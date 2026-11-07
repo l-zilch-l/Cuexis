@@ -1,0 +1,524 @@
+{
+  "scope": "shape of the p99 crossing, read from the recorded per-frame samples of a run that was already judged; descriptive only, never a verdict",
+  "created_utc": "2026-11-01T00:21:22.442795+00:00",
+  "run": "entities-2300",
+  "budget_us": 4166.666666666667,
+  "threshold_us": 6000.0,
+  "sample_tag": "GPU_THROUGHPUT_SAMPLE",
+  "script_sha256": "279c9e0ac300319b21e19e3fac82023ea8beb13526b95b0b6c67dde116383344",
+  "processes": [
+    {
+      "log": "01-render-only-2300.log.txt",
+      "log_sha256": "3961e60d357fd0d4d75bd936987a11f02714339b1729f0cd825d8d9cae1ed38f",
+      "mode": "render-only",
+      "ordinal_continuous": true,
+      "detail": {
+        "frames": 6596,
+        "start_utc_s": 0.0026748,
+        "end_s": 20.0024866,
+        "cycle_us": {
+          "min": 2326.4,
+          "p50": 3048.5,
+          "p90": 3276.5,
+          "p95": 3332.3,
+          "p99": 3503.5,
+          "max": 5396.8
+        },
+        "over_budget": {
+          "count": 10,
+          "share": 0.0015160703456640388,
+          "bursts": 5,
+          "burst_length_median": 2,
+          "burst_length_max": 3,
+          "gap_frames_median": 364.5,
+          "first_ordinal": 3079,
+          "first_utc_s": 8.9054368
+        },
+        "slow": {
+          "threshold_us": 6000.0,
+          "count": 0,
+          "share": 0.0,
+          "bursts": 0,
+          "burst_length_median": null,
+          "burst_length_max": 0,
+          "gap_frames_median": null,
+          "gap_frames_p90": null,
+          "first_ordinal": null,
+          "first_utc_s": null
+        },
+        "phases_us": {
+          "update": 0.0,
+          "extract": 0.0,
+          "submit": 3008.8,
+          "present": 32.3,
+          "total": 3046.4,
+          "cycle": 3048.5
+        },
+        "fast_phases_us": {
+          "update": 0.0,
+          "extract": 0.0,
+          "submit": 3008.8,
+          "present": 32.3,
+          "total": 3046.4,
+          "cycle": 3048.5
+        },
+        "slow_phases_us": null
+      }
+    },
+    {
+      "log": "01-static-2300.log.txt",
+      "log_sha256": "c3eacfbd264e73ff4a3f4557fc0e0b7b3ade6fa3618723c7c7c20b66ee09a948",
+      "mode": "static",
+      "ordinal_continuous": true,
+      "detail": {
+        "frames": 4991,
+        "start_utc_s": 0.0031016999999999998,
+        "end_s": 20.0009397,
+        "cycle_us": {
+          "min": 2792.6,
+          "p50": 3848.6,
+          "p90": 4412.4,
+          "p95": 7038.4,
+          "p99": 7226,
+          "max": 7753.2
+        },
+        "over_budget": {
+          "count": 1250,
+          "share": 0.25045081146062914,
+          "bursts": 622,
+          "burst_length_median": 2.0,
+          "burst_length_max": 14,
+          "gap_frames_median": 4,
+          "first_ordinal": 1312,
+          "first_utc_s": 4.3759915
+        },
+        "slow": {
+          "threshold_us": 6000.0,
+          "count": 315,
+          "share": 0.06311360448807854,
+          "bursts": 315,
+          "burst_length_median": 1,
+          "burst_length_max": 1,
+          "gap_frames_median": 4.0,
+          "gap_frames_p90": 25,
+          "first_ordinal": 1700,
+          "first_utc_s": 5.7704081
+        },
+        "phases_us": {
+          "update": 204.1,
+          "extract": 290.5,
+          "submit": 3291.2,
+          "present": 35,
+          "total": 3846.4,
+          "cycle": 3848.6
+        },
+        "fast_phases_us": {
+          "update": 203.8,
+          "extract": 290.2,
+          "submit": 3253.5,
+          "present": 34.8,
+          "total": 3807.8,
+          "cycle": 3810.85
+        },
+        "slow_phases_us": {
+          "update": 208.4,
+          "extract": 295.5,
+          "submit": 6572.5,
+          "present": 41.8,
+          "total": 7124.5,
+          "cycle": 7126.6
+        }
+      }
+    },
+    {
+      "log": "02-render-only-2300.log.txt",
+      "log_sha256": "01dd8b17bed3a88ff0f279ca52e146a9d24b904405f948e58822d8c10964735e",
+      "mode": "render-only",
+      "ordinal_continuous": true,
+      "detail": {
+        "frames": 6532,
+        "start_utc_s": 0.0027056,
+        "end_s": 20.0020017,
+        "cycle_us": {
+          "min": 2347.8,
+          "p50": 3060.5,
+          "p90": 3308.5,
+          "p95": 3389.6,
+          "p99": 3610.7,
+          "max": 7601.4
+        },
+        "over_budget": {
+          "count": 16,
+          "share": 0.002449479485609308,
+          "bursts": 11,
+          "burst_length_median": 1,
+          "burst_length_max": 3,
+          "gap_frames_median": 386.5,
+          "first_ordinal": 358,
+          "first_utc_s": 0.9790791999999999
+        },
+        "slow": {
+          "threshold_us": 6000.0,
+          "count": 3,
+          "share": 0.00045927740355174526,
+          "bursts": 2,
+          "burst_length_median": 1.5,
+          "burst_length_max": 2,
+          "gap_frames_median": 725,
+          "gap_frames_p90": 725,
+          "first_ordinal": 4588,
+          "first_utc_s": 13.8065649
+        },
+        "phases_us": {
+          "update": 0.0,
+          "extract": 0.0,
+          "submit": 3016.9,
+          "present": 36.55,
+          "total": 3058.3500000000004,
+          "cycle": 3060.5
+        },
+        "fast_phases_us": {
+          "update": 0,
+          "extract": 0,
+          "submit": 3016.9,
+          "present": 36.5,
+          "total": 3058.2,
+          "cycle": 3060.5
+        },
+        "slow_phases_us": {
+          "update": 0,
+          "extract": 0,
+          "submit": 6452.3,
+          "present": 101.5,
+          "total": 6525.1,
+          "cycle": 6529.8
+        }
+      }
+    },
+    {
+      "log": "02-static-2300.log.txt",
+      "log_sha256": "611f5713595f20f3ad00d7949d561f16ecadd53c054d3a867291c3bb5d005070",
+      "mode": "static",
+      "ordinal_continuous": true,
+      "detail": {
+        "frames": 5304,
+        "start_utc_s": 0.0030026,
+        "end_s": 20.0009317,
+        "cycle_us": {
+          "min": 2736.1,
+          "p50": 3591.2,
+          "p90": 4232.9,
+          "p95": 4411.5,
+          "p99": 7182.9,
+          "max": 7566.5
+        },
+        "over_budget": {
+          "count": 751,
+          "share": 0.14159125188536953,
+          "bursts": 453,
+          "burst_length_median": 1,
+          "burst_length_max": 9,
+          "gap_frames_median": 4.0,
+          "first_ordinal": 2241,
+          "first_utc_s": 7.445913900000001
+        },
+        "slow": {
+          "threshold_us": 6000.0,
+          "count": 207,
+          "share": 0.03902714932126697,
+          "bursts": 207,
+          "burst_length_median": 1,
+          "burst_length_max": 1,
+          "gap_frames_median": 9.0,
+          "gap_frames_p90": 25,
+          "first_ordinal": 2828,
+          "first_utc_s": 9.5416
+        },
+        "phases_us": {
+          "update": 193.95,
+          "extract": 272.8,
+          "submit": 3083.05,
+          "present": 34.8,
+          "total": 3589.75,
+          "cycle": 3591.3999999999996
+        },
+        "fast_phases_us": {
+          "update": 193.6,
+          "extract": 272.4,
+          "submit": 3066.8,
+          "present": 34.6,
+          "total": 3572.9,
+          "cycle": 3574.8
+        },
+        "slow_phases_us": {
+          "update": 201,
+          "extract": 282.7,
+          "submit": 6588.1,
+          "present": 43.6,
+          "total": 7122.9,
+          "cycle": 7124.4
+        }
+      }
+    },
+    {
+      "log": "03-render-only-2300.log.txt",
+      "log_sha256": "5957e958cc88d49b7faa03aeb120ab1189e669e3eb7ff41974124e940ac853ee",
+      "mode": "render-only",
+      "ordinal_continuous": true,
+      "detail": {
+        "frames": 6481,
+        "start_utc_s": 0.0025331999999999998,
+        "end_s": 20.002115800000002,
+        "cycle_us": {
+          "min": 2383.2,
+          "p50": 3095.8,
+          "p90": 3279,
+          "p95": 3343.9,
+          "p99": 3549.7,
+          "max": 19030.2
+        },
+        "over_budget": {
+          "count": 11,
+          "share": 0.0016972689399783983,
+          "bursts": 4,
+          "burst_length_median": 2.5,
+          "burst_length_max": 5,
+          "gap_frames_median": 698,
+          "first_ordinal": 298,
+          "first_utc_s": 0.8460122
+        },
+        "slow": {
+          "threshold_us": 6000.0,
+          "count": 2,
+          "share": 0.00030859435272334514,
+          "bursts": 2,
+          "burst_length_median": 1.0,
+          "burst_length_max": 1,
+          "gap_frames_median": 2,
+          "gap_frames_p90": 2,
+          "first_ordinal": 5220,
+          "first_utc_s": 15.9928405
+        },
+        "phases_us": {
+          "update": 0,
+          "extract": 0,
+          "submit": 3056.1,
+          "present": 31.4,
+          "total": 3094.1,
+          "cycle": 3095.8
+        },
+        "fast_phases_us": {
+          "update": 0,
+          "extract": 0,
+          "submit": 3056,
+          "present": 31.4,
+          "total": 3094.1,
+          "cycle": 3095.8
+        },
+        "slow_phases_us": {
+          "update": 0.0,
+          "extract": 0.0,
+          "submit": 12808.3,
+          "present": 107.1,
+          "total": 12915.400000000001,
+          "cycle": 12923.1
+        }
+      }
+    },
+    {
+      "log": "03-static-2300.log.txt",
+      "log_sha256": "aae5e9ba017c3b5bf7b80f80b9fff43ce1ce090c7d742e531bbb9c28c297db1a",
+      "mode": "static",
+      "ordinal_continuous": true,
+      "detail": {
+        "frames": 5234,
+        "start_utc_s": 0.0031527,
+        "end_s": 20.0008507,
+        "cycle_us": {
+          "min": 2781.7,
+          "p50": 3639.1,
+          "p90": 4261.7,
+          "p95": 4627,
+          "p99": 7193.5,
+          "max": 7500.5
+        },
+        "over_budget": {
+          "count": 824,
+          "share": 0.15743217424531908,
+          "bursts": 467,
+          "burst_length_median": 1,
+          "burst_length_max": 11,
+          "gap_frames_median": 5.0,
+          "first_ordinal": 394,
+          "first_utc_s": 1.2268706999999999
+        },
+        "slow": {
+          "threshold_us": 6000.0,
+          "count": 232,
+          "share": 0.04432556362246848,
+          "bursts": 232,
+          "burst_length_median": 1.0,
+          "burst_length_max": 1,
+          "gap_frames_median": 9,
+          "gap_frames_p90": 25,
+          "first_ordinal": 2622,
+          "first_utc_s": 8.8773669
+        },
+        "phases_us": {
+          "update": 195.1,
+          "extract": 239.4,
+          "submit": 3149.75,
+          "present": 37.9,
+          "total": 3637.45,
+          "cycle": 3639.2
+        },
+        "fast_phases_us": {
+          "update": 194.85000000000002,
+          "extract": 239.2,
+          "submit": 3127.45,
+          "present": 37.7,
+          "total": 3609.95,
+          "cycle": 3612.0
+        },
+        "slow_phases_us": {
+          "update": 199.3,
+          "extract": 243.3,
+          "submit": 6619.85,
+          "present": 44.8,
+          "total": 7119.9,
+          "cycle": 7121.6
+        }
+      }
+    }
+  ],
+  "groups": {
+    "render-only": {
+      "processes": 3,
+      "frames": [
+        6596,
+        6532,
+        6481
+      ],
+      "cycle_p50_us": [
+        3048.5,
+        3060.5,
+        3095.8
+      ],
+      "cycle_p99_us": [
+        3503.5,
+        3610.7,
+        3549.7
+      ],
+      "over_budget_share": [
+        0.0015160703456640388,
+        0.002449479485609308,
+        0.0016972689399783983
+      ],
+      "slow_share": [
+        0.0,
+        0.00045927740355174526,
+        0.00030859435272334514
+      ],
+      "slow_frames": [
+        0,
+        3,
+        2
+      ],
+      "slow_bursts": [
+        0,
+        2,
+        2
+      ],
+      "slow_gap_frames_median": [
+        null,
+        725,
+        2
+      ],
+      "first_slow_utc_s": [
+        null,
+        13.8065649,
+        15.9928405
+      ],
+      "submit_us_median": [
+        3008.8,
+        3016.9,
+        3056.1
+      ],
+      "slow_submit_us_median": [
+        null,
+        6452.3,
+        12808.3
+      ],
+      "fast_submit_us_median": [
+        3008.8,
+        3016.9,
+        3056
+      ],
+      "all_processes_continuous": true
+    },
+    "static": {
+      "processes": 3,
+      "frames": [
+        4991,
+        5304,
+        5234
+      ],
+      "cycle_p50_us": [
+        3848.6,
+        3591.2,
+        3639.1
+      ],
+      "cycle_p99_us": [
+        7226,
+        7182.9,
+        7193.5
+      ],
+      "over_budget_share": [
+        0.25045081146062914,
+        0.14159125188536953,
+        0.15743217424531908
+      ],
+      "slow_share": [
+        0.06311360448807854,
+        0.03902714932126697,
+        0.04432556362246848
+      ],
+      "slow_frames": [
+        315,
+        207,
+        232
+      ],
+      "slow_bursts": [
+        315,
+        207,
+        232
+      ],
+      "slow_gap_frames_median": [
+        4.0,
+        9.0,
+        9
+      ],
+      "first_slow_utc_s": [
+        5.7704081,
+        9.5416,
+        8.8773669
+      ],
+      "submit_us_median": [
+        3291.2,
+        3083.05,
+        3149.75
+      ],
+      "slow_submit_us_median": [
+        6572.5,
+        6588.1,
+        6619.85
+      ],
+      "fast_submit_us_median": [
+        3253.5,
+        3066.8,
+        3127.45
+      ],
+      "all_processes_continuous": true
+    }
+  }
+}

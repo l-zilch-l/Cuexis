@@ -1,0 +1,8 @@
+MODE mismatch
+PROBE_BLOCK ptr=000001a8af991280 w_minus_16=000001a8af991270 w_minus_8=65
+STRING ok size=64
+ARRAY ok last=121
+ARRAY released
+ALIGNED ok
+ALIGNED released
+MISMATCH block=000001a8af9990b0

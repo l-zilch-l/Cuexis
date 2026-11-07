@@ -1,0 +1,7 @@
+{
+  "scope": "Private timer overlays only; diagnostics, not normal performance.",
+  "files": {
+    "canonical_chart_loader.cpp": "ab54574c3e4953925352d98689a76e4737ac595c44068e85a0454cf9f28eebd3",
+    "parse.cpp": "73d7a76b91f68e2e81a6cd5b03e84e1492e0ffddc00861adc4bae37fb19053e2"
+  }
+}

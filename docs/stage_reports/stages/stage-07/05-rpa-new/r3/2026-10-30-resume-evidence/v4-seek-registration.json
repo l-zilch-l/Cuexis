@@ -1,0 +1,101 @@
+{
+  "formal": false,
+  "scope": "Fixed ordinary v4 diagnostic. No production memory quota decision. Same candidate class definitions and fresh libraries; all timings exclude fault/heap observers.",
+  "plan": [
+    {
+      "n": 1000,
+      "horizon": "902",
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "horizon": "902",
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 1000,
+      "horizon": "902",
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 1000,
+      "horizon": "902",
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "horizon": "5",
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "horizon": "5",
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "horizon": "5",
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "horizon": "5",
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "horizon": "final",
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "horizon": "final",
+      "pair": 0,
+      "variant": "candidate"
+    }
+  ],
+  "attempts": 3,
+  "gate": "40K first-record H902 median improves >=50%; every candidate request <=20ms; H5 and 1K final guard <=5% regression. Original relative range <=15% reported, no new samples to force pass. first/repeats separate; exact full Snapshot raw bytes/hash/size. CPU Host request through target present only, not physical GPU or formal acceptance.",
+  "binaries": {
+    "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-resume-v1\\budget-v4-host-v1\\probe-baseline.exe": "29cd09d2c29938084bdb5309ae3000b3fdfdf64a3bdd0f8f4640dfbccf3b3bce",
+    "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-resume-v1\\budget-v4-host-v1\\probe-candidate.exe": "2c87481453962613ce38671f247a4dafd6e68eeb96bedb306a5980c1506c4cbf"
+  },
+  "runner_sha256": "f4c2b433d55f411d746489f7f1ea267c22aaa5e2082e050cc5b9acb59a4fbac2",
+  "affinity": 4,
+  "priority": "BelowNormal",
+  "qos": "execution throttling OFF",
+  "failure": "Invalid process stops; original failed/noisy groups retained; no replacement/extension. Builds must be absent."
+}

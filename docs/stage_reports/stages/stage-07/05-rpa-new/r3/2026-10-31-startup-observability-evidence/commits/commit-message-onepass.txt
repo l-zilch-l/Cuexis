@@ -1,0 +1,30 @@
+Parse JSON in one pass instead of through a callback DOM
+
+`json::parse` built a complete nlohmann DOM through a parse callback and then copied every node
+into `Value`. On the 13,171,906-byte 40K chart that cost 10.05 s, and the attribution probe shows
+where it went: the same document parses in 0.24 s without a callback, a callback that does nothing
+but return `true` costs 9.87 s, and the product's duplicate-key observer costs the same 9.87 s. The
+observer was never the cost; the third-party callback-mode parser was, and the value copy after it
+added the remaining 0.2 s.
+
+The one-pass builder already exists for the formats that state owning-value budgets.
+`json::parse` now validates the caller's text budgets and delegates to it, so nesting depth,
+string-byte ceilings and duplicate-key rejection are enforced by the same reader that builds the
+tree, and neither the third-party DOM nor the value copy remains.
+
+The owning-value budgets stay unbounded because this entry point's callers state text budgets only.
+Inventing container or value ceilings here would reject documents that parse today, and every
+caller that wants such a budget already calls `parseBounded` directly.
+
+Measured on the same 40K project on one stable source, Release libraries, no build during the run:
+
+- `PlaybackSession::prepareLoad` 18,570.50/18,561.68/18,272.93 ms -> 3,981.30/3,788.66 ms
+- `json.parse` of the 13.17 MB chart 10,048.80/10,055.03 ms -> 971.64/924.41 ms
+- `ChartWriter::writeCanonicalJson` 11,074.06/10,900.44 ms -> 1,896.71/1,810.44 ms
+- semantic identity unchanged: 936c32eede42abfbd136e217591c623b3ba3dc7093694fe60a356e070f656869
+- 40001 objects, format v3, canonical text 29,652,435 bytes, unchanged
+
+Gates on this source: Release build; cuexis_json_support_tests 293 assertions in 26 cases,
+cuexis_chart_tests 42425 in 227, cuexis_playback_tests 17185 in 130, cuexis_player_control_tests
+484 in 29, cuexis_asset_publish_tests 398 in 26, all passing with unchanged counts. The
+parse-characterization tests that assert exactly one parse per document still hold.

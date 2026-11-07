@@ -1,0 +1,37 @@
+Filters: "Neutral draw late inversion performance guard"
+Randomness seeded to: 1
+DRAW_GUARD {"n":1000,"reverse":false,"iteration":0,"duration_us":776.70000000000005,"digest":4555679925642277249}
+DRAW_GUARD {"n":1000,"reverse":false,"iteration":1,"duration_us":641.20000000000005,"digest":4555679925642277249}
+DRAW_GUARD {"n":1000,"reverse":false,"iteration":2,"duration_us":628.89999999999998,"digest":4555679925642277249}
+DRAW_GUARD {"n":1000,"reverse":false,"iteration":3,"duration_us":639.39999999999998,"digest":4555679925642277249}
+DRAW_GUARD {"n":1000,"reverse":false,"iteration":4,"duration_us":626,"digest":4555679925642277249}
+DRAW_GUARD {"n":1000,"reverse":false,"iteration":5,"duration_us":642.10000000000002,"digest":4555679925642277249}
+DRAW_GUARD {"n":1000,"reverse":false,"iteration":6,"duration_us":625.10000000000002,"digest":4555679925642277249}
+DRAW_GUARD {"n":1000,"reverse":false,"iteration":7,"duration_us":642.10000000000002,"digest":4555679925642277249}
+DRAW_GUARD {"n":1000,"reverse":true,"iteration":0,"duration_us":687.39999999999998,"digest":4555679925642277249}
+DRAW_GUARD {"n":1000,"reverse":true,"iteration":1,"duration_us":675.10000000000002,"digest":4555679925642277249}
+DRAW_GUARD {"n":1000,"reverse":true,"iteration":2,"duration_us":747.89999999999998,"digest":4555679925642277249}
+DRAW_GUARD {"n":1000,"reverse":true,"iteration":3,"duration_us":674.10000000000002,"digest":4555679925642277249}
+DRAW_GUARD {"n":1000,"reverse":true,"iteration":4,"duration_us":676.29999999999995,"digest":4555679925642277249}
+DRAW_GUARD {"n":1000,"reverse":true,"iteration":5,"duration_us":667.20000000000005,"digest":4555679925642277249}
+DRAW_GUARD {"n":1000,"reverse":true,"iteration":6,"duration_us":677,"digest":4555679925642277249}
+DRAW_GUARD {"n":1000,"reverse":true,"iteration":7,"duration_us":678.5,"digest":4555679925642277249}
+DRAW_GUARD {"n":40000,"reverse":false,"iteration":0,"duration_us":31661.900000000001,"digest":4750216533671907307}
+DRAW_GUARD {"n":40000,"reverse":false,"iteration":1,"duration_us":31498.5,"digest":4750216533671907307}
+DRAW_GUARD {"n":40000,"reverse":false,"iteration":2,"duration_us":31171.700000000001,"digest":4750216533671907307}
+DRAW_GUARD {"n":40000,"reverse":false,"iteration":3,"duration_us":41539.599999999999,"digest":4750216533671907307}
+DRAW_GUARD {"n":40000,"reverse":false,"iteration":4,"duration_us":39961.599999999999,"digest":4750216533671907307}
+DRAW_GUARD {"n":40000,"reverse":false,"iteration":5,"duration_us":31099.299999999999,"digest":4750216533671907307}
+DRAW_GUARD {"n":40000,"reverse":false,"iteration":6,"duration_us":30756.5,"digest":4750216533671907307}
+DRAW_GUARD {"n":40000,"reverse":false,"iteration":7,"duration_us":30751.5,"digest":4750216533671907307}
+DRAW_GUARD {"n":40000,"reverse":true,"iteration":0,"duration_us":32994,"digest":4750216533671907307}
+DRAW_GUARD {"n":40000,"reverse":true,"iteration":1,"duration_us":33261.099999999999,"digest":4750216533671907307}
+DRAW_GUARD {"n":40000,"reverse":true,"iteration":2,"duration_us":32498.599999999999,"digest":4750216533671907307}
+DRAW_GUARD {"n":40000,"reverse":true,"iteration":3,"duration_us":33092.800000000003,"digest":4750216533671907307}
+DRAW_GUARD {"n":40000,"reverse":true,"iteration":4,"duration_us":32697.700000000001,"digest":4750216533671907307}
+DRAW_GUARD {"n":40000,"reverse":true,"iteration":5,"duration_us":33127.599999999999,"digest":4750216533671907307}
+DRAW_GUARD {"n":40000,"reverse":true,"iteration":6,"duration_us":32506.5,"digest":4750216533671907307}
+DRAW_GUARD {"n":40000,"reverse":true,"iteration":7,"duration_us":33062.699999999997,"digest":4750216533671907307}
+===============================================================================
+All tests passed (87 assertions in 1 test case)
+

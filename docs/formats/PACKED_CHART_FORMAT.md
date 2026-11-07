@@ -4,6 +4,12 @@
 
 更新日期：2026-09-05
 
+2026-10-04 补充：本文继续拥有 Foundation `candidateRevision=1` 的合同。
+Gameplay 的显式 revision 2 扩展由 [Gameplay Capsule v2 format](GAMEPLAY_CAPSULE_V2_FORMAT.md)
+唯一拥有，复用本文 Header/directory/静态流/预算，并明确 REQ0/CNS0、Header requirementCount、
+ENT0 bit 2、REF0 与 semantic hash 的差异。不能把这些差异倒灌 revision 1，
+不能让旧 Reader 忽略 Gameplay 后继续成功；本补充不切换默认 Writer 或宣称生产实现。
+
 依据：[玩法抽象模型](../architecture/GAMEPLAY_ABSTRACTION_MODEL.md)、
 [CXT v2](CXT_V2_FORMAT.md)、
 [Chart Format Foundation](../stage_plans/completed/chart-format-foundation/plan.md)、
@@ -157,6 +163,11 @@ Foundation revision 1 的可执行硬预算如下。单位是 wire 语义单位�
 之前完成；目录项数先用 u64 乘积校验再预留；STR0/REF0 行数与 IDN0 scope/path/step 数以剩余
 payload 为上界；IDN0 iteration 与 CNS0 lane 是 u32 字段，超宽值拒绝而不截断。Header 计数
 只作预检，解码后按 STR0/REF0/IDN0/REQ0/ENT0/ARCH 实际行数重新计数比对。
+
+2026-10-22 owner 接受的 Capsule revision 4 另受
+[Capsule §13](GAMEPLAY_CAPSULE_V2_FORMAT.md) 的 `capsule4.hash-work.v1` 四维工作量门禁。
+其 preimage bytes 不再借用 physical decoded bytes 计费；本表七项、revision 1/2/3 的原行为
+与 installed PackedChartLimits 不变。物理 revision/semantic codec 必须显式分派，不猜未知版本。
 
 只作观测、未接受阈值的项目：prepare 峰值内存（`preparePeakBytes`）、展开/编译耗时、
 decoded section bytes 解释成堆占用，以及 IDN0 scope/path 表解码后的对象内存。本阶段不为

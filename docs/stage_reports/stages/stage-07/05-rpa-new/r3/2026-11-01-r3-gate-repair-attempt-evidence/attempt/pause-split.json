@@ -1,0 +1,19 @@
+{
+  "scope": "Split of the first pause in the second gate batch (controls run-00).",
+  "log": "out/verification-20261101/r3-gate-batch2/controls/run-00.log.txt",
+  "first_pause": {
+    "pause_call_us": 258,
+    "frozen_draw_us": 178445,
+    "total_us": 178703,
+    "start_us": 126817737656,
+    "confirmed_us": 126817737914,
+    "first_present_us": 126817916359
+  },
+  "later_pauses": {
+    "median_total_us": 875,
+    "note": "second pause 875 us, third 703 us; 39 of 40 readings per process sit at 0.7-2.2 ms"
+  },
+  "load_host_us": 20478,
+  "first_frame_presented_us": 126817737607,
+  "conclusion": "the overrun is entirely the first frozen draw, not the control command"
+}

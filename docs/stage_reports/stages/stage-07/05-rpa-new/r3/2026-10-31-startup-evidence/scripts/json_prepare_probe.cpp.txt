@@ -1,0 +1,28 @@
+#include "D:/Cuexis-redesign/tests/player/gpu_throughput_probe.cpp"
+#include <cuexis/playback/frame_digest.hpp>
+
+TEST_CASE("CPU legacy preparation fixed diagnostic", "[.][json-prepare]") {
+    std::cout << "JSON_PREPARE_READY" << std::endl;
+    std::string go;
+    std::getline(std::cin, go);
+    REQUIRE(go == "go");
+    const auto count = throughputCount("CUEXIS_JSON_PREPARE_ENTITIES", 40000, 40000);
+    auto source = throughputSource(count, false);
+    cuexis::playback::PlaybackSession session;
+    const auto begin = Clock::now();
+    auto prepared = throughputTake(session.prepareLoad(std::move(source), PlaybackMode::ChartClock));
+    const auto end = Clock::now();
+    const auto identity = prepared.semanticIdentity();
+    REQUIRE(identity);
+    throughputTake(session.commit(std::move(prepared)));
+    const cuexis::playback::RuntimeFrame frame{0, 0, 1};
+    throughputTake(session.update(frame));
+    auto snapshot = throughputTake(session.extractFrame({1920, 1080}));
+    REQUIRE(snapshot.objects.size() == count);
+    const auto digest = throughputTake(cuexis::playback::computeFrameDigest(frame, snapshot));
+    std::cout << "JSON_PREPARE_RESULT {\"entities\":" << count << ",\"prepare_us\":"
+              << std::setprecision(17) << throughputUs(begin, end) << ",\"identity\":\"";
+    for (auto byte : identity->sha256)
+        std::cout << std::hex << std::setfill('0') << std::setw(2) << unsigned(byte);
+    std::cout << std::dec << "\",\"frame_digest\":" << digest.value << "}\n";
+}

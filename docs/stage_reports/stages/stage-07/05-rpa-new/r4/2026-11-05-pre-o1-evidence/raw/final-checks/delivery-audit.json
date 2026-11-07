@@ -1,0 +1,24 @@
+{
+  "layout_inputs_checked": 276,
+  "layout_mismatches": [],
+  "tested_non_tool_layout_inputs_equal": true,
+  "protected_entries": 3048,
+  "protected_unchanged": 3047,
+  "allowed_navigation_change": [
+    "docs/stage_reports/stages/stage-07/05-rpa-new/README.md"
+  ],
+  "binary_sha256": {
+    "out\\build\\r4\\pre-o1\\msvc-on-debug\\bin\\cuexis_execution_host_tests.exe": "f268329e47f34e862ffe6ed7ff5cb0f8688932e827ef2fe15a37f7635ff2dc5f",
+    "out\\build\\r4\\pre-o1\\msvc-on-debug\\bin\\cuexis_rpa_tests.exe": "53f8d334fcc4e0de4e29eaa1df36c6d606c048056162f0ea4195801649f45fb3",
+    "out\\build\\r4\\pre-o1\\msvc-on-debug\\bin\\cuexis_host_protocol_tests.exe": "e6692c62a9d6777be174e9d120307c00268852a2c041e5879ce36ad52ab8ff6b",
+    "out\\build\\r4\\pre-o1\\preflight\\20261105-123139-c8af190f\\mingw-on-debug\\bin\\cuexis_execution_host_tests.exe": "358715153f40163d64366de378e7c21051bbc83efa59730caa3172ea06181774",
+    "out\\build\\r4\\pre-o1\\preflight\\20261105-123139-c8af190f\\mingw-on-debug\\bin\\cuexis_rpa_tests.exe": "1f11445f91c23ed9a148156b7a0780e4e8b30e669e86b76fb8ac0e1b0ab0ec2a",
+    "out\\build\\r4\\pre-o1\\preflight\\20261105-123139-c8af190f\\mingw-on-debug\\bin\\cuexis_host_protocol_tests.exe": "fe169af1c765c9d144be2cd71c8931531fdbf4ea1c66ef62786f323fb8f644bc"
+  },
+  "review": {
+    "standards": "functional tool rename applied; no other findings",
+    "spec": "Seek count validation fixed; speculative timeout race withdrawn after cleanup audit"
+  },
+  "original_baseline_available": "commit",
+  "baseline_rebuild_verified": false
+}

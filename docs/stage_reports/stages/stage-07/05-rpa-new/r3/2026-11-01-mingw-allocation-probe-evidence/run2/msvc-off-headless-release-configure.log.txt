@@ -1,0 +1,95 @@
+["cmake", "--preset", "headless-release", "--fresh", "-B", "D:\\Cuexis-redesign\\out\\build\\headless-release"]
+-- Running vcpkg install
+Detecting compiler hash for triplet x64-windows...
+Compiler found: D:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe
+The following packages are already installed:
+    catch2:x64-windows@3.15.2#1
+    entt:x64-windows@3.16.0
+    glm:x64-windows@1.0.3
+    json-schema-validator:x64-windows@2.4.0
+    minizip-ng:x64-windows@4.1.0
+    nlohmann-json:x64-windows@3.12.0#2
+    tl-expected:x64-windows@1.3.1
+  * vcpkg-cmake:x64-windows@2024-04-23
+  * vcpkg-cmake-config:x64-windows@2026-07-21
+entt provides CMake targets:
+
+    find_package(EnTT CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE EnTT::EnTT)
+
+The package glm provides CMake targets:
+
+    find_package(glm CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE glm::glm)
+
+    # Or use the header-only version
+    find_package(glm CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE glm::glm-header-only)
+
+The package nlohmann-json provides CMake targets:
+
+    find_package(nlohmann_json CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE nlohmann_json::nlohmann_json)
+
+The package nlohmann-json can be configured to not provide implicit conversions via a custom triplet file:
+
+    set(nlohmann-json_IMPLICIT_CONVERSIONS OFF)
+
+For more information, see the docs here:
+    
+    https://json.nlohmann.me/api/macros/json_use_implicit_conversions/
+
+json-schema-validator provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(nlohmann_json_schema_validator CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE nlohmann_json_schema_validator::validator)
+
+minizip-ng provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(minizip-ng CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE MINIZIP::minizip-ng)
+
+minizip-ng provides pkg-config modules:
+
+  # Zip manipulation library
+  minizip-ng
+
+tl-expected provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(tl-expected CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE tl::expected)
+
+catch2 provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(Catch2 CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE Catch2::Catch2 Catch2::Catch2WithMain)
+
+catch2 provides pkg-config modules:
+
+  # A modern, C++-native test framework for C++14 and above (links in default main)
+  catch2-with-main
+
+  # A modern, C++-native, test framework for C++14 and above
+  catch2
+
+All requested installations completed successfully in: 496 us
+-- Running vcpkg install - done
+-- The CXX compiler identification is MSVC 19.51.36256.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: D:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Performing Test COMPILER_HAS_DEPRECATED_ATTR
+-- Performing Test COMPILER_HAS_DEPRECATED_ATTR - Failed
+-- Performing Test COMPILER_HAS_DEPRECATED
+-- Performing Test COMPILER_HAS_DEPRECATED - Success
+-- Found nlohmann_json: D:/Cuexis-redesign/out/build/headless-release/vcpkg_installed/x64-windows/share/nlohmann_json/nlohmann_jsonConfig.cmake (found version "3.12.0")
+-- cuexis_cxc_tests: developer tool layer absent; candidate CXC cases excluded
+-- Configuring done (12.0s)
+-- Generating done (0.7s)
+-- Build files have been written to: D:/Cuexis-redesign/out/build/headless-release

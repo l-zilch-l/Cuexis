@@ -1,0 +1,8 @@
+{
+  "scope": "Observer only: real fail-next and requested/CRT usable allocation retention. Original v5 kernel with three event callbacks; common fresh library definitions, original single-Fact Playback.",
+  "files": {
+    "execution_kernel.cpp": "e7abec4638b6192167a9cd5da17f758eea18a84f807c7bf0c697ea4ce1bc784e",
+    "host_probe.cpp": "7cbf09cc21f863a9c1ec45444ccce57037b26e3c52370c72c74e20ba32cfb801",
+    "tick_fault_probe.hpp": "b347643ce263b979b10cf415c02d9441f6c1749a283aa2cbdbeac0645bf7d21c"
+  }
+}

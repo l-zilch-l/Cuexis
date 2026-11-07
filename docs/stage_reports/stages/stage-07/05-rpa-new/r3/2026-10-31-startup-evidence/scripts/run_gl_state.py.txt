@@ -1,0 +1,30 @@
+from pathlib import Path
+import sys
+root=Path.cwd();sys.path.insert(0,str(root/'out/verification-20261029/r3-completion'))
+import gpu_runner as runner
+from native import *
+base=Path(__file__).resolve().parent;build=base/'gl-state-build-v2';out=base/'gl-state-measure-v1';out.mkdir(exist_ok=False)
+runner.base=out
+plan=[dict(entities=n,mode=mode,repeat=pair,variant=v,frames=60) for n in (1000,40000) for mode in ('render-only','static','animated') for pair in range(2) for v in (('baseline','candidate') if pair==0 else ('candidate','baseline'))]
+write(out/'plan.json',dict(scope='Ordinary physical GPU local unlit state cache only. Both variants matching fresh product-sequence libs; only candidate GL presentation TU overridden.',plan=plan,binaries={v:sha(build/('gpu-'+v+'.exe')) for v in ('baseline','candidate')},normal_allocator=True,pixel_readback=False,timer=False,viewport=[1920,1080],gate='40K render-only submit median improves>=10%; all other total cycle<=5%regression. Report original(max-min)/median<=15% screen; no replacement/extension. Functionality and same pixels/draw counts required. No original240FPS or stage acceptance.'))
+# Keep the original validated runner's controls/accounting; change only the explicit
+# pixel readback policy and source path to this fresh source copy.
+original=(root/'out/verification-20261029/r3-completion/gpu_runner.py').read_text()
+original=original.replace("env.update(CUEXIS_GPU_BARRIER=", "env['CUEXIS_GPU_PIXEL_READBACK']='0'\n  env.update(CUEXIS_GPU_BARRIER=")
+original=original.replace("root/'tests/player/gpu_throughput_probe.cpp'", "base_source/'tests/player/gpu_throughput_probe.cpp'")
+namespace=dict(__name__='gl_runner',__file__=str(root/'out/verification-20261029/r3-completion/gpu_runner.py'),base_source=base/'product-sequence-source-v1')
+exec(compile(original,namespace['__file__'],'exec'),namespace)
+namespace['base']=out
+rows=[]
+for ordinal,item in enumerate(plan):
+ namespace['exe']=build/('gpu-'+item['variant']+'.exe')
+ rows+=namespace['run_group'](f'{ordinal:02}-{item["variant"]}',[item]);write(out/'results.json',rows)
+summary=[]
+for n in (1000,40000):
+ for mode in ('render-only','static','animated'):
+  values={v:{metric:dict(samples_us=(points:=[r['statistics'][metric]['mean_us'] for r in rows if r['entities']==n and r['mode']==mode and r['variant']==v]),median_us=statistics.median(points),relative_range_percent=(max(points)-min(points))/statistics.median(points)*100) for metric in ('update_us','extract_us','submit_us','present_us','cycle_us')} for v in ('baseline','candidate')}
+  summary.append(dict(n=n,mode=mode,values=values,submit_change=(values['candidate']['submit_us']['median_us']/values['baseline']['submit_us']['median_us']-1)*100,cycle_change=(values['candidate']['cycle_us']['median_us']/values['baseline']['cycle_us']['median_us']-1)*100))
+numeric=all(s['cycle_change']<=5 for s in summary) and next(s for s in summary if s['n']==40000 and s['mode']=='render-only')['submit_change']<=-10
+repeatability=all(s['values'][v]['cycle_us']['relative_range_percent']<=15 for s in summary for v in ('baseline','candidate'))
+write(out/'decision.json',dict(local_numeric_gate=numeric,repeatability_screen=repeatability,summary=summary,selected=False,scope='Physical local diagnostic only. Finite group frozen; 240FPS and formal gates remain independent.'))
+print(json.dumps(dict(numeric=numeric,repeatability=repeatability,summary=summary)),flush=True)

@@ -1,0 +1,77 @@
+from pathlib import Path
+import hashlib,json,shutil,subprocess
+
+root=Path.cwd();base=Path(__file__).resolve().parent
+parent=base/'budget-observer-v3';out=base/'retention-census-v1';out.mkdir(exist_ok=False)
+for n in ('execution_kernel.cpp','rpa_b3_tests.cpp','tick_fault_probe.hpp'):shutil.copyfile(parent/n,out/n)
+p=out/'rpa_b3_tests.cpp';s=p.read_text(encoding='utf-8')
+s+='''
+TEST_CASE("R3c retained memory census separates budget from cost", "[r3c-cost-census]") {
+    const auto profile=GENERATE(0U,1U,2U);
+    const unsigned n=profile==0?1000:40000;
+    const unsigned wave=profile==2?6667:0;
+    Fixture3 f; expandTickFixture(f,n,wave);
+    const auto config=f.configuration();const auto prepared=f.prepared();
+    { auto warm=detail::ExecutionKernel::prepare(config,prepared);REQUIRE(warm); }
+    struct Sample {std::array<BudgetHeapSample,5> stages{};std::size_t peak{},storagePeak{},released{},storageReleased{},points{};bool success{true};};
+    for(const auto limit:{std::size_t{0},std::size_t{128*1024*1024},SIZE_MAX}) {
+        Sample observed;
+        const auto before=tick_probe::live.load(),storageBefore=tick_probe::storage.load();
+        tick_probe::peak.store(before);tick_probe::storagePeak.store(storageBefore);
+        {
+            auto made=detail::ExecutionKernel::prepare(config,prepared);REQUIRE(made);
+            REQUIRE((*made)->setTickPayloadLimitForProbe(limit));
+            auto empty=(*made)->archive();observed.stages[0]=budgetHeapSample(empty);
+            {
+                std::vector<ReplayArchive> generations;generations.reserve(wave?6:1);
+                const std::array<int,6> targets{904,1104,1304,1504,1704,1904};
+                const std::size_t rounds=wave?6:1;
+                for(std::size_t i=0;i<rounds;++i) {
+                    const auto h=wave?targets[i]:1203;
+                    const auto result=(*made)->advance(Tick{h});
+                    observed.success=observed.success && static_cast<bool>(result);
+                    generations.push_back((*made)->archive());
+                }
+                observed.points=detail::ExecutionKernel::tickPointCount(generations.back());
+                observed.stages[1]=budgetHeapSample(empty);
+                made->reset();observed.stages[2]=budgetHeapSample(empty);
+                // Keep just the earliest generation, then release the very last owner.
+                generations.erase(generations.begin()+1,generations.end());
+                observed.stages[3]=budgetHeapSample(empty);
+            }
+            observed.stages[4]=budgetHeapSample(empty);
+        }
+        // Read observer counters before assertions can allocate a failure record.
+        observed.released=tick_probe::live.load()-before;
+        observed.storageReleased=tick_probe::storage.load()-storageBefore;
+        observed.peak=tick_probe::peak.load()-before;
+        observed.storagePeak=tick_probe::storagePeak.load()-storageBefore;
+        CHECK(observed.success);CHECK(observed.released==0);CHECK(observed.storageReleased==0);
+        CHECK(observed.stages[4].charge==0);
+        CHECK(observed.stages[1].charge==observed.stages[2].charge);
+        if(limit==0) CHECK(observed.points==0);
+        if(limit==SIZE_MAX) CHECK(observed.points==(wave?4:1));
+        for(std::size_t i=0;i<observed.stages.size();++i) {
+            const auto& x=observed.stages[i];
+            std::cout << "{\\"event\\":\\"r3c.retention_census\\",\\"n\\":" << n << ",\\"wave\\":" << wave
+                      << ",\\"limit\\":" << limit << ",\\"phase\\":" << i
+                      << ",\\"requested_delta\\":" << x.requested-before
+                      << ",\\"crt_usable_delta\\":" << x.storage-storageBefore
+                      << ",\\"charge\\":" << x.charge << ",\\"private_bytes\\":" << x.privateBytes
+                      << ",\\"working_set\\":" << x.workingSet << ",\\"points\\":" << observed.points << "}\\n";
+        }
+        std::cout << "{\\"event\\":\\"r3c.retention_release\\",\\"n\\":" << n << ",\\"wave\\":" << wave
+                  << ",\\"limit\\":" << limit << ",\\"peak_requested_delta\\":" << observed.peak
+                  << ",\\"peak_crt_usable_delta\\":" << observed.storagePeak
+                  << ",\\"released_delta\\":" << observed.released << ",\\"storage_released_delta\\":" << observed.storageReleased << "}\\n";
+    }
+}
+'''
+p.write_text(s,encoding='utf-8');subprocess.run(['clang-format','-i',str(p)],check=True)
+builder=(base/'build_budget_observer_v3.py').read_text().replace("out=base/'budget-observer-v3'","out=base/'retention-census-v1'")
+# Kernel event probes are byte-identical and already built against precisely the same headers.
+builder=builder.replace("production=compile('execution_kernel.cpp',kernel,'kernel-'+mode)","production=str(base/'budget-observer-v3/kernel-normal.obj');assert mode=='normal'")
+(base/'build_retention_census.py').write_text(builder,encoding='utf-8')
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+(out/'registration.json').write_text(json.dumps(dict(formal=False,scope='Cost census only; no cap acceptance or performance. Predeclared 1K dense,40K dense,40K six-wave multi-generation. Limits 0 and old128MiB characterize refusal; SIZE_MAX intentionally disables byte admission to observe four-slot actual incremental cost, not a recommended budget or a candidate retention gate.',stages=['writer empty','six/all generations + writer','generations after writer destruction','earliest generation only','last generation released'],observer='Global requested C++ bytes; CRT usable includes observer headers/alignment; absolute process private/working set includes fixture and allocator retention',stop='Any functional invalidity or final live allocation leak stops; no rerun/extension to pass.',sources={n:sha(out/n) for n in ('execution_kernel.cpp','rpa_b3_tests.cpp','tick_fault_probe.hpp')},reused_kernel_sha256=sha(base/'budget-observer-v3/kernel-normal.obj')),indent=2),encoding='utf-8')
+print(out)

@@ -1,0 +1,7 @@
+from pathlib import Path
+base=Path(__file__).resolve().parent
+s=(base/'build_activation.py').read_text()
+s=s.replace("draft=base/'activation-source-v1';out=base/'activation-build-v1'", "draft=base/'active-sequence-source-v3';out=base/'active-sequence-order-build-v1'")
+s=s.replace("kernel=compile('execution_kernel.cpp','execution_kernel');tests=compile('rpa_b3_tests.cpp','rpa_b3_tests')", "assert sha(draft/'execution_kernel.cpp')==sha(base/'active-sequence-source-v1/execution_kernel.cpp')\nkernel=str(base/'active-sequence-build-v1/execution_kernel.obj');tests=compile('rpa_b3_tests.cpp','rpa_b3_tests')")
+s=s.replace("('cuexis_rpa_tests','cuexis_judgement_tests','cuexis_execution_host_tests','cuexis_gameplay_packed_tests')", "('cuexis_rpa_tests',)")
+exec(compile(s,str(base/'build_activation.py'),'exec'))

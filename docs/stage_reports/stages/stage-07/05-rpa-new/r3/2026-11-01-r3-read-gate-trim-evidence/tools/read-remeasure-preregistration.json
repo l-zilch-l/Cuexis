@@ -1,0 +1,30 @@
+{
+  "scope": "Second registration of the formal relative-read gate, after two materializer trims. Diagnostic/test-only; the gate rule is unchanged from the first registration.",
+  "registered_local": "2026-11-02 00:03",
+  "source": {
+    "head": "09a5b53a",
+    "note": "working tree carries the two trims described below; the tree is not committed until the measurement passes"
+  },
+  "trims": [
+    "compare before assigning FrameSnapshot object materialAssetId (an equal assignment is a semantic no-op)",
+    "replace the per-object full id comparison with a length comparison, keeping the exact comparison for the first object of every frame; the layout stamp remains the authority that ties the layout to the runtime layout"
+  ],
+  "arms": {
+    "a": {
+      "exe": "out/_armA-d344088/out/build/armA-release/bin/cuexis_pd_baseline_probe.exe",
+      "sha256": "6af4edd2d365fb99e9df5b7da7e77dd6e45a6e284b37e7b8979dd1c1ed293a94"
+    },
+    "b": {
+      "exe": "out/build/rpa-candidate-release/bin/cuexis_pd_baseline_probe.exe",
+      "sha256": "13b800e6305b0f36a93b568465d12330948d77d40da368fee86154c6d7f6729f"
+    }
+  },
+  "protocol": "exactly the first registration: 3 windows x 3 pairs, 600 s between windows, 3 s between pairs, alternating first arm, median of three read blocks per process, ratio B/A",
+  "decision": "whole-group paired 95% interval upper bound <= 1.10 passes, lower > 1.10 is over, otherwise inconclusive",
+  "amendments": [
+    {
+      "at_local": "2026-11-02 00:05",
+      "why": "the source was clang-formatted after the first build, so the binary was rebuilt and its hash re-recorded before any measurement of this registration"
+    }
+  ]
+}

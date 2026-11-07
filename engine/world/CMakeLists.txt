@@ -2,6 +2,8 @@ find_package(EnTT CONFIG REQUIRED)
 
 add_library(cuexis_world STATIC
     src/property.cpp
+    src/property_helpers.hpp
+    src/property_resolver.cpp
     src/transform_system.cpp
     src/world.cpp
 )
@@ -25,6 +27,7 @@ target_include_directories(cuexis_world PUBLIC
 )
 
 target_compile_features(cuexis_world PUBLIC cxx_std_20)
+target_include_directories(cuexis_world PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/internal")
 
 target_link_libraries(cuexis_world
     PUBLIC

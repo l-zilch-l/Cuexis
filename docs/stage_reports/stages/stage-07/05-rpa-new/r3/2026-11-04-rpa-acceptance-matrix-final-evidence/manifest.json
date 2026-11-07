@@ -1,0 +1,43 @@
+{
+  "scope": "Final 11-row local RPA acceptance matrix on d70df15a; test-only evidence.",
+  "source_run": "out/rpa-acceptance/20261104-050730-f7d80b3f (manifest sha256 0a43856cc0c48f5b4a483c8f6d3ae0bb03ca0f115964c39a407b2cd6b7815fd2)",
+  "content_sha256": "7d28c6ad1b3195c53d795bf1d5301cdf0d11c9b06632139234d80026d6a032a5",
+  "files": [
+    {
+      "path": "identity-closure.json",
+      "bytes": 897,
+      "sha256": "b03645650668d60af207f8839d4e787b1424ec8fe95d0fb3ad420190e6194cc4",
+      "eol": "crlf"
+    },
+    {
+      "path": "index.md",
+      "bytes": 5336,
+      "sha256": "5e5f141bd2e6b05bf7fbafcb664c8119b5358dd6a5a4c0cbf5628a407c7a2886",
+      "eol": "lf"
+    },
+    {
+      "path": "source-content-sha256.json",
+      "bytes": 859802,
+      "sha256": "f8ac9c2af42ca2c54ccee5f29386b70c267c70920f44c0983f92484626c42bcc",
+      "eol": "lf"
+    },
+    {
+      "path": "summary.json",
+      "bytes": 84326,
+      "sha256": "8d29c12aff6c3128f025113be789755a0a09bdb26fd87e936c48e8a290d5e23d",
+      "eol": "crlf"
+    },
+    {
+      "path": "verification.json",
+      "bytes": 603,
+      "sha256": "e9616295e0602f9704ca06d48fee84b1880c01620bafe24735503ae98457776c",
+      "eol": "lf"
+    },
+    {
+      "path": "verify_matrix_evidence.py",
+      "bytes": 6489,
+      "sha256": "4d650ce8f5919253b18b2b76f018f7a3b1dd37b6f8dfd6a3aaafe7270e8b16bf",
+      "eol": "crlf"
+    }
+  ]
+}

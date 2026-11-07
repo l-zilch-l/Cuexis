@@ -1,0 +1,346 @@
+{
+  "scope": "40K product-startup observability and prepare-cost reduction measured on the same fixture, one laptop, one Release configuration. Localised startup diagnostic; not a performance group, not a full matrix, not a 240 FPS claim, not R3/R4/Stage 7 acceptance.",
+  "head": "466ff76a0b2a2f45b90280331bded77897ef6421",
+  "commits": [
+    "6ae7bd75eda5ad4c7b5130bba12d85441d387386 Prepare the startup bundle before any device exists",
+    "6217f00d8e476f5c7c97d8a257abc56e06d64ef4 Read the v4 version member without building the whole value tree",
+    "f70d6ba3714e7e651f9f14cbef2ee75e5b0ae987 Parse JSON in one pass instead of through a callback DOM",
+    "466ff76a0b2a2f45b90280331bded77897ef6421 Own the parsed Chart tree once in legacy prepare"
+  ],
+  "product_startup_source_binding": "The run directories record no per-run executable hash, because the observation script did not collect one. Source binding rests on the same numbers being written into each commit body at the time of the run: 6ae7bd7 quotes 26.270 s window span, 6217f00 quotes 17.899/20.778/18.126/18.608 s, f70d6ba quotes prepareLoad 18,570.50/18,561.68/18,272.93 -> 3,981.30/3,788.66 ms, 466ff76 quotes prepareLoad 3,788/3,981 -> 2,739/2,878 ms and 3,029 ms to a responsive window. The fixture never changed between runs. A v8 run on the post-matrix build closes the gap by recording the executable sha256 next to the run.",
+  "build_configuration": "out/build/release, CMAKE_BUILD_TYPE=Release, static libraries, single build tree, one build at a time, no build during a run. The 40K fixture is a Chart v3 document, so the legacy prepare branch is the hot one; the v4 dispatch path deliberately returns no legacyCanonicalText and is not exercised by this fixture.",
+  "binary_binding_gap": "run-head-after-v7 executed the executable linked from the 466ff76 worktree before the final clang-format pass; the binary was relinked afterwards (22:00:50) and that later binary was not the one observed. The v7 numbers therefore bind to the source semantics of 466ff76, not to a hash of the committed tree's build. Do not relabel the frozen run.",
+  "verified_runtime": "prepare_attribution.exe is linked against the Release libraries in out/build/release, with app-local Release DLLs first on PATH and no .buildenv in scope. The v1..v7 player runs used out/build/release/bin/cuexis_player.exe with its own bin directory as the working directory root.",
+  "fixture": {
+    "path": "out/verification-20261031/r3-product-startup-v1/fixture-40k",
+    "chart_format": "v3",
+    "chart_bytes": 13171906,
+    "chart_sha256": "6e5746a31b22a0839a9bc12bc05bd6a1cc6ec6a9a1724bd67027b59b8365c14e",
+    "canonical_bytes": 29652435,
+    "objects": 40001,
+    "identity": "936c32eede42abfbd136e217591c623b3ba3dc7093694fe60a356e070f656869",
+    "note": "The 13 MB chart is not archived; it is located by hash and by make_fixture.py."
+  },
+  "product_runs": [
+    {
+      "run": "run-head-before-v2",
+      "source": "before 6ae7bd7",
+      "window_ms": 8410,
+      "responsive_ms": 35141,
+      "max_wait_ms": 1912,
+      "hung_samples": 225,
+      "answering_samples": 39,
+      "content_resolved_us": null,
+      "content_prepared_us": null,
+      "phase_total_us": null
+    },
+    {
+      "run": "run-head-after-v1",
+      "source": "6ae7bd7",
+      "window_ms": 26270,
+      "responsive_ms": 26270,
+      "max_wait_ms": 61,
+      "hung_samples": 1,
+      "answering_samples": 108,
+      "content_resolved_us": 8029523,
+      "content_prepared_us": 17778337,
+      "phase_total_us": 26270511
+    },
+    {
+      "run": "run-head-after-v2",
+      "source": "6ae7bd7 + 6217f00",
+      "window_ms": 17940,
+      "responsive_ms": 17940,
+      "max_wait_ms": 61,
+      "hung_samples": 1,
+      "answering_samples": 176,
+      "content_resolved_us": 18245,
+      "content_prepared_us": 17409343,
+      "phase_total_us": 17888404
+    },
+    {
+      "run": "run-head-after-v3",
+      "source": "6ae7bd7 + 6217f00",
+      "window_ms": 20823,
+      "responsive_ms": 20823,
+      "max_wait_ms": 61,
+      "hung_samples": 1,
+      "answering_samples": 144,
+      "content_resolved_us": 18681,
+      "content_prepared_us": 20287989,
+      "phase_total_us": 20767791
+    },
+    {
+      "run": "run-head-after-v4",
+      "source": "6ae7bd7 + 6217f00",
+      "window_ms": 18081,
+      "responsive_ms": 18081,
+      "max_wait_ms": 63,
+      "hung_samples": 1,
+      "answering_samples": 162,
+      "content_resolved_us": 19047,
+      "content_prepared_us": 17631645,
+      "phase_total_us": 18115074
+    },
+    {
+      "run": "run-head-after-v5",
+      "source": "6ae7bd7 + 6217f00",
+      "window_ms": 18613,
+      "responsive_ms": 18970,
+      "max_wait_ms": 124,
+      "hung_samples": 2,
+      "answering_samples": 171,
+      "content_resolved_us": 18440,
+      "content_prepared_us": 18114570,
+      "phase_total_us": 18597276
+    },
+    {
+      "run": "run-head-after-v6",
+      "source": "6ae7bd7 + 6217f00 + f70d6ba",
+      "window_ms": 3774,
+      "responsive_ms": 4307,
+      "max_wait_ms": 186,
+      "hung_samples": 3,
+      "answering_samples": 173,
+      "content_resolved_us": 22476,
+      "content_prepared_us": 3190548,
+      "phase_total_us": 3785742
+    },
+    {
+      "run": "run-head-after-v7",
+      "source": "6ae7bd7 + 6217f00 + f70d6ba + 466ff76",
+      "window_ms": 2858,
+      "responsive_ms": 3029,
+      "max_wait_ms": 62,
+      "hung_samples": 1,
+      "answering_samples": 148,
+      "content_resolved_us": 19074,
+      "content_prepared_us": 2322684,
+      "phase_total_us": 2780598
+    }
+  ],
+  "product_runs_note": "v2..v5 are four repeats of one source: content_prepared 17409343 / 20287989 / 17631645 / 18114570 us, median 17873107 us, relative range (20287989 - 17409343) / 17873107 = 16.1 percent; first-frame totals have median 18356175 us and relative range 15.7 percent. Both exceed this repository's 15 percent repeatability convention, so that tier is reported as a median only and single-run differences under 2.9 s are not treated as gains. The v5 -> v6 and v6 -> v7 steps are single runs each; the v6 -> v7 delta is cross-checked by the attribution probe's independent cost for the removed canonical pass. v1 splits into 17778337 us of prepare plus 8029524 us of version-dispatch tree construction. summary.json serialises hung_samples as null when the count is exactly one; the samples.csv kind column is authoritative and gives one hung sample for v1, v2, v3, v4 and v7.",
+  "prepare_attribution": {
+    "probe": "prepare_attribution.exe, three repeats inside one process, Release libraries, same fixture",
+    "independent_stages": "Each entry point is timed on its own, so the numbers are not one nested chain and must not be summed.",
+    "json_parse_us": [
+      991200,
+      957090,
+      903850
+    ],
+    "json_parse_bounded_us": [
+      958930,
+      966310,
+      902370
+    ],
+    "nlohmann_callback_dom_us": [
+      9067660,
+      9532280,
+      9434240
+    ],
+    "write_canonical_json_us": [
+      1906800,
+      1874430,
+      1804560
+    ],
+    "chart_loader_load_us": [
+      1558830,
+      1501260,
+      1458800
+    ],
+    "prepare_load_us": [
+      2878020,
+      2876810,
+      2738640
+    ],
+    "startup_path_total_us": [
+      2908310,
+      2905160,
+      2766800
+    ],
+    "prepare_load_peak_working_set_mib": [
+      343.5,
+      345.0,
+      350.5
+    ],
+    "prepare_load_peak_private_mib": [
+      255.5,
+      256.3,
+      306.1
+    ],
+    "identity_stable": "936c32ee on all three repeats, 40001 prepared objects, canonical 29,652,435 bytes",
+    "note": "Logs are run-v1 .. run-v6-tree-reuse.log.txt and report MiB, not exact bytes. The same log carries the f70d6ba case: the third-party callback DOM costs 9,067.66/9,532.28/9,434.24 ms on this document while json.parse costs 991.20/957.09/903.85 ms. They establish which stages exist and what they cost after 466ff76; they do not partition the 18 s that v1..v5 spent inside content_prepared."
+  },
+  "prepare_attribution_rounds": {
+    "why_two_rounds": "The first round was taken immediately after the 466ff76 worktree change landed; the second after the aborted 2026-10-31 22:06 matrix rebuilt the release libraries with --clean-first. Comparing two rounds is what exposed a build-artefact effect that one round cannot show, and it is the reason no per-stage difference between rounds is attributed to a commit.",
+    "first_round": {
+      "runs": [
+        "run-v5-tree-reuse.log.txt",
+        "run-v6-tree-reuse.log.txt"
+      ],
+      "written": [
+        "2026-10-31 21:59:49",
+        "2026-10-31 22:03:26"
+      ],
+      "build_state": "incremental library build; the commit object itself landed 22:03:34",
+      "json_parse_us": [
+        991200,
+        957090,
+        903850
+      ],
+      "json_parse_bounded_us": [
+        958930,
+        966310,
+        902370
+      ],
+      "nlohmann_callback_dom_us": [
+        9067660,
+        9532280,
+        9434240
+      ],
+      "write_canonical_json_us": [
+        1906800,
+        1874430,
+        1804560
+      ],
+      "chart_loader_load_us": [
+        1558830,
+        1501260,
+        1458800
+      ],
+      "prepare_load_us": [
+        2878020,
+        2876810,
+        2738640
+      ],
+      "startup_path_total_us": [
+        2908310,
+        2905160,
+        2766800
+      ],
+      "prepare_load_peak_working_set_mib": [
+        343.5,
+        345.0,
+        350.5
+      ],
+      "prepare_load_peak_private_mib": [
+        255.5,
+        256.3,
+        306.1
+      ],
+      "prepare_load_relative_range": 0.048
+    },
+    "second_round": {
+      "run": "run-head-rebuild.log.txt",
+      "probe_compiled_and_linked": "2026-11-01 00:02:08",
+      "finished": "2026-11-01 00:03:27",
+      "build_state": "clean rebuild of the release libraries by the --clean-first msvc-off-release row",
+      "no_concurrent_build": "the aborted 22:06 matrix stopped at 23:39:23 on a full disk and the next matrix started 00:04:20, so the probe ran on an idle machine with no build or measurement in flight",
+      "json_parse_us": [
+        759150,
+        743650,
+        706710
+      ],
+      "json_parse_bounded_us": [
+        742390,
+        739660,
+        714470
+      ],
+      "nlohmann_callback_dom_us": [
+        8742540,
+        8932860,
+        9102910
+      ],
+      "write_canonical_json_us": [
+        1457490,
+        1452920,
+        1407720
+      ],
+      "chart_loader_load_us": [
+        1179250,
+        1178890,
+        1126320
+      ],
+      "from_filesystem_project_us": [
+        22070,
+        22270,
+        21990
+      ],
+      "prepare_load_us": [
+        2202270,
+        2171370,
+        2087550
+      ],
+      "startup_path_total_us": [
+        2224420,
+        2193720,
+        2109610
+      ],
+      "prepare_load_peak_working_set_mib": [
+        343.8,
+        344.5,
+        359.5
+      ],
+      "prepare_load_peak_private_mib": [
+        254.7,
+        256.4,
+        315.3
+      ],
+      "prepare_load_relative_range": 0.053,
+      "identity_stable": "936c32ee on all six readings across both rounds, 40001 objects, canonical 29,652,435 bytes"
+    },
+    "non_attribution": {
+      "observation": "every library stage drops by a similar factor between the rounds (json.parse x0.77-0.78, ChartLoader.load x0.76-0.79, writeCanonicalJson x0.76-0.78, residual x0.62-0.80) while the header-compiled nlohmann path inside the probe translation unit drops only 3-6% (9,067.66/9,532.28/9,434.24 -> 8,742.54/8,932.86/9,102.91 ms, x0.94-0.97)",
+      "why_not_a_commit": "466ff76 does not touch engine/json_support, yet json.parse also got faster in the same process; a CPU frequency or memory pressure explanation would slow the nlohmann path too. The only variable left is the state of the compiled library, i.e. incremental versus clean rebuild",
+      "conclusion": "the roughly 24% gap between rounds is a build-artefact effect, so no per-stage cross-round delta is commit-attributable",
+      "consequence": "only composite values support a direction-of-change claim: the probe prepareLoad worst pairing and the product content_prepared line. Second-round numbers are quoted as the current-source upper bound, never as a commit gain",
+      "sequence_caveat": "run-v5 and run-v6 are pre-commit worktree measurements; the file timestamps and the 22:03:34 commit time are the binding"
+    },
+    "commit_claims": {
+      "probe_prepare_load": "pre-change run-v4-onepass 3,981.30 / 3,788.66 ms; post-change run-v5 2,858.97 / 2,752.00 ms and run-v6 2,878.02 / 2,876.81 / 2,738.64 ms. Every post-change point is below the lowest pre-change point 3,788.66 ms; the worst pairing is -27.7%",
+      "product_content_prepared_us": [
+        3191000,
+        2323000,
+        2286443
+      ],
+      "product_content_prepared_runs": [
+        "v6 at f70d6ba",
+        "v7",
+        "v8"
+      ],
+      "consistency": "the product drop of 27-28% matches the commit body's roughly 0.9 s second-parse saving, and both are composite values"
+    },
+    "remaining_cost_second_round_ms": {
+      "json_parse": "0.71-0.76 (already one parse)",
+      "typed_projection": "0.42-0.44 (ChartLoader.load 1.13-1.18 minus its own parse)",
+      "canonicalize_plus_tree_copy_and_dump": "0.70-0.71",
+      "lowering_and_world": "0.26-0.32"
+    },
+    "canonical_share": "65-67% of prepareLoad in both rounds (first 65-66%, second 66-67%)",
+    "derivation_caveat": "the four shares are derived from differences inside one round, not measured by separately instrumented tiers",
+    "writer_saving_bound": "replacing the nlohmann tree copy and dump with a direct Value-to-text writer can remove about 0.70 s of a 2.09-2.20 s prepareLoad; canonicalisation itself and the single parse stay",
+    "scope_boundary": "the product content_prepared line and the probe prepareLoad cover different scopes and are never converted into each other or averaged"
+  },
+  "verification": {
+    "build": "cmake --preset release, Release static, one build at a time",
+    "suites_at_466ff76": "cuexis_chart_tests 42429 assertions / 227 cases, cuexis_playback_tests 17188 / 131, cuexis_json_support_tests 293 / 26, cuexis_player_control_tests 484 / 29, cuexis_asset_publish_tests 398 / 26, cuexis_cxc_tests 1053 / 66",
+    "new_test": "tests/playback/preparation_characterization_tests.cpp pins one parse per legacy prepare with cuexis::json::detail::ScopedParseCounter",
+    "formatting": "clang-format --dry-run --Werror clean on every touched file before each commit",
+    "matrix": "the same-source full matrix was running when this evidence was staged; its result is archived separately and is not merged into these numbers"
+  },
+  "selection": {
+    "startup_phase_observability": "Selected. player.startup_phase lines exist after 6ae7bd7 and did not exist before it; the previous log had 11 lines and no phase timing for a 40K start.",
+    "prepare_outside_window": "Selected. Preparation moved before window and device creation, so the desktop stops reporting a window that never answers. This fixes where the time is spent being visible, not how long it takes.",
+    "v4_version_scan": "Selected. content_resolved 8,029,523 -> about 19,000 us on a v3 document because the version hint no longer builds a whole value tree. The v4 path still parses twice; that duplication is unchanged.",
+    "one_pass_parse": "Selected. json.parse of the 13.17 MB chart 10.05 s -> 0.93 s by removing the third-party callback DOM and the value copy after it. This is a real API-visible change inside engine/json_support, gated by the full json_support suite.",
+    "legacy_tree_reuse": "Selected. One parse per legacy prepare; identity bytes provably unchanged; the canonical writer failure surface keeps its diagnostics through the text fallback. The same probe measured prepareLoad 3788.66 - 3981.30 ms before and 2738.64 - 2878.02 ms after, so even the worst pairing falls 24.0 percent.",
+    "earlier_prototypes_not_reused": "The frozen previous campaign's json-sax-v2 and legacy-parse-once-v1 prototypes remain unselected there (all-scale gate and 1K/10K repeatability failures). Nothing from those gate numbers is reused or blended into this evidence."
+  },
+  "review": {
+    "orphan_reference": "The 6ae7bd7 commit body cites a5f0723, which exists only as an unreachable local object: it is the pre-rebase twin of 6217f00 with the identical tree a46f2302c0f80ce257fe5438038dcb6320de0f4b. History is not rewritten; the v1 -> v2 step is attributed to 6217f00's tree and the orphan is named here so a clone cannot silently lose the reference.",
+    "render_us": "first_frame_presented reported render_us 0, so no frame render time was captured in these runs and none is claimed.",
+    "window_metric": "window appearance is not comparable across the 6ae7bd7 design change, because the old order created the window first and then froze it. The comparable metric is the first time the window answers a message: 35,141 ms before, 3,029 ms at v7.",
+    "not_a_gate": "2,858 ms window and 3,029 ms first answer are neither a process-to-first-frame <= 2 s pass nor a first-load claim; the fixture and the page cache were warm on this machine."
+  },
+  "limitations": "One laptop, one GPU-independent CPU path, one fixture, one Release configuration, no repeatability group for v1 and v6..v7, no per-run executable hash, no cold-cache control, no v4 document, and no measurement of render or frame scheduling. The 40K throughput, 240 FPS and 128 MiB questions are answered in a separate verdict; this evidence says nothing about them. The prepare attribution has two rounds, one incremental and one clean rebuild, and they differ by about 24% on library stages while the header-compiled nlohmann path barely moves, so per-stage cross-round deltas are not commit-attributable; only composite values are used."
+}

@@ -1,0 +1,36 @@
+{
+  "scope": "Paired comparison of the bulk-read patch against the pre-patch binary of the same commit; used only to decide whether the patch had an effect at all.",
+  "workload": "CUEXIS_FOLLOW_COUNTS=1800 2000 2000, test 'PD finite read and update scaling'",
+  "baseline": {
+    "exe": "out/verification-20261101/r3-repair-v1/bin/baseline-B.exe",
+    "sha256": "5d5829a6e1400222ac5543b813be058592c0821cd9582703b6074c37af1436b4"
+  },
+  "patched": {
+    "exe": "out/build/rpa-candidate-release/bin/cuexis_pd_baseline_probe.exe",
+    "note": "incrementally rebuilt with the bulk read; the binary was replaced by the reverted rebuild afterwards, so its hash is not recoverable from this state"
+  },
+  "pairs": [
+    {
+      "pair": 1,
+      "baseline_us": 207004.6,
+      "patched_us": 207969.7,
+      "ratio": 1.0047
+    },
+    {
+      "pair": 2,
+      "baseline_us": 239582.0,
+      "patched_us": 247021.7,
+      "ratio": 1.0311
+    },
+    {
+      "pair": 3,
+      "baseline_us": 202787.5,
+      "patched_us": 206219.2,
+      "ratio": 1.0169
+    }
+  ],
+  "geometric_mean_ratio": 1.0175,
+  "decision": "the patch made the read path slightly slower; hypothesis falsified, change reverted",
+  "patch_summary": "PresentationRead::objectCount() plus readSnapshotObjectInto(index, out) replaced readSnapshotObject(index) -> Result<ObjectVisualRead>; the materializer validates once per frame and fills a reused row in place; snapshotReadScratchBytes 256 -> 136.",
+  "recorded_local": "2026-11-01 22:15"
+}

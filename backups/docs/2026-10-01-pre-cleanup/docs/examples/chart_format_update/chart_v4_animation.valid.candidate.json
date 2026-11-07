@@ -1,0 +1,135 @@
+{
+  "format": "cuexis.chart",
+  "version": 4,
+  "chartId": "019f0000-0000-7abc-8def-000000000402",
+  "metadata": {
+    "title": "Animation Clip Candidate"
+  },
+  "timing": {
+    "offsetMs": 0.0,
+    "defaultBpm": 120.0,
+    "tempoEvents": [],
+    "stops": [
+      {
+        "beat": { "numerator": 18, "denominator": 1 },
+        "durationMs": 250.0
+      }
+    ]
+  },
+  "camera": {
+    "type": "perspective",
+    "fovY": 60.0,
+    "near": 0.1,
+    "far": 1000.0
+  },
+  "parameters": [],
+  "templates": [],
+  "behaviors": [],
+  "animationTemplateImports": [],
+  "animationClips": [
+    {
+      "id": "animation.note.pulse",
+      "version": 1,
+      "durationBeats": { "numerator": 4, "denominator": 1 },
+      "tracks": [
+        {
+          "property": "material.opacity",
+          "segments": [
+            {
+              "startBeat": { "numerator": 0, "denominator": 1 },
+              "durationBeats": { "numerator": 4, "denominator": 1 },
+              "startValue": 1.0,
+              "endValue": 0.25,
+              "startSlope": 0.0,
+              "endSlope": 0.0
+            }
+          ]
+        },
+        {
+          "property": "transform.scale",
+          "segments": [
+            {
+              "startBeat": { "numerator": 0, "denominator": 1 },
+              "durationBeats": { "numerator": 2, "denominator": 1 },
+              "startValue": [1.0, 1.0, 1.0],
+              "endValue": [1.25, 1.25, 1.25],
+              "startSlope": 0.0,
+              "endSlope": 0.0
+            },
+            {
+              "startBeat": { "numerator": 2, "denominator": 1 },
+              "durationBeats": { "numerator": 2, "denominator": 1 },
+              "startValue": [1.25, 1.25, 1.25],
+              "endValue": [1.0, 1.0, 1.0],
+              "startSlope": 0.0,
+              "endSlope": 0.0
+            }
+          ]
+        }
+      ],
+      "stepTracks": []
+    }
+  ],
+  "objects": [
+    {
+      "id": "019f0000-0000-7abc-8def-000000000412",
+      "name": "animated_note",
+      "parent": null,
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [0.0, 0.0, 0.0],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [1.0, 1.0, 1.0]
+        },
+        "cuexis.renderable": {
+          "version": 1,
+          "mesh": { "domain": "asset", "id": "mesh.note" },
+          "material": { "domain": "asset", "id": "material.note" }
+        },
+        "cuexis.animator": {
+          "version": 1,
+          "templateBindings": [],
+          "layers": [
+            {
+              "layerId": "layer.pulse",
+              "priority": 10,
+              "weight": 1.0,
+              "propertyMask": {
+                "properties": ["material.opacity", "transform.scale"],
+                "prefixes": []
+              },
+              "blendGroups": [
+                {
+                  "groupId": "group.pulse",
+                  "mode": "override",
+                  "weight": 1.0,
+                  "instances": [
+                    {
+                      "instanceId": "instance.pulse",
+                      "clip": {
+                        "domain": "animation",
+                        "id": "animation.note.pulse"
+                      },
+                      "startBeat": { "numerator": 16, "denominator": 1 },
+                      "iterations": 2,
+                      "fillMode": "none",
+                      "weight": 1.0,
+                      "propertyMask": {
+                        "properties": ["material.opacity", "transform.scale"],
+                        "prefixes": []
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "extensions": {}
+    }
+  ],
+  "requiredExtensions": [],
+  "extensions": {}
+}

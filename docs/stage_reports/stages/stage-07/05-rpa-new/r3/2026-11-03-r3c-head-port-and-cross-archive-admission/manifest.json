@@ -1,0 +1,49 @@
+{
+  "scope": "R3c v4 prototype ported to c085688a plus cross-generation payload admission: candidate patch, accounting readings and their driver.",
+  "source_run": "D:/Cuexis-r3c-v4 (worktree of c085688a + candidate patch)",
+  "content_sha256": "21e3f1103f53f3b2fcb246af6888fbf473b56dc2be9f2a581c52bb28255d3bec",
+  "files": [
+    {
+      "path": "index.md",
+      "bytes": 13854,
+      "sha256": "0687a002e60856c50244679f487f64ba522e6f21af850eb61a2adc6a7fbb1b3a",
+      "eol": "crlf"
+    },
+    {
+      "path": "tools/accounting-results.json",
+      "bytes": 41004,
+      "sha256": "5ad702e35eefe77f305379b8512cc8bd6ada3eae4945bf9ce0f8c3d412036644",
+      "eol": "crlf"
+    },
+    {
+      "path": "tools/accounting-run.log.txt",
+      "bytes": 622,
+      "sha256": "4e89fa00e5bf3b89e9ea5855d32d8f688a376ecb1e28f4c17f4307eacda36707",
+      "eol": "crlf"
+    },
+    {
+      "path": "tools/make_manifest.py",
+      "bytes": 1752,
+      "sha256": "e6418a183aeaef09aae9de0d4fea7c53176c6dfc096eed4ddef7da8ed29a2598",
+      "eol": "lf"
+    },
+    {
+      "path": "tools/r3c-formal-selection.json",
+      "bytes": 1146,
+      "sha256": "ca388d652e53ca4105c776b4d21807c24831ff2bc7a9063193153794a9598093",
+      "eol": "crlf"
+    },
+    {
+      "path": "tools/r3c-head-candidate.patch",
+      "bytes": 68446,
+      "sha256": "6e655e2d96d05e9a6083c4e98636baf0375b91f0d19fbdb4b36da260e76b7848",
+      "eol": "crlf"
+    },
+    {
+      "path": "tools/run_r3c_accounting.py",
+      "bytes": 11736,
+      "sha256": "736f71bb54fa8ab4f28c73f780dbde9771781baa5fbb209123a0a4d944a64dc3",
+      "eol": "lf"
+    }
+  ]
+}

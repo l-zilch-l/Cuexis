@@ -1,0 +1,604 @@
+{
+  "scope": "Re-measurement of the formal relative-read gate after the materializer trims: A = pre-PD d344088, B = HEAD plus the trims.",
+  "gate": {
+    "upper_bound_passes_below": 1.1,
+    "min_block_us": 100000.0,
+    "windows": 3,
+    "pairs_per_window": 3
+  },
+  "arm_a": {
+    "exe": "D:\\Cuexis-redesign\\out\\_armA-d344088\\out\\build\\armA-release\\bin\\cuexis_pd_baseline_probe.exe",
+    "sha256": "6af4edd2d365fb99e9df5b7da7e77dd6e45a6e284b37e7b8979dd1c1ed293a94"
+  },
+  "arm_b": {
+    "exe": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_pd_baseline_probe.exe",
+    "sha256": "13b800e6305b0f36a93b568465d12330948d77d40da368fee86154c6d7f6729f"
+  },
+  "head": "bc67670b1da902bec4585107c350d3442871c704",
+  "started_local": "2026-11-02 00:05:36",
+  "windows": [
+    {
+      "window": 1,
+      "pairs": [
+        {
+          "pair": 1,
+          "first": "B",
+          "a": {
+            "arm": "A",
+            "window": 1,
+            "pair": 1,
+            "order": 1,
+            "exit_code": 0,
+            "wall_seconds": 3.525,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              174002.8,
+              178087.4,
+              178474.7
+            ],
+            "updated_blocks_us": [
+              837951.8,
+              896227.8,
+              824228.5
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w1-p1-1-A.log",
+            "read_median_us": 178087.4,
+            "valid": true
+          },
+          "b": {
+            "arm": "B",
+            "window": 1,
+            "pair": 1,
+            "order": 0,
+            "exit_code": 0,
+            "wall_seconds": 1.78,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              179708,
+              182138.5,
+              180384.4
+            ],
+            "updated_blocks_us": [
+              341699.9,
+              337673.8,
+              333682.2
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w1-p1-0-B.log",
+            "read_median_us": 180384.4,
+            "valid": true
+          },
+          "ratio": 1.012898
+        },
+        {
+          "pair": 2,
+          "first": "A",
+          "a": {
+            "arm": "A",
+            "window": 1,
+            "pair": 2,
+            "order": 0,
+            "exit_code": 0,
+            "wall_seconds": 3.507,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              172218.9,
+              172355.9,
+              173460.8
+            ],
+            "updated_blocks_us": [
+              856471.1,
+              867596.8,
+              815694.9
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w1-p2-0-A.log",
+            "read_median_us": 172355.9,
+            "valid": true
+          },
+          "b": {
+            "arm": "B",
+            "window": 1,
+            "pair": 2,
+            "order": 1,
+            "exit_code": 0,
+            "wall_seconds": 1.795,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              186154.6,
+              185695,
+              186437.5
+            ],
+            "updated_blocks_us": [
+              341066,
+              319417.4,
+              345027.6
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w1-p2-1-B.log",
+            "read_median_us": 186154.6,
+            "valid": true
+          },
+          "ratio": 1.080059
+        },
+        {
+          "pair": 3,
+          "first": "B",
+          "a": {
+            "arm": "A",
+            "window": 1,
+            "pair": 3,
+            "order": 1,
+            "exit_code": 0,
+            "wall_seconds": 3.481,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              173342.7,
+              172683.9,
+              172647.6
+            ],
+            "updated_blocks_us": [
+              834163.6,
+              831238.4,
+              867630.4
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w1-p3-1-A.log",
+            "read_median_us": 172683.9,
+            "valid": true
+          },
+          "b": {
+            "arm": "B",
+            "window": 1,
+            "pair": 3,
+            "order": 0,
+            "exit_code": 0,
+            "wall_seconds": 1.856,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              181585,
+              180846.4,
+              184126.8
+            ],
+            "updated_blocks_us": [
+              328569.3,
+              326866.4,
+              332443.4
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w1-p3-0-B.log",
+            "read_median_us": 181585,
+            "valid": true
+          },
+          "ratio": 1.051546
+        }
+      ],
+      "started_local": "2026-11-02 00:05:36",
+      "ratios": [
+        1.012898,
+        1.080059,
+        1.051546
+      ],
+      "interval": {
+        "n": 3,
+        "ratio": 1.0478,
+        "lower": 0.9671,
+        "upper": 1.1352,
+        "ratios": [
+          1.0129,
+          1.0801,
+          1.0515
+        ]
+      },
+      "finished_local": "2026-11-02 00:05:58"
+    },
+    {
+      "window": 2,
+      "pairs": [
+        {
+          "pair": 1,
+          "first": "A",
+          "a": {
+            "arm": "A",
+            "window": 2,
+            "pair": 1,
+            "order": 0,
+            "exit_code": 0,
+            "wall_seconds": 3.652,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              178092.1,
+              179656.2,
+              179740.5
+            ],
+            "updated_blocks_us": [
+              903114.1,
+              864017.3,
+              902800.2
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w2-p1-0-A.log",
+            "read_median_us": 179656.2,
+            "valid": true
+          },
+          "b": {
+            "arm": "B",
+            "window": 2,
+            "pair": 1,
+            "order": 1,
+            "exit_code": 0,
+            "wall_seconds": 1.794,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              179992.1,
+              181569.3,
+              192280.9
+            ],
+            "updated_blocks_us": [
+              332674.9,
+              343912.6,
+              334401.7
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w2-p1-1-B.log",
+            "read_median_us": 181569.3,
+            "valid": true
+          },
+          "ratio": 1.010649
+        },
+        {
+          "pair": 2,
+          "first": "B",
+          "a": {
+            "arm": "A",
+            "window": 2,
+            "pair": 2,
+            "order": 1,
+            "exit_code": 0,
+            "wall_seconds": 3.548,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              178811.4,
+              184092.7,
+              181345.1
+            ],
+            "updated_blocks_us": [
+              849884,
+              844200.3,
+              871629.6
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w2-p2-1-A.log",
+            "read_median_us": 181345.1,
+            "valid": true
+          },
+          "b": {
+            "arm": "B",
+            "window": 2,
+            "pair": 2,
+            "order": 0,
+            "exit_code": 0,
+            "wall_seconds": 1.886,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              182983.7,
+              182259.4,
+              182346.6
+            ],
+            "updated_blocks_us": [
+              341177.9,
+              389161.9,
+              359420.4
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w2-p2-0-B.log",
+            "read_median_us": 182346.6,
+            "valid": true
+          },
+          "ratio": 1.005523
+        },
+        {
+          "pair": 3,
+          "first": "A",
+          "a": {
+            "arm": "A",
+            "window": 2,
+            "pair": 3,
+            "order": 0,
+            "exit_code": 0,
+            "wall_seconds": 3.476,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              174891.2,
+              174474.1,
+              174680.4
+            ],
+            "updated_blocks_us": [
+              838764.8,
+              829462,
+              851450.4
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w2-p3-0-A.log",
+            "read_median_us": 174680.4,
+            "valid": true
+          },
+          "b": {
+            "arm": "B",
+            "window": 2,
+            "pair": 3,
+            "order": 1,
+            "exit_code": 0,
+            "wall_seconds": 1.778,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              189440.3,
+              184934.4,
+              183582.4
+            ],
+            "updated_blocks_us": [
+              330988.7,
+              331958,
+              333728.8
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w2-p3-1-B.log",
+            "read_median_us": 184934.4,
+            "valid": true
+          },
+          "ratio": 1.058701
+        }
+      ],
+      "started_local": "2026-11-02 00:15:58",
+      "ratios": [
+        1.010649,
+        1.005523,
+        1.058701
+      ],
+      "interval": {
+        "n": 3,
+        "ratio": 1.0247,
+        "lower": 0.9549,
+        "upper": 1.0996,
+        "ratios": [
+          1.0106,
+          1.0055,
+          1.0587
+        ]
+      },
+      "finished_local": "2026-11-02 00:16:20"
+    },
+    {
+      "window": 3,
+      "pairs": [
+        {
+          "pair": 1,
+          "first": "B",
+          "a": {
+            "arm": "A",
+            "window": 3,
+            "pair": 1,
+            "order": 1,
+            "exit_code": 0,
+            "wall_seconds": 3.435,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              172590.8,
+              176504.2,
+              171594.9
+            ],
+            "updated_blocks_us": [
+              826589.3,
+              833998.8,
+              820480.7
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w3-p1-1-A.log",
+            "read_median_us": 172590.8,
+            "valid": true
+          },
+          "b": {
+            "arm": "B",
+            "window": 3,
+            "pair": 1,
+            "order": 0,
+            "exit_code": 0,
+            "wall_seconds": 1.792,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              185961.7,
+              183310.2,
+              189967.9
+            ],
+            "updated_blocks_us": [
+              333669.4,
+              337952.6,
+              337415.7
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w3-p1-0-B.log",
+            "read_median_us": 185961.7,
+            "valid": true
+          },
+          "ratio": 1.077472
+        },
+        {
+          "pair": 2,
+          "first": "A",
+          "a": {
+            "arm": "A",
+            "window": 3,
+            "pair": 2,
+            "order": 0,
+            "exit_code": 0,
+            "wall_seconds": 3.519,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              175017.8,
+              184932.8,
+              172359.3
+            ],
+            "updated_blocks_us": [
+              896094.8,
+              834330.2,
+              823315.7
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w3-p2-0-A.log",
+            "read_median_us": 175017.8,
+            "valid": true
+          },
+          "b": {
+            "arm": "B",
+            "window": 3,
+            "pair": 2,
+            "order": 1,
+            "exit_code": 0,
+            "wall_seconds": 1.788,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              180962.5,
+              180483.4,
+              179568.2
+            ],
+            "updated_blocks_us": [
+              345279.5,
+              337138.8,
+              344705.1
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w3-p2-1-B.log",
+            "read_median_us": 180483.4,
+            "valid": true
+          },
+          "ratio": 1.031229
+        },
+        {
+          "pair": 3,
+          "first": "B",
+          "a": {
+            "arm": "A",
+            "window": 3,
+            "pair": 3,
+            "order": 1,
+            "exit_code": 0,
+            "wall_seconds": 3.462,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              174356.6,
+              173699.1,
+              173071.5
+            ],
+            "updated_blocks_us": [
+              840993.9,
+              828635.3,
+              828216.9
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w3-p3-1-A.log",
+            "read_median_us": 173699.1,
+            "valid": true
+          },
+          "b": {
+            "arm": "B",
+            "window": 3,
+            "pair": 3,
+            "order": 0,
+            "exit_code": 0,
+            "wall_seconds": 1.785,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              181550.2,
+              180410.4,
+              180596.8
+            ],
+            "updated_blocks_us": [
+              333750,
+              339201.6,
+              333592
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-refactor-v1\\read-remeasure\\w3-p3-0-B.log",
+            "read_median_us": 180596.8,
+            "valid": true
+          },
+          "ratio": 1.039711
+        }
+      ],
+      "started_local": "2026-11-02 00:26:20",
+      "ratios": [
+        1.077472,
+        1.031229,
+        1.039711
+      ],
+      "interval": {
+        "n": 3,
+        "ratio": 1.0493,
+        "lower": 0.9902,
+        "upper": 1.1119,
+        "ratios": [
+          1.0775,
+          1.0312,
+          1.0397
+        ]
+      },
+      "finished_local": "2026-11-02 00:26:42"
+    }
+  ],
+  "whole_group": {
+    "n": 9,
+    "ratio": 1.0405,
+    "lower": 1.0191,
+    "upper": 1.0624,
+    "ratios": [
+      1.0129,
+      1.0801,
+      1.0515,
+      1.0106,
+      1.0055,
+      1.0587,
+      1.0775,
+      1.0312,
+      1.0397
+    ],
+    "decision": "pass"
+  },
+  "finished_local": "2026-11-02 00:26:42"
+}

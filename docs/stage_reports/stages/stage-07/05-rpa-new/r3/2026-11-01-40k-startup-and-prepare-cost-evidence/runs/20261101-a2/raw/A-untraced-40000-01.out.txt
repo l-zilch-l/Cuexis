@@ -1,0 +1,64 @@
+Filters: "GPU visible entity throughput probe"
+Randomness seeded to: 2648617334
+GPU_STARTUP_ORIGIN 0
+GPU_STARTUP_BEGIN fixture_source
+GPU_STARTUP_END fixture_source 62897.900000000001
+GPU_STARTUP_AT fixture_source 62952.599999999999
+GPU_STARTUP_BEGIN playback_prepare
+GPU_STARTUP_HEARTBEAT playback_prepare 200035.20000000001 263030.20000000001
+GPU_STARTUP_HEARTBEAT playback_prepare 451560.40000000002 514555.40000000002
+GPU_STARTUP_HEARTBEAT playback_prepare 705145.80000000005 768140.80000000005
+GPU_STARTUP_HEARTBEAT playback_prepare 956159.69999999995 1019154.7
+GPU_STARTUP_HEARTBEAT playback_prepare 1209085.1000000001 1272080.1000000001
+GPU_STARTUP_HEARTBEAT playback_prepare 1463651.8 1526646.8
+GPU_STARTUP_HEARTBEAT playback_prepare 1716821.3 1779816.3
+GPU_STARTUP_HEARTBEAT playback_prepare 1968638.8999999999 2031633.8999999999
+GPU_STARTUP_END playback_prepare 2092581.8999999999
+GPU_STARTUP_AT playback_prepare 2155577.1000000001
+GPU_STARTUP_BEGIN sdl_runtime
+GPU_STARTUP_END sdl_runtime 59311.099999999999
+GPU_STARTUP_AT sdl_runtime 2214939.7999999998
+GPU_STARTUP_BEGIN gl_context
+GPU_STARTUP_END gl_context 17.5
+GPU_STARTUP_AT gl_context 2214987.3999999999
+GPU_STARTUP_BEGIN window_create
+GPU_STARTUP_HEARTBEAT window_create 67490.899999999907 2282483.8999999999
+GPU_STARTUP_END window_create 234751.79999999999
+GPU_STARTUP_AT window_create 2449745
+GPU_STARTUP_WINDOW {"at_us":2449833.7000000002,"window_id":2,"hidden":false,"opengl":true,"width":1280,"height":720}
+GPU_STARTUP_BEGIN backend_create
+GPU_STARTUP_END backend_create 11087.4
+GPU_STARTUP_AT backend_create 2460933.1000000001
+GPU_STARTUP_BEGIN pixel_readback
+GPU_STARTUP_END pixel_readback 5.4000000000000004
+GPU_STARTUP_AT pixel_readback 2460975.6000000001
+GPU_STARTUP_BEGIN renderer_prepare
+GPU_STARTUP_END renderer_prepare 348.69999999999999
+GPU_STARTUP_AT renderer_prepare 2461351.8999999999
+GPU_STARTUP_BEGIN session_commit
+GPU_STARTUP_END session_commit 11.699999999999999
+GPU_STARTUP_AT session_commit 2461374.2000000002
+GPU_STARTUP_BEGIN backend_activate
+GPU_STARTUP_END backend_activate 2.2000000000000002
+GPU_STARTUP_AT backend_activate 2461384.8999999999
+GPU_STARTUP_BEGIN first_update
+GPU_STARTUP_END first_update 6090.6000000000004
+GPU_STARTUP_AT first_update 2467585.3999999999
+GPU_STARTUP_BEGIN first_extract
+GPU_STARTUP_END first_extract 12095.700000000001
+GPU_STARTUP_AT first_extract 2479712.8999999999
+GPU_STARTUP_BEGIN first_submit
+GPU_STARTUP_END first_submit 43769.599999999999
+GPU_STARTUP_AT first_submit 2524078.3999999999
+GPU_STARTUP_BEGIN first_present
+GPU_STARTUP_END first_present 198
+GPU_STARTUP_AT first_present 2526426.7000000002
+GPU_STARTUP_SHOWN 2526456.2999999998
+GPU_STARTUP_TOTAL {"first_present_us":2526463.2999999998}
+GPU_THROUGHPUT_ID {"mode":"static","entities":40000,"draws_per_frame":40000,"in_view_centers":40000,"fixture_revision":3,"moved_entities":0,"frames":3,"duration_seconds":0,"warmup_frames":2,"pixel_readback":true,"outside_timing_pixel_proof_frames":2,"warmup_ms":0,"timer":false,"vsync":0,"width":1280,"height":720,"vendor":"NVIDIA Corporation","renderer":"NVIDIA GeForce RTX 4060 Laptop GPU/PCIe/SSE2","gl_version":"3.3.0 NVIDIA 616.64","measured_wall_us":164582.20000000001,"pixel_rgba":[255,204,51,255],"audio":false,"formal":false}
+GPU_THROUGHPUT_SAMPLE {"ordinal":0,"update_us":5154.5,"extract_us":6927.3000000000002,"submit_us":43059.099999999999,"present_us":102.7,"total_us":55243.599999999999,"cycle_us":55253.5,"end_us":55253.5}
+GPU_THROUGHPUT_SAMPLE {"ordinal":1,"update_us":5051.1999999999998,"extract_us":7100.3999999999996,"submit_us":42369.199999999997,"present_us":93,"total_us":54613.800000000003,"cycle_us":54624.900000000001,"end_us":109878.39999999999}
+GPU_THROUGHPUT_SAMPLE {"ordinal":2,"update_us":5277.3999999999996,"extract_us":6940.3000000000002,"submit_us":42377,"present_us":99.200000000000003,"total_us":54693.900000000001,"cycle_us":54703.800000000003,"end_us":164582.20000000001}
+===============================================================================
+All tests passed (21 assertions in 1 test case)
+

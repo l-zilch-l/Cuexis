@@ -1,0 +1,77 @@
+#include <cuexis/json/parse.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <array>
+#include <iostream>
+#include <limits>
+#include <string>
+
+TEST_CASE("Ordinary parse preserves deferred rejection and first duplicate order", "[json][sax]") {
+    const cuexis::json::ParseLimits limits{4096, 8, 32};
+    auto result = cuexis::json::parse(R"({"z":0,"z":{"a":1,"a":2}})", limits);
+    REQUIRE_FALSE(result);
+    CHECK(result.error().code() == "json.parse.duplicate_key");
+    REQUIRE(result.error().context().size() == 1);
+    CHECK(result.error().context()[0].value == "z");
+    for (auto text : {R"({"a":1,"a":[invalid])", R"({"a":1,"a":2} trailing)"}) {
+        auto malformed = cuexis::json::parse(text, limits);
+        REQUIRE_FALSE(malformed);
+        CHECK(malformed.error().code() == "json.parse.syntax_error");
+    }
+    auto depth = cuexis::json::parse(R"({"a":1,"a":[[]]})", {4096, 2, 32});
+    REQUIRE_FALSE(depth);
+    CHECK(depth.error().code() == "json.parse.depth_limit");
+    auto string = cuexis::json::parse(R"({"a":1,"a":"abcd"})", {4096, 8, 3});
+    REQUIRE_FALSE(string);
+    CHECK(string.error().code() == "json.parse.string_limit");
+}
+
+TEST_CASE("Ordinary parse rejects empty duplicate keys", "[json][sax][empty-key]") {
+    auto result = cuexis::json::parse(R"({"":1,"":2})", {4096, 8, 32});
+    REQUIRE_FALSE(result);
+    CHECK(result.error().code() == "json.parse.duplicate_key");
+    REQUIRE(result.error().context().size() == 1);
+    CHECK(result.error().context()[0].value.empty());
+}
+
+TEST_CASE("Ordinary parse numerical and malformed corpus has stable bytes and diagnostics", "[json][sax][corpus]") {
+    const std::array corpus{
+        "null", "true", "false", "-0", "-0.0", "0", "1.25", "1e-300", "1e300",
+        "9223372036854775807", "-9223372036854775808", "18446744073709551615",
+        "18446744073709551616", "-9223372036854775809", "1e999", "", "[", "[1,]", "{} true",
+        "\"\\ud800\"", "\"\\u4f60\"", "\"a\\u0000b\"",
+        "{\"a\":1,\"a\":2}", "{\"a\":1,\"a\":[invalid]", "[[[[[]]]]]",
+        "{\"x\":[{\"v\":1},{\"v\":2}],\"y\":{\"a\":true}}"};
+    for (const auto* text : corpus) {
+        auto result = cuexis::json::parse(text, {4096, 4, 32});
+        std::cout << "JSON_CORPUS " << text << " => ";
+        if (result) {
+            auto serialized = cuexis::json::serialize(*result);
+            REQUIRE(serialized);
+            std::cout << static_cast<unsigned>(result->type()) << " " << *serialized;
+        } else {
+            std::cout << result.error().code() << " " << result.error().message();
+            for (const auto& item : result.error().context())
+                std::cout << " " << item.key << "=" << item.value;
+        }
+        std::cout << "\n";
+    }
+}
+
+TEST_CASE("Ordinary parse builds wide nested object arrays without losing values", "[json][sax]") {
+    std::string text = "[";
+    for (unsigned i = 0; i < 2048; ++i) {
+        if (i) text += ',';
+        text += "{\"i\":" + std::to_string(i) + ",\"v\":[{},[true,\"text\"]]}";
+    }
+    text += ']';
+    auto result = cuexis::json::parse(text, {text.size(), 5, 32});
+    REQUIRE(result);
+    REQUIRE(result->array()->size() == 2048);
+    for (unsigned i = 0; i < 2048; ++i) {
+        const auto& item = (*result->array())[i];
+        CHECK(*item.find("i")->unsignedInteger() == i);
+        const auto& nested = (*item.find("v")->array())[1];
+        CHECK(*(*nested.array())[0].boolean());
+        CHECK(*(*nested.array())[1].string() == "text");
+    }
+}

@@ -1,0 +1,43 @@
+Filters: "R3c exact source floor releases after last point during archive assignment"
+Randomness seeded to: 1
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+rpa-floor-mutant.exe is a Catch2 v3.15.2 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+R3c exact source floor releases after last point during archive assignment
+-------------------------------------------------------------------------------
+D:\Cuexis-redesign\out\verification-20261030\r3-resume-v1\budget-v4-observer-v1\rpa_b3_tests.cpp(2821)
+...............................................................................
+
+D:\Cuexis-redesign\out\verification-20261030\r3-resume-v1\budget-v4-observer-v1\rpa_b3_tests.cpp(2843): FAILED:
+  CHECK( observed.pointExpired )
+with expansion:
+  false
+
+D:\Cuexis-redesign\out\verification-20261030\r3-resume-v1\budget-v4-observer-v1\rpa_b3_tests.cpp(2844): FAILED:
+  CHECK( observed.floorLive == 0 )
+with expansion:
+  292920 (0x47838) == 0
+
+-------------------------------------------------------------------------------
+R3c exact source floor releases after last point during archive assignment
+-------------------------------------------------------------------------------
+D:\Cuexis-redesign\out\verification-20261030\r3-resume-v1\budget-v4-observer-v1\rpa_b3_tests.cpp(2821)
+...............................................................................
+
+D:\Cuexis-redesign\out\verification-20261030\r3-resume-v1\budget-v4-observer-v1\rpa_b3_tests.cpp(2843): FAILED:
+  CHECK( observed.pointExpired )
+with expansion:
+  false
+
+D:\Cuexis-redesign\out\verification-20261030\r3-resume-v1\budget-v4-observer-v1\rpa_b3_tests.cpp(2844): FAILED:
+  CHECK( observed.floorLive == 0 )
+with expansion:
+  292920 (0x47838) == 0
+
+===============================================================================
+test cases:  1 |  0 passed | 1 failed
+assertions: 32 | 28 passed | 4 failed
+

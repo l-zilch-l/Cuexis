@@ -1,0 +1,40 @@
+from pathlib import Path
+import shutil,subprocess
+root=Path.cwd();base=Path(__file__).resolve().parent;out=base/'budget-v4-guard-v1';out.mkdir(exist_ok=False)
+parent=base/'budget-v4-observer-v1'
+for n in ('execution_kernel.cpp','rpa_b3_tests.cpp','tick_fault_probe.hpp'):shutil.copyfile(parent/n,out/n)
+p=out/'tick_fault_probe.hpp';s=p.read_text(encoding='utf-8').replace('    bool watchFloor{}, pointExpired{};','    bool watchFloor{}, pointExpired{}, detachFinal{};');p.write_text(s,encoding='utf-8')
+p=out/'execution_kernel.cpp';s=p.read_text(encoding='utf-8');s=s.replace('extern "C" void r3c_floor_release','extern "C" bool r3c_detach_final() noexcept;\nextern "C" void r3c_floor_release',1)
+needle='        auto final = std::make_shared<RuntimeState>(*impl_->active);';assert s.count(needle)==1;s=s.replace(needle,needle+'''
+        if(r3c_detach_final() && !final->projection.facts.empty())
+            final->projection.facts.update(0,[](auto&){});''');p.write_text(s,encoding='utf-8')
+p=out/'rpa_b3_tests.cpp';s=p.read_text(encoding='utf-8')+'''
+extern "C" bool r3c_detach_final() noexcept {return tick_probe::plan.detachFinal;}
+TEST_CASE("R3c actual promotion rejects equal but independently owned complete Fact page", "[r3c-guard]") {
+    Fixture3 f;expandTickFixture(f,256);
+    auto made=detail::ExecutionKernel::prepare(f.configuration(),f.prepared());REQUIRE(made);
+    auto empty=(*made)->archive();
+    tick_probe::plan={};tick_probe::plan.detachFinal=true;
+    const auto advanced=(*made)->advance(Tick{1203});
+    const auto observed=tick_probe::plan;tick_probe::plan={};
+    REQUIRE(advanced);REQUIRE(observed.events[1]==1);
+    auto archive=(*made)->archive();
+    CHECK(detail::ExecutionKernel::tickPointCount(archive)==0);
+    CHECK(detail::ExecutionKernel::tickPayloadBytes(empty)==0);
+    const ReplayArchive external{archive.anchor(),std::make_shared<const RecoveryInputs>(archive.dependencies())};
+    const auto cut=replayCutAt(archive,Tick{1003});
+    auto a=detail::ExecutionKernel::seekCandidate(archive,Tick{1003},nullptr,&cut);
+    auto b=detail::ExecutionKernel::seekCandidate(external,Tick{1003},nullptr,&cut);REQUIRE(a);REQUIRE(b);
+    auto av=(*a)->snapshot();auto bv=(*b)->snapshot();REQUIRE(av);REQUIRE(bv);
+    CHECK(sameSnapshot((*av)->dto,(*bv)->dto));
+}
+''';p.write_text(s,encoding='utf-8')
+subprocess.run(['clang-format','-i',*[str(out/n) for n in ('execution_kernel.cpp','rpa_b3_tests.cpp','tick_fault_probe.hpp')]],check=True)
+s=(base/'build_v4_observer.py').read_text(encoding='utf-8').replace("out=base/'budget-v4-observer-v1'","out=base/'budget-v4-guard-v1'")
+needle="    if mode=='floor-mutant':"
+s=s.replace(needle,"""    if mode=='guard-mutant':
+        needle='if (capture.points[i]->state->projection.facts.sharesCompletePrefixPagesWith(\\n                    impl_->active->projection.facts))'
+        assert original.count(needle)==1
+        kernel.write_text(original.replace(needle,'if (true)'),encoding='utf-8')
+    elif mode=='floor-mutant':""")
+(base/'build_v4_guard.py').write_text(s,encoding='utf-8');print(out)

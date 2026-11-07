@@ -1,0 +1,21 @@
+from pathlib import Path
+import json, hashlib
+
+base = Path(__file__).resolve().parent
+out = base / 'json-sax-source-v2'
+# The first preparation attempt stopped on a default-codepage read before writing any source.
+assert out.is_dir() and not list(out.iterdir())
+source = (base / 'json-sax-source-v1/parse.cpp').read_text(encoding='utf-8')
+source = source.replace('        stack_.back().key = std::move(value);',
+    '        if (stack_.back().value.object()->contains(value) && !duplicateKey_) duplicateKey_ = value;\n        stack_.back().key = std::move(value);')
+source = source.replace('    [[nodiscard]] auto duplicateKey() const noexcept -> std::string_view {',
+    '    [[nodiscard]] auto duplicateKey() const noexcept -> const std::optional<std::string>& {')
+source = source.replace('                if (duplicateKey_.empty()) duplicateKey_ = parent.key;\n', '')
+source = source.replace('    std::string duplicateKey_;', '    std::optional<std::string> duplicateKey_;')
+source = source.replace('if (!parser.duplicateKey().empty())', 'if (parser.duplicateKey())')
+source = source.replace('std::string{parser.duplicateKey()}', '*parser.duplicateKey()')
+(out / 'parse.cpp').write_text(source, encoding='utf-8')
+(out / 'binding.json').write_text(json.dumps(dict(
+    scope='v2 preserves first duplicate at key encounter, defers rejection for syntax/depth/string precedence. Correctly rejects empty duplicate keys under existing all-keys-unique contract; private CPP only.',
+    preparation_failure='Initial script read v1 under GBK; aborted before writing source. This explicit UTF8 resume produced the first v2 source.',
+    source_sha256=hashlib.sha256((out / 'parse.cpp').read_bytes()).hexdigest(), selected=False), indent=2), encoding='utf-8')

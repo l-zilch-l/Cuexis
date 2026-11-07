@@ -1,0 +1,26 @@
+from pathlib import Path
+import ctypes as ct
+from ctypes import wintypes as w
+import datetime as dt,hashlib,json,math,os,statistics,subprocess,sys,time
+root=Path.cwd();base=Path(__file__).resolve().parent
+exe=base/'gpu_scale.exe'
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+write=lambda p,v:p.write_text(json.dumps(v,indent=2),encoding='utf-8')
+k=ct.WinDLL('kernel32',use_last_error=True)
+k.OpenProcess.argtypes=[w.DWORD,w.BOOL,w.DWORD];k.OpenProcess.restype=w.HANDLE
+k.SetProcessAffinityMask.argtypes=[w.HANDLE,ct.c_size_t]
+k.GetProcessAffinityMask.argtypes=[w.HANDLE,ct.POINTER(ct.c_size_t),ct.POINTER(ct.c_size_t)]
+k.SetProcessInformation.argtypes=[w.HANDLE,ct.c_int,ct.c_void_p,w.DWORD]
+k.GetProcessInformation.argtypes=[w.HANDLE,ct.c_int,ct.c_void_p,w.DWORD]
+k.GetPriorityClass.argtypes=[w.HANDLE];k.GetPriorityClass.restype=w.DWORD
+k.SetPriorityClass.argtypes=[w.HANDLE,w.DWORD]
+k.GetCurrentProcess.restype=w.HANDLE
+k.CloseHandle.argtypes=[w.HANDLE]
+class Power(ct.Structure):_fields_=[('Version',w.DWORD),('ControlMask',w.DWORD),('StateMask',w.DWORD)]
+class Battery(ct.Structure):_fields_=[('ACLineStatus',w.BYTE),('BatteryFlag',w.BYTE),('BatteryLifePercent',w.BYTE),('SystemStatusFlag',w.BYTE),('BatteryLifeTime',w.DWORD),('BatteryFullLifeTime',w.DWORD)]
+k.GetSystemPowerStatus.argtypes=[ct.POINTER(Battery)]
+allowed=ct.c_size_t();system_allowed=ct.c_size_t()
+assert k.GetProcessAffinityMask(k.GetCurrentProcess(),ct.byref(allowed),ct.byref(system_allowed))
+measurement_mask=allowed.value
+assert measurement_mask
+assert k.SetProcessAffinityMask(k.GetCurrentProcess(),3) and k.SetPriorityClass(k.GetCurrentProcess(),0x4000)

@@ -1,0 +1,956 @@
+{
+ "label": "before: nlohmann DOM dump",
+ "source_dir": "out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-c",
+ "prefix": "writer-split-",
+ "processes": [
+  {
+   "stages_us": {
+    "json_dom_parse": 724467,
+    "chart_typed_read": 348006,
+    "chart_canonical_normalize": 183092,
+    "chart_canonical_dump": 410031,
+    "chart_canonical_write": 667800,
+    "load_chart": 1740449,
+    "load_canonical": 18240,
+    "load_document": 1758866,
+    "resolve_parameters": 20,
+    "preflight": 15,
+    "animation_compile": 12,
+    "chart_compile": 93226,
+    "resources": 42,
+    "audio": 6,
+    "runtime": 206751,
+    "presentation": 2146,
+    "commit_runtime": 8,
+    "commit_frame": 6,
+    "snapshot_layout": 19336,
+    "identity": 20,
+    "assemble": 1590
+   },
+   "self_us": {
+    "json_dom_parse": 724467,
+    "chart_typed_read": 348006,
+    "chart_canonical_normalize": 183092,
+    "chart_canonical_dump": 410031,
+    "chart_canonical_write": 74677,
+    "load_chart": 176,
+    "load_canonical": 18240,
+    "load_document": 177,
+    "resolve_parameters": 20,
+    "preflight": 15,
+    "animation_compile": 12,
+    "chart_compile": 93226,
+    "resources": 42,
+    "audio": 6,
+    "runtime": 206751,
+    "presentation": 2146,
+    "commit_runtime": 8,
+    "commit_frame": 6,
+    "snapshot_layout": 19336,
+    "identity": 20,
+    "assemble": 1590
+   },
+   "traced_us": 2082044,
+   "content_prepared_us": 2087872,
+   "outside_us": 5828,
+   "frames": [
+    {
+     "name": "json_dom_parse",
+     "elapsed_us": 724467,
+     "depth": 2,
+     "parent": "load_chart",
+     "self_us": 724467
+    },
+    {
+     "name": "chart_typed_read",
+     "elapsed_us": 348006,
+     "depth": 2,
+     "parent": "load_chart",
+     "self_us": 348006
+    },
+    {
+     "name": "chart_canonical_normalize",
+     "elapsed_us": 183092,
+     "depth": 3,
+     "parent": "chart_canonical_write",
+     "self_us": 183092
+    },
+    {
+     "name": "chart_canonical_dump",
+     "elapsed_us": 410031,
+     "depth": 3,
+     "parent": "chart_canonical_write",
+     "self_us": 410031
+    },
+    {
+     "name": "chart_canonical_write",
+     "elapsed_us": 667800,
+     "depth": 2,
+     "parent": "load_chart",
+     "self_us": 74677
+    },
+    {
+     "name": "load_chart",
+     "elapsed_us": 1740449,
+     "depth": 1,
+     "parent": "load_document",
+     "self_us": 176
+    },
+    {
+     "name": "load_canonical",
+     "elapsed_us": 18240,
+     "depth": 1,
+     "parent": "load_document",
+     "self_us": 18240
+    },
+    {
+     "name": "load_document",
+     "elapsed_us": 1758866,
+     "depth": 0,
+     "parent": null,
+     "self_us": 177
+    },
+    {
+     "name": "resolve_parameters",
+     "elapsed_us": 20,
+     "depth": 0,
+     "parent": null,
+     "self_us": 20
+    },
+    {
+     "name": "preflight",
+     "elapsed_us": 15,
+     "depth": 0,
+     "parent": null,
+     "self_us": 15
+    },
+    {
+     "name": "animation_compile",
+     "elapsed_us": 12,
+     "depth": 0,
+     "parent": null,
+     "self_us": 12
+    },
+    {
+     "name": "chart_compile",
+     "elapsed_us": 93226,
+     "depth": 0,
+     "parent": null,
+     "self_us": 93226
+    },
+    {
+     "name": "resources",
+     "elapsed_us": 42,
+     "depth": 0,
+     "parent": null,
+     "self_us": 42
+    },
+    {
+     "name": "audio",
+     "elapsed_us": 6,
+     "depth": 0,
+     "parent": null,
+     "self_us": 6
+    },
+    {
+     "name": "runtime",
+     "elapsed_us": 206751,
+     "depth": 0,
+     "parent": null,
+     "self_us": 206751
+    },
+    {
+     "name": "presentation",
+     "elapsed_us": 2146,
+     "depth": 0,
+     "parent": null,
+     "self_us": 2146
+    },
+    {
+     "name": "commit_runtime",
+     "elapsed_us": 8,
+     "depth": 0,
+     "parent": null,
+     "self_us": 8
+    },
+    {
+     "name": "commit_frame",
+     "elapsed_us": 6,
+     "depth": 0,
+     "parent": null,
+     "self_us": 6
+    },
+    {
+     "name": "snapshot_layout",
+     "elapsed_us": 19336,
+     "depth": 0,
+     "parent": null,
+     "self_us": 19336
+    },
+    {
+     "name": "identity",
+     "elapsed_us": 20,
+     "depth": 0,
+     "parent": null,
+     "self_us": 20
+    },
+    {
+     "name": "assemble",
+     "elapsed_us": 1590,
+     "depth": 0,
+     "parent": null,
+     "self_us": 1590
+    }
+   ],
+   "label": "writer-split-00",
+   "err_sha256": "6a388f3e7180e6baef32484cfbccda3ca1f41c1bc06ed98b35e0900c3b38e25f",
+   "err_bytes": 2053,
+   "phase_lines": {
+    "content_prepared": {
+     "elapsed_us": 2087872,
+     "total_us": 2106986
+    },
+    "content_committed": {
+     "elapsed_us": 486,
+     "total_us": 2441845
+    },
+    "first_frame_presented": {
+     "elapsed_us": 64707,
+     "total_us": 2506576,
+     "opaque": 40000,
+     "transparent": 0,
+     "render_us": 0
+    }
+   }
+  },
+  {
+   "stages_us": {
+    "json_dom_parse": 720669,
+    "chart_typed_read": 341045,
+    "chart_canonical_normalize": 180214,
+    "chart_canonical_dump": 389059,
+    "chart_canonical_write": 649232,
+    "load_chart": 1711145,
+    "load_canonical": 16945,
+    "load_document": 1728265,
+    "resolve_parameters": 18,
+    "preflight": 15,
+    "animation_compile": 11,
+    "chart_compile": 90734,
+    "resources": 28,
+    "audio": 4,
+    "runtime": 207236,
+    "presentation": 2125,
+    "commit_runtime": 6,
+    "commit_frame": 15,
+    "snapshot_layout": 19716,
+    "identity": 14,
+    "assemble": 1691
+   },
+   "self_us": {
+    "json_dom_parse": 720669,
+    "chart_typed_read": 341045,
+    "chart_canonical_normalize": 180214,
+    "chart_canonical_dump": 389059,
+    "chart_canonical_write": 79959,
+    "load_chart": 199,
+    "load_canonical": 16945,
+    "load_document": 175,
+    "resolve_parameters": 18,
+    "preflight": 15,
+    "animation_compile": 11,
+    "chart_compile": 90734,
+    "resources": 28,
+    "audio": 4,
+    "runtime": 207236,
+    "presentation": 2125,
+    "commit_runtime": 6,
+    "commit_frame": 15,
+    "snapshot_layout": 19716,
+    "identity": 14,
+    "assemble": 1691
+   },
+   "traced_us": 2049878,
+   "content_prepared_us": 2055866,
+   "outside_us": 5988,
+   "frames": [
+    {
+     "name": "json_dom_parse",
+     "elapsed_us": 720669,
+     "depth": 2,
+     "parent": "load_chart",
+     "self_us": 720669
+    },
+    {
+     "name": "chart_typed_read",
+     "elapsed_us": 341045,
+     "depth": 2,
+     "parent": "load_chart",
+     "self_us": 341045
+    },
+    {
+     "name": "chart_canonical_normalize",
+     "elapsed_us": 180214,
+     "depth": 3,
+     "parent": "chart_canonical_write",
+     "self_us": 180214
+    },
+    {
+     "name": "chart_canonical_dump",
+     "elapsed_us": 389059,
+     "depth": 3,
+     "parent": "chart_canonical_write",
+     "self_us": 389059
+    },
+    {
+     "name": "chart_canonical_write",
+     "elapsed_us": 649232,
+     "depth": 2,
+     "parent": "load_chart",
+     "self_us": 79959
+    },
+    {
+     "name": "load_chart",
+     "elapsed_us": 1711145,
+     "depth": 1,
+     "parent": "load_document",
+     "self_us": 199
+    },
+    {
+     "name": "load_canonical",
+     "elapsed_us": 16945,
+     "depth": 1,
+     "parent": "load_document",
+     "self_us": 16945
+    },
+    {
+     "name": "load_document",
+     "elapsed_us": 1728265,
+     "depth": 0,
+     "parent": null,
+     "self_us": 175
+    },
+    {
+     "name": "resolve_parameters",
+     "elapsed_us": 18,
+     "depth": 0,
+     "parent": null,
+     "self_us": 18
+    },
+    {
+     "name": "preflight",
+     "elapsed_us": 15,
+     "depth": 0,
+     "parent": null,
+     "self_us": 15
+    },
+    {
+     "name": "animation_compile",
+     "elapsed_us": 11,
+     "depth": 0,
+     "parent": null,
+     "self_us": 11
+    },
+    {
+     "name": "chart_compile",
+     "elapsed_us": 90734,
+     "depth": 0,
+     "parent": null,
+     "self_us": 90734
+    },
+    {
+     "name": "resources",
+     "elapsed_us": 28,
+     "depth": 0,
+     "parent": null,
+     "self_us": 28
+    },
+    {
+     "name": "audio",
+     "elapsed_us": 4,
+     "depth": 0,
+     "parent": null,
+     "self_us": 4
+    },
+    {
+     "name": "runtime",
+     "elapsed_us": 207236,
+     "depth": 0,
+     "parent": null,
+     "self_us": 207236
+    },
+    {
+     "name": "presentation",
+     "elapsed_us": 2125,
+     "depth": 0,
+     "parent": null,
+     "self_us": 2125
+    },
+    {
+     "name": "commit_runtime",
+     "elapsed_us": 6,
+     "depth": 0,
+     "parent": null,
+     "self_us": 6
+    },
+    {
+     "name": "commit_frame",
+     "elapsed_us": 15,
+     "depth": 0,
+     "parent": null,
+     "self_us": 15
+    },
+    {
+     "name": "snapshot_layout",
+     "elapsed_us": 19716,
+     "depth": 0,
+     "parent": null,
+     "self_us": 19716
+    },
+    {
+     "name": "identity",
+     "elapsed_us": 14,
+     "depth": 0,
+     "parent": null,
+     "self_us": 14
+    },
+    {
+     "name": "assemble",
+     "elapsed_us": 1691,
+     "depth": 0,
+     "parent": null,
+     "self_us": 1691
+    }
+   ],
+   "label": "writer-split-01",
+   "err_sha256": "f5184e4f0f40c5774f43e01be6681c47e8606d0767eb30a87db296528f6ccc1e",
+   "err_bytes": 2054,
+   "phase_lines": {
+    "content_prepared": {
+     "elapsed_us": 2055866,
+     "total_us": 2075005
+    },
+    "content_committed": {
+     "elapsed_us": 429,
+     "total_us": 2410863
+    },
+    "first_frame_presented": {
+     "elapsed_us": 65243,
+     "total_us": 2476121,
+     "opaque": 40000,
+     "transparent": 0,
+     "render_us": 0
+    }
+   }
+  },
+  {
+   "stages_us": {
+    "json_dom_parse": 715405,
+    "chart_typed_read": 345446,
+    "chart_canonical_normalize": 181025,
+    "chart_canonical_dump": 391141,
+    "chart_canonical_write": 643884,
+    "load_chart": 1704956,
+    "load_canonical": 16949,
+    "load_document": 1722096,
+    "resolve_parameters": 16,
+    "preflight": 13,
+    "animation_compile": 9,
+    "chart_compile": 87732,
+    "resources": 27,
+    "audio": 4,
+    "runtime": 206479,
+    "presentation": 2102,
+    "commit_runtime": 7,
+    "commit_frame": 4,
+    "snapshot_layout": 19522,
+    "identity": 16,
+    "assemble": 1632
+   },
+   "self_us": {
+    "json_dom_parse": 715405,
+    "chart_typed_read": 345446,
+    "chart_canonical_normalize": 181025,
+    "chart_canonical_dump": 391141,
+    "chart_canonical_write": 71718,
+    "load_chart": 221,
+    "load_canonical": 16949,
+    "load_document": 191,
+    "resolve_parameters": 16,
+    "preflight": 13,
+    "animation_compile": 9,
+    "chart_compile": 87732,
+    "resources": 27,
+    "audio": 4,
+    "runtime": 206479,
+    "presentation": 2102,
+    "commit_runtime": 7,
+    "commit_frame": 4,
+    "snapshot_layout": 19522,
+    "identity": 16,
+    "assemble": 1632
+   },
+   "traced_us": 2039659,
+   "content_prepared_us": 2045609,
+   "outside_us": 5950,
+   "frames": [
+    {
+     "name": "json_dom_parse",
+     "elapsed_us": 715405,
+     "depth": 2,
+     "parent": "load_chart",
+     "self_us": 715405
+    },
+    {
+     "name": "chart_typed_read",
+     "elapsed_us": 345446,
+     "depth": 2,
+     "parent": "load_chart",
+     "self_us": 345446
+    },
+    {
+     "name": "chart_canonical_normalize",
+     "elapsed_us": 181025,
+     "depth": 3,
+     "parent": "chart_canonical_write",
+     "self_us": 181025
+    },
+    {
+     "name": "chart_canonical_dump",
+     "elapsed_us": 391141,
+     "depth": 3,
+     "parent": "chart_canonical_write",
+     "self_us": 391141
+    },
+    {
+     "name": "chart_canonical_write",
+     "elapsed_us": 643884,
+     "depth": 2,
+     "parent": "load_chart",
+     "self_us": 71718
+    },
+    {
+     "name": "load_chart",
+     "elapsed_us": 1704956,
+     "depth": 1,
+     "parent": "load_document",
+     "self_us": 221
+    },
+    {
+     "name": "load_canonical",
+     "elapsed_us": 16949,
+     "depth": 1,
+     "parent": "load_document",
+     "self_us": 16949
+    },
+    {
+     "name": "load_document",
+     "elapsed_us": 1722096,
+     "depth": 0,
+     "parent": null,
+     "self_us": 191
+    },
+    {
+     "name": "resolve_parameters",
+     "elapsed_us": 16,
+     "depth": 0,
+     "parent": null,
+     "self_us": 16
+    },
+    {
+     "name": "preflight",
+     "elapsed_us": 13,
+     "depth": 0,
+     "parent": null,
+     "self_us": 13
+    },
+    {
+     "name": "animation_compile",
+     "elapsed_us": 9,
+     "depth": 0,
+     "parent": null,
+     "self_us": 9
+    },
+    {
+     "name": "chart_compile",
+     "elapsed_us": 87732,
+     "depth": 0,
+     "parent": null,
+     "self_us": 87732
+    },
+    {
+     "name": "resources",
+     "elapsed_us": 27,
+     "depth": 0,
+     "parent": null,
+     "self_us": 27
+    },
+    {
+     "name": "audio",
+     "elapsed_us": 4,
+     "depth": 0,
+     "parent": null,
+     "self_us": 4
+    },
+    {
+     "name": "runtime",
+     "elapsed_us": 206479,
+     "depth": 0,
+     "parent": null,
+     "self_us": 206479
+    },
+    {
+     "name": "presentation",
+     "elapsed_us": 2102,
+     "depth": 0,
+     "parent": null,
+     "self_us": 2102
+    },
+    {
+     "name": "commit_runtime",
+     "elapsed_us": 7,
+     "depth": 0,
+     "parent": null,
+     "self_us": 7
+    },
+    {
+     "name": "commit_frame",
+     "elapsed_us": 4,
+     "depth": 0,
+     "parent": null,
+     "self_us": 4
+    },
+    {
+     "name": "snapshot_layout",
+     "elapsed_us": 19522,
+     "depth": 0,
+     "parent": null,
+     "self_us": 19522
+    },
+    {
+     "name": "identity",
+     "elapsed_us": 16,
+     "depth": 0,
+     "parent": null,
+     "self_us": 16
+    },
+    {
+     "name": "assemble",
+     "elapsed_us": 1632,
+     "depth": 0,
+     "parent": null,
+     "self_us": 1632
+    }
+   ],
+   "label": "writer-split-02",
+   "err_sha256": "1bf8c3167aaa9cf02df968c9f6d3672790232831edc73d1ed730369348277cd6",
+   "err_bytes": 2052,
+   "phase_lines": {
+    "content_prepared": {
+     "elapsed_us": 2045609,
+     "total_us": 2064661
+    },
+    "content_committed": {
+     "elapsed_us": 428,
+     "total_us": 2404115
+    },
+    "first_frame_presented": {
+     "elapsed_us": 65044,
+     "total_us": 2469176,
+     "opaque": 40000,
+     "transparent": 0,
+     "render_us": 0
+    }
+   }
+  }
+ ],
+ "summary": {
+  "n": 3,
+  "content_prepared_us": {
+   "median_us": 2055866,
+   "per_process_us": [
+    2087872,
+    2055866,
+    2045609
+   ],
+   "spread_pct": 2.06
+  },
+  "outside_us": {
+   "median_us": 5950,
+   "per_process_us": [
+    5828,
+    5988,
+    5950
+   ],
+   "spread_pct": 2.69
+  },
+  "stages": {
+   "json_dom_parse": {
+    "median_us": 720669,
+    "min_us": 715405,
+    "max_us": 724467,
+    "spread_pct": 1.26,
+    "self_median_us": 720669,
+    "per_process_us": [
+     724467,
+     720669,
+     715405
+    ]
+   },
+   "chart_typed_read": {
+    "median_us": 345446,
+    "min_us": 341045,
+    "max_us": 348006,
+    "spread_pct": 2.02,
+    "self_median_us": 345446,
+    "per_process_us": [
+     348006,
+     341045,
+     345446
+    ]
+   },
+   "chart_canonical_normalize": {
+    "median_us": 181025,
+    "min_us": 180214,
+    "max_us": 183092,
+    "spread_pct": 1.59,
+    "self_median_us": 181025,
+    "per_process_us": [
+     183092,
+     180214,
+     181025
+    ]
+   },
+   "chart_canonical_dump": {
+    "median_us": 391141,
+    "min_us": 389059,
+    "max_us": 410031,
+    "spread_pct": 5.36,
+    "self_median_us": 391141,
+    "per_process_us": [
+     410031,
+     389059,
+     391141
+    ]
+   },
+   "chart_canonical_write": {
+    "median_us": 649232,
+    "min_us": 643884,
+    "max_us": 667800,
+    "spread_pct": 3.68,
+    "self_median_us": 74677,
+    "per_process_us": [
+     667800,
+     649232,
+     643884
+    ]
+   },
+   "load_chart": {
+    "median_us": 1711145,
+    "min_us": 1704956,
+    "max_us": 1740449,
+    "spread_pct": 2.07,
+    "self_median_us": 199,
+    "per_process_us": [
+     1740449,
+     1711145,
+     1704956
+    ]
+   },
+   "load_canonical": {
+    "median_us": 16949,
+    "min_us": 16945,
+    "max_us": 18240,
+    "spread_pct": 7.64,
+    "self_median_us": 16949,
+    "per_process_us": [
+     18240,
+     16945,
+     16949
+    ]
+   },
+   "load_document": {
+    "median_us": 1728265,
+    "min_us": 1722096,
+    "max_us": 1758866,
+    "spread_pct": 2.13,
+    "self_median_us": 177,
+    "per_process_us": [
+     1758866,
+     1728265,
+     1722096
+    ]
+   },
+   "resolve_parameters": {
+    "median_us": 18,
+    "min_us": 16,
+    "max_us": 20,
+    "spread_pct": 22.22,
+    "self_median_us": 18,
+    "per_process_us": [
+     20,
+     18,
+     16
+    ]
+   },
+   "preflight": {
+    "median_us": 15,
+    "min_us": 13,
+    "max_us": 15,
+    "spread_pct": 13.33,
+    "self_median_us": 15,
+    "per_process_us": [
+     15,
+     15,
+     13
+    ]
+   },
+   "animation_compile": {
+    "median_us": 11,
+    "min_us": 9,
+    "max_us": 12,
+    "spread_pct": 27.27,
+    "self_median_us": 11,
+    "per_process_us": [
+     12,
+     11,
+     9
+    ]
+   },
+   "chart_compile": {
+    "median_us": 90734,
+    "min_us": 87732,
+    "max_us": 93226,
+    "spread_pct": 6.06,
+    "self_median_us": 90734,
+    "per_process_us": [
+     93226,
+     90734,
+     87732
+    ]
+   },
+   "resources": {
+    "median_us": 28,
+    "min_us": 27,
+    "max_us": 42,
+    "spread_pct": 53.57,
+    "self_median_us": 28,
+    "per_process_us": [
+     42,
+     28,
+     27
+    ]
+   },
+   "audio": {
+    "median_us": 4,
+    "min_us": 4,
+    "max_us": 6,
+    "spread_pct": 50.0,
+    "self_median_us": 4,
+    "per_process_us": [
+     6,
+     4,
+     4
+    ]
+   },
+   "runtime": {
+    "median_us": 206751,
+    "min_us": 206479,
+    "max_us": 207236,
+    "spread_pct": 0.37,
+    "self_median_us": 206751,
+    "per_process_us": [
+     206751,
+     207236,
+     206479
+    ]
+   },
+   "presentation": {
+    "median_us": 2125,
+    "min_us": 2102,
+    "max_us": 2146,
+    "spread_pct": 2.07,
+    "self_median_us": 2125,
+    "per_process_us": [
+     2146,
+     2125,
+     2102
+    ]
+   },
+   "commit_runtime": {
+    "median_us": 7,
+    "min_us": 6,
+    "max_us": 8,
+    "spread_pct": 28.57,
+    "self_median_us": 7,
+    "per_process_us": [
+     8,
+     6,
+     7
+    ]
+   },
+   "commit_frame": {
+    "median_us": 6,
+    "min_us": 4,
+    "max_us": 15,
+    "spread_pct": 183.33,
+    "self_median_us": 6,
+    "per_process_us": [
+     6,
+     15,
+     4
+    ]
+   },
+   "snapshot_layout": {
+    "median_us": 19522,
+    "min_us": 19336,
+    "max_us": 19716,
+    "spread_pct": 1.95,
+    "self_median_us": 19522,
+    "per_process_us": [
+     19336,
+     19716,
+     19522
+    ]
+   },
+   "identity": {
+    "median_us": 16,
+    "min_us": 14,
+    "max_us": 20,
+    "spread_pct": 37.5,
+    "self_median_us": 16,
+    "per_process_us": [
+     20,
+     14,
+     16
+    ]
+   },
+   "assemble": {
+    "median_us": 1632,
+    "min_us": 1590,
+    "max_us": 1691,
+    "spread_pct": 6.19,
+    "self_median_us": 1632,
+    "per_process_us": [
+     1590,
+     1691,
+     1632
+    ]
+   }
+  }
+ },
+ "environment": {
+  "player": "out\\build\\rpa-candidate-release\\bin\\cuexis_player.exe",
+  "player_sha256": "cb575e15cb0d93559a131c547fff15ae4b0a9b720cca7a8b18d38d193be3e94e",
+  "player_bytes": 5674496,
+  "project": "out\\verification-20261101\\r3-startup-observability-v1\\player-40k-project",
+  "project_chart_sha256": "247cb8ef1ae66eb829fff5f58cdb466cb819396afdbac418a5b9814db408a0ae",
+  "close_after_s": 8.0,
+  "timeout_s": 40.0,
+  "samples": 3,
+  "repeatability_limit_pct": 15.0,
+  "trace_gate": "CUEXIS_PREPARE_TRACE=1",
+  "watch_window_poll_ms": 2.0,
+  "probe_interval_ms": 25.0
+ }
+}

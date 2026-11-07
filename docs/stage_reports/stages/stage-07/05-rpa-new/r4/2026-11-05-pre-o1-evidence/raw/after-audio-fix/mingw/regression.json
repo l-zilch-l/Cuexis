@@ -1,0 +1,10 @@
+{
+  "command": [
+    "D:\\Cuexis-worktree\\out\\build\\r4\\pre-o1\\preflight\\20261105-123139-c8af190f\\mingw-on-debug\\bin\\cuexis_execution_host_tests.exe",
+    "B5 Close waits for a failed audio owner's drained exit before binding participants"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 0.09891689999994924,
+  "test_counts": null,
+  "log_sha256": "129055ae953c33ba731a42c155672a20cd3422aa7393573f277e96a4856ed139"
+}

@@ -1,0 +1,137 @@
+{
+  "formal": false,
+  "scope": "Fixed ordinary bounded publication batch diagnostic. Both variants use v4 continuation. No production memory quota decision. Same candidate class definitions and fresh libraries; all timings exclude fault/heap observers.",
+  "plan": [
+    {
+      "n": 1000,
+      "horizon": "902",
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "horizon": "902",
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 1000,
+      "horizon": "902",
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 1000,
+      "horizon": "902",
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "horizon": "902",
+      "pair": 2,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "horizon": "902",
+      "pair": 2,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "horizon": "5",
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "horizon": "5",
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "horizon": "5",
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "horizon": "5",
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "horizon": "5",
+      "pair": 2,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "horizon": "5",
+      "pair": 2,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "pair": 2,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "pair": 2,
+      "variant": "candidate"
+    },
+    {
+      "n": 1000,
+      "horizon": "final",
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "horizon": "final",
+      "pair": 0,
+      "variant": "candidate"
+    }
+  ],
+  "attempts": 3,
+  "gate": "40K first-record H902 median improves >=20%; every candidate request <=20ms; H5 and 1K final guard <=5% regression; 1K H902 <=10% regression. Original relative range <=15% reported, no new samples to force pass. first/repeats separate; exact full Snapshot raw bytes/hash/size. CPU Host request through target present only, not physical GPU or formal acceptance.",
+  "binaries": {
+    "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-next-v1\\publication-host-v1\\probe-baseline.exe": "0fa03312b6effa1c3812a78209e0e3bdcc5c81de2f1de242714e7fb5c218a811",
+    "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-next-v1\\publication-host-v1\\probe-candidate.exe": "ad1027d245c4917f5eaae27994c60b684edc9db5e25b59ccf12d5107ae469077"
+  },
+  "runner_sha256": "c83991497098b8295ea2b1dd597828cf92ad910097ba57c45b9d11595efd4aed",
+  "affinity": 4,
+  "priority": "BelowNormal",
+  "qos": "execution throttling OFF",
+  "failure": "Invalid process stops; original failed/noisy groups retained; no replacement/extension. Builds must be absent."
+}

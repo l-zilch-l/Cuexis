@@ -1,0 +1,35 @@
+from pathlib import Path
+import json, subprocess, hashlib
+
+root = Path.cwd()
+base = Path(__file__).resolve().parent
+build = base / 'json-sax-build-v2'
+out = base / 'json-sax-check-v2'
+out.mkdir(exist_ok=False)
+rows = []
+for label, variant, arguments, expected in (
+    ('baseline-all', 'baseline', [], 42),
+    ('candidate-all', 'candidate', [], 0),
+    ('baseline-corpus', 'baseline', ['[corpus]'], 0),
+    ('candidate-corpus', 'candidate', ['[corpus]'], 0),
+):
+    args = [str(build / ('json-' + variant + '.exe')), *arguments, '--rng-seed', '1']
+    with (out / (label + '.log')).open('x', encoding='utf-8') as stream:
+        result = subprocess.run(args, cwd=root, stdout=stream, stderr=subprocess.STDOUT)
+    rows.append(dict(label=label, args=args, exit=result.returncode, expected=expected))
+    (out / 'results.json').write_text(json.dumps(rows, indent=2), encoding='utf-8')
+    print(label, result.returncode, flush=True)
+    if result.returncode != expected: raise SystemExit('Unexpected characterization result')
+corpus = {}
+for variant in ('baseline', 'candidate'):
+    text = (out / (variant + '-corpus.log')).read_text(encoding='utf-8')
+    corpus[variant] = [line for line in text.splitlines() if line.startswith('JSON_CORPUS ')]
+assert corpus['baseline'] and corpus['baseline'] == corpus['candidate']
+baseline = (out / 'baseline-all.log').read_text(encoding='utf-8')
+assert 'Ordinary parse rejects empty duplicate keys' in baseline
+assert '1 failed' in baseline
+(out / 'decision.json').write_text(json.dumps(dict(
+    corpus_equal=True, lines=len(corpus['baseline']), candidate_suite_pass=True,
+    baseline_expected_failure='Only empty duplicate key regression is expected; inspect original test log.',
+    logs={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in out.glob('*.log')}
+), indent=2), encoding='utf-8')

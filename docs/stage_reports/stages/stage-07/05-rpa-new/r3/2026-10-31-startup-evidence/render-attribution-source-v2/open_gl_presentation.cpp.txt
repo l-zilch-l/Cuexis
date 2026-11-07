@@ -1,0 +1,2066 @@
+#include <chrono>
+#include <iostream>
+#include "../internal/cuexis_internal/gpu_storage_observer.hpp"
+#include "../internal/cuexis_internal/pixel_probe.hpp"
+#include "open_gl_presentation_internal.hpp"
+#include <cuexis/playback/presentation_candidate.hpp>
+
+#include <cuexis/core/error.hpp>
+#include <cuexis/shader/shader_cache.hpp>
+#include <cuexis/shader/shader_diagnostics.hpp>
+
+#ifdef CUEXIS_HAS_SHADER_TOOLS
+#include <cuexis/shader/shader_compiler.hpp>
+#endif
+
+#include <SDL3/SDL.h>
+
+#include <algorithm>
+#include <array>
+#include <bit>
+#include <cmath>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <exception>
+#include <filesystem>
+#include <iterator>
+#include <limits>
+#include <map>
+#include <new>
+#include <optional>
+#include <span>
+#include <string>
+#include <string_view>
+#include <tuple>
+#include <type_traits>
+#include <utility>
+#include <variant>
+#include <vector>
+
+namespace cuexis::render_opengl {
+namespace {
+
+class RenderStageTimer final {
+  public:
+    std::chrono::steady_clock::time_point begin{std::chrono::steady_clock::now()};
+    void mark(const char* name) {
+        const auto end = std::chrono::steady_clock::now();
+        std::cout << "RENDER_STAGE " << name << " "
+                  << std::chrono::duration<double, std::micro>(end-begin).count() << std::endl;
+        begin = std::chrono::steady_clock::now();
+    }
+};
+
+constexpr std::size_t maxNormalizedRecords = 100'000;
+constexpr std::uint64_t maxResourceBytes = 64ULL * 1024ULL * 1024ULL;
+constexpr std::uint64_t maxSessionBytes = 512ULL * 1024ULL * 1024ULL;
+constexpr std::uint32_t maxMeshVertices = 1'048'576;
+constexpr std::uint32_t maxMeshIndices = 3'145'728;
+constexpr std::uint32_t portableMaxTextureDimension = 8'192;
+// Adapter-local transparent sort quantization: 4096 depth bins per meter. Changing this constant
+// changes transparentDepthKey values and can change draw order for objects at nearby depths.
+constexpr double depthQuantization = 4096.0;
+constexpr double signedIntegerLimit = 0x1p63;
+
+struct PresentationVertex final {
+    float x;
+    float y;
+    float z;
+    float u;
+    float v;
+};
+
+using detail::DebugVertex;
+using detail::PreparedDraw;
+
+struct CuexisObjectStd140 final {
+    float world[16]{};
+    float viewProjection[16]{};
+    float tint[3]{};
+    float opacity{1.0F};
+};
+
+static_assert(sizeof(CuexisObjectStd140) == 144);
+
+[[nodiscard]] auto sdlError() -> std::string {
+    const char* message = SDL_GetError();
+    return message != nullptr && message[0] != '\0' ? message : "unknown SDL error";
+}
+
+[[nodiscard]] auto requireMainThread(std::string_view operation) -> core::Result<void> {
+    if (SDL_IsMainThread()) {
+        return {};
+    }
+    return core::unexpected(
+        core::Error{"render.opengl.not_main_thread",
+                    "OpenGL presentation operations require the SDL main thread"}
+            .withContext("operation", std::string{operation}));
+}
+
+[[nodiscard]] auto resourceTypeName(playback::PresentationResourceType type) noexcept
+    -> std::string_view {
+    switch (type) {
+    case playback::PresentationResourceType::Mesh:
+        return "mesh";
+    case playback::PresentationResourceType::Texture2D:
+        return "texture2d";
+    case playback::PresentationResourceType::UnlitMaterial:
+        return "unlit_material";
+    case playback::PresentationResourceType::Shader:
+        return "shader";
+    case playback::PresentationResourceType::ParameterizedMaterial:
+        return "parameterized_material";
+    }
+    return "unknown";
+}
+
+[[nodiscard]] auto referenceKey(const playback::PresentationResourceRef& reference) noexcept {
+    return std::tie(reference.assetId, reference.type);
+}
+
+[[nodiscard]] auto resourceError(std::string code, std::string message,
+                                 const playback::PresentationResourceRef* reference = nullptr)
+    -> core::Error {
+    auto error = core::Error{std::move(code), std::move(message)};
+    if (reference != nullptr) {
+        error.withContext("asset_id", reference->assetId)
+            .withContext("resource_type", std::string{resourceTypeName(reference->type)});
+    }
+    return error;
+}
+
+[[nodiscard]] auto frameError(std::string message, std::string_view objectId,
+                              const playback::PresentationResourceRef* reference = nullptr)
+    -> core::Error {
+    auto error = resourceError("playback.presentation.frame.resource_mismatch", std::move(message),
+                               reference);
+    if (!objectId.empty()) {
+        error.withContext("object_id", std::string{objectId});
+    }
+    return error;
+}
+
+[[nodiscard]] auto nonFiniteError(std::string_view objectId, std::string_view field)
+    -> core::Error {
+    auto error = core::Error{"playback.presentation.frame.non_finite",
+                             "OpenGL presentation calculation contains a non-finite value"}
+                     .withContext("field", std::string{field});
+    if (!objectId.empty()) {
+        error.withContext("object_id", std::string{objectId});
+    }
+    return error;
+}
+
+void clearGlErrors() noexcept {
+    while (glGetError() != GL_NO_ERROR) {
+    }
+}
+
+[[nodiscard]] auto checkGl(std::string code, std::string message,
+                           const playback::PresentationResourceRef* reference = nullptr)
+    -> core::Result<void> {
+    const GLenum errorCode = glGetError();
+    if (errorCode == GL_NO_ERROR) {
+        return {};
+    }
+    return core::unexpected(resourceError(std::move(code), std::move(message), reference)
+                                .withContext("gl_error", std::to_string(errorCode)));
+}
+
+[[nodiscard]] auto cacheMeshBounds(const playback::PortableResource& resource,
+                                   const playback::PortableMesh& mesh, detail::GpuMesh& uploaded,
+                                   detail::BoundsProbeStats* stats) -> core::Result<void>;
+
+[[nodiscard]] auto shaderLog(GLuint shader) -> std::string {
+    GLint length = 0;
+    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+    length = std::clamp(length, 0, 4096);
+    if (length == 0) {
+        return "no shader compiler log";
+    }
+    std::string log(static_cast<std::size_t>(length), '\0');
+    GLsizei written = 0;
+    glGetShaderInfoLog(shader, length, &written, log.data());
+    log.resize(static_cast<std::size_t>(std::max<GLsizei>(written, 0)));
+    return log;
+}
+
+[[nodiscard]] auto programLog(GLuint program) -> std::string {
+    GLint length = 0;
+    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
+    length = std::clamp(length, 0, 4096);
+    if (length == 0) {
+        return "no program linker log";
+    }
+    std::string log(static_cast<std::size_t>(length), '\0');
+    GLsizei written = 0;
+    glGetProgramInfoLog(program, length, &written, log.data());
+    log.resize(static_cast<std::size_t>(std::max<GLsizei>(written, 0)));
+    return log;
+}
+
+[[nodiscard]] auto compileShader(GLenum type, const char* source, std::string_view stage)
+    -> core::Result<GLuint> {
+    const GLuint shader = glCreateShader(type);
+    if (shader == 0) {
+        return core::unexpected(core::Error{"render.opengl.presentation.shader_create_failed",
+                                            "OpenGL could not create a presentation shader"}
+                                    .withContext("stage", std::string{stage}));
+    }
+    glShaderSource(shader, 1, &source, nullptr);
+    glCompileShader(shader);
+    GLint compiled = GL_FALSE;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+    if (compiled != GL_TRUE) {
+        auto error =
+            core::Error{"render.opengl.presentation.shader_compile_failed", shaderLog(shader)}
+                .withContext("stage", std::string{stage});
+        glDeleteShader(shader);
+        return core::unexpected(std::move(error));
+    }
+    return shader;
+}
+
+[[nodiscard]] auto createPresentationPipeline() -> core::Result<detail::PresentationPipeline> {
+    static constexpr const char* vertexSource = R"GLSL(#version 330 core
+layout(location = 0) in vec3 inPosition;
+layout(location = 1) in vec2 inUv;
+layout(location = 2) in mat4 instanceWorld;
+layout(location = 6) in vec4 instanceColor;
+uniform bool instanced;
+flat out vec4 vertexInstanceColor;
+uniform mat4 world;
+uniform mat4 viewProjection;
+out vec2 vertexUv;
+void main() {
+        mat4 objectWorld = instanced ? instanceWorld : world;
+    gl_Position = viewProjection * objectWorld * vec4(inPosition, 1.0);
+    vertexInstanceColor = instanceColor;
+    vertexUv = inUv;
+}
+)GLSL";
+    static constexpr const char* fragmentSource = R"GLSL(#version 330 core
+in vec2 vertexUv;
+flat in vec4 vertexInstanceColor;
+uniform bool instanced;
+uniform vec4 effectiveColor;
+uniform sampler2D baseTexture;
+uniform bool useTexture;
+uniform bool useTextureAlpha;
+out vec4 outColor;
+void main() {
+    vec4 sampled = useTexture ? texture(baseTexture, vertexUv) : vec4(1.0);
+    float sampledAlpha = useTextureAlpha ? sampled.a : 1.0;
+    vec4 color = instanced ? vertexInstanceColor : effectiveColor;
+    outColor = vec4(color.rgb * sampled.rgb, color.a * sampledAlpha);
+}
+)GLSL";
+
+    auto vertex = compileShader(GL_VERTEX_SHADER, vertexSource, "vertex");
+    if (!vertex) {
+        return core::unexpected(std::move(vertex.error()));
+    }
+    auto fragment = compileShader(GL_FRAGMENT_SHADER, fragmentSource, "fragment");
+    if (!fragment) {
+        glDeleteShader(*vertex);
+        return core::unexpected(std::move(fragment.error()));
+    }
+
+    const GLuint program = glCreateProgram();
+    if (program == 0) {
+        glDeleteShader(*fragment);
+        glDeleteShader(*vertex);
+        return core::unexpected(core::Error{"render.opengl.presentation.program_create_failed",
+                                            "OpenGL could not create the presentation program"});
+    }
+    glAttachShader(program, *vertex);
+    glAttachShader(program, *fragment);
+    glLinkProgram(program);
+    glDeleteShader(*fragment);
+    glDeleteShader(*vertex);
+
+    GLint linked = GL_FALSE;
+    glGetProgramiv(program, GL_LINK_STATUS, &linked);
+    if (linked != GL_TRUE) {
+        auto error =
+            core::Error{"render.opengl.presentation.program_link_failed", programLog(program)};
+        glDeleteProgram(program);
+        return core::unexpected(std::move(error));
+    }
+
+    detail::PresentationPipeline pipeline;
+    pipeline.program = detail::UniqueProgram{program};
+    pipeline.worldLocation = glGetUniformLocation(program, "world");
+    pipeline.viewProjectionLocation = glGetUniformLocation(program, "viewProjection");
+    pipeline.effectiveColorLocation = glGetUniformLocation(program, "effectiveColor");
+    pipeline.useTextureLocation = glGetUniformLocation(program, "useTexture");
+    pipeline.useTextureAlphaLocation = glGetUniformLocation(program, "useTextureAlpha");
+    pipeline.textureLocation = glGetUniformLocation(program, "baseTexture");
+    if (pipeline.worldLocation < 0 || pipeline.viewProjectionLocation < 0 ||
+        pipeline.effectiveColorLocation < 0 || pipeline.useTextureLocation < 0 ||
+        pipeline.useTextureAlphaLocation < 0 || pipeline.textureLocation < 0) {
+        return core::unexpected(
+            core::Error{"render.opengl.presentation.uniform_missing",
+                        "The presentation program does not expose all required uniforms"});
+    }
+    return pipeline;
+}
+
+[[nodiscard]] auto validationError(const playback::PresentationValidationResult& validation)
+    -> core::Error {
+    auto error = core::Error{"render.opengl.presentation.capability_failed",
+                             "OpenGL presentation capability validation failed"};
+    if (!validation.diagnostics.items().empty()) {
+        const auto& diagnostic = validation.diagnostics.items().front();
+        error.withContext("diagnostic_code", std::string{diagnostic.code()})
+            .withContext("diagnostic_message", std::string{diagnostic.message()});
+    }
+    return error;
+}
+
+[[nodiscard]] auto uploadMesh(const playback::PortableResource& resource)
+    -> core::Result<detail::GpuMesh> {
+    const auto* mesh = std::get_if<playback::PortableMesh>(&resource.value);
+    if (mesh == nullptr) {
+        return core::unexpected(resourceError("render.opengl.presentation.resource_type_invalid",
+                                              "Mesh resource has an incompatible portable value",
+                                              &resource.reference));
+    }
+    const std::size_t vertexCount = mesh->positions.size() / 3U;
+    std::vector<PresentationVertex> vertices;
+    vertices.reserve(vertexCount);
+    for (std::size_t index = 0; index < vertexCount; ++index) {
+        const std::size_t positionOffset = index * 3U;
+        const std::size_t uvOffset = index * 2U;
+        vertices.push_back(PresentationVertex{
+            mesh->positions[positionOffset], mesh->positions[positionOffset + 1U],
+            mesh->positions[positionOffset + 2U], mesh->uv0.empty() ? 0.0F : mesh->uv0[uvOffset],
+            mesh->uv0.empty() ? 0.0F : mesh->uv0[uvOffset + 1U]});
+    }
+
+    detail::GpuMesh uploaded;
+    uploaded.reference = resource.reference;
+    if (auto cached = cacheMeshBounds(resource, *mesh, uploaded, nullptr); !cached) {
+        return core::unexpected(std::move(cached.error()));
+    }
+
+    GLuint vertexArray = 0;
+    GLuint vertexBuffer = 0;
+    GLuint indexBuffer = 0;
+    clearGlErrors();
+    glGenVertexArrays(1, &vertexArray);
+    glGenBuffers(1, &vertexBuffer);
+    glGenBuffers(1, &indexBuffer);
+    uploaded.vertexArray = detail::UniqueVertexArray{vertexArray};
+    uploaded.vertexBuffer = detail::UniqueBuffer{vertexBuffer};
+    uploaded.indexBuffer = detail::UniqueBuffer{indexBuffer};
+    if (vertexArray == 0 || vertexBuffer == 0 || indexBuffer == 0) {
+        return core::unexpected(resourceError("render.opengl.presentation.mesh_create_failed",
+                                              "OpenGL could not create Mesh objects",
+                                              &resource.reference));
+    }
+
+    glBindVertexArray(vertexArray);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    test_only::GpuStorage::charge(1, vertexBuffer, vertices.size() * sizeof(PresentationVertex));
+    glBufferData(GL_ARRAY_BUFFER,
+                 static_cast<GLsizeiptr>(vertices.size() * sizeof(PresentationVertex)),
+                 vertices.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(PresentationVertex),
+                          reinterpret_cast<const void*>(offsetof(PresentationVertex, x)));
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(PresentationVertex),
+                          reinterpret_cast<const void*>(offsetof(PresentationVertex, u)));
+    glEnableVertexAttribArray(1);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+    test_only::GpuStorage::charge(1, indexBuffer, mesh->indices.size() * sizeof(std::uint32_t));
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                 static_cast<GLsizeiptr>(mesh->indices.size() * sizeof(std::uint32_t)),
+                 mesh->indices.data(), GL_STATIC_DRAW);
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    if (auto checked = checkGl("render.opengl.presentation.mesh_upload_failed",
+                               "OpenGL rejected Mesh upload", &resource.reference);
+        !checked) {
+        return core::unexpected(std::move(checked.error()));
+    }
+    uploaded.indexCount = static_cast<GLsizei>(mesh->indices.size());
+    return uploaded;
+}
+
+[[nodiscard]] auto uploadTexture(const playback::PortableResource& resource)
+    -> core::Result<detail::GpuTexture> {
+    const auto* texture = std::get_if<playback::PortableTexture2D>(&resource.value);
+    if (texture == nullptr) {
+        return core::unexpected(resourceError(
+            "render.opengl.presentation.resource_type_invalid",
+            "Texture2D resource has an incompatible portable value", &resource.reference));
+    }
+    GLuint textureName = 0;
+    clearGlErrors();
+    glGenTextures(1, &textureName);
+    detail::GpuTexture uploaded;
+    uploaded.reference = resource.reference;
+    uploaded.texture = detail::UniqueTexture{textureName};
+    if (textureName == 0) {
+        return core::unexpected(resourceError("render.opengl.presentation.texture_create_failed",
+                                              "OpenGL could not create Texture2D object",
+                                              &resource.reference));
+    }
+    glBindTexture(GL_TEXTURE_2D, textureName);
+    test_only::GpuStorage::charge(2, textureName, texture->pixelsRgba8.size());
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    const GLint internalFormat =
+        texture->colorSpace == playback::PresentationColorSpace::Srgb ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, static_cast<GLsizei>(texture->width),
+                 static_cast<GLsizei>(texture->height), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                 texture->pixelsRgba8.data());
+    glBindTexture(GL_TEXTURE_2D, 0);
+    if (auto checked = checkGl("render.opengl.presentation.texture_upload_failed",
+                               "OpenGL rejected Texture2D upload", &resource.reference);
+        !checked) {
+        return core::unexpected(std::move(checked.error()));
+    }
+    return uploaded;
+}
+
+[[nodiscard]] auto copyMaterial(const playback::PortableResource& resource)
+    -> core::Result<detail::GpuMaterial> {
+    const auto* material = std::get_if<playback::PortableUnlitMaterial>(&resource.value);
+    if (material == nullptr) {
+        return core::unexpected(resourceError(
+            "render.opengl.presentation.resource_type_invalid",
+            "Unlit Material resource has an incompatible portable value", &resource.reference));
+    }
+    detail::GpuMaterial uploaded;
+    uploaded.reference = resource.reference;
+    uploaded.material = *material;
+    return uploaded;
+}
+
+[[nodiscard]] auto copyParameterizedMaterial(const playback::PortableResource& resource)
+    -> core::Result<detail::GpuMaterial> {
+    const auto* material = std::get_if<playback::PortableParameterizedMaterial>(&resource.value);
+    if (material == nullptr) {
+        return core::unexpected(
+            resourceError("render.opengl.presentation.resource_type_invalid",
+                          "Parameterized Material resource has an incompatible portable value",
+                          &resource.reference));
+    }
+    detail::GpuMaterial uploaded;
+    uploaded.reference = resource.reference;
+    uploaded.material.baseColor[0] = 1.0F;
+    uploaded.material.baseColor[1] = 1.0F;
+    uploaded.material.baseColor[2] = 1.0F;
+    uploaded.material.baseColor[3] = 1.0F;
+    uploaded.material.alphaMode = material->alphaMode;
+    uploaded.material.doubleSided = material->doubleSided;
+    uploaded.parameterized = true;
+    uploaded.parameterizedMaterial = *material;
+    return uploaded;
+}
+
+[[nodiscard]] auto linkGlsl330Program(const char* vertexSource, const char* fragmentSource,
+                                      const playback::PresentationResourceRef* reference)
+    -> core::Result<GLuint> {
+    auto vertex = compileShader(GL_VERTEX_SHADER, vertexSource, "vertex");
+    if (!vertex) {
+        return core::unexpected(std::move(vertex.error()));
+    }
+    auto fragment = compileShader(GL_FRAGMENT_SHADER, fragmentSource, "fragment");
+    if (!fragment) {
+        glDeleteShader(*vertex);
+        return core::unexpected(std::move(fragment.error()));
+    }
+    const GLuint program = glCreateProgram();
+    if (program == 0) {
+        glDeleteShader(*fragment);
+        glDeleteShader(*vertex);
+        return core::unexpected(resourceError("render.opengl.presentation.program_create_failed",
+                                              "OpenGL could not create a parameterized program",
+                                              reference));
+    }
+    glAttachShader(program, *vertex);
+    glAttachShader(program, *fragment);
+    glLinkProgram(program);
+    glDeleteShader(*fragment);
+    glDeleteShader(*vertex);
+    GLint linked = GL_FALSE;
+    glGetProgramiv(program, GL_LINK_STATUS, &linked);
+    if (linked != GL_TRUE) {
+        auto error = resourceError("render.opengl.presentation.program_link_failed",
+                                   programLog(program), reference);
+        glDeleteProgram(program);
+        return core::unexpected(std::move(error));
+    }
+    return program;
+}
+
+#ifdef CUEXIS_HAS_SHADER_TOOLS
+[[nodiscard]] auto compileParameterizedArtifact(const playback::PortableShader& shader,
+                                                std::span<const std::string> selectedKeywords)
+    -> core::Result<shader::ShaderCompileArtifact> {
+    std::vector<std::string_view> declaredKeywords;
+    declaredKeywords.reserve(shader.variantKeywords.size());
+    for (const auto& keyword : shader.variantKeywords) {
+        declaredKeywords.emplace_back(keyword);
+    }
+    std::vector<std::string_view> selectedViews;
+    selectedViews.reserve(selectedKeywords.size());
+    for (const auto& keyword : selectedKeywords) {
+        selectedViews.emplace_back(keyword);
+    }
+    std::vector<shader::ShaderDeclaredBinding> bindings;
+    bindings.reserve(shader.bindings.size());
+    for (const auto& binding : shader.bindings) {
+        bindings.push_back(shader::ShaderDeclaredBinding{
+            .set = binding.set,
+            .binding = binding.binding,
+            .type = static_cast<shader::ShaderParameterType>(binding.type),
+            .name = binding.name,
+        });
+    }
+    std::vector<shader::ShaderDeclaredParameter> parameters;
+    parameters.reserve(shader.parameters.size());
+    for (const auto& parameter : shader.parameters) {
+        parameters.push_back(shader::ShaderDeclaredParameter{
+            .name = parameter.name,
+            .type = static_cast<shader::ShaderParameterType>(parameter.type),
+            .set = parameter.set,
+            .binding = parameter.binding,
+        });
+    }
+    return shader::ShaderCompiler::compile(shader::ShaderCompileRequest{
+        .vertexSource = shader.vertexSource,
+        .fragmentSource = shader.fragmentSource,
+        .vertexEntry = shader.vertexEntry,
+        .fragmentEntry = shader.fragmentEntry,
+        .declaredKeywords = declaredKeywords,
+        .selectedKeywords = selectedViews,
+        .declaredBindings = bindings,
+        .declaredParameters = parameters,
+    });
+}
+#endif
+
+[[nodiscard]] auto
+uploadParameterizedProgram(const playback::PortableResource& shaderResource,
+                           const playback::PortableParameterizedMaterial& material,
+                           const std::filesystem::path& cacheDirectory, bool compileEnabled)
+    -> core::Result<detail::GpuParameterizedProgram> {
+    const auto* shader = std::get_if<playback::PortableShader>(&shaderResource.value);
+    if (shader == nullptr) {
+        return core::unexpected(resourceError("render.opengl.presentation.resource_type_invalid",
+                                              "Shader resource has an incompatible portable value",
+                                              &shaderResource.reference));
+    }
+
+    std::vector<std::string_view> selectedViews;
+    selectedViews.reserve(material.selectedKeywords.size());
+    for (const auto& keyword : material.selectedKeywords) {
+        selectedViews.emplace_back(keyword);
+    }
+    const auto targets = shader::defaultTargetProfiles();
+    shader::ShaderCacheKeyInput keyInput{
+        .sourceIdentity = shaderResource.reference.identity.sha256,
+        .targetProfiles = targets,
+        .selectedKeywords = selectedViews,
+        .vertexEntry = shader->vertexEntry,
+        .fragmentEntry = shader->fragmentEntry,
+    };
+
+#ifdef CUEXIS_HAS_SHADER_TOOLS
+    std::optional<shader::ShaderPipelineCache> pipeline;
+    std::optional<shader::ShaderCacheRecord> ownedRecord;
+    const shader::ShaderCacheRecord* record = nullptr;
+    if (!cacheDirectory.empty()) {
+        std::vector<std::string_view> declaredKeywords;
+        declaredKeywords.reserve(shader->variantKeywords.size());
+        for (const auto& keyword : shader->variantKeywords) {
+            declaredKeywords.emplace_back(keyword);
+        }
+        std::vector<shader::ShaderDeclaredBinding> declaredBindings;
+        declaredBindings.reserve(shader->bindings.size());
+        for (const auto& binding : shader->bindings) {
+            declaredBindings.push_back(shader::ShaderDeclaredBinding{
+                .set = binding.set,
+                .binding = binding.binding,
+                .type = static_cast<shader::ShaderParameterType>(binding.type),
+                .name = binding.name,
+            });
+        }
+        std::vector<shader::ShaderDeclaredParameter> parameters;
+        parameters.reserve(shader->parameters.size());
+        for (const auto& parameter : shader->parameters) {
+            parameters.push_back(shader::ShaderDeclaredParameter{
+                .name = parameter.name,
+                .type = static_cast<shader::ShaderParameterType>(parameter.type),
+                .set = parameter.set,
+                .binding = parameter.binding,
+            });
+        }
+        const shader::ShaderCompileRequest compileRequest{
+            .vertexSource = shader->vertexSource,
+            .fragmentSource = shader->fragmentSource,
+            .vertexEntry = shader->vertexEntry,
+            .fragmentEntry = shader->fragmentEntry,
+            .declaredKeywords = declaredKeywords,
+            .selectedKeywords = selectedViews,
+            .declaredBindings = declaredBindings,
+            .declaredParameters = parameters,
+        };
+        pipeline.emplace(cacheDirectory);
+        auto prepared = pipeline->prepareCandidate(compileRequest, keyInput, compileEnabled);
+        if (!prepared) {
+            auto error = std::move(prepared.error());
+            error.withContext("asset_id", shaderResource.reference.assetId)
+                .withContext("resource_type", "shader");
+            return core::unexpected(std::move(error));
+        }
+        record = pipeline->candidate();
+    } else if (compileEnabled) {
+        auto compiled = compileParameterizedArtifact(*shader, material.selectedKeywords);
+        if (!compiled) {
+            return core::unexpected(std::move(compiled.error()));
+        }
+        ownedRecord.emplace();
+        ownedRecord->sourceIdentity = shaderResource.reference.identity.sha256;
+        ownedRecord->vertexEntry = shader->vertexEntry;
+        ownedRecord->fragmentEntry = shader->fragmentEntry;
+        ownedRecord->selectedKeywords = material.selectedKeywords;
+        ownedRecord->artifact = std::move(*compiled);
+        record = &*ownedRecord;
+    }
+    if (record == nullptr) {
+        return core::unexpected(resourceError(
+            std::string{shader::diagnosticCacheMissing},
+            "Parameterized OpenGL prepare requires a CXSCCH01 cache or opt-in compile",
+            &shaderResource.reference));
+    }
+#else
+    std::optional<shader::ShaderCacheRecord> ownedRecord;
+    if (!cacheDirectory.empty()) {
+        shader::ShaderCacheStore store{cacheDirectory};
+        auto loaded = store.load(keyInput);
+        if (!loaded) {
+            return core::unexpected(std::move(loaded.error()));
+        }
+        ownedRecord = std::move(*loaded);
+    }
+    if (!ownedRecord) {
+        (void)compileEnabled;
+        return core::unexpected(resourceError(
+            std::string{shader::diagnosticCacheMissing},
+            "Parameterized OpenGL prepare requires a CXSCCH01 cache", &shaderResource.reference));
+    }
+    const auto* record = &*ownedRecord;
+#endif
+
+    auto linked =
+        linkGlsl330Program(record->artifact.vertexGlsl330.c_str(),
+                           record->artifact.fragmentGlsl330.c_str(), &shaderResource.reference);
+    if (!linked) {
+        return core::unexpected(std::move(linked.error()));
+    }
+
+    detail::GpuParameterizedProgram uploaded;
+    uploaded.shaderReference = shaderResource.reference;
+    uploaded.selectedKeywords = material.selectedKeywords;
+    uploaded.program = detail::UniqueProgram{*linked};
+    uploaded.reflection = record->artifact.reflection;
+
+    const GLuint blockIndex = glGetUniformBlockIndex(*linked, "CuexisObject");
+    if (blockIndex == GL_INVALID_INDEX) {
+        return core::unexpected(resourceError("render.opengl.presentation.uniform_missing",
+                                              "Parameterized program is missing CuexisObject",
+                                              &shaderResource.reference));
+    }
+    glUniformBlockBinding(*linked, blockIndex, 0);
+
+    GLuint ubo = 0;
+    glGenBuffers(1, &ubo);
+    uploaded.cuexisObject = detail::UniqueBuffer{ubo};
+    if (ubo == 0) {
+        return core::unexpected(resourceError("render.opengl.presentation.ubo_create_failed",
+                                              "OpenGL could not create the CuexisObject UBO",
+                                              &shaderResource.reference));
+    }
+    glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+    test_only::GpuStorage::charge(1, ubo, sizeof(CuexisObjectStd140));
+    glBufferData(GL_UNIFORM_BUFFER, static_cast<GLsizeiptr>(sizeof(CuexisObjectStd140)), nullptr,
+                 GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    uploaded.numericUniforms.reserve(uploaded.reflection.parameters.size());
+    for (const auto& parameter : uploaded.reflection.parameters) {
+        if (parameter.type == shader::ShaderParameterType::Texture2D) {
+            continue;
+        }
+        detail::GpuNumericUniformBinding mapped;
+        mapped.name = parameter.name;
+        mapped.location = glGetUniformLocation(*linked, parameter.name.c_str());
+        uploaded.numericUniforms.push_back(std::move(mapped));
+    }
+
+    auto reflectionBindings = record->artifact.reflection.bindings;
+    std::sort(reflectionBindings.begin(), reflectionBindings.end(),
+              [](const auto& left, const auto& right) {
+                  return std::tie(left.set, left.binding, left.name) <
+                         std::tie(right.set, right.binding, right.name);
+              });
+    GLint textureUnit = 0;
+    uploaded.textures.reserve(reflectionBindings.size());
+    glUseProgram(*linked);
+    for (const auto& binding : reflectionBindings) {
+        if (binding.set == 0 && binding.binding == 0) {
+            continue;
+        }
+        if (binding.type != shader::ShaderParameterType::Texture2D) {
+            continue;
+        }
+        if (uploaded.textures.size() >= playback::presentationMaxTextureBindings) {
+            glUseProgram(0);
+            return core::unexpected(
+                resourceError("render.opengl.presentation.texture_binding_limit",
+                              "Parameterized program exceeds the Built-in texture binding limit",
+                              &shaderResource.reference));
+        }
+        detail::GpuTextureBinding mapped;
+        mapped.set = binding.set;
+        mapped.binding = binding.binding;
+        mapped.name = binding.name;
+        mapped.textureUnit = textureUnit;
+        mapped.location = glGetUniformLocation(*linked, binding.name.c_str());
+        if (mapped.location >= 0) {
+            glUniform1i(mapped.location, textureUnit);
+        }
+        uploaded.textures.push_back(std::move(mapped));
+        ++textureUnit;
+    }
+    glUseProgram(0);
+    if (auto checked =
+            checkGl("render.opengl.presentation.shader_upload_failed",
+                    "OpenGL rejected parameterized program setup", &shaderResource.reference);
+        !checked) {
+        return core::unexpected(std::move(checked.error()));
+    }
+    return uploaded;
+}
+
+template <typename Resource>
+[[nodiscard]] auto findGpuResource(const std::vector<Resource>& resources,
+                                   const playback::PresentationResourceRef& reference) noexcept
+    -> const Resource* {
+    const auto found = std::lower_bound(
+        resources.begin(), resources.end(), reference,
+        [](const Resource& resource, const playback::PresentationResourceRef& candidate) {
+            return referenceKey(resource.reference) < referenceKey(candidate);
+        });
+    return found != resources.end() && found->reference == reference ? &*found : nullptr;
+}
+
+[[nodiscard]] auto cacheMeshBounds(const playback::PortableResource& resource,
+                                   const playback::PortableMesh& mesh, detail::GpuMesh& uploaded,
+                                   detail::BoundsProbeStats* stats) -> core::Result<void> {
+    if (stats != nullptr) {
+        ++stats->meshBoundsParses;
+    }
+    for (std::size_t component = 0; component < 3; ++component) {
+        if (!std::isfinite(mesh.boundsMin[component]) ||
+            !std::isfinite(mesh.boundsMax[component])) {
+            return core::unexpected(nonFiniteError({}, "mesh_bounds")
+                                        .withContext("asset_id", resource.reference.assetId));
+        }
+        uploaded.boundsMin[component] = mesh.boundsMin[component];
+        uploaded.boundsMax[component] = mesh.boundsMax[component];
+    }
+    uploaded.boundsCenter[0] =
+        (static_cast<double>(mesh.boundsMin[0]) + static_cast<double>(mesh.boundsMax[0])) / 2.0;
+    uploaded.boundsCenter[1] =
+        (static_cast<double>(mesh.boundsMin[1]) + static_cast<double>(mesh.boundsMax[1])) / 2.0;
+    uploaded.boundsCenter[2] =
+        (static_cast<double>(mesh.boundsMin[2]) + static_cast<double>(mesh.boundsMax[2])) / 2.0;
+    if (!std::all_of(uploaded.boundsCenter.begin(), uploaded.boundsCenter.end(),
+                     [](double value) { return std::isfinite(value); })) {
+        return core::unexpected(
+            nonFiniteError({}, "mesh_bounds").withContext("asset_id", resource.reference.assetId));
+    }
+    return {};
+}
+
+[[nodiscard]] auto multiplyMatrices(const std::array<float, 16>& left,
+                                    const std::array<float, 16>& right) noexcept
+    -> std::array<float, 16> {
+    std::array<float, 16> result{};
+    for (std::size_t column = 0; column < 4; ++column) {
+        for (std::size_t row = 0; row < 4; ++row) {
+            double value = 0.0;
+            for (std::size_t index = 0; index < 4; ++index) {
+                value += static_cast<double>(left[index * 4 + row]) *
+                         static_cast<double>(right[column * 4 + index]);
+            }
+            result[column * 4 + row] = static_cast<float>(value);
+        }
+    }
+    return result;
+}
+
+// Resolves the GL handles a neutral draw command needs. The neutral builder already validated that
+// every reference is backed by the active set, so a miss here is an internal inconsistency rather
+// than a caller error.
+[[nodiscard]] auto resolveGpuDraw(const presentation_renderer::DrawCommand& command,
+                                  const detail::PresentationResourceSet& resources,
+                                  PreparedDraw& draw) -> core::Result<void> {
+    draw.command = command;
+    draw.mesh = findGpuResource(resources.meshes, command.mesh);
+    draw.material = findGpuResource(resources.materials, command.material);
+    if (draw.mesh == nullptr || draw.material == nullptr) {
+        return core::unexpected(
+            frameError("Snapshot ref is not backed by the active OpenGL cache", command.objectId,
+                       draw.mesh == nullptr ? &command.mesh : &command.material));
+    }
+    draw.texture = nullptr;
+    draw.program = nullptr;
+    draw.parameterizedTextures = {};
+    if (draw.material->parameterized) {
+        if (draw.material->programIndex >= resources.programs.size()) {
+            return core::unexpected(
+                frameError("Parameterized material is missing a compiled program", command.objectId,
+                           &command.material));
+        }
+        draw.program = &resources.programs[draw.material->programIndex];
+        for (std::size_t index = 0; index < draw.program->textures.size(); ++index) {
+            const auto& binding = draw.program->textures[index];
+            const auto parameter =
+                std::find_if(draw.material->parameterizedMaterial.parameters.begin(),
+                             draw.material->parameterizedMaterial.parameters.end(),
+                             [&](const playback::ShaderParameterValue& candidate) {
+                                 return candidate.name == binding.name &&
+                                        candidate.type == playback::ShaderParameterType::Texture2D;
+                             });
+            if (parameter == draw.material->parameterizedMaterial.parameters.end() ||
+                !parameter->texture) {
+                return core::unexpected(
+                    frameError("Parameterized texture binding is not supplied by the material",
+                               command.objectId, &command.material));
+            }
+            const auto* bound = findGpuResource(resources.textures, *parameter->texture);
+            if (bound == nullptr) {
+                return core::unexpected(
+                    frameError("Material texture ref is not backed by the active OpenGL cache",
+                               command.objectId, &*parameter->texture));
+            }
+            draw.parameterizedTextures[index] = bound;
+        }
+    } else if (draw.material->material.baseColorTexture) {
+        draw.texture =
+            findGpuResource(resources.textures, *draw.material->material.baseColorTexture);
+        if (draw.texture == nullptr) {
+            return core::unexpected(
+                frameError("Material texture ref is not backed by the active OpenGL cache",
+                           command.objectId, &*draw.material->material.baseColorTexture));
+        }
+    }
+    return {};
+}
+
+void applyPassState(bool transparent) noexcept {
+    if (transparent) {
+        glEnable(GL_BLEND);
+        glBlendEquation(GL_FUNC_ADD);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDepthMask(GL_FALSE);
+    } else {
+        glDisable(GL_BLEND);
+        glDepthMask(GL_TRUE);
+    }
+}
+
+void drawUnlitCommands(const detail::PresentationPipeline& pipeline,
+                       const std::array<float, 16>& viewProjection,
+                       std::span<const PreparedDraw> draws, bool transparent) {
+    glUseProgram(pipeline.program.value);
+    glUniformMatrix4fv(pipeline.viewProjectionLocation, 1, GL_FALSE, viewProjection.data());
+    glUniform1i(pipeline.textureLocation, 0);
+    // Prototype: only adjacent opaque draws with identical raster/mesh/texture state
+    // are instanced. Transparent and parameterized draws retain their existing path.
+    // No shared definitions or installed headers change in this isolated experiment.
+    struct Instance final {
+        std::array<float, 16> world;
+        std::array<float, 4> color;
+    };
+    static_assert(sizeof(Instance) == 80);
+    const auto instanceLocation = glGetUniformLocation(pipeline.program.value, "instanced");
+    glUniform1i(instanceLocation, 0);
+    detail::UniqueBuffer instanceBuffer;
+    std::vector<Instance> instances;
+    for (std::size_t index = 0; index < draws.size();) {
+        const auto& draw = draws[index];
+        if (draw.program != nullptr) {
+            ++index;
+            continue;
+        }
+        std::size_t end = index + 1;
+        if (!transparent) {
+            while (end < draws.size()) {
+                const auto& next = draws[end];
+                if (next.program != nullptr || next.mesh != draw.mesh ||
+                    next.texture != draw.texture ||
+                    next.command.backFaceCulling != draw.command.backFaceCulling ||
+                    next.material->material.alphaMode != draw.material->material.alphaMode) {
+                    break;
+                }
+                ++end;
+            }
+        }
+        if (end - index >= 2) {
+            instances.clear();
+            instances.reserve(end - index);
+            for (std::size_t item = index; item < end; ++item) {
+                const auto& command = draws[item].command;
+                instances.push_back({command.worldMatrix,
+                    {static_cast<float>(command.effectiveColor[0]),
+                     static_cast<float>(command.effectiveColor[1]),
+                     static_cast<float>(command.effectiveColor[2]),
+                     static_cast<float>(command.effectiveColor[3])}});
+            }
+            if (!instanceBuffer.value) {
+                GLuint value = 0;
+                glGenBuffers(1, &value);
+                instanceBuffer = detail::UniqueBuffer{value};
+            }
+            glBindBuffer(GL_ARRAY_BUFFER, instanceBuffer.value);
+            test_only::GpuStorage::charge(1, instanceBuffer.value, instances.size() * sizeof(Instance));
+            glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(instances.size() * sizeof(Instance)),
+                         instances.data(), GL_STREAM_DRAW);
+            if (draw.command.backFaceCulling) glEnable(GL_CULL_FACE);
+            else glDisable(GL_CULL_FACE);
+            glUniform1i(pipeline.useTextureLocation, draw.texture != nullptr ? 1 : 0);
+            glUniform1i(pipeline.useTextureAlphaLocation, 0);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, draw.texture ? draw.texture->texture.value : 0);
+            glBindVertexArray(draw.mesh->vertexArray.value);
+            for (GLuint column = 0; column < 4; ++column) {
+                glEnableVertexAttribArray(2 + column);
+                glVertexAttribPointer(2 + column, 4, GL_FLOAT, GL_FALSE, sizeof(Instance),
+                    reinterpret_cast<const void*>(static_cast<std::uintptr_t>(column * 4 * sizeof(float))));
+                glVertexAttribDivisor(2 + column, 1);
+            }
+            glEnableVertexAttribArray(6);
+            glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Instance),
+                                  reinterpret_cast<const void*>(offsetof(Instance, color)));
+            glVertexAttribDivisor(6, 1);
+            glUniform1i(instanceLocation, 1);
+            glDrawElementsInstanced(GL_TRIANGLES, draw.mesh->indexCount, GL_UNSIGNED_INT, nullptr,
+                                   static_cast<GLsizei>(instances.size()));
+            glUniform1i(instanceLocation, 0);
+            for (GLuint attribute = 2; attribute <= 6; ++attribute) {
+                glDisableVertexAttribArray(attribute);
+                glVertexAttribDivisor(attribute, 0);
+            }
+            // Detach the temporary instance buffer from this mesh VAO before deleting it.
+            // Disabling an attribute alone would keep its buffer alive through the VAO.
+            glBindBuffer(GL_ARRAY_BUFFER, draw.mesh->vertexBuffer.value);
+            for (GLuint attribute = 2; attribute <= 6; ++attribute) {
+                glVertexAttribPointer(attribute, 4, GL_FLOAT, GL_FALSE, sizeof(PresentationVertex), nullptr);
+            }
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            index = end;
+            continue;
+        }
+        if (draw.command.backFaceCulling) {
+            glEnable(GL_CULL_FACE);
+        } else {
+            glDisable(GL_CULL_FACE);
+        }
+        glUniformMatrix4fv(pipeline.worldLocation, 1, GL_FALSE, draw.command.worldMatrix.data());
+        glUniform4f(pipeline.effectiveColorLocation,
+                    static_cast<float>(draw.command.effectiveColor[0]),
+                    static_cast<float>(draw.command.effectiveColor[1]),
+                    static_cast<float>(draw.command.effectiveColor[2]),
+                    static_cast<float>(draw.command.effectiveColor[3]));
+        glUniform1i(pipeline.useTextureLocation, draw.texture != nullptr ? 1 : 0);
+        glUniform1i(pipeline.useTextureAlphaLocation,
+                    draw.texture != nullptr && draw.material->material.alphaMode ==
+                                                   playback::PresentationAlphaMode::Blend
+                        ? 1
+                        : 0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, draw.texture != nullptr ? draw.texture->texture.value : 0);
+        glBindVertexArray(draw.mesh->vertexArray.value);
+        glDrawElements(GL_TRIANGLES, draw.mesh->indexCount, GL_UNSIGNED_INT, nullptr);
+        ++index;
+    }
+}
+
+void setNumericUniform(GLint location, const playback::ShaderParameterValue& parameter) noexcept {
+    if (location < 0) {
+        return;
+    }
+    switch (parameter.type) {
+    case playback::ShaderParameterType::Float:
+        glUniform1f(location, parameter.numeric[0]);
+        break;
+    case playback::ShaderParameterType::Vec2:
+        glUniform2f(location, parameter.numeric[0], parameter.numeric[1]);
+        break;
+    case playback::ShaderParameterType::Vec3:
+        glUniform3f(location, parameter.numeric[0], parameter.numeric[1], parameter.numeric[2]);
+        break;
+    case playback::ShaderParameterType::Vec4:
+        glUniform4f(location, parameter.numeric[0], parameter.numeric[1], parameter.numeric[2],
+                    parameter.numeric[3]);
+        break;
+    case playback::ShaderParameterType::Int:
+        glUniform1i(location, parameter.integer);
+        break;
+    case playback::ShaderParameterType::Bool:
+        glUniform1i(location, parameter.boolean ? 1 : 0);
+        break;
+    case playback::ShaderParameterType::Texture2D:
+        break;
+    }
+}
+
+void drawParameterizedCommands(const std::array<float, 16>& viewProjection,
+                               std::span<const PreparedDraw> draws) noexcept {
+    for (const auto& draw : draws) {
+        if (draw.program == nullptr) {
+            continue;
+        }
+        if (draw.command.backFaceCulling) {
+            glEnable(GL_CULL_FACE);
+        } else {
+            glDisable(GL_CULL_FACE);
+        }
+        glUseProgram(draw.program->program.value);
+        CuexisObjectStd140 object{};
+        std::memcpy(object.world, draw.command.worldMatrix.data(), sizeof(object.world));
+        std::memcpy(object.viewProjection, viewProjection.data(), sizeof(object.viewProjection));
+        object.tint[0] = static_cast<float>(draw.command.effectiveColor[0]);
+        object.tint[1] = static_cast<float>(draw.command.effectiveColor[1]);
+        object.tint[2] = static_cast<float>(draw.command.effectiveColor[2]);
+        object.opacity = static_cast<float>(draw.command.effectiveColor[3]);
+        glBindBuffer(GL_UNIFORM_BUFFER, draw.program->cuexisObject.value);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, static_cast<GLsizeiptr>(sizeof(object)), &object);
+        glBindBufferBase(GL_UNIFORM_BUFFER, 0, draw.program->cuexisObject.value);
+        for (std::size_t parameterIndex = 0;
+             parameterIndex < draw.material->parameterizedMaterial.parameters.size();
+             ++parameterIndex) {
+            const auto& parameter = draw.material->parameterizedMaterial.parameters[parameterIndex];
+            if (parameter.type == playback::ShaderParameterType::Texture2D) {
+                continue;
+            }
+            if (parameterIndex < draw.material->numericUniformLocations.size()) {
+                setNumericUniform(draw.material->numericUniformLocations[parameterIndex],
+                                  parameter);
+            }
+        }
+        for (std::size_t index = 0; index < draw.program->textures.size(); ++index) {
+            const auto& binding = draw.program->textures[index];
+            const auto* texture = draw.parameterizedTextures[index];
+            glActiveTexture(GL_TEXTURE0 + binding.textureUnit);
+            glBindTexture(GL_TEXTURE_2D, texture != nullptr ? texture->texture.value : 0);
+            if (binding.location >= 0) {
+                glUniform1i(binding.location, binding.textureUnit);
+            }
+        }
+        glBindVertexArray(draw.mesh->vertexArray.value);
+        glDrawElements(GL_TRIANGLES, draw.mesh->indexCount, GL_UNSIGNED_INT, nullptr);
+    }
+}
+
+void drawPresentationCommands(const detail::PresentationPipeline& pipeline,
+                              const std::array<float, 16>& viewProjection,
+                              std::span<const PreparedDraw> draws, bool transparent) {
+    if (draws.empty()) {
+        return;
+    }
+    applyPassState(transparent);
+    drawUnlitCommands(pipeline, viewProjection, draws, transparent);
+    drawParameterizedCommands(viewProjection, draws);
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    glUseProgram(0);
+    glDepthMask(GL_TRUE);
+    glDisable(GL_BLEND);
+    glActiveTexture(GL_TEXTURE0);
+}
+
+[[nodiscard]] auto collectDebugVertices(const render::RenderScene* scene,
+                                        std::vector<DebugVertex>& vertices) -> core::Result<void> {
+    if (scene == nullptr) {
+        return {};
+    }
+    if (scene->size() > render::RenderScene::maxCommandCount) {
+        return core::unexpected(core::Error{"render.opengl.command_limit_exceeded",
+                                            "RenderScene command limit was exceeded"});
+    }
+    vertices.reserve(scene->size() * 2U);
+    for (const auto& command : scene->commands()) {
+        if (command.type != render::RenderCommandType::DebugLine ||
+            !core::isFinite(command.start) || !core::isFinite(command.end) ||
+            !render::isValidColor(command.color)) {
+            return core::unexpected(core::Error{"render.opengl.invalid_command",
+                                                "RenderScene contains an invalid Debug command"});
+        }
+        vertices.push_back(DebugVertex{command.start.x, command.start.y, command.start.z,
+                                       command.color.red, command.color.green, command.color.blue,
+                                       command.color.alpha});
+        vertices.push_back(DebugVertex{command.end.x, command.end.y, command.end.z,
+                                       command.color.red, command.color.green, command.color.blue,
+                                       command.color.alpha});
+    }
+    return {};
+}
+
+} // namespace
+
+auto detail::probeBuildDraws(const playback::FrameSnapshot& snapshot,
+                             const playback::PresentationResourceManifest& manifest,
+                             std::span<const playback::PortableResourcePtr> resources,
+                             detail::BoundsProbeStats* stats)
+    -> core::Result<presentation_renderer::DrawSummary> {
+    detail::PresentationResourceSet set;
+    set.manifest = manifest;
+    set.resources.assign(resources.begin(), resources.end());
+    set.meshes.reserve(resources.size());
+    set.materials.reserve(resources.size());
+
+    for (const auto& resource : resources) {
+        if (!resource) {
+            continue;
+        }
+        if (std::holds_alternative<playback::PortableMesh>(resource->value)) {
+            detail::GpuMesh mesh;
+            mesh.reference = resource->reference;
+            const auto& portableMesh = std::get<playback::PortableMesh>(resource->value);
+            mesh.indexCount = static_cast<GLsizei>(portableMesh.indices.size());
+            if (auto cached = cacheMeshBounds(*resource, portableMesh, mesh, stats); !cached) {
+                return core::unexpected(std::move(cached.error()));
+            }
+            set.meshes.push_back(std::move(mesh));
+        }
+        if (const auto* material = std::get_if<playback::PortableUnlitMaterial>(&resource->value);
+            material != nullptr) {
+            detail::GpuMaterial materialCopy;
+            materialCopy.reference = resource->reference;
+            materialCopy.material = *material;
+            set.materials.push_back(std::move(materialCopy));
+        }
+    }
+
+    const auto byReference = [](const auto& left, const auto& right) {
+        return referenceKey(left.reference) < referenceKey(right.reference);
+    };
+    std::sort(set.meshes.begin(), set.meshes.end(), byReference);
+    std::sort(set.materials.begin(), set.materials.end(), byReference);
+
+    // Characterization seam: the real backend-neutral builder produces the summary. Only the
+    // bounds-cache statistics are adapter-specific.
+    return presentation_renderer::buildPresentationCommands(
+        snapshot, set.resources, set.manifest.entries.empty(), false, nullptr);
+}
+
+auto builtInPresentationCapabilities(std::uint32_t maxTextureDimension, bool debugPass) noexcept
+    -> playback::PresentationCapabilities {
+    playback::PresentationCapabilities capabilities{
+        .version = 2,
+        .opaquePass = true,
+        .transparentPass = true,
+        .linearTexture = true,
+        .srgbTexture = true,
+        .straightAlphaBlend = true,
+        .backFaceCulling = true,
+        .doubleSided = true,
+        .debugPass = debugPass,
+        .maxResourceBytes = 64ULL * 1024ULL * 1024ULL,
+        .maxTotalDecodedBytes = 512ULL * 1024ULL * 1024ULL,
+        .maxTextureDimension = maxTextureDimension,
+        .maxMeshVertices = 1'048'576,
+        .maxMeshIndices = 3'145'728,
+        .builtInRendererProfileVersion = 1,
+        .parameterizedMaterial = true,
+        .shaderGlsl330 = true,
+        .declaredVariants = true,
+        .maxShaderSourceBytes = playback::presentationMaxShaderSourceBytes,
+        .maxSpirvBytes = playback::presentationMaxSpirvBytes,
+        .maxVariantKeywords = playback::presentationMaxVariantKeywords,
+        .maxVariantsPerShader = playback::presentationMaxVariantsPerShader,
+        .maxMaterialParameters = playback::presentationMaxMaterialParameters,
+        .maxTextureBindings = playback::presentationMaxTextureBindings,
+    };
+#ifdef CUEXIS_HAS_SHADER_TOOLS
+    capabilities.shaderGlsl450Source = true;
+    capabilities.shaderSpirv = true;
+#endif
+    return capabilities;
+}
+
+namespace detail {
+
+UniqueBuffer::~UniqueBuffer() {
+    if (value != 0) {
+        test_only::GpuStorage::release(1, value);
+        glDeleteBuffers(1, &value);
+    }
+}
+
+UniqueBuffer::UniqueBuffer(UniqueBuffer&& other) noexcept : value(std::exchange(other.value, 0)) {}
+
+auto UniqueBuffer::operator=(UniqueBuffer&& other) noexcept -> UniqueBuffer& {
+    if (this != &other) {
+        if (value != 0) {
+            test_only::GpuStorage::release(1, value);
+            glDeleteBuffers(1, &value);
+        }
+        value = std::exchange(other.value, 0);
+    }
+    return *this;
+}
+
+UniqueVertexArray::~UniqueVertexArray() {
+    if (value != 0) {
+        glDeleteVertexArrays(1, &value);
+    }
+}
+
+UniqueVertexArray::UniqueVertexArray(UniqueVertexArray&& other) noexcept
+    : value(std::exchange(other.value, 0)) {}
+
+auto UniqueVertexArray::operator=(UniqueVertexArray&& other) noexcept -> UniqueVertexArray& {
+    if (this != &other) {
+        if (value != 0) {
+            glDeleteVertexArrays(1, &value);
+        }
+        value = std::exchange(other.value, 0);
+    }
+    return *this;
+}
+
+UniqueTexture::~UniqueTexture() {
+    if (value != 0) {
+        test_only::GpuStorage::release(2, value);
+        glDeleteTextures(1, &value);
+    }
+}
+
+UniqueTexture::UniqueTexture(UniqueTexture&& other) noexcept
+    : value(std::exchange(other.value, 0)) {}
+
+auto UniqueTexture::operator=(UniqueTexture&& other) noexcept -> UniqueTexture& {
+    if (this != &other) {
+        if (value != 0) {
+            test_only::GpuStorage::release(2, value);
+            glDeleteTextures(1, &value);
+        }
+        value = std::exchange(other.value, 0);
+    }
+    return *this;
+}
+
+UniqueProgram::~UniqueProgram() {
+    if (value != 0) {
+        glDeleteProgram(value);
+    }
+}
+
+UniqueProgram::UniqueProgram(UniqueProgram&& other) noexcept
+    : value(std::exchange(other.value, 0)) {}
+
+auto UniqueProgram::operator=(UniqueProgram&& other) noexcept -> UniqueProgram& {
+    if (this != &other) {
+        if (value != 0) {
+            glDeleteProgram(value);
+        }
+        value = std::exchange(other.value, 0);
+    }
+    return *this;
+}
+
+auto createPresentationBackendState(std::uint64_t backendToken)
+    -> core::Result<std::unique_ptr<OpenGlPresentationBackendState>> {
+    auto pipeline = createPresentationPipeline();
+    if (!pipeline) {
+        return core::unexpected(std::move(pipeline.error()));
+    }
+    try {
+        auto state = std::make_unique<OpenGlPresentationBackendState>();
+        state->pipeline = std::move(*pipeline);
+        state->backendToken = backendToken;
+        return state;
+    } catch (const std::bad_alloc&) {
+        return core::unexpected(
+            core::Error{"render.opengl.presentation.allocation_failed",
+                        "OpenGL presentation backend state allocation could not be satisfied"});
+    }
+}
+
+} // namespace detail
+
+OpenGlPresentationCandidate::OpenGlPresentationCandidate(
+    OpenGlPresentationCandidate&& other) noexcept
+    : token_(std::move(other.token_)), settings_(other.settings_),
+      backendToken_(std::exchange(other.backendToken_, 0)),
+      generation_(std::exchange(other.generation_, 0)) {}
+
+auto OpenGlPresentationCandidate::operator=(OpenGlPresentationCandidate&& other) noexcept
+    -> OpenGlPresentationCandidate& {
+    if (this != &other) {
+        token_ = std::move(other.token_);
+        settings_ = other.settings_;
+        backendToken_ = std::exchange(other.backendToken_, 0);
+        generation_ = std::exchange(other.generation_, 0);
+    }
+    return *this;
+}
+
+bool OpenGlPresentationCandidate::valid() const noexcept {
+    return backendToken_ != 0 && generation_ != 0;
+}
+
+auto OpenGlPresentationCandidate::token() const noexcept
+    -> const playback::PresentationCandidateToken& {
+    return token_;
+}
+
+auto OpenGlPresentationCandidate::settings() const noexcept
+    -> const playback::EffectivePresentationSettings& {
+    return settings_;
+}
+
+auto OpenGlBackend::preparePresentation(playback::PreparedPlayback& prepared,
+                                        const playback::PresentationRequest& request)
+    -> core::Result<OpenGlPresentationCandidate> {
+    if (auto mainThread = requireMainThread("prepare_presentation"); !mainThread)
+        return core::unexpected(std::move(mainThread.error()));
+    if (!ownerThread_.isCurrent())
+        return core::unexpected(core::Error{"render.opengl.not_main_thread",
+                                            "The OpenGL backend belongs to another thread"});
+    auto validation = prepared.validatePresentation(capabilities(), request);
+    if (!validation.hasValue())
+        return core::unexpected(validationError(validation));
+    auto input = prepared.materializePresentation(capabilities(), request, identity().instance,
+                                                  identity().generation, 1);
+    if (!input)
+        return core::unexpected(input.error());
+    return preparePresentationOwned(*input);
+}
+auto OpenGlBackend::preparePresentationOwned(const playback::PresentationCandidateInput& input)
+    -> core::Result<OpenGlPresentationCandidate> {
+    if (auto mainThread = requireMainThread("prepare_presentation"); !mainThread) {
+        return core::unexpected(std::move(mainThread.error()));
+    }
+    if (!ownerThread_.isCurrent()) {
+        return core::unexpected(core::Error{"render.opengl.not_main_thread",
+                                            "The OpenGL backend belongs to another thread"}
+                                    .withContext("operation", "prepare_presentation"));
+    }
+    if (!presentation_ || !window_.valid() || context_ == nullptr) {
+        return core::unexpected(core::Error{"render.opengl.backend_unavailable",
+                                            "The OpenGL presentation backend is unavailable"});
+    }
+    if (presentation_->pending.has_value()) {
+        return core::unexpected(
+            core::Error{"render.opengl.presentation.candidate_outstanding",
+                        "The previous OpenGL presentation candidate is still outstanding"}
+                .withContext("candidate_generation",
+                             std::to_string(presentation_->pendingGeneration)));
+    }
+    auto* nativeWindow = static_cast<SDL_Window*>(window_.nativeHandle());
+    if (nativeWindow == nullptr ||
+        !SDL_GL_MakeCurrent(nativeWindow, static_cast<SDL_GLContext>(context_))) {
+        return core::unexpected(core::Error{"render.opengl.context_current_failed", sdlError()});
+    }
+    presentation_->retired.reset();
+
+    GLint maxTextureSize = 0;
+    glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+    const auto textureLimit = static_cast<std::uint32_t>(
+        std::clamp(maxTextureSize, 0, static_cast<int>(portableMaxTextureDimension)));
+    const auto capabilities = builtInPresentationCapabilities(textureLimit, debugProgram_ != 0);
+    capabilities_ = capabilities;
+    capabilitiesReady_ = true;
+    if (input.rendererInstance != identity().instance ||
+        input.context.rendererGeneration != rendererGeneration_ ||
+        input.capabilities != capabilities ||
+        input.resources.size() != input.manifest.entries.size())
+        return core::unexpected(
+            core::Error{"host.rpa.context_stale", "Owning GPU candidate context mismatch"});
+    const auto* manifest = &input.manifest;
+    if (presentation_->nextGeneration == std::numeric_limits<std::uint64_t>::max()) {
+        return core::unexpected(
+            core::Error{"render.opengl.presentation.generation_exhausted",
+                        "OpenGL presentation candidate generation is exhausted"});
+    }
+
+    try {
+        detail::PresentationResourceSet candidate;
+        candidate.settings = input.settings;
+        candidate.manifest = *manifest;
+        candidate.token = input.token;
+        candidate.resources.reserve(manifest->entries.size());
+        candidate.meshes.reserve(manifest->entries.size());
+        candidate.textures.reserve(manifest->entries.size());
+        candidate.materials.reserve(manifest->entries.size());
+        for (std::size_t i = 0; i < input.resources.size(); ++i) {
+            const auto& entry = manifest->entries[i];
+            core::Result<playback::PortableResourcePtr> resource{input.resources[i]};
+            if (!*resource)
+                return core::unexpected(
+                    core::Error{"host.rpa.context_stale", "Missing GPU candidate resource"});
+            if ((*resource)->reference != entry.reference) {
+                return core::unexpected(
+                    resourceError("render.opengl.presentation.resource_mismatch",
+                                  "Acquired portable resource does not match its manifest entry",
+                                  &entry.reference));
+            }
+            candidate.resources.push_back(*resource);
+            switch (entry.reference.type) {
+            case playback::PresentationResourceType::Mesh: {
+                auto uploaded = uploadMesh(**resource);
+                if (!uploaded) {
+                    return core::unexpected(std::move(uploaded.error()));
+                }
+                candidate.meshes.push_back(std::move(*uploaded));
+                break;
+            }
+            case playback::PresentationResourceType::Texture2D: {
+                auto uploaded = uploadTexture(**resource);
+                if (!uploaded) {
+                    return core::unexpected(std::move(uploaded.error()));
+                }
+                candidate.textures.push_back(std::move(*uploaded));
+                break;
+            }
+            case playback::PresentationResourceType::UnlitMaterial: {
+                auto copied = copyMaterial(**resource);
+                if (!copied) {
+                    return core::unexpected(std::move(copied.error()));
+                }
+                candidate.materials.push_back(std::move(*copied));
+                break;
+            }
+            case playback::PresentationResourceType::Shader:
+                break;
+            case playback::PresentationResourceType::ParameterizedMaterial: {
+                auto copied = copyParameterizedMaterial(**resource);
+                if (!copied) {
+                    return core::unexpected(std::move(copied.error()));
+                }
+                candidate.materials.push_back(std::move(*copied));
+                break;
+            }
+            }
+        }
+
+        std::map<std::string, std::size_t> programIndexByKey;
+        for (auto& material : candidate.materials) {
+            if (!material.parameterized) {
+                continue;
+            }
+            std::string key = material.parameterizedMaterial.shader.assetId;
+            key.push_back('\0');
+            key.append(reinterpret_cast<const char*>(
+                           material.parameterizedMaterial.shader.identity.sha256.data()),
+                       material.parameterizedMaterial.shader.identity.sha256.size());
+            key.push_back('\0');
+            for (const auto& keyword : material.parameterizedMaterial.selectedKeywords) {
+                key.append(keyword);
+                key.push_back('\0');
+            }
+            const auto existing = programIndexByKey.find(key);
+            if (existing != programIndexByKey.end()) {
+                material.programIndex = existing->second;
+                const auto& cachedProgram = candidate.programs[material.programIndex];
+                material.numericUniformLocations.reserve(
+                    material.parameterizedMaterial.parameters.size());
+                for (const auto& parameter : material.parameterizedMaterial.parameters) {
+                    if (parameter.type == playback::ShaderParameterType::Texture2D) {
+                        material.numericUniformLocations.push_back(-1);
+                        continue;
+                    }
+                    const auto binding = std::find_if(
+                        cachedProgram.numericUniforms.begin(), cachedProgram.numericUniforms.end(),
+                        [&](const detail::GpuNumericUniformBinding& candidateBinding) {
+                            return candidateBinding.name == parameter.name;
+                        });
+                    material.numericUniformLocations.push_back(
+                        binding == cachedProgram.numericUniforms.end() ? -1 : binding->location);
+                }
+                continue;
+            }
+            const auto shaderResource = std::find_if(
+                candidate.resources.begin(), candidate.resources.end(),
+                [&](const playback::PortableResourcePtr& resource) {
+                    return resource && resource->reference == material.parameterizedMaterial.shader;
+                });
+            if (shaderResource == candidate.resources.end()) {
+                return core::unexpected(
+                    resourceError("render.opengl.presentation.resource_mismatch",
+                                  "Parameterized Material shader is not in the candidate",
+                                  &material.parameterizedMaterial.shader));
+            }
+            auto program = uploadParameterizedProgram(
+                **shaderResource, material.parameterizedMaterial,
+                presentation_->shaderCacheDirectory, candidate.settings.shaderCompileEnabled);
+            if (!program) {
+                return core::unexpected(std::move(program.error()));
+            }
+            material.programIndex = candidate.programs.size();
+            programIndexByKey.emplace(std::move(key), material.programIndex);
+            candidate.programs.push_back(std::move(*program));
+            const auto& cachedProgram = candidate.programs[material.programIndex];
+            material.numericUniformLocations.reserve(
+                material.parameterizedMaterial.parameters.size());
+            for (const auto& parameter : material.parameterizedMaterial.parameters) {
+                if (parameter.type == playback::ShaderParameterType::Texture2D) {
+                    material.numericUniformLocations.push_back(-1);
+                    continue;
+                }
+                const auto binding = std::find_if(
+                    cachedProgram.numericUniforms.begin(), cachedProgram.numericUniforms.end(),
+                    [&](const detail::GpuNumericUniformBinding& candidateBinding) {
+                        return candidateBinding.name == parameter.name;
+                    });
+                material.numericUniformLocations.push_back(
+                    binding == cachedProgram.numericUniforms.end() ? -1 : binding->location);
+            }
+        }
+
+        const std::uint64_t generation = ++presentation_->nextGeneration;
+        presentation_->pending = std::move(candidate);
+        presentation_->pendingGeneration = generation;
+        return OpenGlPresentationCandidate{presentation_->pending->token,
+                                           presentation_->pending->settings,
+                                           presentation_->backendToken, generation};
+    } catch (const std::bad_alloc&) {
+        return core::unexpected(
+            core::Error{"render.opengl.presentation.upload_budget_exceeded",
+                        "OpenGL presentation candidate allocation could not be satisfied"}
+                .withContext("limit", std::to_string(maxSessionBytes)));
+    } catch (const std::exception& exception) {
+        return core::unexpected(core::Error{"render.opengl.presentation.prepare_failed",
+                                            "OpenGL presentation candidate preparation failed"}
+                                    .withContext("exception", exception.what()));
+    } catch (...) {
+        return core::unexpected(core::Error{"render.opengl.presentation.prepare_failed",
+                                            "OpenGL presentation candidate preparation failed"});
+    }
+}
+
+// Activation and discard are owner-thread, single-pending-candidate operations. Contract violations
+// terminate so a stale or foreign GPU resource set cannot corrupt the active cache.
+void OpenGlBackend::activatePresentation(OpenGlPresentationCandidate&& candidate) noexcept {
+    if (!SDL_IsMainThread() || !ownerThread_.isCurrent()) {
+        std::terminate();
+    }
+    if (!presentation_ || !candidate.valid() ||
+        candidate.backendToken_ != presentation_->backendToken) {
+        return;
+    }
+    if (presentation_->pendingGeneration != candidate.generation_ ||
+        !presentation_->pending.has_value() || presentation_->pending->token != candidate.token_) {
+        std::terminate();
+    }
+    if (presentation_->active.has_value()) {
+        if (presentation_->retired.has_value()) {
+            std::terminate();
+        }
+        presentation_->retired.emplace(std::move(*presentation_->active));
+        presentation_->active.reset();
+    }
+    presentation_->active.emplace(std::move(*presentation_->pending));
+    presentation_->pending.reset();
+    presentation_->pendingGeneration = 0;
+    candidate.backendToken_ = 0;
+    candidate.generation_ = 0;
+}
+
+void OpenGlBackend::discardPresentation(OpenGlPresentationCandidate&& candidate) noexcept {
+    if (!SDL_IsMainThread() || !ownerThread_.isCurrent()) {
+        std::terminate();
+    }
+    if (!presentation_ || !candidate.valid() ||
+        candidate.backendToken_ != presentation_->backendToken) {
+        return;
+    }
+    if (presentation_->pendingGeneration != candidate.generation_ ||
+        !presentation_->pending.has_value() || presentation_->pending->token != candidate.token_ ||
+        presentation_->retired.has_value()) {
+        std::terminate();
+    }
+    presentation_->retired.emplace(std::move(*presentation_->pending));
+    presentation_->pending.reset();
+    presentation_->pendingGeneration = 0;
+    candidate.backendToken_ = 0;
+    candidate.generation_ = 0;
+}
+
+bool OpenGlBackend::hasActivePresentation() const noexcept {
+    ownerThread_.assertCurrent();
+    return presentation_ && presentation_->active.has_value();
+}
+
+void OpenGlBackend::setShaderCacheDirectory(std::filesystem::path directory) {
+    ownerThread_.assertCurrent();
+    if (presentation_) {
+        presentation_->shaderCacheDirectory = std::move(directory);
+    }
+}
+
+auto OpenGlBackend::renderPresentationFrame(const playback::FrameSnapshot& snapshot,
+                                            const render::RenderScene* debugScene,
+                                            OpenGlDrawSummary* summary,
+                                            OpenGlPixelProbe* pixelProbe) -> core::Result<void> {
+    return renderPresentation(snapshot, debugScene, summary, pixelProbe, true);
+}
+
+auto OpenGlBackend::renderPresentation(const playback::FrameSnapshot& snapshot,
+                                       const render::RenderScene* debugScene,
+                                       OpenGlDrawSummary* summary, OpenGlPixelProbe* pixelProbe,
+                                       bool presentFrame) -> core::Result<void> {
+    if (auto mainThread = requireMainThread("render_presentation_frame"); !mainThread) {
+        return core::unexpected(std::move(mainThread.error()));
+    }
+    if (!ownerThread_.isCurrent()) {
+        return core::unexpected(core::Error{"render.opengl.not_main_thread",
+                                            "The OpenGL backend belongs to another thread"}
+                                    .withContext("operation", "render_presentation_frame"));
+    }
+    if (!presentation_ || !presentation_->active || !window_.valid() || context_ == nullptr) {
+        return core::unexpected(core::Error{"render.opengl.presentation.inactive",
+                                            "No active OpenGL presentation cache is available"});
+    }
+    auto* nativeWindow = static_cast<SDL_Window*>(window_.nativeHandle());
+    if (nativeWindow == nullptr ||
+        !SDL_GL_MakeCurrent(nativeWindow, static_cast<SDL_GLContext>(context_))) {
+        return core::unexpected(core::Error{"render.opengl.context_current_failed", sdlError()});
+    }
+    auto& state = *presentation_;
+    state.opaqueScratch.clear();
+    state.transparentScratch.clear();
+    state.debugVerticesScratch.clear();
+    presentation_->retired.reset();
+
+    try {
+        const auto reserveCount = std::min(snapshot.objects.size(), maxNormalizedRecords);
+        state.opaqueScratch.reserve(reserveCount);
+        state.transparentScratch.reserve(reserveCount);
+        if (presentation_->active->settings.debugPassEnabled && debugScene != nullptr) {
+            state.debugVerticesScratch.reserve(
+                std::min(debugScene->size(), render::RenderScene::maxCommandCount) * 2U);
+        }
+
+        // Ordering, pass split, validation, and the digest all come from the backend-neutral
+        // builder. This adapter only resolves the GL handles the neutral layer cannot carry.
+        RenderStageTimer renderStages;
+        auto built = presentation_renderer::buildPresentationCommands(
+            snapshot, presentation_->active->resources,
+            presentation_->active->manifest.entries.empty(),
+            presentation_->active->settings.debugPassEnabled, debugScene);
+        renderStages.mark("neutral_builder");
+        if (!built) {
+            return core::unexpected(std::move(built.error()));
+        }
+        presentation_renderer::DrawSummary preparedSummary = std::move(*built);
+
+        state.opaqueScratch.reserve(preparedSummary.opaque.size());
+        state.transparentScratch.reserve(preparedSummary.transparent.size());
+        for (const auto& command : preparedSummary.opaque) {
+            PreparedDraw draw;
+            if (auto resolved = resolveGpuDraw(command, *presentation_->active, draw); !resolved) {
+                return core::unexpected(std::move(resolved.error()));
+            }
+            state.opaqueScratch.push_back(std::move(draw));
+        }
+        for (const auto& command : preparedSummary.transparent) {
+            PreparedDraw draw;
+            if (auto resolved = resolveGpuDraw(command, *presentation_->active, draw); !resolved) {
+                return core::unexpected(std::move(resolved.error()));
+            }
+            state.transparentScratch.push_back(std::move(draw));
+        }
+
+        if (preparedSummary.debugPassEnabled) {
+            if (auto collected = collectDebugVertices(debugScene, state.debugVerticesScratch);
+                !collected) {
+                return core::unexpected(std::move(collected.error()));
+            }
+        }
+
+        renderStages.mark("gpu_resolution");
+        constexpr auto maxDimension =
+            static_cast<std::uint32_t>(std::numeric_limits<GLsizei>::max());
+        const auto width = static_cast<GLsizei>(std::min(snapshot.viewportWidth, maxDimension));
+        const auto height = static_cast<GLsizei>(std::min(snapshot.viewportHeight, maxDimension));
+        glViewport(0, 0, width, height);
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+        glFrontFace(GL_CCW);
+        glCullFace(GL_BACK);
+        glClearColor(snapshot.clearRed, snapshot.clearGreen, snapshot.clearBlue,
+                     snapshot.clearAlpha);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        clearGlErrors();
+
+        const auto viewProjection =
+            multiplyMatrices(preparedSummary.projectionMatrix, preparedSummary.viewMatrix);
+        renderStages.mark("frame_setup");
+        drawPresentationCommands(presentation_->pipeline, viewProjection, state.opaqueScratch,
+                                 false);
+        drawPresentationCommands(presentation_->pipeline, viewProjection, state.transparentScratch,
+                                 true);
+        renderStages.mark("gl_draws");
+        if (auto checked = checkGl("render.opengl.presentation.draw_failed",
+                                   "OpenGL rejected Portable Presentation drawing");
+            !checked) {
+            return core::unexpected(std::move(checked.error()));
+        }
+
+        OpenGlPixelProbe preparedProbe;
+        preparedProbe.presentationDrawn =
+            !state.opaqueScratch.empty() || !state.transparentScratch.empty();
+        if (pixelProbe != nullptr && width > 0 && height > 0) {
+            glReadPixels(width / 2, height / 2, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE,
+                         preparedProbe.rgba.data());
+            if (auto checked = checkGl("render.opengl.presentation.readback_failed",
+                                       "OpenGL rejected presentation pixel readback");
+                !checked) {
+                return core::unexpected(std::move(checked.error()));
+            }
+        }
+
+        if (!state.debugVerticesScratch.empty()) {
+            glDisable(GL_BLEND);
+            glDepthMask(GL_TRUE);
+            glEnable(GL_DEPTH_TEST);
+            glUseProgram(debugProgram_);
+            glUniformMatrix4fv(viewProjectionLocation_, 1, GL_FALSE, viewProjection.data());
+            glBindVertexArray(debugVertexArray_);
+            glBindBuffer(GL_ARRAY_BUFFER, debugVertexBuffer_);
+            test_only::GpuStorage::charge(1, debugVertexBuffer_,
+                                          state.debugVerticesScratch.size() * sizeof(DebugVertex));
+            glBufferData(
+                GL_ARRAY_BUFFER,
+                static_cast<GLsizeiptr>(state.debugVerticesScratch.size() * sizeof(DebugVertex)),
+                state.debugVerticesScratch.data(), GL_DYNAMIC_DRAW);
+            glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(state.debugVerticesScratch.size()));
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindVertexArray(0);
+            glUseProgram(0);
+            if (auto checked =
+                    checkGl("render.opengl.draw_failed", "OpenGL rejected Debug Pass drawing");
+                !checked) {
+                return core::unexpected(std::move(checked.error()));
+            }
+        }
+        if (presentFrame && !SDL_GL_SwapWindow(nativeWindow)) {
+            return core::unexpected(core::Error{"render.opengl.swap_failed", sdlError()});
+        }
+        lastProbe_ = preparedProbe;
+        if (summary != nullptr) {
+            *summary = std::move(preparedSummary);
+        }
+        if (pixelProbe != nullptr) {
+            *pixelProbe = preparedProbe;
+        }
+        return {};
+    } catch (const std::bad_alloc&) {
+        return core::unexpected(
+            core::Error{"playback.presentation.frame.command_budget_exceeded",
+                        "OpenGL presentation frame allocation could not be satisfied"}
+                .withContext("limit", std::to_string(maxNormalizedRecords)));
+    } catch (const std::exception& exception) {
+        return core::unexpected(core::Error{"render.opengl.presentation.draw_failed",
+                                            "OpenGL presentation frame failed"}
+                                    .withContext("exception", exception.what()));
+    } catch (...) {
+        return core::unexpected(core::Error{"render.opengl.presentation.draw_failed",
+                                            "OpenGL presentation frame failed"});
+    }
+}
+
+auto OpenGlBackend::capabilities() const noexcept -> const playback::PresentationCapabilities& {
+    if (!capabilitiesReady_ && presentation_ != nullptr && window_.valid() && context_ != nullptr &&
+        SDL_IsMainThread() && ownerThread_.isCurrent()) {
+        auto* nativeWindow = static_cast<SDL_Window*>(window_.nativeHandle());
+        if (nativeWindow != nullptr &&
+            SDL_GL_MakeCurrent(nativeWindow, static_cast<SDL_GLContext>(context_))) {
+            GLint maxTextureSize = 0;
+            glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+            const auto textureLimit = static_cast<std::uint32_t>(
+                std::clamp(maxTextureSize, 0, static_cast<int>(portableMaxTextureDimension)));
+            capabilities_ = builtInPresentationCapabilities(textureLimit, debugProgram_ != 0);
+            capabilitiesReady_ = true;
+        }
+    }
+    return capabilities_;
+}
+
+auto OpenGlBackend::identity() const noexcept -> presentation_renderer::RendererIdentity {
+    return presentation_renderer::RendererIdentity{
+        presentation_ != nullptr ? presentation_->backendToken : 0, rendererGeneration_};
+}
+
+auto OpenGlBackend::prepare(playback::PreparedPlayback& prepared,
+                            const playback::PresentationRequest& request)
+    -> core::Result<presentation_renderer::PreparedPresentation> {
+    if (deviceLost_) {
+        return core::unexpected(core::Error{"presentation.renderer.surface.lost",
+                                            "The presentation surface is lost until rebuild"});
+    }
+    if (interfaceCandidate_) {
+        return core::unexpected(
+            core::Error{"render.opengl.presentation.candidate_outstanding",
+                        "The previous OpenGL presentation candidate is still outstanding"});
+    }
+    auto candidate = preparePresentation(prepared, request);
+    if (!candidate) {
+        return core::unexpected(std::move(candidate.error()));
+    }
+    const auto generation = candidate->generation_;
+    const auto token = candidate->token();
+    const auto settings = candidate->settings();
+    interfaceCandidate_ = std::move(*candidate);
+    return presentation_renderer::sealPreparedPresentation(
+        *this, presentation_->backendToken, rendererGeneration_, generation, token, settings);
+}
+
+auto OpenGlBackend::prepareOwned(const playback::PresentationCandidateInput& input)
+    -> core::Result<presentation_renderer::PreparedPresentation> {
+    if (deviceLost_ || interfaceCandidate_)
+        return core::unexpected(
+            core::Error{"host.rpa.device_failed", "GPU owner cannot prepare candidate"});
+    auto candidate = preparePresentationOwned(input);
+    if (!candidate)
+        return core::unexpected(candidate.error());
+    const auto generation = candidate->generation_;
+    const auto token = candidate->token();
+    const auto settings = candidate->settings();
+    interfaceCandidate_ = std::move(*candidate);
+    return presentation_renderer::sealPreparedPresentation(
+        *this, presentation_->backendToken, rendererGeneration_, generation, token, settings);
+}
+
+auto OpenGlBackend::accepts(const presentation_renderer::PreparedPresentation& candidate) const
+    -> core::Result<void> {
+    if (!SDL_IsMainThread() || !ownerThread_.isCurrent()) {
+        return core::unexpected(core::Error{"render.opengl.not_main_thread",
+                                            "The OpenGL backend belongs to another thread"}
+                                    .withContext("operation", "accepts"));
+    }
+    if (!candidate.valid() || candidate.playbackToken() == nullptr || presentation_ == nullptr ||
+        !interfaceCandidate_ || !interfaceCandidate_->valid()) {
+        return core::unexpected(core::Error{"presentation.renderer.token.invalid",
+                                            "The presentation candidate is not outstanding"});
+    }
+    const auto identity = candidate.rendererIdentity();
+    if (identity.instance != presentation_->backendToken ||
+        identity.generation != rendererGeneration_ ||
+        !(*candidate.playbackToken() == interfaceCandidate_->token())) {
+        return core::unexpected(core::Error{"presentation.renderer.token.stale",
+                                            "The presentation candidate token is stale"});
+    }
+    return {};
+}
+
+void OpenGlBackend::activate(presentation_renderer::PreparedPresentation&& candidate) noexcept {
+    if (!accepts(candidate).has_value() || !interfaceCandidate_) {
+        std::terminate();
+    }
+    activatePresentation(std::move(*interfaceCandidate_));
+    interfaceCandidate_.reset();
+}
+
+void OpenGlBackend::discard(presentation_renderer::PreparedPresentation&& candidate) noexcept {
+    if (!SDL_IsMainThread() || !ownerThread_.isCurrent() || !candidate.valid()) {
+        std::terminate();
+    }
+    if (!interfaceCandidate_) {
+        return;
+    }
+    const auto identity = candidate.rendererIdentity();
+    if (presentation_ == nullptr || identity.instance != presentation_->backendToken ||
+        identity.generation != rendererGeneration_ || candidate.playbackToken() == nullptr ||
+        !(*candidate.playbackToken() == interfaceCandidate_->token())) {
+        interfaceCandidate_.reset();
+        return;
+    }
+    discardPresentation(std::move(*interfaceCandidate_));
+    interfaceCandidate_.reset();
+}
+
+auto OpenGlBackend::submit(const playback::FrameSnapshot& snapshot,
+                           const render::RenderScene* debugScene)
+    -> core::Result<presentation_renderer::DrawSummary> {
+    if (deviceLost_) {
+        return core::unexpected(core::Error{"presentation.renderer.surface.lost",
+                                            "The presentation surface is lost until rebuild"});
+    }
+    if (surfaceWidth_ == 0 || surfaceHeight_ == 0) {
+        return core::unexpected(
+            core::Error{"presentation.renderer.surface.zero_size",
+                        "A zero-size surface suspends presentation submission"});
+    }
+    if (frameSubmitted_) {
+        return core::unexpected(core::Error{"presentation.renderer.frame.already_submitted",
+                                            "The current frame was already submitted"});
+    }
+    presentation_renderer::DrawSummary summary;
+    OpenGlPixelProbe probe;
+    auto drawn = renderPresentation(
+        snapshot, debugScene, &summary,
+        presentation_ && presentation_->pixelReadbackEnabled ? &probe : nullptr, false);
+    if (!drawn) {
+        return core::unexpected(std::move(drawn.error()));
+    }
+    frameSubmitted_ = true;
+    // The neutral builder already produced the authoritative summary; no second conversion.
+    return summary;
+}
+
+auto OpenGlBackend::present() -> core::Result<void> {
+    if (!SDL_IsMainThread() || !ownerThread_.isCurrent()) {
+        return core::unexpected(core::Error{"render.opengl.not_main_thread",
+                                            "The OpenGL backend belongs to another thread"}
+                                    .withContext("operation", "present"));
+    }
+    if (deviceLost_) {
+        return core::unexpected(core::Error{"presentation.renderer.surface.lost",
+                                            "The presentation surface is lost until rebuild"});
+    }
+    if (!frameSubmitted_) {
+        return core::unexpected(core::Error{"presentation.renderer.frame.not_submitted",
+                                            "Present requires a submitted frame"});
+    }
+    frameSubmitted_ = false;
+    if (presentFailure_.has_value()) {
+        const auto failure = *presentFailure_;
+        presentFailure_.reset();
+        if (failure == presentation_renderer::PresentationFailureClass::Unrecoverable) {
+            deviceLost_ = true;
+            return core::unexpected(
+                core::Error{"presentation.renderer.present.device_lost",
+                            "Present failed because the presentation device was lost"});
+        }
+        return core::unexpected(
+            core::Error{"presentation.renderer.present.failed",
+                        "Present failed and the active presentation was left unchanged"});
+    }
+    if (!window_.valid() || context_ == nullptr) {
+        return core::unexpected(core::Error{"render.opengl.backend_unavailable",
+                                            "The OpenGL presentation backend is unavailable"});
+    }
+    auto* nativeWindow = static_cast<SDL_Window*>(window_.nativeHandle());
+    if (nativeWindow == nullptr ||
+        !SDL_GL_MakeCurrent(nativeWindow, static_cast<SDL_GLContext>(context_)) ||
+        !SDL_GL_SwapWindow(nativeWindow)) {
+        return core::unexpected(core::Error{"render.opengl.swap_failed", sdlError()});
+    }
+    return {};
+}
+
+auto OpenGlBackend::resize(std::uint32_t width, std::uint32_t height) -> core::Result<void> {
+    if (!SDL_IsMainThread() || !ownerThread_.isCurrent()) {
+        return core::unexpected(core::Error{"render.opengl.not_main_thread",
+                                            "The OpenGL backend belongs to another thread"}
+                                    .withContext("operation", "resize"));
+    }
+    surfaceWidth_ = width;
+    surfaceHeight_ = height;
+    return {};
+}
+
+auto OpenGlBackend::rebuild() -> core::Result<void> {
+    if (!SDL_IsMainThread() || !ownerThread_.isCurrent()) {
+        return core::unexpected(core::Error{"render.opengl.not_main_thread",
+                                            "The OpenGL backend belongs to another thread"}
+                                    .withContext("operation", "rebuild"));
+    }
+    if (rendererGeneration_ == std::numeric_limits<std::uint64_t>::max()) {
+        return core::unexpected(core::Error{"presentation.renderer.generation_exhausted",
+                                            "Presentation renderer generation is exhausted"});
+    }
+    const bool retainedResources =
+        presentation_ != nullptr &&
+        (presentation_->active.has_value() || presentation_->pending.has_value() ||
+         presentation_->retired.has_value());
+    if (retainedResources) {
+        if (!window_.valid() || context_ == nullptr) {
+            return core::unexpected(
+                core::Error{"render.opengl.cleanup_unavailable",
+                            "Presentation resources require their OpenGL context for cleanup"});
+        }
+        auto* nativeWindow = static_cast<SDL_Window*>(window_.nativeHandle());
+        if (nativeWindow == nullptr ||
+            !SDL_GL_MakeCurrent(nativeWindow, static_cast<SDL_GLContext>(context_))) {
+            return core::unexpected(
+                core::Error{"render.opengl.cleanup_unavailable",
+                            "Cannot make the OpenGL context current for presentation cleanup"});
+        }
+        presentation_->active.reset();
+        presentation_->pending.reset();
+        presentation_->retired.reset();
+        presentation_->pendingGeneration = 0;
+    }
+    interfaceCandidate_.reset();
+    frameSubmitted_ = false;
+    deviceLost_ = false;
+    presentFailure_.reset();
+    ++rendererGeneration_;
+    return {};
+}
+
+auto OpenGlBackend::lastPixelProbe() const noexcept -> const OpenGlPixelProbe& {
+    return lastProbe_;
+}
+
+auto detail::OpenGlDiagnosticsAccess::setPixelReadback(OpenGlBackend& backend, bool enabled)
+    -> core::Result<void> {
+    if (!SDL_IsMainThread() || !backend.ownerThread_.isCurrent())
+        return core::unexpected(core::Error{"render.opengl.not_main_thread",
+                                            "Pixel readback configuration belongs to the owner"});
+    if (!backend.presentation_)
+        return core::unexpected(core::Error{"render.opengl.backend_unavailable",
+                                            "Pixel readback requires a live backend"});
+    if (backend.presentation_->pixelReadbackEnabled != enabled) {
+        backend.presentation_->pixelReadbackEnabled = enabled;
+        backend.lastProbe_ = {};
+    }
+    return {};
+}
+
+void OpenGlBackend::injectPresentFailure(
+    presentation_renderer::PresentationFailureClass failure) noexcept {
+    presentFailure_ = failure;
+}
+
+void OpenGlBackend::detachCandidate(std::uint64_t rendererGeneration,
+                                    std::uint64_t candidateGeneration,
+                                    const playback::PresentationCandidateToken& token) noexcept {
+    if (!interfaceCandidate_) {
+        return;
+    }
+    if (presentation_ == nullptr || rendererGeneration != rendererGeneration_ ||
+        !presentation_->pending.has_value() ||
+        interfaceCandidate_->generation_ != candidateGeneration ||
+        !(interfaceCandidate_->token() == token)) {
+        interfaceCandidate_.reset();
+        return;
+    }
+    discardPresentation(std::move(*interfaceCandidate_));
+    interfaceCandidate_.reset();
+}
+
+static_assert(std::is_nothrow_move_constructible_v<OpenGlPresentationCandidate>);
+static_assert(std::is_nothrow_move_assignable_v<OpenGlPresentationCandidate>);
+static_assert(std::is_nothrow_move_constructible_v<detail::PresentationResourceSet>);
+
+} // namespace cuexis::render_opengl

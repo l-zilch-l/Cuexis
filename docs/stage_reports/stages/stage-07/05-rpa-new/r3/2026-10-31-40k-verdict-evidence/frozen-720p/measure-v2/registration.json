@@ -1,0 +1,111 @@
+{
+  "scope": "finite physical GPU throughput diagnostic, not formal R3/R4 acceptance",
+  "created_utc": "2026-10-28T22:49:50.386846+00:00",
+  "head": "ce5fd2e04afbdbeb71eb5e81850eaa8c7b903e6d",
+  "entities": 40000,
+  "viewport": [
+    1280,
+    720
+  ],
+  "vsync": false,
+  "audio": false,
+  "normal_allocator": true,
+  "metrics": "OFF",
+  "measurement_affinity": 65535,
+  "priority": "BelowNormal",
+  "execution_throttling": "OFF",
+  "selector": "GPU visible entity throughput probe",
+  "binary_sha256": "3c837dd608c3b549d74849ff0dcadc566e5f05fdba7e99c2062726641f9a7204",
+  "probe_source_sha256": "d9ffd3d48ca53426449a23419cfc7843cebce9b877236173d14a960b5add726b",
+  "runner_sha256": "d293a6b56dbd08ca5440004fab05b5477e398a32aa0d77a1180e6f0041602b54",
+  "plan": [
+    {
+      "mode": "render-only",
+      "repeat": 0,
+      "timer": true,
+      "frames": 120,
+      "warmup": 30
+    },
+    {
+      "mode": "static",
+      "repeat": 0,
+      "timer": true,
+      "frames": 120,
+      "warmup": 30
+    },
+    {
+      "mode": "animated",
+      "repeat": 0,
+      "timer": true,
+      "frames": 120,
+      "warmup": 30
+    },
+    {
+      "mode": "animated",
+      "repeat": 1,
+      "timer": true,
+      "frames": 120,
+      "warmup": 30
+    },
+    {
+      "mode": "static",
+      "repeat": 1,
+      "timer": true,
+      "frames": 120,
+      "warmup": 30
+    },
+    {
+      "mode": "render-only",
+      "repeat": 1,
+      "timer": true,
+      "frames": 120,
+      "warmup": 30
+    },
+    {
+      "mode": "render-only",
+      "repeat": 2,
+      "timer": true,
+      "frames": 120,
+      "warmup": 30
+    },
+    {
+      "mode": "static",
+      "repeat": 2,
+      "timer": true,
+      "frames": 120,
+      "warmup": 30
+    },
+    {
+      "mode": "animated",
+      "repeat": 2,
+      "timer": true,
+      "frames": 120,
+      "warmup": 30
+    },
+    {
+      "mode": "render-only",
+      "repeat": 0,
+      "timer": false,
+      "frames": 120,
+      "warmup": 30
+    },
+    {
+      "mode": "static",
+      "repeat": 0,
+      "timer": false,
+      "frames": 120,
+      "warmup": 30
+    },
+    {
+      "mode": "animated",
+      "repeat": 0,
+      "timer": false,
+      "frames": 120,
+      "warmup": 30
+    }
+  ],
+  "stop": "first invalid/timeout; no replacement or extension",
+  "target_frame_us": 4166.666666666667,
+  "gpu_boundary": "timestamp around backend submit, includes GPU idle/driver submission gaps and production pixel readback; not pure shader busy time",
+  "fps_boundary": "measured wall includes update/extract (except render-only), submit, present, polling and pump; excludes load/warmup/drain/output"
+}

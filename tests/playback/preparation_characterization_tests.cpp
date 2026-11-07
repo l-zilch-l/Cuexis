@@ -661,3 +661,20 @@ TEST_CASE("Playback v4 prepare reuses the initial Chart parse",
     CHECK(counter.count() == 1U);
 #endif
 }
+
+TEST_CASE("Playback legacy prepare reuses the initial Chart parse",
+          "[playback][prepare][parse][characterization][count]") {
+#if defined(CUEXIS_PLAYBACK_PARSE_COUNT_PROBE_UNAVAILABLE)
+    SKIP("The test-only parse probe is private to each shared library.");
+#else
+    // A legacy prepare used to parse its document twice: once for the typed projection and once
+    // more to canonicalize the source bytes that carry the semantic identity.
+    const auto chart = readFile(sourceRoot() / "tests" / "fixtures" / "chart_format_update" /
+                                "valid" / "chart_v3_static_migration.json");
+    cuexis::json::detail::ScopedParseCounter counter;
+    PlaybackSession session;
+    const auto prepared = session.prepareLoad(chart, PlaybackMode::ChartClock);
+    REQUIRE(prepared.has_value());
+    CHECK(counter.count() == 1U);
+#endif
+}

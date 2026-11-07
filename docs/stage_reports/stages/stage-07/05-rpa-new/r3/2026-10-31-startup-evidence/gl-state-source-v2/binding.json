@@ -1,0 +1,6 @@
+{
+  "selected": false,
+  "scope": "Private per-call unlit GL state cache; draw order, world uniforms, shader semantics, neutral builder/digest untouched. First draw explicitly writes all GL state, no cross-frame cache. Parameterized draw path unchanged. Exact float bit comparisons for signed zero; active texture set only when binding an actual unlit draw.",
+  "source_sha256": "53bcd881b09acb68a0c6fb4af1d7ed4e83948d4bf0f4618fdf57bbcef8e1597a",
+  "baseline_sha256": "954f27c1d094f6da3b7cfe0a9ec72a97d3b7baf6824815281bfa8aec317d8caf"
+}

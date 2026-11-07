@@ -10,7 +10,7 @@
 [ANIMATION_MIXING.md](../../../formats/ANIMATION_MIXING.md)、
 [ADR 0009](../../../adr/0009-property-evaluation-and-conflicts.md)、
 [ADR 0019](../../../adr/0019-animation-layers-and-runtime-overrides.md) 与
-[CFU-G2 Stage 4 typed handoff](../../chart-format-update/2026-08-16-g2-stage4-handoff.md)。
+[CFU-G2 Stage 4 typed handoff](../chart-format-update/2026-08-16-g2-stage4-handoff.md)。
 
 ## 交付
 

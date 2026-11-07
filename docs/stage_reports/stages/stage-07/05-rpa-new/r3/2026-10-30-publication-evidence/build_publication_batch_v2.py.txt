@@ -1,0 +1,6 @@
+from pathlib import Path
+base=Path(__file__).resolve().parent
+s=(base/'build_publication_batch.py').read_text()
+s=s.replace("out=base/'publication-build-v1'", "out=base/'publication-build-v2'")
+s=s.replace("'-DCUEXIS_LIBRARY_TYPE=STATIC'", "'-DCUEXIS_LIBRARY_TYPE=STATIC','-DCUEXIS_ENABLE_CHART_V5_CANDIDATE=ON'")
+exec(compile(s,str(base/'build_publication_batch.py'),'exec'))

@@ -1,0 +1,15 @@
+{
+  "scope": "Ordinary allocator CPU legacy prepare only; shared identical libraries; sole change SAX parser. Fixture before timer, commit/update/digest after. No physical window created.",
+  "candidate_sha256": "da64484ff83f7cb31ee27793aa4462f232d6a70d57e221f9d29d6743d3bec0e9",
+  "probe_sha256": "1d4d20438a6ad1ef7a2debe2022dde4ab18cc6500b0568900b6e1239fca2adc1",
+  "included_probe_sha256": "c6c832d0f4d07c1532f8588e2143f2e5bce0bff7c8a7976ce24c91b6293c4122",
+  "commands_sha256": "a91e2837e9d103031a0c2c99a9cdf7f357d16aa7d68f16b6f684c90a51bd63ad",
+  "files": {
+    "fmt.dll": "8219387a1b0de304630a67564a0ec30271e061c1e92cc77ae7cf9753a5f75214",
+    "nlohmann_json_schema_validator.dll": "1c0a7cdcd718802c79052f323f52e63afcedac969dd7eb5a44d12c521502f248",
+    "prepare-baseline.exe": "5ae62d797f52cac3b30dbff41e0c417dc4f84c14999497f9460f30d6b16cb67d",
+    "prepare-candidate.exe": "2fd5b9dcb69505f211ff77ce3accdbdf5fc3b0a310dc38c570ae4d8381881159",
+    "SDL3.dll": "cedddd9456105f8b2df78c33a0282c170b86b0d16146a8ccbb0c6e01571ee783",
+    "spdlog.dll": "a7c410914f4aff0cb84f642ff91da8a6b1a85d21cb0de11e88a3a37dc7575214"
+  }
+}

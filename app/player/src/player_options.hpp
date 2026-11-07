@@ -7,6 +7,8 @@
 #include <cstdint>
 #include <filesystem>
 #include <optional>
+#include <string>
+#include <vector>
 
 namespace cuexis::player {
 
@@ -21,8 +23,18 @@ enum class PlayerClockOption : std::uint8_t {
 struct PlayerOptions final {
     bool smokeTest{};
     bool audioSmokeTest{};
+    bool executionTestOnly{};
+    bool debugAxes{};
+    bool showFps{};
+    std::optional<std::string> executionTailDeadline;
     std::optional<std::filesystem::path> chartPath;
     std::optional<std::filesystem::path> projectPath;
+    std::optional<std::filesystem::path> cxcPath;
+    std::optional<std::string> candidateEntry;
+    std::optional<std::filesystem::path> gameplayConfiguration;
+    std::optional<std::filesystem::path> gameplayPacked;
+    std::optional<std::string> gameplayBudget, gameplayHStep, gameplayTStep;
+    std::vector<std::string> gameplayKeys;
     // The clock the startup Load names. Switching between content with and without an audio track
     // is an explicit choice, so it is named here instead of probed from a failed load. Kept as a
     // plain enum so this header stays free of Playback types.

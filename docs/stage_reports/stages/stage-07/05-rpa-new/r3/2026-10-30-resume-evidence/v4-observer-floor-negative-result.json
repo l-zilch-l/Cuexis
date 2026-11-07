@@ -1,0 +1,5 @@
+{
+  "exit": 42,
+  "expected_failure": true,
+  "scope": "Deliberately remove exact source floor binding. Copy/move source release ordering negative control."
+}

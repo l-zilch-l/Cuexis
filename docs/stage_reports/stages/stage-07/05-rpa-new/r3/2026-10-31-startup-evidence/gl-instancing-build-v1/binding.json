@@ -1,0 +1,11 @@
+{
+  "scope": "Original product GL versus CPP-only adjacent opaque instancing. Identical new responsive startup probe. Common paged-sequence libraries reused immutably in both; no R3c/batch/memory observer.",
+  "old_binding_sha256": "c4724012a87b1fdc5bd4d1893c803ba94603a7df10a5fa6a3acb7d4c7f30c308",
+  "candidate_source_sha256": "4bfaad6779e55b9f8ceca389c23c625009cc373703fed462bad9d611c8c8cc6b",
+  "startup_binding_sha256": "870e35cd808b77e1ff731597af7abaebf378001a66cf104340c14309c4a5fe5a",
+  "commands_sha256": "e9232fe09c355fdff0e61054b85bd55f1b7f2bff12e81843dbb64e99cbae7981",
+  "binaries": {
+    "gpu-baseline.exe": "e4f5376fe0f1a9f0239bbee86b03c442d4d4661d2d37de0fd459ec336922333a",
+    "gpu-candidate.exe": "8e1ebd697244c5620a6666d8535c4b8022d0efcb118cf47595729e473a27a3bd"
+  }
+}

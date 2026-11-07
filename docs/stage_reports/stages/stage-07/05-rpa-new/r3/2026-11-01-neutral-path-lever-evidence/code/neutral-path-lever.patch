@@ -1,0 +1,352 @@
+diff --git a/app/player/src/player_smoke.cpp b/app/player/src/player_smoke.cpp
+index 67f0db4..4895219 100644
+--- a/app/player/src/player_smoke.cpp
++++ b/app/player/src/player_smoke.cpp
+@@ -357,16 +357,18 @@ auto PlayerSmokeBinding::notePresented(const PlayerPresentedFrame& presented)
+         return {};
+     }
+     const auto& drawSummary = presented.summary;
++    const auto omittedDigest = presentation_renderer::summaryDigest(*omittedDebugSummary_);
++    const auto emptyDigest = presentation_renderer::summaryDigest(*emptyDebugSummary_);
++    const auto populatedDigest = presentation_renderer::summaryDigest(drawSummary);
+     if (omittedDebugSummary_->debugPassEnabled != emptyDebugSummary_->debugPassEnabled ||
+         omittedDebugSummary_->debugPassEnabled != drawSummary.debugPassEnabled ||
+-        omittedDebugSummary_->digest != emptyDebugSummary_->digest ||
+-        omittedDebugSummary_->digest != drawSummary.digest) {
++        omittedDigest != emptyDigest || omittedDigest != populatedDigest) {
+         return core::unexpected(
+             core::Error{"player.smoke_test.debug_summary_mismatch",
+                         "OpenGL Debug summary differs across scene argument forms"}
+-                .withContext("omitted_digest", std::to_string(omittedDebugSummary_->digest))
+-                .withContext("empty_digest", std::to_string(emptyDebugSummary_->digest))
+-                .withContext("populated_digest", std::to_string(drawSummary.digest)));
++                .withContext("omitted_digest", std::to_string(omittedDigest))
++                .withContext("empty_digest", std::to_string(emptyDigest))
++                .withContext("populated_digest", std::to_string(populatedDigest)));
+     }
+     logger_.info("player.smoke_test",
+                  "Debug summary parity held for omitted, empty, and populated scenes");
+@@ -379,21 +381,20 @@ auto PlayerSmokeBinding::validatePresented(const PlayerPresentedFrame& presented
+     -> core::Result<void> {
+     const auto& drawSummary = presented.summary;
+     const auto pixelProbe = backend_.lastPixelProbe();
++    const auto digest = presentation_renderer::summaryDigest(drawSummary);
+     if (auto validated =
+             validateFrame(presented.renderedFrames, presented.snapshot, drawSummary, pixelProbe);
+         !validated) {
+         return core::unexpected(std::move(validated.error()));
+     }
+     logger_.info("player.smoke_test",
+-                 std::string{"Frame "} + std::to_string(presented.renderedFrames) +
+-                     " summary=" + std::to_string(drawSummary.digest) +
+-                     " pixel=" + std::to_string(pixelProbe.rgba[0]) + "," +
++                 std::string{"Frame "} + std::to_string(presented.renderedFrames) + " summary=" +
++                     std::to_string(digest) + " pixel=" + std::to_string(pixelProbe.rgba[0]) + "," +
+                      std::to_string(pixelProbe.rgba[1]) + "," + std::to_string(pixelProbe.rgba[2]) +
+                      "," + std::to_string(pixelProbe.rgba[3]) +
+                      " render_us=" + std::to_string(presented.renderMicroseconds));
+     if (presented.renderedFrames == 0) {
+-        if (auto minimized = verifyMinimizeRestore(presented, drawSummary.digest, pixelProbe);
+-            !minimized) {
++        if (auto minimized = verifyMinimizeRestore(presented, digest, pixelProbe); !minimized) {
+             return core::unexpected(std::move(minimized.error()));
+         }
+     }
+@@ -502,11 +503,12 @@ auto PlayerSmokeBinding::verifyMinimizeRestore(const PlayerPresentedFrame& prese
+     if (auto presentedFrame = presented.renderer.present(); !presentedFrame) {
+         return core::unexpected(std::move(presentedFrame.error()));
+     }
+-    if (submitted->digest != baselineDigest) {
++    const auto restoredDigest = presentation_renderer::summaryDigest(*submitted);
++    if (restoredDigest != baselineDigest) {
+         return core::unexpected(core::Error{"player.smoke_test.restore_digest_mismatch",
+                                             "Restoring the window changed the presentation digest"}
+                                     .withContext("baseline", std::to_string(baselineDigest))
+-                                    .withContext("restored", std::to_string(submitted->digest)));
++                                    .withContext("restored", std::to_string(restoredDigest)));
+     }
+     const auto probe = backend_.lastPixelProbe();
+     for (std::size_t component = 0; component < 4; ++component) {
+@@ -589,12 +591,15 @@ auto PlayerSmokeBinding::validateFrame(std::uint32_t frameIndex,
+             core::Error{"player.smoke_test.textured_blend_pixel_invalid",
+                         "Transparent smoke frame did not produce the expected textured blend"});
+     }
+-    if ((frameIndex == 1 || frameIndex == 5) && summary.digest != presentationSmokeDigest) {
+-        return core::unexpected(
+-            core::Error{"player.smoke_test.presentation_digest_mismatch",
+-                        "OpenGL draw summary differs from the Validation Sink golden"}
+-                .withContext("expected", std::to_string(presentationSmokeDigest))
+-                .withContext("actual", std::to_string(summary.digest)));
++    if (frameIndex == 1 || frameIndex == 5) {
++        const auto digest = presentation_renderer::summaryDigest(summary);
++        if (digest != presentationSmokeDigest) {
++            return core::unexpected(
++                core::Error{"player.smoke_test.presentation_digest_mismatch",
++                            "OpenGL draw summary differs from the Validation Sink golden"}
++                    .withContext("expected", std::to_string(presentationSmokeDigest))
++                    .withContext("actual", std::to_string(digest)));
++        }
+     }
+     return {};
+ }
+diff --git a/engine/presentation_renderer/include/cuexis/presentation_renderer/draw_command.hpp b/engine/presentation_renderer/include/cuexis/presentation_renderer/draw_command.hpp
+index 78be32b..cdc7628 100644
+--- a/engine/presentation_renderer/include/cuexis/presentation_renderer/draw_command.hpp
++++ b/engine/presentation_renderer/include/cuexis/presentation_renderer/draw_command.hpp
+@@ -53,11 +53,16 @@ struct DrawSummary final {
+     std::vector<DrawCommand> opaque;
+     std::vector<DrawCommand> transparent;
+     std::size_t debugCommandCount{};
+-    std::uint64_t digest{};
+ };
+ 
++// Portable summary v1 identity. It covers this summary and every command in pass order, and equals
++// the Validation Sink digest of the same submission. It is a derived value rather than a stored
++// field because the render path never reads it: computing it per frame costs one serial hash chain
++// over every command, so only callers that record or compare summaries ask for it.
++[[nodiscard]] auto summaryDigest(const DrawSummary& summary) noexcept -> std::uint64_t;
++
+ // Builds one submission from portable resources. manifestEmpty skips draw expansion but still
+-// validates the debug pass. The digest covers the same fields as the OpenGL summary v1 digest.
++// validates the debug pass. The result carries no digest; call summaryDigest to derive it.
+ [[nodiscard]] auto
+ buildPresentationCommands(const playback::FrameSnapshot& snapshot,
+                           std::span<const playback::PortableResourcePtr> resources,
+diff --git a/engine/presentation_renderer/src/draw_command.cpp b/engine/presentation_renderer/src/draw_command.cpp
+index 2ac765a..bb461bf 100644
+--- a/engine/presentation_renderer/src/draw_command.cpp
++++ b/engine/presentation_renderer/src/draw_command.cpp
+@@ -209,7 +209,31 @@ void hashCommand(SummaryHash& hash, const DrawCommand& command) noexcept {
+     hash.writeU64(std::bit_cast<std::uint64_t>(command.transparentDepthKey));
+ }
+ 
+-[[nodiscard]] auto summaryDigest(const DrawSummary& summary) noexcept -> std::uint64_t {
++[[nodiscard]] auto validateDebugPass(bool debugPassEnabled, const render::RenderScene* debugScene,
++                                     std::size_t& debugCommandCount) -> core::Result<void> {
++    debugCommandCount = 0;
++    if (!debugPassEnabled || debugScene == nullptr) {
++        return {};
++    }
++    if (debugScene->size() > render::RenderScene::maxCommandCount) {
++        return core::unexpected(core::Error{"presentation.renderer.debug.limit",
++                                            "RenderScene command limit was exceeded"});
++    }
++    for (const auto& command : debugScene->commands()) {
++        if (command.type != render::RenderCommandType::DebugLine ||
++            !core::isFinite(command.start) || !core::isFinite(command.end) ||
++            !render::isValidColor(command.color)) {
++            return core::unexpected(core::Error{"presentation.renderer.debug.invalid",
++                                                "RenderScene contains an invalid Debug command"});
++        }
++    }
++    debugCommandCount = debugScene->size();
++    return {};
++}
++
++} // namespace
++
++auto summaryDigest(const DrawSummary& summary) noexcept -> std::uint64_t {
+     SummaryHash hash;
+     hash.writeU32(summary.version);
+     hash.writeU32(summary.viewportWidth);
+@@ -236,30 +260,6 @@ void hashCommand(SummaryHash& hash, const DrawCommand& command) noexcept {
+     return hash.value();
+ }
+ 
+-[[nodiscard]] auto validateDebugPass(bool debugPassEnabled, const render::RenderScene* debugScene,
+-                                     std::size_t& debugCommandCount) -> core::Result<void> {
+-    debugCommandCount = 0;
+-    if (!debugPassEnabled || debugScene == nullptr) {
+-        return {};
+-    }
+-    if (debugScene->size() > render::RenderScene::maxCommandCount) {
+-        return core::unexpected(core::Error{"presentation.renderer.debug.limit",
+-                                            "RenderScene command limit was exceeded"});
+-    }
+-    for (const auto& command : debugScene->commands()) {
+-        if (command.type != render::RenderCommandType::DebugLine ||
+-            !core::isFinite(command.start) || !core::isFinite(command.end) ||
+-            !render::isValidColor(command.color)) {
+-            return core::unexpected(core::Error{"presentation.renderer.debug.invalid",
+-                                                "RenderScene contains an invalid Debug command"});
+-        }
+-    }
+-    debugCommandCount = debugScene->size();
+-    return {};
+-}
+-
+-} // namespace
+-
+ auto buildPresentationCommands(const playback::FrameSnapshot& snapshot,
+                                std::span<const playback::PortableResourcePtr> resources,
+                                bool manifestEmpty, bool debugPassEnabled,
+@@ -289,7 +289,6 @@ auto buildPresentationCommands(const playback::FrameSnapshot& snapshot,
+         return core::unexpected(std::move(debug.error()));
+     }
+     if (manifestEmpty) {
+-        summary.digest = summaryDigest(summary);
+         return summary;
+     }
+     if (snapshot.objects.size() > maxNormalizedRecords) {
+@@ -517,7 +516,6 @@ auto buildPresentationCommands(const playback::FrameSnapshot& snapshot,
+     if (!std::is_sorted(summary.transparent.begin(), summary.transparent.end(), transparentLess)) {
+         std::sort(summary.transparent.begin(), summary.transparent.end(), transparentLess);
+     }
+-    summary.digest = summaryDigest(summary);
+     return summary;
+ }
+ 
+diff --git a/engine/render_opengl/src/open_gl_presentation.cpp b/engine/render_opengl/src/open_gl_presentation.cpp
+index 277c13f..0801118 100644
+--- a/engine/render_opengl/src/open_gl_presentation.cpp
++++ b/engine/render_opengl/src/open_gl_presentation.cpp
+@@ -794,7 +794,7 @@ template <typename Resource>
+ [[nodiscard]] auto resolveGpuDraw(const presentation_renderer::DrawCommand& command,
+                                   const detail::PresentationResourceSet& resources,
+                                   PreparedDraw& draw) -> core::Result<void> {
+-    draw.command = command;
++    draw.command = &command;
+     draw.mesh = findGpuResource(resources.meshes, command.mesh);
+     draw.material = findGpuResource(resources.materials, command.material);
+     if (draw.mesh == nullptr || draw.material == nullptr) {
+@@ -869,17 +869,17 @@ void drawUnlitCommands(const detail::PresentationPipeline& pipeline,
+         if (draw.program != nullptr) {
+             continue;
+         }
+-        if (draw.command.backFaceCulling) {
++        if (draw.command->backFaceCulling) {
+             glEnable(GL_CULL_FACE);
+         } else {
+             glDisable(GL_CULL_FACE);
+         }
+-        glUniformMatrix4fv(pipeline.worldLocation, 1, GL_FALSE, draw.command.worldMatrix.data());
++        glUniformMatrix4fv(pipeline.worldLocation, 1, GL_FALSE, draw.command->worldMatrix.data());
+         glUniform4f(pipeline.effectiveColorLocation,
+-                    static_cast<float>(draw.command.effectiveColor[0]),
+-                    static_cast<float>(draw.command.effectiveColor[1]),
+-                    static_cast<float>(draw.command.effectiveColor[2]),
+-                    static_cast<float>(draw.command.effectiveColor[3]));
++                    static_cast<float>(draw.command->effectiveColor[0]),
++                    static_cast<float>(draw.command->effectiveColor[1]),
++                    static_cast<float>(draw.command->effectiveColor[2]),
++                    static_cast<float>(draw.command->effectiveColor[3]));
+         glUniform1i(pipeline.useTextureLocation, draw.texture != nullptr ? 1 : 0);
+         glUniform1i(pipeline.useTextureAlphaLocation,
+                     draw.texture != nullptr && draw.material->material.alphaMode ==
+@@ -928,19 +928,19 @@ void drawParameterizedCommands(const std::array<float, 16>& viewProjection,
+         if (draw.program == nullptr) {
+             continue;
+         }
+-        if (draw.command.backFaceCulling) {
++        if (draw.command->backFaceCulling) {
+             glEnable(GL_CULL_FACE);
+         } else {
+             glDisable(GL_CULL_FACE);
+         }
+         glUseProgram(draw.program->program.value);
+         CuexisObjectStd140 object{};
+-        std::memcpy(object.world, draw.command.worldMatrix.data(), sizeof(object.world));
++        std::memcpy(object.world, draw.command->worldMatrix.data(), sizeof(object.world));
+         std::memcpy(object.viewProjection, viewProjection.data(), sizeof(object.viewProjection));
+-        object.tint[0] = static_cast<float>(draw.command.effectiveColor[0]);
+-        object.tint[1] = static_cast<float>(draw.command.effectiveColor[1]);
+-        object.tint[2] = static_cast<float>(draw.command.effectiveColor[2]);
+-        object.opacity = static_cast<float>(draw.command.effectiveColor[3]);
++        object.tint[0] = static_cast<float>(draw.command->effectiveColor[0]);
++        object.tint[1] = static_cast<float>(draw.command->effectiveColor[1]);
++        object.tint[2] = static_cast<float>(draw.command->effectiveColor[2]);
++        object.opacity = static_cast<float>(draw.command->effectiveColor[3]);
+         glBindBuffer(GL_UNIFORM_BUFFER, draw.program->cuexisObject.value);
+         glBufferSubData(GL_UNIFORM_BUFFER, 0, static_cast<GLsizeiptr>(sizeof(object)), &object);
+         glBindBufferBase(GL_UNIFORM_BUFFER, 0, draw.program->cuexisObject.value);
+@@ -1553,8 +1553,8 @@ auto OpenGlBackend::renderPresentation(const playback::FrameSnapshot& snapshot,
+                 std::min(debugScene->size(), render::RenderScene::maxCommandCount) * 2U);
+         }
+ 
+-        // Ordering, pass split, validation, and the digest all come from the backend-neutral
+-        // builder. This adapter only resolves the GL handles the neutral layer cannot carry.
++        // Ordering, pass split, and validation all come from the backend-neutral builder. This
++        // adapter only resolves the GL handles the neutral layer cannot carry.
+         auto built = presentation_renderer::buildPresentationCommands(
+             snapshot, presentation_->active->resources,
+             presentation_->active->manifest.entries.empty(),
+@@ -1661,6 +1661,11 @@ auto OpenGlBackend::renderPresentation(const playback::FrameSnapshot& snapshot,
+         if (pixelProbe != nullptr) {
+             *pixelProbe = preparedProbe;
+         }
++        // PreparedDraw holds non-owning command pointers into preparedSummary.opaque/transparent,
++        // which the move above consumes. Drop them with the summary they came from so the
++        // persistent scratch never outlives the commands it points at.
++        state.opaqueScratch.clear();
++        state.transparentScratch.clear();
+         return {};
+     } catch (const std::bad_alloc&) {
+         return core::unexpected(
+diff --git a/engine/render_opengl/src/open_gl_presentation_internal.hpp b/engine/render_opengl/src/open_gl_presentation_internal.hpp
+index ad066a5..912b570 100644
+--- a/engine/render_opengl/src/open_gl_presentation_internal.hpp
++++ b/engine/render_opengl/src/open_gl_presentation_internal.hpp
+@@ -136,10 +136,12 @@ struct DebugVertex final {
+ };
+ 
+ // Per-draw GPU retention resolved from the neutral draw command. The neutral builder owns the
+-// ordering, split, validation, and digest; this only carries the GL handles that cannot live in
+-// the backend-neutral layer.
++// ordering, split, and validation; this only carries a pointer to the builder-owned command plus
++// the GL handles that cannot live in the backend-neutral layer. The command is non-owning: it
++// points into the DrawSummary the frame is currently rendering and is cleared with the scratch
++// vector before that summary goes away.
+ struct PreparedDraw final {
+-    presentation_renderer::DrawCommand command;
++    const presentation_renderer::DrawCommand* command{};
+     const GpuMesh* mesh{};
+     const GpuMaterial* material{};
+     const GpuTexture* texture{};
+diff --git a/tests/presentation_renderer/presentation_renderer_tests.cpp b/tests/presentation_renderer/presentation_renderer_tests.cpp
+index b455db6..79d5bfa 100644
+--- a/tests/presentation_renderer/presentation_renderer_tests.cpp
++++ b/tests/presentation_renderer/presentation_renderer_tests.cpp
+@@ -106,7 +106,8 @@ TEST_CASE("Neutral commands sort opaque ids and transparent depth",
+         snapshot, resources, false, false, nullptr);
+     REQUIRE(first.has_value());
+     REQUIRE(second.has_value());
+-    CHECK(first->digest == second->digest);
++    CHECK(cuexis::presentation_renderer::summaryDigest(*first) ==
++          cuexis::presentation_renderer::summaryDigest(*second));
+     REQUIRE(first->opaque.size() == 2);
+     CHECK(first->opaque[0].objectId == "a");
+     CHECK(first->opaque[1].objectId == "b");
+@@ -121,7 +122,8 @@ TEST_CASE("Neutral commands sort opaque ids and transparent depth",
+     const auto changed = cuexis::presentation_renderer::buildPresentationCommands(
+         snapshot, resources, false, false, nullptr);
+     REQUIRE(changed.has_value());
+-    CHECK(changed->digest != first->digest);
++    CHECK(cuexis::presentation_renderer::summaryDigest(*changed) !=
++          cuexis::presentation_renderer::summaryDigest(*first));
+ }
+ 
+ TEST_CASE("Test renderer transactions reject failure and stale tokens",
+@@ -197,7 +199,7 @@ TEST_CASE("Test renderer transactions reject failure and stale tokens",
+     REQUIRE(summary.has_value());
+     CHECK(summary->debugPassEnabled);
+     CHECK(summary->debugCommandCount == 1);
+-    CHECK(summary->digest != 0);
++    CHECK(cuexis::presentation_renderer::summaryDigest(*summary) != 0);
+     const auto duplicate = renderer.submit(*frame, nullptr);
+     REQUIRE_FALSE(duplicate.has_value());
+     CHECK(duplicate.error().code() == "presentation.renderer.frame.already_submitted");
+diff --git a/tests/render/open_gl_presentation_tests.cpp b/tests/render/open_gl_presentation_tests.cpp
+index aabe8d2..dd9ab87 100644
+--- a/tests/render/open_gl_presentation_tests.cpp
++++ b/tests/render/open_gl_presentation_tests.cpp
+@@ -315,7 +315,9 @@ TEST_CASE("OpenGL summary characterization preserves command order and digest",
+ 
+     REQUIRE(first->opaque.size() == second->opaque.size());
+     REQUIRE(first->transparent.size() == second->transparent.size());
+-    CHECK(first->digest == second->digest);
++    CHECK(cuexis::presentation_renderer::summaryDigest(*first) ==
++          cuexis::presentation_renderer::summaryDigest(*second));
++    CHECK(cuexis::presentation_renderer::summaryDigest(*first) != 0);
+     REQUIRE(first->opaque.size() == 1);
+     CHECK(first->opaque.front().objectId == second->opaque.front().objectId);
+     CHECK(first->opaque.front().worldMatrix == second->opaque.front().worldMatrix);

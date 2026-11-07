@@ -1,0 +1,128 @@
+[
+  {
+    "timestamp": "2026-10-31T21:27:00.215",
+    "level": "info",
+    "logger": "Cuexis Player",
+    "category": "player.startup",
+    "message": "Starting Cuexis Player 26.10.19-1"
+  },
+  {
+    "timestamp": "2026-10-31T21:27:00.220",
+    "level": "info",
+    "logger": "Cuexis Player",
+    "category": "player.build_flavor",
+    "message": "production"
+  },
+  {
+    "timestamp": "2026-10-31T21:27:00.224",
+    "level": "info",
+    "logger": "Cuexis Player",
+    "category": "player.config",
+    "message": "Profile system-default, gain 1.000000"
+  },
+  {
+    "timestamp": "2026-10-31T21:27:08.256",
+    "level": "info",
+    "logger": "Cuexis Player",
+    "category": "player.startup_phase",
+    "message": "content_resolved elapsed_us 8029523 total_us 8029524"
+  },
+  {
+    "timestamp": "2026-10-31T21:27:26.034",
+    "level": "info",
+    "logger": "Cuexis Player",
+    "category": "player.startup_phase",
+    "message": "content_prepared elapsed_us 17778337 total_us 25807861"
+  },
+  {
+    "timestamp": "2026-10-31T21:27:26.122",
+    "level": "info",
+    "logger": "Cuexis Player",
+    "category": "player.sdl",
+    "message": "Video driver: windows"
+  },
+  {
+    "timestamp": "2026-10-31T21:27:26.408",
+    "level": "info",
+    "logger": "Cuexis Player",
+    "category": "player.startup_phase",
+    "message": "window_created elapsed_us 374383 total_us 26182245"
+  },
+  {
+    "timestamp": "2026-10-31T21:27:26.429",
+    "level": "info",
+    "logger": "Cuexis Player",
+    "category": "player.opengl",
+    "message": "Version: 3.3.0 NVIDIA 616.64"
+  },
+  {
+    "timestamp": "2026-10-31T21:27:26.429",
+    "level": "info",
+    "logger": "Cuexis Player",
+    "category": "player.opengl",
+    "message": "Vendor: NVIDIA Corporation"
+  },
+  {
+    "timestamp": "2026-10-31T21:27:26.430",
+    "level": "info",
+    "logger": "Cuexis Player",
+    "category": "player.opengl",
+    "message": "Renderer: NVIDIA GeForce RTX 4060 Laptop GPU/PCIe/SSE2"
+  },
+  {
+    "timestamp": "2026-10-31T21:27:26.430",
+    "level": "info",
+    "logger": "Cuexis Player",
+    "category": "player.startup_phase",
+    "message": "backend_created elapsed_us 21291 total_us 26203536"
+  },
+  {
+    "timestamp": "2026-10-31T21:27:26.430",
+    "level": "info",
+    "logger": "Cuexis Player",
+    "category": "player.config",
+    "message": "Session identity b4eb849265cea6ca0ee0b5c867ac78dbca9122bcdb55970c51b6b21ebd7ffb16"
+  },
+  {
+    "timestamp": "2026-10-31T21:27:26.430",
+    "level": "info",
+    "logger": "Cuexis Player",
+    "category": "player.playback",
+    "message": "Prepared objects: 40001, behaviors: 0, resources: 2"
+  },
+  {
+    "timestamp": "2026-10-31T21:27:26.431",
+    "level": "info",
+    "logger": "Cuexis Player",
+    "category": "player.startup_phase",
+    "message": "content_committed elapsed_us 895 total_us 26204432"
+  },
+  {
+    "timestamp": "2026-10-31T21:27:26.431",
+    "level": "info",
+    "logger": "Cuexis Player",
+    "category": "player.config",
+    "message": "Effective window 1280x720, windowed, audio closed"
+  },
+  {
+    "timestamp": "2026-10-31T21:27:26.431",
+    "level": "info",
+    "logger": "Cuexis Player",
+    "category": "player.startup_phase",
+    "message": "transport_playing elapsed_us 394 total_us 26204826"
+  },
+  {
+    "timestamp": "2026-10-31T21:27:26.497",
+    "level": "info",
+    "logger": "Cuexis Player",
+    "category": "player.startup_phase",
+    "message": "first_frame_presented elapsed_us 65685 total_us 26270511 opaque 40000 transparent 0 render_us 0"
+  },
+  {
+    "timestamp": "2026-10-31T21:27:26.498",
+    "level": "info",
+    "logger": "Cuexis Player",
+    "category": "player.snapshot",
+    "message": "Objects: 40001, opaque draws: 40000, transparent draws: 0, debug commands: 0"
+  }
+]

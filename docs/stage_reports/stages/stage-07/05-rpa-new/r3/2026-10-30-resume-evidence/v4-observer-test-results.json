@@ -1,0 +1,10 @@
+[
+  {
+    "test": "fault",
+    "exit": 0
+  },
+  {
+    "test": "memory",
+    "exit": 0
+  }
+]

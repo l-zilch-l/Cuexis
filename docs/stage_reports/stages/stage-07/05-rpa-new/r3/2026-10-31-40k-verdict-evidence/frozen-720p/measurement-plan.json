@@ -1,0 +1,7 @@
+{
+  "decision_before_registration": "pilot establishes 40K draw correctness and ~0.2s animated frames; freeze finite main group at 120 measured + 30 warmup frames per process, 3 independent timer-on repetitions per mode plus one timer-off per mode; no replacement or extension",
+  "pilot_results_sha256": "c038ab76b9f93c5431b03522a712a605f602c0fdff9bd27a73bd39ad02748845",
+  "processes": 12,
+  "measured_frames": 1440,
+  "scope": "local throughput only; p99 from 120 samples per process, no formal acceptance"
+}

@@ -1,0 +1,200 @@
+{
+  "scope": "Initial-load gate: process creation to first valid frame present-return.",
+  "gate_ms": 2000.0,
+  "exe": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_player.exe",
+  "exe_sha256": "f5d8b0316e3d1308b9a598d7abda8b20d0c7ac6f09347a36b8353ae7feb9721f",
+  "workload": "--smoke-test",
+  "head": "c31f4f14e4a288d5147a42b754121b89e8bbf7ad",
+  "runs": [
+    {
+      "run": 0,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 0.824,
+      "created_utc": "2026-11-01T13:05:06.440512+00:00",
+      "first_log_utc": "2026-11-01T21:05:06.480000+08:00",
+      "first_frame": {
+        "stamp": "2026-11-01T21:05:06.867+08:00",
+        "detail": "elapsed_us 2279 total_us 385652 opaque 1 transparent 0 render_us 0"
+      },
+      "golden_present": true,
+      "first_frame_lines": 1,
+      "log_lines": 35,
+      "out_log": "out\\verification-20261101\\r3-gate-batch1\\load\\run-00.out.log",
+      "err_log": "out\\verification-20261101\\r3-gate-batch1\\load\\run-00.err.log",
+      "load_ms": 426.488,
+      "logger_start_ms": 39.488,
+      "valid": true
+    },
+    {
+      "run": 1,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 0.804,
+      "created_utc": "2026-11-01T13:05:07.268854+00:00",
+      "first_log_utc": "2026-11-01T21:05:07.310000+08:00",
+      "first_frame": {
+        "stamp": "2026-11-01T21:05:07.664+08:00",
+        "detail": "elapsed_us 2275 total_us 352984 opaque 1 transparent 0 render_us 0"
+      },
+      "golden_present": true,
+      "first_frame_lines": 1,
+      "log_lines": 35,
+      "out_log": "out\\verification-20261101\\r3-gate-batch1\\load\\run-01.out.log",
+      "err_log": "out\\verification-20261101\\r3-gate-batch1\\load\\run-01.err.log",
+      "load_ms": 395.146,
+      "logger_start_ms": 41.146,
+      "valid": true
+    },
+    {
+      "run": 2,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 0.795,
+      "created_utc": "2026-11-01T13:05:08.075576+00:00",
+      "first_log_utc": "2026-11-01T21:05:08.116000+08:00",
+      "first_frame": {
+        "stamp": "2026-11-01T21:05:08.487+08:00",
+        "detail": "elapsed_us 1686 total_us 368739 opaque 1 transparent 0 render_us 0"
+      },
+      "golden_present": true,
+      "first_frame_lines": 1,
+      "log_lines": 35,
+      "out_log": "out\\verification-20261101\\r3-gate-batch1\\load\\run-02.out.log",
+      "err_log": "out\\verification-20261101\\r3-gate-batch1\\load\\run-02.err.log",
+      "load_ms": 411.424,
+      "logger_start_ms": 40.424,
+      "valid": true
+    },
+    {
+      "run": 3,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 0.802,
+      "created_utc": "2026-11-01T13:05:08.873386+00:00",
+      "first_log_utc": "2026-11-01T21:05:08.914000+08:00",
+      "first_frame": {
+        "stamp": "2026-11-01T21:05:09.286+08:00",
+        "detail": "elapsed_us 1859 total_us 370616 opaque 1 transparent 0 render_us 0"
+      },
+      "golden_present": true,
+      "first_frame_lines": 1,
+      "log_lines": 35,
+      "out_log": "out\\verification-20261101\\r3-gate-batch1\\load\\run-03.out.log",
+      "err_log": "out\\verification-20261101\\r3-gate-batch1\\load\\run-03.err.log",
+      "load_ms": 412.614,
+      "logger_start_ms": 40.614,
+      "valid": true
+    },
+    {
+      "run": 4,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 0.792,
+      "created_utc": "2026-11-01T13:05:09.678338+00:00",
+      "first_log_utc": "2026-11-01T21:05:09.718000+08:00",
+      "first_frame": {
+        "stamp": "2026-11-01T21:05:10.089+08:00",
+        "detail": "elapsed_us 1887 total_us 369380 opaque 1 transparent 0 render_us 0"
+      },
+      "golden_present": true,
+      "first_frame_lines": 1,
+      "log_lines": 35,
+      "out_log": "out\\verification-20261101\\r3-gate-batch1\\load\\run-04.out.log",
+      "err_log": "out\\verification-20261101\\r3-gate-batch1\\load\\run-04.err.log",
+      "load_ms": 410.662,
+      "logger_start_ms": 39.662,
+      "valid": true
+    },
+    {
+      "run": 5,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 0.819,
+      "created_utc": "2026-11-01T13:05:10.472946+00:00",
+      "first_log_utc": "2026-11-01T21:05:10.513000+08:00",
+      "first_frame": {
+        "stamp": "2026-11-01T21:05:10.890+08:00",
+        "detail": "elapsed_us 1891 total_us 375445 opaque 1 transparent 0 render_us 0"
+      },
+      "golden_present": true,
+      "first_frame_lines": 1,
+      "log_lines": 35,
+      "out_log": "out\\verification-20261101\\r3-gate-batch1\\load\\run-05.out.log",
+      "err_log": "out\\verification-20261101\\r3-gate-batch1\\load\\run-05.err.log",
+      "load_ms": 417.054,
+      "logger_start_ms": 40.054,
+      "valid": true
+    },
+    {
+      "run": 6,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 0.806,
+      "created_utc": "2026-11-01T13:05:11.295244+00:00",
+      "first_log_utc": "2026-11-01T21:05:11.335000+08:00",
+      "first_frame": {
+        "stamp": "2026-11-01T21:05:11.703+08:00",
+        "detail": "elapsed_us 1738 total_us 366230 opaque 1 transparent 0 render_us 0"
+      },
+      "golden_present": true,
+      "first_frame_lines": 1,
+      "log_lines": 35,
+      "out_log": "out\\verification-20261101\\r3-gate-batch1\\load\\run-06.out.log",
+      "err_log": "out\\verification-20261101\\r3-gate-batch1\\load\\run-06.err.log",
+      "load_ms": 407.756,
+      "logger_start_ms": 39.756,
+      "valid": true
+    },
+    {
+      "run": 7,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 0.785,
+      "created_utc": "2026-11-01T13:05:12.103806+00:00",
+      "first_log_utc": "2026-11-01T21:05:12.144000+08:00",
+      "first_frame": {
+        "stamp": "2026-11-01T21:05:12.501+08:00",
+        "detail": "elapsed_us 1789 total_us 355619 opaque 1 transparent 0 render_us 0"
+      },
+      "golden_present": true,
+      "first_frame_lines": 1,
+      "log_lines": 35,
+      "out_log": "out\\verification-20261101\\r3-gate-batch1\\load\\run-07.out.log",
+      "err_log": "out\\verification-20261101\\r3-gate-batch1\\load\\run-07.err.log",
+      "load_ms": 397.194,
+      "logger_start_ms": 40.194,
+      "valid": true
+    },
+    {
+      "run": 8,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 0.805,
+      "created_utc": "2026-11-01T13:05:12.893784+00:00",
+      "first_log_utc": "2026-11-01T21:05:12.934000+08:00",
+      "first_frame": {
+        "stamp": "2026-11-01T21:05:13.292+08:00",
+        "detail": "elapsed_us 1735 total_us 356627 opaque 1 transparent 0 render_us 0"
+      },
+      "golden_present": true,
+      "first_frame_lines": 1,
+      "log_lines": 35,
+      "out_log": "out\\verification-20261101\\r3-gate-batch1\\load\\run-08.out.log",
+      "err_log": "out\\verification-20261101\\r3-gate-batch1\\load\\run-08.err.log",
+      "load_ms": 398.216,
+      "logger_start_ms": 40.216,
+      "valid": true
+    }
+  ],
+  "summary": {
+    "valid_runs": 9,
+    "invalid_runs": 0,
+    "min_ms": 395.146,
+    "median_ms": 410.662,
+    "max_ms": 426.488,
+    "relative_range": 0.076321,
+    "gate_pass_per_run": true,
+    "repeatability_pass": true
+  }
+}

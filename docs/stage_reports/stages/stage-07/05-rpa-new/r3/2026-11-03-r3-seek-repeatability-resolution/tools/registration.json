@@ -1,0 +1,45 @@
+{
+  "schema": "r3.seek.resolution.v1",
+  "formal": false,
+  "scope": "Repeatability resolution only: one unchanged product binary, no A/B, no candidate. Measures how far a single variant's per-process reading moves across nine independent processes so that the plan 9.2 (max-min)/median <= 15 percent row can be judged for feasibility at sub-millisecond magnitudes.",
+  "instrument": {
+    "exe": "D:/Cuexis-redesign/out/build/rpa-candidate-release/bin/cuexis_execution_device_probe.exe",
+    "sha256": "de07cacb0f53c14e23458f58e485b44d03926ec0e0fb4cb08ed4b937df1d65d6",
+    "test": "PD5 scripted seek timing probe",
+    "suite": "cuexis_execution_device_probe",
+    "profile": "Release, STATIC, candidate ON, normal allocator, metrics/trace OFF",
+    "source": {
+      "head": "51f60fa50e0b2183776572093d47f8628f9b9afd",
+      "dirty": "M engine/playback/src/playback_session_internal.hpp\n?? docs/stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-03-r3-seek-repeatability-resolution/"
+    }
+  },
+  "design": {
+    "processes_per_scale": 9,
+    "scales_records": [
+      129,
+      1024
+    ],
+    "seeks_per_process": 16,
+    "order": "interleaved: one process per scale in turn, so both scales spread over the same wall-clock window instead of one scale running first",
+    "environment": {
+      "CUEXIS_PD5_SEEK_RECORDS": "scale",
+      "CUEXIS_PD5_SEEK_COUNT": "16"
+    },
+    "affinity": "not pinned; matches the 2026-11-01 seek probe runs that produced the 941/1012 us ledger readings",
+    "no_parallel_build": true
+  },
+  "quantities": {
+    "primary": "per-process median of request_to_present_us over all 16 seeks, then (max-min)/median across the nine process medians",
+    "secondary": "same but the per-process median uses only the first 3 seeks, matching the archived v4 group shape",
+    "tertiary": "per-process maximum of request_to_present_us (the quantity the Seek gate judges), then the same across-process relative range"
+  },
+  "decision_rule": "Declared before measurement. For each scale and quantity: a relative range above 15 percent means the statistic cannot be satisfied by any implementation at that magnitude, and the 9.2 row is recorded as unattainable there rather than as a candidate defect. At or below 15 percent the criterion stays usable at that magnitude. No threshold is changed by this run and no candidate is accepted or rejected by it.",
+  "validity": "exit code 0, one PD5_SEEK_ID line, exactly 16 PD5_SEEK lines, records equal to the requested scale. Invalid processes are kept and never replaced.",
+  "not_claimed": [
+    "no A/B or candidate comparison",
+    "no formal window or nine pairs",
+    "no change to the 20 ms Seek gate or its two covered classes",
+    "no device, production or stage acceptance"
+  ],
+  "started_local": "2026-11-03 17:32:38"
+}

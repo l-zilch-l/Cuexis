@@ -1,0 +1,1196 @@
+{
+  "scope": "Neutral-path lever A/B screen frozen at 1474316d2bfd38809c38a1e6050c29d83351e369: two entity counts, three fresh processes per arm per count, ABBA order, pixel readback on in both arms, GPU timer off, plus one diagnostic process per arm at 40000 entities. Screen only: it gates nothing outside this group and constitutes no R3/R4, device, production or formal acceptance.",
+  "source_run": {
+    "work_dir": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-neutral-path-v1",
+    "archive": "2026-11-01-neutral-path-lever-evidence",
+    "created_utc": "2026-11-01T07:50:14.609271+00:00",
+    "runs": 14,
+    "processes": 14
+  },
+  "runs": [
+    {
+      "archive": "neutral-lever-measure-v1/00-baseline-1800-render-only",
+      "process": 0,
+      "variant": "baseline",
+      "entities": 1800,
+      "mode": "render-only",
+      "role": "baseline arm, 1800 entities, render-only, 600 frames / 20 s, gate cell",
+      "files": 3,
+      "archived_files": [
+        "neutral-lever-measure-v1/00-baseline-1800-render-only/registration.json",
+        "neutral-lever-measure-v1/00-baseline-1800-render-only/results.json",
+        "neutral-lever-measure-v1/00-baseline-1800-render-only/00-render-only-1800.log.txt.gz"
+      ]
+    },
+    {
+      "archive": "neutral-lever-measure-v1/01-candidate-1800-render-only",
+      "process": 1,
+      "variant": "candidate",
+      "entities": 1800,
+      "mode": "render-only",
+      "role": "candidate arm, 1800 entities, render-only, 600 frames / 20 s, gate cell",
+      "files": 3,
+      "archived_files": [
+        "neutral-lever-measure-v1/01-candidate-1800-render-only/registration.json",
+        "neutral-lever-measure-v1/01-candidate-1800-render-only/results.json",
+        "neutral-lever-measure-v1/01-candidate-1800-render-only/00-render-only-1800.log.txt.gz"
+      ]
+    },
+    {
+      "archive": "neutral-lever-measure-v1/02-baseline-2600-render-only",
+      "process": 2,
+      "variant": "baseline",
+      "entities": 2600,
+      "mode": "render-only",
+      "role": "baseline arm, 2600 entities, render-only, 600 frames / 20 s, gate cell",
+      "files": 3,
+      "archived_files": [
+        "neutral-lever-measure-v1/02-baseline-2600-render-only/registration.json",
+        "neutral-lever-measure-v1/02-baseline-2600-render-only/results.json",
+        "neutral-lever-measure-v1/02-baseline-2600-render-only/00-render-only-2600.log.txt.gz"
+      ]
+    },
+    {
+      "archive": "neutral-lever-measure-v1/03-candidate-2600-render-only",
+      "process": 3,
+      "variant": "candidate",
+      "entities": 2600,
+      "mode": "render-only",
+      "role": "candidate arm, 2600 entities, render-only, 600 frames / 20 s, gate cell",
+      "files": 3,
+      "archived_files": [
+        "neutral-lever-measure-v1/03-candidate-2600-render-only/registration.json",
+        "neutral-lever-measure-v1/03-candidate-2600-render-only/results.json",
+        "neutral-lever-measure-v1/03-candidate-2600-render-only/00-render-only-2600.log.txt.gz"
+      ]
+    },
+    {
+      "archive": "neutral-lever-measure-v1/04-candidate-1800-render-only",
+      "process": 4,
+      "variant": "candidate",
+      "entities": 1800,
+      "mode": "render-only",
+      "role": "candidate arm, 1800 entities, render-only, 600 frames / 20 s, gate cell",
+      "files": 3,
+      "archived_files": [
+        "neutral-lever-measure-v1/04-candidate-1800-render-only/registration.json",
+        "neutral-lever-measure-v1/04-candidate-1800-render-only/results.json",
+        "neutral-lever-measure-v1/04-candidate-1800-render-only/00-render-only-1800.log.txt.gz"
+      ]
+    },
+    {
+      "archive": "neutral-lever-measure-v1/05-baseline-1800-render-only",
+      "process": 5,
+      "variant": "baseline",
+      "entities": 1800,
+      "mode": "render-only",
+      "role": "baseline arm, 1800 entities, render-only, 600 frames / 20 s, gate cell",
+      "files": 3,
+      "archived_files": [
+        "neutral-lever-measure-v1/05-baseline-1800-render-only/registration.json",
+        "neutral-lever-measure-v1/05-baseline-1800-render-only/results.json",
+        "neutral-lever-measure-v1/05-baseline-1800-render-only/00-render-only-1800.log.txt.gz"
+      ]
+    },
+    {
+      "archive": "neutral-lever-measure-v1/06-candidate-2600-render-only",
+      "process": 6,
+      "variant": "candidate",
+      "entities": 2600,
+      "mode": "render-only",
+      "role": "candidate arm, 2600 entities, render-only, 600 frames / 20 s, gate cell",
+      "files": 3,
+      "archived_files": [
+        "neutral-lever-measure-v1/06-candidate-2600-render-only/registration.json",
+        "neutral-lever-measure-v1/06-candidate-2600-render-only/results.json",
+        "neutral-lever-measure-v1/06-candidate-2600-render-only/00-render-only-2600.log.txt.gz"
+      ]
+    },
+    {
+      "archive": "neutral-lever-measure-v1/07-baseline-2600-render-only",
+      "process": 7,
+      "variant": "baseline",
+      "entities": 2600,
+      "mode": "render-only",
+      "role": "baseline arm, 2600 entities, render-only, 600 frames / 20 s, gate cell",
+      "files": 3,
+      "archived_files": [
+        "neutral-lever-measure-v1/07-baseline-2600-render-only/registration.json",
+        "neutral-lever-measure-v1/07-baseline-2600-render-only/results.json",
+        "neutral-lever-measure-v1/07-baseline-2600-render-only/00-render-only-2600.log.txt.gz"
+      ]
+    },
+    {
+      "archive": "neutral-lever-measure-v1/08-baseline-1800-render-only",
+      "process": 8,
+      "variant": "baseline",
+      "entities": 1800,
+      "mode": "render-only",
+      "role": "baseline arm, 1800 entities, render-only, 600 frames / 20 s, gate cell",
+      "files": 3,
+      "archived_files": [
+        "neutral-lever-measure-v1/08-baseline-1800-render-only/registration.json",
+        "neutral-lever-measure-v1/08-baseline-1800-render-only/results.json",
+        "neutral-lever-measure-v1/08-baseline-1800-render-only/00-render-only-1800.log.txt.gz"
+      ]
+    },
+    {
+      "archive": "neutral-lever-measure-v1/09-candidate-1800-render-only",
+      "process": 9,
+      "variant": "candidate",
+      "entities": 1800,
+      "mode": "render-only",
+      "role": "candidate arm, 1800 entities, render-only, 600 frames / 20 s, gate cell",
+      "files": 3,
+      "archived_files": [
+        "neutral-lever-measure-v1/09-candidate-1800-render-only/registration.json",
+        "neutral-lever-measure-v1/09-candidate-1800-render-only/results.json",
+        "neutral-lever-measure-v1/09-candidate-1800-render-only/00-render-only-1800.log.txt.gz"
+      ]
+    },
+    {
+      "archive": "neutral-lever-measure-v1/10-baseline-2600-render-only",
+      "process": 10,
+      "variant": "baseline",
+      "entities": 2600,
+      "mode": "render-only",
+      "role": "baseline arm, 2600 entities, render-only, 600 frames / 20 s, gate cell",
+      "files": 3,
+      "archived_files": [
+        "neutral-lever-measure-v1/10-baseline-2600-render-only/registration.json",
+        "neutral-lever-measure-v1/10-baseline-2600-render-only/results.json",
+        "neutral-lever-measure-v1/10-baseline-2600-render-only/00-render-only-2600.log.txt.gz"
+      ]
+    },
+    {
+      "archive": "neutral-lever-measure-v1/11-candidate-2600-render-only",
+      "process": 11,
+      "variant": "candidate",
+      "entities": 2600,
+      "mode": "render-only",
+      "role": "candidate arm, 2600 entities, render-only, 600 frames / 20 s, gate cell",
+      "files": 3,
+      "archived_files": [
+        "neutral-lever-measure-v1/11-candidate-2600-render-only/registration.json",
+        "neutral-lever-measure-v1/11-candidate-2600-render-only/results.json",
+        "neutral-lever-measure-v1/11-candidate-2600-render-only/00-render-only-2600.log.txt.gz"
+      ]
+    },
+    {
+      "archive": "neutral-lever-measure-v1/12-baseline-40000-render-only",
+      "process": 12,
+      "variant": "baseline",
+      "entities": 40000,
+      "mode": "render-only",
+      "role": "baseline arm, 40000 entities, render-only, 600 frames / 20 s, diagnostic cell (never gated)",
+      "files": 3,
+      "archived_files": [
+        "neutral-lever-measure-v1/12-baseline-40000-render-only/registration.json",
+        "neutral-lever-measure-v1/12-baseline-40000-render-only/results.json",
+        "neutral-lever-measure-v1/12-baseline-40000-render-only/00-render-only-40000.log.txt.gz"
+      ]
+    },
+    {
+      "archive": "neutral-lever-measure-v1/13-candidate-40000-render-only",
+      "process": 13,
+      "variant": "candidate",
+      "entities": 40000,
+      "mode": "render-only",
+      "role": "candidate arm, 40000 entities, render-only, 600 frames / 20 s, diagnostic cell (never gated)",
+      "files": 3,
+      "archived_files": [
+        "neutral-lever-measure-v1/13-candidate-40000-render-only/registration.json",
+        "neutral-lever-measure-v1/13-candidate-40000-render-only/results.json",
+        "neutral-lever-measure-v1/13-candidate-40000-render-only/00-render-only-40000.log.txt.gz"
+      ]
+    }
+  ],
+  "copied_files": [
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/arms/A/arm.json",
+      "archive": "arms/A/arm.json",
+      "mode": "text",
+      "source_bytes": 1141,
+      "bytes": 1176,
+      "sha256": "11619a0f7a25059e7b4f50e3e1d43889e29f357afa92a01ee5e0f86174ab3dda",
+      "source_sha256": "dbf9859fa39137b5c7115afd772935ea82c406b5cc9033f90703493fed4d6dea",
+      "content_sha256": "dbf9859fa39137b5c7115afd772935ea82c406b5cc9033f90703493fed4d6dea",
+      "eol": "lf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/arms/B/arm.json",
+      "archive": "arms/B/arm.json",
+      "mode": "text",
+      "source_bytes": 1665,
+      "bytes": 1709,
+      "sha256": "d4e3bd70e8c2c2ea52c03fdbbeaf9fec21c651b6b39e9cf0da22f886a8ef9f41",
+      "source_sha256": "06bdaa31d3785cd6a19093d8c1a0b2d50a7dedc9da48a29893e1b9fe5a09e56d",
+      "content_sha256": "06bdaa31d3785cd6a19093d8c1a0b2d50a7dedc9da48a29893e1b9fe5a09e56d",
+      "eol": "lf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/binding.json",
+      "archive": "neutral-lever-measure-v1/binding.json",
+      "mode": "text",
+      "source_bytes": 10424,
+      "bytes": 10424,
+      "sha256": "1cd7361a909f817784ad1728ccf14f8b995d814f6cc13e3d476db784f7fc4124",
+      "source_sha256": "1cd7361a909f817784ad1728ccf14f8b995d814f6cc13e3d476db784f7fc4124",
+      "content_sha256": "bd4b6a3535f02d6778a360a131bffb223590fb2004d87af06eeaf4249eb3a412",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/plan.json",
+      "archive": "neutral-lever-measure-v1/plan.json",
+      "mode": "text",
+      "source_bytes": 1279,
+      "bytes": 1279,
+      "sha256": "4dc46b1a020a964b9e8d1f3d09c0246c25cd2fd70926416f7fbce4a1c2616d86",
+      "source_sha256": "4dc46b1a020a964b9e8d1f3d09c0246c25cd2fd70926416f7fbce4a1c2616d86",
+      "content_sha256": "cc3e32fc3b9ab55ef4bf35295f97d26f99ed34b175bb4a87a727b8dedfad1bac",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/results.json",
+      "archive": "neutral-lever-measure-v1/results.json",
+      "mode": "text",
+      "source_bytes": 40574,
+      "bytes": 40574,
+      "sha256": "ddfa016d92f7e4bc923b37ee683e13c12f9131888384cf18a44e19af0ea3cf68",
+      "source_sha256": "ddfa016d92f7e4bc923b37ee683e13c12f9131888384cf18a44e19af0ea3cf68",
+      "content_sha256": "636c21fa4ff9cef870492615e19df8053cd2790833e2477d838e5e9b05a8897f",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/decision.json",
+      "archive": "neutral-lever-measure-v1/decision.json",
+      "mode": "text",
+      "source_bytes": 4718,
+      "bytes": 4718,
+      "sha256": "c8a3112b6492f2c61c211cbe816dd70ddbae60904dea87a538bcfcba232dfc20",
+      "source_sha256": "c8a3112b6492f2c61c211cbe816dd70ddbae60904dea87a538bcfcba232dfc20",
+      "content_sha256": "acb287e05e19241c11bdd72e3cb5fdcae7375eb5291bd2cf7b0a2ec42114ebd2",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/verification.json",
+      "archive": "neutral-lever-measure-v1/verification.json",
+      "mode": "text",
+      "source_bytes": 90,
+      "bytes": 97,
+      "sha256": "8c3b03bcd26b1389c124e9104dc90a026e5643ae77d0a982491cc4528b540152",
+      "source_sha256": "d0c164d8b7fae21ecfc962feba335366b54d594ce3538c6b711445240f476d75",
+      "content_sha256": "d0c164d8b7fae21ecfc962feba335366b54d594ce3538c6b711445240f476d75",
+      "eol": "lf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1-aborted-setup/aborted.json",
+      "archive": "superseded/aborted-setup/aborted.json",
+      "mode": "text",
+      "source_bytes": 573,
+      "bytes": 583,
+      "sha256": "7e1f4e41f4fb89809c0bfaf60153570af049fe96e27959ca87f7592cf30f5371",
+      "source_sha256": "0f4f91492097b0e17cdbfa0eaedc624dc6c7687db1538d0bc18d4c1f2ed8a024",
+      "content_sha256": "0f4f91492097b0e17cdbfa0eaedc624dc6c7687db1538d0bc18d4c1f2ed8a024",
+      "eol": "lf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1-aborted-setup/binding.json",
+      "archive": "superseded/aborted-setup/binding.json",
+      "mode": "text",
+      "source_bytes": 10424,
+      "bytes": 10424,
+      "sha256": "9cfa25c7df9286f3a6fff2aa0a87b42af47d3ad3b2c0559ba8e224fe4dbd6dd0",
+      "source_sha256": "9cfa25c7df9286f3a6fff2aa0a87b42af47d3ad3b2c0559ba8e224fe4dbd6dd0",
+      "content_sha256": "0559ac55fb5c5d2e4a79ce48f7c4d74b7b1a9b8a8e324710e5dc24f55d88c626",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1-aborted-setup/plan.json",
+      "archive": "superseded/aborted-setup/plan.json",
+      "mode": "text",
+      "source_bytes": 1279,
+      "bytes": 1279,
+      "sha256": "19ed2325127acea27133e634916f88bcd2ef585b49e2f5e31dd8879ead1d68d1",
+      "source_sha256": "19ed2325127acea27133e634916f88bcd2ef585b49e2f5e31dd8879ead1d68d1",
+      "content_sha256": "300ca8ef1ea90b41d83a32e9f560156bc81fcdbf98d31572beafe0cebacfdfaf",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/run_neutral_lever_v1.py",
+      "archive": "instruments/run_neutral_lever_v1.py.txt",
+      "mode": "text",
+      "source_bytes": 11594,
+      "bytes": 11850,
+      "sha256": "a061909f06a1dbe6d8447a2ed9d09418f32837c7acc0766712066aa91d3deadc",
+      "source_sha256": "5056873fc4c97fc713baf823f18a99abefa1c24ce8a4f8c2c66e00608650e7ca",
+      "content_sha256": "5056873fc4c97fc713baf823f18a99abefa1c24ce8a4f8c2c66e00608650e7ca",
+      "eol": "lf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/verify_neutral_lever_v1.py",
+      "archive": "instruments/verify_neutral_lever_v1.py.txt",
+      "mode": "text",
+      "source_bytes": 12811,
+      "bytes": 13043,
+      "sha256": "16c1a307dfbcf5d078ffaa6c152db0ccc3f688cfc9bcff6d3aa7b8760279b1c6",
+      "source_sha256": "3b6d20b8b27705686d78392e155210d611f5385424206073c1702a75a9152b74",
+      "content_sha256": "3b6d20b8b27705686d78392e155210d611f5385424206073c1702a75a9152b74",
+      "eol": "lf"
+    },
+    {
+      "source": "out/verification-20261029/r3-completion/gpu_runner.py",
+      "archive": "instruments/gpu_runner.py.txt",
+      "mode": "text",
+      "source_bytes": 7750,
+      "bytes": 7750,
+      "sha256": "424e1b619f786fcb0ea10f73dd3af0679e7adb63acd60b2c48f04d3c076e6904",
+      "source_sha256": "424e1b619f786fcb0ea10f73dd3af0679e7adb63acd60b2c48f04d3c076e6904",
+      "content_sha256": "dbc4753722c16d1b8df48bfbb474e74f91fe2756d5daede014ef389d6602e5fa",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261029/r3-completion/native.py",
+      "archive": "instruments/native.py.txt",
+      "mode": "text",
+      "source_bytes": 1669,
+      "bytes": 1669,
+      "sha256": "44f9c49e8ec353a6386a7b481f178859abcf1c46b11688db70bb411ed21f15ce",
+      "source_sha256": "44f9c49e8ec353a6386a7b481f178859abcf1c46b11688db70bb411ed21f15ce",
+      "content_sha256": "1d08bf37831bd57a9bb4bd9be3a81155dbb5292a73b9928a22203465513b1012",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/00-baseline-1800-render-only/registration.json",
+      "archive": "neutral-lever-measure-v1/00-baseline-1800-render-only/registration.json",
+      "mode": "text",
+      "source_bytes": 1649,
+      "bytes": 1649,
+      "sha256": "5ad6f6da1191f338fd538f69750c52ff56257fdedad7274f71d9349b4425cbf8",
+      "source_sha256": "5ad6f6da1191f338fd538f69750c52ff56257fdedad7274f71d9349b4425cbf8",
+      "content_sha256": "da36eaeed3ce140e0daa9e2c208d84bd991251421d36d78c499f9c5cf1359587",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/00-baseline-1800-render-only/results.json",
+      "archive": "neutral-lever-measure-v1/00-baseline-1800-render-only/results.json",
+      "mode": "text",
+      "source_bytes": 2889,
+      "bytes": 2889,
+      "sha256": "753a0a832f0c0006c62aff6dbcd2ae1c835ed0739b86f37413a8fc3a887f5de0",
+      "source_sha256": "753a0a832f0c0006c62aff6dbcd2ae1c835ed0739b86f37413a8fc3a887f5de0",
+      "content_sha256": "2db6805f69b9c0e74ec11179807b0f36a2b711081438cc0822b8ecacf2b93bf5",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/00-baseline-1800-render-only/00-render-only-1800.log",
+      "archive": "neutral-lever-measure-v1/00-baseline-1800-render-only/00-render-only-1800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1511928,
+      "bytes": 169798,
+      "sha256": "a9e539b83e8807cf294e74c3a6668cba1bb9f2cd2ec26d1502dadf8faab2f1ad",
+      "source_sha256": "c4742ffcb3541109dd5277f6b5e821a6e2bc8845ee236eb43b4c5a981bbd9cdc",
+      "content_sha256": "a4c1548a23a1df5301660e2a86c9467931fcca3cb6cbedf58def0cd712a9b733",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/01-candidate-1800-render-only/registration.json",
+      "archive": "neutral-lever-measure-v1/01-candidate-1800-render-only/registration.json",
+      "mode": "text",
+      "source_bytes": 1651,
+      "bytes": 1651,
+      "sha256": "06116f3ef89f7bd33231fb1b28740b9106ec2fe8cf531cd20112a6243599d732",
+      "source_sha256": "06116f3ef89f7bd33231fb1b28740b9106ec2fe8cf531cd20112a6243599d732",
+      "content_sha256": "0b61426cfa115332b3ac35889f58c6f2e40b1aed01558b7efd2fda7277dffe7f",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/01-candidate-1800-render-only/results.json",
+      "archive": "neutral-lever-measure-v1/01-candidate-1800-render-only/results.json",
+      "mode": "text",
+      "source_bytes": 2893,
+      "bytes": 2893,
+      "sha256": "189b2dddb76199ac61bb0bdbe7202b8a24c0901f49b2bc60ec1ded20f6314f1a",
+      "source_sha256": "189b2dddb76199ac61bb0bdbe7202b8a24c0901f49b2bc60ec1ded20f6314f1a",
+      "content_sha256": "de3cadb456d78bb56ef1754665eedc7cd98807daa1226254d678807c5229b10c",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/01-candidate-1800-render-only/00-render-only-1800.log",
+      "archive": "neutral-lever-measure-v1/01-candidate-1800-render-only/00-render-only-1800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 2041762,
+      "bytes": 239919,
+      "sha256": "6b0f336ffd962279729b5026c96a2e578f91dd869b6f7e6cf12eccd6f19e0766",
+      "source_sha256": "34c38402525ae37d17209e93ccd983c74fad162e3004d5c0d8f6513b9da59c17",
+      "content_sha256": "fca431cd7fcc66f0b74a7f14a470d733c8358e73d67bcc71fa748363cb0f7552",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/02-baseline-2600-render-only/registration.json",
+      "archive": "neutral-lever-measure-v1/02-baseline-2600-render-only/registration.json",
+      "mode": "text",
+      "source_bytes": 1649,
+      "bytes": 1649,
+      "sha256": "08622f7864ddf26f1c66319b7d6908d97fe9a0ae18f36241e2186ebe7c6b44f3",
+      "source_sha256": "08622f7864ddf26f1c66319b7d6908d97fe9a0ae18f36241e2186ebe7c6b44f3",
+      "content_sha256": "0a6eea5e81e51fb9d6307f1cf0d4d679276fdb047b4fc4de6d76db5f09bc6929",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/02-baseline-2600-render-only/results.json",
+      "archive": "neutral-lever-measure-v1/02-baseline-2600-render-only/results.json",
+      "mode": "text",
+      "source_bytes": 2896,
+      "bytes": 2896,
+      "sha256": "d0b402c8951a745c000abddaa29f82cfbc0a10cb3acc1c1784925c0b971b422e",
+      "source_sha256": "d0b402c8951a745c000abddaa29f82cfbc0a10cb3acc1c1784925c0b971b422e",
+      "content_sha256": "0b8a22d62b1014a5ee2c3c83b977880d56785dcd302225c3b6dd0c42729f75f5",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/02-baseline-2600-render-only/00-render-only-2600.log",
+      "archive": "neutral-lever-measure-v1/02-baseline-2600-render-only/00-render-only-2600.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1066572,
+      "bytes": 122493,
+      "sha256": "9ac4da9e9534232a2e6ea6c1a90c2a99c8466998a206b261ebb09cee4a73d3dd",
+      "source_sha256": "8a7cf3796a84c7f3969fa70d8ea553b4e6812a7d0e373de1a42ac1ccfd0fcb79",
+      "content_sha256": "244b349fa69f00e0bcb24fa65581b5269cc7f0fbb42be469a4b809a048a267a5",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/03-candidate-2600-render-only/registration.json",
+      "archive": "neutral-lever-measure-v1/03-candidate-2600-render-only/registration.json",
+      "mode": "text",
+      "source_bytes": 1651,
+      "bytes": 1651,
+      "sha256": "7e2fa6f1b4e5071a9b95c1aec79af2e8f6e59e1c62e9cfda1166a59872ec25a3",
+      "source_sha256": "7e2fa6f1b4e5071a9b95c1aec79af2e8f6e59e1c62e9cfda1166a59872ec25a3",
+      "content_sha256": "dfb515a36c4e03368d9cb5bc8c1bbf414f1cbdad473355e965f44a34a0f64aa6",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/03-candidate-2600-render-only/results.json",
+      "archive": "neutral-lever-measure-v1/03-candidate-2600-render-only/results.json",
+      "mode": "text",
+      "source_bytes": 2890,
+      "bytes": 2890,
+      "sha256": "2c94bd6826bb5286d9db305e34590806f8ac0e8eccff864310ed675deb89ec8f",
+      "source_sha256": "2c94bd6826bb5286d9db305e34590806f8ac0e8eccff864310ed675deb89ec8f",
+      "content_sha256": "f14380f24651ab70d3b1e78b2551d5f5b197c82335817b83626fd5b0b0a490b5",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/03-candidate-2600-render-only/00-render-only-2600.log",
+      "archive": "neutral-lever-measure-v1/03-candidate-2600-render-only/00-render-only-2600.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1597932,
+      "bytes": 181495,
+      "sha256": "4078ecf90a17d19686eac9655d07644b882c5a69e85e3a00eceac3cec364a3d2",
+      "source_sha256": "db160acd6a121d00e534b00d35c5a647f6c52b80e1010ddc4f0d4d3a4b3e167a",
+      "content_sha256": "3391e0d4956a30edcd493fc77360788f841a04feb0bac7e662b3031345a2a50b",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/04-candidate-1800-render-only/registration.json",
+      "archive": "neutral-lever-measure-v1/04-candidate-1800-render-only/registration.json",
+      "mode": "text",
+      "source_bytes": 1651,
+      "bytes": 1651,
+      "sha256": "584e387bd26e84f744f03f54ef5ad360113bf79c1abb805958abc1ac1d89d2c1",
+      "source_sha256": "584e387bd26e84f744f03f54ef5ad360113bf79c1abb805958abc1ac1d89d2c1",
+      "content_sha256": "bb7bd6ccddd16bb8ae5866e471d29cf754822e0ae84b60648e42df5d19066944",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/04-candidate-1800-render-only/results.json",
+      "archive": "neutral-lever-measure-v1/04-candidate-1800-render-only/results.json",
+      "mode": "text",
+      "source_bytes": 2899,
+      "bytes": 2899,
+      "sha256": "4fef6f62f9451784e909a37eed561fb243e610a0ace26ef1491ab02f1fe51cce",
+      "source_sha256": "4fef6f62f9451784e909a37eed561fb243e610a0ace26ef1491ab02f1fe51cce",
+      "content_sha256": "74debd3ad82866d1c30fdcd10025392ecb3b9c9989fb78ad606b9a3dda3930ed",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/04-candidate-1800-render-only/00-render-only-1800.log",
+      "archive": "neutral-lever-measure-v1/04-candidate-1800-render-only/00-render-only-1800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 2018867,
+      "bytes": 238471,
+      "sha256": "e10176ad3f7ecf74ade556b0b53cfeb2d84fb6d5ef952d72aedde7df29c34a61",
+      "source_sha256": "d6acef554801f25cf9daf4526f1dd54ebdb7d9311c08e2798edd3e2b7b371896",
+      "content_sha256": "6d3f68738780e3506994b79ef019ea4ccc4c3b66a38bba7c24efee913670d243",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/05-baseline-1800-render-only/registration.json",
+      "archive": "neutral-lever-measure-v1/05-baseline-1800-render-only/registration.json",
+      "mode": "text",
+      "source_bytes": 1649,
+      "bytes": 1649,
+      "sha256": "e65e9808aff982c63b95a10baea256edc7fbc15654e4f2ec0b150a55fa8d107d",
+      "source_sha256": "e65e9808aff982c63b95a10baea256edc7fbc15654e4f2ec0b150a55fa8d107d",
+      "content_sha256": "e9e46588fe69676c3924727530f6f32aa010df412f996ff1c74185c34d3194e6",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/05-baseline-1800-render-only/results.json",
+      "archive": "neutral-lever-measure-v1/05-baseline-1800-render-only/results.json",
+      "mode": "text",
+      "source_bytes": 2886,
+      "bytes": 2886,
+      "sha256": "75a8f1fb711fea4c14c3de789e8136afa9dd44660fe8a5ee716ed3c39df6808b",
+      "source_sha256": "75a8f1fb711fea4c14c3de789e8136afa9dd44660fe8a5ee716ed3c39df6808b",
+      "content_sha256": "f6e00e5560583c68dc7d618bcd124f17c5e450863537d417f523833062cad7d5",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/05-baseline-1800-render-only/00-render-only-1800.log",
+      "archive": "neutral-lever-measure-v1/05-baseline-1800-render-only/00-render-only-1800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1507545,
+      "bytes": 169612,
+      "sha256": "6d4414c9994dc08d4ed78bc8395b647ee7c4631f86e2033dced5cc030a022b9a",
+      "source_sha256": "13311fc6a27363e60341864862c5bd9ce4baa14c171b7a2b0676316fa6bd6fa1",
+      "content_sha256": "1bc0f50381d25b6a7c71569a2c5b941c26048cfb6adb97b71618214333908b2f",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/06-candidate-2600-render-only/registration.json",
+      "archive": "neutral-lever-measure-v1/06-candidate-2600-render-only/registration.json",
+      "mode": "text",
+      "source_bytes": 1651,
+      "bytes": 1651,
+      "sha256": "f1a8a5e890762e462973a85b0e46b87d25a411d9948e8cf70ca5a544c38ea964",
+      "source_sha256": "f1a8a5e890762e462973a85b0e46b87d25a411d9948e8cf70ca5a544c38ea964",
+      "content_sha256": "ad9fda3a62c32cfb2d8b3441f14681407441f8ac2b4c9310ca29efa672a7bb8f",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/06-candidate-2600-render-only/results.json",
+      "archive": "neutral-lever-measure-v1/06-candidate-2600-render-only/results.json",
+      "mode": "text",
+      "source_bytes": 2884,
+      "bytes": 2884,
+      "sha256": "29dedb105c6b11b63311e71f57a93aa3e96eb6f042d182778177061a871e46a2",
+      "source_sha256": "29dedb105c6b11b63311e71f57a93aa3e96eb6f042d182778177061a871e46a2",
+      "content_sha256": "8305d44cfb1cf4ab0617ffcd86dcd32afb86aecd3fe38f9aa6f954d5f4ca5b0a",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/06-candidate-2600-render-only/00-render-only-2600.log",
+      "archive": "neutral-lever-measure-v1/06-candidate-2600-render-only/00-render-only-2600.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1608337,
+      "bytes": 183182,
+      "sha256": "1f80588f909e9d0b8f3b937573acff3e83791078fa30dfdd6d97bc7b8c5f0c2b",
+      "source_sha256": "d20eed59dc5add1ca209cc2027be6d30882f7164dfdae373b11d0982c63a2cc6",
+      "content_sha256": "5d4a7fce4d9a8889094d5801deb100f917eb4ffd0e273a48caace5311dae2685",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/07-baseline-2600-render-only/registration.json",
+      "archive": "neutral-lever-measure-v1/07-baseline-2600-render-only/registration.json",
+      "mode": "text",
+      "source_bytes": 1649,
+      "bytes": 1649,
+      "sha256": "d556255f15d021b70b6b23b46dbcd3408d4d030b997e5f763f60267994e06485",
+      "source_sha256": "d556255f15d021b70b6b23b46dbcd3408d4d030b997e5f763f60267994e06485",
+      "content_sha256": "66b0522a925c72c074c52285a186ce21e5b823014df1327351cbf0f7774febc5",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/07-baseline-2600-render-only/results.json",
+      "archive": "neutral-lever-measure-v1/07-baseline-2600-render-only/results.json",
+      "mode": "text",
+      "source_bytes": 2898,
+      "bytes": 2898,
+      "sha256": "3bb6c279c645221ce19b677acded46dd5bc346272443ab6ccad8c677015efea7",
+      "source_sha256": "3bb6c279c645221ce19b677acded46dd5bc346272443ab6ccad8c677015efea7",
+      "content_sha256": "51102ddb82ce0edb9f68df83a9cc191eda1367afea91e93cc695806248e121f9",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/07-baseline-2600-render-only/00-render-only-2600.log",
+      "archive": "neutral-lever-measure-v1/07-baseline-2600-render-only/00-render-only-2600.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1035396,
+      "bytes": 117627,
+      "sha256": "487777add1febf70717a8a96aa5363f60a5065934b8ff47aec10d83d5616165e",
+      "source_sha256": "0f4b73cde81d96f49256fdbff7aa0f5f620827b8d8169955ef7998ef67449ca5",
+      "content_sha256": "483d2cb0624e6a974c43b8705ef17f487c4ca0c316340ab1c855ecbc867686a0",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/08-baseline-1800-render-only/registration.json",
+      "archive": "neutral-lever-measure-v1/08-baseline-1800-render-only/registration.json",
+      "mode": "text",
+      "source_bytes": 1649,
+      "bytes": 1649,
+      "sha256": "944316d87db72471d0e676b74fc1422223d6bded00be7f3102a7f822823360c4",
+      "source_sha256": "944316d87db72471d0e676b74fc1422223d6bded00be7f3102a7f822823360c4",
+      "content_sha256": "5cd48c817affc77f6f7a2add93b115ef3d5eed3313a7dd2b48dae80905be8dfe",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/08-baseline-1800-render-only/results.json",
+      "archive": "neutral-lever-measure-v1/08-baseline-1800-render-only/results.json",
+      "mode": "text",
+      "source_bytes": 2888,
+      "bytes": 2888,
+      "sha256": "19ce88b4629012a406b11bc3bedc1183d80e2988f4734809b7e3c9f994b133ac",
+      "source_sha256": "19ce88b4629012a406b11bc3bedc1183d80e2988f4734809b7e3c9f994b133ac",
+      "content_sha256": "94af361ea6221d00df56ab9201ab1bd104c38137209265dc1e64ac5926522fe8",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/08-baseline-1800-render-only/00-render-only-1800.log",
+      "archive": "neutral-lever-measure-v1/08-baseline-1800-render-only/00-render-only-1800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1511262,
+      "bytes": 170702,
+      "sha256": "c52401d179a93a29f0568f54d57d9a25c23e9fc2f08b2beeb318a24a661fc98b",
+      "source_sha256": "0fc0ac601384e10fd23d92002df41dc61ee86002ff1c772dacdc4243dae35ec1",
+      "content_sha256": "70fc7084d0123ccec41f045344514864db8a26af7cff907586c01c490d64e889",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/09-candidate-1800-render-only/registration.json",
+      "archive": "neutral-lever-measure-v1/09-candidate-1800-render-only/registration.json",
+      "mode": "text",
+      "source_bytes": 1651,
+      "bytes": 1651,
+      "sha256": "05f7f99ca2a3da915eb64a4526813a077ef557117137ada48d49b7e94a8d7690",
+      "source_sha256": "05f7f99ca2a3da915eb64a4526813a077ef557117137ada48d49b7e94a8d7690",
+      "content_sha256": "c3e26acba710502b95a13bbdbe3b7cdd7ad299906c6121d91e4f36d5ea1be635",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/09-candidate-1800-render-only/results.json",
+      "archive": "neutral-lever-measure-v1/09-candidate-1800-render-only/results.json",
+      "mode": "text",
+      "source_bytes": 2899,
+      "bytes": 2899,
+      "sha256": "ac126d1c73c4eecc3f83643cd41dc38c5f93a9a8aae224770c8c358c355a3fe8",
+      "source_sha256": "ac126d1c73c4eecc3f83643cd41dc38c5f93a9a8aae224770c8c358c355a3fe8",
+      "content_sha256": "2f2a98e3fca0b6e3fbd5b4b7f193efa5f576545e7b48f0c54113eb5e8c57a6a2",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/09-candidate-1800-render-only/00-render-only-1800.log",
+      "archive": "neutral-lever-measure-v1/09-candidate-1800-render-only/00-render-only-1800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 2010678,
+      "bytes": 237669,
+      "sha256": "cc453fac24ef92aef251fb5a722747ed9056791947218396328b242e9cfc5602",
+      "source_sha256": "70a3bc39be32d3b44d8689d441e4f155fbc55ad0820f8a6c2802b6e6517a4009",
+      "content_sha256": "560bda48d9d591e70f98bdf79ad57c15f44c62c8f000ad419f493d3c2acff815",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/10-baseline-2600-render-only/registration.json",
+      "archive": "neutral-lever-measure-v1/10-baseline-2600-render-only/registration.json",
+      "mode": "text",
+      "source_bytes": 1650,
+      "bytes": 1650,
+      "sha256": "18cb895c216ff2e3be3eb6228bccdd859f0f7fc6f52521c1fc09e3494b1af1cd",
+      "source_sha256": "18cb895c216ff2e3be3eb6228bccdd859f0f7fc6f52521c1fc09e3494b1af1cd",
+      "content_sha256": "ad834e241b62af4a74a633f982b6c3fdef942c4387e0c439d1e93321e4cb864a",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/10-baseline-2600-render-only/results.json",
+      "archive": "neutral-lever-measure-v1/10-baseline-2600-render-only/results.json",
+      "mode": "text",
+      "source_bytes": 2897,
+      "bytes": 2897,
+      "sha256": "1768b062cb91f0e166cedc926722f92019dd6f6f637e2a926722972ebf7c2ad7",
+      "source_sha256": "1768b062cb91f0e166cedc926722f92019dd6f6f637e2a926722972ebf7c2ad7",
+      "content_sha256": "026fbb7132ed74b613cc9f818b359892f82c016f48c1ba912b5f62ca2b1fbde9",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/10-baseline-2600-render-only/00-render-only-2600.log",
+      "archive": "neutral-lever-measure-v1/10-baseline-2600-render-only/00-render-only-2600.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1100174,
+      "bytes": 126137,
+      "sha256": "dc36efc8f6bdc70be4ed7d1a0c169c3e448706c97ef9c3105d9cdbfb6428a26e",
+      "source_sha256": "5143b387d338d282a1e4892ee49d23e9795172a45f1ed6c691118227c5f6a7eb",
+      "content_sha256": "49fd9035408f3d138d9c0d65ba275cf595bd8a2ede14087a7e377faf92a48607",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/11-candidate-2600-render-only/registration.json",
+      "archive": "neutral-lever-measure-v1/11-candidate-2600-render-only/registration.json",
+      "mode": "text",
+      "source_bytes": 1652,
+      "bytes": 1652,
+      "sha256": "01d35e23cd96f525ee3c8449d0f7919ca3347976cc272845d68cd9801b2dec5b",
+      "source_sha256": "01d35e23cd96f525ee3c8449d0f7919ca3347976cc272845d68cd9801b2dec5b",
+      "content_sha256": "254e317ecbb6098d6be8a113a6f829aaaaf59af70e908940d7d77ee263fea8c9",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/11-candidate-2600-render-only/results.json",
+      "archive": "neutral-lever-measure-v1/11-candidate-2600-render-only/results.json",
+      "mode": "text",
+      "source_bytes": 2893,
+      "bytes": 2893,
+      "sha256": "b8ff294c3fbdd5fe9219104f2b5cbf7b12b70afcec15a37c388d977d455523ed",
+      "source_sha256": "b8ff294c3fbdd5fe9219104f2b5cbf7b12b70afcec15a37c388d977d455523ed",
+      "content_sha256": "b9b1e2d4460ee4a518ffc5f4dd5e0e997f7589d8f36779d6ece14feb05af212c",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/11-candidate-2600-render-only/00-render-only-2600.log",
+      "archive": "neutral-lever-measure-v1/11-candidate-2600-render-only/00-render-only-2600.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1621443,
+      "bytes": 183411,
+      "sha256": "5300b110793029424f4700463b14bde821e5167af0cdd4178f26d16388008a4a",
+      "source_sha256": "263b672a079d1860184f5685359e2f5cd0d38178a91434ca278a707ac604fd6a",
+      "content_sha256": "0eb88f8c03de0f172e0e3db4974049c612e51edd0e2a6c4c24d7ccb140743662",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/12-baseline-40000-render-only/registration.json",
+      "archive": "neutral-lever-measure-v1/12-baseline-40000-render-only/registration.json",
+      "mode": "text",
+      "source_bytes": 1761,
+      "bytes": 1761,
+      "sha256": "4ee7ae8fd2d4e107f18b396bae939d779b2457c5531e9d69f9debf8fa955a2cc",
+      "source_sha256": "4ee7ae8fd2d4e107f18b396bae939d779b2457c5531e9d69f9debf8fa955a2cc",
+      "content_sha256": "b21fc0bc7612cc59448f81a9155a2a985c7de89e3588e9b8b845ba3c4c351411",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/12-baseline-40000-render-only/results.json",
+      "archive": "neutral-lever-measure-v1/12-baseline-40000-render-only/results.json",
+      "mode": "text",
+      "source_bytes": 2950,
+      "bytes": 2950,
+      "sha256": "b4d035ac2431458223bf8ffbc3dcd9049eb952c07509cb58277abe250cd0e042",
+      "source_sha256": "b4d035ac2431458223bf8ffbc3dcd9049eb952c07509cb58277abe250cd0e042",
+      "content_sha256": "7d1f671a8ea46aa28c92088428fc5d16b5e6589f2f8b508f0e40a267f120c7b4",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/12-baseline-40000-render-only/00-render-only-40000.log",
+      "archive": "neutral-lever-measure-v1/12-baseline-40000-render-only/00-render-only-40000.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 95276,
+      "bytes": 12738,
+      "sha256": "0807c7bb9da129a4f380182afc9efb08cc6c6c76470a1a58e1bdab5009081aad",
+      "source_sha256": "7d02d5fb5170d8717eb0b5dd3b2512db5c9a2f939d47d125e170a00d33daba84",
+      "content_sha256": "02c6f96b10ed1dbd899550d38f69c96230bd5d91bc364790f457f13fec160914",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/13-candidate-40000-render-only/registration.json",
+      "archive": "neutral-lever-measure-v1/13-candidate-40000-render-only/registration.json",
+      "mode": "text",
+      "source_bytes": 1763,
+      "bytes": 1763,
+      "sha256": "ad6fd71f32ded62d8f93306df01428615de23046338cbc8678c4d745b6978daa",
+      "source_sha256": "ad6fd71f32ded62d8f93306df01428615de23046338cbc8678c4d745b6978daa",
+      "content_sha256": "e10fe60a8bb7e70c42116cd80dc93e9ca47ca780b197e362761de42782e3d04d",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/13-candidate-40000-render-only/results.json",
+      "archive": "neutral-lever-measure-v1/13-candidate-40000-render-only/results.json",
+      "mode": "text",
+      "source_bytes": 2951,
+      "bytes": 2951,
+      "sha256": "5a76104157779a7d662c8c543bb68d85340a3cd74c1eb3aa973b8301256a38da",
+      "source_sha256": "5a76104157779a7d662c8c543bb68d85340a3cd74c1eb3aa973b8301256a38da",
+      "content_sha256": "cd591d1d0accb9c5d2aa5256d89f8abbb0da2f8e3e2f93fc3a81d18c5d5ae551",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/neutral-lever-measure-v1/13-candidate-40000-render-only/00-render-only-40000.log",
+      "archive": "neutral-lever-measure-v1/13-candidate-40000-render-only/00-render-only-40000.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 149117,
+      "bytes": 19008,
+      "sha256": "80973a760fd18d64b78e70b6348c794bbba3bd4fba6dee384e49641450b57155",
+      "source_sha256": "be5798ea49ad4497a8a5db2ac9d32816094ea90d025622be98f0066c784c7337",
+      "content_sha256": "6723ea09db226cba78323ae87613f489dd795c85a2f9ca435025701f67fffb1c",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/r3-neutral-path-v1/smoke-B.log",
+      "archive": "logs/smoke-B.log.txt",
+      "mode": "text",
+      "source_bytes": 4529,
+      "bytes": 4531,
+      "sha256": "1a796929efb0374addc085788e261f5ffb29f3398c11e79336f075aadd68a605",
+      "source_sha256": "7b0f67197b0292041bee60337c32d306735aabc7117c7aee09b3107d91c81dad",
+      "content_sha256": "9d2764564bb618e3d3ef022c1c42a18c7e4aa928cf51562e478cc88ebcbabf4b",
+      "eol": "mixed"
+    },
+    {
+      "source": "out/build/rpa-candidate-release/Testing/Temporary/LastTest.log",
+      "archive": "logs/full-ctest-release.journal.log.gz",
+      "mode": "gzip",
+      "source_bytes": 2189386,
+      "bytes": 148051,
+      "sha256": "fe0ef11f4ae7ed568df896f19522e90df5fe6600c543a744e99b9dcc13b09bf1",
+      "source_sha256": "e9128cace6e4acc3bfe745aa4c458bb18cf4b41b80963c807a2c3419c71f3337",
+      "content_sha256": "f41244daa3c6fbc78a6df09163923be94c478e4bb2f73a5661780f89fdb7f413",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/evidence-staging/r3-neutral/checks/full-ctest-release.console-tail.log",
+      "archive": "logs/full-ctest-release.console-tail.log.txt",
+      "mode": "text",
+      "source_bytes": 261646,
+      "bytes": 263953,
+      "sha256": "4676d6ff31207204a50e35e31819a6323f906fd6990cf7033bdaa7cff7e8b2c7",
+      "source_sha256": "a7e50816b961bd8e5487d0ccf16813a46bdf8b091ba8b47b7dff3633d7c85c1e",
+      "content_sha256": "a7e50816b961bd8e5487d0ccf16813a46bdf8b091ba8b47b7dff3633d7c85c1e",
+      "eol": "lf"
+    },
+    {
+      "source": "out/verification-20261101/evidence-staging/r3-neutral/checks/format-check.log",
+      "archive": "logs/format-check.log.txt",
+      "mode": "text",
+      "source_bytes": 428,
+      "bytes": 428,
+      "sha256": "5837c87ba9b12a6e62b4c5ee384041cbb5ac3fec45bd2d3242cf101f40081e86",
+      "source_sha256": "5837c87ba9b12a6e62b4c5ee384041cbb5ac3fec45bd2d3242cf101f40081e86",
+      "content_sha256": "abe0625f927cda6ed42565cedb5abee7b7d5e5859b2289c295c11f970be114fe",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/build/rpa-candidate-release/cuexis-format-files.txt",
+      "archive": "logs/format-file-list.txt",
+      "mode": "text",
+      "source_bytes": 41942,
+      "bytes": 41942,
+      "sha256": "a8e4a354df9de2483ef5a2575c72b5ef820635238b44439809ece3e23692acc1",
+      "source_sha256": "a8e4a354df9de2483ef5a2575c72b5ef820635238b44439809ece3e23692acc1",
+      "content_sha256": "9d9db473b09899f2e193972a529088375c14edaf0d8605a84c5e20ff5d8ad176",
+      "eol": "crlf"
+    },
+    {
+      "source": "out/verification-20261101/evidence-staging/r3-neutral/derived/neutral-path-lever.patch",
+      "archive": "code/neutral-path-lever.patch",
+      "mode": "text",
+      "source_bytes": 20458,
+      "bytes": 20810,
+      "sha256": "bd7ea93546a73d00ee849645e31e922428a5f7d0f4b153fee8e5993f5d2fd389",
+      "source_sha256": "a9f31cebadf7589e1766a9d2af89963fbcae925de6875d40d883c337b3da3439",
+      "content_sha256": "a9f31cebadf7589e1766a9d2af89963fbcae925de6875d40d883c337b3da3439",
+      "eol": "lf"
+    }
+  ],
+  "attached_files": [
+    {
+      "archive": "neutral-lever-measure-v1/plan.json",
+      "role": "preregistered plan and gate"
+    },
+    {
+      "archive": "neutral-lever-measure-v1/binding.json",
+      "role": "group binding: head, arms, instrument patches"
+    },
+    {
+      "archive": "neutral-lever-measure-v1/results.json",
+      "role": "row-level readings for all fourteen processes"
+    },
+    {
+      "archive": "neutral-lever-measure-v1/decision.json",
+      "role": "per-cell medians, changes and gate outcome"
+    },
+    {
+      "archive": "neutral-lever-measure-v1/verification.json",
+      "role": "independent re-derivation of the group"
+    },
+    {
+      "archive": "code/neutral-path-lever.patch",
+      "role": "the candidate diff frozen with the binaries, regenerated at build time"
+    },
+    {
+      "archive": "arms/A/arm.json",
+      "role": "baseline arm manifest: binary and library hashes"
+    },
+    {
+      "archive": "arms/B/arm.json",
+      "role": "candidate arm manifest: binary and library hashes"
+    },
+    {
+      "archive": "superseded/aborted-setup/aborted.json",
+      "role": "why the first launch started no process"
+    },
+    {
+      "archive": "logs/full-ctest-release.journal.log.gz",
+      "role": "complete CTest journal of the release suite beside this group; opaque bytes because its timestamps are localised; totals re-derived by the validator"
+    },
+    {
+      "archive": "logs/full-ctest-release.console-tail.log.txt",
+      "role": "console stream from test 335 to the end: final tally, wall time, exit marker"
+    },
+    {
+      "archive": "logs/format-check.log.txt",
+      "role": "transcript of the re-run repository format target"
+    },
+    {
+      "archive": "logs/format-file-list.txt",
+      "role": "the 651 files that target covered, including all seven changed files"
+    }
+  ],
+  "derived_files": [],
+  "instrument_versions": [
+    {
+      "run": "neutral-lever-measure-v1",
+      "runner": "run_neutral_lever_v1.py",
+      "runner_sha256": "5056873fc4c97fc713baf823f18a99abefa1c24ce8a4f8c2c66e00608650e7ca",
+      "template": "gpu_runner.py",
+      "template_sha256": "424e1b619f786fcb0ea10f73dd3af0679e7adb63acd60b2c48f04d3c076e6904",
+      "native_sha256": "44f9c49e8ec353a6386a7b481f178859abcf1c46b11688db70bb411ed21f15ce",
+      "verifier": "verify_neutral_lever_v1.py",
+      "verifier_sha256": "3b6d20b8b27705686d78392e155210d611f5385424206073c1702a75a9152b74",
+      "patches": [
+        {
+          "name": "pixel_readback",
+          "value": "CUEXIS_GPU_PIXEL_READBACK=1 for both arms (timed frames read back one pixel)"
+        },
+        {
+          "name": "environment_scrub",
+          "value": "CUEXIS_PD*, CUEXIS_GPU*, CUEXIS_NEUTRAL* removed from the inherited environment"
+        },
+        {
+          "name": "registration_scope",
+          "value": "group scope line of each process registration"
+        }
+      ],
+      "head": "1474316d2bfd38809c38a1e6050c29d83351e369",
+      "probe_source_sha256": "ff25101217404dc4c26ba7c3423cd10c6d577317a20d347e7a1c15b232bc5dd1",
+      "arms": {
+        "baseline": "04092c8f688ff18fc24e3948f8df6f8f2a4c6a637a10af0555ba55f38bbf9dd0",
+        "candidate": "9aaa34f7f7aaf43d0cb06fdb6e7750e3c72e4065777e292f6e95cce0a75ac58c"
+      }
+    }
+  ],
+  "superseded_attempts": [
+    {
+      "archive": "superseded/aborted-setup",
+      "state": "withdrawn before any process started",
+      "reason": "The first launch of this group died on a wrapper defect: the arms directory path was indexed as a mapping, so run_group raised TypeError before a probe process existed. The directory was withdrawn by rename and the group was rebuilt from scratch; it is kept because deleting it would make the group look like a first try that worked.",
+      "quoted_in_report": false
+    }
+  ],
+  "superseded_notes": [
+    "No process and no group was discarded: all fourteen scheduled processes ran once and are archived. The withdrawn setup attempt ran zero processes and holds no timing.",
+    "The 40000 entity pair is archived and reported apart. It is a diagnostic of the lever's reach at stress scale, never a gate row, and it is not spliced into any capacity ladder."
+  ],
+  "excluded": [
+    {
+      "path": "arms/*/*.exe",
+      "reason": "both arms' executables are hash-bound in arm.json and selection.json; they are rebuildable artifacts rather than readings"
+    },
+    {
+      "path": "arms/*/*.dll",
+      "reason": "redistributable dependencies of the arms, hash-bound in arm.json"
+    },
+    {
+      "path": "backup/**",
+      "reason": "pre-edit text snapshots of three sources; the frozen patch supersedes them"
+    },
+    {
+      "path": "worktree-working.patch",
+      "reason": "earlier work-in-progress patch, superseded by code/neutral-path-lever.patch"
+    }
+  ],
+  "excluded_files": [],
+  "generated_files": {
+    "selection.json": {
+      "archive": "selection.json",
+      "bytes": 4562,
+      "sha256": "345565445823eb0849f79f0d02a166c7f65ab0ab7e0dd03e13ce3022bd04a316",
+      "eol": "lf"
+    },
+    "index.md": {
+      "archive": "index.md",
+      "authored": "D:\\Cuexis-redesign\\out\\verification-20261101\\evidence-staging\\r3-neutral\\authored\\index.md",
+      "bytes": 2540,
+      "sha256": "1fde55277a5885035f76f4d2dfbc10cde959a738472349e76cb277c854fc1750",
+      "eol": "lf"
+    },
+    ".gitattributes": {
+      "archive": ".gitattributes",
+      "bytes": 377,
+      "sha256": "30df5f2655aa3545bc4eb9420c2cb397579d693c05d93ce15f61647637a893ff",
+      "eol": "lf"
+    }
+  },
+  "binding": {
+    "head": "1474316d2bfd38809c38a1e6050c29d83351e369",
+    "worktree_porcelain": [
+      "M app/player/src/player_smoke.cpp",
+      " M engine/presentation_renderer/include/cuexis/presentation_renderer/draw_command.hpp",
+      " M engine/presentation_renderer/src/draw_command.cpp",
+      " M engine/render_opengl/src/open_gl_presentation.cpp",
+      " M engine/render_opengl/src/open_gl_presentation_internal.hpp",
+      " M tests/presentation_renderer/presentation_renderer_tests.cpp",
+      " M tests/render/open_gl_presentation_tests.cpp"
+    ],
+    "patch_sha256": "bd7ea93546a73d00ee849645e31e922428a5f7d0f4b153fee8e5993f5d2fd389",
+    "arms": {
+      "A": {
+        "description": "clean rebuild of restore point 1474316 in the same build tree, no instrumentation, no levers",
+        "head": "1474316d2bfd38809c38a1e6050c29d83351e369",
+        "worktree_clean": true,
+        "built_at": "2026-11-01T07:06:19.580178+00:00",
+        "exe": {
+          "cuexis_execution_device_probe.exe": {
+            "bytes": 5730816,
+            "sha256": "04092C8F688FF18FC24E3948F8DF6F8F2A4C6A637A10AF0555BA55F38BBF9DD0"
+          },
+          "cuexis_player.exe": {
+            "bytes": 5674496,
+            "sha256": "BFDC6C5994CF56B1FC1887AF12DAFBED59A3299DCFF3AA054300CAE2294ED283"
+          }
+        },
+        "dll": {
+          "fmt.dll": {
+            "bytes": 130048,
+            "sha256": "8219387A1B0DE304630A67564A0EC30271E061C1E92CC77AE7CF9753A5F75214"
+          },
+          "nlohmann_json_schema_validator.dll": {
+            "bytes": 432128,
+            "sha256": "1C0A7CDCD718802C79052F323F52E63AFCEDAC969DD7EB5A44D12C521502F248"
+          },
+          "SDL3.dll": {
+            "bytes": 2488832,
+            "sha256": "CEDDDD9456105F8B2DF78C33A0282C170B86B0D16146A8CCBB0C6E01571EE783"
+          },
+          "spdlog.dll": {
+            "bytes": 281600,
+            "sha256": "A7C410914F4AFF0CB84F642FF91DA8A6B1A85D21CB0DE11E88A3A37DC7575214"
+          }
+        },
+        "arm_json_sha256": "dbf9859fa39137b5c7115afd772935ea82c406b5cc9033f90703493fed4d6dea"
+      },
+      "B": {
+        "description": "lever candidate built in the same tree and configuration right after arm A: summary digest derived on demand, PreparedDraw carries a non-owning command pointer",
+        "head": "1474316d2bfd38809c38a1e6050c29d83351e369",
+        "worktree_clean": false,
+        "built_at": "2026-11-01T07:15:59.500177+00:00",
+        "exe": {
+          "cuexis_execution_device_probe.exe": {
+            "bytes": 5726720,
+            "sha256": "9AAA34F7F7AAF43D0CB06FDB6E7750E3C72E4065777E292F6E95CCE0A75AC58C"
+          },
+          "cuexis_player.exe": {
+            "bytes": 5672960,
+            "sha256": "1D54B77EFFD159C88AFAD66DE3DB973EC78F23AB33FBD793E536B03611146497"
+          }
+        },
+        "dll": {
+          "fmt.dll": {
+            "bytes": 130048,
+            "sha256": "8219387A1B0DE304630A67564A0EC30271E061C1E92CC77AE7CF9753A5F75214"
+          },
+          "nlohmann_json_schema_validator.dll": {
+            "bytes": 432128,
+            "sha256": "1C0A7CDCD718802C79052F323F52E63AFCEDAC969DD7EB5A44D12C521502F248"
+          },
+          "SDL3.dll": {
+            "bytes": 2488832,
+            "sha256": "CEDDDD9456105F8B2DF78C33A0282C170B86B0D16146A8CCBB0C6E01571EE783"
+          },
+          "spdlog.dll": {
+            "bytes": 281600,
+            "sha256": "A7C410914F4AFF0CB84F642FF91DA8A6B1A85D21CB0DE11E88A3A37DC7575214"
+          }
+        },
+        "arm_json_sha256": "06bdaa31d3785cd6a19093d8c1a0b2d50a7dedc9da48a29893e1b9fe5a09e56d"
+      }
+    },
+    "group_records": {
+      "binding.json": "1cd7361a909f817784ad1728ccf14f8b995d814f6cc13e3d476db784f7fc4124",
+      "plan.json": "4dc46b1a020a964b9e8d1f3d09c0246c25cd2fd70926416f7fbce4a1c2616d86",
+      "results.json": "ddfa016d92f7e4bc923b37ee683e13c12f9131888384cf18a44e19af0ea3cf68",
+      "decision.json": "c8a3112b6492f2c61c211cbe816dd70ddbae60904dea87a538bcfcba232dfc20",
+      "verification.json": "d0c164d8b7fae21ecfc962feba335366b54d594ce3538c6b711445240f476d75"
+    },
+    "preregistration": {
+      "cells": [
+        {
+          "entities": 1800,
+          "mode": "render-only"
+        },
+        {
+          "entities": 2600,
+          "mode": "render-only"
+        }
+      ],
+      "pairs": 3,
+      "order": "per pair the arm order alternates (baseline-first, candidate-first, baseline-first); each process runs one gate cell",
+      "seconds": 20,
+      "gate": {
+        "submit_improvement": "submit median improves by at least 10 percent at both (1800, render-only) and (2600, render-only)",
+        "cycle_non_regression": "cycle median and cycle p99 median regress by at most 5 percent in every gate cell",
+        "repeatability": "per cell and arm, (max-min)/median of the process medians is at most 15 percent for submit and cycle",
+        "value_identity": "every process reports 255,204,51,255 with draws and in-view centers equal to the entity count, and both arms agree",
+        "stop": "an invalid process stops the group; no retry, no replacement, no extra samples"
+      },
+      "binding_sha256": "1cd7361a909f817784ad1728ccf14f8b995d814f6cc13e3d476db784f7fc4124"
+    },
+    "process_identity": {
+      "binary_sha256": {
+        "baseline": "04092c8f688ff18fc24e3948f8df6f8f2a4c6a637a10af0555ba55f38bbf9dd0",
+        "candidate": "9aaa34f7f7aaf43d0cb06fdb6e7750e3c72e4065777e292f6e95cce0a75ac58c"
+      },
+      "source_sha256": "ff25101217404dc4c26ba7c3423cd10c6d577317a20d347e7a1c15b232bc5dd1",
+      "budget_us": 4166.666666666667,
+      "pass_rule": "wall FPS>=240 and cycle p99<=4.166667ms; duration runs additionally every full 1-second bin >=240 completed frames",
+      "stop": "invalid process stops; budget failures are retained capacity points, never replaced or extended",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "timer": false,
+      "normal_allocator": true,
+      "metrics": "OFF"
+    },
+    "verification_checks": {
+      "checks": 558,
+      "passed": 558,
+      "failed": 0
+    }
+  },
+  "environment": {
+    "platform": "Windows-11-10.0.26300-SP0",
+    "platform_version": "10.0.26300",
+    "machine": "AMD64",
+    "python": "3.14.6",
+    "python_64bit": true,
+    "cpu_count": 16,
+    "gpu_vendor": "NVIDIA Corporation",
+    "gpu_renderer": "NVIDIA GeForce RTX 4060 Laptop GPU/PCIe/SSE2",
+    "gl_version": "3.3.0 NVIDIA 616.64",
+    "viewport": [
+      1920,
+      1080
+    ],
+    "controls": {
+      "affinity": 65535,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    }
+  },
+  "totals": {
+    "raw_bytes": 21564608,
+    "archived_bytes": 2822491,
+    "files": 62,
+    "text": 47,
+    "gzip": 15
+  }
+}

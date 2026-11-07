@@ -64,6 +64,14 @@ jobs:
           done
           gcc --version
           g++ --version
+          printf 'CUEXIS_CI_COMPILER=%s\n' "$(cygpath -m "$(command -v g++)")" >> "$GITHUB_ENV"
+
+      - name: Restore vcpkg binary archives
+        uses: ./.github/actions/cache-vcpkg
+        with:
+          compiler: ${{ env.CUEXIS_CI_COMPILER }}
+          profile: ${{ matrix.preset }}
+          vcpkg-commit: ${{ env.VCPKG_COMMIT }}
 
       - name: Configure
         shell: msys2 {0}
@@ -84,6 +92,7 @@ jobs:
         run: ctest --preset ${{ matrix.preset }} --no-tests=error
 
       - name: Build and test optional media tools
+        if: matrix.preset == 'release'
         shell: msys2 {0}
         run: |
           cmake --preset debug-media-tools --fresh \

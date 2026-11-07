@@ -1,0 +1,6 @@
+pid=24716 threads=4 opened=4
+elapsed_s=24.002 samples=800 rate=33/s failures=1019040
+  tid=16808 samples=200 failures=254760
+  tid=24624 samples=200 failures=254760
+  tid=6464 samples=200 failures=254760
+  tid=28632 samples=200 failures=254760

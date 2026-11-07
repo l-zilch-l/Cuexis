@@ -1,0 +1,35 @@
+{
+  "arm": "A",
+  "description": "clean rebuild of restore point 1474316 in the same build tree, no instrumentation, no levers",
+  "head": "1474316d2bfd38809c38a1e6050c29d83351e369",
+  "worktree_clean": true,
+  "built_at": "2026-11-01T07:06:19.580178+00:00",
+  "exe": {
+    "cuexis_execution_device_probe.exe": {
+      "bytes": 5730816,
+      "sha256": "04092C8F688FF18FC24E3948F8DF6F8F2A4C6A637A10AF0555BA55F38BBF9DD0"
+    },
+    "cuexis_player.exe": {
+      "bytes": 5674496,
+      "sha256": "BFDC6C5994CF56B1FC1887AF12DAFBED59A3299DCFF3AA054300CAE2294ED283"
+    }
+  },
+  "dlls": {
+    "fmt.dll": {
+      "bytes": 130048,
+      "sha256": "8219387A1B0DE304630A67564A0EC30271E061C1E92CC77AE7CF9753A5F75214"
+    },
+    "nlohmann_json_schema_validator.dll": {
+      "bytes": 432128,
+      "sha256": "1C0A7CDCD718802C79052F323F52E63AFCEDAC969DD7EB5A44D12C521502F248"
+    },
+    "SDL3.dll": {
+      "bytes": 2488832,
+      "sha256": "CEDDDD9456105F8B2DF78C33A0282C170B86B0D16146A8CCBB0C6E01571EE783"
+    },
+    "spdlog.dll": {
+      "bytes": 281600,
+      "sha256": "A7C410914F4AFF0CB84F642FF91DA8A6B1A85D21CB0DE11E88A3A37DC7575214"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "scope": "Unselected ordinary opaque adjacent-run instancing prototype. Original product base; no GL state cache, no quota/recovery/public API changes. Local vector/buffer lifetime ends every pass.",
+  "baseline_sha256": "954f27c1d094f6da3b7cfe0a9ec72a97d3b7baf6824815281bfa8aec317d8caf",
+  "source_sha256": "4bfaad6779e55b9f8ceca389c23c625009cc373703fed462bad9d611c8c8cc6b",
+  "selected": false
+}

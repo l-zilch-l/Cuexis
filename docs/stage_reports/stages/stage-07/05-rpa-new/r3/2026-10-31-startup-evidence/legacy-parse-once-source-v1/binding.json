@@ -1,0 +1,12 @@
+{
+  "scope": "Unselected combination of direct SAX plus legacy parse-once. No public layout change: original dispatch symbol preserved, new private overload, const borrowed typed reader and exact existing canonical writer. All owning CPP callers recompiled.",
+  "files": {
+    "engine/chart/include/cuexis/chart/detail/chart_dispatch_internal.hpp": "1cc810acf083fe5df9a28c55698ac01a36d0f6600600f7898879d85e47b9d43b",
+    "engine/chart/src/canonical_chart_loader_internal.hpp": "b6bf0d8800fcdf35fe07db29b072b4ce04d0f71fb5b4b07dc1ef12847550992a",
+    "engine/chart/src/chart_writer_internal.hpp": "458bd948236e3ad986978da9d29a1844f388b310b4aa0884a741ba1f151d0b2f",
+    "engine/chart/src/chart_v4_loader.cpp": "2d43dfd764cb4d769bafc115f0064a8dea2d3617d2fcf84567fb63810fe99fcf",
+    "engine/chart/src/canonical_chart_loader.cpp": "217538d8dcd4ec0343a89c8f1674b29364837d2e7c08d6626284c0f1c84b385f",
+    "engine/chart/src/chart_writer.cpp": "1f0bdd471622040cc857b2ded59553018b3c6a964e103d9245cf632b57fc974f",
+    "engine/playback/src/playback_session.cpp": "d4e111604440b669f390dd45d8848b18ff7ee97ffebcbcc68db5721e1be62037"
+  }
+}

@@ -1,0 +1,19 @@
+from pathlib import Path
+import json, hashlib, shutil
+
+base = Path(__file__).resolve().parent
+old = base / 'json-sax-build-v2'
+out = base / 'json-sax-runtime-v3'
+out.mkdir(exist_ok=False)
+dependencies = Path.cwd() / 'out/verification-20261030/r3-resume-v1/budget-build-v3/vcpkg_installed/x64-windows/bin'
+for path in old.glob('*.exe'): shutil.copyfile(path, out / path.name)
+for path in dependencies.glob('*.dll'): shutil.copyfile(path, out / path.name)
+sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+(out / 'binding.json').write_text(json.dumps(dict(
+    scope='Exact unchanged v2 executables with app-local Release DLLs from the same vcpkg tree as headers/import libraries. v2 lacked local DLLs and buildenv PATH preferred debug DLLs; baseline schema test crashed before candidate testing. No source/binary rewrite.',
+    parent_binding_sha256=sha(old / 'binding.json'),
+    files={p.name: sha(p) for p in out.iterdir() if p.suffix in ('.exe', '.dll')}
+), indent=2), encoding='utf-8')
+script = (base / 'check_json_sax_v2.py').read_text()
+script = script.replace('json-sax-build-v2', 'json-sax-runtime-v3').replace('json-sax-check-v2', 'json-sax-check-v3')
+(base / 'check_json_sax_v3.py').write_text(script, encoding='utf-8')

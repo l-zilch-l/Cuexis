@@ -1,0 +1,10 @@
+{
+  "scope": "Independent product candidate: only private activeRequirements representation changed. No R3c, no tick cache or quota, no Fact batching. Root headers/templates/source consistent; final ordinary writer comparison required.",
+  "head": "a320e692a6ae4da67e2d0ee1b693d790342e4f76",
+  "sources": {
+    "engine\\judgement\\src\\execution_kernel.cpp": "626778ae1ac245cb0fdee1bd7224ef506d94896e9fe9adb4dff941fb8e35e8e4",
+    "tests\\rpa\\rpa_b3_tests.cpp": "c1330b3f5f6853f52c586d0b57593a74dec00d067e384f74e1b31fe21174924b",
+    "tests/rpa/rpa_b3_tests.cpp": "2ac74352feaf29d42acb9149d4084ac6ab891a0771c6e174728e6d6365c0e04f"
+  },
+  "baseline_cpp_sha256": "2d82200e1bf6c08009f810e46fcc3cf61f22a192526c9b68322b29d413d1805d"
+}

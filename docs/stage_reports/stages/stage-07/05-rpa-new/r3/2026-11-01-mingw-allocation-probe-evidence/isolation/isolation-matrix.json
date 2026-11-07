@@ -1,0 +1,161 @@
+{
+  "compiler": "C:\\msys64\\ucrt64\\bin\\c++.exe",
+  "compiler_version": "c++.exe (Rev5, Built by MSYS2 project) 16.1.0",
+  "flags": [
+    "-std=c++20",
+    "-O0",
+    "-g"
+  ],
+  "defines": [],
+  "source": "archive-src\\isolation-no-framework.cpp",
+  "source_sha256": "dbcf363a2a83371d976d0252978649b229fa829b4857979a26f89cbd16b4d844",
+  "header": {
+    "source": "git show 3fbc31f6:tests/pd/pd_allocation_probe.hpp",
+    "sha256": "e8c9aaa7896fd5d538a94ba0d734988f0de51a83035f7e30fd843505ce6f284f",
+    "bytes": 4481,
+    "manifest_run": "out\\rpa-acceptance\\20261101-021741-4daf2bb2",
+    "manifest_sha256": "e8c9aaa7896fd5d538a94ba0d734988f0de51a83035f7e30fd843505ce6f284f"
+  },
+  "runs": [
+    {
+      "build": "dynamic-runtime",
+      "mode": "roundtrip",
+      "why": "every release returns to the replacement delete, so the offset payload is never seen by the CRT as a block header",
+      "expected_exit": "0x00000000",
+      "exit_status": "0x00000000",
+      "extra_flags": [],
+      "compile_command": [
+        "C:\\msys64\\ucrt64\\bin\\c++.exe",
+        "-std=c++20",
+        "-O0",
+        "-g",
+        "-ID:\\Cuexis-redesign\\out\\verification-20261031\\evidence-staging\\r3-mingw-probe\\trace\\as-run-include",
+        "-ID:\\Cuexis-redesign\\engine\\core\\internal",
+        "-o",
+        "D:\\Cuexis-redesign\\out\\verification-20261031\\evidence-staging\\r3-mingw-probe\\trace\\isolation-dynamic-runtime.exe",
+        "D:\\Cuexis-redesign\\out\\verification-20261031\\evidence-staging\\r3-mingw-probe\\archive-src\\isolation-no-framework.cpp"
+      ],
+      "compile_exit": 0,
+      "binary": "trace\\isolation-dynamic-runtime.exe",
+      "binary_sha256": "5d82a8dfb660f1f9c142f481acb1b3be93ba4d57e656c809174bb2f4ea8d6200",
+      "transcript": "isolation\\dynamic-runtime-roundtrip.txt",
+      "transcript_sha256": "9ab1e12a0b6a4b488a39216a81fec10398c192ecd2ab5b9a5b66a91585dc04dd",
+      "published_block_offset": null,
+      "checks": {
+        "exit_status": true,
+        "printed_done": true,
+        "mismatch_block_printed": true,
+        "probe_block_published": true
+      },
+      "matches_expectation": true
+    },
+    {
+      "build": "dynamic-runtime",
+      "mode": "mismatch",
+      "why": "a payload of the replacement is handed to std::free, which is the corruption the framework reproduction triggers through the DLL's own delete",
+      "expected_exit": "0xc0000374",
+      "exit_status": "0xc0000374",
+      "extra_flags": [],
+      "compile_command": [
+        "C:\\msys64\\ucrt64\\bin\\c++.exe",
+        "-std=c++20",
+        "-O0",
+        "-g",
+        "-ID:\\Cuexis-redesign\\out\\verification-20261031\\evidence-staging\\r3-mingw-probe\\trace\\as-run-include",
+        "-ID:\\Cuexis-redesign\\engine\\core\\internal",
+        "-o",
+        "D:\\Cuexis-redesign\\out\\verification-20261031\\evidence-staging\\r3-mingw-probe\\trace\\isolation-dynamic-runtime.exe",
+        "D:\\Cuexis-redesign\\out\\verification-20261031\\evidence-staging\\r3-mingw-probe\\archive-src\\isolation-no-framework.cpp"
+      ],
+      "compile_exit": 0,
+      "binary": "trace\\isolation-dynamic-runtime.exe",
+      "binary_sha256": "5d82a8dfb660f1f9c142f481acb1b3be93ba4d57e656c809174bb2f4ea8d6200",
+      "transcript": "isolation\\dynamic-runtime-mismatch.txt",
+      "transcript_sha256": "5c72c9233426437cff790229c918c76390ce5cf364d6558ccc4c75190f42bad4",
+      "published_block_offset": null,
+      "checks": {
+        "exit_status": true,
+        "printed_done": true,
+        "mismatch_block_printed": true,
+        "probe_block_published": true
+      },
+      "matches_expectation": true
+    },
+    {
+      "build": "static-runtime",
+      "mode": "roundtrip",
+      "why": "every release returns to the replacement delete, so the offset payload is never seen by the CRT as a block header",
+      "expected_exit": "0x00000000",
+      "exit_status": "0x00000000",
+      "extra_flags": [
+        "-static-libstdc++",
+        "-static-libgcc"
+      ],
+      "compile_command": [
+        "C:\\msys64\\ucrt64\\bin\\c++.exe",
+        "-std=c++20",
+        "-O0",
+        "-g",
+        "-ID:\\Cuexis-redesign\\out\\verification-20261031\\evidence-staging\\r3-mingw-probe\\trace\\as-run-include",
+        "-ID:\\Cuexis-redesign\\engine\\core\\internal",
+        "-static-libstdc++",
+        "-static-libgcc",
+        "-o",
+        "D:\\Cuexis-redesign\\out\\verification-20261031\\evidence-staging\\r3-mingw-probe\\trace\\isolation-static-runtime.exe",
+        "D:\\Cuexis-redesign\\out\\verification-20261031\\evidence-staging\\r3-mingw-probe\\archive-src\\isolation-no-framework.cpp"
+      ],
+      "compile_exit": 0,
+      "binary": "trace\\isolation-static-runtime.exe",
+      "binary_sha256": "0ab4000c0bc67defdb7385412f6fc4b14b6ef117261347b111dc3312fea8bedd",
+      "transcript": "isolation\\static-runtime-roundtrip.txt",
+      "transcript_sha256": "9b322e431f6fd61b529a15661ed27f309aea921267a9c45acd6c1853dff8a993",
+      "published_block_offset": null,
+      "checks": {
+        "exit_status": true,
+        "printed_done": true,
+        "mismatch_block_printed": true,
+        "probe_block_published": true
+      },
+      "matches_expectation": true
+    },
+    {
+      "build": "static-runtime",
+      "mode": "mismatch",
+      "why": "a payload of the replacement is handed to std::free, which is the corruption the framework reproduction triggers through the DLL's own delete",
+      "expected_exit": "0xc0000374",
+      "exit_status": "0xc0000374",
+      "extra_flags": [
+        "-static-libstdc++",
+        "-static-libgcc"
+      ],
+      "compile_command": [
+        "C:\\msys64\\ucrt64\\bin\\c++.exe",
+        "-std=c++20",
+        "-O0",
+        "-g",
+        "-ID:\\Cuexis-redesign\\out\\verification-20261031\\evidence-staging\\r3-mingw-probe\\trace\\as-run-include",
+        "-ID:\\Cuexis-redesign\\engine\\core\\internal",
+        "-static-libstdc++",
+        "-static-libgcc",
+        "-o",
+        "D:\\Cuexis-redesign\\out\\verification-20261031\\evidence-staging\\r3-mingw-probe\\trace\\isolation-static-runtime.exe",
+        "D:\\Cuexis-redesign\\out\\verification-20261031\\evidence-staging\\r3-mingw-probe\\archive-src\\isolation-no-framework.cpp"
+      ],
+      "compile_exit": 0,
+      "binary": "trace\\isolation-static-runtime.exe",
+      "binary_sha256": "0ab4000c0bc67defdb7385412f6fc4b14b6ef117261347b111dc3312fea8bedd",
+      "transcript": "isolation\\static-runtime-mismatch.txt",
+      "transcript_sha256": "e5443ec0d9ed102a450eb8dcfbf10c8938c41ffdd707ef8a19da0f777e535cf3",
+      "published_block_offset": null,
+      "checks": {
+        "exit_status": true,
+        "printed_done": true,
+        "mismatch_block_printed": true,
+        "probe_block_published": true
+      },
+      "matches_expectation": true
+    }
+  ],
+  "conclusion": "the offset payload is harmless on every matched release path in both runtimes and fatal on a release path that bypasses the replacement in both runtimes, so the framework reproduction's runtime dependence is a difference in which release paths exist, not a difference in the payload",
+  "mismatches": []
+}

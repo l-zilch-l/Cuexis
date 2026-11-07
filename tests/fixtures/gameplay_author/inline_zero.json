@@ -1,0 +1,213 @@
+{
+  "format": "cuexis.chart",
+  "version": 5,
+  "chartId": "019a0000-0000-7000-8000-000000000001",
+  "features": [],
+  "timing": {
+    "offsetMs": 0,
+    "defaultBpm": 120,
+    "tempoEvents": [],
+    "stops": []
+  },
+  "defaultCamera": {
+    "type": "perspective",
+    "fovY": 60,
+    "nearPlane": 0.1,
+    "farPlane": 1000,
+    "pitch": 0,
+    "yaw": 0,
+    "roll": 0
+  },
+  "resourceClosure": [],
+  "entities": [],
+  "requiredExtensions": [
+    "cuexis.gameplay.v2"
+  ],
+  "gameplay": {
+    "version": 2,
+    "authorProfile": "gameplay.author.t4-k4.v1",
+    "sourceDocumentId": "doc.alpha",
+    "common": {
+      "chartEntryId": "chart.entry.one",
+      "graphRevision": "2",
+      "rulesetRef": "ruleset.one",
+      "normalizationProfileToken": "normalization.one",
+      "coordinatorPolicy": "coordinator.policy.greedy_v1",
+      "executionProfile": "gameplay.execution.t4-k4.v1",
+      "timebase": {
+        "profileId": "engine.tick.us.v1",
+        "unitToken": "us",
+        "tickScale": {
+          "numerator": "1",
+          "denominator": "1"
+        },
+        "originBeat": {
+          "numerator": "0",
+          "denominator": "1"
+        },
+        "initialTempo": {
+          "numerator": "500000",
+          "denominator": "1"
+        },
+        "tempoSections": [],
+        "stopSections": []
+      },
+      "latePolicy": {
+        "mode": "queue_next_tick",
+        "finalizationWatermark": {
+          "state": "measured",
+          "value": "8"
+        },
+        "maxQueueHop": {
+          "state": "measured",
+          "value": "4"
+        },
+        "windowCloseThreshold": {
+          "state": "measured",
+          "value": "3"
+        },
+        "windowOpenThreshold": {
+          "state": "measured",
+          "value": "2"
+        }
+      },
+      "graceInputs": [],
+      "declarations": [
+        {
+          "stableId": {
+            "sourceDocumentId": "doc.alpha",
+            "declarationOrdinal": 1
+          },
+          "kind": "judgementDomain",
+          "localName": "domain.main",
+          "references": [],
+          "requiredRefs": {
+            "features": [],
+            "capabilities": []
+          }
+        },
+        {
+          "stableId": {
+            "sourceDocumentId": "doc.alpha",
+            "declarationOrdinal": 3
+          },
+          "kind": "solverProfile",
+          "localName": "solver.exclusive",
+          "references": [],
+          "requiredRefs": {
+            "features": [],
+            "capabilities": []
+          }
+        },
+        {
+          "stableId": {
+            "sourceDocumentId": "doc.alpha",
+            "declarationOrdinal": 100
+          },
+          "kind": "patternDefinition",
+          "localName": "unused.pattern",
+          "references": [],
+          "requiredRefs": {
+            "features": [],
+            "capabilities": []
+          }
+        },
+        {
+          "stableId": {
+            "sourceDocumentId": "doc.alpha",
+            "declarationOrdinal": 101
+          },
+          "kind": "measureDefinition",
+          "localName": "unused.measure",
+          "references": [],
+          "requiredRefs": {
+            "features": [],
+            "capabilities": []
+          }
+        }
+      ],
+      "resources": [],
+      "relations": [],
+      "solverProfiles": [
+        {
+          "solverId": "solver.exclusive",
+          "revision": "revision.one",
+          "algorithmToken": "coordinator.policy.greedy_v1",
+          "objective": [
+            "first-eligible"
+          ],
+          "tieBreak": [
+            "priority.asc",
+            "tieRank.asc"
+          ],
+          "rejectIfNonUnique": true,
+          "requiredRefs": {
+            "features": [],
+            "capabilities": []
+          }
+        }
+      ],
+      "factBindings": [
+        "binding.one"
+      ],
+      "judgementDomains": [
+        {
+          "domainId": "domain.main",
+          "coordinateSystemToken": "coordinate.plane",
+          "axes": [
+            {
+              "axisToken": "axis.horizontal",
+              "minimum": "0",
+              "maximum": "1000"
+            }
+          ],
+          "frame": "static",
+          "requiredRefs": {
+            "features": [],
+            "capabilities": []
+          }
+        }
+      ],
+      "declaredFeatures": [],
+      "declaredCapabilities": [],
+      "namedGraceDurations": [],
+      "patternDefinitions": [
+        {
+          "patternId": "unused.pattern",
+          "matchPolicy": "leftmost-first",
+          "root": {
+            "primitive": "instant",
+            "operands": []
+          },
+          "requiredRefs": {
+            "features": [],
+            "capabilities": []
+          }
+        }
+      ],
+      "measureDefinitions": [
+        {
+          "id": "unused.measure",
+          "declaration": {
+            "components": [
+              {
+                "phase": "tap",
+                "categoryToken": "tap",
+                "gradeTokens": []
+              }
+            ],
+            "requiredRefs": {
+              "features": [],
+              "capabilities": []
+            }
+          }
+        }
+      ]
+    },
+    "requirements": [],
+    "rankAssignment": {
+      "mode": "explicit",
+      "rows": []
+    }
+  }
+}

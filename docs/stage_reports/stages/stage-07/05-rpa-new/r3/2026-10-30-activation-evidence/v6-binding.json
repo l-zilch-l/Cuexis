@@ -1,0 +1,9 @@
+{
+  "selected": false,
+  "scope": "Private RuntimeState activeRequirements vector -> existing SharedSequence<size_t>. Exact sort retained when needed; no installed/public/header/template changes or wire/DTO changes. All active pages conservatively charged, no new floor exemption. Supplemental explicit canonical ordering,63/64/65 early activations then index0; production CPP unchanged.",
+  "sources": {
+    "execution_kernel.cpp": "cac5e82e4d2e28b2aecaaf298ef0d616c89449f69b0837a7213c510edf57e322",
+    "rpa_b3_tests.cpp": "affe7356abf9fa27d4761cbb47cf0c2d3727ab01229a30346c42f2bd0eee2ab3"
+  },
+  "parent": "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-next-v1\\activation-source-v1"
+}

@@ -1,0 +1,142 @@
+{
+  "mode": "static",
+  "index": 0,
+  "entities": 2800,
+  "seconds": 5.0,
+  "log": "00-static-2800.log.txt",
+  "log_sha256": "48cdef6976cbbae55f217c8510756795752121d49efca6bf7533dde692774fd0",
+  "samples": "00-static-2800.samples.txt",
+  "samples_sha256": "bd31b43624b814f4688af5f278398c835147486ca8573178df8c5ad7e999c81c",
+  "modules": "00-static-2800.modules.txt",
+  "modules_sha256": "40cdd6fae6c792f1084e9052d7411d78ebe6af445f7df8089de1d16569856d9c",
+  "sampler_log": "00-static-2800.sampler.txt",
+  "sampler_sha256": "f38090b249a640978ff9d58f9b9730a5997ea16e08ca17e054d52d3800a045f4",
+  "handles": "00-static-2800.handles.txt",
+  "handles_sha256": null,
+  "sampler_output": [
+    "pid=3868 threads=4 opened=4",
+    "elapsed_s=7.716 samples=76779 rate=9950/s failures=2821 handles=0 reason=process_exit",
+    "  tid=2740 samples=19610 failures=290",
+    "  tid=24180 samples=19057 failures=843",
+    "  tid=9376 samples=19056 failures=844",
+    "  tid=4128 samples=19056 failures=844",
+    "  failure_codes [('suspend 5', 2821)]",
+    "  failure_seconds 1 buckets, first [(7, 2821)] last [(7, 2821)]"
+  ],
+  "sampler_affinity": 32768,
+  "sampler_note": "",
+  "started_utc": "2026-11-01T01:52:17.648790+00:00",
+  "exit": 0,
+  "problems": [],
+  "controls": {
+    "affinity": 65535,
+    "priority": 16384,
+    "qos_control": 1,
+    "qos_state": 0
+  },
+  "identity": {
+    "mode": "static",
+    "entities": 2800,
+    "draws_per_frame": 2800,
+    "in_view_centers": 2800,
+    "fixture_revision": 3,
+    "moved_entities": 0,
+    "frames": 977,
+    "duration_seconds": 5,
+    "warmup_frames": 437,
+    "pixel_readback": true,
+    "outside_timing_pixel_proof_frames": 2,
+    "warmup_ms": 2000,
+    "timer": false,
+    "vsync": 0,
+    "width": 1920,
+    "height": 1080,
+    "vendor": "NVIDIA Corporation",
+    "renderer": "NVIDIA GeForce RTX 4060 Laptop GPU/PCIe/SSE2",
+    "gl_version": "3.3.0 NVIDIA 616.64",
+    "measured_wall_us": 5002318.6,
+    "pixel_rgba": [
+      255,
+      204,
+      51,
+      255
+    ],
+    "audio": false,
+    "formal": false
+  },
+  "frames": 977,
+  "wall_fps": 195.3094311106054,
+  "second_windows": [
+    236,
+    193,
+    185,
+    181,
+    181
+  ],
+  "min_window": 181,
+  "summary": {
+    "update_us": {
+      "n": 977,
+      "mean_us": 309.4496417604913,
+      "p50_us": 303.1,
+      "p95_us": 388,
+      "p99_us": 451.7,
+      "max_us": 549.8,
+      "over_budget": 0
+    },
+    "extract_us": {
+      "n": 977,
+      "mean_us": 451.12497441146365,
+      "p50_us": 440.8,
+      "p95_us": 579.3,
+      "p99_us": 640.7,
+      "max_us": 784.3,
+      "over_budget": 0
+    },
+    "submit_us": {
+      "n": 977,
+      "mean_us": 4297.952712384852,
+      "p50_us": 4128.5,
+      "p95_us": 6323,
+      "p99_us": 7064.9,
+      "max_us": 7727.4,
+      "over_budget": 463
+    },
+    "present_us": {
+      "n": 977,
+      "mean_us": 57.23725690890481,
+      "p50_us": 50.8,
+      "p95_us": 92.4,
+      "p99_us": 177.7,
+      "max_us": 449.8,
+      "over_budget": 0
+    },
+    "total_us": {
+      "n": 977,
+      "mean_us": 5115.764585465711,
+      "p50_us": 4946.8,
+      "p95_us": 7129.5,
+      "p99_us": 7967.1,
+      "max_us": 8498.9,
+      "over_budget": 872
+    },
+    "cycle_us": {
+      "n": 977,
+      "mean_us": 5120.080450358239,
+      "p50_us": 4949.7,
+      "p95_us": 7133.1,
+      "p99_us": 7971,
+      "max_us": 8502.8,
+      "over_budget": 874
+    }
+  },
+  "slow_frames": {
+    "threshold_us": 6000.0,
+    "count": 138,
+    "share": 0.141249,
+    "submit_us": 5084.6,
+    "fast_submit_us": 2935.7
+  },
+  "budget_pass": false,
+  "control_ok": true
+}

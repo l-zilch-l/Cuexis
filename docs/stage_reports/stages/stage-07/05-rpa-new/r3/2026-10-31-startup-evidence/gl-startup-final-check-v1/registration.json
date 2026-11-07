@@ -1,0 +1,22 @@
+{
+  "scope": "Final formatted root probe actual recompile, 1K normal/close controls. Exact Release DLLs, no throughput or load acceptance. Window message acknowledgements observed; no performance acceptance from these samples.",
+  "plan": [
+    {
+      "name": "1k-normal",
+      "n": 1000,
+      "cancel": false
+    },
+    {
+      "name": "1k-window-close",
+      "n": 1000,
+      "cancel": true
+    }
+  ],
+  "binary_sha256": "7dbad55dd3938a3e17706cd99dae18417107b49041f34c57c6819de81b45614d",
+  "poll_ms": 50,
+  "message_timeout_ms": 100,
+  "process_timeout_seconds": 180,
+  "frames": 8,
+  "warmup_ms": 2000,
+  "probe_sha256": "e98f1dac026e51cfebdfb331c657bdb9a6e77e6896a493f6c57a8040fdcd07f0"
+}

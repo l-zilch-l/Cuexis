@@ -3,6 +3,7 @@
 // Internal Stage 6 candidate bridge. This header is a build-time implementation detail and is
 // intentionally not part of the installed public Playback SDK.
 
+#include <cuexis/chart/behavior_candidate.hpp>
 #include <cuexis/chart/canonical_semantic_chart.hpp>
 #include <cuexis/chart/packed_chart_tables.hpp>
 #include <cuexis/core/diagnostic.hpp>
@@ -47,6 +48,7 @@ struct CandidateChart final {
     chart::CanonicalSemanticChart semantic;
     chart::packed::PackedSemanticIdentity semanticIdentity{};
     std::string artifactIdentity;
+    std::optional<chart::CandidateRuntimeArtifact> behavior;
 };
 
 struct CandidateChartResult final {

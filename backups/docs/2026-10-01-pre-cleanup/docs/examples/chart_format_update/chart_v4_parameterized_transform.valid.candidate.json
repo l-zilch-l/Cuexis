@@ -1,0 +1,93 @@
+{
+  "format": "cuexis.chart",
+  "version": 4,
+  "chartId": "019f0000-0000-7abc-8def-000000000470",
+  "metadata": {
+    "title": "Parameterized Transform Candidate"
+  },
+  "timing": {
+    "offsetMs": 0.0,
+    "defaultBpm": 120.0,
+    "tempoEvents": [],
+    "stops": []
+  },
+  "camera": {
+    "type": "perspective",
+    "fovY": {
+      "parameter": {
+        "domain": "chart-parameter",
+        "id": "camera.fov"
+      }
+    },
+    "near": 0.1,
+    "far": 1000.0
+  },
+  "parameters": [
+    {
+      "id": "camera.fov",
+      "type": "number",
+      "default": 60.0,
+      "constraints": {
+        "exclusiveMinimum": 0.0,
+        "exclusiveMaximum": 179.0
+      }
+    },
+    {
+      "id": "layout.scale-y",
+      "type": "number",
+      "default": 1.0,
+      "constraints": {
+        "exclusiveMinimum": 0.0
+      }
+    },
+    {
+      "id": "layout.x",
+      "type": "number",
+      "default": 2.0,
+      "constraints": {
+        "minimum": -100.0,
+        "maximum": 100.0
+      }
+    }
+  ],
+  "templates": [],
+  "behaviors": [],
+  "animationTemplateImports": [],
+  "animationClips": [],
+  "objects": [
+    {
+      "id": "019f0000-0000-7abc-8def-000000000471",
+      "name": "parameterized_object",
+      "parent": null,
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [
+            {
+              "parameter": {
+                "domain": "chart-parameter",
+                "id": "layout.x"
+              }
+            },
+            0.0,
+            0.0
+          ],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [
+            1.0,
+            {
+              "parameter": {
+                "domain": "chart-parameter",
+                "id": "layout.scale-y"
+              }
+            },
+            1.0
+          ]
+        }
+      },
+      "extensions": {}
+    }
+  ],
+  "requiredExtensions": [],
+  "extensions": {}
+}

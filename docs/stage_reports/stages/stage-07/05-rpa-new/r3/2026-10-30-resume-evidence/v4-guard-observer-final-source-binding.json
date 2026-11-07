@@ -1,0 +1,9 @@
+{
+  "scope": "Final instrumented v4 observer bytes; supersedes preparatory draft binding hashes. Not ordinary timings.",
+  "sources": {
+    "execution_kernel.cpp": "29fd282cf0c67d7ce28393ff3d4039fcae5eb75d306a291d878a65459c02e429",
+    "rpa_b3_tests.cpp": "9340131c293ec92e1b7356db3f04809076e7ee5bd26f6f41b3121ed669fa8022",
+    "tick_fault_probe.hpp": "1ea695f1fe5777e95ef80366f8719229cb90279e0b03888952ab586d2122940f"
+  },
+  "parent_v4_complete_sha256": "e1ea502e4c104fda22f336d1a419172ff61d187f222d2aad5bfd5a335a9c3a7b"
+}

@@ -1,0 +1,865 @@
+{
+  "scope": "Diagnosis of the single intermittent CTest failure recorded by the 2026-11-01 same-source matrix (row msvc-on-release). Not a matrix re-run, not a re-sample of a registered group, and not evidence that the test is sound.",
+  "case": "Audio publication preserves device observation time across service polls",
+  "exe": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_execution_host_tests.exe",
+  "exe_sha256": "429a5f0c26b5d1047b981ca7f87c7ac768b41b20d58ad3d670d59940620f4ad3",
+  "exe_bytes": 6109184,
+  "exe_mtime_local": "2026-11-01 00:25:15",
+  "logical_processors": 16,
+  "sequential": {
+    "summary": {
+      "regime": "sequential-idle",
+      "runs": 60,
+      "passed": 60,
+      "failed": 0,
+      "elapsed_seconds_min": 0.108,
+      "elapsed_seconds_max": 0.139
+    },
+    "records": [
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.122,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.125,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.127,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.139,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.11,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.109,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.124,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.126,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.108,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.11,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.108,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.111,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.111,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.123,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.109,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.11,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.117,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.133,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.127,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.11,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.133,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.115,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.111,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.109,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.125,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.109,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.112,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.125,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.126,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.108,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.109,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.11,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.109,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.11,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.11,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.109,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.127,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.109,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.109,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.111,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.11,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.111,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.111,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.11,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.11,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.109,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.122,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.129,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.109,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.111,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.11,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.11,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.126,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.119,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.132,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.11,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.11,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.11,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.109,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.109,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      }
+    ]
+  },
+  "parallel": {
+    "workers_per_round": 8,
+    "rounds": [
+      {
+        "round": 1,
+        "records": [
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.139,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.124,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.138,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.138,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.123,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.153,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.122,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.137,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          }
+        ]
+      },
+      {
+        "round": 2,
+        "records": [
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.125,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.125,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.124,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.124,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.124,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.139,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.139,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.139,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          }
+        ]
+      },
+      {
+        "round": 3,
+        "records": [
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.133,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.133,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.132,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.132,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.132,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.131,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.131,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.135,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          }
+        ]
+      },
+      {
+        "round": 4,
+        "records": [
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.126,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.126,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.125,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.125,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.125,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.125,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.124,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.124,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          }
+        ]
+      },
+      {
+        "round": 5,
+        "records": [
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.126,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.126,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.125,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.125,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.14,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.156,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.139,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          },
+          {
+            "exit_code": 0,
+            "elapsed_seconds": 0.124,
+            "passed": true,
+            "assertions_failed": 0,
+            "tail": []
+          }
+        ]
+      }
+    ],
+    "summary": [
+      {
+        "regime": "parallel-1",
+        "runs": 8,
+        "passed": 8,
+        "failed": 0,
+        "elapsed_seconds_min": 0.122,
+        "elapsed_seconds_max": 0.153
+      },
+      {
+        "regime": "parallel-2",
+        "runs": 8,
+        "passed": 8,
+        "failed": 0,
+        "elapsed_seconds_min": 0.124,
+        "elapsed_seconds_max": 0.139
+      },
+      {
+        "regime": "parallel-3",
+        "runs": 8,
+        "passed": 8,
+        "failed": 0,
+        "elapsed_seconds_min": 0.131,
+        "elapsed_seconds_max": 0.135
+      },
+      {
+        "regime": "parallel-4",
+        "runs": 8,
+        "passed": 8,
+        "failed": 0,
+        "elapsed_seconds_min": 0.124,
+        "elapsed_seconds_max": 0.126
+      },
+      {
+        "regime": "parallel-5",
+        "runs": 8,
+        "passed": 8,
+        "failed": 0,
+        "elapsed_seconds_min": 0.124,
+        "elapsed_seconds_max": 0.156
+      }
+    ]
+  },
+  "stress": {
+    "background_exe": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_execution_host_tests.exe",
+    "background_exe_sha256": "429a5f0c26b5d1047b981ca7f87c7ac768b41b20d58ad3d670d59940620f4ad3",
+    "background_processes": 4,
+    "records": [
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.125,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.108,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.109,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.124,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.109,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.111,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.109,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      },
+      {
+        "exit_code": 0,
+        "elapsed_seconds": 0.11,
+        "passed": true,
+        "assertions_failed": 0,
+        "tail": []
+      }
+    ],
+    "summary": {
+      "regime": "loaded",
+      "runs": 8,
+      "passed": 8,
+      "failed": 0,
+      "elapsed_seconds_min": 0.108,
+      "elapsed_seconds_max": 0.125
+    }
+  },
+  "verdict_rule": "Deterministic failure means every run fails; intermittent failure means at least one run passes and at least one fails. A pass under a lighter regime than CTest -j 4 does not clear the test; it only shows the outcome depends on timing or load."
+}

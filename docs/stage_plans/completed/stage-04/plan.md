@@ -7,7 +7,7 @@
 归档来源：[旧版 PROJECT_GUIDE](../../../archive/PROJECT_GUIDE_LEGACY_2026-08-10.md) 与
 [SDK transition plan 快照](../../../archive/CUEXIS_SDK_TRANSITION_PLAN_2026-08-10.md)。typed 输入、capability、
 fixture、预算和残余风险以
-[CFU-G2 Stage 4 typed handoff](../../../stage_reports/chart-format-update/2026-08-16-g2-stage4-handoff.md) 为准。
+[CFU-G2 Stage 4 typed handoff](../../../stage_reports/stages/chart-format-update/2026-08-16-g2-stage4-handoff.md) 为准。
 
 ## 1. 阶段目标
 
@@ -23,10 +23,10 @@ runtime program，按绝对时间采样，并写入既有 FrameSnapshot 观察�
 - Stage 4 只消费格式阶段交付的 typed 数据，不读取 JSON、CXC 或 CXT。
 - [ANIMATION_MIXING.md](../../../formats/ANIMATION_MIXING.md)、[ADR 0009](../../../adr/0009-property-evaluation-and-conflicts.md)
   与 [ADR 0019](../../../adr/0019-animation-layers-and-runtime-overrides.md) 的混合和覆盖语义保持权威。
-- [CFU-G2 Stage 4 typed handoff](../../../stage_reports/chart-format-update/2026-08-16-g2-stage4-handoff.md)
+- [CFU-G2 Stage 4 typed handoff](../../../stage_reports/stages/chart-format-update/2026-08-16-g2-stage4-handoff.md)
   已冻结 `AnimationProgramInput`、capability、fixture、预算、diagnostics、所有权和验收入口；项目所有者
   已接受 completion report，Stage 4 已解锁但尚未开始。
-- [CFU-G4 hosted verification](../../../stage_reports/chart-format-update/2026-08-24-g4-hosted.md)
+- [CFU-G4 hosted verification](../../../stage_reports/stages/chart-format-update/2026-08-24-g4-hosted.md)
   已记录同 SHA Linux/MSVC/MinGW 全部成功；G5 report-SHA hosted revalidation 与 G6 owner acceptance
   已完成。
 

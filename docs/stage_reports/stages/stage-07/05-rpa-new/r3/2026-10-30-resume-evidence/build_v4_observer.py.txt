@@ -1,0 +1,63 @@
+from pathlib import Path
+import ctypes
+import hashlib
+import json
+import shutil
+import subprocess
+import sys
+
+root=Path.cwd();base=Path(__file__).resolve().parent
+parent=base/'budget-build-v3'
+out=base/'budget-v4-observer-v1'
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+mode=sys.argv[1] if len(sys.argv)>1 else 'normal'
+name='rpa-'+mode
+shell=ctypes.WinDLL('shell32');shell.CommandLineToArgvW.argtypes=[ctypes.c_wchar_p,ctypes.POINTER(ctypes.c_int)];shell.CommandLineToArgvW.restype=ctypes.POINTER(ctypes.c_wchar_p)
+k=ctypes.WinDLL('kernel32');k.LocalFree.argtypes=[ctypes.c_void_p]
+def split(line):
+    n=ctypes.c_int();p=shell.CommandLineToArgvW(line,ctypes.byref(n))
+    try:return [p[i] for i in range(n.value)]
+    finally:k.LocalFree(p)
+
+cache=dict(l.split('=',1) for l in (parent/'CMakeCache.txt').read_text().splitlines() if '=' in l and not l.startswith(('#','//')))
+cc=json.loads((parent/'compile_commands.json').read_text())
+commands=[]
+def run(args,label):
+    commands.append(dict(label=label,args=args));(out/(name+'-commands.json')).write_text(json.dumps(commands,indent=2))
+    with (out/(name+'-'+label+'.log')).open('x',encoding='utf-8') as stream:
+        r=subprocess.run(args,cwd=parent,stdout=stream,stderr=subprocess.STDOUT)
+    print(label,r.returncode,flush=True)
+    if r.returncode:raise SystemExit(r.returncode)
+def compile(suffix,path,stem):
+    entry=next(c for c in cc if c['file'].endswith('/'+suffix))
+    args=[a for a in split(entry['command']) if not a.startswith(('/Fo','/Fd')) and not a.endswith('.cpp')]
+    args=[a.replace(str(base/'budget-source-v3'),str(base/'budget-source-v4')).replace((base/'budget-source-v3').as_posix(),(base/'budget-source-v4').as_posix()) for a in args]
+    args.insert(1,'/I'+str(base/'budget-source-v4/engine/judgement/src'))
+    obj=out/(stem+'.obj')
+    run([*args,'/Fo'+str(obj),'/Fd'+str(out/(stem+'.pdb')),str(path)],'compile-'+stem)
+    return str(obj)
+
+kernel=out/'execution_kernel.cpp'
+if mode!='normal':
+    original=kernel.read_text(encoding='utf-8')
+    kernel=out/('execution_kernel_'+mode+'.cpp')
+    if mode=='floor-mutant':
+        needle='        index->exactSourceFloor = archive.anchor();'
+        assert original.count(needle)==1
+        kernel.write_text(original.replace(needle,''),encoding='utf-8')
+    else:
+        assert mode=='mutant'
+        needle='if (outcome && collecting)\n        for (std::size_t i = 0; i < capture.count; ++i)'
+        assert original.count(needle)==1
+        kernel.write_text(original.replace(needle,'if (collecting)\n        for (std::size_t i = 0; i < capture.count; ++i)'),encoding='utf-8')
+production=compile('execution_kernel.cpp',kernel,'kernel-'+mode)
+test=str(out/'test.obj') if mode!='normal' else compile('rpa_b3_tests.cpp',out/'rpa_b3_tests.cpp','test')
+block=(parent/'build.ninja').read_text().split('build bin\\cuexis_rpa_tests.exe',1)[1].split('\n\n',1)[0]
+objects=split(block.split(': CXX_EXECUTABLE_LINKER__cuexis_rpa_tests_Release ',1)[1].split(' | ',1)[0])
+objects=[test if 'rpa_b3_tests.cpp.obj' in p else p for p in objects]
+libs=split(next(l.split(' = ',1)[1] for l in block.splitlines() if l.startswith('  LINK_LIBRARIES = ')))
+run([cache['CMAKE_LINKER:FILEPATH'],'/NOLOGO','/machine:x64','/INCREMENTAL:NO','/subsystem:console','/OUT:'+str(out/(name+'.exe')),production,*objects,*libs,'Psapi.lib'],'link')
+for dll in (parent/'bin').glob('*.dll'):
+    target=out/dll.name
+    if not target.exists():shutil.copyfile(dll,target)
+(out/(name+'-binding.json')).write_text(json.dumps(dict(binary_sha256=sha(out/(name+'.exe')),kernel_sha256=sha(kernel),test_sha256=sha(out/'rpa_b3_tests.cpp'),commands_sha256=sha(out/(name+'-commands.json')),parent_complete_sha256=sha(parent/'complete.json'),scope='Instrumented fault and actual allocation observation only. Exact same budget-v2 class definitions; all reused objects/libraries from its self-consistent fresh build.'),indent=2))

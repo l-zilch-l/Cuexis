@@ -1,0 +1,137 @@
+{
+  "format": "cuexis.chart",
+  "version": 4,
+  "chartId": "019f0000-0000-7abc-8def-000000000404",
+  "metadata": {
+    "title": "Invalid Layer Mask Conflict"
+  },
+  "timing": {
+    "offsetMs": 0.0,
+    "defaultBpm": 120.0,
+    "tempoEvents": [],
+    "stops": []
+  },
+  "camera": {
+    "type": "perspective",
+    "fovY": 60.0,
+    "near": 0.1,
+    "far": 1000.0
+  },
+  "parameters": [],
+  "templates": [],
+  "behaviors": [],
+  "animationTemplateImports": [],
+  "animationClips": [
+    {
+      "id": "animation.scale",
+      "version": 1,
+      "durationBeats": { "numerator": 1, "denominator": 1 },
+      "tracks": [
+        {
+          "property": "transform.scale",
+          "segments": [
+            {
+              "startBeat": { "numerator": 0, "denominator": 1 },
+              "durationBeats": { "numerator": 1, "denominator": 1 },
+              "startValue": [1.0, 1.0, 1.0],
+              "endValue": [2.0, 2.0, 2.0],
+              "startSlope": 1.0,
+              "endSlope": 1.0
+            }
+          ]
+        }
+      ],
+      "stepTracks": []
+    }
+  ],
+  "objects": [
+    {
+      "id": "019f0000-0000-7abc-8def-000000000414",
+      "name": "invalid_mask_conflict",
+      "parent": null,
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [0.0, 0.0, 0.0],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [1.0, 1.0, 1.0]
+        },
+        "cuexis.animator": {
+          "version": 1,
+          "templateBindings": [],
+          "layers": [
+            {
+              "layerId": "layer.a",
+              "priority": 5,
+              "weight": 1.0,
+              "propertyMask": {
+                "properties": ["transform.scale"],
+                "prefixes": []
+              },
+              "blendGroups": [
+                {
+                  "groupId": "group.a",
+                  "mode": "override",
+                  "weight": 1.0,
+                  "instances": [
+                    {
+                      "instanceId": "instance.a",
+                      "clip": {
+                        "domain": "animation",
+                        "id": "animation.scale"
+                      },
+                      "startBeat": { "numerator": 0, "denominator": 1 },
+                      "iterations": "infinite",
+                      "fillMode": "none",
+                      "weight": 1.0,
+                      "propertyMask": {
+                        "properties": ["transform.scale"],
+                        "prefixes": []
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "layerId": "layer.b",
+              "priority": 5,
+              "weight": 1.0,
+              "propertyMask": {
+                "properties": ["transform.scale"],
+                "prefixes": []
+              },
+              "blendGroups": [
+                {
+                  "groupId": "group.b",
+                  "mode": "override",
+                  "weight": 1.0,
+                  "instances": [
+                    {
+                      "instanceId": "instance.b",
+                      "clip": {
+                        "domain": "animation",
+                        "id": "animation.scale"
+                      },
+                      "startBeat": { "numerator": 0, "denominator": 1 },
+                      "iterations": "infinite",
+                      "fillMode": "none",
+                      "weight": 1.0,
+                      "propertyMask": {
+                        "properties": ["transform.scale"],
+                        "prefixes": []
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "extensions": {}
+    }
+  ],
+  "requiredExtensions": [],
+  "extensions": {}
+}

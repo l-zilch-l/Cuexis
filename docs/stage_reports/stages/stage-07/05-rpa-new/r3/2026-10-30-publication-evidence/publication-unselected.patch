@@ -1,0 +1,159 @@
+--- a/engine/judgement/internal/cuexis/judgement/publication.hpp
++++ b/engine/judgement/internal/cuexis/judgement/publication.hpp
+@@ -5,6 +5,7 @@
+ #include <cuexis/judgement/judgement_session.hpp>
+ 
+ #include <functional>
++#include <span>
+ 
+ namespace cuexis::judgement::detail {
+ struct PublicationLifetime;
+@@ -36,6 +37,11 @@
+     ~PublicationRead();
+     auto metadata() const -> core::Result<std::reference_wrapper<const PublicationMetadata>>;
+     auto fact(std::uint64_t ordinal) const -> core::Result<PublicationFact>;
++    // Copy a bounded batch of borrowed Fact descriptors within this read's prefix.
++    // Validate owner/epoch once per batch. References retain the same lifetime as fact().
++    // No caller may keep a batch across a session mutation.
++    auto readFacts(std::uint64_t first, std::span<PublicationFact> output) const
++        -> core::Result<std::size_t>;
+ 
+   private:
+     friend struct PublicationAccess;
+--- a/engine/judgement/src/publication.cpp
++++ b/engine/judgement/src/publication.cpp
+@@ -1,5 +1,6 @@
+ #include "diagnostic_policy.hpp"
+ #include "publication_lifetime.hpp"
++#include <algorithm>
+ 
+ namespace cuexis::judgement::detail {
+ PublicationRead::PublicationRead(std::weak_ptr<PublicationLifetime> lifetime,
+@@ -40,6 +41,27 @@
+     const auto& receipt = std::get<ReceiptFact>(value);
+     return PublicationFact{receipt.kind, receipt.factId, nullptr, {}, {}, {}};
+ }
++auto PublicationRead::readFacts(std::uint64_t first, std::span<PublicationFact> output) const
++    -> core::Result<std::size_t> {
++    if (auto valid = validate(); !valid)
++        return core::unexpected(std::move(valid.error()));
++    if (first < metadata_.fromCursor || first > metadata_.publishableCursor)
++        return core::unexpected(publicationError("Fact ordinal outside requested prefix"));
++    const auto count = static_cast<std::size_t>(
++        std::min<std::uint64_t>(output.size(), metadata_.publishableCursor - first));
++    for (std::size_t i = 0; i < count; ++i) {
++        const auto& value = projection_->facts[static_cast<std::size_t>(first) + i];
++        if (const auto* phase = std::get_if<PhaseOutcomeFact>(&value))
++            output[i] = {FactKind::phaseOutcome, phase->factId,  &phase->requirement,
++                         phase->phase,           phase->outcome, phase->error};
++        else {
++            const auto& receipt = std::get<ReceiptFact>(value);
++            output[i] = {receipt.kind, receipt.factId, nullptr, {}, {}, {}};
++        }
++    }
++    return count;
++}
++
+ auto classifyPublicDiagnostic(std::string_view code) noexcept -> bool {
+     return categoryProjectedDiagnostic(code);
+ }
+--- a/engine/playback/src/playback_session.cpp
++++ b/engine/playback/src/playback_session.cpp
+@@ -3908,9 +3908,26 @@
+         internal::presentation::Mutation::reserve(state_->presentationClock, false, !rebuildScope);
+     if (!mutation)
+         return core::unexpected(std::move(mutation.error()));
++    // This synchronous projection cannot mutate its Judgement source. Buffer borrowed
++    // descriptors locally; each refill checks owner, lifetime and epoch. The adapter still
++    // validates every Fact, including when no presentation bindings are configured.
++    std::array<judgement::detail::PublicationFact, 64> factBatch{};
++    std::uint64_t batchFirst{};
++    std::size_t batchSize{};
+     auto candidate = PresentationProjectionAdapter::project(
+         state_->gameplayProjectionIndex, projection, publication, t,
+-        [&](std::uint64_t ordinal) { return read->fact(ordinal); },
++        [&](std::uint64_t ordinal) -> core::Result<judgement::detail::PublicationFact> {
++            if (ordinal < batchFirst || ordinal - batchFirst >= batchSize) {
++                auto filled = read->readFacts(ordinal, factBatch);
++                if (!filled)
++                    return core::unexpected(std::move(filled.error()));
++                batchFirst = ordinal;
++                batchSize = *filled;
++            }
++            if (batchSize == 0)
++                return core::unexpected(gameplayError("Publication Fact batch is empty"));
++            return factBatch[static_cast<std::size_t>(ordinal - batchFirst)];
++        },
+         [&](std::size_t index, std::string_view id) -> core::Result<bool> {
+             if (index >= state_->snapshotLayout.entities.size())
+                 return false;
+--- a/tests/judgement/publication_tests.cpp
++++ b/tests/judgement/publication_tests.cpp
+@@ -3,6 +3,7 @@
+ #include "execution_test_fixture.hpp"
+ #include <cuexis/judgement/publication.hpp>
+ 
++#include <array>
+ #include <thread>
+ 
+ using namespace cuexis::judgement;
+@@ -313,3 +314,59 @@
+     CHECK(m->get().publishableCursor == before->kernelView().fold->factCursor);
+     CHECK(m->get().foldWorkTick == before->kernelView().fold->workTick);
+ }
++
++TEST_CASE("Publication batches preserve prefix boundaries and reject invalidated reads",
++          "[judgement][publication][batch]") {
++    PublicationFixture fixture;
++    auto session = fixture.session();
++    REQUIRE(session.advance(Tick{1103}));
++    auto view = read(session);
++    const auto metadata = view.metadata();
++    REQUIRE(metadata);
++    const auto end = metadata->get().publishableCursor;
++    REQUIRE(end > 0);
++    for (const std::size_t width : {std::size_t{1}, std::size_t{3}, std::size_t{64}}) {
++        std::array<detail::PublicationFact, 64> batch{};
++        std::uint64_t ordinal{};
++        while (ordinal < end) {
++            auto count = view.readFacts(ordinal, std::span{batch}.first(width));
++            REQUIRE(count);
++            REQUIRE(*count > 0);
++            REQUIRE(*count <= width);
++            REQUIRE(*count <= end - ordinal);
++            for (std::size_t i = 0; i < *count; ++i) {
++                const auto single = view.fact(ordinal + i);
++                REQUIRE(single);
++                CHECK(batch[i].kind == single->kind);
++                CHECK(batch[i].factId == single->factId);
++                CHECK(batch[i].requirement == single->requirement);
++                CHECK(batch[i].phase == single->phase);
++                CHECK(batch[i].outcome == single->outcome);
++                CHECK(batch[i].error == single->error);
++            }
++            ordinal += *count;
++        }
++    }
++    std::array<detail::PublicationFact, 3> batch{};
++    CHECK(view.readFacts(end, batch).value() == 0);
++    CHECK(view.readFacts(0, {}).value() == 0);
++    CHECK_FALSE(view.readFacts(UINT64_MAX, batch));
++    bool rejected{};
++    std::thread foreign([&] { rejected = !view.readFacts(0, batch); });
++    foreign.join();
++    CHECK(rejected);
++    REQUIRE(session.submit({}));
++    CHECK_FALSE(view.readFacts(0, batch));
++    {
++        auto tail = read(session, end);
++        CHECK_FALSE(tail.readFacts(end - 1, batch));
++        CHECK(tail.readFacts(end, batch).value() == 0);
++    }
++    std::optional<detail::PublicationRead> dead;
++    {
++        auto temporary = fixture.session();
++        REQUIRE(temporary.advance(Tick{1103}));
++        dead.emplace(read(temporary));
++    }
++    CHECK_FALSE(dead->readFacts(0, batch));
++}

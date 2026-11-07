@@ -1,0 +1,5 @@
+Filters: [r3c-guard]
+Randomness seeded to: 1
+===============================================================================
+All tests passed (58 assertions in 1 test case)
+

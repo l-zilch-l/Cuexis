@@ -1,0 +1,109 @@
+[
+  {
+    "entities": 40000,
+    "mode": "animated",
+    "repeat": 0,
+    "variant": "baseline",
+    "frames": 60,
+    "index": 0,
+    "exit": 0,
+    "valid": true,
+    "controls": {
+      "affinity": 65535,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "ac_line": 1,
+    "identity": {
+      "mode": "animated",
+      "entities": 40000,
+      "draws_per_frame": 40000,
+      "in_view_centers": 40000,
+      "fixture_revision": 3,
+      "moved_entities": 40000,
+      "frames": 60,
+      "duration_seconds": 0,
+      "warmup_frames": 18,
+      "pixel_readback": false,
+      "outside_timing_pixel_proof_frames": 2,
+      "warmup_ms": 2000,
+      "timer": false,
+      "vsync": 0,
+      "width": 1920,
+      "height": 1080,
+      "vendor": "NVIDIA Corporation",
+      "renderer": "NVIDIA GeForce RTX 4060 Laptop GPU/PCIe/SSE2",
+      "gl_version": "3.3.0 NVIDIA 616.64",
+      "measured_wall_us": 6680070.9,
+      "pixel_rgba": [
+        255,
+        204,
+        51,
+        255
+      ],
+      "audio": false,
+      "formal": false
+    },
+    "statistics": {
+      "update_us": {
+        "n": 60,
+        "mean_us": 48147.78333333333,
+        "p50_us": 48035.1,
+        "p95_us": 51324.4,
+        "p99_us": 54697.2,
+        "max_us": 54697.2,
+        "over_budget": 60
+      },
+      "extract_us": {
+        "n": 60,
+        "mean_us": 7700.49,
+        "p50_us": 7444.4,
+        "p95_us": 9629,
+        "p99_us": 11735.8,
+        "max_us": 11735.8,
+        "over_budget": 60
+      },
+      "submit_us": {
+        "n": 60,
+        "mean_us": 55348.36833333333,
+        "p50_us": 54667.3,
+        "p95_us": 60367.8,
+        "p99_us": 67172.5,
+        "max_us": 67172.5,
+        "over_budget": 60
+      },
+      "present_us": {
+        "n": 60,
+        "mean_us": 89.95166666666667,
+        "p50_us": 81.7,
+        "p95_us": 127.6,
+        "p99_us": 324.3,
+        "max_us": 324.3,
+        "over_budget": 0
+      },
+      "total_us": {
+        "n": 60,
+        "mean_us": 111286.59333333334,
+        "p50_us": 110119.4,
+        "p95_us": 118589.5,
+        "p99_us": 125793.8,
+        "max_us": 125793.8,
+        "over_budget": 60
+      },
+      "cycle_us": {
+        "n": 60,
+        "mean_us": 111334.515,
+        "p50_us": 110240.5,
+        "p95_us": 120047.1,
+        "p99_us": 125814.7,
+        "max_us": 125814.7,
+        "over_budget": 60
+      }
+    },
+    "wall_fps": 8.981940595870022,
+    "budget_pass": false,
+    "one_second_completed_frames": [],
+    "log_sha256": "a8b71894787a58a1c695f4b504801b59a68d2d857a68b4eff450264cc11dff05"
+  }
+]

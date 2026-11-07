@@ -1,0 +1,1165 @@
+{
+  "schema": "cuexis.r2-technical-closure-audit.v1",
+  "utc": "2026-10-26T14:31:24.329775+00:00",
+  "source_head": "c4bc5d4456ffe4778a90f9bae410638c0016a8eb",
+  "R2_technical_work_complete": true,
+  "R2_owner_exit_accepted": false,
+  "R4_formal_accepted": false,
+  "new_product_changes": false,
+  "new_performance_windows": false,
+  "evidence_review": {
+    "archived_reanchor_bindings": {
+      "A": {
+        "archive": "D:\\Cuexis-worktree-evidence\\cleanup\\20261025-worktree-cleanup-7e49c2\\archives\\Cuexis-r2-a-20261025.zip",
+        "archive_sha256": "692b7ea89b38cf8c2fb31adf316319531a7d3c52518500e8f03c880760b68537",
+        "source_files": 877,
+        "build_files": 24
+      },
+      "B": {
+        "archive": "D:\\Cuexis-worktree-evidence\\cleanup\\20261025-worktree-cleanup-7e49c2\\archives\\Cuexis-r2-baseline-20261025.zip",
+        "archive_sha256": "2e3ae1b3e33edbb7ce4f48f81ccb2b70f4241ab6c58a90bd2589dd832e4eb0aa",
+        "source_files": 962,
+        "build_files": 24
+      },
+      "Q4": {
+        "archive": "D:\\Cuexis-worktree-evidence\\cleanup\\20261025-worktree-cleanup-7e49c2\\archives\\Cuexis-r2-q4-20261025.zip",
+        "archive_sha256": "4e8ab663313a25c2a99bc506bfc37e179a7bee3ff0c3d9a034747b3d1b54db57",
+        "source_files": 962,
+        "build_files": 24
+      }
+    },
+    "q4_delta": [
+      "engine/playback/src/playback_session.cpp",
+      "engine/playback/src/presentation_materializer.cpp",
+      "engine/playback/src/presentation_materializer.hpp",
+      "engine/runtime/internal/cuexis/runtime/presentation_read.hpp",
+      "engine/runtime/src/presentation_read.cpp"
+    ],
+    "historical_reanchor": {
+      "processes": 9,
+      "blocks": 72,
+      "min_block_us": 603493.4,
+      "registration_sha256": "d745805fa7871d7ecd9239ff8ef21d545982f351bb0c74c310e4d39e96a9e93d",
+      "contrasts": {
+        "reanchor/N64/B/A": {
+          "ratio": 1.5827588813107383,
+          "ci95": [
+            0.7940309692519236,
+            3.1549470655132774
+          ],
+          "noisy": true,
+          "local_nonregression": false,
+          "local_benefit": false
+        },
+        "reanchor/N64/Q4/A": {
+          "ratio": 1.2098261735387372,
+          "ci95": [
+            0.7039128829298944,
+            2.079347325037034
+          ],
+          "noisy": true,
+          "local_nonregression": false,
+          "local_benefit": false
+        },
+        "reanchor/N64/Q4/B": {
+          "ratio": 0.7643780665674342,
+          "ci95": [
+            0.6171467935407324,
+            0.9467339614571069
+          ],
+          "noisy": true,
+          "local_nonregression": false,
+          "local_benefit": false
+        }
+      },
+      "noise": {
+        "A": {
+          "within": [
+            0.6129620057328544,
+            0.21154860552395696,
+            0.061858173712733396
+          ],
+          "between": 0.323478294724009,
+          "failed": true
+        },
+        "B": {
+          "within": [
+            0.03486511676708034,
+            0.4453031291637826,
+            0.03983935372911707
+          ],
+          "between": 0.14468703095286498,
+          "failed": true
+        },
+        "Q4": {
+          "within": [
+            0.20559384462978877,
+            0.12373400005105042,
+            0.062473444317570764
+          ],
+          "between": 0.018873761826719383,
+          "failed": true
+        }
+      },
+      "results_sha256": "59015a50d22569855dc24d3dbd59eff0d3ab9755b4d3cf218d762063f051aaea",
+      "raw_readback": true
+    },
+    "investigation_sha256": "2abfbd729b0b3e1becc57c22da67f7fd499105157d3ff56b6b545f67cec46078",
+    "common_object_local_performance": {
+      "processes": 6,
+      "blocks": 192,
+      "min_block_us": 540342,
+      "registration_sha256": "fb6be68714dce2053083a1ed9549df50a02ae760146dea12f2d42e1be8f2bac9",
+      "contrasts": {
+        "N1/E/B": {
+          "ratio": 0.9081503775279848,
+          "ci95": [
+            0.8567085225467463,
+            0.9626811062326269
+          ],
+          "noisy": false,
+          "local_nonregression": true,
+          "local_benefit": true
+        },
+        "N8/E/B": {
+          "ratio": 0.8333355281309294,
+          "ci95": [
+            0.8177259754055953,
+            0.8492430512566339
+          ],
+          "noisy": false,
+          "local_nonregression": true,
+          "local_benefit": true
+        },
+        "N64/E/B": {
+          "ratio": 0.8197340292395742,
+          "ci95": [
+            0.7771894799723263,
+            0.8646075326666464
+          ],
+          "noisy": false,
+          "local_nonregression": true,
+          "local_benefit": true
+        },
+        "N256/E/B": {
+          "ratio": 0.8196543847814243,
+          "ci95": [
+            0.8056563693189633,
+            0.8338956111764234
+          ],
+          "noisy": false,
+          "local_nonregression": true,
+          "local_benefit": true
+        }
+      },
+      "noise": {
+        "B": {
+          "within": [
+            0.0345514228826865,
+            0.02526494631290663,
+            0.003313895990910756
+          ],
+          "between": 0.02733649125874108,
+          "failed": false
+        },
+        "E": {
+          "within": [
+            0.0054244061735690225,
+            0.007680043026265464,
+            0.008868439838813937
+          ],
+          "between": 0.02193477811741786,
+          "failed": false
+        }
+      },
+      "results_sha256": "92a4e217fcee77206718ee673cbc049f5b5cd08255354542a4c3869041caaf67",
+      "raw_readback": true
+    },
+    "current_inputs": 9,
+    "obligations": {
+      "new_reanchor_and_triggered_investigation_completed": true,
+      "historical_inconclusive_must_become_pass": false,
+      "default_QoS_performance_claim": false,
+      "local_performance_scope": "Release STATIC, HighQoS, mask4, normal allocator, common unchanged objects",
+      "owner_exit_acceptance": false,
+      "r4_acceptance": false
+    },
+    "new_measurements": false
+  },
+  "fresh_regression": {
+    "tests": 46,
+    "failures": 0,
+    "rows": [
+      {
+        "configuration": "debug-r2-regression",
+        "name": "cuexis_architecture_tests",
+        "command": [
+          "D:/Program Files/CMake/bin/cmake.exe",
+          "-DCUEXIS_SOURCE_DIR=D:/Cuexis-worktree",
+          "-P",
+          "D:/Cuexis-worktree/cmake/VerifyArchitecture.cmake"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/debug",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\debug-r2-regression-1.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "binary_sha256": "70fa92ce2ac9f54b0ae395b0b3790d9147ef2ebdbd7c4e0bb20852aac581baea"
+      },
+      {
+        "configuration": "debug-r2-regression",
+        "name": "R2 warmed borrowed gather and consumption allocate nothing",
+        "command": [
+          "D:/Cuexis-worktree/out/build/debug/bin/cuexis_runtime_tests.exe",
+          "R2 warmed borrowed gather and consumption allocate nothing"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/debug/tests/runtime",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\debug-r2-regression-2.log",
+        "sha256": "89e7524e4cf91484cb9d9bb80e035e09591a588273b4588e856f5e0f44cf634a",
+        "binary_sha256": "ef05d6b741623e410eb8d7dc78b39cf73e4625e32d570fa4045bec0ff478b4c2"
+      },
+      {
+        "configuration": "debug-r2-regression",
+        "name": "R2 borrowed row reports boundaries missing components and actual World matrix",
+        "command": [
+          "D:/Cuexis-worktree/out/build/debug/bin/cuexis_runtime_tests.exe",
+          "R2 borrowed row reports boundaries missing components and actual World matrix"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/debug/tests/runtime",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\debug-r2-regression-3.log",
+        "sha256": "90debc0a1275ba86a14000e6063d31a68ec5dba58c2dff397714cc4e19ead044",
+        "binary_sha256": "ef05d6b741623e410eb8d7dc78b39cf73e4625e32d570fa4045bec0ff478b4c2"
+      },
+      {
+        "configuration": "debug-r2-regression",
+        "name": "R2 consumer errors exceptions and allocation failures end the read window",
+        "command": [
+          "D:/Cuexis-worktree/out/build/debug/bin/cuexis_runtime_tests.exe",
+          "R2 consumer errors exceptions and allocation failures end the read window"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/debug/tests/runtime",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\debug-r2-regression-4.log",
+        "sha256": "9bdd3a4669c50a24640a66fe0a2f703ddb935ecca8e195a42486db81cef2c099",
+        "binary_sha256": "ef05d6b741623e410eb8d7dc78b39cf73e4625e32d570fa4045bec0ff478b4c2"
+      },
+      {
+        "configuration": "debug-r2-regression",
+        "name": "R2 borrowed row preserves owner window serial and mutation exclusion",
+        "command": [
+          "D:/Cuexis-worktree/out/build/debug/bin/cuexis_runtime_tests.exe",
+          "R2 borrowed row preserves owner window serial and mutation exclusion"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/debug/tests/runtime",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\debug-r2-regression-5.log",
+        "sha256": "5d633b5db98badc4aadb7456d10f989b2ea20643f6bfa0e57c6fb433e13545ec",
+        "binary_sha256": "ef05d6b741623e410eb8d7dc78b39cf73e4625e32d570fa4045bec0ff478b4c2"
+      },
+      {
+        "configuration": "debug-r2-regression",
+        "name": "R2 preserves first errors contexts and partial writes inside and across blocks",
+        "command": [
+          "D:/Cuexis-worktree/out/build/debug/bin/cuexis_playback_tests.exe",
+          "R2 preserves first errors contexts and partial writes inside and across blocks"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/debug/tests/playback",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\debug-r2-regression-6.log",
+        "sha256": "f214d3e5cbcbdf9b1faab5e024096a475306ea87dc3c3e3d7d8f9f51faa37c7a",
+        "binary_sha256": "52c8feb312d237449975bad82bf431f26b950c81740565974d96bd0282945a36"
+      },
+      {
+        "configuration": "debug-r2-regression",
+        "name": "R2 public extraction restores every polluted field across DTOs sessions and reload",
+        "command": [
+          "D:/Cuexis-worktree/out/build/debug/bin/cuexis_playback_tests.exe",
+          "R2 public extraction restores every polluted field across DTOs sessions and reload"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/debug/tests/playback",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\debug-r2-regression-7.log",
+        "sha256": "e31242333c4496a55564f5283353f2e12adb63d7f4a6bba478e77785b68940e6",
+        "binary_sha256": "52c8feb312d237449975bad82bf431f26b950c81740565974d96bd0282945a36"
+      },
+      {
+        "configuration": "debug-r2-regression",
+        "name": "R2 materializer matches frozen old fields defaults identities empty full and tail blocks",
+        "command": [
+          "D:/Cuexis-worktree/out/build/debug/bin/cuexis_playback_tests.exe",
+          "R2 materializer matches frozen old fields defaults identities empty full and tail blocks"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/debug/tests/playback",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\debug-r2-regression-8.log",
+        "sha256": "baacc69903b9de38de0799cb8846553285d4605a816a72a82b8f0cf13bb0975a",
+        "binary_sha256": "52c8feb312d237449975bad82bf431f26b950c81740565974d96bd0282945a36"
+      },
+      {
+        "configuration": "debug-r2-regression",
+        "name": "R2 camera failures and stale state preserve legacy materialization order",
+        "command": [
+          "D:/Cuexis-worktree/out/build/debug/bin/cuexis_playback_tests.exe",
+          "R2 camera failures and stale state preserve legacy materialization order"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/debug/tests/playback",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\debug-r2-regression-9.log",
+        "sha256": "b417981ca3258418267f3ae2b86606b382c66708607e0e8f4fe0589c2abca75e",
+        "binary_sha256": "52c8feb312d237449975bad82bf431f26b950c81740565974d96bd0282945a36"
+      },
+      {
+        "configuration": "debug-r2-regression",
+        "name": "R2 original order includes noncontiguous indices and material override fallback",
+        "command": [
+          "D:/Cuexis-worktree/out/build/debug/bin/cuexis_playback_tests.exe",
+          "R2 original order includes noncontiguous indices and material override fallback"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/debug/tests/playback",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\debug-r2-regression-10.log",
+        "sha256": "3c546e6d76b302911d350768e23d65b532944a931fd00a92be593c814e511094",
+        "binary_sha256": "52c8feb312d237449975bad82bf431f26b950c81740565974d96bd0282945a36"
+      },
+      {
+        "configuration": "release-r2-regression",
+        "name": "cuexis_architecture_tests",
+        "command": [
+          "D:/Program Files/CMake/bin/cmake.exe",
+          "-DCUEXIS_SOURCE_DIR=D:/Cuexis-worktree",
+          "-P",
+          "D:/Cuexis-worktree/cmake/VerifyArchitecture.cmake"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/release",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\release-r2-regression-1.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "binary_sha256": "70fa92ce2ac9f54b0ae395b0b3790d9147ef2ebdbd7c4e0bb20852aac581baea"
+      },
+      {
+        "configuration": "release-r2-regression",
+        "name": "R2 borrowed row preserves owner window serial and mutation exclusion",
+        "command": [
+          "D:/Cuexis-worktree/out/build/release/bin/cuexis_runtime_tests.exe",
+          "R2 borrowed row preserves owner window serial and mutation exclusion"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/release/tests/runtime",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\release-r2-regression-2.log",
+        "sha256": "371ebc5f3ad4892548455f8561d254691e510b62718b5d8577780ca99a39d266",
+        "binary_sha256": "74230be7c2c11f5c28535cc0529692e26c016e4819188b2df79336eeeca7b0bc"
+      },
+      {
+        "configuration": "release-r2-regression",
+        "name": "R2 warmed borrowed gather and consumption allocate nothing",
+        "command": [
+          "D:/Cuexis-worktree/out/build/release/bin/cuexis_runtime_tests.exe",
+          "R2 warmed borrowed gather and consumption allocate nothing"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/release/tests/runtime",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\release-r2-regression-3.log",
+        "sha256": "51a1423d9034b49e6baf0dec8e28f7a0baaaea8770065ba434bb0bfa7ce48236",
+        "binary_sha256": "74230be7c2c11f5c28535cc0529692e26c016e4819188b2df79336eeeca7b0bc"
+      },
+      {
+        "configuration": "release-r2-regression",
+        "name": "R2 borrowed row reports boundaries missing components and actual World matrix",
+        "command": [
+          "D:/Cuexis-worktree/out/build/release/bin/cuexis_runtime_tests.exe",
+          "R2 borrowed row reports boundaries missing components and actual World matrix"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/release/tests/runtime",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\release-r2-regression-4.log",
+        "sha256": "f4f0f26b79aff1cb18ff9b549e03bc3eee07f1ac65c6da4b0f080adb8d06707c",
+        "binary_sha256": "74230be7c2c11f5c28535cc0529692e26c016e4819188b2df79336eeeca7b0bc"
+      },
+      {
+        "configuration": "release-r2-regression",
+        "name": "R2 consumer errors exceptions and allocation failures end the read window",
+        "command": [
+          "D:/Cuexis-worktree/out/build/release/bin/cuexis_runtime_tests.exe",
+          "R2 consumer errors exceptions and allocation failures end the read window"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/release/tests/runtime",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\release-r2-regression-5.log",
+        "sha256": "c0883e163f1034583984d9f343802f53915508d1ce9d9a8566e6bdd588c9680f",
+        "binary_sha256": "74230be7c2c11f5c28535cc0529692e26c016e4819188b2df79336eeeca7b0bc"
+      },
+      {
+        "configuration": "release-r2-regression",
+        "name": "R2 camera failures and stale state preserve legacy materialization order",
+        "command": [
+          "D:/Cuexis-worktree/out/build/release/bin/cuexis_playback_tests.exe",
+          "R2 camera failures and stale state preserve legacy materialization order"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/release/tests/playback",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\release-r2-regression-6.log",
+        "sha256": "b0bf1d60a6feccf755ac33485ca4ff582364f7399fb2ff50ac08dba002caec33",
+        "binary_sha256": "8bacf8e499702f0839c6510c26be0c2fc4dd4d6c357626ea0b71b6d0d16684a1"
+      },
+      {
+        "configuration": "release-r2-regression",
+        "name": "R2 materializer matches frozen old fields defaults identities empty full and tail blocks",
+        "command": [
+          "D:/Cuexis-worktree/out/build/release/bin/cuexis_playback_tests.exe",
+          "R2 materializer matches frozen old fields defaults identities empty full and tail blocks"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/release/tests/playback",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\release-r2-regression-7.log",
+        "sha256": "a8aaffa5cb97ac44ad23a5c267bc77a6afaa0de1036374a0a814abf1c32e2433",
+        "binary_sha256": "8bacf8e499702f0839c6510c26be0c2fc4dd4d6c357626ea0b71b6d0d16684a1"
+      },
+      {
+        "configuration": "release-r2-regression",
+        "name": "R2 original order includes noncontiguous indices and material override fallback",
+        "command": [
+          "D:/Cuexis-worktree/out/build/release/bin/cuexis_playback_tests.exe",
+          "R2 original order includes noncontiguous indices and material override fallback"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/release/tests/playback",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\release-r2-regression-8.log",
+        "sha256": "b02c2e86ebd3666d1878a79b7f614babbca35b9d1f379460b577289ebd560415",
+        "binary_sha256": "8bacf8e499702f0839c6510c26be0c2fc4dd4d6c357626ea0b71b6d0d16684a1"
+      },
+      {
+        "configuration": "release-r2-regression",
+        "name": "R2 public extraction restores every polluted field across DTOs sessions and reload",
+        "command": [
+          "D:/Cuexis-worktree/out/build/release/bin/cuexis_playback_tests.exe",
+          "R2 public extraction restores every polluted field across DTOs sessions and reload"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/release/tests/playback",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\release-r2-regression-9.log",
+        "sha256": "3d115f1b802cc27200b87965944f8f9172d395f6eefed794241267d582a77ae5",
+        "binary_sha256": "8bacf8e499702f0839c6510c26be0c2fc4dd4d6c357626ea0b71b6d0d16684a1"
+      },
+      {
+        "configuration": "release-r2-regression",
+        "name": "R2 preserves first errors contexts and partial writes inside and across blocks",
+        "command": [
+          "D:/Cuexis-worktree/out/build/release/bin/cuexis_playback_tests.exe",
+          "R2 preserves first errors contexts and partial writes inside and across blocks"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/release/tests/playback",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\release-r2-regression-10.log",
+        "sha256": "93b7bbddc063f08232e8b47afe9e4607734fa304e6f47a64e558aa6ec01c5f24",
+        "binary_sha256": "8bacf8e499702f0839c6510c26be0c2fc4dd4d6c357626ea0b71b6d0d16684a1"
+      },
+      {
+        "configuration": "observation-debug-r2-regression",
+        "name": "cuexis_architecture_tests",
+        "command": [
+          "D:/Program Files/CMake/bin/cmake.exe",
+          "-DCUEXIS_SOURCE_DIR=D:/Cuexis-worktree",
+          "-P",
+          "D:/Cuexis-worktree/cmake/VerifyArchitecture.cmake"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-observation-debug-20261026",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-debug-r2-regression-1.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "binary_sha256": "70fa92ce2ac9f54b0ae395b0b3790d9147ef2ebdbd7c4e0bb20852aac581baea"
+      },
+      {
+        "configuration": "observation-debug-r2-regression",
+        "name": "R2 warmed borrowed gather and consumption allocate nothing",
+        "command": [
+          "D:/Cuexis-worktree/out/build/consolidated-observation-debug-20261026/bin/cuexis_runtime_tests.exe",
+          "R2 warmed borrowed gather and consumption allocate nothing"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-observation-debug-20261026/tests/runtime",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-debug-r2-regression-2.log",
+        "sha256": "29dff0c923fe1ad8bab299436128835fbff09ea7fe66d531abcd58df53fad179",
+        "binary_sha256": "c504a775924fa9e827c72fd3a78de826148eae344638139b5718cf62e9902515"
+      },
+      {
+        "configuration": "observation-debug-r2-regression",
+        "name": "R2 consumer errors exceptions and allocation failures end the read window",
+        "command": [
+          "D:/Cuexis-worktree/out/build/consolidated-observation-debug-20261026/bin/cuexis_runtime_tests.exe",
+          "R2 consumer errors exceptions and allocation failures end the read window"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-observation-debug-20261026/tests/runtime",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-debug-r2-regression-3.log",
+        "sha256": "dc4bfcd7c3123e00aec714fbceca862fbdb59f71baacfbb94594e346057e22c8",
+        "binary_sha256": "c504a775924fa9e827c72fd3a78de826148eae344638139b5718cf62e9902515"
+      },
+      {
+        "configuration": "observation-debug-r2-regression",
+        "name": "R2 borrowed row reports boundaries missing components and actual World matrix",
+        "command": [
+          "D:/Cuexis-worktree/out/build/consolidated-observation-debug-20261026/bin/cuexis_runtime_tests.exe",
+          "R2 borrowed row reports boundaries missing components and actual World matrix"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-observation-debug-20261026/tests/runtime",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-debug-r2-regression-4.log",
+        "sha256": "da8e7fca1e51e73ba801cb89a9d6974a808afee77be5cb51144b8db0fe27875b",
+        "binary_sha256": "c504a775924fa9e827c72fd3a78de826148eae344638139b5718cf62e9902515"
+      },
+      {
+        "configuration": "observation-debug-r2-regression",
+        "name": "R2 borrowed row preserves owner window serial and mutation exclusion",
+        "command": [
+          "D:/Cuexis-worktree/out/build/consolidated-observation-debug-20261026/bin/cuexis_runtime_tests.exe",
+          "R2 borrowed row preserves owner window serial and mutation exclusion"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-observation-debug-20261026/tests/runtime",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-debug-r2-regression-5.log",
+        "sha256": "b872c4b93a20cc87272aa22e8b2b48b43966a557dbba1bbef582bbbd399027a1",
+        "binary_sha256": "c504a775924fa9e827c72fd3a78de826148eae344638139b5718cf62e9902515"
+      },
+      {
+        "configuration": "observation-debug-r2-regression",
+        "name": "R2 materializer matches frozen old fields defaults identities empty full and tail blocks",
+        "command": [
+          "D:/Cuexis-worktree/out/build/consolidated-observation-debug-20261026/bin/cuexis_playback_tests.exe",
+          "R2 materializer matches frozen old fields defaults identities empty full and tail blocks"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-observation-debug-20261026/tests/playback",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-debug-r2-regression-6.log",
+        "sha256": "5dd6f159b5a771c20ed6231108318fa0bc05d384821cd9712205a3aa1be5430a",
+        "binary_sha256": "746d5a7c5b1b0892efee6b93bedfb32ead374e4f7a1365da2b3af87a9a19b04c"
+      },
+      {
+        "configuration": "observation-debug-r2-regression",
+        "name": "R2 public extraction restores every polluted field across DTOs sessions and reload",
+        "command": [
+          "D:/Cuexis-worktree/out/build/consolidated-observation-debug-20261026/bin/cuexis_playback_tests.exe",
+          "R2 public extraction restores every polluted field across DTOs sessions and reload"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-observation-debug-20261026/tests/playback",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-debug-r2-regression-7.log",
+        "sha256": "84ec39128ff1f58588eb46d7d804febfa26425cbd344512d6af7834ce732ef0e",
+        "binary_sha256": "746d5a7c5b1b0892efee6b93bedfb32ead374e4f7a1365da2b3af87a9a19b04c"
+      },
+      {
+        "configuration": "observation-debug-r2-regression",
+        "name": "R2 camera failures and stale state preserve legacy materialization order",
+        "command": [
+          "D:/Cuexis-worktree/out/build/consolidated-observation-debug-20261026/bin/cuexis_playback_tests.exe",
+          "R2 camera failures and stale state preserve legacy materialization order"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-observation-debug-20261026/tests/playback",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-debug-r2-regression-8.log",
+        "sha256": "e252401da954426129ae801b506e5244340b1e1f8ef404e23012a86d4d29128c",
+        "binary_sha256": "746d5a7c5b1b0892efee6b93bedfb32ead374e4f7a1365da2b3af87a9a19b04c"
+      },
+      {
+        "configuration": "observation-debug-r2-regression",
+        "name": "R2 preserves first errors contexts and partial writes inside and across blocks",
+        "command": [
+          "D:/Cuexis-worktree/out/build/consolidated-observation-debug-20261026/bin/cuexis_playback_tests.exe",
+          "R2 preserves first errors contexts and partial writes inside and across blocks"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-observation-debug-20261026/tests/playback",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-debug-r2-regression-9.log",
+        "sha256": "65b7a51d70a5a67d85db1ff705e032972ee4a0f46fad53d9bd1478490dc43eb7",
+        "binary_sha256": "746d5a7c5b1b0892efee6b93bedfb32ead374e4f7a1365da2b3af87a9a19b04c"
+      },
+      {
+        "configuration": "observation-debug-r2-regression",
+        "name": "R2 original order includes noncontiguous indices and material override fallback",
+        "command": [
+          "D:/Cuexis-worktree/out/build/consolidated-observation-debug-20261026/bin/cuexis_playback_tests.exe",
+          "R2 original order includes noncontiguous indices and material override fallback"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-observation-debug-20261026/tests/playback",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-debug-r2-regression-10.log",
+        "sha256": "cf7439da482c945b83a90f0b5011b59bd5d26809f3252d03046675a521255017",
+        "binary_sha256": "746d5a7c5b1b0892efee6b93bedfb32ead374e4f7a1365da2b3af87a9a19b04c"
+      },
+      {
+        "configuration": "observation-release-r2-regression",
+        "name": "cuexis_architecture_tests",
+        "command": [
+          "D:/Program Files/CMake/bin/cmake.exe",
+          "-DCUEXIS_SOURCE_DIR=D:/Cuexis-worktree",
+          "-P",
+          "D:/Cuexis-worktree/cmake/VerifyArchitecture.cmake"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-observation-release-20261026",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-release-r2-regression-1.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "binary_sha256": "70fa92ce2ac9f54b0ae395b0b3790d9147ef2ebdbd7c4e0bb20852aac581baea"
+      },
+      {
+        "configuration": "observation-release-r2-regression",
+        "name": "R2 borrowed row reports boundaries missing components and actual World matrix",
+        "command": [
+          "D:/Cuexis-worktree/out/build/consolidated-observation-release-20261026/bin/cuexis_runtime_tests.exe",
+          "R2 borrowed row reports boundaries missing components and actual World matrix"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-observation-release-20261026/tests/runtime",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-release-r2-regression-2.log",
+        "sha256": "35b30771846cf4769593e53ef06c6b993a7cf80154080bf82da79d9c35595a96",
+        "binary_sha256": "c02410e4edb0062c7d40d3cfb0feead2c65609acaedf1fc9b52f2059533bc4d4"
+      },
+      {
+        "configuration": "observation-release-r2-regression",
+        "name": "R2 borrowed row preserves owner window serial and mutation exclusion",
+        "command": [
+          "D:/Cuexis-worktree/out/build/consolidated-observation-release-20261026/bin/cuexis_runtime_tests.exe",
+          "R2 borrowed row preserves owner window serial and mutation exclusion"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-observation-release-20261026/tests/runtime",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-release-r2-regression-3.log",
+        "sha256": "f6f353a5d2ebf9a4c80987ed0d8f37379fa113886d4b23e89d181197bea28c16",
+        "binary_sha256": "c02410e4edb0062c7d40d3cfb0feead2c65609acaedf1fc9b52f2059533bc4d4"
+      },
+      {
+        "configuration": "observation-release-r2-regression",
+        "name": "R2 warmed borrowed gather and consumption allocate nothing",
+        "command": [
+          "D:/Cuexis-worktree/out/build/consolidated-observation-release-20261026/bin/cuexis_runtime_tests.exe",
+          "R2 warmed borrowed gather and consumption allocate nothing"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-observation-release-20261026/tests/runtime",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-release-r2-regression-4.log",
+        "sha256": "da582dfab64fcc8a7f4dd97f6df4dbacef518416a46b5f310d41ca0c5c38e212",
+        "binary_sha256": "c02410e4edb0062c7d40d3cfb0feead2c65609acaedf1fc9b52f2059533bc4d4"
+      },
+      {
+        "configuration": "observation-release-r2-regression",
+        "name": "R2 consumer errors exceptions and allocation failures end the read window",
+        "command": [
+          "D:/Cuexis-worktree/out/build/consolidated-observation-release-20261026/bin/cuexis_runtime_tests.exe",
+          "R2 consumer errors exceptions and allocation failures end the read window"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-observation-release-20261026/tests/runtime",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-release-r2-regression-5.log",
+        "sha256": "724ebc07d2dbf95329250fe8f4aa07f0ba1beb51bfc1d18837ca1daca088edf4",
+        "binary_sha256": "c02410e4edb0062c7d40d3cfb0feead2c65609acaedf1fc9b52f2059533bc4d4"
+      },
+      {
+        "configuration": "observation-release-r2-regression",
+        "name": "R2 camera failures and stale state preserve legacy materialization order",
+        "command": [
+          "D:/Cuexis-worktree/out/build/consolidated-observation-release-20261026/bin/cuexis_playback_tests.exe",
+          "R2 camera failures and stale state preserve legacy materialization order"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-observation-release-20261026/tests/playback",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-release-r2-regression-6.log",
+        "sha256": "f152c9a64d2f8c7826cfb3d76e5936eea1b0cfce6845399bdcbe3bcd2e5cf213",
+        "binary_sha256": "e449d0ec8f286b1a5ccf59fb4c44ca0216d2d42e238bbd3f83637ecc2bdb6377"
+      },
+      {
+        "configuration": "observation-release-r2-regression",
+        "name": "R2 materializer matches frozen old fields defaults identities empty full and tail blocks",
+        "command": [
+          "D:/Cuexis-worktree/out/build/consolidated-observation-release-20261026/bin/cuexis_playback_tests.exe",
+          "R2 materializer matches frozen old fields defaults identities empty full and tail blocks"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-observation-release-20261026/tests/playback",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-release-r2-regression-7.log",
+        "sha256": "7a375e2999a22e15192653f9197877c25b7345d647e8e6765ea6391bc0dc0d51",
+        "binary_sha256": "e449d0ec8f286b1a5ccf59fb4c44ca0216d2d42e238bbd3f83637ecc2bdb6377"
+      },
+      {
+        "configuration": "observation-release-r2-regression",
+        "name": "R2 public extraction restores every polluted field across DTOs sessions and reload",
+        "command": [
+          "D:/Cuexis-worktree/out/build/consolidated-observation-release-20261026/bin/cuexis_playback_tests.exe",
+          "R2 public extraction restores every polluted field across DTOs sessions and reload"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-observation-release-20261026/tests/playback",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-release-r2-regression-8.log",
+        "sha256": "57efd4b8d5a813988cdadb08ef8281b8635c700180ab26d2b59aed1fe640fc1c",
+        "binary_sha256": "e449d0ec8f286b1a5ccf59fb4c44ca0216d2d42e238bbd3f83637ecc2bdb6377"
+      },
+      {
+        "configuration": "observation-release-r2-regression",
+        "name": "R2 original order includes noncontiguous indices and material override fallback",
+        "command": [
+          "D:/Cuexis-worktree/out/build/consolidated-observation-release-20261026/bin/cuexis_playback_tests.exe",
+          "R2 original order includes noncontiguous indices and material override fallback"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-observation-release-20261026/tests/playback",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-release-r2-regression-9.log",
+        "sha256": "d5a5f846ffab6622008be3a3eeba1b9c48330a1a4639fec3e8ce229e68d70298",
+        "binary_sha256": "e449d0ec8f286b1a5ccf59fb4c44ca0216d2d42e238bbd3f83637ecc2bdb6377"
+      },
+      {
+        "configuration": "observation-release-r2-regression",
+        "name": "R2 preserves first errors contexts and partial writes inside and across blocks",
+        "command": [
+          "D:/Cuexis-worktree/out/build/consolidated-observation-release-20261026/bin/cuexis_playback_tests.exe",
+          "R2 preserves first errors contexts and partial writes inside and across blocks"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-observation-release-20261026/tests/playback",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-release-r2-regression-10.log",
+        "sha256": "e102bad0d7ddced09963b7a270a869f5fd96524b63ff48fe72f580bc3d8a679f",
+        "binary_sha256": "e449d0ec8f286b1a5ccf59fb4c44ca0216d2d42e238bbd3f83637ecc2bdb6377"
+      },
+      {
+        "configuration": "shared-release-r2-regression",
+        "name": "cuexis_architecture_tests",
+        "command": [
+          "D:/Program Files/CMake/bin/cmake.exe",
+          "-DCUEXIS_SOURCE_DIR=D:/Cuexis-worktree",
+          "-P",
+          "D:/Cuexis-worktree/cmake/VerifyArchitecture.cmake"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-shared-release-20261026",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\shared-release-r2-regression-1.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "binary_sha256": "70fa92ce2ac9f54b0ae395b0b3790d9147ef2ebdbd7c4e0bb20852aac581baea"
+      },
+      {
+        "configuration": "shared-release-r2-regression",
+        "name": "R2 borrowed row reports boundaries missing components and actual World matrix",
+        "command": [
+          "D:/Cuexis-worktree/out/build/consolidated-shared-release-20261026/bin/cuexis_runtime_tests.exe",
+          "R2 borrowed row reports boundaries missing components and actual World matrix"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-shared-release-20261026/tests/runtime",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\shared-release-r2-regression-2.log",
+        "sha256": "088836b99d26211d4ce98b2ebe19a566d16b55d3f01b06427090e28d3dc6550a",
+        "binary_sha256": "4496d8fb963ded0844247d0e25d0d5782441ce5a36ec4b596ccb591006c0f250"
+      },
+      {
+        "configuration": "shared-release-r2-regression",
+        "name": "R2 consumer errors exceptions and allocation failures end the read window",
+        "command": [
+          "D:/Cuexis-worktree/out/build/consolidated-shared-release-20261026/bin/cuexis_runtime_tests.exe",
+          "R2 consumer errors exceptions and allocation failures end the read window"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-shared-release-20261026/tests/runtime",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\shared-release-r2-regression-3.log",
+        "sha256": "808aecaa91ac13f09755efd4b891781548ccbb37c7e159682e4a65ac16b89f83",
+        "binary_sha256": "4496d8fb963ded0844247d0e25d0d5782441ce5a36ec4b596ccb591006c0f250"
+      },
+      {
+        "configuration": "shared-release-r2-regression",
+        "name": "R2 warmed borrowed gather and consumption allocate nothing",
+        "command": [
+          "D:/Cuexis-worktree/out/build/consolidated-shared-release-20261026/bin/cuexis_runtime_tests.exe",
+          "R2 warmed borrowed gather and consumption allocate nothing"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-shared-release-20261026/tests/runtime",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\shared-release-r2-regression-4.log",
+        "sha256": "a7d733788d996de5e0c8571340d9c8aacbde803e0de851b8b501a8aeade4266a",
+        "binary_sha256": "4496d8fb963ded0844247d0e25d0d5782441ce5a36ec4b596ccb591006c0f250"
+      },
+      {
+        "configuration": "shared-release-r2-regression",
+        "name": "R2 borrowed row preserves owner window serial and mutation exclusion",
+        "command": [
+          "D:/Cuexis-worktree/out/build/consolidated-shared-release-20261026/bin/cuexis_runtime_tests.exe",
+          "R2 borrowed row preserves owner window serial and mutation exclusion"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-shared-release-20261026/tests/runtime",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\shared-release-r2-regression-5.log",
+        "sha256": "37c044a3877cbdd50b4e6786136772b095f230616bc78fe2be7734397ce6b62e",
+        "binary_sha256": "4496d8fb963ded0844247d0e25d0d5782441ce5a36ec4b596ccb591006c0f250"
+      },
+      {
+        "configuration": "shared-release-r2-regression",
+        "name": "R2 public extraction restores every polluted field across DTOs sessions and reload",
+        "command": [
+          "D:/Cuexis-worktree/out/build/consolidated-shared-release-20261026/bin/cuexis_playback_tests.exe",
+          "R2 public extraction restores every polluted field across DTOs sessions and reload"
+        ],
+        "cwd": "D:/Cuexis-worktree/out/build/consolidated-shared-release-20261026/tests/playback",
+        "exit": 0,
+        "log": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\shared-release-r2-regression-6.log",
+        "sha256": "9af77d53f56d987213a4798f334dac709477c704d1dfb134c98505bf195c07a0",
+        "binary_sha256": "4964c19505c25a6e978f187fc90fdc3686964e1bd67d9d991503d72ecbdd1541"
+      }
+    ],
+    "method": "Execute the selected original CTest commands directly; preserve frozen Testing logs; no rebuild or timing inference"
+  },
+  "original_evidence_archive": {
+    "path": "D:\\Cuexis-worktree\\docs\\stage_reports\\stages\\stage-07\\05-rpa-new\\r2\\2026-10-26-r2-exit-evidence.zip",
+    "sha256": "2f0a38c9f3998ef20d5a27ac78cb096f4af54ece66155d3565776182a8aa63d4",
+    "files": 501,
+    "unchanged": true
+  },
+  "original_evidence_manifest_sha256": "7c22524b52a4f9d5d76dfc88d3237a33b8e2d9c20221a4e32886fe3a67c81517",
+  "limitations": "Scoped local implementation/validation exit review; no default-QoS, alternative-layout, formal, device or production performance acceptance",
+  "records": [
+    {
+      "source_path": "D:\\Cuexis-worktree\\docs\\stage_reports\\stages\\stage-07\\05-rpa-new\\r2\\2026-10-26-r2-technical-closure-review.md",
+      "archive_path": "report/2026-10-26-r2-technical-closure-review.md",
+      "bytes": 6517,
+      "sha256": "19105215097abbc49ec17c2c4077430bb1eb3c80fbc0a8b9bb404a10f32a9b1e"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\audit.py",
+      "archive_path": "audit/audit.py",
+      "bytes": 12770,
+      "sha256": "fdf994801faeafece1598861ea148edce2e62d50afac079175908413e7bf133a"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\debug-r2-regression-test-list.json",
+      "archive_path": "audit/debug-r2-regression-test-list.json",
+      "bytes": 847585,
+      "sha256": "69b07b8995239720d6914b0f0ec0b1eab1739caf556a7ac1d1a8cb990bf193ae"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\evidence-audit.json",
+      "archive_path": "audit/evidence-audit.json",
+      "bytes": 5404,
+      "sha256": "a0bc93917371a3a366c7172f96e10cbd848354d206d50774cfaa038c7cc6597a"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\finish.py",
+      "archive_path": "audit/finish.py",
+      "bytes": 6988,
+      "sha256": "7f0d6625bfb2b4c7b62a4e72f29575ec5f46473bd2ed3b3f20a5c3fd23a21d29"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\fresh-regression.json",
+      "archive_path": "audit/fresh-regression.json",
+      "bytes": 35027,
+      "sha256": "5930166e13f8ad249824e166fea8db5f94e5153a371e747bec7b5e09592ed058"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\debug-r2-regression-1.log",
+      "archive_path": "audit/logs/debug-r2-regression-1.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\debug-r2-regression-10.log",
+      "archive_path": "audit/logs/debug-r2-regression-10.log",
+      "bytes": 259,
+      "sha256": "3c546e6d76b302911d350768e23d65b532944a931fd00a92be593c814e511094"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\debug-r2-regression-2.log",
+      "archive_path": "audit/logs/debug-r2-regression-2.log",
+      "bytes": 237,
+      "sha256": "89e7524e4cf91484cb9d9bb80e035e09591a588273b4588e856f5e0f44cf634a"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\debug-r2-regression-3.log",
+      "archive_path": "audit/logs/debug-r2-regression-3.log",
+      "bytes": 256,
+      "sha256": "90debc0a1275ba86a14000e6063d31a68ec5dba58c2dff397714cc4e19ead044"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\debug-r2-regression-4.log",
+      "archive_path": "audit/logs/debug-r2-regression-4.log",
+      "bytes": 252,
+      "sha256": "9bdd3a4669c50a24640a66fe0a2f703ddb935ecca8e195a42486db81cef2c099"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\debug-r2-regression-5.log",
+      "archive_path": "audit/logs/debug-r2-regression-5.log",
+      "bytes": 247,
+      "sha256": "5d633b5db98badc4aadb7456d10f989b2ea20643f6bfa0e57c6fb433e13545ec"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\debug-r2-regression-6.log",
+      "archive_path": "audit/logs/debug-r2-regression-6.log",
+      "bytes": 259,
+      "sha256": "f214d3e5cbcbdf9b1faab5e024096a475306ea87dc3c3e3d7d8f9f51faa37c7a"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\debug-r2-regression-7.log",
+      "archive_path": "audit/logs/debug-r2-regression-7.log",
+      "bytes": 261,
+      "sha256": "e31242333c4496a55564f5283353f2e12adb63d7f4a6bba478e77785b68940e6"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\debug-r2-regression-8.log",
+      "archive_path": "audit/logs/debug-r2-regression-8.log",
+      "bytes": 268,
+      "sha256": "baacc69903b9de38de0799cb8846553285d4605a816a72a82b8f0cf13bb0975a"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\debug-r2-regression-9.log",
+      "archive_path": "audit/logs/debug-r2-regression-9.log",
+      "bytes": 252,
+      "sha256": "b417981ca3258418267f3ae2b86606b382c66708607e0e8f4fe0589c2abca75e"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-debug-r2-regression-1.log",
+      "archive_path": "audit/logs/observation-debug-r2-regression-1.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-debug-r2-regression-10.log",
+      "archive_path": "audit/logs/observation-debug-r2-regression-10.log",
+      "bytes": 259,
+      "sha256": "cf7439da482c945b83a90f0b5011b59bd5d26809f3252d03046675a521255017"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-debug-r2-regression-2.log",
+      "archive_path": "audit/logs/observation-debug-r2-regression-2.log",
+      "bytes": 237,
+      "sha256": "29dff0c923fe1ad8bab299436128835fbff09ea7fe66d531abcd58df53fad179"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-debug-r2-regression-3.log",
+      "archive_path": "audit/logs/observation-debug-r2-regression-3.log",
+      "bytes": 252,
+      "sha256": "dc4bfcd7c3123e00aec714fbceca862fbdb59f71baacfbb94594e346057e22c8"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-debug-r2-regression-4.log",
+      "archive_path": "audit/logs/observation-debug-r2-regression-4.log",
+      "bytes": 256,
+      "sha256": "da8e7fca1e51e73ba801cb89a9d6974a808afee77be5cb51144b8db0fe27875b"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-debug-r2-regression-5.log",
+      "archive_path": "audit/logs/observation-debug-r2-regression-5.log",
+      "bytes": 247,
+      "sha256": "b872c4b93a20cc87272aa22e8b2b48b43966a557dbba1bbef582bbbd399027a1"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-debug-r2-regression-6.log",
+      "archive_path": "audit/logs/observation-debug-r2-regression-6.log",
+      "bytes": 269,
+      "sha256": "5dd6f159b5a771c20ed6231108318fa0bc05d384821cd9712205a3aa1be5430a"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-debug-r2-regression-7.log",
+      "archive_path": "audit/logs/observation-debug-r2-regression-7.log",
+      "bytes": 259,
+      "sha256": "84ec39128ff1f58588eb46d7d804febfa26425cbd344512d6af7834ce732ef0e"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-debug-r2-regression-8.log",
+      "archive_path": "audit/logs/observation-debug-r2-regression-8.log",
+      "bytes": 252,
+      "sha256": "e252401da954426129ae801b506e5244340b1e1f8ef404e23012a86d4d29128c"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-debug-r2-regression-9.log",
+      "archive_path": "audit/logs/observation-debug-r2-regression-9.log",
+      "bytes": 258,
+      "sha256": "65b7a51d70a5a67d85db1ff705e032972ee4a0f46fad53d9bd1478490dc43eb7"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-release-r2-regression-1.log",
+      "archive_path": "audit/logs/observation-release-r2-regression-1.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-release-r2-regression-10.log",
+      "archive_path": "audit/logs/observation-release-r2-regression-10.log",
+      "bytes": 259,
+      "sha256": "e102bad0d7ddced09963b7a270a869f5fd96524b63ff48fe72f580bc3d8a679f"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-release-r2-regression-2.log",
+      "archive_path": "audit/logs/observation-release-r2-regression-2.log",
+      "bytes": 255,
+      "sha256": "35b30771846cf4769593e53ef06c6b993a7cf80154080bf82da79d9c35595a96"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-release-r2-regression-3.log",
+      "archive_path": "audit/logs/observation-release-r2-regression-3.log",
+      "bytes": 247,
+      "sha256": "f6f353a5d2ebf9a4c80987ed0d8f37379fa113886d4b23e89d181197bea28c16"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-release-r2-regression-4.log",
+      "archive_path": "audit/logs/observation-release-r2-regression-4.log",
+      "bytes": 236,
+      "sha256": "da582dfab64fcc8a7f4dd97f6df4dbacef518416a46b5f310d41ca0c5c38e212"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-release-r2-regression-5.log",
+      "archive_path": "audit/logs/observation-release-r2-regression-5.log",
+      "bytes": 252,
+      "sha256": "724ebc07d2dbf95329250fe8f4aa07f0ba1beb51bfc1d18837ca1daca088edf4"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-release-r2-regression-6.log",
+      "archive_path": "audit/logs/observation-release-r2-regression-6.log",
+      "bytes": 251,
+      "sha256": "f152c9a64d2f8c7826cfb3d76e5936eea1b0cfce6845399bdcbe3bcd2e5cf213"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-release-r2-regression-7.log",
+      "archive_path": "audit/logs/observation-release-r2-regression-7.log",
+      "bytes": 269,
+      "sha256": "7a375e2999a22e15192653f9197877c25b7345d647e8e6765ea6391bc0dc0d51"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-release-r2-regression-8.log",
+      "archive_path": "audit/logs/observation-release-r2-regression-8.log",
+      "bytes": 260,
+      "sha256": "57efd4b8d5a813988cdadb08ef8281b8635c700180ab26d2b59aed1fe640fc1c"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\observation-release-r2-regression-9.log",
+      "archive_path": "audit/logs/observation-release-r2-regression-9.log",
+      "bytes": 259,
+      "sha256": "d5a5f846ffab6622008be3a3eeba1b9c48330a1a4639fec3e8ce229e68d70298"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\release-r2-regression-1.log",
+      "archive_path": "audit/logs/release-r2-regression-1.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\release-r2-regression-10.log",
+      "archive_path": "audit/logs/release-r2-regression-10.log",
+      "bytes": 259,
+      "sha256": "93b7bbddc063f08232e8b47afe9e4607734fa304e6f47a64e558aa6ec01c5f24"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\release-r2-regression-2.log",
+      "archive_path": "audit/logs/release-r2-regression-2.log",
+      "bytes": 246,
+      "sha256": "371ebc5f3ad4892548455f8561d254691e510b62718b5d8577780ca99a39d266"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\release-r2-regression-3.log",
+      "archive_path": "audit/logs/release-r2-regression-3.log",
+      "bytes": 237,
+      "sha256": "51a1423d9034b49e6baf0dec8e28f7a0baaaea8770065ba434bb0bfa7ce48236"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\release-r2-regression-4.log",
+      "archive_path": "audit/logs/release-r2-regression-4.log",
+      "bytes": 255,
+      "sha256": "f4f0f26b79aff1cb18ff9b549e03bc3eee07f1ac65c6da4b0f080adb8d06707c"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\release-r2-regression-5.log",
+      "archive_path": "audit/logs/release-r2-regression-5.log",
+      "bytes": 252,
+      "sha256": "c0883e163f1034583984d9f343802f53915508d1ce9d9a8566e6bdd588c9680f"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\release-r2-regression-6.log",
+      "archive_path": "audit/logs/release-r2-regression-6.log",
+      "bytes": 252,
+      "sha256": "b0bf1d60a6feccf755ac33485ca4ff582364f7399fb2ff50ac08dba002caec33"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\release-r2-regression-7.log",
+      "archive_path": "audit/logs/release-r2-regression-7.log",
+      "bytes": 269,
+      "sha256": "a8aaffa5cb97ac44ad23a5c267bc77a6afaa0de1036374a0a814abf1c32e2433"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\release-r2-regression-8.log",
+      "archive_path": "audit/logs/release-r2-regression-8.log",
+      "bytes": 259,
+      "sha256": "b02c2e86ebd3666d1878a79b7f614babbca35b9d1f379460b577289ebd560415"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\release-r2-regression-9.log",
+      "archive_path": "audit/logs/release-r2-regression-9.log",
+      "bytes": 261,
+      "sha256": "3d115f1b802cc27200b87965944f8f9172d395f6eefed794241267d582a77ae5"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\shared-release-r2-regression-1.log",
+      "archive_path": "audit/logs/shared-release-r2-regression-1.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\shared-release-r2-regression-2.log",
+      "archive_path": "audit/logs/shared-release-r2-regression-2.log",
+      "bytes": 256,
+      "sha256": "088836b99d26211d4ce98b2ebe19a566d16b55d3f01b06427090e28d3dc6550a"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\shared-release-r2-regression-3.log",
+      "archive_path": "audit/logs/shared-release-r2-regression-3.log",
+      "bytes": 252,
+      "sha256": "808aecaa91ac13f09755efd4b891781548ccbb37c7e159682e4a65ac16b89f83"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\shared-release-r2-regression-4.log",
+      "archive_path": "audit/logs/shared-release-r2-regression-4.log",
+      "bytes": 236,
+      "sha256": "a7d733788d996de5e0c8571340d9c8aacbde803e0de851b8b501a8aeade4266a"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\shared-release-r2-regression-5.log",
+      "archive_path": "audit/logs/shared-release-r2-regression-5.log",
+      "bytes": 247,
+      "sha256": "37c044a3877cbdd50b4e6786136772b095f230616bc78fe2be7734397ce6b62e"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\logs\\shared-release-r2-regression-6.log",
+      "archive_path": "audit/logs/shared-release-r2-regression-6.log",
+      "bytes": 260,
+      "sha256": "9af77d53f56d987213a4798f334dac709477c704d1dfb134c98505bf195c07a0"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\observation-debug-r2-regression-test-list.json",
+      "archive_path": "audit/observation-debug-r2-regression-test-list.json",
+      "bytes": 946709,
+      "sha256": "44de9420de74e291adfe4164b2c3a23870285b2a575df53eac74c2b112a6c282"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\observation-release-r2-regression-test-list.json",
+      "archive_path": "audit/observation-release-r2-regression-test-list.json",
+      "bytes": 952253,
+      "sha256": "24d4d21a2d5d9acfe68d8692c5d0da87e89360dd3a7671977569f162dc38d7ff"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\release-r2-regression-test-list.json",
+      "archive_path": "audit/release-r2-regression-test-list.json",
+      "bytes": 853101,
+      "sha256": "f90963769700dded5b54baef9ac1f04af6dc38e569d5af288d4766a1b6536a36"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\shared-release-r2-regression-test-list.json",
+      "archive_path": "audit/shared-release-r2-regression-test-list.json",
+      "bytes": 845267,
+      "sha256": "126c99d52b3eae72222e4f7fbc783796ec5889e988615d0adc1860dfd77f6c8c"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\start.json",
+      "archive_path": "audit/start.json",
+      "bytes": 301569,
+      "sha256": "b533abc72800d134353d75c51e062d9de1f9b908225c19905deca67ba91c662b"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-closure-audit-20261026\\update_docs.py",
+      "archive_path": "audit/update_docs.py",
+      "bytes": 16524,
+      "sha256": "be8e7afe3ac321f5b5237687b40dab1cb3cbbfae7b834ff4db79237ba122154a"
+    }
+  ],
+  "archive_path": "D:\\Cuexis-worktree\\docs\\stage_reports\\stages\\stage-07\\05-rpa-new\\r2\\2026-10-26-r2-technical-closure-audit.zip",
+  "archive_sha256": "28f6c9c8cafdeb9dc55bb9fb9e1a67603e2c6f8475f43cc0a98f56d549d0c3ce",
+  "payload_manifest_sha256": "dbc710a6605006b5c4806662736461bb18b4e7d9d18644c09551b5c837c9b567"
+}

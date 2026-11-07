@@ -1,0 +1,398 @@
+# Gameplay Identity 分层草案
+
+> 目录状态：Gameplay research input。身份裁决已整理到 ADR 0043 与 Gameplay Judgement Spec；本文保留分层推导。
+
+状态：candidate（设计草案，未接受，未实施）
+
+更新日期：2026-10-01
+
+本文回应 [Gameplay Ruleset 设计讨论记录](GAMEPLAY_RULESET_DISCUSSION.md) 下一步工作 F：判定与内容
+identity 的分层。前置决定见该文 §2.9、§2.10 与 §3.1。
+
+## 1. 要解决的问题
+
+经过分层与 Program IR 的设计，identity 已经牵出多个来源：谱面语义、程序内容、Ruleset
+Interface 版本、Ruleset Build、Loadout、输入映射，以及生效后的表现绑定。
+
+如果它们只合成一个摘要，会出现两类错误：
+
+```text
+过宽    换一张贴图就让全部已有 Replay 失效
+过窄    改了判定线运动却不影响 Replay 绑定，重放出不同结果
+```
+
+因此要把"哪些字段影响判定结果"变成可机械检查的格式属性，而不是靠维护一张人工清单。
+
+## 2. 字段分区
+
+每个语义字段必须声明一个类别，类别完备且互斥：
+
+| 类别 | 含义 | 例子 |
+| --- | --- | --- |
+| `judgment` | 影响判定结果 | requirement 的参数与区间、region、frame 轨道、判定程序、窗口、Loadout |
+| `presentation` | 只影响外观与声音 | 材质、贴图、判定文字、按键音、L4 绑定 |
+| `neutral` | 两者都不影响 | 作者名、注释、标签、目录顺序 |
+
+分区由 Schema 作者声明，验证器做两件事：**每个字段都有类别**，以及**类别完整覆盖所有字段**。
+改变某个字段的类别属于破坏性格式变更，需要新的格式版本。
+
+分区必须**逐字段**判定，不能按"几何 vs 视觉"粗分。反例很直接：frame 轨道与 Slider 路径是
+`judgment`，而相机与材质是 `presentation`，它们都是几何数据。
+
+### 2.1 分类的可信性
+
+分类若由内容自己声明，而内容是不可信的第三方包，就会出现一个健全性缺口。一个包可以把影响
+判定的字段声明成 `presentation`：
+
+```text
+包声明：scoreMultiplier 是 presentation
+实际：它影响折叠结果
+结果：改数值后 JudgementIdentity 不变
+      → 旧 Replay 仍然"合法"，却播放出不同分数
+```
+
+这既是静默分叉，也是一个作弊面。两条规则堵住它：
+
+```text
+1. 引擎自有的字段类型由引擎固定类别，包不能覆盖。
+2. 包自定义的类型默认落在 judgment 类别。
+```
+
+默认方向统一取保守一侧：**过度判定只会让 Replay 多失效，判少了才会静默分叉。**
+
+检查阶段随之确定：Schema 阶段是便利，**prepare 阶段是必须**，因为引擎不控制第三方包的
+Schema。该检查是纯结构性的，可按 `ContentIdentity` 缓存，不进会话热路径。
+
+### 2.2 Interface 也做字段分区
+
+Ruleset Interface 的变化同样需要区分"对既有内容是否可见"，判据与 §2 完全一致：
+
+**这个变化是否改变既有内容的判定结果，或者让既有内容变得非法。**
+
+| Interface 变化 | 对既有内容的判定结果可见 | 是否需要 bump |
+| --- | --- | --- |
+| 末尾追加一个 grade | 否 | 否 |
+| 中间插入一个 grade | 是（名次索引后移） | 是 |
+| 放宽 Hook 的取值范围 | 否 | 否 |
+| 收窄 Hook 的取值范围 | 是（既有程序或 Loadout 可能非法） | 是 |
+| 新增一个 Hook | 否 | **否** |
+| 新增 outcome 或 category | 否 | 否 |
+| 改窗口表数值 | 不适用 | 这是 Build 变化，本来就不 bump |
+
+由此得到两条结论：
+
+- **grade 集合只能追加，不能插入。** 插入是破坏性变更。
+- **新增 Hook 不 bump。** 否则每加一个技能都要重发整个曲库。
+
+第 1 条与 §2.1 是同一条规则的两种应用，不是两套机制。
+
+### 2.3 Interface 字段集合的完整 bump 细则（回应 §13.1）
+
+§2.2 给的是判据与几个条目。判据本身是完备的（"是否改变既有内容的判定结果，或让既有内容
+变得非法"），但缺一张覆盖 Interface 全部字段的清单，因此无法机械检查。
+
+Interface 的字段集合来自
+[Ruleset Fold Language 草案](GAMEPLAY_RULESET_FOLD_DRAFT.md) §4.1，共十项。
+逐个套用 §2.2 的判据：
+
+| Interface 字段 | 追加式变更 | 破坏式变更 | bump |
+| --- | --- | --- | --- |
+| `grade` 有序等级集合 | 末尾追加 | 中间插入、删除、重排、改语义 | 追加否 / 其余是 |
+| `category` | 新增取值 | 删除、改名、改含义 | 否 |
+| `outcome` | 新增取值 | 删除、改名、改含义 | 否 |
+| `phase` | 新增取值 | 删除、改名、改含义 | 否 |
+| `window` 命名窗口表 | 新增一张表 | 改既有表的数值 | 否（改数值是 Build 变更） |
+| `hook` 类型化变量 | **放宽取值范围** | 收窄取值范围、改类型、改合成算子、改 derived/owned | 放宽否 / 其余是 |
+| `region` 判定域 | 新增 | 删除、改形状、改 frame 绑定 | 否 |
+| `controller` | 新增 | 删除、改形状、改参数 | 否 |
+| `field` 导出字段 | 新增（纯增量） | 删除、改类型 | 否 |
+| `module` 清单 | 新增 | 删除、改 group / conflicts 声明 | 否 |
+
+**十项里只有两项会 bump，且都只在"收窄或重排"方向。** 这不是巧合：判据问的是"既有内容
+是否变得非法或结果改变"，而新增一个取值永远不会让既有内容引用到它。
+
+**三处需要额外说明**，因为它们的判定不是显然的：
+
+```text
+grade 中间插入    不只是"名次索引后移"。Grading 把 Measure 映射到等级，
+                 而等级是有序集合，插入会让"比 perfect 差一档"变成另一档。
+                 因此它是判定语义变更，不是容器变更。
+hook 改合成算子    合成算子决定"多个贡献如何合成一个值"，因此它改变判定。
+                 但同一 hookId 下换算子意味着同名条目语义已变，正确做法是新增 hookId
+                 （与引擎冻结合同草案 §3 的"id 即语义内容"同一条规则）。
+module 改 group    它不改变判定，只改变"哪些组合被拒绝"。因此它既不 bump 也不失效
+                 Replay —— 它让某些 Loadout 从合法变为非法，而非法 Loadout 本来就不产生
+                 有效 Replay。放进这张表是为了说明它为什么**不** bump。
+```
+
+**这张表就是 §2.2 判据的机械化形式**，可以直接写成检查脚本：Interface 的两个版本做逐字段
+diff，按上表分类，任一落在"是"列即要求显式放行（放行机制见
+[引擎冻结合同草案](GAMEPLAY_ENGINE_FROZEN_CONTRACTS_DRAFT.md) §6 的三来源原则）。
+
+**逐字段 diff 而不是整体摘要**，理由与 §4 的命名分量一致：整体摘要只能报"变了"，
+逐字段 diff 能报"`hook.windowScale` 的取值范围从 `[750..1250]` 收窄到 `[900..1100]`"。
+后者才是作者能据以行动的信息。
+
+## 3. 两个摘要
+
+```text
+ContentIdentity
+  覆盖全部字段（judgment + presentation + neutral）
+  用途：交换、防篡改、缓存键、CXC entry identity、资源闭包
+
+JudgementIdentity
+  只覆盖 judgment 类字段，按来源分组
+  用途：Replay 绑定、排行榜可比性、Studio 结果复现
+```
+
+两个而不是一个，因为它们的作用范围本来就不同。用 ContentIdentity 做 Replay 绑定会过宽，
+用 JudgementIdentity 做内容身份会过窄。
+
+`ContentIdentity` 沿用既有的域分隔 SHA-256 合成方式，不新造机制。
+
+## 4. JudgementIdentity 的组成
+
+四个来源，每个是**命名分量**，最后按域分隔合成：
+
+```text
+engine     判定语义版本、定点表版本（角度表等）、Tick 分辨率
+ruleset    Interface 版本（等级集合、category、outcome、程序可见 Hook 及静态范围、窗口表，
+           含 holdGrace 默认值、允许范围、谱面覆盖开关和 graceResolutionPolicy）
+           Build 的 judgment 投影（Controller、region、仲裁策略、fold、模块骨架）
+chart      judgment 投影：requirement 集（参数已解析）。
+            每条 requirement 在 Fold Calculus 下是
+            （标准库条目 ID | 内联 Pattern） + 参数 + 计量规格；连续音符记录最终
+            prepared grace 值
+            另含被引用的 region 与 frame、谱面自带的判定程序
+session    Loadout（启用模块与参数取值，含 prepare 时提供 holdGrace 默认值的配置）
+```
+
+**命名分量而不是单一摘要，是为了诊断**：失配时能指出是 engine、ruleset、chart 还是 session
+变了，而不是只报"身份不符"。这也让既有 `PreparedSemanticIdentity` 的域分隔合成方式可以
+直接扩展为分量表。
+
+### 4.0 术语对应
+
+本文写作时间早于 [Bounded Fold Calculus 提案](GAMEPLAY_FOLD_CALCULUS_DRAFT.md)，个别名词与其
+不同但概念对应：
+
+| 本文 | Fold Calculus | 说明 |
+| --- | --- | --- |
+| Hook | 程序可见 Hook（calculus §5.6） | 同一概念；calculus 把 `hook` 列入谓词读取集合 |
+| 窗口集 | 窗口表 / 等级集合（calculus §3.6） | 同一概念；Grading 用它把 Measure 映射到等级 |
+| requirement 集 | Pattern / 标准库条目 + 参数 + 计量规格 | 同一概念，表达形式改变 |
+| 判定程序 | Pattern（编译为 Fold） | 作者写 Pattern，引擎编译为自动机 |
+
+引用本文的结论时，以本表换算到 calculus 的名词。
+
+### 4.1 Interface 投影（use-based）
+
+ruleset 分量不直接使用 Interface 版本的内容清单，而是使用 **Interface 投影**：内容与 Loadout
+**实际引用**了哪些 Hook、窗口表、region 与 grade。
+
+理由见 [Skill Hooks 与模块扩展性草案](GAMEPLAY_SKILL_HOOKS_DRAFT.md) §7：Interface 版本是
+"兼容集合"，只回答内容能否运行；投影才回答"实际用到哪些"。两者分开之后，
+
+- 新增一个 Hook 且无人引用：版本不变，投影不变，没有 Replay 失效。
+- 新增一个 Hook 且被某谱面引用：版本不变，只有该谱面的投影变化。
+
+这与 §2 的字段分区是同一条原则，只是从"字段"推进到"实际使用"。
+
+连续音符的 JudgementIdentity 记录最终 prepared `grace` 值，以及版本化的
+`graceResolutionPolicy`。显式值还是继承值、原始字段是否存在、继承自哪个默认层，属于
+ContentIdentity 和诊断元数据，不属于 JudgementIdentity。Ruleset 的默认值 / 范围 / 覆盖开关
+属于 `ruleset`，Loadout 提供的 prepare-time 默认值属于 `session`；三者合起来即可重建
+prepared requirement。Gap 中的释放时刻是运行状态，不进入 identity。
+
+### 4.2 Interface 投影的粒度
+
+待决项曾把问题写成"按 Hook 标识逐项，还是按判定域加参数族聚合"。两种都不是正确的单位，
+因为它问的是**键的粗细**，而真正要记录的是**值**。
+
+按 §4.1 与 D8 的裁决，投影记录"实际生效的值"而不是声明范围。于是正确的单位是：
+
+```text
+投影的单元 = (hookId, 贡献来源)，对某个 Loadout 下处于活跃期的贡献集合求一次
+```
+
+理由：判定读到的不是 Hook 的声明范围，而是合成后的**生效值**，而生效值由活跃贡献集合决定
+（[Ruleset Fold Language 草案](GAMEPLAY_RULESET_FOLD_DRAFT.md) §4.7 的派生 Hook）。记录
+`windowScale: Int[750..1250]` 没有意义，记录 `{core: 1000, skillA: +150}` 才有意义——
+后者才是判定真正消费的东西。
+
+**这个单位同时解决了成本担忧，方向与直觉相反。** 待决项的担忧是"粒度太细会让 identity 计算量
+与内容规模线性相关"。逐 Hook 记录确实是 O(Hook 数)，但贡献集合的规模由 **Loadout** 决定，
+与谱面规模无关：
+
+```text
+逐 Hook        O(规则集声明的 Hook 数)      随引擎演进缓慢增长
+按域聚合       O(域数)，但会把不同 Hook 混在一起，欠分离 —— 安全
+按贡献         O(本 Loadout 的活跃贡献数)   由技能数决定，与小节数、requirement 数无关
+```
+
+因此"更细"在这一维上**没有**带来线性成本。粒度细只在线性于谱面的那一维上昂贵，
+而投影里线性于谱面的部分是 chart 分量，不是 ruleset 分量。
+
+**只记录两侧都出现的 Hook。** chart 的 Pattern 读取 Hook（calculus §5.6 把 `hook` 列入
+谓词读取集合），ruleset 的模块写入 Hook。一个 Hook 若无人读，或无人写，都不能改变判定：
+
+```text
+投影 = 生效贡献集合 ∩ 该谱面实际读取的 Hook 集合
+```
+
+这是精确的削减，不是近似：没人读的值影响不了任何东西。它也是 §2 字段分区的同一条原则，
+只是从"字段"推进到"实际使用"再推进到"两侧都在用"。
+
+**由此得到三条判据**：
+
+```text
+新增 Hook，无人读     版本不变、投影不变、无 Replay 失效
+新增 Hook，被谱面读   版本不变、只有该谱面的投影变化
+改某模块贡献值        投影变、Replay 失效 —— 正确，判定结果确实变了
+```
+
+**诊断时的指向**因此是双向的：贡献变化指向规则集的模块，读取集合变化指向谱面的 requirement。
+这正是 §4 说的"命名分量是为了诊断"在投影内部的延续。
+
+## 5. 显式排除清单
+
+显式排除与显式包含同等重要，否则会意外耦合：
+
+```text
+渲染后端、帧率、Entity 遍历顺序
+时钟来源（ChartClock / HostClock / CuexisAudio）
+音频输出设备与延迟
+表现资源、皮肤、L4 绑定
+输入映射与校准
+诊断与日志
+作者元数据、注释、标签
+```
+
+时钟来源被排除不是新决定，而是与 `TIMING_MODEL.md` 已有的规定一致：三种时钟必须对相同的
+规范化输入产生相同的判定结果。这说明分区原则与既有合同自洽。
+
+L1 归一化整体被排除，因为 Replay 记录的是**规范化之后**的事件。见 §6。
+
+## 6. 输入映射与校准的位置
+
+原始设备输入先经过 L1 归一化、映射和校准，成为规范化事件。Replay 记录的就是这些事件。
+
+因此：
+
+- **映射 identity 与校准参数都是信息性元数据**，写入 Replay 头部用于诊断，但不参与校验门。
+- 若把事件记录在映射之前，则映射与校准必须进入 identity，且校验失败要拒绝播放。这会带来
+  一个不必要的结果：玩家换键盘、换手台或改校准之后，旧 Replay 不再可播。
+- Replay 的本质是"在给定谱面与规则下，重放这段规范化输入能得到相同结果"。它只依赖判定
+  折叠所消费的东西。
+
+这条修正了讨论记录第 24 条的措辞。该条原文同时要求"记录映射后的事件"与"校验映射 identity"，
+两者不能同时成立：映射若已烘进数据，校验只会错误拒绝有效 Replay。
+
+## 7. 变更影响表
+
+| 改动 | ContentIdentity | JudgementIdentity |
+| --- | --- | --- |
+| 换材质 / 贴图 | 变 | 不变 |
+| 改 Note 位置或判定线运动 | 变 | 变 |
+| 改作者名 / 注释 | 变 | 不变 |
+| 改谱面判定程序 | 变 | 变 |
+| 改 Ruleset 窗口数值 | 变 | 变 |
+| 改单个 handoff 音符的显式 `grace` | 变 | 变 |
+| 改 `holdGrace` 默认值、范围或谱面覆盖开关 | 变 | 变 |
+| 显式 grace 与继承 grace 的来源互换，但最终值和 policy 不变 | 变 | 不变 |
+| 改 `graceResolutionPolicy` | 变 | 变 |
+| 只改 Ruleset 的按键音 | 变 | 不变 |
+| 换 Loadout | 不变 | 变 |
+| 换输入映射或校准 | 不变 | 不变（已烘进事件） |
+| 换渲染后端 / 帧率 / 时钟来源 | 不变 | 不变 |
+| 引擎升级改了判定语义 | 不变 | 变 |
+
+第六行要求 **Ruleset 包同样做字段分区**。分区原则是通用的，不只适用于谱面。
+
+## 8. 失配策略
+
+```text
+组件级比对     identity 是命名分量的记录，诊断能指出是哪个分量变了
+默认严格拒绝   不静默用错的身份重放
+诊断模式       显式开启后可用当前内容重新折叠，结果标记为非权威
+```
+
+诊断模式用于 Studio 与谱面校验：显示"哪里变了"、"结果差多少"，帮助作者定位改动的影响。
+它是非权威路径，产生的分数不计分、不写排行榜、不进入任何证据。
+
+## 9. 与既有实现的关系
+
+现有 `PreparedSemanticIdentity` 由 canonical Chart identity、各 CXT identity、各资源内容
+identity 和 parameter identity 合成。它**包含资源内容 identity 是正确的**，因为它服务的是
+prepare 事务与 CXC 身份。
+
+但它**不能直接复用为 Replay 绑定**：包含资源内容 identity 会让一次换贴图失效全部 Replay。
+需要的是"新增一个 judgment 投影摘要"，而不是"修改 PreparedSemanticIdentity"。这一点的
+措辞应精确到"不复用"，而不是"它是错的"。
+
+## 10. 判定语义版本
+
+判定语义版本与引擎版本必须**分开编号**。理由：引擎升级若只改渲染、后端适配或日志，不应让
+`JudgementIdentity` 变化，否则每次发版都会清空全部已有 Replay。
+
+代价是需要配套两件事：
+
+1. 一份"什么算判定语义"的清单。范围是参与折叠的部分：窗口比较、锚点量化、仲裁、fold
+   求值、外推基求值、定点表。L1 归一化不在内，因为 Replay 记录的是规范化之后的事件（§6）。
+2. 一个"判定语义未变"的门禁，要求变更必须刻意放行并留痕。本仓库已有同类机制：
+   `tools/check_version_gate.py` 对 SDK API 版本采用"一经变更即需 `--allow-sdk-api-change`
+   放行"的模式，判定语义版本照此办理。
+
+该脚本目前是 Stage 7A 的一处已知阻塞：开关没有工作流传入，而检查器从 base commit 取出运行，
+所以候选分支无法自行开启。设计时应一并规划放行开关的传递路径，避免重复同一个坑。
+
+## 11. 定点表版本
+
+定点表（角度表，以及将来可能的 `exp` / `sinusoid` 外推基表）的版本**必须进入 engine 分量**。
+否则表被改进时，角度相关的判定结果会变而 identity 不变，属于 §2.1 的静默分叉。
+
+是否允许同一张表多版本并存，是第二个问题，可以后置。若允许并存，表的版本就成为一个
+capability，需要它的内容在缺少该表的引擎上稳定拒绝。
+
+定点表需要**一个统一的登记点**：一张表清单一处声明版本，而不是每加一张表就多一处要记得
+写进身份。这与 Fold 草案待决项 3 是同一件事。
+
+## 12. Replay 头部格式
+
+失配诊断要能指出"是哪个分量变了"，因此 Replay 头部必须存**逐分量的 identity**，而不是只有
+一个合成摘要。这是格式决定，晚定就要改 Replay 格式版本。
+
+对照 §6，映射 identity 与校准参数同样写进头部，但性质不同：它们是信息性元数据，不参与校验。
+
+"结果差多少"的量化报告属于 Studio 工具功能，可以后置。
+
+## 13. 待决
+
+1. ~~Ruleset Interface 版本的 bump 细则~~ 已在 §2.3 完成：按
+   [Ruleset Fold Language 草案](GAMEPLAY_RULESET_FOLD_DRAFT.md) §4.1 的十个字段逐个套用
+   §2.2 的判据，得到一张"追加式 / 破坏式 / 是否 bump"的表。十项里只有 `grade` 与 `hook`
+   会 bump，且都只在收窄或重排方向；表可直接写成逐字段 diff 的检查脚本。
+2. ~~定点表是否允许同一张表多版本并存，还是永久冻结、只能新增~~ 已在
+   [引擎冻结合同草案](GAMEPLAY_ENGINE_FROZEN_CONTRACTS_DRAFT.md) §3 处置：
+   **问题被消解**。表条目的 id 即语义内容，改进是新增条目而非提升版本，
+   两个条目永久并存。理由三条：并存是必然的（老内容要逐位可复现）、
+   版本提升会让全部角度相关 Replay 立即失效、capability 按 id 声明天然成立。
+3. ~~Studio 的诊断模式需要多详细的可视化，以及"结果差异"报告的量化粒度~~
+   已裁决为**推迟到 Studio 阶段，不属于本次设计**。理由：它不影响判定语义，只影响作者
+   体验；而 §12 已经确定 Replay 头部逐分量存 identity，因此"哪里变了"所需的数据在格式里
+   已经齐备，"差多少"是纯展示层的选择。把它写进本次设计会过早约束 Studio 的交互。
+4. ~~判定语义的清单如何与 `check_version_gate.py` 的现有机制合并，以及放行开关的传递路径~~
+   已在 [引擎冻结合同草案](GAMEPLAY_ENGINE_FROZEN_CONTRACTS_DRAFT.md) §5–§6 处置：
+   清单在 §5 逐项列出（在清单内 / 不在清单内两组），门禁在 §6 采用**三来源原则**
+   （执行器取自 base、声明取自 candidate、放行取自 workflow 事件），
+   **放行按清单项而非全局布尔**。该节同时说明为什么只做其中两条都会失效。
+5. ~~Interface 投影的粒度~~ 已在 §4.2 裁决：单位不是 Hook 标识也不是判定域，
+   而是 **(hookId, 贡献来源)**，且只覆盖"生效贡献集合"与"该谱面实际读取的 Hook 集合"的
+   交集。这个单位既比逐 Hook 更细（安全），又不随谱面规模增长（成本由 Loadout 决定）。
+   与 [Skill Hooks 与模块扩展性草案](GAMEPLAY_SKILL_HOOKS_DRAFT.md) §10 是同一问题，
+   已同步。
+6. 哪些参数进 identity 的完整清单见
+   [预算与规模上界草案](GAMEPLAY_BUDGET_AND_SCALE_DRAFT.md) §5。该节新增一条区分：
+   **引擎能力上限的收紧是兼容性破坏，不是 identity 变化**，因此不进任何分量（含 engine
+   分量）。若按"引擎变了就 bump engine"处理，每次调预算都会失效全部既有 Replay，
+   而判定结果一个字都没改。

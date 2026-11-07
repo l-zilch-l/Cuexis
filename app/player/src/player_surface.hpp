@@ -30,6 +30,13 @@ enum class PlayerInputAction : std::uint8_t {
 struct PlayerInput final {
     bool quitRequested{false};
     std::vector<PlayerInputAction> actions;
+    struct Key final {
+        std::uint32_t scanCode;
+        bool pressed;
+        std::uint64_t timestampNs;
+    };
+    std::vector<Key> keys;
+    bool focusLost{false};
 };
 
 class PlayerSurface {

@@ -1,0 +1,5 @@
+{
+  "reason": "1400 static failed two of three duration budget checks; next new lower entity count, fixed three processes; no 1400 retry or threshold relaxation",
+  "previous_results_sha256": "81978507bb839e06a7a3dc1103779c54d28bf3355a2f0ff29786c5c5188334d3",
+  "entities": 1300
+}

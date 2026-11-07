@@ -1,0 +1,21 @@
+Own the parsed Chart tree once in legacy prepare
+
+A legacy prepare parsed the document twice: chart::detail::loadChartForPlayback parsed the
+source for the typed projection, and PlaybackSession::loadDocumentStage parsed the same bytes
+again through ChartWriter::writeCanonicalJson only to hash the canonical identity. On the
+13,171,906-byte 40K chart the second parse cost about 0.9 s of the 3.8 s prepare.
+
+The typed reader never moved anything out of the tree it was handed, so it now takes the value
+by const reference and the dispatcher keeps ownership. loadChartForPlayback can therefore
+canonicalize the tree it already parsed, through the new detail::writeCanonicalValue, which is
+the same serializeCanonical path ChartWriter::writeCanonicalJson runs after its own parse, and
+return the bytes in ChartDispatchResult::legacyCanonicalText. loadDocumentStage consumes those
+bytes and falls back to the text entry point only when the writer rejected the value, so the
+chart.writer.* diagnostics of that failure surface are unchanged.
+
+Identity bytes are unchanged: 936c32ee... on the 40K v3 fixture with 40,001 prepared objects.
+prepareLoad drops from 3788/3981 ms to 2739/2878 ms, and the player reaches a responsive
+window in 3029 ms, from 18970 ms before this line of work.
+
+Tests pin one parse per legacy prepare, and the dispatch test asserts the returned bytes equal
+ChartWriter::writeCanonicalJson for the same source text.

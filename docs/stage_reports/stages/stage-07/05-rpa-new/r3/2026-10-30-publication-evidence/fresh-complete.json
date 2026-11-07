@@ -1,0 +1,11 @@
+{
+  "scope": "Fresh Release STATIC bounded publication batch + R3c v4. Full definitions consistent; four related suites, architecture and dependency gate. No ordinary performance acceptance.",
+  "source_manifest_sha256": "e3c87da77498968f2a634d9edac7ca390b5371e726cbf36702e0cf5dc7ac26b8",
+  "commands_sha256": "d41eb30efd623f27a89ddd359f9c6fa03797f5af520e5e25224115e5da0aae95",
+  "binaries": {
+    "cuexis_execution_host_tests.exe": "88ad7887d5b57a1356a79ed149065d6cbd7d50d7775c87b34123ba06ae594ead",
+    "cuexis_gameplay_packed_tests.exe": "a6ad9d4dc66869e628e418b7f7061669e002f6e9652fc477a3fead84e81ea8d8",
+    "cuexis_judgement_tests.exe": "8226ee6f277de9a08cd9b64981963dcbe4a63d81e264bd0b4e94b6a28b1de8d8",
+    "cuexis_rpa_tests.exe": "91c097db772ae226c3a3589efcfdbae4ef82ad9e8b65d6ffbea9c30b64ca76d4"
+  }
+}

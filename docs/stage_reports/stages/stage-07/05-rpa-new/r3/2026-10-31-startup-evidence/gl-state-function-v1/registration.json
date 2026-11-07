@@ -1,0 +1,9 @@
+{
+  "scope": "Four-frame overlapping RGB characterization, ordinary physical GPU; baseline and state-cache candidate.",
+  "binaries": {
+    "baseline": "0d1e20f6a165280ce1036bedbb0a691a7e1bd439246233bc350f85d01874a997",
+    "candidate": "8ac6ae9fb93506b82538fc90b3f3921d60b6dfb2450403db756572f649991e17"
+  },
+  "test_source_sha256": "043ffd9a45ac4c7cf398093964ade7aa4423292fc16e3cce5febc0b8f145b1ca",
+  "controls": "BelowNormal, all originally allowed logical CPUs, throttling OFF"
+}

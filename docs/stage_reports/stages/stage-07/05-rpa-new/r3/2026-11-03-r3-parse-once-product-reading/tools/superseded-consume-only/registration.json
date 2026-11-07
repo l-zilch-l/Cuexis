@@ -1,0 +1,44 @@
+{
+  "schema": "r3.prepare.parse_once.v1",
+  "formal": false,
+  "scope": "Shipped legacy parse-once versus the same source with the reuse disabled. One unchanged probe, one timed synchronous prepareLoad per fresh process, three pairs per scale AB/BA/AB, one window. Not the plan 9.2 nine-pair formal unit and not a load or stage acceptance.",
+  "head": "a422e52766e7e9086ea7b783217487fe995bf057",
+  "dirty": "M tests/pd/CMakeLists.txt\n?? docs/stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-03-r3-parse-once-product-reading/\n?? tests/pd/json_prepare_probe.cpp",
+  "arms": {
+    "baseline": {
+      "role": "reuse disabled: loadDocumentStage ignores the dispatcher bytes and the canonical writer re-parses the text",
+      "exe": "D:\\Cuexis-redesign\\out\\_parseonce\\prepare-noreuse.exe",
+      "sha256": "b9169253111c9490a22f920b3da459e6f220d3fed30ec892bc517bb95245dfb5"
+    },
+    "candidate": {
+      "role": "shipped product behaviour: the canonical bytes come from the same parsed tree",
+      "exe": "D:\\Cuexis-redesign\\out\\_parseonce\\prepare-reuse.exe",
+      "sha256": "e67fd3427f6967ad4105a4941eb41ac6aba4540d4500cbf9706ac4f24f0292d3"
+    }
+  },
+  "a_side": "The baseline build differs from HEAD only by the six-line edit in a-side.patch; the source was restored before this registration was written.",
+  "probe": {
+    "source_sha256": "2f9e411d864519e004f1cdfa9011e489f5044942b714825ff9be049920872fed",
+    "test": "CPU legacy preparation fixed diagnostic",
+    "fixture": "synthetic legacy Chart v1: entities objects on a square grid, one transform plus one renderable each, two assets from assets/projects/stage3_project"
+  },
+  "design": {
+    "scales": [
+      1000,
+      10000,
+      40000
+    ],
+    "pairs_per_scale": 3,
+    "order": "pair 0 AB, pair 1 BA, pair 2 AB",
+    "controls": {
+      "affinity": 4,
+      "priority_class": 16384,
+      "creation": "CREATE_NO_WINDOW",
+      "execution_throttling": "not controlled in this group"
+    },
+    "timing": "one timed prepareLoad per process; the fixture is built before the timer and commit/update/extract/digest run after it"
+  },
+  "decision_rule": "Declared before measurement. The A/B quantity is the paired log ratio of the prepare median with a Student-t interval over the three pairs. The product arm must not regress: an upper bound above 1.10 is recorded as a regression, not as noise. Identity and frame digest must match across all processes of a scale. No threshold is changed and no candidate is selected by this run.",
+  "validity": "exit code 0, 'All tests passed' in the log, exactly one PREPARE_RESULT line with entities equal to the scale. Invalid processes are kept and never replaced.",
+  "started_local": "2026-11-03 18:15:29"
+}

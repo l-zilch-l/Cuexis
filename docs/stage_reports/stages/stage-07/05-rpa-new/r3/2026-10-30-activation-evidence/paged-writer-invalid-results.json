@@ -1,0 +1,106 @@
+[
+  {
+    "n": 1000,
+    "wave": 0,
+    "pair": 0,
+    "variant": "baseline",
+    "valid": true,
+    "exit": 0,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 0.27668469999480294,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3c.writer",
+        "n": 1000,
+        "wave": 0,
+        "capture": 1,
+        "attempt": 0,
+        "advance_us": 16421.7,
+        "points": 1
+      },
+      {
+        "event": "r3c.writer",
+        "n": 1000,
+        "wave": 0,
+        "capture": 1,
+        "attempt": 1,
+        "advance_us": 12863.1,
+        "points": 1
+      },
+      {
+        "event": "r3c.writer",
+        "n": 1000,
+        "wave": 0,
+        "capture": 1,
+        "attempt": 2,
+        "advance_us": 11801,
+        "points": 1
+      }
+    ],
+    "wire": [
+      [
+        "5284823",
+        "02d177782899b10aea6cd02dba63902664511d1ad6258b5315f3c1d7b1e7dadb"
+      ]
+    ],
+    "log_sha256": "ceed4e7ae54ea57791606790b0d2b9c3b5c38ed53a94540f45308313955c842d"
+  },
+  {
+    "n": 1000,
+    "wave": 0,
+    "pair": 0,
+    "variant": "candidate",
+    "valid": false,
+    "exit": 42,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "seconds": 0.22578939999948489,
+    "ac_line": 1,
+    "events": [
+      {
+        "event": "r3c.writer",
+        "n": 1000,
+        "wave": 0,
+        "capture": 1,
+        "attempt": 0,
+        "advance_us": 11226.3,
+        "points": 2
+      },
+      {
+        "event": "r3c.writer",
+        "n": 1000,
+        "wave": 0,
+        "capture": 1,
+        "attempt": 1,
+        "advance_us": 11479.1,
+        "points": 2
+      },
+      {
+        "event": "r3c.writer",
+        "n": 1000,
+        "wave": 0,
+        "capture": 1,
+        "attempt": 2,
+        "advance_us": 12189.7,
+        "points": 2
+      }
+    ],
+    "wire": [
+      [
+        "5284823",
+        "02d177782899b10aea6cd02dba63902664511d1ad6258b5315f3c1d7b1e7dadb"
+      ]
+    ],
+    "log_sha256": "8ac00212d94ca7feffa242db4de74cf692c373464f894c6b4f78b978444ccf44"
+  }
+]

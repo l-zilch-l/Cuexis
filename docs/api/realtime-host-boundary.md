@@ -1,0 +1,361 @@
+# 实时宿主边界合同
+
+状态：candidate contract；当前分支 SDK 0.9.1 preview；发行、设备与生产接受独立
+
+更新日期：2026-10-28
+
+决策归 [ADR 0046](../adr/0046-realtime-playback-coordination.md)，执行/时间/控制语义归
+[RPA 补充 Spec](../formats/rpa-execution-contract.md)，批次和门禁归
+[RPA 整改计划](../stage_plans/active/stage-07/05-rpa-new/plan.md)。本页拥有载体、接口、所有权和宿主状态。
+旧候选 TB-01–07 表由补充 Spec 的已选合同替代；当前实施状态以
+[CURRENT_STATUS](../CURRENT_STATUS.md) 为准，内部存储与复用设计见
+[执行状态、恢复与准备路径](../architecture/execution-state-and-recovery.md)。
+
+## 1. 表示与接口
+
+以下是实现设计，字段不得靠 sentinel 表示缺失。Tick/Span/Delta 使用现有 i64 strong types；
+ID/cursor/代数为 checked u64，耗尽拒绝而不 wrap；text 是 owning UTF-8 string；list 是 owning vector。
+跨域只传不可变 owning 值。运行 scope 使用不透明 owner 生成 token，不得把地址/hash当判定身份。
+
+| 载体 | 必需字段 | 生产者与消费者 |
+| --- | --- | --- |
+| MessageContext | sessionScope、clockSegment、runEpoch、controlSequence；资源消息另带 contentIdentity/resourceGeneration/rendererGeneration | 每个 owner 检查自身预期上下文；不同代数不合并 |
+| ClockObservation | 连贯源/设备/presented 位置、各自 rate、sampleMonotonicUs、clockDomain、publicationSequence、state/quality、validUntil、errorBound、segment | audio/host adapter 发布；D1/D2 读同一 owning snapshot；字段语义归 Spec §2 |
+| ClosedCaptureBatch / CapturePrefix / EndRunEpoch | Spec §1/§3 的完整成员、计数、连续序号、正常 exclusive B 或控制 inclusive q/cut | D1→D2，整批校验后准入；不能只传最后序号 |
+| AdvanceRequest | context、requestId、commandOrdinal、原 H、所用 observation ID、profile identity | D6/显式驱动→D2；等待不重写 H |
+| AdvanceOutcome | requestId、commandOrdinal、D2 decisionOrdinal、Waiting/BusyNotAccepted/CanceledNotExecuted/ClockInvalidNotExecuted/Retired/Executed/Failed；实际 receipt、失败阶段和前缀只在相应分支存在 | D2→调用方；不把宿主状态加入 kernel enum |
+| ControlRequest | context、operationId、commandOrdinal、kind、expected generations、显式目标；Seek 必含 archive identity/cut/H | D6 排序，D2/D3/D4/D5 在各自 owner 准备或应用 |
+| ControlReceipt | operationId、commandOrdinal、D2接入 decisionOrdinal、controlSequence、Prepared/Rejected/SoftwareApplied/DeviceApplied/Complete/Suspended/Failed、各参与域的实际位置和 error | 每域独立确认；排队或发送不算生效 |
+| OwnerStepRequest / OwnerStepReceipt | context、operationId、controlSequence、participant、phase、expected generation、Apply/Cancel/query；回执含 Pending/InProgress/RejectedNotApplied/CanceledNotApplied/Applied/Failed/Unknown、实际副作用和 error | 每个 owner 串行裁决一个步骤；步骤终态不是整个组合控制完成 |
+| PauseTrace / Reconciliation | pauseEpoch、连续 capture 序列、来源/动作/provenance、末尾 cut；软件记录 controlOrdinal、applied cursor 和 deferred occurrence 引用 | D1→D2；不走 Paused 禁止的普通 submit |
+| FrameEnvelope | owning FrameSnapshot、frameId、T、RuntimeFrame、Fold cursor/workTick、projectionScope、controlSequence、content/resource/renderer generations、feedback membership | D3→D5；完整帧可 latest-value 合并 |
+| PresentReceipt | frameId、scope、controlSequence、renderer/resource generations、Succeeded/Failed、实际调用时刻与 error | D5→D3 的内部观察通道；不进 Gameplay identity |
+
+内部 API 选择：D2 `acceptCapture/acceptPrefix/requestAdvance/requestControl/queryOutcome`；
+D3 `consumeCommittedPrefix/samplePresentation`；D4 `prepareAudio/applyAudioControl/readObservation`；
+D5 `readCapabilities/prepareCandidate/activateCandidate/present/retire`。
+这些是职责入口，SDK 不隐式创建线程，不安装内部执行图；新公共批次/控制 facade 由 B3/B4
+按相同合同提供 owning opaque 值，旧同步方法保留显式 legacy 行为，版本策略见 Spec §6。
+公共时钟扩展采用单独可选连贯观察接口，不给旧 IAudioClock 虚函数增加纯虚义务；
+旧 HostClock/第三方实现没有连贯观察时仍能用于旧路径，RPA 实时启动明确拒绝能力不足。
+
+operationId/requestId 由各会话调用方单调生成；同 ID 同载荷是查询/重传，异载荷拒绝。
+至多一个非终态控制操作；新控制在入口明确 ControlBusyNotAccepted，Close/紧急故障可进入清理路径。
+被拒绝的新控制未被 D2 接入，不触发 K1。已开始的控制不能被新命令覆盖或靠超时推断取消。
+结果保留到调用方确认，随后以 retired 连续前缀保证旧 ID 不再执行；跨 scope 重用旧 ID 拒绝。
+显式 retire 后连续前缀释放完整记录；前缀内查询和推进重传返回
+`host.rpa.request_retired`，不再提供原结果。重复 retire 幂等成功，不证明原推进执行成功。
+乱序确认空洞后的 Retired 记录在前缀推进前仍保留。
+requestId 可跳号，但新接纳 ID 必须严格增加；确认前的重传仍按原载荷检查。
+执行调度器是回收进度的唯一裁定者；宿主经内部轻量元数据桥清理 coherent 载荷，不复制完整结果判定寿命。
+Resume/时钟切段保留该身份历史；成功 Seek 替换执行实例后继承旧接纳高水位为已退役前缀。
+同会话 restore、Reset/Stop 后重新启动也继承该高水位；新内容提交和 Close 结束旧实例的临时转移状态。
+
+命令可取与目标回复可取使用不同等待条件；回复在同一 mutex 下发布持久终态并保留到 ACK。
+关闭 admission 本身不是 pending 回复完成。host 保留总体 deadline，并按剩余时间和主线程泵预算切片等待；
+目标回复完成早于等待时不得继续等待下一次通知。此等待不改变 owner、控制/fence 或输入捕获合同。
+
+D6 发出的 commandOrdinal 不赋予请求成功或取消效力；D2 的 decisionOrdinal 与 Spec §1.3
+是唯一推进 Started/K1 接入顺序。D6 必须保留未获 D2 接入回执的请求供同 ID 查询/重传，
+不能因本地超时把它当作未接纳并换 ID 重试。跨域回执携带原 ID、scope、ordinal 和阶段，
+重复回执幂等；同 ID 异载荷及同 ordinal 异请求都拒绝并停止使用该通道的旧许可。
+调用方明确确认终态后才可退休结果；阶段回执、传输确认和最终结果确认是三种不同事件。
+旧 ID 的退休记录至少保留到相应 scope 结束，不能因结果对象释放而允许重执行。
+
+## 2. 状态、错误与有界通道
+
+宿主状态为 Running、ControlPreparing、Paused、ResumeStarting、Suspended、Closing、Closed。
+Gameplay 的 Prepared/Running/Paused/Faulted 保持独立；Suspended 是禁止推进的宿主状态，
+不冒充 kernel fault。实际 kernel/Fold fault 按原生命周期限制操作。
+
+| 条件 | 设计码/typed 结局 | 状态与恢复 |
+| --- | --- | --- |
+| 普通推进占槽 | BusyNotAccepted | 不入 FIFO；不改旧请求/输入 |
+| 有效控制串行接入 | CanceledNotExecuted（K1） | 只取消未开始推进；控制失败不复活 |
+| 旧 scope/segment/代数 | `host.rpa.context_stale` | 拒绝；旧资源候选仅清理 |
+| 已回收的请求身份前缀 | `host.rpa.request_retired` | 拒绝查询/推进重传；重复 retire 幂等确认；不执行、不采样时钟、不撤销当前执行许可 |
+| 同消息或操作 ID 异载荷 | `host.rpa.message_conflict` | 撤销许可，Suspended；不得选择任一载荷继续 |
+| 连续交付尚有缺口 | Waiting，reason=InputPrefix | 保留输入、精确重传；不借超时跳过 |
+| 时钟无效/超期/误差参数缺失 | `host.rpa.clock_invalid` | 撤销许可；显式新段恢复，不静默 fallback |
+| 配置预算未测量 | `host.rpa.profile_incomplete` | 生产启动拒绝；testOnly 明示 |
+| 可靠通道不能接纳 | `host.rpa.capacity_exceeded` | 未发送请求明确拒绝；已捕获无法保留则记录 gap 并 Suspended |
+| PauseTrace 已确认不可补齐 | `host.rpa.capture_gap` | 拒绝直接续跑；保留结果，显式 Stop/reset/完整恢复 |
+| 已接纳操作迟迟无设备回执 | `host.rpa.device_pending` | 报实际阶段；超时不是回滚或 Closed |
+| renderer/audio 失败 | `host.rpa.device_failed`，cause 保留原码 | 按实际副作用收束；未生效步骤依B1取消；切段或软件提交后保留实际状态，不假回滚 |
+| 内核/Playback 失败 | 沿原 error/sourceCode/first-fault | 保留实际 sealed/Fold 前缀；不包装为 Busy |
+| 控制切段结局未知 | `host.rpa.control_pending` | 按 operationId 查询 D1；未确认前 Suspended，不当作未切段重试 |
+| Resume最终切段后、R2 seal前准备确定失败 | `host.rpa.resume_aborted`，cause保留原码 | A1：Suspended并终止本次直接续跑资格；同/新ID的Resume均拒绝，允许显式退出/新会话恢复 |
+
+host.rpa 码只属于宿主协议，不投影成 judgement.*，不增加 N3 九类别或 19 个拒绝面。
+每个错误回执含 operation/request ID、context、stage、retryability 和原 cause；
+前置校验顺序为载体完整性→context/ID→生命周期→数值/预算→语义准备→提交→设备回执。
+分配失败必须能利用启动时保留的故障槽报告，不能再分配一份日志才表示失败。
+
+输入/控制/Fact 是可靠通道；frame 是完整值合并通道；性能 trace 可按声明丢样。
+容量在 SchedulingProfile 明示。输入通道满时先保留 D1 未确认记录，不能阻塞 callback/事件泵；
+保留空间也耗尽则用预留故障槽标记捕获缺口并停推进，不声称无损捕获。
+控制/故障保留独立通道，不能与输入共享最后一个槽而无法 Pause/Close。
+观察回执丢失记 Unknown；不得反向阻塞 Gameplay。量产容量、等待上限在 B1/B3/F3 测量接受。
+
+控制消息和故障回执各有预留容量。D1 的切段步骤也遵循下面 B1，Applied 的 payload 为
+CutApplied(cut,q,pauseEpoch)；当前未执行为 Pending，不能用裸 NotApplied 充当取消成功。
+超时/查询不到记录只表示未知，保持实际宿主状态和禁止推进要求，不授权撤销或重发新操作。
+
+### 2.1 B1：owner 串行裁决 Apply 与 Cancel
+
+步骤键为 `(sessionScope,operationId,participant,phase)`；controlSequence、expected generation
+及原 Apply 载荷在首次有效请求时绑定，后续异值按 message_conflict 拒绝。Apply、Cancel 和
+query 使用同一步骤键；Cancel 携带原 Apply 的不可变目标描述，即使先于 Apply 到达也可绑定
+目标。Cancel 是针对该步骤的动词，不按“同 ID 异载荷”误拒绝。
+query 只读；Cancel 必须在所属 owner 与 Apply 开始点串行裁决，D6 发送取消不产生终态效力。
+音频启动、补偿停音频及 D1 切段是不同 phase；取消其中一个不能被解释为整个控制已回滚。
+
+| owner步骤状态 | Cancel结果 | 原Apply/重传随后到达 |
+| --- | --- | --- |
+| 未见Apply或Pending，尚未开始 | 先在该scope的操作记录中保存CanceledNotApplied，再确认；禁止该步骤之后开始 | 返回原取消终态，不执行，即使这是第一次到达的Apply |
+| InProgress，已开始且结果未定 | 返回InProgress与实际阶段，不能承诺取消成功 | 不再次启动；查询直到实际结局明确 |
+| Applied | 返回Applied及副作用/代数；补偿是另一个显式步骤 | 返回原结果，不重复应用 |
+| RejectedNotApplied或CanceledNotApplied | 重发原终态确认 | 拒绝执行，原终态不变 |
+| Failed或Unknown，副作用尚不能确认 | 保留实际阶段并查询/清理；不转换为未生效终态 | 不重新启动或假报取消 |
+
+RejectedNotApplied 表示 owner 已终结该步骤且未发生副作用，之后同样不会执行；Pending
+仅表示尚未开始，不能代替终态拒绝。表中的记录是会话内拥有的记录，不要求新增磁盘持久化。
+取消记录及终态回执使用预留控制/故障容量；不能保存终态时不得确认取消成功。
+终态记录可按已有确认协议压缩为退休前缀，但该前缀必须拒绝旧步骤再次执行，不能只删除记录。
+
+只有 owner 确认终态未生效，且相关在途引用/设备使用已结束或由独立 owning 值保活，才能
+以取消为由回收对应候选；已Applied对象沿正常退休/补偿清理路径释放。一个参与域的取消回执
+不授权回收其它域仍使用的对象。Apply已开始但回执丢失时，已知开始则保持InProgress，
+不能确认则记Unknown并查询实际阶段，不改报Pending或以超时撤销。已软件提交的操作可按原
+合同重试剩余设备阶段；A1终止的软件恢复不得据此继续提交。查询不可得时保持 Suspended/
+Closing 及缺失责任域。Close和A1清理也必须遵守这些终态和寿命要求。
+已确定终结且合同允许重试的设备失败使用同 operationId/controlOrdinal 下的新 phase 尝试，
+phase 含 checked u64 尝试序号（初次为0）；旧步骤终态不变。InProgress/Unknown 不能由新尝试
+覆盖；这项设备重试规则不适用于 A1 已终止的软件恢复、R2 seal 或已应用的 D1 cut。
+
+## 3. Prepared 与资源提交
+
+采用 P3-a：PreparedPlayback 仍仅在 Session owner 创建、使用和析构。
+P-B 中 Session owner 是 Playback worker，GL renderer owner 是主线程。
+
+1. 主线程读取 owning capabilities（含 renderer generation），交给 Playback worker。
+2. Playback worker 调用 Prepared 的 validate/acquire，深拷贝 manifest，取得 owning portable resources，
+   物化内部 PresentationCandidateInput：sessionScope、mutationGeneration、candidateId、content identity、
+   renderer generation、capabilities identity、manifest、校验结果及资源集合。没有借用 span、provider 回调或 Prepared 指针。
+3. 主线程消费该值构造 GPU candidate。创建/激活/销毁 GL 对象全部留在主线程；
+   回执必须绑定 candidateId 及全部代数，不能只报告成功 bool。
+4. D6 收齐 D2/D4/D5 prepared 回执后请求 commit fence；各 owner 确认停在可提交边界。
+   D2 fence 期间禁止 submit/advance/update/override 等 mutation；新捕获暂存，不被丢弃。
+   进入 fence 时重验 generation；此前新 mutation 使 candidate stale 则取消并重建，不阻塞正常活动去掩盖 stale。
+5. D2 先 reserve 所有软件提交空间，发布新组合后给出 SoftwareApplied；其它域据同一 controlSequence 激活。
+   GPU/audio 物理失败可能不可逆，进入 Suspended 并保留实际提交回执；不声称跨设备原子回滚。
+   仅全域确认后解除 fence、切换输入上下文并发布新帧；旧帧不能越过此控制序号。
+6. 提交前且未发生其它控制副作用时，按 B1 取得各 owner 终态未生效确认后取消候选，旧组合保持；
+   未确认前不解除 fence 或提前回收，已切段的 Resume 失败按 Spec §3.5。旧资源活到最后一个 frame 读者和设备使用结束。
+   CPU owning 值析构不能调用 GL/SDL；需要设备析构的资源由所属 owner 排队回收。
+
+P3-a 不新增公共可共享 Prepared 类型，也不意味所有 RPA 公共 API 无变化。
+CPU owning 候选由公开的 `PreparedPlayback::materializePresentation` 产生，renderer adapter
+仅消费安装的 `PresentationCandidateInput` 值；不再包含 Playback 私有宿主头文件。保持 target
+allowlist、无 backend 反向依赖。此同步物化入口不改变 Prepared 的 owner 或 GPU 线程约束。
+现有 renderer.prepare(Prepared&) 仍作为同 owner 兼容入口；跨 owner 仅传 owning 候选，
+不能把物化入口理解为 Prepared 可跨线程使用。
+
+音频准备也必须闭合寿命：在 Prepared owner 内从 MainMusicSourceView 取得/复制 owning 编码数据或解码产物，
+然后把不含借用的音频候选交给 audio owner 创建/管理 ClipStore 与设备句柄。
+不能只因当前主线程立即 decode 的路径可用，就推断迁到 audio worker 无寿命工作。
+候选、活动 clip、callback 引用和 store 的释放顺序须以同一 content/control generation 审核。
+
+## 4. 表现、反馈与日志
+
+D2 发布完整成功 Fold 前缀，D3 自己维护 FactBinding cursor、dedup、future queue、aggregation、tokens。
+表现失败不回滚 Gameplay，也不能重新 submit 已准入输入。T 按声明时钟独立采样，
+不把 watermark/最后 Fact 当 T；同段 T 回退须显式恢复，不普通 clamp。
+帧仅在 scope、已应用控制序号和资源代数全部匹配时交给 renderer。
+
+采用 F1 + F3 可观测，内部回执通道不新增“保证用户看见”的公共义务。
+feedbackId=`(projectionScope,FactId,targetId,bindingId,activationOrdinal)`；聚合结果记录实际成员集合，
+frame 保存实际参与提交的 feedback membership。Succeeded 只表示 present 调用成功。
+每个反馈记录 created/expiry、ConfirmedPresent、ExpiredUnconfirmed、CanceledByControl 或 UnknownEvidence；
+到期时的状态与后来到达的确认分别记录，不把迟到回执倒填成“到期时已确认”。
+旧 scope 的迟到回执只更新对应历史诊断，不复活效果或污染新 scope 计数；重复 frame receipt 幂等。
+若记录预算耗尽/回执丢失则计 Unknown 和缺失数，不能把它计为确定未呈现。
+RemainingFrames 仍按成功 Runtime 更新消耗，不按 present 次数、不因等待回执续命。
+
+执行日志采用分块追加、immutable prefix 共享，当前可变状态仍由唯一 owner 维护。
+owning query/result 独立于 Session/World/设备；旧 handle 可以跨 Close 保留。
+checkpoint 键含 archive/cut/H/profile identity；活跃尾块复制/释放与历史增长分别测量，
+不能只把全量复制搬到另一个线程。实时循环不做每帧完整 ReplayEvaluation；
+停止后或显式验证使用独立 owning archive 运行完整 evaluator，不在活动 owner 上并发调用。
+
+## 5. 控制退出与关闭
+
+Pause/Resume 的 drain、R2 及错误路径由补充 Spec §3 唯一定义。
+A1失败后暂停音频属于清理，不恢复直接续跑资格；失败回执与清理完成分别可查，
+清理未结束前仅允许query及串行接入的显式退出/清理命令，不把普通控制槽空闲当作可再次Resume。
+Seek/Stop/reset/reload 不借 R2 更改既有目标语义：Stop/reset 明确放弃活动游戏，归档保留，
+future pending 只随明确替换清除；Seek 明确选择 archive/cut/H；reload 使用新内容身份。
+只换表现重建绑定/资源与 projection scope，不换判定四分量。旧回执不可解除新控制的 fence。
+
+Close 的有向顺序：停止新请求并应用 K1→固定可取得归档/取消候选→停音频并确认 callback 隔离
+→各 owner 清理活动对象→主线程完成 GPU/在途资源退休→join 已无主线程依赖的 worker
+→释放协调器并报告 Closed。主线程在 join 前持续处理需要它执行的清理任务。
+任一步未确认则保留 Closing 与缺失责任域；超时不 detach、不释放仍被访问内存、不假报 Closed。
+外部 CPU owning 结果不需要被全部销毁才可 Close；其最终析构不得依赖已关闭的 worker。
+
+## 6. 验证接口
+
+B1 fake clock/可控交付 fixture 走同一协议；时间 oracle 用独立有理数模型，
+T2/R2 oracle 用扫描式 reducer，不调用生产调度/advance 充当预期。
+同 canonical/admission/control 轨迹比较完整 kernel/Fold/Replay，刻意改封窗轨迹则验证不同结果或稳定拒绝。
+真实 DFJK、听音、focus、设备切换和主线程阻塞仍须 B5 实测，文档与 fixture 不能代替。
+
+
+B4 已增加非安装的 `host_protocol`、`host_candidate`、`capture_route`、`audio_owner`、
+`renderer_owner` 和 `frame_observation` 实施入口；同线程显式驱动，不创建线程。
+生产源码身份、实际调用测试和验证边界见
+[B4 实施记录](../stage_reports/stages/stage-07/03-rpa-legacy/b4/2026-10-12-b4-host-and-resources.md)。
+这里的接口实施不替代 B5 的设备、callback 隔离和线程部署验收。
+
+B5 应用装配位于 Player 的 `execution_host` / `player_execution`，AudioWorker 与
+SessionWorker 为非安装的 owner 实施入口；SDK facade 保持显式单 owner，不自动创建线程。
+主机以原 job ID 查询在途回执，控制等待期间泵主线程事件。D1 为关闭批和 EpochEnd
+另留两个真实消息槽；故障 Close 导出未确认输入、tentative Tick 成员和实际 fault，
+不制造 ACK 或 canonical admission。
+显式 EOF tail 在同一 kernel/run 内换 clock segment。暂停/恢复动作使用同域单调时间锚点，
+worker 采用 source 动作时间，不采用回执到达时间；新 run 的 terminal H 至少覆盖实际
+Pause control drain，原输入截止 Tick 保持不变。这是 synthetic tail 的控制状态，
+不是修改物理音频位置。配置不能在终点证明 `F(H)<B` 时拒绝启用尾段。
+Player 的候选入口为 `--execution-test-only`；EOF 要求显式
+`--execution-tail-input-deadline`。当前 A 来自 app profile output correction，I/V=0、rate=1，
+calibration 不匹配则拒绝。主音乐使用显式 Audio clock，Playback 内部由 HostClock
+接收 owner 供给的 RuntimeFrame。全部容量/误差/有效期为 testOnly，不能据此接受生产参数。
+实施、测量和自动化边界见 [B5 记录](../stage_reports/stages/stage-07/03-rpa-legacy/deployment/2026-10-13-worker-deployment.md)。
+
+## 7. DLL 与内置宿主实施边界（2026-10-14 修复）
+
+按 owner 选择的方案 A，`app/execution_host/` 为非安装的静态宿主支持模块，拥有 worker、
+消息队列、capture/audio/renderer owner、步骤 ledger、表现回执 ledger 与组合控制协调器。
+这些类不使用 Playback 导出宏，SDK 不安装它们，也不负责创建宿主线程。
+
+Playback 保留软件会话的唯一 accepted control、generation、fence 和执行状态。
+`PlaybackSession` 的 candidate 同步能力分为：owner 状态/软件副作用查询、控制接受与绑定验证、
+fence/软件提交与完成确认、受控退休/Pause/Resume/Seek、时钟映射/撤销、Replay cut、
+表现采样与反馈成员读取。它们不接收宿主 ledger、worker 或协调器指针；调用、对象析构
+仍在 Session owner。宿主步骤的终态重传、Apply/Cancel 串行裁决、容量预留和回收由
+宿主 ledger 负责，调用原始 SDK mutation 不提供跨设备组合控制的 exactly-once 保证。
+
+[`execution_control.hpp`](../../engine/playback/include/cuexis/playback/execution_control.hpp)
+只在 candidate SDK 安装，声明 owning 请求/回执值、可复制但不可由调用方构造有效值的
+`ExecutionFence`、owner 状态副本及纯 proof 检查。副本不是第二份可变会话状态。
+Resume 传最终 route 回执并校验同一 trace identity；Seek 校验 owning archive identity 与 cut；
+软件清理仍需 capture cut、audio stop/isolation 证据。scope、代数和操作绑定不得省略。
+
+2026-10-27 的 R3 分支候选允许 Seek 在 canonical SHA-256 与进程内 owning source token
+之间选择一种绑定，具体拒绝和生命周期语义见 [RPA 合同 §4](../formats/rpa-execution-contract.md#4-t2-fact-identityreplay-与-seek)。
+`StepTarget` 及包含它的请求、回执与 proof 的 C++ 布局随新增字段改变；当前 candidate
+消费者须整体重新编译，不能混用旧二进制。此变更未发行，不声称 SDK 二进制兼容。
+
+
+通用 [`presentation_candidate.hpp`](../../engine/playback/include/cuexis/playback/presentation_candidate.hpp)
+也用于旧同步 renderer prepare，拥有 manifest、portable resources 和编码音频副本，不拥有
+Prepared、provider 回调或设备句柄。其物化使用原有 acquire 路径，没有新增深拷贝资源策略。
+
+candidate OFF 不构建宿主支持模块、不安装 execution control，不保存 RPA 控制/fence 状态。
+ADR 0033 禁止私有导出的规则保留；共享库白名单仅登记实际公共类型/函数，不能放行 detail。
+上述接口首用于 SDK 0.8.0 preview；当前分支为 0.9.1 preview，版本沿革见
+[版本政策](../guides/VERSIONING.md)。本页不宣布生产 profile、设备验收或 Stage 7 关闭。
+
+## 8. PD 候选修订：来源、许可与反馈寿命（2026-10-16）
+
+本节区分 PD 的已接受接入与后续候选：§8.1 的内部宿主细化已随 PD-3-c 授权实施，
+新增只读来源 API 与 SDK 0.8.1 已获 owner 接受，实施验证见
+[PD-3-c 记录](../stage_reports/stages/stage-07/04-pd/pd-3/c/2026-10-19-pd3c-contract-and-version-decision.md)。
+§8.2–8.4 已于 2026-10-19 随 ADR 0047 获 owner 接受；PD-4 内部实施及适用本地门禁完成，证据见 [PD-4 实施报告](../stage_reports/stages/stage-07/04-pd/pd-4/2026-10-19-pd4-delivery-retirement-and-observation.md)；尚未作为正式发行交付。
+[PD 计划](../stage_plans/active/stage-07/04-pd/plan.md)拥有批次，
+[设计细则](../stage_plans/active/stage-07/04-pd/design.md)拥有内部接入和待验收项。
+
+### 8.1 状态来源与使用许可
+
+FrameEnvelope 的状态来源与当前已确认交付 context 分开：原 session/resultVersion、
+content/layout、原 T/RuntimeFrame/实际消费的 Fact/control cursor 不随重绘改写。初始 Prepared
+画面没有的来源字段使用显式 absence，不伪造 Runtime 更新或 Fold。FrameSnapshot 公共值格式
+保持不变；DeliveryBinding 是宿主从现有控制证明派生的内部概念，不是新公共控制能力。
+
+Pause/Resume/合法 EOF 仅换控制/时钟许可时，保留表现作用域及原激活身份；控制完成本身不
+重新投影、不消耗 RemainingFrames。Seek/Reset/Stop/内容或表现绑定替换按原语义重建
+projectionScope。替换当前 Player 每次 finish 递增 projectionScope 的策略时，必须同时修订
+frame admission 与 receipt 匹配；完整 HostContext/controlSequence/资源代验证不能省略。
+
+Pause 重绘实际呈现端最后成功画面，允许其修订落后于当前 Runtime。旧 envelope 不可修改；
+经全域控制确认后，宿主验证保留来源、当前资源和呈现端证明，签发新 attempt，复用 CPU backing。
+原 T/frame/cursor/membership 保留，不消费 Pause drain 的新前缀。resize 可用保留 Snapshot
+的完整对象、相机参数及 view matrix 生成新 viewport 的 Snapshot；它是物化，不是新求值。
+原资源代/内容/表现作用域失效、控制结果不明或 Closing 时不得据此重新提交。
+
+同一表现作用域的旧控制 receipt 仍只更新原 AttemptKey 对应的既有义务证据，不能确认新控制；
+作用域真的替换后，只能更新旧历史。保留画面的源 T 可以较旧，不用于倒退 expiry 或 Runtime
+的时间前沿。历史成员的迟到成功不重开义务。
+
+首版一个实际呈现端与多个 CPU capture 消费者。CPU capture 无设备完成证明、无 present
+attempt，不能确认反馈。独立第二 Renderer 需要另行扩展 RPA 的已确认设备绑定、参与者集合、
+资源激活/退休和 Close；本节不以放宽唯一 confirmedHostContext 的比较来提供多窗口。
+
+### 8.2 显式反馈寿命与迁移（ADR 0047 已接受）
+
+Gameplay FactBinding 的有限区间/UntilReset 含义不变。已接受的公共 FeedbackObservation 保留
+id、created、status、laterConfirmed；将 `expiry` 从整数改为
+`optional<GameplayPresentationTick>`：有值是有限 exclusive end，absent 是 UntilReset。
+created 的现有 signed i64 表示仍解释为 presentation T，不扩展到墙钟；有限 end 必须大于
+created。有限 end=INT64_MAX 与无 end 可区分，UntilReset 不因 T 到最大值而到期。
+scope 替换/取消和证据 TTL 仍分别处理；TTL 不能改变效果寿命。
+
+`PlaybackSession::gameplayFeedback` 和内部成员读取必须保留该分支，不再用 INT64_MAX sentinel。
+此变更涉及 candidate 安装结构及外部消费者，按 [VERSIONING](../guides/VERSIONING.md)属于
+不兼容 minor 迁移。实现时记录当时的源/目标版本、Spec/ABI 差异，重建 static/shared 与安装
+消费者，并验证旧 minor 不匹配拒绝；目标版本已接受为 SDK 0.9.0，不允许只改头而继续使用旧库。
+不永久维护另一套 V2 反馈状态机；旧版本保存在历史构建/证据中，不宣称其已支持新表示。
+
+### 8.3 交付、执行与证据（ADR 0047 已接受）
+
+消费注册身份沿用 PD 设计中的 ConsumerId，和 sessionScope 共同标识本次加入；同窗口/设备重新
+注册使用新身份。普通帧与保留重绘都携带该身份，实际 Renderer 调用前校验当前有效注册，
+不能只核对 HostContext/资源代。注册激活和撤销须经 Renderer owner 串行确认，沿可靠生命周期
+设施传递；撤销确认前不得让同端新注册生效。迟到激活、撤销与确认不复活旧注册，也不清除
+新注册。注册前沿独立于可淘汰历史，帧执行标记只有在旧注册失效已确认后才能为新身份初始化。
+具体状态/容量归[PD 细则 §6.3.1](../stage_plans/active/stage-07/04-pd/design.md)。
+注册确认不解除控制/fence，撤销确认不证明 GPU 已完成或外部 CPU 引用已释放；公开 HostContext
+及 Gameplay/Replay identity 不因此增加字段。
+同一 Renderer instance/generation 的控制或资源换代可保留注册，但仍更新已确认交付绑定；
+更换 Renderer instance/generation 则须先证明旧注册不能再调用，再为新端注册新身份。
+失联或超时不能代替旧注册撤销/owner 终结及旧路由失效证明。
+
+RequestId 去重、Renderer 实际执行去重和 receipt 去重是不同责任。实际呈现端在调用前登记
+已接入的 attempt；同一 ID 结局未知或历史淘汰后也不能再调用。其执行标记独立于可淘汰的
+observation journal。Renderer 本地保留 last-success CPU backing，不依赖观察回执到达；
+重绘必须签发新 attempt。CPU lease 与设备 retire/fence 仍按 §3、§5 独立结束。
+拒绝旧 envelope 副本不等于原 attempt 从未调用；已无精确执行历史则返回历史不可得，不伪造
+NotSubmitted。旧注册的合法 receipt 仍只补原 attempt 的反馈证据，不改变新注册的最后成功图。
+
+未领取响应可以在额度内持有一份 owning 帧；成功领取后，请求去重历史只保留元数据。
+响应领取与取消必须有唯一先后，重复查询/领取不生成新 attempt、不从历史保活或恢复帧。
+该移交使用有界交付槽的同步，不依赖可丢 present receipt，也不增加逐帧等待 Worker 确认。
+请求 deadline 限制最迟移交时间，过期与领取同样串行裁决；它不等于实际调用完成或 receipt
+观察时限，不能收回已经移交的 owning 帧。
+
+本候选修订不改变 G1/Q1/K1、R2/A1、跨设备确认、fault/恢复和有向 Close，也不表示这些新增
+差异已经通过实施验证。接受前 PD-3 控制接入、PD-4 公共反馈迁移不得据计划自行绕过门禁。
+
+### 8.4 保留资格撤销与显式降级（ADR 0047 已接受）
+
+已接受策略允许已声明的内存压力或设备/资源失效撤销保留画面的后续使用资格；普通稳态仍履行
+已接受的保留保证。撤销由 Renderer owner 串行裁决，在实际调用前重验保留身份；迟到重绘
+不得恢复资格。资格变化经可靠生命周期/控制通道通知并确认，不依赖可丢的 present receipt。
+在途 CPU/GPU 责任和外部 owning 值不因撤销结束，释放各自引用不能声称已回收全部存储。
+
+暂停时精确保留画面已丢失，必须显式报告无可重绘图，不能用当前较新修订替代或运行 frozen
+update 补图。该结局在 PD 文档中称 NoRetainedFrame，尚未指定公共错误码或安装类型。
+恢复沿合法更新/控制和设备确认；跨资源代的精确暂停画面恢复需另行接受资源重新取得合同。
+细节及验收归[PD 细则 §12.4](../stage_plans/active/stage-07/04-pd/design.md)。
+实施前须接受触发条件、可观察状态与恢复保证；如影响公共合同，补版本/安装消费者差异，
+不得把压力驱逐直接当成现有 SDK 已允许的行为。

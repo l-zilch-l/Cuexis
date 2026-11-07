@@ -1,0 +1,256 @@
+"""Neutral-path lever A/B: baseline arm A vs candidate arm B.
+
+Registered before the first process starts.  The probe binary is the ordinary
+GPU throughput probe; the only wrapper-level patches are the ones recorded in
+binding.json (pixel readback pinned on for both arms, neutral trace scrubbed
+from the inherited environment).
+"""
+
+import json
+import sys
+from pathlib import Path
+
+ROOT = Path.cwd()
+HERE = Path(__file__).resolve().parent
+ORIGIN = ROOT / "out/verification-20261029/r3-completion"
+sys.path.insert(0, str(ORIGIN))
+from native import *  # noqa: F401,F403  (documented instrument module)
+
+GROUP = HERE / "neutral-lever-measure-v1"
+ARM_ROOT = HERE / "arms"
+BUDGET = 1000000 / 240
+CELLS = ((1800, "render-only"), (2600, "render-only"))
+PAIRS = 3
+WARMUP = "at least 8 frames and 2000ms"
+TEMPLATE = ORIGIN / "gpu_runner.py"
+TEMPLATE_TEXT = TEMPLATE.read_bytes().decode("utf-8")
+
+
+def patched(text):
+    scrub_before = "if not key.startswith(('CUEXIS_PD','CUEXIS_GPU_'))"
+    scrub_after = "if not key.startswith(('CUEXIS_PD','CUEXIS_GPU_','CUEXIS_NEUTRAL'))"
+    assert text.count(scrub_before) == 1, "instrument scrub line drifted"
+    text = text.replace(scrub_before, scrub_after)
+    readback_before = "  env.update(CUEXIS_GPU_BARRIER="
+    readback_after = "  env['CUEXIS_GPU_PIXEL_READBACK']='1'\n  env.update(CUEXIS_GPU_BARRIER="
+    assert text.count(readback_before) == 1, "instrument env line drifted"
+    text = text.replace(readback_before, readback_after)
+    scope_before = "P3 validated resolver index final physical GPU diagnostic; no formal acceptance"
+    scope_after = "Neutral-path lever A/B screen; exact app-local Release DLLs; no formal acceptance"
+    assert text.count(scope_before) == 1, "instrument scope line drifted"
+    text = text.replace(scope_before, scope_after)
+    return text
+
+
+def build_plan():
+    plan = []
+    for pair in range(PAIRS):
+        arms = ("baseline", "candidate") if pair % 2 == 0 else ("candidate", "baseline")
+        for entities, mode in CELLS:
+            for variant in arms:
+                plan.append(
+                    dict(
+                        entities=entities,
+                        mode=mode,
+                        repeat=pair,
+                        variant=variant,
+                        frames=600,
+                        seconds=20,
+                    )
+                )
+    for variant in ("baseline", "candidate"):
+        plan.append(
+            dict(
+                entities=40000,
+                mode="render-only",
+                repeat=99,
+                variant=variant,
+                frames=600,
+                seconds=20,
+                diagnostic="separate stress diagnostic, not a gate cell",
+            )
+        )
+    return plan
+
+
+def binding(plan):
+    arms = {}
+    for label in ("baseline", "candidate"):
+        arm_dir = ARM_ROOT / ("A" if label == "baseline" else "B")
+        manifest = arm_dir / "arm.json"
+        arms[label] = dict(
+            arm=label,
+            directory=str(arm_dir.relative_to(ROOT)),
+            arm_json_sha256=sha(manifest),
+            arm_json=json.loads(manifest.read_bytes().decode("utf-8")),
+            files={p.name: dict(bytes=p.stat().st_size, sha256=sha(p)) for p in sorted(arm_dir.iterdir()) if p.suffix == ".exe" or p.suffix == ".dll"},
+        )
+    return dict(
+        scope="Neutral-path lever A/B screen on the ordinary physical GPU; readback on, timer off; not formal capacity acceptance.",
+        head=subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip(),
+        worktree_porcelain=subprocess.check_output(["git", "status", "--porcelain"]).decode().strip().splitlines(),
+        arms=arms,
+        instrument=dict(
+            template_path=str(TEMPLATE.relative_to(ROOT)),
+            template_sha256=sha(TEMPLATE),
+            native_path=str((ORIGIN / "native.py").relative_to(ROOT)),
+            native_sha256=sha(ORIGIN / "native.py"),
+            wrapper_path=str(Path(__file__).resolve().relative_to(ROOT)),
+            wrapper_sha256=sha(Path(__file__).resolve()),
+            patches=[
+                dict(name="pixel_readback", value="CUEXIS_GPU_PIXEL_READBACK=1 for both arms (timed frames read back one pixel)"),
+                dict(name="environment_scrub", value="CUEXIS_PD*, CUEXIS_GPU*, CUEXIS_NEUTRAL* removed from the inherited environment"),
+                dict(name="registration_scope", value="group scope line of each process registration"),
+            ],
+            probe_source=str(Path("tests/player/gpu_throughput_probe.cpp")),
+            probe_source_sha256=sha(ROOT / "tests/player/gpu_throughput_probe.cpp"),
+            viewport=[1920, 1080],
+            affinity="measurement_mask (all logical CPUs)",
+            priority="BelowNormal",
+            qos="execution throttling OFF",
+            timer=False,
+            warmup=WARMUP,
+            budget_us=BUDGET,
+        ),
+        plan=plan,
+    )
+
+
+def main():
+    namespace = dict(
+        __name__="neutral_lever_runner",
+        __file__=str(TEMPLATE),
+    )
+    exec(compile(patched(TEMPLATE_TEXT), str(TEMPLATE), "exec"), namespace)
+    namespace["base"] = GROUP
+    run_group = namespace["run_group"]
+
+    plan = build_plan()
+    GROUP.mkdir(exist_ok=False)
+    write(HERE / "neutral-lever-measure-v1" / "binding.json", binding(plan))
+    gate = dict(
+        submit_improvement="submit median improves by at least 10 percent at both (1800, render-only) and (2600, render-only)",
+        cycle_non_regression="cycle median and cycle p99 median regress by at most 5 percent in every gate cell",
+        repeatability="per cell and arm, (max-min)/median of the process medians is at most 15 percent for submit and cycle",
+        value_identity="every process reports 255,204,51,255 with draws and in-view centers equal to the entity count, and both arms agree",
+        stop="an invalid process stops the group; no retry, no replacement, no extra samples",
+    )
+    write(
+        HERE / "neutral-lever-measure-v1" / "plan.json",
+        dict(
+            scope=binding(plan)["scope"],
+            cells=[dict(entities=n, mode=mode) for n, mode in CELLS],
+            pairs=PAIRS,
+            order="per pair the arm order alternates (baseline-first, candidate-first, baseline-first); each process runs one gate cell",
+            seconds=20,
+            diagnostic="40000 render-only one process per arm, reported apart and never spliced with the gate cells",
+            gate=gate,
+            binding_sha256=sha(HERE / "neutral-lever-measure-v1" / "binding.json"),
+        ),
+    )
+
+    rows = []
+    for ordinal, item in enumerate(plan):
+        namespace["exe"] = ARM_ROOT / ("A" if item["variant"] == "baseline" else "B") / "cuexis_execution_device_probe.exe"
+        directory = f'{ordinal:02}-{item["variant"]}-{item["entities"]}-{item["mode"]}'
+        rows += run_group(directory, [item])
+        registration_path = GROUP / directory / "registration.json"
+        registration = json.loads(registration_path.read_bytes().decode("utf-8"))
+        registration.update(
+            group="neutral-lever-measure-v1",
+            arm=item["variant"],
+            cell_index=ordinal,
+            diagnostic=item.get("diagnostic"),
+            wrapper_sha256=sha(Path(__file__).resolve()),
+            template_runner_sha256=sha(TEMPLATE),
+            binding_sha256=sha(HERE / "neutral-lever-measure-v1" / "binding.json"),
+        )
+        write(registration_path, registration)
+        write(GROUP / "results.json", rows)
+        print(json.dumps(dict(index=ordinal, arm=item["variant"], entities=item["entities"], valid=rows[-1]["valid"]), indent=None), flush=True)
+
+    gate_rows = [r for r in rows if not r.get("diagnostic")]
+    summary = []
+    for entities, mode in CELLS:
+        values = {}
+        for variant in ("baseline", "candidate"):
+            points = [r for r in gate_rows if r["entities"] == entities and r["mode"] == mode and r["variant"] == variant]
+            values[variant] = {}
+            for metric in ("submit_us", "cycle_us"):
+                samples = [p["statistics"][metric]["mean_us"] for p in points]
+                median = statistics.median(samples)
+                values[variant][metric] = dict(
+                    samples_us=samples,
+                    median_us=median,
+                    relative_range_percent=(max(samples) - min(samples)) / median * 100,
+                )
+            p99 = [p["statistics"]["cycle_us"]["p99_us"] for p in points]
+            values[variant]["cycle_p99_us"] = dict(
+                samples_us=p99,
+                median_us=statistics.median(p99),
+                relative_range_percent=(max(p99) - min(p99)) / statistics.median(p99) * 100,
+            )
+        summary.append(
+            dict(
+                n=entities,
+                mode=mode,
+                processes=len([r for r in gate_rows if r["entities"] == entities and r["mode"] == mode]),
+                values=values,
+                submit_change=(values["candidate"]["submit_us"]["median_us"] / values["baseline"]["submit_us"]["median_us"] - 1) * 100,
+                cycle_change=(values["candidate"]["cycle_us"]["median_us"] / values["baseline"]["cycle_us"]["median_us"] - 1) * 100,
+                cycle_p99_change=(values["candidate"]["cycle_p99_us"]["median_us"] / values["baseline"]["cycle_p99_us"]["median_us"] - 1) * 100,
+            )
+        )
+
+    diagnostics = []
+    for variant in ("baseline", "candidate"):
+        for row in rows:
+            if row.get("diagnostic") and row["variant"] == variant:
+                diagnostics.append(
+                    dict(
+                        n=row["entities"],
+                        mode=row["mode"],
+                        variant=variant,
+                        submit_us=row["statistics"]["submit_us"]["mean_us"],
+                        cycle_us=row["statistics"]["cycle_us"]["mean_us"],
+                        cycle_p99_us=row["statistics"]["cycle_us"]["p99_us"],
+                        wall_fps=row["wall_fps"],
+                    )
+                )
+
+    submit_gate = all(s["submit_change"] <= -10.0 for s in summary)
+    cycle_gate = all(s["cycle_change"] <= 5.0 and s["cycle_p99_change"] <= 5.0 for s in summary)
+    repeatability = all(
+        s["values"][v][m]["relative_range_percent"] <= 15.0
+        for s in summary
+        for v in ("baseline", "candidate")
+        for m in ("submit_us", "cycle_us", "cycle_p99_us")
+    )
+    identity = all(
+        r["identity"] is not None
+        and r["identity"]["pixel_rgba"] == [255, 204, 51, 255]
+        and r["identity"]["draws_per_frame"] == r["entities"]
+        and r["identity"]["in_view_centers"] == r["entities"]
+        and r["identity"]["timer"] is False
+        and r["identity"]["width"] == 1920
+        and r["identity"]["height"] == 1080
+        for r in rows
+    )
+    decision = dict(
+        numeric_gate=bool(submit_gate and cycle_gate),
+        submit_improvement_gate=submit_gate,
+        cycle_non_regression_gate=cycle_gate,
+        repeatability_screen=repeatability,
+        value_identity=identity,
+        valid_processes=all(r["valid"] for r in rows),
+        selected=bool(submit_gate and cycle_gate and repeatability and identity),
+        summary=summary,
+        diagnostics=diagnostics,
+        formal_acceptance=False,
+    )
+    write(GROUP / "decision.json", decision)
+    print(json.dumps(dict(numeric=decision["numeric_gate"], repeatability=repeatability, identity=identity, selected=decision["selected"]), indent=None), flush=True)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,381 @@
+{
+  "samples": 663113,
+  "duration_us": 22780927,
+  "modules_loaded": 80,
+  "exe": "cuexis_execution_device_probe.exe",
+  "threads": {
+    "14352": {
+      "samples": 166680,
+      "module_share": {
+        "ntdll.dll": 0.560607,
+        "cuexis_execution_device_probe.exe": 0.343623,
+        "vcruntime140.dll": 0.058885,
+        "nvoglv64.dll": 0.020734,
+        "win32u.dll": 0.005634,
+        "ucrtbase.dll": 0.003516,
+        "kernel32.dll": 0.001842,
+        "sdl3.dll": 0.0015,
+        "opengl32.dll": 0.000792,
+        "msvcp140.dll": 0.000516,
+        "apphelp.dll": 0.000468,
+        "nvgpucomp64.dll": 0.000402,
+        "kernelbase.dll": 0.00039,
+        "directxdatabasehelper.dll": 0.000222,
+        "imagehlp.dll": 0.00018,
+        "gdi32full.dll": 0.000138,
+        "user32.dll": 0.000132,
+        "gdi32.dll": 0.00012,
+        "rpcrt4.dll": 4.2e-05,
+        "dxcore.dll": 3.6e-05,
+        "combase.dll": 3.6e-05,
+        "unmapped": 3e-05,
+        "windows.storage.dll": 2.4e-05,
+        "twinapi.appcore.dll": 2.4e-05,
+        "dxgi.dll": 1.8e-05,
+        "cfgmgr32.dll": 1.2e-05,
+        "drvstore.dll": 1.2e-05,
+        "bcrypt.dll": 1.2e-05,
+        "shcore.dll": 6e-06,
+        "audiodevprops2.dll": 6e-06,
+        "msctf.dll": 6e-06,
+        "msvcrt.dll": 6e-06,
+        "ntmarta.dll": 6e-06,
+        "devobj.dll": 6e-06,
+        "rsaenh.dll": 6e-06,
+        "clbcatq.dll": 6e-06,
+        "textinputframework.dll": 6e-06
+      }
+    },
+    "4292": {
+      "samples": 165478,
+      "module_share": {
+        "ntdll.dll": 1.0
+      }
+    },
+    "10828": {
+      "samples": 165478,
+      "module_share": {
+        "ntdll.dll": 1.0
+      }
+    },
+    "25316": {
+      "samples": 165477,
+      "module_share": {
+        "ntdll.dll": 1.0
+      }
+    }
+  },
+  "main_thread": 14352,
+  "main_thread_samples": 166680,
+  "hot_addresses": [
+    {
+      "module": "ntdll.dll",
+      "rva": 1445444,
+      "samples": 71831,
+      "share": 0.430952,
+      "base": 140737215332352,
+      "symbol": null,
+      "symbol_offset": null
+    },
+    {
+      "module": "ntdll.dll",
+      "rva": 1446500,
+      "samples": 4277,
+      "share": 0.02566,
+      "base": 140737215332352,
+      "symbol": null,
+      "symbol_offset": null
+    },
+    {
+      "module": "cuexis_execution_device_probe.exe",
+      "rva": 2772960,
+      "samples": 3147,
+      "share": 0.01888,
+      "base": 140696925962240,
+      "symbol": null,
+      "symbol_offset": null
+    },
+    {
+      "module": "vcruntime140.dll",
+      "rva": 124120,
+      "samples": 3123,
+      "share": 0.018737,
+      "base": 140737112768512,
+      "symbol": null,
+      "symbol_offset": null
+    },
+    {
+      "module": "cuexis_execution_device_probe.exe",
+      "rva": 4025073,
+      "samples": 2384,
+      "share": 0.014303,
+      "base": 140696925962240,
+      "symbol": null,
+      "symbol_offset": null
+    },
+    {
+      "module": "cuexis_execution_device_probe.exe",
+      "rva": 2767489,
+      "samples": 1790,
+      "share": 0.010739,
+      "base": 140696925962240,
+      "symbol": null,
+      "symbol_offset": null
+    },
+    {
+      "module": "ntdll.dll",
+      "rva": 1445764,
+      "samples": 1747,
+      "share": 0.010481,
+      "base": 140737215332352,
+      "symbol": null,
+      "symbol_offset": null
+    },
+    {
+      "module": "cuexis_execution_device_probe.exe",
+      "rva": 1227357,
+      "samples": 1623,
+      "share": 0.009737,
+      "base": 140696925962240,
+      "symbol": null,
+      "symbol_offset": null
+    },
+    {
+      "module": "cuexis_execution_device_probe.exe",
+      "rva": 2772957,
+      "samples": 1618,
+      "share": 0.009707,
+      "base": 140696925962240,
+      "symbol": null,
+      "symbol_offset": null
+    },
+    {
+      "module": "cuexis_execution_device_probe.exe",
+      "rva": 2767594,
+      "samples": 1523,
+      "share": 0.009137,
+      "base": 140696925962240,
+      "symbol": null,
+      "symbol_offset": null
+    },
+    {
+      "module": "cuexis_execution_device_probe.exe",
+      "rva": 2772950,
+      "samples": 1368,
+      "share": 0.008207,
+      "base": 140696925962240,
+      "symbol": null,
+      "symbol_offset": null
+    },
+    {
+      "module": "ntdll.dll",
+      "rva": 118115,
+      "samples": 1247,
+      "share": 0.007481,
+      "base": 140737215332352,
+      "symbol": null,
+      "symbol_offset": null
+    }
+  ],
+  "clusters": {
+    "gap_us": 1000,
+    "min_span_us": 1500,
+    "min_samples": 3,
+    "count": 87882,
+    "stalled_count": 329,
+    "stalled_covered_us": 532449,
+    "stalled_covered_share": 0.023373,
+    "stalled_module_us": {
+      "ntdll.dll": 532449
+    },
+    "background_module_share": {
+      "ntdll.dll": 0.560607,
+      "cuexis_execution_device_probe.exe": 0.343623,
+      "vcruntime140.dll": 0.058885,
+      "nvoglv64.dll": 0.020734,
+      "win32u.dll": 0.005634,
+      "ucrtbase.dll": 0.003516,
+      "kernel32.dll": 0.001842,
+      "sdl3.dll": 0.0015,
+      "opengl32.dll": 0.000792,
+      "msvcp140.dll": 0.000516,
+      "apphelp.dll": 0.000468,
+      "nvgpucomp64.dll": 0.000402,
+      "kernelbase.dll": 0.00039,
+      "directxdatabasehelper.dll": 0.000222,
+      "imagehlp.dll": 0.00018,
+      "gdi32full.dll": 0.000138,
+      "user32.dll": 0.000132,
+      "gdi32.dll": 0.00012,
+      "rpcrt4.dll": 4.2e-05,
+      "dxcore.dll": 3.6e-05,
+      "combase.dll": 3.6e-05,
+      "unmapped": 3e-05,
+      "windows.storage.dll": 2.4e-05,
+      "twinapi.appcore.dll": 2.4e-05,
+      "dxgi.dll": 1.8e-05,
+      "cfgmgr32.dll": 1.2e-05,
+      "drvstore.dll": 1.2e-05,
+      "bcrypt.dll": 1.2e-05,
+      "shcore.dll": 6e-06,
+      "audiodevprops2.dll": 6e-06,
+      "msctf.dll": 6e-06,
+      "msvcrt.dll": 6e-06,
+      "ntmarta.dll": 6e-06,
+      "devobj.dll": 6e-06,
+      "rsaenh.dll": 6e-06,
+      "clbcatq.dll": 6e-06,
+      "textinputframework.dll": 6e-06
+    },
+    "cluster_module_share": {
+      "ntdll.dll": 1.0
+    },
+    "cluster_samples": 6446,
+    "top": [
+      {
+        "module": "ntdll.dll",
+        "rva": 1446464,
+        "symbol": null,
+        "symbol_offset": null,
+        "span_us": 2696,
+        "samples": 20
+      },
+      {
+        "module": "ntdll.dll",
+        "rva": 1445440,
+        "symbol": null,
+        "symbol_offset": null,
+        "span_us": 2369,
+        "samples": 20
+      },
+      {
+        "module": "ntdll.dll",
+        "rva": 1446464,
+        "symbol": null,
+        "symbol_offset": null,
+        "span_us": 2230,
+        "samples": 20
+      },
+      {
+        "module": "ntdll.dll",
+        "rva": 1446464,
+        "symbol": null,
+        "symbol_offset": null,
+        "span_us": 2158,
+        "samples": 20
+      },
+      {
+        "module": "ntdll.dll",
+        "rva": 1446464,
+        "symbol": null,
+        "symbol_offset": null,
+        "span_us": 2100,
+        "samples": 20
+      },
+      {
+        "module": "ntdll.dll",
+        "rva": 1446464,
+        "symbol": null,
+        "symbol_offset": null,
+        "span_us": 2080,
+        "samples": 20
+      },
+      {
+        "module": "ntdll.dll",
+        "rva": 1446464,
+        "symbol": null,
+        "symbol_offset": null,
+        "span_us": 2022,
+        "samples": 20
+      },
+      {
+        "module": "ntdll.dll",
+        "rva": 1446464,
+        "symbol": null,
+        "symbol_offset": null,
+        "span_us": 1987,
+        "samples": 20
+      },
+      {
+        "module": "ntdll.dll",
+        "rva": 1446464,
+        "symbol": null,
+        "symbol_offset": null,
+        "span_us": 1969,
+        "samples": 20
+      },
+      {
+        "module": "ntdll.dll",
+        "rva": 1446464,
+        "symbol": null,
+        "symbol_offset": null,
+        "span_us": 1926,
+        "samples": 20
+      },
+      {
+        "module": "ntdll.dll",
+        "rva": 1446464,
+        "symbol": null,
+        "symbol_offset": null,
+        "span_us": 1907,
+        "samples": 20
+      },
+      {
+        "module": "ntdll.dll",
+        "rva": 1446464,
+        "symbol": null,
+        "symbol_offset": null,
+        "span_us": 1895,
+        "samples": 20
+      }
+    ],
+    "cluster_top_addresses": [
+      {
+        "module": "ntdll.dll",
+        "rva": 1445440,
+        "symbol": null,
+        "symbol_offset": null,
+        "samples": 5407,
+        "share_of_cluster_samples": 0.838815
+      },
+      {
+        "module": "ntdll.dll",
+        "rva": 1446464,
+        "symbol": null,
+        "symbol_offset": null,
+        "samples": 999,
+        "share_of_cluster_samples": 0.15498
+      },
+      {
+        "module": "ntdll.dll",
+        "rva": 1445504,
+        "symbol": null,
+        "symbol_offset": null,
+        "samples": 20,
+        "share_of_cluster_samples": 0.003103
+      },
+      {
+        "module": "ntdll.dll",
+        "rva": 1447040,
+        "symbol": null,
+        "symbol_offset": null,
+        "samples": 20,
+        "share_of_cluster_samples": 0.003103
+      }
+    ]
+  },
+  "faults": {
+    "snapshots": 1520,
+    "total_faults": 303106,
+    "median_per_ms": 19.67493584260051,
+    "p95_per_ms": 135.60804899387577,
+    "max_per_ms": 986.7096254530809,
+    "intervals": 1519,
+    "cluster_faults": 65357,
+    "cluster_fault_share": 0.215624,
+    "cluster_time_share": 0.023373,
+    "cluster_median_per_ms": 134.41558441558442,
+    "cluster_max_per_ms": 1519.949335022166,
+    "cluster_ratio": 6.832
+  }
+}

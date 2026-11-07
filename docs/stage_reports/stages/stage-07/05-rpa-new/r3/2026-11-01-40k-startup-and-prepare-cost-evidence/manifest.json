@@ -1,0 +1,3692 @@
+{
+  "scope": "Evidence for two diagnostics of the 40K stress project: (a) what is observable about player start-up from outside the process, and what the prepare actually spends its time on; (b) what replacing the nlohmann DOM dump in the canonical JSON writer changed, stage by stage, with a byte sweep proving the output text did not move. The 40K project is a deliberate stress case, not a capacity point: the only acceptance gate these numbers speak to is the R3 first-load clamp of 2000 ms, and even there the margin statement is a stress-case margin. Nothing here is a matrix row, a frontier point, or R3/R4 acceptance.",
+  "source_run": {
+    "roots": {
+      "startup": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1",
+      "prepare_cost": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1",
+      "cleanup": "D:\\Cuexis-redesign\\out\\_cleanup-20261101",
+      "staging": "D:\\Cuexis-redesign\\out\\verification-20261101\\evidence-staging\\r3-40k-startup"
+    },
+    "archive": "2026-11-01-40k-startup-and-prepare-cost-evidence",
+    "created_utc": "2026-11-01T06:00:12.530963+00:00",
+    "runs": 10,
+    "timer_runs": 0,
+    "walk_runs": 0,
+    "processes": 73,
+    "project": "player-40k-project from the startup tree, archived verbatim under project/ (the chart gzipped): the runs' argv names the original path, so a re-run has to point the same file back at that path"
+  },
+  "runs": [
+    {
+      "archive": "runs/20261101-a",
+      "role": "Probe start-up group: 6 processes untraced then 6 traced, 40000 entities, static.",
+      "files": 25,
+      "archived_files": [
+        "runs/20261101-a/startup-set.json",
+        "runs/20261101-a/raw/A-untraced-40000-00.err.txt",
+        "runs/20261101-a/raw/A-untraced-40000-00.out.txt",
+        "runs/20261101-a/raw/A-untraced-40000-01.err.txt",
+        "runs/20261101-a/raw/A-untraced-40000-01.out.txt",
+        "runs/20261101-a/raw/A-untraced-40000-02.err.txt",
+        "runs/20261101-a/raw/A-untraced-40000-02.out.txt",
+        "runs/20261101-a/raw/A-untraced-40000-03.err.txt",
+        "runs/20261101-a/raw/A-untraced-40000-03.out.txt",
+        "runs/20261101-a/raw/A-untraced-40000-04.err.txt",
+        "runs/20261101-a/raw/A-untraced-40000-04.out.txt",
+        "runs/20261101-a/raw/A-untraced-40000-05.err.txt",
+        "runs/20261101-a/raw/A-untraced-40000-05.out.txt",
+        "runs/20261101-a/raw/B-traced-40000-00.err.txt",
+        "runs/20261101-a/raw/B-traced-40000-00.out.txt",
+        "runs/20261101-a/raw/B-traced-40000-01.err.txt",
+        "runs/20261101-a/raw/B-traced-40000-01.out.txt",
+        "runs/20261101-a/raw/B-traced-40000-02.err.txt",
+        "runs/20261101-a/raw/B-traced-40000-02.out.txt",
+        "runs/20261101-a/raw/B-traced-40000-03.err.txt",
+        "runs/20261101-a/raw/B-traced-40000-03.out.txt",
+        "runs/20261101-a/raw/B-traced-40000-04.err.txt",
+        "runs/20261101-a/raw/B-traced-40000-04.out.txt",
+        "runs/20261101-a/raw/B-traced-40000-05.err.txt",
+        "runs/20261101-a/raw/B-traced-40000-05.out.txt"
+      ],
+      "processes": 12,
+      "entities": 40000,
+      "mode": "static",
+      "note": "The batched order (six of one arm, then six of the other) cannot separate a trace effect from a drift in the machine, so this group is superseded by 20261101-a2 and its numbers are quoted only as the superseded attempt."
+    },
+    {
+      "archive": "runs/20261101-a2",
+      "role": "Probe start-up group: 8 processes per arm, strictly alternating ABAB.",
+      "files": 33,
+      "archived_files": [
+        "runs/20261101-a2/startup-set.json",
+        "runs/20261101-a2/raw/A-untraced-40000-00.err.txt",
+        "runs/20261101-a2/raw/A-untraced-40000-00.out.txt",
+        "runs/20261101-a2/raw/A-untraced-40000-01.err.txt",
+        "runs/20261101-a2/raw/A-untraced-40000-01.out.txt",
+        "runs/20261101-a2/raw/A-untraced-40000-02.err.txt",
+        "runs/20261101-a2/raw/A-untraced-40000-02.out.txt",
+        "runs/20261101-a2/raw/A-untraced-40000-03.err.txt",
+        "runs/20261101-a2/raw/A-untraced-40000-03.out.txt",
+        "runs/20261101-a2/raw/A-untraced-40000-04.err.txt",
+        "runs/20261101-a2/raw/A-untraced-40000-04.out.txt",
+        "runs/20261101-a2/raw/A-untraced-40000-05.err.txt",
+        "runs/20261101-a2/raw/A-untraced-40000-05.out.txt",
+        "runs/20261101-a2/raw/A-untraced-40000-06.err.txt",
+        "runs/20261101-a2/raw/A-untraced-40000-06.out.txt",
+        "runs/20261101-a2/raw/A-untraced-40000-07.err.txt",
+        "runs/20261101-a2/raw/A-untraced-40000-07.out.txt",
+        "runs/20261101-a2/raw/B-traced-40000-00.err.txt",
+        "runs/20261101-a2/raw/B-traced-40000-00.out.txt",
+        "runs/20261101-a2/raw/B-traced-40000-01.err.txt",
+        "runs/20261101-a2/raw/B-traced-40000-01.out.txt",
+        "runs/20261101-a2/raw/B-traced-40000-02.err.txt",
+        "runs/20261101-a2/raw/B-traced-40000-02.out.txt",
+        "runs/20261101-a2/raw/B-traced-40000-03.err.txt",
+        "runs/20261101-a2/raw/B-traced-40000-03.out.txt",
+        "runs/20261101-a2/raw/B-traced-40000-04.err.txt",
+        "runs/20261101-a2/raw/B-traced-40000-04.out.txt",
+        "runs/20261101-a2/raw/B-traced-40000-05.err.txt",
+        "runs/20261101-a2/raw/B-traced-40000-05.out.txt",
+        "runs/20261101-a2/raw/B-traced-40000-06.err.txt",
+        "runs/20261101-a2/raw/B-traced-40000-06.out.txt",
+        "runs/20261101-a2/raw/B-traced-40000-07.err.txt",
+        "runs/20261101-a2/raw/B-traced-40000-07.out.txt"
+      ],
+      "processes": 16,
+      "entities": 40000,
+      "mode": "static",
+      "note": "The authoritative trace-perturbation test: the paired difference between traced and untraced is -0.23 %, well inside the 1 % gate the tabulator applies."
+    },
+    {
+      "archive": "runs/20261101-b",
+      "role": "Probe start-up group: entity ladder 1800/2400/2800/10000, traced, 3 processes per point.",
+      "files": 25,
+      "archived_files": [
+        "runs/20261101-b/startup-set.json",
+        "runs/20261101-b/raw/C-traced-1800-00.err.txt",
+        "runs/20261101-b/raw/C-traced-1800-00.out.txt",
+        "runs/20261101-b/raw/C-traced-1800-01.err.txt",
+        "runs/20261101-b/raw/C-traced-1800-01.out.txt",
+        "runs/20261101-b/raw/C-traced-1800-02.err.txt",
+        "runs/20261101-b/raw/C-traced-1800-02.out.txt",
+        "runs/20261101-b/raw/D-traced-2400-00.err.txt",
+        "runs/20261101-b/raw/D-traced-2400-00.out.txt",
+        "runs/20261101-b/raw/D-traced-2400-01.err.txt",
+        "runs/20261101-b/raw/D-traced-2400-01.out.txt",
+        "runs/20261101-b/raw/D-traced-2400-02.err.txt",
+        "runs/20261101-b/raw/D-traced-2400-02.out.txt",
+        "runs/20261101-b/raw/E-traced-2800-00.err.txt",
+        "runs/20261101-b/raw/E-traced-2800-00.out.txt",
+        "runs/20261101-b/raw/E-traced-2800-01.err.txt",
+        "runs/20261101-b/raw/E-traced-2800-01.out.txt",
+        "runs/20261101-b/raw/E-traced-2800-02.err.txt",
+        "runs/20261101-b/raw/E-traced-2800-02.out.txt",
+        "runs/20261101-b/raw/F-traced-10000-00.err.txt",
+        "runs/20261101-b/raw/F-traced-10000-00.out.txt",
+        "runs/20261101-b/raw/F-traced-10000-01.err.txt",
+        "runs/20261101-b/raw/F-traced-10000-01.out.txt",
+        "runs/20261101-b/raw/F-traced-10000-02.err.txt",
+        "runs/20261101-b/raw/F-traced-10000-02.out.txt"
+      ],
+      "processes": 12,
+      "entities": null,
+      "mode": "static",
+      "note": "The entity-scaling check: prepare cost per entity is 43.48 us at 1800, 50.06 at 2400, 49.03 at 2800 and 51.42 at 10000, and 51.48 at 40000 taken from a2, a largest-over-smallest ratio of 1.184 against a 1.5 limit.  Three of the four arms sit at the same 50 us per entity, which is why the ladder is quoted as a ratio and not as a straight line."
+    },
+    {
+      "archive": "runs/20261101-c",
+      "role": "Before arm of the serializer comparison: 3 processes of the 40K project, PREPARE_TRACE on.",
+      "files": 9,
+      "archived_files": [
+        "runs/20261101-c/writer-split-00.err.txt",
+        "runs/20261101-c/writer-split-00.out.txt",
+        "runs/20261101-c/writer-split-01.err.txt",
+        "runs/20261101-c/writer-split-01.out.txt",
+        "runs/20261101-c/writer-split-02.err.txt",
+        "runs/20261101-c/writer-split-02.out.txt",
+        "runs/20261101-c/raw/writer-split-00.json",
+        "runs/20261101-c/raw/writer-split-01.json",
+        "runs/20261101-c/raw/writer-split-02.json"
+      ],
+      "processes": 3,
+      "entities": 40000,
+      "mode": "static",
+      "note": "Launched by watch_window.py with the label prefix writer-split-; the ad-hoc command line is not persisted, but every raw sample records its own argv, digest and environment.  prepare-cost/before/prepare-split.json is the summary over these logs."
+    },
+    {
+      "archive": "runs/20261101-w1",
+      "role": "Watcher group: the player untraced x3 and traced x3, the probe untraced x1 and traced x1.",
+      "files": 17,
+      "archived_files": [
+        "runs/20261101-w1/watch-set.json",
+        "runs/20261101-w1/raw/player-40k-traced-00.err.txt",
+        "runs/20261101-w1/raw/player-40k-traced-00.out.txt",
+        "runs/20261101-w1/raw/player-40k-traced-01.err.txt",
+        "runs/20261101-w1/raw/player-40k-traced-01.out.txt",
+        "runs/20261101-w1/raw/player-40k-traced-02.err.txt",
+        "runs/20261101-w1/raw/player-40k-traced-02.out.txt",
+        "runs/20261101-w1/raw/player-40k-untraced-00.err.txt",
+        "runs/20261101-w1/raw/player-40k-untraced-00.out.txt",
+        "runs/20261101-w1/raw/player-40k-untraced-01.err.txt",
+        "runs/20261101-w1/raw/player-40k-untraced-01.out.txt",
+        "runs/20261101-w1/raw/player-40k-untraced-02.err.txt",
+        "runs/20261101-w1/raw/player-40k-untraced-02.out.txt",
+        "runs/20261101-w1/raw/probe-40k-static-traced-00.err.txt",
+        "runs/20261101-w1/raw/probe-40k-static-traced-00.out.txt",
+        "runs/20261101-w1/raw/probe-40k-static-untraced-00.err.txt",
+        "runs/20261101-w1/raw/probe-40k-static-untraced-00.out.txt"
+      ],
+      "processes": 8,
+      "entities": 40000,
+      "mode": "static",
+      "note": "Measures responsiveness from outside the process: time to window creation, to the first visible frame, and the probe-latency distribution of a thread that is not the renderer.  Also the group that shows the probe's own prepare scopes are the same 19 scopes in the same order as the probe of group a2."
+    },
+    {
+      "archive": "runs/20261101-w2",
+      "role": "Watcher group: default order x3, device-first order x3, and one close-at-1s attempt each.",
+      "files": 17,
+      "archived_files": [
+        "runs/20261101-w2/watch-set.json",
+        "runs/20261101-w2/raw/player-40k-untraced-00.err.txt",
+        "runs/20261101-w2/raw/player-40k-untraced-00.out.txt",
+        "runs/20261101-w2/raw/player-40k-untraced-01.err.txt",
+        "runs/20261101-w2/raw/player-40k-untraced-01.out.txt",
+        "runs/20261101-w2/raw/player-40k-untraced-02.err.txt",
+        "runs/20261101-w2/raw/player-40k-untraced-02.out.txt",
+        "runs/20261101-w2/raw/player-40k-untraced-close1-00.err.txt",
+        "runs/20261101-w2/raw/player-40k-untraced-close1-00.out.txt",
+        "runs/20261101-w2/raw/player-40k-window-first-00.err.txt",
+        "runs/20261101-w2/raw/player-40k-window-first-00.out.txt",
+        "runs/20261101-w2/raw/player-40k-window-first-01.err.txt",
+        "runs/20261101-w2/raw/player-40k-window-first-01.out.txt",
+        "runs/20261101-w2/raw/player-40k-window-first-02.err.txt",
+        "runs/20261101-w2/raw/player-40k-window-first-02.out.txt",
+        "runs/20261101-w2/raw/player-40k-window-first-close1-00.err.txt",
+        "runs/20261101-w2/raw/player-40k-window-first-close1-00.out.txt"
+      ],
+      "processes": 8,
+      "entities": 40000,
+      "mode": "static",
+      "note": "The device-first order makes the window visible 2.09 s earlier and moves the first frame by +1.55 %, but the window is visible while not pumping, so four of the watcher's probes time out.  The close-at-1s pair shows a WM_CLOSE posted at 1.0 s is unreachable in the default order and takes 1.6893 s to act in the device-first order."
+    },
+    {
+      "archive": "runs/watch",
+      "role": "Three single-process pilots of the traced player, default order.",
+      "files": 9,
+      "archived_files": [
+        "runs/watch/player-40k-traced-b.err.txt",
+        "runs/watch/player-40k-traced-b.json",
+        "runs/watch/player-40k-traced-b.out.txt",
+        "runs/watch/player-40k-traced-c.err.txt",
+        "runs/watch/player-40k-traced-c.json",
+        "runs/watch/player-40k-traced-c.out.txt",
+        "runs/watch/player-40k-traced.err.txt",
+        "runs/watch/player-40k-traced.json",
+        "runs/watch/player-40k-traced.out.txt"
+      ],
+      "processes": 3,
+      "entities": 40000,
+      "mode": "static",
+      "note": "Instrument lineage and the [player.startup_phase] vocabulary come from here, and so does the player digest 56a04af4 that group w1's player arms report.  The first pilot was killed at the watcher's 25 s timeout with return code 1: it ran before the watcher could post a close, which is why the two later pilots exist.  Nothing is dropped for it."
+    },
+    {
+      "archive": "runs/smoke-w2",
+      "role": "Two single-process pilots of the device-first patch.",
+      "files": 6,
+      "archived_files": [
+        "runs/smoke-w2/smoke-wf-01.err.txt",
+        "runs/smoke-w2/smoke-wf-01.json",
+        "runs/smoke-w2/smoke-wf-01.out.txt",
+        "runs/smoke-w2/smoke-wf2-01.err.txt",
+        "runs/smoke-w2/smoke-wf2-01.json",
+        "runs/smoke-w2/smoke-wf2-01.out.txt"
+      ],
+      "processes": 2,
+      "entities": 40000,
+      "mode": "static",
+      "note": "smoke-wf-01 is the threaded patch: return code 3221226505 (0xC0000409) from an off-thread destruction.  smoke-wf2-01 is the thread-free rewrite and exits 0."
+    },
+    {
+      "archive": "runs/smoke",
+      "role": "Watcher self-test: the same project launched six times, two plain runs, one dump run and three traced runs.",
+      "files": 13,
+      "archived_files": [
+        "runs/smoke/dump-40k.err.txt",
+        "runs/smoke/dump-40k.out.txt",
+        "runs/smoke/plain-40k.err.txt",
+        "runs/smoke/plain-40k.out.txt",
+        "runs/smoke/plain3-40k.err.txt",
+        "runs/smoke/plain3-40k.out.txt",
+        "runs/smoke/smoke-40k.txt",
+        "runs/smoke/trace-40k.err.txt",
+        "runs/smoke/trace-40k.out.txt",
+        "runs/smoke/trace2-40k.err.txt",
+        "runs/smoke/trace2-40k.out.txt",
+        "runs/smoke/trace3-40k.err.txt",
+        "runs/smoke/trace3-40k.out.txt"
+      ],
+      "processes": 6,
+      "entities": 40000,
+      "mode": "static",
+      "note": "Shows the trace vocabulary growing: trace-40k has no chart sub-scope, trace2 adds load_chart and load_canonical, trace3 adds json_dom_parse, chart_typed_read and chart_canonical_write.  That is the reason w1 has to be checked for the full 19 scopes instead of assuming any traced run speaks the same language.  No quoted number derives from this group, and it sits beside runs/ rather than inside it in the source tree."
+    },
+    {
+      "archive": "runs/serializer-direct-v1",
+      "role": "After arm of the serializer comparison: 3 processes, PREPARE_TRACE on, player cb575e15.",
+      "files": 7,
+      "archived_files": [
+        "runs/serializer-direct-v1/player-40k-traced-00.err.txt",
+        "runs/serializer-direct-v1/player-40k-traced-00.out.txt",
+        "runs/serializer-direct-v1/player-40k-traced-01.err.txt",
+        "runs/serializer-direct-v1/player-40k-traced-01.out.txt",
+        "runs/serializer-direct-v1/player-40k-traced-02.err.txt",
+        "runs/serializer-direct-v1/player-40k-traced-02.out.txt",
+        "runs/serializer-direct-v1/prepare-split.json"
+      ],
+      "processes": 3,
+      "entities": 40000,
+      "mode": "static",
+      "note": "Driven by run_prepare_split_set.py, which hashes the player before the first launch and after the last one and refuses to write the stamp if it moved, so this arm's digest is recorded by the instrument rather than inferred."
+    }
+  ],
+  "timer_runs": [],
+  "walks": [],
+  "project": [
+    {
+      "archive": "project/cuexis.project.json",
+      "bytes": 333,
+      "note": "The project document of the 40K stress project."
+    },
+    {
+      "archive": "project/assets/cuexis.asset-index.json",
+      "bytes": 371,
+      "note": "Its asset index."
+    },
+    {
+      "archive": "project/assets/charts/stress_40k.cuexis.chart.json.gz",
+      "bytes": 237545,
+      "note": "The 12 571 828-byte chart: 40 000 behaviours."
+    },
+    {
+      "archive": "project/assets/materials/opaque.material.bin",
+      "bytes": 56,
+      "note": "The only material."
+    },
+    {
+      "archive": "project/assets/meshes/triangle.mesh.bin",
+      "bytes": 112,
+      "note": "The only mesh."
+    }
+  ],
+  "prepare_cost": [
+    {
+      "archive": "prepare-cost/before/prepare-split.json",
+      "note": "The before-arm summary: per-stage elapsed, self time and spread over 3 processes of the 40K project, player 8591b67a recorded by the watcher.",
+      "bytes": 22975
+    },
+    {
+      "archive": "prepare-cost/before/prepare-split.original.json",
+      "note": "The superseded first version of the same stamp: it carried the after-arm binary's digest because it was summarised after the rebuild.  Kept so the correction is auditable.",
+      "bytes": 19983
+    },
+    {
+      "archive": "prepare-cost/before/40k-canonical.json.gz",
+      "note": "The canonical text of the 40K chart, 32 180 288 bytes gzipped to 484 803.  Its digest is the identity the sweep asserts; it is byte-identical to before/work/e107126d44c6da1f-t3.json.",
+      "bytes": 484803
+    },
+    {
+      "archive": "prepare-cost/before/40k-report.json",
+      "note": "The migrator's report for the 40K case: 1 behaviour converted, 1 event generated.",
+      "bytes": 209
+    },
+    {
+      "archive": "prepare-cost/before/serialize-capture.txt",
+      "note": "A hidden-test capture of the writer's output for 12 cases (scalars, doubles, escapes, key order, nesting, unicode, a chart fragment), taken before the change.  The new writer's golden header is generated from it, so it is the fixed point.",
+      "bytes": 5786
+    },
+    {
+      "archive": "prepare-cost/before/sweep.json",
+      "note": "The 22-case byte sweep taken before the change, with the migrator's own digest.",
+      "bytes": 21654
+    },
+    {
+      "archive": "prepare-cost/after/sweep.json",
+      "note": "The same 22 cases after the change: every output_sha256 equals the before value.",
+      "bytes": 21977
+    },
+    {
+      "archive": "prepare-cost/after/prepare-split-compare.json",
+      "note": "The stage-by-stage before/after difference that the report quotes.",
+      "bytes": 1944
+    },
+    {
+      "archive": "prepare-cost/before/work",
+      "role": "Migrator per-case intermediates of the before sweep: 11 report documents and the 40K canonical text, which is byte-identical in both directions.",
+      "files": 12,
+      "archived_files": [
+        "prepare-cost/before/work/739e886c58a8f76a-t4.report.json",
+        "prepare-cost/before/work/87b9685410e88905-t3.report.json",
+        "prepare-cost/before/work/888b73fb26a5fb09-t4.report.json",
+        "prepare-cost/before/work/99031a497315c670-t4.report.json",
+        "prepare-cost/before/work/b1c60c6896a0b49e-t3.report.json",
+        "prepare-cost/before/work/b6f1503ff1bed4c7-t3.report.json",
+        "prepare-cost/before/work/bab71b20ab958e04-t4.report.json",
+        "prepare-cost/before/work/cd89b97b6e4270cc-t3.report.json",
+        "prepare-cost/before/work/d791ae541c3bb982-t3.report.json",
+        "prepare-cost/before/work/e107126d44c6da1f-t3.json.gz",
+        "prepare-cost/before/work/e107126d44c6da1f-t3.report.json",
+        "prepare-cost/before/work/f8f8a884352c53d9-t3.report.json"
+      ]
+    },
+    {
+      "archive": "prepare-cost/after/work",
+      "role": "Migrator per-case intermediates of the after sweep: 11 report documents and the 40K canonical text, which is byte-identical in both directions.",
+      "files": 12,
+      "archived_files": [
+        "prepare-cost/after/work/739e886c58a8f76a-t4.report.json",
+        "prepare-cost/after/work/87b9685410e88905-t3.report.json",
+        "prepare-cost/after/work/888b73fb26a5fb09-t4.report.json",
+        "prepare-cost/after/work/99031a497315c670-t4.report.json",
+        "prepare-cost/after/work/b1c60c6896a0b49e-t3.report.json",
+        "prepare-cost/after/work/b6f1503ff1bed4c7-t3.report.json",
+        "prepare-cost/after/work/bab71b20ab958e04-t4.report.json",
+        "prepare-cost/after/work/cd89b97b6e4270cc-t3.report.json",
+        "prepare-cost/after/work/d791ae541c3bb982-t3.report.json",
+        "prepare-cost/after/work/e107126d44c6da1f-t3.json.gz",
+        "prepare-cost/after/work/e107126d44c6da1f-t3.report.json",
+        "prepare-cost/after/work/f8f8a884352c53d9-t3.report.json"
+      ]
+    },
+    {
+      "archive": "prepare-cost/logs/build-before-serializer.log.gz",
+      "note": "The incremental build log written before the after-binary was linked.  It is a link-only pass, not the build that produced 8591b67a; the report says so.",
+      "bytes": 839
+    },
+    {
+      "archive": "prepare-cost/logs/build-after-serializer.log.gz",
+      "note": "The incremental build log written at 03:34, i.e. before the after binary the arm measured was linked at 03:34:46.  Also link-only.",
+      "bytes": 853
+    },
+    {
+      "archive": "prepare-cost/logs/ctest-after-serializer.log.gz",
+      "note": "The full suite after the change: 1418 tests, 1417 passed, 1 intentional skip.",
+      "bytes": 58678
+    }
+  ],
+  "cleanup": [
+    {
+      "archive": "cleanup/build-inventory.json",
+      "note": "Every build directory under out/ with its size, newest file and citing references.",
+      "bytes": 211605,
+      "role": "repo-hygiene; not a measurement"
+    },
+    {
+      "archive": "cleanup/build-references.json",
+      "note": "The reference scan: which file outside each deleted tree cited it.  This is why eight of the ten deleted trees are no longer re-derivable, recorded rather than glossed.",
+      "bytes": 1421075,
+      "role": "repo-hygiene; not a measurement"
+    },
+    {
+      "archive": "cleanup/delete-plan.json",
+      "note": "The plan the deletion followed: 10 build trees, checked path by path.",
+      "bytes": 2591,
+      "role": "repo-hygiene; not a measurement"
+    },
+    {
+      "archive": "cleanup/temp-files.json",
+      "note": "The temporary-file inventory, including the two patterns that did not mean what the brief assumed (out/ collapses to one git entry; underscore prefixes are dominated by vendored plot-libs).",
+      "bytes": 413626,
+      "role": "repo-hygiene; not a measurement"
+    },
+    {
+      "archive": "cleanup/cleanup-20261101.json",
+      "note": "The executed result: 77.853 GiB across 10 build trees, 138 __pycache__ directories and 13 files; D: went from 9.60 to 87.41 GiB free.",
+      "bytes": 7666,
+      "role": "repo-hygiene; not a measurement"
+    },
+    {
+      "archive": "cleanup/build-debug-serializer.log.gz",
+      "note": "The incremental Debug build run after the cleanup, proving the three surviving trees still build.",
+      "bytes": 2140,
+      "role": "repo-hygiene; not a measurement"
+    }
+  ],
+  "copied_files": [
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\build_probe.bat",
+      "archive": "instruments/build_probe.bat",
+      "mode": "text",
+      "source_bytes": 245,
+      "bytes": 249,
+      "sha256": "5a03f8a55f38d903a65ce3faa9a6f3a5b8f97da5e315fadcf3cff85498cea1f1",
+      "source_sha256": "6f83d6a2cb2ce5c32de9ed5531a0ee507815f9b98e24e8a07b63b64a08531933",
+      "source_eol": "mixed",
+      "eol": "crlf",
+      "content_sha256": "3b35643d938b982eba4e599b6b1bdc3047cd6b856c3359701411e13101d64da4"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\patch_probe_v2.py",
+      "archive": "instruments/patch_probe_v2.py",
+      "mode": "text",
+      "source_bytes": 12910,
+      "bytes": 13212,
+      "sha256": "ad95c9aa20203232f27837e6b2f1340c5234f0250f241ac2c6bba08cadb20be2",
+      "source_sha256": "28d471410413fa44100b63495aac0d0f28aff574548ec525670892a70eb6c3b0",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "28d471410413fa44100b63495aac0d0f28aff574548ec525670892a70eb6c3b0"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\patch_prepare_trace.py",
+      "archive": "instruments/patch_prepare_trace.py",
+      "mode": "text",
+      "source_bytes": 10313,
+      "bytes": 10544,
+      "sha256": "48dd30a992230408ad5a965173313723265b6bf78d551a70858d4762341be9c4",
+      "source_sha256": "04fc26c90185a0b3b86e2899316b87710028c60c440f3dbbe2c96d57b88bda86",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "04fc26c90185a0b3b86e2899316b87710028c60c440f3dbbe2c96d57b88bda86"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\patch_chart_trace.py",
+      "archive": "instruments/patch_chart_trace.py",
+      "mode": "text",
+      "source_bytes": 4188,
+      "bytes": 4287,
+      "sha256": "4de0ba60fa9fdf5da8ba9785fa7499779f7a65a370069aa4f350d40ab05d2817",
+      "source_sha256": "d960fd5d0d562f4ce90b98fe7cc0b6828d14dd3d230c08832f63d6f69ba61937",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "d960fd5d0d562f4ce90b98fe7cc0b6828d14dd3d230c08832f63d6f69ba61937"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\run_startup_set.py",
+      "archive": "instruments/run_startup_set.py",
+      "mode": "text",
+      "source_bytes": 9249,
+      "bytes": 9474,
+      "sha256": "2e71fdfab28236fba54a3019454988f6281fc5c30f94d04d4ec19f116cab8add",
+      "source_sha256": "1ca0ca73d9b9edd47bc3a2e7e3487e29d53410a04041f145b43a71ef76884c3c",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "1ca0ca73d9b9edd47bc3a2e7e3487e29d53410a04041f145b43a71ef76884c3c"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\build_player.bat",
+      "archive": "instruments/build_player.bat",
+      "mode": "text",
+      "source_bytes": 388,
+      "bytes": 395,
+      "sha256": "bc5fff77018a5b2f7fc0e4a3c9e283fd49884290ad8732bde1ff84f0cd51df4f",
+      "source_sha256": "9c655070b4722cca716b82604a2f652b60846978f8cb10d31f9b4fca5d21ff15",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "9c655070b4722cca716b82604a2f652b60846978f8cb10d31f9b4fca5d21ff15"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\watch_window.py",
+      "archive": "instruments/watch_window.py",
+      "mode": "text",
+      "source_bytes": 20030,
+      "bytes": 20510,
+      "sha256": "4942750ad2119f2c7df05f3751ab78028906d5a5bfcd95fc9e68253c7d416ee5",
+      "source_sha256": "ce98a1ddd84975f3e0c5ba6bdca654802ee70ea48429ad86e53c22dbae6f595e",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "ce98a1ddd84975f3e0c5ba6bdca654802ee70ea48429ad86e53c22dbae6f595e"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\patch_player_window_first.py",
+      "archive": "instruments/patch_player_window_first.py",
+      "mode": "text",
+      "source_bytes": 15116,
+      "bytes": 15475,
+      "sha256": "b29ae8080e52c95e65fd5275dc682410dabf80dad67cf282cfde32f7f10c037e",
+      "source_sha256": "5f6a86559959802e4713580b810cc32cbf83d98c9a295766377aef1fdc092968",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "5f6a86559959802e4713580b810cc32cbf83d98c9a295766377aef1fdc092968"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\patch_player_window_first_v2.py",
+      "archive": "instruments/patch_player_window_first_v2.py",
+      "mode": "text",
+      "source_bytes": 13735,
+      "bytes": 14055,
+      "sha256": "8909126d5c3ba6aea3fd299c97439a6531c3cef883a4b4a6e87f6524a9fdd79a",
+      "source_sha256": "af9ec229f5ebae476634fe9a7def7c7c791bd07207d2599c0e3a86da0159961e",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "af9ec229f5ebae476634fe9a7def7c7c791bd07207d2599c0e3a86da0159961e"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\run_watch_set.py",
+      "archive": "instruments/run_watch_set.py",
+      "mode": "text",
+      "source_bytes": 11322,
+      "bytes": 11606,
+      "sha256": "ee308eb630a23142db3cf4ec1949a0981e2c8dd2cb968d9098823756c074c575",
+      "source_sha256": "f5ef45d06d2c4e2b8c7dfa2859e0d220b5a41df759c44bc2207933ed7292dffa",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "f5ef45d06d2c4e2b8c7dfa2859e0d220b5a41df759c44bc2207933ed7292dffa"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\patch_writer_trace.py",
+      "archive": "instruments/patch_writer_trace.py",
+      "mode": "text",
+      "source_bytes": 3489,
+      "bytes": 3586,
+      "sha256": "5be513cecc273095d817118499c515b856d1dbb066362247aabc4f2480b4ac93",
+      "source_sha256": "cf82c27735ff890e9a082191a6ae5b31c3ca7726fb43eae242483ecaf077078d",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "cf82c27735ff890e9a082191a6ae5b31c3ca7726fb43eae242483ecaf077078d"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\run_prepare_split_set.py",
+      "archive": "instruments/run_prepare_split_set.py",
+      "mode": "text",
+      "source_bytes": 21040,
+      "bytes": 21531,
+      "sha256": "81d2be30c54263addcc2e26e7ab8b500170dfb86cf1662f98e169a1e52ba1476",
+      "source_sha256": "83764de8a5590549ee81ba90823295babe2a4043ee465e5cef9533d6e2b6b17b",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "83764de8a5590549ee81ba90823295babe2a4043ee465e5cef9533d6e2b6b17b"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\canonical_sweep.py",
+      "archive": "instruments/canonical_sweep.py",
+      "mode": "text",
+      "source_bytes": 8580,
+      "bytes": 8786,
+      "sha256": "5c44f49665981999b4b865a9b954b827ffa0e3441abe80610ecc37aa4777f0b9",
+      "source_sha256": "ffb56392f5bb9472a2c268814ff790a8cb5e7e3b2b84990c9dafbf05cccc389b",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "ffb56392f5bb9472a2c268814ff790a8cb5e7e3b2b84990c9dafbf05cccc389b"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\gen_serialize_golden.py",
+      "archive": "instruments/gen_serialize_golden.py",
+      "mode": "text",
+      "source_bytes": 8708,
+      "bytes": 8928,
+      "sha256": "d27e3a08fab45c5af53110cf14d5904ae951930085a442958605676472daac62",
+      "source_sha256": "f5a84df5d3b024b4628e368d5c5aa12759f11645f2b8e2eca4c5f05d30da889d",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "f5a84df5d3b024b4628e368d5c5aa12759f11645f2b8e2eca4c5f05d30da889d"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\evidence-staging\\r3-40k-startup\\tabulate_startup.py",
+      "archive": "instruments/tabulate_startup.py",
+      "mode": "text",
+      "source_bytes": 84764,
+      "bytes": 86646,
+      "sha256": "3e319aa0e58a69c42331f009a3cfd829028fc1930e3232645bbf63a218ab9d1c",
+      "source_sha256": "1fa7ee79134d7dccf7cffad0f00831734b462823f956e313ad172a4822797838",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "1fa7ee79134d7dccf7cffad0f00831734b462823f956e313ad172a4822797838"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\player-40k-project\\cuexis.project.json",
+      "archive": "project/cuexis.project.json",
+      "mode": "text",
+      "source_bytes": 315,
+      "bytes": 333,
+      "sha256": "7b49813e14115dc0fa7dfe430fc6b2f091d25c11b0bb7d252f714509193371ba",
+      "source_sha256": "fcf6574eb64fb872d91a82cf495b069070f16854f04a41a8445beb458ba61c1e",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "fcf6574eb64fb872d91a82cf495b069070f16854f04a41a8445beb458ba61c1e"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\player-40k-project\\assets/cuexis.asset-index.json",
+      "archive": "project/assets/cuexis.asset-index.json",
+      "mode": "text",
+      "source_bytes": 352,
+      "bytes": 371,
+      "sha256": "68a609116872a59bd815baa73b29fbfb12e4d78dc405efc082ce7953b86c3c82",
+      "source_sha256": "00372698fc00721df196a2adc0f1a400eb593fa63094d25266cef514749ef807",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "00372698fc00721df196a2adc0f1a400eb593fa63094d25266cef514749ef807"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\player-40k-project\\assets/charts/stress_40k.cuexis.chart.json",
+      "archive": "project/assets/charts/stress_40k.cuexis.chart.json.gz",
+      "mode": "gzip",
+      "source_bytes": 12571828,
+      "bytes": 237545,
+      "sha256": "91515d7e6fac60234d60ccb6e0acaf061a1caa50cae10ae0e16b19b925c3f118",
+      "source_sha256": "247cb8ef1ae66eb829fff5f58cdb466cb819396afdbac418a5b9814db408a0ae",
+      "source_eol": "lf",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\player-40k-project\\assets/materials/opaque.material.bin",
+      "archive": "project/assets/materials/opaque.material.bin",
+      "mode": "binary",
+      "source_bytes": 56,
+      "bytes": 56,
+      "sha256": "77a6d5ca69dec6d286226f0a80abc3e136903d18509054c954561b33387483de",
+      "source_sha256": "77a6d5ca69dec6d286226f0a80abc3e136903d18509054c954561b33387483de",
+      "source_eol": "none",
+      "eol": "none"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\player-40k-project\\assets/meshes/triangle.mesh.bin",
+      "archive": "project/assets/meshes/triangle.mesh.bin",
+      "mode": "binary",
+      "source_bytes": 112,
+      "bytes": 112,
+      "sha256": "c7910110532d3f2bad3486f61079446f6cf2718dcde7144dc7598494f122ceae",
+      "source_sha256": "c7910110532d3f2bad3486f61079446f6cf2718dcde7144dc7598494f122ceae",
+      "source_eol": "none",
+      "eol": "none"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a\\startup-set.json",
+      "archive": "runs/20261101-a/startup-set.json",
+      "mode": "text",
+      "source_bytes": 54379,
+      "bytes": 54379,
+      "sha256": "0eb4c9f5beff465cf26d0a70985942642aea82ca49aad01029116b3393d1e912",
+      "source_sha256": "0eb4c9f5beff465cf26d0a70985942642aea82ca49aad01029116b3393d1e912",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "e15c33e0cec73ea84912a08c9b1cfce1bf9cd2b82cc237873bc259a8a0cafcaf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a\\raw\\A-untraced-40000-00.err.txt",
+      "archive": "runs/20261101-a/raw/A-untraced-40000-00.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a\\raw\\A-untraced-40000-00.out.txt",
+      "archive": "runs/20261101-a/raw/A-untraced-40000-00.out.txt",
+      "mode": "text",
+      "source_bytes": 4106,
+      "bytes": 4171,
+      "sha256": "3c426dad0bb76fab05617742bbeda610674bd1aa4ea11979d8bc016cfc16c192",
+      "source_sha256": "5dc424dcbfb648e004964237c9d023d86a74cffe3aeb64c515dbf33f3d09cb2f",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "5dc424dcbfb648e004964237c9d023d86a74cffe3aeb64c515dbf33f3d09cb2f"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a\\raw\\A-untraced-40000-01.err.txt",
+      "archive": "runs/20261101-a/raw/A-untraced-40000-01.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a\\raw\\A-untraced-40000-01.out.txt",
+      "archive": "runs/20261101-a/raw/A-untraced-40000-01.out.txt",
+      "mode": "text",
+      "source_bytes": 4017,
+      "bytes": 4081,
+      "sha256": "5bb198975f2db143945b727dc19f9c9de17e6f51f3e1b9c4179c85ac769091c6",
+      "source_sha256": "0f2063d4f4afa86c863fcd2e2301cce5e5ee0108a407e55803edb7c22fc7d6ab",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "0f2063d4f4afa86c863fcd2e2301cce5e5ee0108a407e55803edb7c22fc7d6ab"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a\\raw\\A-untraced-40000-02.err.txt",
+      "archive": "runs/20261101-a/raw/A-untraced-40000-02.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a\\raw\\A-untraced-40000-02.out.txt",
+      "archive": "runs/20261101-a/raw/A-untraced-40000-02.out.txt",
+      "mode": "text",
+      "source_bytes": 4002,
+      "bytes": 4067,
+      "sha256": "b70a0e56280bb134ace9f236d64414ed3e3014d5fa292e9614e90604319d8570",
+      "source_sha256": "e4ac03c7ba30854b17d2f73c3b816fab02c5a1837cebdd8aa461aafc6c7df593",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "e4ac03c7ba30854b17d2f73c3b816fab02c5a1837cebdd8aa461aafc6c7df593"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a\\raw\\A-untraced-40000-03.err.txt",
+      "archive": "runs/20261101-a/raw/A-untraced-40000-03.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a\\raw\\A-untraced-40000-03.out.txt",
+      "archive": "runs/20261101-a/raw/A-untraced-40000-03.out.txt",
+      "mode": "text",
+      "source_bytes": 3916,
+      "bytes": 3980,
+      "sha256": "e71dcc6fe91e6da0055e40a3e936efa92df2def630c45178764f79c9daadc694",
+      "source_sha256": "b9a352d6c70495482b6cd4fb5d58a3ab9daaa6be6c4b0fc08cd5c032a97e917e",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "b9a352d6c70495482b6cd4fb5d58a3ab9daaa6be6c4b0fc08cd5c032a97e917e"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a\\raw\\A-untraced-40000-04.err.txt",
+      "archive": "runs/20261101-a/raw/A-untraced-40000-04.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a\\raw\\A-untraced-40000-04.out.txt",
+      "archive": "runs/20261101-a/raw/A-untraced-40000-04.out.txt",
+      "mode": "text",
+      "source_bytes": 4047,
+      "bytes": 4111,
+      "sha256": "5fec2aeddcb4dbe788f7add844bbfb4795b70903b6d130fac4db64066116be22",
+      "source_sha256": "5fa759ff26ebd7d923ffd38f05b4661bc54659be4a18155220532f1366f63ccb",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "5fa759ff26ebd7d923ffd38f05b4661bc54659be4a18155220532f1366f63ccb"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a\\raw\\A-untraced-40000-05.err.txt",
+      "archive": "runs/20261101-a/raw/A-untraced-40000-05.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a\\raw\\A-untraced-40000-05.out.txt",
+      "archive": "runs/20261101-a/raw/A-untraced-40000-05.out.txt",
+      "mode": "text",
+      "source_bytes": 3914,
+      "bytes": 3978,
+      "sha256": "0f37b85ba01f991dba1938c5283bef78b3aeff63bd1c160c8d50f7c8108db6e8",
+      "source_sha256": "8d1cfb83a927d31fb5f1c947c8cd3e70478b60dfdc5354258e493f849a42c087",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "8d1cfb83a927d31fb5f1c947c8cd3e70478b60dfdc5354258e493f849a42c087"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a\\raw\\B-traced-40000-00.err.txt",
+      "archive": "runs/20261101-a/raw/B-traced-40000-00.err.txt",
+      "mode": "text",
+      "source_bytes": 1777,
+      "bytes": 1815,
+      "sha256": "e3e6595213b9f7f96232cc91578b0ef238d062e4cfc1da440d25d594b0dca28a",
+      "source_sha256": "123aef39aa157d12def273d92c1711142be83fc97dc6a64d4f44ef2c73ffab86",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "123aef39aa157d12def273d92c1711142be83fc97dc6a64d4f44ef2c73ffab86"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a\\raw\\B-traced-40000-00.out.txt",
+      "archive": "runs/20261101-a/raw/B-traced-40000-00.out.txt",
+      "mode": "text",
+      "source_bytes": 3973,
+      "bytes": 4037,
+      "sha256": "3f289393634f668006e980a466f7450f2596021a70979a29d28f13de4a996540",
+      "source_sha256": "a1ca37cd2ef9c735a2ffe6b00e333b0dcb15dc151994182c6408fb8c842669b8",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "a1ca37cd2ef9c735a2ffe6b00e333b0dcb15dc151994182c6408fb8c842669b8"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a\\raw\\B-traced-40000-01.err.txt",
+      "archive": "runs/20261101-a/raw/B-traced-40000-01.err.txt",
+      "mode": "text",
+      "source_bytes": 1778,
+      "bytes": 1816,
+      "sha256": "31f8d874d70da6cd641392d154f37ef9944bdba79d75089cc1382fe9d71e3212",
+      "source_sha256": "69269d324434030245c428ad4dd0ed3f4d1140c2ccec4d888e5f11302f768488",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "69269d324434030245c428ad4dd0ed3f4d1140c2ccec4d888e5f11302f768488"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a\\raw\\B-traced-40000-01.out.txt",
+      "archive": "runs/20261101-a/raw/B-traced-40000-01.out.txt",
+      "mode": "text",
+      "source_bytes": 4045,
+      "bytes": 4109,
+      "sha256": "ea7e6dd8cd2b0d1932f9d4c8f09ee7dd4dff6bddc0fa90250af5ddae6a09f1f3",
+      "source_sha256": "942f5240956b243a3240ae2f8d1644c60f28ab1575b6665832d71a4d68d3d711",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "942f5240956b243a3240ae2f8d1644c60f28ab1575b6665832d71a4d68d3d711"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a\\raw\\B-traced-40000-02.err.txt",
+      "archive": "runs/20261101-a/raw/B-traced-40000-02.err.txt",
+      "mode": "text",
+      "source_bytes": 1778,
+      "bytes": 1816,
+      "sha256": "4f838456de1e2fa4ffee9b4cda3f630e345590ab4a4826063dc562f320befd7e",
+      "source_sha256": "8a9eafe7e0619ea01907afd81d8fb619bbdb8ebfcf9ddab6db84fa7e29f69d49",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "8a9eafe7e0619ea01907afd81d8fb619bbdb8ebfcf9ddab6db84fa7e29f69d49"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a\\raw\\B-traced-40000-02.out.txt",
+      "archive": "runs/20261101-a/raw/B-traced-40000-02.out.txt",
+      "mode": "text",
+      "source_bytes": 3968,
+      "bytes": 4032,
+      "sha256": "e8037588914f91281be68bde4b83b1f538815c3d438aa6e82fd01a50ccbdb514",
+      "source_sha256": "74c60dab4bf54724b1e22ff9132bf2f2f11270642da40562c3851691b8626ed8",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "74c60dab4bf54724b1e22ff9132bf2f2f11270642da40562c3851691b8626ed8"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a\\raw\\B-traced-40000-03.err.txt",
+      "archive": "runs/20261101-a/raw/B-traced-40000-03.err.txt",
+      "mode": "text",
+      "source_bytes": 1778,
+      "bytes": 1816,
+      "sha256": "c4140ce6e244380bf329057a02f09f2fe447a6e67381e6bbe8224684098cf317",
+      "source_sha256": "a041bc97c0d6afb40577b197339372baac0f4368dcb36773c6d441a555b111c2",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "a041bc97c0d6afb40577b197339372baac0f4368dcb36773c6d441a555b111c2"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a\\raw\\B-traced-40000-03.out.txt",
+      "archive": "runs/20261101-a/raw/B-traced-40000-03.out.txt",
+      "mode": "text",
+      "source_bytes": 3990,
+      "bytes": 4054,
+      "sha256": "719cfb86753000653dd0aa80f4c00453b1a9e1bbc8eda01525006e5ee013e42d",
+      "source_sha256": "cb0b6b93a281cd42596d66b59e6823bd13eec1eca24dc4dd45b1d045399c15dd",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "cb0b6b93a281cd42596d66b59e6823bd13eec1eca24dc4dd45b1d045399c15dd"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a\\raw\\B-traced-40000-04.err.txt",
+      "archive": "runs/20261101-a/raw/B-traced-40000-04.err.txt",
+      "mode": "text",
+      "source_bytes": 1778,
+      "bytes": 1816,
+      "sha256": "e7c35d1df13bc94addf19e48bb68800d97a31d68dcd21557fdc52e0b3156c718",
+      "source_sha256": "c3ceb433891dd31ca25933eae2b3859c0936f6915d3fc7fdb98dc508c0c9190f",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "c3ceb433891dd31ca25933eae2b3859c0936f6915d3fc7fdb98dc508c0c9190f"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a\\raw\\B-traced-40000-04.out.txt",
+      "archive": "runs/20261101-a/raw/B-traced-40000-04.out.txt",
+      "mode": "text",
+      "source_bytes": 4014,
+      "bytes": 4078,
+      "sha256": "ab057b0f06b2477c06d0baa91a4722b00902a1f900bd24959646269744e50a75",
+      "source_sha256": "312d3ab9379cf4dbe82242bedf3ee8fa62d4d35688179b89190bcd7bf4bc26bc",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "312d3ab9379cf4dbe82242bedf3ee8fa62d4d35688179b89190bcd7bf4bc26bc"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a\\raw\\B-traced-40000-05.err.txt",
+      "archive": "runs/20261101-a/raw/B-traced-40000-05.err.txt",
+      "mode": "text",
+      "source_bytes": 1778,
+      "bytes": 1816,
+      "sha256": "ee60f6f0e92b464aa46fc0418d512e303fd50bfaaaf1379e690377bdd7d3d803",
+      "source_sha256": "591e6ee5a800b1c6805fcc6bd3d7f8ed08fc923d59721da4ef0cb435e3935545",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "591e6ee5a800b1c6805fcc6bd3d7f8ed08fc923d59721da4ef0cb435e3935545"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a\\raw\\B-traced-40000-05.out.txt",
+      "archive": "runs/20261101-a/raw/B-traced-40000-05.out.txt",
+      "mode": "text",
+      "source_bytes": 3996,
+      "bytes": 4060,
+      "sha256": "a93c29fb16fddf938c942456a8ba8a6575c30a3ee079c5409a211a4d49d4d6cf",
+      "source_sha256": "038b89a28248d9fd3930a87fb840e20e533c765ede929628da06e327b1d74b06",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "038b89a28248d9fd3930a87fb840e20e533c765ede929628da06e327b1d74b06"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\startup-set.json",
+      "archive": "runs/20261101-a2/startup-set.json",
+      "mode": "text",
+      "source_bytes": 69857,
+      "bytes": 69857,
+      "sha256": "45da621f88b6f199d4e3a4cab0e5ba2e1affdf056231ca27232f69402b4075f7",
+      "source_sha256": "45da621f88b6f199d4e3a4cab0e5ba2e1affdf056231ca27232f69402b4075f7",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "672cf170592808c4193090a61413ff766f773fdfe890b54ab941a201517fdaa4"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\A-untraced-40000-00.err.txt",
+      "archive": "runs/20261101-a2/raw/A-untraced-40000-00.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\A-untraced-40000-00.out.txt",
+      "archive": "runs/20261101-a2/raw/A-untraced-40000-00.out.txt",
+      "mode": "text",
+      "source_bytes": 3981,
+      "bytes": 4045,
+      "sha256": "1ee01825b50aa534c85cee3a10ddd852bdfa34e3c3a8a90c3002cf81f5a9da65",
+      "source_sha256": "0683113600af8b6dfccba3425e1d8f98c7ef36157db2fe3ed47b0f7928940782",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "0683113600af8b6dfccba3425e1d8f98c7ef36157db2fe3ed47b0f7928940782"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\A-untraced-40000-01.err.txt",
+      "archive": "runs/20261101-a2/raw/A-untraced-40000-01.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\A-untraced-40000-01.out.txt",
+      "archive": "runs/20261101-a2/raw/A-untraced-40000-01.out.txt",
+      "mode": "text",
+      "source_bytes": 4069,
+      "bytes": 4133,
+      "sha256": "c425d279729f0773f4eb3b6634d30fc36022d5cdb59005499862680d36e7b49b",
+      "source_sha256": "5a02ae5d9d993329f040e9256cb8d66b5d7e171bc49ed2716eb96cfa077b7ff8",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "5a02ae5d9d993329f040e9256cb8d66b5d7e171bc49ed2716eb96cfa077b7ff8"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\A-untraced-40000-02.err.txt",
+      "archive": "runs/20261101-a2/raw/A-untraced-40000-02.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\A-untraced-40000-02.out.txt",
+      "archive": "runs/20261101-a2/raw/A-untraced-40000-02.out.txt",
+      "mode": "text",
+      "source_bytes": 4002,
+      "bytes": 4066,
+      "sha256": "6ce558ff79e9330aa6356f69b0a14756ff078c8305093cfb3c5b1a181c4f8e87",
+      "source_sha256": "123e5ef4df47928b729070efc8288fca39ccd1680f05f1f6096933f1848b3c63",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "123e5ef4df47928b729070efc8288fca39ccd1680f05f1f6096933f1848b3c63"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\A-untraced-40000-03.err.txt",
+      "archive": "runs/20261101-a2/raw/A-untraced-40000-03.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\A-untraced-40000-03.out.txt",
+      "archive": "runs/20261101-a2/raw/A-untraced-40000-03.out.txt",
+      "mode": "text",
+      "source_bytes": 4020,
+      "bytes": 4084,
+      "sha256": "79e38d78c9c494b4381e1e83af249c14868379b3a3dbf86d689a15223645c5cc",
+      "source_sha256": "83550a695d9a1f80f01a65904d4e7df28ad771165d398e39cbc0e5229b1cab6a",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "83550a695d9a1f80f01a65904d4e7df28ad771165d398e39cbc0e5229b1cab6a"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\A-untraced-40000-04.err.txt",
+      "archive": "runs/20261101-a2/raw/A-untraced-40000-04.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\A-untraced-40000-04.out.txt",
+      "archive": "runs/20261101-a2/raw/A-untraced-40000-04.out.txt",
+      "mode": "text",
+      "source_bytes": 4052,
+      "bytes": 4116,
+      "sha256": "cb7ca53957aae7db2e9e5ebb0fce579ec59f3c7ae2bd222cd474d603441cf9e2",
+      "source_sha256": "53354fd02d73145c14e4d147c810d465b42160d48f9752775dc82caa66d61677",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "53354fd02d73145c14e4d147c810d465b42160d48f9752775dc82caa66d61677"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\A-untraced-40000-05.err.txt",
+      "archive": "runs/20261101-a2/raw/A-untraced-40000-05.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\A-untraced-40000-05.out.txt",
+      "archive": "runs/20261101-a2/raw/A-untraced-40000-05.out.txt",
+      "mode": "text",
+      "source_bytes": 3946,
+      "bytes": 4010,
+      "sha256": "e25101f2d5b02329795d1fc0f503ff2dbd9a3f39df7a7a0c2579a45c4bf7b867",
+      "source_sha256": "1a7722e3a100ebc84932d871eb128e1396d1ef835368ab0e5813bf3158d9a74c",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "1a7722e3a100ebc84932d871eb128e1396d1ef835368ab0e5813bf3158d9a74c"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\A-untraced-40000-06.err.txt",
+      "archive": "runs/20261101-a2/raw/A-untraced-40000-06.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\A-untraced-40000-06.out.txt",
+      "archive": "runs/20261101-a2/raw/A-untraced-40000-06.out.txt",
+      "mode": "text",
+      "source_bytes": 4060,
+      "bytes": 4124,
+      "sha256": "5205e3e669c3f69fea74305fd00c1be2a79c755ba63e3375c00c5f6d7c1a711d",
+      "source_sha256": "3133580de9382abb2c99c90e746edb0bdf10bdbadce072cf06619ad9e88fe62b",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "3133580de9382abb2c99c90e746edb0bdf10bdbadce072cf06619ad9e88fe62b"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\A-untraced-40000-07.err.txt",
+      "archive": "runs/20261101-a2/raw/A-untraced-40000-07.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\A-untraced-40000-07.out.txt",
+      "archive": "runs/20261101-a2/raw/A-untraced-40000-07.out.txt",
+      "mode": "text",
+      "source_bytes": 4054,
+      "bytes": 4118,
+      "sha256": "14e5a75bb002b5b8c346c297ca7ce46a2786727566be585970e4a8cc6564d487",
+      "source_sha256": "079a049038926d9d5bbdd13e04013e905633e9f674688e9aa59f4bbb1a3cc063",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "079a049038926d9d5bbdd13e04013e905633e9f674688e9aa59f4bbb1a3cc063"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\B-traced-40000-00.err.txt",
+      "archive": "runs/20261101-a2/raw/B-traced-40000-00.err.txt",
+      "mode": "text",
+      "source_bytes": 1778,
+      "bytes": 1816,
+      "sha256": "0ed1626ba2e9cff5144952874511b0c86f7bba36b34cc069da3f3144e0ebf206",
+      "source_sha256": "ca8112338ef907d0b9f5d6242804eb424021c38f30ed6c4d20596bcca445bdd1",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "ca8112338ef907d0b9f5d6242804eb424021c38f30ed6c4d20596bcca445bdd1"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\B-traced-40000-00.out.txt",
+      "archive": "runs/20261101-a2/raw/B-traced-40000-00.out.txt",
+      "mode": "text",
+      "source_bytes": 4020,
+      "bytes": 4084,
+      "sha256": "edecaa6ef42a4e00876bacf2cd6afd14baa11887794a4d2e34d22da2cdc7da8d",
+      "source_sha256": "2d2e3c82daebcc0d5af50da727c6725331a1820037803edf179c4e8116cf9108",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "2d2e3c82daebcc0d5af50da727c6725331a1820037803edf179c4e8116cf9108"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\B-traced-40000-01.err.txt",
+      "archive": "runs/20261101-a2/raw/B-traced-40000-01.err.txt",
+      "mode": "text",
+      "source_bytes": 1777,
+      "bytes": 1815,
+      "sha256": "beee4b9b952f177f5c8b97bf1a4b858fe3af0f489c588ca27e254a513254d1b7",
+      "source_sha256": "957efbc9f15d1a099e07335029d9ecc0419781d82fce61cbf44c863ccd673d5f",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "957efbc9f15d1a099e07335029d9ecc0419781d82fce61cbf44c863ccd673d5f"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\B-traced-40000-01.out.txt",
+      "archive": "runs/20261101-a2/raw/B-traced-40000-01.out.txt",
+      "mode": "text",
+      "source_bytes": 3985,
+      "bytes": 4049,
+      "sha256": "991ba015b246cc20fee007239760be15642f3c86ad48c85cde7a06328ee6768c",
+      "source_sha256": "8e599784c022e3aa32eb189f10d53c164de5462a446959d353bb78a9082c4add",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "8e599784c022e3aa32eb189f10d53c164de5462a446959d353bb78a9082c4add"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\B-traced-40000-02.err.txt",
+      "archive": "runs/20261101-a2/raw/B-traced-40000-02.err.txt",
+      "mode": "text",
+      "source_bytes": 1778,
+      "bytes": 1816,
+      "sha256": "dac7182d29c25ef2759f29f77ad9ed20dfb9b09b35f4d55f970c0b09d9384625",
+      "source_sha256": "1ed1e02275d2bff6c1ef0732cc607a061676481d265687bfce62eb54dcda5d51",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "1ed1e02275d2bff6c1ef0732cc607a061676481d265687bfce62eb54dcda5d51"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\B-traced-40000-02.out.txt",
+      "archive": "runs/20261101-a2/raw/B-traced-40000-02.out.txt",
+      "mode": "text",
+      "source_bytes": 4054,
+      "bytes": 4119,
+      "sha256": "2efed200c63334ee81ac72d952057438afd59458da05b6cd9d3e53e1acd436e9",
+      "source_sha256": "13371e0bef9067fbbadf7a69d19c4e6a607cd3633e4f36940505ecfe47899850",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "13371e0bef9067fbbadf7a69d19c4e6a607cd3633e4f36940505ecfe47899850"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\B-traced-40000-03.err.txt",
+      "archive": "runs/20261101-a2/raw/B-traced-40000-03.err.txt",
+      "mode": "text",
+      "source_bytes": 1778,
+      "bytes": 1816,
+      "sha256": "a664d46413e928a82ab355efa074d2dc0ba37b803e3cf0820454fcafc34a19d4",
+      "source_sha256": "b1dc1641e5d073693f6f4b0312c5f279a8ce90e663eef05d72371cd25eef84ea",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "b1dc1641e5d073693f6f4b0312c5f279a8ce90e663eef05d72371cd25eef84ea"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\B-traced-40000-03.out.txt",
+      "archive": "runs/20261101-a2/raw/B-traced-40000-03.out.txt",
+      "mode": "text",
+      "source_bytes": 4023,
+      "bytes": 4087,
+      "sha256": "5c162844db0feb23c63c89774162b5e5f0d5669dfca9f4560e6853225ea3098c",
+      "source_sha256": "7fbcc05db71cbfa9fad1519a914c5ce35b15743f90de480aa15c3cc2620db9f1",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "7fbcc05db71cbfa9fad1519a914c5ce35b15743f90de480aa15c3cc2620db9f1"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\B-traced-40000-04.err.txt",
+      "archive": "runs/20261101-a2/raw/B-traced-40000-04.err.txt",
+      "mode": "text",
+      "source_bytes": 1778,
+      "bytes": 1816,
+      "sha256": "d35eb7ee99d6462d5473a4afd8f5e00f886385acae3655d2721ca080943040e9",
+      "source_sha256": "609d5b25ff64cdc6c6fd95fea66242fa1606d0a2e40e68fd5af47dfedee98890",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "609d5b25ff64cdc6c6fd95fea66242fa1606d0a2e40e68fd5af47dfedee98890"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\B-traced-40000-04.out.txt",
+      "archive": "runs/20261101-a2/raw/B-traced-40000-04.out.txt",
+      "mode": "text",
+      "source_bytes": 4008,
+      "bytes": 4072,
+      "sha256": "1f6f0babbb9bc3602a1e7d0bff449c90030273b4afe7a7b7dfb4d7a74202cdbc",
+      "source_sha256": "c786b6faf6109d5556c2b2a526774840bd648b21ed89b51b5f8ae26ebfb4df04",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "c786b6faf6109d5556c2b2a526774840bd648b21ed89b51b5f8ae26ebfb4df04"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\B-traced-40000-05.err.txt",
+      "archive": "runs/20261101-a2/raw/B-traced-40000-05.err.txt",
+      "mode": "text",
+      "source_bytes": 1777,
+      "bytes": 1815,
+      "sha256": "52fdf8ed4422d27da1e0951672c71a99a1cc6c84f0ac9ed9bd8cdac64e152ee0",
+      "source_sha256": "78b11c8142a03b2ea1e18b3bc8a74df540d3b84817e4da47f824ecbae3c5dedd",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "78b11c8142a03b2ea1e18b3bc8a74df540d3b84817e4da47f824ecbae3c5dedd"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\B-traced-40000-05.out.txt",
+      "archive": "runs/20261101-a2/raw/B-traced-40000-05.out.txt",
+      "mode": "text",
+      "source_bytes": 3979,
+      "bytes": 4043,
+      "sha256": "156cc64acb8dda87b3eab577f4e4c50566f38483a090e78fab4897fabcffcfd1",
+      "source_sha256": "365191523ba6bf91bf0d195fe3e043a3dd70331b72b5e2600a62a284dba77630",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "365191523ba6bf91bf0d195fe3e043a3dd70331b72b5e2600a62a284dba77630"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\B-traced-40000-06.err.txt",
+      "archive": "runs/20261101-a2/raw/B-traced-40000-06.err.txt",
+      "mode": "text",
+      "source_bytes": 1778,
+      "bytes": 1816,
+      "sha256": "6a39cdfc304ac187dc929a45f15b7b59f7c28d804ab034dbad61cae2c10338da",
+      "source_sha256": "5780928349f09b7d73adc038a339b1c65133b082da02286c3a374c8e101920a8",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "5780928349f09b7d73adc038a339b1c65133b082da02286c3a374c8e101920a8"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\B-traced-40000-06.out.txt",
+      "archive": "runs/20261101-a2/raw/B-traced-40000-06.out.txt",
+      "mode": "text",
+      "source_bytes": 4086,
+      "bytes": 4150,
+      "sha256": "bc81c3ffaf9034152c255ad894e60992b599776faec1d855e5c0de565db398e4",
+      "source_sha256": "263e0dbe9d343331abae8eac15b705877d56c05bb6e4c11536a584e5400121f5",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "263e0dbe9d343331abae8eac15b705877d56c05bb6e4c11536a584e5400121f5"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\B-traced-40000-07.err.txt",
+      "archive": "runs/20261101-a2/raw/B-traced-40000-07.err.txt",
+      "mode": "text",
+      "source_bytes": 1778,
+      "bytes": 1816,
+      "sha256": "01d678b2286cc8439a5fcf2ddbe55a09a7a6cca778785f9c83ac3709a095b8f0",
+      "source_sha256": "54ed524a22ba2f8a0a62cd4d48955507e596bbb8d067a89c086dc72ae5bf1861",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "54ed524a22ba2f8a0a62cd4d48955507e596bbb8d067a89c086dc72ae5bf1861"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-a2\\raw\\B-traced-40000-07.out.txt",
+      "archive": "runs/20261101-a2/raw/B-traced-40000-07.out.txt",
+      "mode": "text",
+      "source_bytes": 3986,
+      "bytes": 4050,
+      "sha256": "ea46e0a86d3cff9ee803a02b1deb2961231ae65f94f44c906cab78c70935a7c3",
+      "source_sha256": "b9a5ed2067aa82d990ab00c5707b4911570cb263a373b77922d20a4aefddd7c9",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "b9a5ed2067aa82d990ab00c5707b4911570cb263a373b77922d20a4aefddd7c9"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-b\\startup-set.json",
+      "archive": "runs/20261101-b/startup-set.json",
+      "mode": "text",
+      "source_bytes": 75224,
+      "bytes": 75224,
+      "sha256": "a1b39104cbd18de21081331333fe7cc06eaac5f351541def3754e89c6b235985",
+      "source_sha256": "a1b39104cbd18de21081331333fe7cc06eaac5f351541def3754e89c6b235985",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "af9d7d896af4d76dab4b5c95335a33b31b2c583986a6527cf4517ee1d3fdb8e5"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-b\\raw\\C-traced-1800-00.err.txt",
+      "archive": "runs/20261101-b/raw/C-traced-1800-00.err.txt",
+      "mode": "text",
+      "source_bytes": 1762,
+      "bytes": 1800,
+      "sha256": "76fb2395fdc3e1df2a09a6f77933727a71072a2a54f47af5f7a525fdf4a5fdb2",
+      "source_sha256": "91991f612ace7231aced654ae09ff2682b2528edf13df4822c7897beba6cf48b",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "91991f612ace7231aced654ae09ff2682b2528edf13df4822c7897beba6cf48b"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-b\\raw\\C-traced-1800-00.out.txt",
+      "archive": "runs/20261101-b/raw/C-traced-1800-00.out.txt",
+      "mode": "text",
+      "source_bytes": 3482,
+      "bytes": 3538,
+      "sha256": "549f501067e84884e4aba34b9a92270de2a75961ca5a8c0d157c69d9c03b7caf",
+      "source_sha256": "4a313f789e7e7b3f593d8363d9afd5e8d0b69c9a982a82c68c25cd76dc0bd039",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "4a313f789e7e7b3f593d8363d9afd5e8d0b69c9a982a82c68c25cd76dc0bd039"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-b\\raw\\C-traced-1800-01.err.txt",
+      "archive": "runs/20261101-b/raw/C-traced-1800-01.err.txt",
+      "mode": "text",
+      "source_bytes": 1760,
+      "bytes": 1798,
+      "sha256": "fe1ed270d6cf7cd92a99cd00ad824aa251a9498c5e47b8cd60dd02d50a5a5fd7",
+      "source_sha256": "3e78888f342034616b48e2b5fc5bf50b7b409bee9df591269b34693b58f949c2",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "3e78888f342034616b48e2b5fc5bf50b7b409bee9df591269b34693b58f949c2"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-b\\raw\\C-traced-1800-01.out.txt",
+      "archive": "runs/20261101-b/raw/C-traced-1800-01.out.txt",
+      "mode": "text",
+      "source_bytes": 3475,
+      "bytes": 3531,
+      "sha256": "1833dd7bcb61087e04a782b9d6c1c42af0c26c2a1f1e2cb7dfd0c1a6a868080e",
+      "source_sha256": "3ae982aa4b01f9003a48a0088a75e5b941f0c3e864af889556bcf0b900541717",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "3ae982aa4b01f9003a48a0088a75e5b941f0c3e864af889556bcf0b900541717"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-b\\raw\\C-traced-1800-02.err.txt",
+      "archive": "runs/20261101-b/raw/C-traced-1800-02.err.txt",
+      "mode": "text",
+      "source_bytes": 1759,
+      "bytes": 1797,
+      "sha256": "cff35a4dc9b0a71eeb540370d212e25a8a33d0dbc7a50c733b00029a7bc6fe76",
+      "source_sha256": "e2cd2e86d90a687859e81c2ece08dd5bf54542ad67ed55b988f3ae211688cdad",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "e2cd2e86d90a687859e81c2ece08dd5bf54542ad67ed55b988f3ae211688cdad"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-b\\raw\\C-traced-1800-02.out.txt",
+      "archive": "runs/20261101-b/raw/C-traced-1800-02.out.txt",
+      "mode": "text",
+      "source_bytes": 3535,
+      "bytes": 3591,
+      "sha256": "b03feff75abbba6e559a617c2f6d457a7a754b9a045f437a622776dd752d9c52",
+      "source_sha256": "01bb4697aa29aad1254998243cfa4019461e268fcc089f3583127b064ee1ff67",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "01bb4697aa29aad1254998243cfa4019461e268fcc089f3583127b064ee1ff67"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-b\\raw\\D-traced-2400-00.err.txt",
+      "archive": "runs/20261101-b/raw/D-traced-2400-00.err.txt",
+      "mode": "text",
+      "source_bytes": 1764,
+      "bytes": 1802,
+      "sha256": "d2ac8914f231d8b6500f0c29892c0b17561ee3c692054c4c347ab703a8879285",
+      "source_sha256": "b05dbe39007033efabf21241cfa350501f9cfa289a99638324cb1f9d34afa229",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "b05dbe39007033efabf21241cfa350501f9cfa289a99638324cb1f9d34afa229"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-b\\raw\\D-traced-2400-00.out.txt",
+      "archive": "runs/20261101-b/raw/D-traced-2400-00.out.txt",
+      "mode": "text",
+      "source_bytes": 3353,
+      "bytes": 3409,
+      "sha256": "8e69b8ed08b0c33f8f4f420068366c1c69847a52f13d079bf9df60e56c6204aa",
+      "source_sha256": "61a4d58e7f2de4d28ce0012e2ab27f913509b37d587972edaeabdc37ca49f221",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "61a4d58e7f2de4d28ce0012e2ab27f913509b37d587972edaeabdc37ca49f221"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-b\\raw\\D-traced-2400-01.err.txt",
+      "archive": "runs/20261101-b/raw/D-traced-2400-01.err.txt",
+      "mode": "text",
+      "source_bytes": 1766,
+      "bytes": 1804,
+      "sha256": "09345e8a7fab47c0ef3c3e2471c069bdb22063446a11dba08b5b72e259971168",
+      "source_sha256": "15942c21b6959f19367f9b93679ae28b8227bcc113ed3658ced4e113c560a3ad",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "15942c21b6959f19367f9b93679ae28b8227bcc113ed3658ced4e113c560a3ad"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-b\\raw\\D-traced-2400-01.out.txt",
+      "archive": "runs/20261101-b/raw/D-traced-2400-01.out.txt",
+      "mode": "text",
+      "source_bytes": 3477,
+      "bytes": 3533,
+      "sha256": "88c95116a356586c2935d6b7bd0ac09ea2ed94ef6f1dfd71a9a61f7722ee29bf",
+      "source_sha256": "f2d2e48329ac26cd5f88daea63b51ca73c3943adfaabdea6fe20bddd2632640c",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "f2d2e48329ac26cd5f88daea63b51ca73c3943adfaabdea6fe20bddd2632640c"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-b\\raw\\D-traced-2400-02.err.txt",
+      "archive": "runs/20261101-b/raw/D-traced-2400-02.err.txt",
+      "mode": "text",
+      "source_bytes": 1767,
+      "bytes": 1805,
+      "sha256": "e585befbc85d40c6829bf4f987e94b2862f084ef86b24f2148bb21b5766c3c57",
+      "source_sha256": "984d629e620d195e43ddf2bd7cd62b7fb3bc35d144c3a3069f81b70a887b7abf",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "984d629e620d195e43ddf2bd7cd62b7fb3bc35d144c3a3069f81b70a887b7abf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-b\\raw\\D-traced-2400-02.out.txt",
+      "archive": "runs/20261101-b/raw/D-traced-2400-02.out.txt",
+      "mode": "text",
+      "source_bytes": 3481,
+      "bytes": 3537,
+      "sha256": "c9f2cb205dbe37c5ab37c77a03f60a48ce0ce64317962b04e29d47897ea0813b",
+      "source_sha256": "2b840cb6b30028fcc6ec2e4882d0a9bc0f2f1acf6b1aade00c0386a9ae4312bd",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "2b840cb6b30028fcc6ec2e4882d0a9bc0f2f1acf6b1aade00c0386a9ae4312bd"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-b\\raw\\E-traced-2800-00.err.txt",
+      "archive": "runs/20261101-b/raw/E-traced-2800-00.err.txt",
+      "mode": "text",
+      "source_bytes": 1767,
+      "bytes": 1805,
+      "sha256": "6f25ee20e06bd478780602c8ec280c1e2cbd890cb99a487f026b607e5bc802d0",
+      "source_sha256": "bcca32ad3b59644a7eb8425919441b4f0a96f8e5f908b79a8f9dd30228f71095",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "bcca32ad3b59644a7eb8425919441b4f0a96f8e5f908b79a8f9dd30228f71095"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-b\\raw\\E-traced-2800-00.out.txt",
+      "archive": "runs/20261101-b/raw/E-traced-2800-00.out.txt",
+      "mode": "text",
+      "source_bytes": 3400,
+      "bytes": 3456,
+      "sha256": "69ba15bdd4d62a754f11ac81c5457ff78e4082f60b417cc4faac2cbdf91c9996",
+      "source_sha256": "46bd8c9818524c7d269d1f73111465c6f4800f575ed7c0410dd9c5574d58dea8",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "46bd8c9818524c7d269d1f73111465c6f4800f575ed7c0410dd9c5574d58dea8"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-b\\raw\\E-traced-2800-01.err.txt",
+      "archive": "runs/20261101-b/raw/E-traced-2800-01.err.txt",
+      "mode": "text",
+      "source_bytes": 1766,
+      "bytes": 1804,
+      "sha256": "ff64dc720ca5c632dc51815add80d3d8ea18170b06d765b3cd382cbcd8ca814b",
+      "source_sha256": "89181d3a12f9ad3aaa19cf6e0146df77c176d7db6320582f300fae1c10964da8",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "89181d3a12f9ad3aaa19cf6e0146df77c176d7db6320582f300fae1c10964da8"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-b\\raw\\E-traced-2800-01.out.txt",
+      "archive": "runs/20261101-b/raw/E-traced-2800-01.out.txt",
+      "mode": "text",
+      "source_bytes": 3458,
+      "bytes": 3514,
+      "sha256": "4b42a820f3287eaf67cb0363e1b8224d82011ad195ed2d09cefd9549fe6bfc20",
+      "source_sha256": "c815113091c62cbe5f1021e7f01392ea7e62551d48b82539de1e9eed83e1f7cb",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "c815113091c62cbe5f1021e7f01392ea7e62551d48b82539de1e9eed83e1f7cb"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-b\\raw\\E-traced-2800-02.err.txt",
+      "archive": "runs/20261101-b/raw/E-traced-2800-02.err.txt",
+      "mode": "text",
+      "source_bytes": 1766,
+      "bytes": 1804,
+      "sha256": "aba6a2486b20433045ea3ecce59f518ce5b61a585f06b78684c1668a40c5853c",
+      "source_sha256": "ef1886212f6e7cdf7926e5c0746032b1527144ef85407523aecc23012998d76d",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "ef1886212f6e7cdf7926e5c0746032b1527144ef85407523aecc23012998d76d"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-b\\raw\\E-traced-2800-02.out.txt",
+      "archive": "runs/20261101-b/raw/E-traced-2800-02.out.txt",
+      "mode": "text",
+      "source_bytes": 3385,
+      "bytes": 3441,
+      "sha256": "7fe0a87ac9eb92bed1ca7d3e840fa2a98ad60d8a4a1a6a79ea0ec307a4e3eca3",
+      "source_sha256": "7d0c1c4e3d5278df2a186762d49beb75ceda8dd9b26742376099621e8d7ffb50",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "7d0c1c4e3d5278df2a186762d49beb75ceda8dd9b26742376099621e8d7ffb50"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-b\\raw\\F-traced-10000-00.err.txt",
+      "archive": "runs/20261101-b/raw/F-traced-10000-00.err.txt",
+      "mode": "text",
+      "source_bytes": 1769,
+      "bytes": 1807,
+      "sha256": "5ce1fdf26b4b9ea091455f9b547ade9fe4ffef4bbff2fbe112c5b03f03b3907a",
+      "source_sha256": "a8bc9a27a60e823fb78bfb1d9b9a05b52fbddd2e7003777af3ca4826d9eac579",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "a8bc9a27a60e823fb78bfb1d9b9a05b52fbddd2e7003777af3ca4826d9eac579"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-b\\raw\\F-traced-10000-00.out.txt",
+      "archive": "runs/20261101-b/raw/F-traced-10000-00.out.txt",
+      "mode": "text",
+      "source_bytes": 3486,
+      "bytes": 3544,
+      "sha256": "a3e7f01573d2790624587bd77cab01afef427b305961d515d23b3d7557171f4c",
+      "source_sha256": "59ba1117b5e6bc80a05f4262ce2ee7bb7eeed634585b90b6d2ca113ecfa04611",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "59ba1117b5e6bc80a05f4262ce2ee7bb7eeed634585b90b6d2ca113ecfa04611"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-b\\raw\\F-traced-10000-01.err.txt",
+      "archive": "runs/20261101-b/raw/F-traced-10000-01.err.txt",
+      "mode": "text",
+      "source_bytes": 1769,
+      "bytes": 1807,
+      "sha256": "ea77768bb11fd9ef366392b3000290a2de719b071e630a32b8be71a936c381df",
+      "source_sha256": "ca34159dd27eff060a9d8f718501c64ef039bcc671f2e57261c104bc1aec387c",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "ca34159dd27eff060a9d8f718501c64ef039bcc671f2e57261c104bc1aec387c"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-b\\raw\\F-traced-10000-01.out.txt",
+      "archive": "runs/20261101-b/raw/F-traced-10000-01.out.txt",
+      "mode": "text",
+      "source_bytes": 3594,
+      "bytes": 3652,
+      "sha256": "2550eef3708c0f3eef3c922db804590eaebb4282a8331f16bd6f7296bca1cccf",
+      "source_sha256": "de54e24c9ea0c78d06dd7a3052fabcddbbd327861979d902e08252f9b985810b",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "de54e24c9ea0c78d06dd7a3052fabcddbbd327861979d902e08252f9b985810b"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-b\\raw\\F-traced-10000-02.err.txt",
+      "archive": "runs/20261101-b/raw/F-traced-10000-02.err.txt",
+      "mode": "text",
+      "source_bytes": 1770,
+      "bytes": 1808,
+      "sha256": "8ef31742bdc74e655bfe5b69f24554fc4ad17fdff4e439580bb93b99eb26362f",
+      "source_sha256": "52a853b61dcade3e311bfdd1a0cda9c1b2ba4e74ddbde2183f8a758fee09b35e",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "52a853b61dcade3e311bfdd1a0cda9c1b2ba4e74ddbde2183f8a758fee09b35e"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-b\\raw\\F-traced-10000-02.out.txt",
+      "archive": "runs/20261101-b/raw/F-traced-10000-02.out.txt",
+      "mode": "text",
+      "source_bytes": 3453,
+      "bytes": 3511,
+      "sha256": "2055a42eccf73ce87d0f8d345673d71e70e1546372bc4fc584671ebd3a15e199",
+      "source_sha256": "45103b1262144162386f254167d75ac6e16df17edf527947f31aa1255a3ac43d",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "45103b1262144162386f254167d75ac6e16df17edf527947f31aa1255a3ac43d"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-c\\writer-split-00.err.txt",
+      "archive": "runs/20261101-c/writer-split-00.err.txt",
+      "mode": "text",
+      "source_bytes": 2053,
+      "bytes": 2053,
+      "sha256": "6a388f3e7180e6baef32484cfbccda3ca1f41c1bc06ed98b35e0900c3b38e25f",
+      "source_sha256": "6a388f3e7180e6baef32484cfbccda3ca1f41c1bc06ed98b35e0900c3b38e25f",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "a60a1474b991556be24abb2145d23ba046041f48bce3318262afec5822773d22"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-c\\writer-split-00.out.txt",
+      "archive": "runs/20261101-c/writer-split-00.out.txt",
+      "mode": "text",
+      "source_bytes": 2192,
+      "bytes": 2192,
+      "sha256": "17107e845d469943c903feae12b775e2094ef8d4e3b4cf61a1d86f9ceae9ef8b",
+      "source_sha256": "17107e845d469943c903feae12b775e2094ef8d4e3b4cf61a1d86f9ceae9ef8b",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "db61c25cd8d8ac177bd2c1e39c20551bb22c7f354bd16edf82efa7264ba9827d"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-c\\writer-split-01.err.txt",
+      "archive": "runs/20261101-c/writer-split-01.err.txt",
+      "mode": "text",
+      "source_bytes": 2054,
+      "bytes": 2054,
+      "sha256": "f5184e4f0f40c5774f43e01be6681c47e8606d0767eb30a87db296528f6ccc1e",
+      "source_sha256": "f5184e4f0f40c5774f43e01be6681c47e8606d0767eb30a87db296528f6ccc1e",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "eb668f0fab646a4fad1a03173b75c3a45cbf6cf80bfafe56c565eefdc68bbe49"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-c\\writer-split-01.out.txt",
+      "archive": "runs/20261101-c/writer-split-01.out.txt",
+      "mode": "text",
+      "source_bytes": 2192,
+      "bytes": 2192,
+      "sha256": "b579c17c76805aaa2de6f61bf390bd8829c682c2cdd6efce1768545926be7717",
+      "source_sha256": "b579c17c76805aaa2de6f61bf390bd8829c682c2cdd6efce1768545926be7717",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "26f53609713cff91aab546673838df61b13eba4c0e3e6c40553ae573131f24b6"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-c\\writer-split-02.err.txt",
+      "archive": "runs/20261101-c/writer-split-02.err.txt",
+      "mode": "text",
+      "source_bytes": 2052,
+      "bytes": 2052,
+      "sha256": "1bf8c3167aaa9cf02df968c9f6d3672790232831edc73d1ed730369348277cd6",
+      "source_sha256": "1bf8c3167aaa9cf02df968c9f6d3672790232831edc73d1ed730369348277cd6",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "e10c1f6ca6d7137f806935f29b57a088c18ef3e1be959765be1e2a3e9a69f2d0"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-c\\writer-split-02.out.txt",
+      "archive": "runs/20261101-c/writer-split-02.out.txt",
+      "mode": "text",
+      "source_bytes": 2192,
+      "bytes": 2192,
+      "sha256": "350c0ebe247b55e97e0f952120438513326c1234ff629ea5004cc3a78940bf58",
+      "source_sha256": "350c0ebe247b55e97e0f952120438513326c1234ff629ea5004cc3a78940bf58",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "7b106d24fa840d58b4283b9d3ccf6322ae720ee590347132f33b33d269d0a55e"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-c\\raw\\writer-split-00.json",
+      "archive": "runs/20261101-c/raw/writer-split-00.json",
+      "mode": "text",
+      "source_bytes": 25918,
+      "bytes": 25918,
+      "sha256": "175c11850edeb36ae43c87c221f32b8f0a6d97af8143dc67457607e7a890af68",
+      "source_sha256": "175c11850edeb36ae43c87c221f32b8f0a6d97af8143dc67457607e7a890af68",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "d3fe30de90164f9f22c04f56d7f279eaf5ce36f00585f86786ae41513b00b50c"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-c\\raw\\writer-split-01.json",
+      "archive": "runs/20261101-c/raw/writer-split-01.json",
+      "mode": "text",
+      "source_bytes": 25871,
+      "bytes": 25871,
+      "sha256": "e983bb9446c657e70e3e3d5400aa1075f2587293ce63603eda468382845bf2a1",
+      "source_sha256": "e983bb9446c657e70e3e3d5400aa1075f2587293ce63603eda468382845bf2a1",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "e5f36b4e4aae4d99a18e0ee86c042aebbf13040f68770d4f291f57310f5ae8b7"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-c\\raw\\writer-split-02.json",
+      "archive": "runs/20261101-c/raw/writer-split-02.json",
+      "mode": "text",
+      "source_bytes": 25896,
+      "bytes": 25896,
+      "sha256": "d025678c11162d3fd85f6983e3e9a29253facc107c02e6906313dd8d3872147c",
+      "source_sha256": "d025678c11162d3fd85f6983e3e9a29253facc107c02e6906313dd8d3872147c",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "f47eb39f04143e983b16909a3b837648964c9d21c3715069229ee5f5d8209b14"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w1\\watch-set.json",
+      "archive": "runs/20261101-w1/watch-set.json",
+      "mode": "text",
+      "source_bytes": 82714,
+      "bytes": 82714,
+      "sha256": "8d1c948c42bcdb76600691847e031ad6624fa908f2e2a4ea7cc880be0379d7b0",
+      "source_sha256": "8d1c948c42bcdb76600691847e031ad6624fa908f2e2a4ea7cc880be0379d7b0",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "0d0e5f3c129573eecaa1249f5fd6c98ed0a014417d274ddc93be8adaeb86d968"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w1\\raw\\player-40k-traced-00.err.txt",
+      "archive": "runs/20261101-w1/raw/player-40k-traced-00.err.txt",
+      "mode": "text",
+      "source_bytes": 1816,
+      "bytes": 1816,
+      "sha256": "0a2ed105356ea7c14053d59ed092d90364896f88871777ec7f38d7e7d9680e58",
+      "source_sha256": "0a2ed105356ea7c14053d59ed092d90364896f88871777ec7f38d7e7d9680e58",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "acac629bca0640e4a0054bf0eb8377fc9ffbadc8de6b182b415c9f24f673bfdc"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w1\\raw\\player-40k-traced-00.out.txt",
+      "archive": "runs/20261101-w1/raw/player-40k-traced-00.out.txt",
+      "mode": "text",
+      "source_bytes": 2192,
+      "bytes": 2192,
+      "sha256": "83a9e73dec932cf2e86ba2576910df91175db175cb61898c1fe030e29b394513",
+      "source_sha256": "83a9e73dec932cf2e86ba2576910df91175db175cb61898c1fe030e29b394513",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "8eedd80210cf3618dbc368d6fbac8493adbc75dde7b05a9ad4e74fd8eec42a9b"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w1\\raw\\player-40k-traced-01.err.txt",
+      "archive": "runs/20261101-w1/raw/player-40k-traced-01.err.txt",
+      "mode": "text",
+      "source_bytes": 1817,
+      "bytes": 1817,
+      "sha256": "90f3730225d4084be1cb9a9b815a7ca07238f26b4f20582e789d65e30815b815",
+      "source_sha256": "90f3730225d4084be1cb9a9b815a7ca07238f26b4f20582e789d65e30815b815",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "895efbb531e402143d45ff4791f0361d848a63dcad007980e52b4051d4d7e4e9"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w1\\raw\\player-40k-traced-01.out.txt",
+      "archive": "runs/20261101-w1/raw/player-40k-traced-01.out.txt",
+      "mode": "text",
+      "source_bytes": 2192,
+      "bytes": 2192,
+      "sha256": "cf8b9dd50b6981cd49594489bec778597857205457083068b9e25ae58668f312",
+      "source_sha256": "cf8b9dd50b6981cd49594489bec778597857205457083068b9e25ae58668f312",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "8aeef8a7dc8b647d153a0fa0cf3888e08db8b67ded57a354dd0cd161ee9aa3e2"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w1\\raw\\player-40k-traced-02.err.txt",
+      "archive": "runs/20261101-w1/raw/player-40k-traced-02.err.txt",
+      "mode": "text",
+      "source_bytes": 1817,
+      "bytes": 1817,
+      "sha256": "ac07407ce174c72e44fc7b2c26d86bdaf23ffe48dbafc9d1e92aa6b1eea571d3",
+      "source_sha256": "ac07407ce174c72e44fc7b2c26d86bdaf23ffe48dbafc9d1e92aa6b1eea571d3",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "5aadeea3dabb61714369c51cee2f2e6ebcbc39c53a60fad651e72ca8a2ca02c6"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w1\\raw\\player-40k-traced-02.out.txt",
+      "archive": "runs/20261101-w1/raw/player-40k-traced-02.out.txt",
+      "mode": "text",
+      "source_bytes": 2192,
+      "bytes": 2192,
+      "sha256": "aab7b178784daad8357ba4763d82681f15c11950314ce58183f616b8b1409e01",
+      "source_sha256": "aab7b178784daad8357ba4763d82681f15c11950314ce58183f616b8b1409e01",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "53db5f936925247b5ccacc5a485788f82238d64c3d90550dd230c6012d9a9e74"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w1\\raw\\player-40k-untraced-00.err.txt",
+      "archive": "runs/20261101-w1/raw/player-40k-untraced-00.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w1\\raw\\player-40k-untraced-00.out.txt",
+      "archive": "runs/20261101-w1/raw/player-40k-untraced-00.out.txt",
+      "mode": "text",
+      "source_bytes": 2192,
+      "bytes": 2192,
+      "sha256": "3be4d44fc9e37b6c2488eaff041a52b4dcee8e827b057cf3cb779209a6c395f1",
+      "source_sha256": "3be4d44fc9e37b6c2488eaff041a52b4dcee8e827b057cf3cb779209a6c395f1",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "60db504a6a47b6d9fe8b070d90a200f4304d3de41795d56eac3322147a186353"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w1\\raw\\player-40k-untraced-01.err.txt",
+      "archive": "runs/20261101-w1/raw/player-40k-untraced-01.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w1\\raw\\player-40k-untraced-01.out.txt",
+      "archive": "runs/20261101-w1/raw/player-40k-untraced-01.out.txt",
+      "mode": "text",
+      "source_bytes": 2192,
+      "bytes": 2192,
+      "sha256": "ac0b538355d86d2cb3e1f7fb38e443eaba95c8331cbb02357488a8eb5aa4e421",
+      "source_sha256": "ac0b538355d86d2cb3e1f7fb38e443eaba95c8331cbb02357488a8eb5aa4e421",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "52b877d3f43b8a25424f8c715d2abe1e2dea1a3c930350a242540cf5c053e2b6"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w1\\raw\\player-40k-untraced-02.err.txt",
+      "archive": "runs/20261101-w1/raw/player-40k-untraced-02.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w1\\raw\\player-40k-untraced-02.out.txt",
+      "archive": "runs/20261101-w1/raw/player-40k-untraced-02.out.txt",
+      "mode": "text",
+      "source_bytes": 2192,
+      "bytes": 2192,
+      "sha256": "b51d38e50375f5c831b38a1ffb9e976e18206773634c1f2a95a296cf74ddd4fe",
+      "source_sha256": "b51d38e50375f5c831b38a1ffb9e976e18206773634c1f2a95a296cf74ddd4fe",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "8f95c675293becc8fa39bb75adee185bff94f72a1a778aed14fcfc88e24c73e9"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w1\\raw\\probe-40k-static-traced-00.err.txt",
+      "archive": "runs/20261101-w1/raw/probe-40k-static-traced-00.err.txt",
+      "mode": "text",
+      "source_bytes": 1817,
+      "bytes": 1817,
+      "sha256": "e723d8b9b6f9fa5842a719cf97d8f5c88cb1a729ee9ad246c4fd7b2e38f7c933",
+      "source_sha256": "e723d8b9b6f9fa5842a719cf97d8f5c88cb1a729ee9ad246c4fd7b2e38f7c933",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "c4df91513b795d78d9bbbcb0e909c139c036c41f7b313ae66276a7c7d4295d22"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w1\\raw\\probe-40k-static-traced-00.out.txt",
+      "archive": "runs/20261101-w1/raw/probe-40k-static-traced-00.out.txt",
+      "mode": "text",
+      "source_bytes": 58864,
+      "bytes": 58864,
+      "sha256": "4e3c2f0d9592e1fef91e9c893cfc233984edd76851702ca4aab90fd44b88b637",
+      "source_sha256": "4e3c2f0d9592e1fef91e9c893cfc233984edd76851702ca4aab90fd44b88b637",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "6a1c7219850d00fffd1ba749656716da622041ee436e5192ce5107fabf09a7cb"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w1\\raw\\probe-40k-static-untraced-00.err.txt",
+      "archive": "runs/20261101-w1/raw/probe-40k-static-untraced-00.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w1\\raw\\probe-40k-static-untraced-00.out.txt",
+      "archive": "runs/20261101-w1/raw/probe-40k-static-untraced-00.out.txt",
+      "mode": "text",
+      "source_bytes": 58724,
+      "bytes": 58724,
+      "sha256": "53eaff7b8d254ebcece5d9ad01d2ec31bf066df86ef3486b99dabdea59d73818",
+      "source_sha256": "53eaff7b8d254ebcece5d9ad01d2ec31bf066df86ef3486b99dabdea59d73818",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "a1622d3d7075bc3fe9da152f0f3b2e7083fd8e0451dc081f04b047119d219f2b"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w2\\watch-set.json",
+      "archive": "runs/20261101-w2/watch-set.json",
+      "mode": "text",
+      "source_bytes": 74976,
+      "bytes": 74976,
+      "sha256": "faf38ef4b1189bf36303b64db5fa5bb396a14edcadde6a4c8a5d9c80628e21aa",
+      "source_sha256": "faf38ef4b1189bf36303b64db5fa5bb396a14edcadde6a4c8a5d9c80628e21aa",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "b087085cf2e3d8d80165fa8d1f36deb0555d9dc31e2d07c7a31d9e06e664ad5a"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w2\\raw\\player-40k-untraced-00.err.txt",
+      "archive": "runs/20261101-w2/raw/player-40k-untraced-00.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w2\\raw\\player-40k-untraced-00.out.txt",
+      "archive": "runs/20261101-w2/raw/player-40k-untraced-00.out.txt",
+      "mode": "text",
+      "source_bytes": 2192,
+      "bytes": 2192,
+      "sha256": "661de9b92a86f86686f776c90d5d99bf659d9883bc18a5d5481df1c06e26c1db",
+      "source_sha256": "661de9b92a86f86686f776c90d5d99bf659d9883bc18a5d5481df1c06e26c1db",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "45e087875634e1f000d2fdcc342dbb7b4b788a9079bd083a2196ad85f1f62e0a"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w2\\raw\\player-40k-untraced-01.err.txt",
+      "archive": "runs/20261101-w2/raw/player-40k-untraced-01.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w2\\raw\\player-40k-untraced-01.out.txt",
+      "archive": "runs/20261101-w2/raw/player-40k-untraced-01.out.txt",
+      "mode": "text",
+      "source_bytes": 2192,
+      "bytes": 2192,
+      "sha256": "46c1e292248d5068d74db14987aabd59e38c8f4fba6fec79ee4b5d445ddc1806",
+      "source_sha256": "46c1e292248d5068d74db14987aabd59e38c8f4fba6fec79ee4b5d445ddc1806",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "4aacc65f910adf875e87715608586681446e0aff8cca3efa2d3cd0b1767b24bb"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w2\\raw\\player-40k-untraced-02.err.txt",
+      "archive": "runs/20261101-w2/raw/player-40k-untraced-02.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w2\\raw\\player-40k-untraced-02.out.txt",
+      "archive": "runs/20261101-w2/raw/player-40k-untraced-02.out.txt",
+      "mode": "text",
+      "source_bytes": 2192,
+      "bytes": 2192,
+      "sha256": "4adef8bc1b67470d67eaa00a46ad3890954fbeaafd68381547b5d826e6b10093",
+      "source_sha256": "4adef8bc1b67470d67eaa00a46ad3890954fbeaafd68381547b5d826e6b10093",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "a1108593226e9d6fe8d606991fde7020b83c7edbae414039d9e1b33d2e2b21ad"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w2\\raw\\player-40k-untraced-close1-00.err.txt",
+      "archive": "runs/20261101-w2/raw/player-40k-untraced-close1-00.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w2\\raw\\player-40k-untraced-close1-00.out.txt",
+      "archive": "runs/20261101-w2/raw/player-40k-untraced-close1-00.out.txt",
+      "mode": "text",
+      "source_bytes": 2192,
+      "bytes": 2192,
+      "sha256": "960329688b966b4ebdd44e73f8757307aecc0fede884c0ea2175a32bfda45692",
+      "source_sha256": "960329688b966b4ebdd44e73f8757307aecc0fede884c0ea2175a32bfda45692",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "ce8a14e04308d6677285bec98a977f178dbc60214548e565ddd2317dfab9804a"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w2\\raw\\player-40k-window-first-00.err.txt",
+      "archive": "runs/20261101-w2/raw/player-40k-window-first-00.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w2\\raw\\player-40k-window-first-00.out.txt",
+      "archive": "runs/20261101-w2/raw/player-40k-window-first-00.out.txt",
+      "mode": "text",
+      "source_bytes": 2190,
+      "bytes": 2190,
+      "sha256": "9fe24130b087de75417522cac26c67d165ecccce7464bdc97ca1b42ff51a2d09",
+      "source_sha256": "9fe24130b087de75417522cac26c67d165ecccce7464bdc97ca1b42ff51a2d09",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "b1a466178c9cfb38ea55321fe3662395203769790a26fd28f4d1ab7dfd747f9d"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w2\\raw\\player-40k-window-first-01.err.txt",
+      "archive": "runs/20261101-w2/raw/player-40k-window-first-01.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w2\\raw\\player-40k-window-first-01.out.txt",
+      "archive": "runs/20261101-w2/raw/player-40k-window-first-01.out.txt",
+      "mode": "text",
+      "source_bytes": 2190,
+      "bytes": 2190,
+      "sha256": "9124ac623b913cfa8b2e4ac6850cb8a5aa950a7e14b6898e03e285de4bda8bf3",
+      "source_sha256": "9124ac623b913cfa8b2e4ac6850cb8a5aa950a7e14b6898e03e285de4bda8bf3",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "03c48eb6daa8d8e679068f05702bcdf4d150dc6b614b848c2756d575a8167963"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w2\\raw\\player-40k-window-first-02.err.txt",
+      "archive": "runs/20261101-w2/raw/player-40k-window-first-02.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w2\\raw\\player-40k-window-first-02.out.txt",
+      "archive": "runs/20261101-w2/raw/player-40k-window-first-02.out.txt",
+      "mode": "text",
+      "source_bytes": 2190,
+      "bytes": 2190,
+      "sha256": "0e5e3a8362d0e0b366c7b2d48a45859420e259211aac71962924e4ee312f9d69",
+      "source_sha256": "0e5e3a8362d0e0b366c7b2d48a45859420e259211aac71962924e4ee312f9d69",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "6fae2c74f66f2fcb420a16a9e072ab8b6b9b1c8e07bf4a44931ca7fe95277c9f"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w2\\raw\\player-40k-window-first-close1-00.err.txt",
+      "archive": "runs/20261101-w2/raw/player-40k-window-first-close1-00.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\20261101-w2\\raw\\player-40k-window-first-close1-00.out.txt",
+      "archive": "runs/20261101-w2/raw/player-40k-window-first-close1-00.out.txt",
+      "mode": "text",
+      "source_bytes": 1357,
+      "bytes": 1357,
+      "sha256": "86791511b6db4c858b763f5d0e113e186cf38d31aae85decebcbd43db186f5ba",
+      "source_sha256": "86791511b6db4c858b763f5d0e113e186cf38d31aae85decebcbd43db186f5ba",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "11c94f4acb0fdef54cd0602d66552ea57b42d39600cd3f5c5935a16710f9f5ad"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\watch\\player-40k-traced-b.err.txt",
+      "archive": "runs/watch/player-40k-traced-b.err.txt",
+      "mode": "text",
+      "source_bytes": 1817,
+      "bytes": 1817,
+      "sha256": "1ecc4610d5d073f179c07a56521551162eeef8df9f5119abd0e5ea59a076bbec",
+      "source_sha256": "1ecc4610d5d073f179c07a56521551162eeef8df9f5119abd0e5ea59a076bbec",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "7813e3e885cda59ad2dfb4fdfb640fc8e95b2bf7539903b0b8ff69949ac79524"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\watch\\player-40k-traced-b.json",
+      "archive": "runs/watch/player-40k-traced-b.json",
+      "mode": "text",
+      "source_bytes": 24330,
+      "bytes": 24330,
+      "sha256": "68b0d87c584262746471852feb56de2c72abe51d97c1cb2cff174d65aed324c1",
+      "source_sha256": "68b0d87c584262746471852feb56de2c72abe51d97c1cb2cff174d65aed324c1",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "a108d2bd819ce79b458bad4400785d30ed27d0fbece895ae3d8c45a3eb1e8d60"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\watch\\player-40k-traced-b.out.txt",
+      "archive": "runs/watch/player-40k-traced-b.out.txt",
+      "mode": "text",
+      "source_bytes": 2192,
+      "bytes": 2192,
+      "sha256": "e9f7c73614e6b70714bbc08ec40f2da21cd93f04acb8805068796e5d52fce805",
+      "source_sha256": "e9f7c73614e6b70714bbc08ec40f2da21cd93f04acb8805068796e5d52fce805",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "cb5e67ace3f58b321be4fabbf89933f55ebf87a5567ccb7be9e355f3c6b200f9"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\watch\\player-40k-traced-c.err.txt",
+      "archive": "runs/watch/player-40k-traced-c.err.txt",
+      "mode": "text",
+      "source_bytes": 1817,
+      "bytes": 1817,
+      "sha256": "b2fcd1798ba50164f0b188a27cb67b3d64f663ffac51ce2f205f61f4ac84c6b7",
+      "source_sha256": "b2fcd1798ba50164f0b188a27cb67b3d64f663ffac51ce2f205f61f4ac84c6b7",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "7e6200925044fe364d92c2a92da196dbe5aef0baaa8c4e1b1690dea9deaf381e"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\watch\\player-40k-traced-c.json",
+      "archive": "runs/watch/player-40k-traced-c.json",
+      "mode": "text",
+      "source_bytes": 25850,
+      "bytes": 25850,
+      "sha256": "149f97c80c6c381fcc390b417716f8154f82e5db33d1f175bb9cfdb6a9030a76",
+      "source_sha256": "149f97c80c6c381fcc390b417716f8154f82e5db33d1f175bb9cfdb6a9030a76",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "baaab2d5eb9d65ac77d69fd575064dad6702b5798632b36824072ccccc411b87"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\watch\\player-40k-traced-c.out.txt",
+      "archive": "runs/watch/player-40k-traced-c.out.txt",
+      "mode": "text",
+      "source_bytes": 2192,
+      "bytes": 2192,
+      "sha256": "8848caea02f079d01241c5326bfbd17d415c3ac3ad01b97a8e73f5efebdbc2c5",
+      "source_sha256": "8848caea02f079d01241c5326bfbd17d415c3ac3ad01b97a8e73f5efebdbc2c5",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "9cecadde40b7bde6d7dad456a4409a4f80f1b1e27a07fefde37066afa1b7e4ad"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\watch\\player-40k-traced.err.txt",
+      "archive": "runs/watch/player-40k-traced.err.txt",
+      "mode": "text",
+      "source_bytes": 1817,
+      "bytes": 1817,
+      "sha256": "dc2439d879825fbc23a25c34c9674164ff9635a1455b467228912f3427d337ac",
+      "source_sha256": "dc2439d879825fbc23a25c34c9674164ff9635a1455b467228912f3427d337ac",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "e5bf7515cf888a9698735df3d371abe74dc5aa532b12bd38708d1c12ecdc0895"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\watch\\player-40k-traced.json",
+      "archive": "runs/watch/player-40k-traced.json",
+      "mode": "text",
+      "source_bytes": 20931,
+      "bytes": 20931,
+      "sha256": "d7349cb1f8989872cdab29bd10d4124dda3a2d11644009c47b503cf40307f443",
+      "source_sha256": "d7349cb1f8989872cdab29bd10d4124dda3a2d11644009c47b503cf40307f443",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "e52e973113ad0024630dcd1cd5da6900403bce155e2818b0169bfafbca9759c7"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\watch\\player-40k-traced.out.txt",
+      "archive": "runs/watch/player-40k-traced.out.txt",
+      "mode": "text",
+      "source_bytes": 2192,
+      "bytes": 2192,
+      "sha256": "510305e197815580c329070ec35c9dd3b9f2add989c315d079a83f98e14a3ad3",
+      "source_sha256": "510305e197815580c329070ec35c9dd3b9f2add989c315d079a83f98e14a3ad3",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "2cd715ecbfe7e608373de4ed0a27ad29b3b847935a1ecde6542d3825a2843924"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\smoke-w2\\smoke-wf-01.err.txt",
+      "archive": "runs/smoke-w2/smoke-wf-01.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\smoke-w2\\smoke-wf-01.json",
+      "archive": "runs/smoke-w2/smoke-wf-01.json",
+      "mode": "text",
+      "source_bytes": 25669,
+      "bytes": 25669,
+      "sha256": "15cb70dbd31a3666485a9a0f0a25cc5554095bb9f68f04c6d02f227293ed34a1",
+      "source_sha256": "15cb70dbd31a3666485a9a0f0a25cc5554095bb9f68f04c6d02f227293ed34a1",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "ca01dc42e8f2c2935a03f27a30cef4e03315060b29559f385cb46c8fa8ebaaea"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\smoke-w2\\smoke-wf-01.out.txt",
+      "archive": "runs/smoke-w2/smoke-wf-01.out.txt",
+      "mode": "text",
+      "source_bytes": 1220,
+      "bytes": 1220,
+      "sha256": "7a2ae30baf721622fb481e168968e5b91e9033597f979cc032b2c60213f93638",
+      "source_sha256": "7a2ae30baf721622fb481e168968e5b91e9033597f979cc032b2c60213f93638",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "7e6ba5a773eda0c5265222f07d402e364ac4cee9abdb8f184436fe6b87db4c9e"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\smoke-w2\\smoke-wf2-01.err.txt",
+      "archive": "runs/smoke-w2/smoke-wf2-01.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\smoke-w2\\smoke-wf2-01.json",
+      "archive": "runs/smoke-w2/smoke-wf2-01.json",
+      "mode": "text",
+      "source_bytes": 26885,
+      "bytes": 26885,
+      "sha256": "e94a58b8fe6d9db44433f46f42cf6f46fc2c4a7e737beca9b16d69f504829d48",
+      "source_sha256": "e94a58b8fe6d9db44433f46f42cf6f46fc2c4a7e737beca9b16d69f504829d48",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "67b4372439a2b38f155aae6ae6f2bc8bbcab923953ea706b30f38cffea8f11ec"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\runs\\smoke-w2\\smoke-wf2-01.out.txt",
+      "archive": "runs/smoke-w2/smoke-wf2-01.out.txt",
+      "mode": "text",
+      "source_bytes": 2190,
+      "bytes": 2190,
+      "sha256": "704e2186ed54aa1324a2700a55b5c982e1312e648df6ddfc5afba8b06bcd3cb5",
+      "source_sha256": "704e2186ed54aa1324a2700a55b5c982e1312e648df6ddfc5afba8b06bcd3cb5",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "f9373f678ced64b689f104fbd4881d4110340e7a15153eaae88c3cb270045712"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\smoke\\dump-40k.err.txt",
+      "archive": "runs/smoke/dump-40k.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\smoke\\dump-40k.out.txt",
+      "archive": "runs/smoke/dump-40k.out.txt",
+      "mode": "text",
+      "source_bytes": 4010,
+      "bytes": 4010,
+      "sha256": "e41f8cf826bcf9975b59b31afece2a2787823197b8b6fc83cd6fb3dca430f5c4",
+      "source_sha256": "e41f8cf826bcf9975b59b31afece2a2787823197b8b6fc83cd6fb3dca430f5c4",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "1b2662b32879756351451baef5ad26cdbcf752ef357c61f92a9fcf59ea3c6af0"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\smoke\\plain-40k.err.txt",
+      "archive": "runs/smoke/plain-40k.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\smoke\\plain-40k.out.txt",
+      "archive": "runs/smoke/plain-40k.out.txt",
+      "mode": "text",
+      "source_bytes": 4066,
+      "bytes": 4066,
+      "sha256": "b66aaeba9bd89ea4d0a01b5ebf19bf1f15cc01db5de9b413a5808e1c2f529e9b",
+      "source_sha256": "b66aaeba9bd89ea4d0a01b5ebf19bf1f15cc01db5de9b413a5808e1c2f529e9b",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "0ab7d115f17ea54ecd52048514c6a970f69c8df8873a3f30bf73982c1dbba883"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\smoke\\plain3-40k.err.txt",
+      "archive": "runs/smoke/plain3-40k.err.txt",
+      "mode": "text",
+      "source_bytes": 0,
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_eol": "none",
+      "eol": "crlf",
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\smoke\\plain3-40k.out.txt",
+      "archive": "runs/smoke/plain3-40k.out.txt",
+      "mode": "text",
+      "source_bytes": 4022,
+      "bytes": 4022,
+      "sha256": "b0ae5aa696f6a6c8163a24dbbb8e58e251c0bd1034cd025ebf3b0e03d34d9295",
+      "source_sha256": "b0ae5aa696f6a6c8163a24dbbb8e58e251c0bd1034cd025ebf3b0e03d34d9295",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "513be5caf7e03f1e1e38c62028efab3f478a24e981ee68b0cffdead8362a2689"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\smoke\\smoke-40k.txt",
+      "archive": "runs/smoke/smoke-40k.txt",
+      "mode": "text",
+      "source_bytes": 3850,
+      "bytes": 3850,
+      "sha256": "8944b3ca6eadeef3f4ddfa35c2b55fea5806b87e660410f9efd49acd9ad3cb6d",
+      "source_sha256": "8944b3ca6eadeef3f4ddfa35c2b55fea5806b87e660410f9efd49acd9ad3cb6d",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "3fc04e1c22fddf2036c59f99966b4b1e33a8e0f367173cbd00ec10b7e72e97bc"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\smoke\\trace-40k.err.txt",
+      "archive": "runs/smoke/trace-40k.err.txt",
+      "mode": "text",
+      "source_bytes": 1331,
+      "bytes": 1331,
+      "sha256": "3ebcab8f04532224ebd241ae43721a49e872dc8c2da5d3e3e66d52e1f1e326d4",
+      "source_sha256": "3ebcab8f04532224ebd241ae43721a49e872dc8c2da5d3e3e66d52e1f1e326d4",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "d47770b2aecca9fea11ab332512eaaafd6fa2d013eff96df44d19906839156f3"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\smoke\\trace-40k.out.txt",
+      "archive": "runs/smoke/trace-40k.out.txt",
+      "mode": "text",
+      "source_bytes": 4109,
+      "bytes": 4109,
+      "sha256": "0cdc1ec9b3a88263385d910fa304a772608dce37c29930a0434b2cb0aa5f332f",
+      "source_sha256": "0cdc1ec9b3a88263385d910fa304a772608dce37c29930a0434b2cb0aa5f332f",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "6806853a72c6f3ef72dc1d784088e418794cf32a2f92e77b4e4e86629cfdcefe"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\smoke\\trace2-40k.err.txt",
+      "archive": "runs/smoke/trace2-40k.err.txt",
+      "mode": "text",
+      "source_bytes": 1495,
+      "bytes": 1495,
+      "sha256": "7af4613a54d2ba1a7f0fcc1bce95ca084902c565da31deef741e9e8560772688",
+      "source_sha256": "7af4613a54d2ba1a7f0fcc1bce95ca084902c565da31deef741e9e8560772688",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "0a6f4441314bffbad10a75f5643b37b6b5b9809af53ac44ddd7edb21a71e011e"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\smoke\\trace2-40k.out.txt",
+      "archive": "runs/smoke/trace2-40k.out.txt",
+      "mode": "text",
+      "source_bytes": 4023,
+      "bytes": 4023,
+      "sha256": "00ef3450db406f02ee680436cef6879bb171204699297d98747e70face64bd78",
+      "source_sha256": "00ef3450db406f02ee680436cef6879bb171204699297d98747e70face64bd78",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "010912f5c44df9a38d77f127038972ec3fd3669b97cc101efdeadcb55c2e13a0"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\smoke\\trace3-40k.err.txt",
+      "archive": "runs/smoke/trace3-40k.err.txt",
+      "mode": "text",
+      "source_bytes": 1817,
+      "bytes": 1817,
+      "sha256": "e26d73a824545f98033e9b12887de2d496675a3d0cda04d888b06f0d057729f2",
+      "source_sha256": "e26d73a824545f98033e9b12887de2d496675a3d0cda04d888b06f0d057729f2",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "1a0aec04417c8d17d4da37da897dfdf4d3a01ad431a4a3b465a30572ef9f29f9"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-startup-observability-v1\\smoke\\trace3-40k.out.txt",
+      "archive": "runs/smoke/trace3-40k.out.txt",
+      "mode": "text",
+      "source_bytes": 4074,
+      "bytes": 4074,
+      "sha256": "48ea2b595d5e781271a43e614d0d1ef6fc4d0d81bc4bf0ad95b261b8872cb9bc",
+      "source_sha256": "48ea2b595d5e781271a43e614d0d1ef6fc4d0d81bc4bf0ad95b261b8872cb9bc",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "5c59a6c6a992e8e7e8937b517e76feb1bc870aea5119ff3b2fe6ebda817efa5f"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\runs\\serializer-direct-v1\\player-40k-traced-00.err.txt",
+      "archive": "runs/serializer-direct-v1/player-40k-traced-00.err.txt",
+      "mode": "text",
+      "source_bytes": 2052,
+      "bytes": 2052,
+      "sha256": "a92fed0f5a85cf85b8c89f4a004aec0629127967c15a996bd15f2276e22c00ec",
+      "source_sha256": "a92fed0f5a85cf85b8c89f4a004aec0629127967c15a996bd15f2276e22c00ec",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "57db4cfeedac7e1d8243306fa975c001eb79c8743d1a71a3103d0cb883e7fd1e"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\runs\\serializer-direct-v1\\player-40k-traced-00.out.txt",
+      "archive": "runs/serializer-direct-v1/player-40k-traced-00.out.txt",
+      "mode": "text",
+      "source_bytes": 2192,
+      "bytes": 2192,
+      "sha256": "ab958c5aa41cbd7795565a745ff498f17265bfa71e653ea73e62d78ef12ce99f",
+      "source_sha256": "ab958c5aa41cbd7795565a745ff498f17265bfa71e653ea73e62d78ef12ce99f",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "b6ceb8db24a78009f7808f2aedda96aeb5254b239825a76fa84f10b364a0d311"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\runs\\serializer-direct-v1\\player-40k-traced-01.err.txt",
+      "archive": "runs/serializer-direct-v1/player-40k-traced-01.err.txt",
+      "mode": "text",
+      "source_bytes": 2052,
+      "bytes": 2052,
+      "sha256": "29f8763a334af07f97a0e510834d1fcb7b34fe2c9ecbda0aa0a29a69b9a2d8eb",
+      "source_sha256": "29f8763a334af07f97a0e510834d1fcb7b34fe2c9ecbda0aa0a29a69b9a2d8eb",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "3bf8d9db1319afb8505e1699392cdab00159e87eb09367fb093ce3737e5a3679"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\runs\\serializer-direct-v1\\player-40k-traced-01.out.txt",
+      "archive": "runs/serializer-direct-v1/player-40k-traced-01.out.txt",
+      "mode": "text",
+      "source_bytes": 2192,
+      "bytes": 2192,
+      "sha256": "aa1d5f4958e5ddbcc4b028bcb0046a886e494d510dac7159fd6089571019efbc",
+      "source_sha256": "aa1d5f4958e5ddbcc4b028bcb0046a886e494d510dac7159fd6089571019efbc",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "da1008ed9c2465ba49c883a502fbe4bea6d41a1ad36ac2e6388b02adbf73e37f"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\runs\\serializer-direct-v1\\player-40k-traced-02.err.txt",
+      "archive": "runs/serializer-direct-v1/player-40k-traced-02.err.txt",
+      "mode": "text",
+      "source_bytes": 2052,
+      "bytes": 2052,
+      "sha256": "fd9b5711786cebb3643c5fb172686001df92c79b47fe212007533cc3a6ec9919",
+      "source_sha256": "fd9b5711786cebb3643c5fb172686001df92c79b47fe212007533cc3a6ec9919",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "ac500be3e11c3001551a7fdcd9c29e7dd8c643cbbc610973d14ea54000035a16"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\runs\\serializer-direct-v1\\player-40k-traced-02.out.txt",
+      "archive": "runs/serializer-direct-v1/player-40k-traced-02.out.txt",
+      "mode": "text",
+      "source_bytes": 2192,
+      "bytes": 2192,
+      "sha256": "2a010deac7f13f541f3c6b8b0579bd9bd51056bc2cf7a241cdea1ae0950f1df3",
+      "source_sha256": "2a010deac7f13f541f3c6b8b0579bd9bd51056bc2cf7a241cdea1ae0950f1df3",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "328d824529a0589821c03846a157ec71519505f58957f3dbf2848971246d8d31"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\runs\\serializer-direct-v1\\prepare-split.json",
+      "archive": "runs/serializer-direct-v1/prepare-split.json",
+      "mode": "text",
+      "source_bytes": 20254,
+      "bytes": 20254,
+      "sha256": "3ac3251091f112eccc24c52191416f50c9445ed8900b11bbe54aea7c7b7570a4",
+      "source_sha256": "3ac3251091f112eccc24c52191416f50c9445ed8900b11bbe54aea7c7b7570a4",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "1fbdf466d2053aa7843325dfb47bac7eb2e0df1254c00c3de2ca4db2f1d362ff"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\baseline\\prepare-split.json",
+      "archive": "prepare-cost/before/prepare-split.json",
+      "mode": "text",
+      "source_bytes": 22975,
+      "bytes": 22975,
+      "sha256": "2725443595a9228fe04533b1934c3f2aabf2d1cc3c59ce9dc9235da5bd56e4ed",
+      "source_sha256": "2725443595a9228fe04533b1934c3f2aabf2d1cc3c59ce9dc9235da5bd56e4ed",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "b32e041dd8abf5015cb9d4a707e750ebe08274ebc3c6745f4dc452c18963eabf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\baseline\\prepare-split.original.json",
+      "archive": "prepare-cost/before/prepare-split.original.json",
+      "mode": "text",
+      "source_bytes": 19983,
+      "bytes": 19983,
+      "sha256": "8bfe3505f8a8a092848ddbaafa83de213e1f6f671a915ebb273d091a92559a45",
+      "source_sha256": "8bfe3505f8a8a092848ddbaafa83de213e1f6f671a915ebb273d091a92559a45",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "1351577dfbb3c71c99093b1a46b60ee2d947328af0b2780c50f344017f4ae127"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\baseline\\40k-canonical.json",
+      "archive": "prepare-cost/before/40k-canonical.json.gz",
+      "mode": "gzip",
+      "source_bytes": 32180288,
+      "bytes": 484803,
+      "sha256": "ce725e67ca9815f8f79baaac6ce428b8ff668de05be308009f7e6bd2ae4a7cb9",
+      "source_sha256": "0cf308c86e0dcd98d63a01b2a342867cb6911bc976362da779e4de2d42656f52",
+      "source_eol": "lf",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\baseline\\40k-report.json",
+      "archive": "prepare-cost/before/40k-report.json",
+      "mode": "text",
+      "source_bytes": 198,
+      "bytes": 209,
+      "sha256": "5d0b5004afe3b98d239e1db4529cde8246edb20e13b9cfb9567a82d16b1f4fa4",
+      "source_sha256": "3de9b6c7ff7b78e1ed6cb7655423ddb2cdf406d989e29f494fd307384017d1a5",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "3de9b6c7ff7b78e1ed6cb7655423ddb2cdf406d989e29f494fd307384017d1a5"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\baseline\\serialize-capture.txt",
+      "archive": "prepare-cost/before/serialize-capture.txt",
+      "mode": "text",
+      "source_bytes": 5786,
+      "bytes": 5786,
+      "sha256": "936b698e0acf6839330c6bcc3414f191b7a5aff3943759755a5951e25e560595",
+      "source_sha256": "936b698e0acf6839330c6bcc3414f191b7a5aff3943759755a5951e25e560595",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "0049b6c6859be01c899eb8cbd18606b44efd0606be85e0ff2067f479a21bb98c"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\baseline\\sweep.json",
+      "archive": "prepare-cost/before/sweep.json",
+      "mode": "text",
+      "source_bytes": 21153,
+      "bytes": 21654,
+      "sha256": "f0c0e1f7919d928b4fa6b164e14b174b6b6027b83ec7c4ea88dde07aae7ce0eb",
+      "source_sha256": "84f58cc12b3a677bffa36274a77ef89370c5d66654e22e78ba63a5db3ba1ceda",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "84f58cc12b3a677bffa36274a77ef89370c5d66654e22e78ba63a5db3ba1ceda"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\after\\sweep.json",
+      "archive": "prepare-cost/after/sweep.json",
+      "mode": "text",
+      "source_bytes": 21467,
+      "bytes": 21977,
+      "sha256": "f3a217ba82d6f85daaf4f674ab963706853ee18d2e2807f74e75436f33b3c52f",
+      "source_sha256": "bc657162b21059798e5f53a857814f6d0ae2c2f2f23c953f9c91943256471424",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "bc657162b21059798e5f53a857814f6d0ae2c2f2f23c953f9c91943256471424"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\after\\prepare-split-compare.json",
+      "archive": "prepare-cost/after/prepare-split-compare.json",
+      "mode": "text",
+      "source_bytes": 1944,
+      "bytes": 1944,
+      "sha256": "159185d1b357c76c8689c0e4aab9eaaeea0cb46a9d48409827623de12c68eeca",
+      "source_sha256": "159185d1b357c76c8689c0e4aab9eaaeea0cb46a9d48409827623de12c68eeca",
+      "source_eol": "crlf",
+      "eol": "crlf",
+      "content_sha256": "360a07129753b4c2c50cee31f5d2d79c7dc500533eb7bc2409a90f8f604a368b"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\baseline\\work\\739e886c58a8f76a-t4.report.json",
+      "archive": "prepare-cost/before/work/739e886c58a8f76a-t4.report.json",
+      "mode": "text",
+      "source_bytes": 661,
+      "bytes": 685,
+      "sha256": "7e15fe5f7cde4a49254fcb85caaaa1e01c95c001c922f97570d6c97b1f37bbc9",
+      "source_sha256": "81df14e422603ae411ea8a70f5de89fb49ae2a34b804af71146a8be3075824e0",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "81df14e422603ae411ea8a70f5de89fb49ae2a34b804af71146a8be3075824e0"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\baseline\\work\\87b9685410e88905-t3.report.json",
+      "archive": "prepare-cost/before/work/87b9685410e88905-t3.report.json",
+      "mode": "text",
+      "source_bytes": 184,
+      "bytes": 193,
+      "sha256": "c2728fc970e430cfd406a16ea060e306a8935954d26ab62d4d8c76ef88142355",
+      "source_sha256": "7613df3a830eeacf5d78328a02bf39ba615b9e799ca6503326683b4f24631be9",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "7613df3a830eeacf5d78328a02bf39ba615b9e799ca6503326683b4f24631be9"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\baseline\\work\\888b73fb26a5fb09-t4.report.json",
+      "archive": "prepare-cost/before/work/888b73fb26a5fb09-t4.report.json",
+      "mode": "text",
+      "source_bytes": 661,
+      "bytes": 685,
+      "sha256": "2a36a39398502dd7d86d64d0bcc828cc6115ff60994b0b99b9dae5b017c647a7",
+      "source_sha256": "22bb9a688bf93bc494421fec4f2681c8d06abcc2dcf580ad1b71487f2a8f4c32",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "22bb9a688bf93bc494421fec4f2681c8d06abcc2dcf580ad1b71487f2a8f4c32"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\baseline\\work\\99031a497315c670-t4.report.json",
+      "archive": "prepare-cost/before/work/99031a497315c670-t4.report.json",
+      "mode": "text",
+      "source_bytes": 661,
+      "bytes": 685,
+      "sha256": "d9f2e2e142f9c0ac6b465243e67af1c3b8f58539b5c0359b34185aa517795207",
+      "source_sha256": "faaee8a901960b0df74b1307e744e8341368822889c85db8beeb617cfe2dba1a",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "faaee8a901960b0df74b1307e744e8341368822889c85db8beeb617cfe2dba1a"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\baseline\\work\\b1c60c6896a0b49e-t3.report.json",
+      "archive": "prepare-cost/before/work/b1c60c6896a0b49e-t3.report.json",
+      "mode": "text",
+      "source_bytes": 184,
+      "bytes": 193,
+      "sha256": "e02e6ccaae7c750bef06f428d0e2b0b80ba03044e61441327cc5bb50e20261bc",
+      "source_sha256": "c3ec2cbd3e1a1692a934a1f5afdd2c483f849358600babffa12eaea4393ae18c",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "c3ec2cbd3e1a1692a934a1f5afdd2c483f849358600babffa12eaea4393ae18c"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\baseline\\work\\b6f1503ff1bed4c7-t3.report.json",
+      "archive": "prepare-cost/before/work/b6f1503ff1bed4c7-t3.report.json",
+      "mode": "text",
+      "source_bytes": 184,
+      "bytes": 193,
+      "sha256": "d04539655a4203db49628cfd87264d4edcb0a3ae812e16e5f2ed5717bb7dc67c",
+      "source_sha256": "3bd24ad9847d8926f6d39fe6f2042b7df3d37d4846df07e823ceb9da01d5294b",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "3bd24ad9847d8926f6d39fe6f2042b7df3d37d4846df07e823ceb9da01d5294b"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\baseline\\work\\bab71b20ab958e04-t4.report.json",
+      "archive": "prepare-cost/before/work/bab71b20ab958e04-t4.report.json",
+      "mode": "text",
+      "source_bytes": 661,
+      "bytes": 685,
+      "sha256": "f1f43113a17efdddbfe70fd707f8fbad3df1980ee2e0716c836ea5ebe7968124",
+      "source_sha256": "f1dfabc84de60575f2a59fb454742f39ac08174446ca2e8904499d68ec3dc282",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "f1dfabc84de60575f2a59fb454742f39ac08174446ca2e8904499d68ec3dc282"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\baseline\\work\\cd89b97b6e4270cc-t3.report.json",
+      "archive": "prepare-cost/before/work/cd89b97b6e4270cc-t3.report.json",
+      "mode": "text",
+      "source_bytes": 208,
+      "bytes": 219,
+      "sha256": "3a0c319f81a93e34d17cc74bd0d3670ef8176fd4f8ad329f28297eafbb74f419",
+      "source_sha256": "49490f044816003d0eb42f7abc3cad24786a08e7233195f49521d16cc9e3546c",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "49490f044816003d0eb42f7abc3cad24786a08e7233195f49521d16cc9e3546c"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\baseline\\work\\d791ae541c3bb982-t3.report.json",
+      "archive": "prepare-cost/before/work/d791ae541c3bb982-t3.report.json",
+      "mode": "text",
+      "source_bytes": 184,
+      "bytes": 193,
+      "sha256": "d04539655a4203db49628cfd87264d4edcb0a3ae812e16e5f2ed5717bb7dc67c",
+      "source_sha256": "3bd24ad9847d8926f6d39fe6f2042b7df3d37d4846df07e823ceb9da01d5294b",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "3bd24ad9847d8926f6d39fe6f2042b7df3d37d4846df07e823ceb9da01d5294b"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\baseline\\work\\e107126d44c6da1f-t3.json",
+      "archive": "prepare-cost/before/work/e107126d44c6da1f-t3.json.gz",
+      "mode": "gzip",
+      "source_bytes": 32180288,
+      "bytes": 484803,
+      "sha256": "ce725e67ca9815f8f79baaac6ce428b8ff668de05be308009f7e6bd2ae4a7cb9",
+      "source_sha256": "0cf308c86e0dcd98d63a01b2a342867cb6911bc976362da779e4de2d42656f52",
+      "source_eol": "lf",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\baseline\\work\\e107126d44c6da1f-t3.report.json",
+      "archive": "prepare-cost/before/work/e107126d44c6da1f-t3.report.json",
+      "mode": "text",
+      "source_bytes": 198,
+      "bytes": 209,
+      "sha256": "5d0b5004afe3b98d239e1db4529cde8246edb20e13b9cfb9567a82d16b1f4fa4",
+      "source_sha256": "3de9b6c7ff7b78e1ed6cb7655423ddb2cdf406d989e29f494fd307384017d1a5",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "3de9b6c7ff7b78e1ed6cb7655423ddb2cdf406d989e29f494fd307384017d1a5"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\baseline\\work\\f8f8a884352c53d9-t3.report.json",
+      "archive": "prepare-cost/before/work/f8f8a884352c53d9-t3.report.json",
+      "mode": "text",
+      "source_bytes": 184,
+      "bytes": 193,
+      "sha256": "e85ef7e2264483dc78972d89a270c1563e7cec674cf39953c07ce8a7f288de87",
+      "source_sha256": "f295b7fb8fa989e7b36fddc79763ec58366c7854afe84221c26c45b8f305da32",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "f295b7fb8fa989e7b36fddc79763ec58366c7854afe84221c26c45b8f305da32"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\after\\work\\739e886c58a8f76a-t4.report.json",
+      "archive": "prepare-cost/after/work/739e886c58a8f76a-t4.report.json",
+      "mode": "text",
+      "source_bytes": 661,
+      "bytes": 685,
+      "sha256": "7e15fe5f7cde4a49254fcb85caaaa1e01c95c001c922f97570d6c97b1f37bbc9",
+      "source_sha256": "81df14e422603ae411ea8a70f5de89fb49ae2a34b804af71146a8be3075824e0",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "81df14e422603ae411ea8a70f5de89fb49ae2a34b804af71146a8be3075824e0"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\after\\work\\87b9685410e88905-t3.report.json",
+      "archive": "prepare-cost/after/work/87b9685410e88905-t3.report.json",
+      "mode": "text",
+      "source_bytes": 184,
+      "bytes": 193,
+      "sha256": "c2728fc970e430cfd406a16ea060e306a8935954d26ab62d4d8c76ef88142355",
+      "source_sha256": "7613df3a830eeacf5d78328a02bf39ba615b9e799ca6503326683b4f24631be9",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "7613df3a830eeacf5d78328a02bf39ba615b9e799ca6503326683b4f24631be9"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\after\\work\\888b73fb26a5fb09-t4.report.json",
+      "archive": "prepare-cost/after/work/888b73fb26a5fb09-t4.report.json",
+      "mode": "text",
+      "source_bytes": 661,
+      "bytes": 685,
+      "sha256": "2a36a39398502dd7d86d64d0bcc828cc6115ff60994b0b99b9dae5b017c647a7",
+      "source_sha256": "22bb9a688bf93bc494421fec4f2681c8d06abcc2dcf580ad1b71487f2a8f4c32",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "22bb9a688bf93bc494421fec4f2681c8d06abcc2dcf580ad1b71487f2a8f4c32"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\after\\work\\99031a497315c670-t4.report.json",
+      "archive": "prepare-cost/after/work/99031a497315c670-t4.report.json",
+      "mode": "text",
+      "source_bytes": 661,
+      "bytes": 685,
+      "sha256": "d9f2e2e142f9c0ac6b465243e67af1c3b8f58539b5c0359b34185aa517795207",
+      "source_sha256": "faaee8a901960b0df74b1307e744e8341368822889c85db8beeb617cfe2dba1a",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "faaee8a901960b0df74b1307e744e8341368822889c85db8beeb617cfe2dba1a"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\after\\work\\b1c60c6896a0b49e-t3.report.json",
+      "archive": "prepare-cost/after/work/b1c60c6896a0b49e-t3.report.json",
+      "mode": "text",
+      "source_bytes": 184,
+      "bytes": 193,
+      "sha256": "e02e6ccaae7c750bef06f428d0e2b0b80ba03044e61441327cc5bb50e20261bc",
+      "source_sha256": "c3ec2cbd3e1a1692a934a1f5afdd2c483f849358600babffa12eaea4393ae18c",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "c3ec2cbd3e1a1692a934a1f5afdd2c483f849358600babffa12eaea4393ae18c"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\after\\work\\b6f1503ff1bed4c7-t3.report.json",
+      "archive": "prepare-cost/after/work/b6f1503ff1bed4c7-t3.report.json",
+      "mode": "text",
+      "source_bytes": 184,
+      "bytes": 193,
+      "sha256": "d04539655a4203db49628cfd87264d4edcb0a3ae812e16e5f2ed5717bb7dc67c",
+      "source_sha256": "3bd24ad9847d8926f6d39fe6f2042b7df3d37d4846df07e823ceb9da01d5294b",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "3bd24ad9847d8926f6d39fe6f2042b7df3d37d4846df07e823ceb9da01d5294b"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\after\\work\\bab71b20ab958e04-t4.report.json",
+      "archive": "prepare-cost/after/work/bab71b20ab958e04-t4.report.json",
+      "mode": "text",
+      "source_bytes": 661,
+      "bytes": 685,
+      "sha256": "f1f43113a17efdddbfe70fd707f8fbad3df1980ee2e0716c836ea5ebe7968124",
+      "source_sha256": "f1dfabc84de60575f2a59fb454742f39ac08174446ca2e8904499d68ec3dc282",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "f1dfabc84de60575f2a59fb454742f39ac08174446ca2e8904499d68ec3dc282"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\after\\work\\cd89b97b6e4270cc-t3.report.json",
+      "archive": "prepare-cost/after/work/cd89b97b6e4270cc-t3.report.json",
+      "mode": "text",
+      "source_bytes": 208,
+      "bytes": 219,
+      "sha256": "3a0c319f81a93e34d17cc74bd0d3670ef8176fd4f8ad329f28297eafbb74f419",
+      "source_sha256": "49490f044816003d0eb42f7abc3cad24786a08e7233195f49521d16cc9e3546c",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "49490f044816003d0eb42f7abc3cad24786a08e7233195f49521d16cc9e3546c"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\after\\work\\d791ae541c3bb982-t3.report.json",
+      "archive": "prepare-cost/after/work/d791ae541c3bb982-t3.report.json",
+      "mode": "text",
+      "source_bytes": 184,
+      "bytes": 193,
+      "sha256": "d04539655a4203db49628cfd87264d4edcb0a3ae812e16e5f2ed5717bb7dc67c",
+      "source_sha256": "3bd24ad9847d8926f6d39fe6f2042b7df3d37d4846df07e823ceb9da01d5294b",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "3bd24ad9847d8926f6d39fe6f2042b7df3d37d4846df07e823ceb9da01d5294b"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\after\\work\\e107126d44c6da1f-t3.json",
+      "archive": "prepare-cost/after/work/e107126d44c6da1f-t3.json.gz",
+      "mode": "gzip",
+      "source_bytes": 32180288,
+      "bytes": 484803,
+      "sha256": "ce725e67ca9815f8f79baaac6ce428b8ff668de05be308009f7e6bd2ae4a7cb9",
+      "source_sha256": "0cf308c86e0dcd98d63a01b2a342867cb6911bc976362da779e4de2d42656f52",
+      "source_eol": "lf",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\after\\work\\e107126d44c6da1f-t3.report.json",
+      "archive": "prepare-cost/after/work/e107126d44c6da1f-t3.report.json",
+      "mode": "text",
+      "source_bytes": 198,
+      "bytes": 209,
+      "sha256": "5d0b5004afe3b98d239e1db4529cde8246edb20e13b9cfb9567a82d16b1f4fa4",
+      "source_sha256": "3de9b6c7ff7b78e1ed6cb7655423ddb2cdf406d989e29f494fd307384017d1a5",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "3de9b6c7ff7b78e1ed6cb7655423ddb2cdf406d989e29f494fd307384017d1a5"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\after\\work\\f8f8a884352c53d9-t3.report.json",
+      "archive": "prepare-cost/after/work/f8f8a884352c53d9-t3.report.json",
+      "mode": "text",
+      "source_bytes": 184,
+      "bytes": 193,
+      "sha256": "e85ef7e2264483dc78972d89a270c1563e7cec674cf39953c07ce8a7f288de87",
+      "source_sha256": "f295b7fb8fa989e7b36fddc79763ec58366c7854afe84221c26c45b8f305da32",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "f295b7fb8fa989e7b36fddc79763ec58366c7854afe84221c26c45b8f305da32"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\logs\\build-before-serializer.log",
+      "archive": "prepare-cost/logs/build-before-serializer.log.gz",
+      "mode": "gzip",
+      "source_bytes": 6660,
+      "bytes": 839,
+      "sha256": "b0108599b98240d5aba61ba31f222ad8aae26200cac587fd16150e94fbdad782",
+      "source_sha256": "49bfaae5c9a7fe9515e6e11fd0fd1c8558b70265ed8128703262b82e245ba3cc",
+      "source_eol": "crlf",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\logs\\build-after-serializer.log",
+      "archive": "prepare-cost/logs/build-after-serializer.log.gz",
+      "mode": "gzip",
+      "source_bytes": 6943,
+      "bytes": 853,
+      "sha256": "5476e6df9ef02e805f106a5e7e3c9df085e2897ec5260572afac430a88f84419",
+      "source_sha256": "e5a85f1bfbdcdcbb973aa3878ce3dae17bcdc12498e76ea6080e1eb238bae05b",
+      "source_eol": "crlf",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-prepare-cost-v1\\logs\\ctest-after-serializer.log",
+      "archive": "prepare-cost/logs/ctest-after-serializer.log.gz",
+      "mode": "gzip",
+      "source_bytes": 341170,
+      "bytes": 58678,
+      "sha256": "920025368dd45f19db4b6aa0255765300e60d01804ef874dc8d7f3312460cbe8",
+      "source_sha256": "364780d6fcc698139205e18d8181acf6f588f42b99119fe7a7e97f26322b17e3",
+      "source_eol": "crlf",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\_cleanup-20261101\\build-inventory.json",
+      "archive": "cleanup/build-inventory.json",
+      "mode": "text",
+      "source_bytes": 206264,
+      "bytes": 211605,
+      "sha256": "b9182c7132d4b5d3f4076f169f9bcfe5dc2a9b31800576f780af8ff27eb17063",
+      "source_sha256": "f90929c9bdc92baa770d541f6cedc2f8f2e8dba85c4466d264fc47e554cf49ea",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "f90929c9bdc92baa770d541f6cedc2f8f2e8dba85c4466d264fc47e554cf49ea"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\_cleanup-20261101\\build-references.json",
+      "archive": "cleanup/build-references.json",
+      "mode": "text",
+      "source_bytes": 1393132,
+      "bytes": 1421075,
+      "sha256": "118638ea3a91a445cdb7d9d1b32445dbf8f238675a4dcde7a0e3ab055ad962db",
+      "source_sha256": "f45d104713dfe6c1eb739f3959a11198e07b8d7eaff83b996d9fa3b9201f2ba4",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "f45d104713dfe6c1eb739f3959a11198e07b8d7eaff83b996d9fa3b9201f2ba4"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\_cleanup-20261101\\delete-plan.json",
+      "archive": "cleanup/delete-plan.json",
+      "mode": "text",
+      "source_bytes": 2495,
+      "bytes": 2591,
+      "sha256": "1027d02280a156106b8362775ebd08dcc5c4783f52bbf0dda96cf8778a4bfbb6",
+      "source_sha256": "506793feeb3100e1235b15b5a28361ad35979badd526720192a01eb648c8bff0",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "506793feeb3100e1235b15b5a28361ad35979badd526720192a01eb648c8bff0"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\_cleanup-20261101\\temp-files.json",
+      "archive": "cleanup/temp-files.json",
+      "mode": "text",
+      "source_bytes": 405381,
+      "bytes": 413626,
+      "sha256": "33395613be1f308abbcad7f3baad3a13588c2ad56c80473786d17ed18f2b5341",
+      "source_sha256": "da553224e145c4b091ae58f7a3e10f58654c8a091920c076a817f2afc4a5afe6",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "da553224e145c4b091ae58f7a3e10f58654c8a091920c076a817f2afc4a5afe6"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\_cleanup-20261101\\cleanup-20261101.json",
+      "archive": "cleanup/cleanup-20261101.json",
+      "mode": "text",
+      "source_bytes": 7513,
+      "bytes": 7666,
+      "sha256": "7a60eda280cf6cf81bbf28a8fe54dbc875090fe365c677dd7470472403e17cca",
+      "source_sha256": "d5cd28034b6c62e35e9e18df5a7f540d2edf6f338659dc0a14a21f8a1ca8e21a",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "d5cd28034b6c62e35e9e18df5a7f540d2edf6f338659dc0a14a21f8a1ca8e21a"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\_cleanup-20261101\\build-debug-serializer.log",
+      "archive": "cleanup/build-debug-serializer.log.gz",
+      "mode": "gzip",
+      "source_bytes": 11207,
+      "bytes": 2140,
+      "sha256": "ecb9e7cd777140c4a430f45dba587b939ae45c2c0c9050e25340f2c4afe33030",
+      "source_sha256": "bd78ba94b4684e18c003a05a211533e20bdbc1a9e2d3f9026aff29c6c4d1688e",
+      "source_eol": "crlf",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\evidence-staging\\r3-40k-startup\\derived\\startup-cost-table.json",
+      "archive": "derived/startup-cost-table.json",
+      "mode": "text",
+      "source_bytes": 203927,
+      "bytes": 212622,
+      "sha256": "2d8c1d149df65f8d99509de205e2b1cfd24628f05f833b6f606c59a5886de455",
+      "source_sha256": "4ec48d660e949b9d58e1081c2f7f37fa2747e137a2d65e1b502a44ef9770b0ae",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "4ec48d660e949b9d58e1081c2f7f37fa2747e137a2d65e1b502a44ef9770b0ae",
+      "note": "Authoritative tabulation: per-group stage medians and spreads, the trace perturbation, the entity scaling, the watcher tables, the before/after comparison, 39 checks and 9 findings."
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\evidence-staging\\r3-40k-startup\\derived\\startup-cost-table.md",
+      "archive": "derived/startup-cost-table.md",
+      "mode": "text",
+      "source_bytes": 45720,
+      "bytes": 46739,
+      "sha256": "e6e4316288b9647e4e444f93b4335701688f33dcc737510594254984e0bcca82",
+      "source_sha256": "1523e1da577d1aa040cf0360f21614266b4797112b008acc544f32289c75f7cd",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "1523e1da577d1aa040cf0360f21614266b4797112b008acc544f32289c75f7cd",
+      "note": "The same tabulation rendered for reading; every number in the report is in one of these two files."
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\evidence-staging\\r3-40k-startup\\authored\\verify_startup_evidence.py",
+      "archive": "verify/verify_startup_evidence.py",
+      "mode": "text",
+      "source_bytes": 11182,
+      "bytes": 11427,
+      "sha256": "e667f8084c7164b87367d36a53eeca1bdcd0c4a6d9f3aecbcd6acd2f22f19507",
+      "source_sha256": "4754998e0aa62ae5ed93931bd2103209019a97e5e575f225accd7303c329f034",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "4754998e0aa62ae5ed93931bd2103209019a97e5e575f225accd7303c329f034"
+    }
+  ],
+  "attached_files": [
+    {
+      "archive": "instruments/build_probe.bat",
+      "role": "instrument",
+      "note": "Relinks the probe; written before the first probe group and not edited afterwards.",
+      "source_mtime_utc": "2026-11-01T02:46:56Z"
+    },
+    {
+      "archive": "instruments/patch_probe_v2.py",
+      "role": "instrument",
+      "note": "Rewrites the probe to print one stage stamp line per start-up stage.  The only driver that declares its target path, so the patch cannot be applied to the wrong file silently.",
+      "source_mtime_utc": "2026-11-01T02:45:56Z"
+    },
+    {
+      "archive": "instruments/patch_prepare_trace.py",
+      "role": "instrument",
+      "note": "Adds the env-gated PrepareTraceScope calls to the player; CUEXIS_PREPARE_TRACE is unset in every group that is not labelled -traced.",
+      "source_mtime_utc": "2026-11-01T02:54:33Z"
+    },
+    {
+      "archive": "instruments/patch_chart_trace.py",
+      "role": "instrument",
+      "note": "Adds the chart_canonical_normalize / chart_canonical_dump split to the canonical writer.  Written at 02:54:56Z, i.e. before the first probe group, but the probe binary that ran groups a/a2/b was built before the writer split, so those runs have no scopes of their own.",
+      "source_mtime_utc": "2026-11-01T02:54:56Z"
+    },
+    {
+      "archive": "instruments/run_startup_set.py",
+      "role": "instrument",
+      "note": "Driver of the probe groups.  Written 46 s after group a's summary, i.e. between a and a2.",
+      "source_mtime_utc": "2026-11-01T02:57:54Z"
+    },
+    {
+      "archive": "instruments/build_player.bat",
+      "role": "instrument",
+      "note": "Rebuilds the player; the rebuild it performed at 03:29Z produced the before-arm binary 8591b67a.",
+      "source_mtime_utc": "2026-11-01T03:01:56Z"
+    },
+    {
+      "archive": "instruments/watch_window.py",
+      "role": "instrument",
+      "note": "The external watcher: enumerates windows, timestamps the first visible frame, posts WM_CLOSE, and takes the executable's digest before every launch.  Written at 03:05:19Z, after group c and before group w1, so it is the copy that observed w1, w2 and every later pilot.",
+      "source_mtime_utc": "2026-11-01T03:05:19Z"
+    },
+    {
+      "archive": "instruments/patch_player_window_first.py",
+      "role": "instrument",
+      "note": "The first device-first patch: it created the window before prepare on a second thread, and the player died with 0xC0000409 because a single-threaded object was destroyed off-thread.",
+      "source_mtime_utc": "2026-11-01T03:12:00Z"
+    },
+    {
+      "archive": "instruments/patch_player_window_first_v2.py",
+      "role": "instrument",
+      "note": "The thread-free rewrite of the same order; the player it produces exits 0 and is what group w2 measures.",
+      "source_mtime_utc": "2026-11-01T03:15:33Z"
+    },
+    {
+      "archive": "instruments/run_watch_set.py",
+      "role": "instrument",
+      "note": "Driver of watcher groups w1 and w2.  Written at 03:19:44Z, after both groups had run, so the archived copy is not the bytes that drove them; the differences are listed in the report.",
+      "source_mtime_utc": "2026-11-01T03:19:44Z"
+    },
+    {
+      "archive": "instruments/patch_writer_trace.py",
+      "role": "instrument",
+      "note": "Adds the writer split to the player; applied before the before arm (03:24:48Z) and therefore present in both arms.",
+      "source_mtime_utc": "2026-11-01T03:24:22Z"
+    },
+    {
+      "archive": "instruments/run_prepare_split_set.py",
+      "role": "instrument",
+      "note": "Driver of the stage-split stamps: hashes the player before the first launch and after the last one, refuses to write a stamp if it moved, and reduces the prepare trace to per-stage medians.  Its docstring is the pre-registration; the addendum records the mis-bound digest that produced the superseded before stamp.",
+      "source_mtime_utc": "2026-11-01T05:12:13Z"
+    },
+    {
+      "archive": "instruments/canonical_sweep.py",
+      "role": "instrument",
+      "note": "Runs the migrator over the 22 repository chart fixtures and records the canonical text hash of every case, which is what makes the before/after byte sweep checkable.",
+      "source_mtime_utc": "2026-11-01T03:29:29Z"
+    },
+    {
+      "archive": "instruments/gen_serialize_golden.py",
+      "role": "instrument",
+      "note": "Generates tests/json_support/serialize_golden.hpp from the pinned dump parameters.  Written after the after arm, so it cannot have influenced the measured binary.",
+      "source_mtime_utc": "2026-11-01T03:50:00Z"
+    },
+    {
+      "archive": "instruments/tabulate_startup.py",
+      "role": "instrument",
+      "note": "The reduction instrument: reads only files in this archive and writes derived/.  Its output carries the checks (39) and the findings (9) that the report quotes.",
+      "source_mtime_utc": "2026-11-01T05:45:51Z"
+    },
+    {
+      "archive": "verify/verify_startup_evidence.py",
+      "role": "verifier",
+      "note": "Re-checks every hash in this manifest, gunzips every stream, and re-reads the tabulation's own checks."
+    }
+  ],
+  "derived_files": [
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\evidence-staging\\r3-40k-startup\\derived\\startup-cost-table.json",
+      "archive": "derived/startup-cost-table.json",
+      "mode": "text",
+      "source_bytes": 203927,
+      "bytes": 212622,
+      "sha256": "2d8c1d149df65f8d99509de205e2b1cfd24628f05f833b6f606c59a5886de455",
+      "source_sha256": "4ec48d660e949b9d58e1081c2f7f37fa2747e137a2d65e1b502a44ef9770b0ae",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "4ec48d660e949b9d58e1081c2f7f37fa2747e137a2d65e1b502a44ef9770b0ae",
+      "note": "Authoritative tabulation: per-group stage medians and spreads, the trace perturbation, the entity scaling, the watcher tables, the before/after comparison, 39 checks and 9 findings."
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\evidence-staging\\r3-40k-startup\\derived\\startup-cost-table.md",
+      "archive": "derived/startup-cost-table.md",
+      "mode": "text",
+      "source_bytes": 45720,
+      "bytes": 46739,
+      "sha256": "e6e4316288b9647e4e444f93b4335701688f33dcc737510594254984e0bcca82",
+      "source_sha256": "1523e1da577d1aa040cf0360f21614266b4797112b008acc544f32289c75f7cd",
+      "source_eol": "lf",
+      "eol": "crlf",
+      "content_sha256": "1523e1da577d1aa040cf0360f21614266b4797112b008acc544f32289c75f7cd",
+      "note": "The same tabulation rendered for reading; every number in the report is in one of these two files."
+    }
+  ],
+  "instrument_versions": [
+    {
+      "archive": "instruments/build_probe.bat",
+      "sha256": "5a03f8a55f38d903a65ce3faa9a6f3a5b8f97da5e315fadcf3cff85498cea1f1",
+      "source_mtime_utc": "2026-11-01T02:46:56Z",
+      "relation": "Relinks the probe; written before the first probe group and not edited afterwards.",
+      "proof": "none: the file was not hashed at run time, so mtime ordering is the only evidence, and it says when a copy existed rather than what ran"
+    },
+    {
+      "archive": "instruments/patch_probe_v2.py",
+      "sha256": "ad95c9aa20203232f27837e6b2f1340c5234f0250f241ac2c6bba08cadb20be2",
+      "source_mtime_utc": "2026-11-01T02:45:56Z",
+      "relation": "Rewrites the probe to print one stage stamp line per start-up stage.  The only driver that declares its target path, so the patch cannot be applied to the wrong file silently.",
+      "proof": "none: the file was not hashed at run time, so mtime ordering is the only evidence, and it says when a copy existed rather than what ran"
+    },
+    {
+      "archive": "instruments/patch_prepare_trace.py",
+      "sha256": "48dd30a992230408ad5a965173313723265b6bf78d551a70858d4762341be9c4",
+      "source_mtime_utc": "2026-11-01T02:54:33Z",
+      "relation": "Adds the env-gated PrepareTraceScope calls to the player; CUEXIS_PREPARE_TRACE is unset in every group that is not labelled -traced.",
+      "proof": "none: the file was not hashed at run time, so mtime ordering is the only evidence, and it says when a copy existed rather than what ran"
+    },
+    {
+      "archive": "instruments/patch_chart_trace.py",
+      "sha256": "4de0ba60fa9fdf5da8ba9785fa7499779f7a65a370069aa4f350d40ab05d2817",
+      "source_mtime_utc": "2026-11-01T02:54:56Z",
+      "relation": "Adds the chart_canonical_normalize / chart_canonical_dump split to the canonical writer.  Written at 02:54:56Z, i.e. before the first probe group, but the probe binary that ran groups a/a2/b was built before the writer split, so those runs have no scopes of their own.",
+      "proof": "none: the file was not hashed at run time, so mtime ordering is the only evidence, and it says when a copy existed rather than what ran"
+    },
+    {
+      "archive": "instruments/run_startup_set.py",
+      "sha256": "2e71fdfab28236fba54a3019454988f6281fc5c30f94d04d4ec19f116cab8add",
+      "source_mtime_utc": "2026-11-01T02:57:54Z",
+      "relation": "Driver of the probe groups.  Written 46 s after group a's summary, i.e. between a and a2.",
+      "proof": "none: the file was not hashed at run time, so mtime ordering is the only evidence, and it says when a copy existed rather than what ran"
+    },
+    {
+      "archive": "instruments/build_player.bat",
+      "sha256": "bc5fff77018a5b2f7fc0e4a3c9e283fd49884290ad8732bde1ff84f0cd51df4f",
+      "source_mtime_utc": "2026-11-01T03:01:56Z",
+      "relation": "Rebuilds the player; the rebuild it performed at 03:29Z produced the before-arm binary 8591b67a.",
+      "proof": "none: the file was not hashed at run time, so mtime ordering is the only evidence, and it says when a copy existed rather than what ran"
+    },
+    {
+      "archive": "instruments/watch_window.py",
+      "sha256": "4942750ad2119f2c7df05f3751ab78028906d5a5bfcd95fc9e68253c7d416ee5",
+      "source_mtime_utc": "2026-11-01T03:05:19Z",
+      "relation": "The external watcher: enumerates windows, timestamps the first visible frame, posts WM_CLOSE, and takes the executable's digest before every launch.  Written at 03:05:19Z, after group c and before group w1, so it is the copy that observed w1, w2 and every later pilot.",
+      "proof": "none: the file was not hashed at run time, so mtime ordering is the only evidence, and it says when a copy existed rather than what ran"
+    },
+    {
+      "archive": "instruments/patch_player_window_first.py",
+      "sha256": "b29ae8080e52c95e65fd5275dc682410dabf80dad67cf282cfde32f7f10c037e",
+      "source_mtime_utc": "2026-11-01T03:12:00Z",
+      "relation": "The first device-first patch: it created the window before prepare on a second thread, and the player died with 0xC0000409 because a single-threaded object was destroyed off-thread.",
+      "proof": "none: the file was not hashed at run time, so mtime ordering is the only evidence, and it says when a copy existed rather than what ran"
+    },
+    {
+      "archive": "instruments/patch_player_window_first_v2.py",
+      "sha256": "8909126d5c3ba6aea3fd299c97439a6531c3cef883a4b4a6e87f6524a9fdd79a",
+      "source_mtime_utc": "2026-11-01T03:15:33Z",
+      "relation": "The thread-free rewrite of the same order; the player it produces exits 0 and is what group w2 measures.",
+      "proof": "none: the file was not hashed at run time, so mtime ordering is the only evidence, and it says when a copy existed rather than what ran"
+    },
+    {
+      "archive": "instruments/run_watch_set.py",
+      "sha256": "ee308eb630a23142db3cf4ec1949a0981e2c8dd2cb968d9098823756c074c575",
+      "source_mtime_utc": "2026-11-01T03:19:44Z",
+      "relation": "Driver of watcher groups w1 and w2.  Written at 03:19:44Z, after both groups had run, so the archived copy is not the bytes that drove them; the differences are listed in the report.",
+      "proof": "none: the file was not hashed at run time, so mtime ordering is the only evidence, and it says when a copy existed rather than what ran"
+    },
+    {
+      "archive": "instruments/patch_writer_trace.py",
+      "sha256": "5be513cecc273095d817118499c515b856d1dbb066362247aabc4f2480b4ac93",
+      "source_mtime_utc": "2026-11-01T03:24:22Z",
+      "relation": "Adds the writer split to the player; applied before the before arm (03:24:48Z) and therefore present in both arms.",
+      "proof": "none: the file was not hashed at run time, so mtime ordering is the only evidence, and it says when a copy existed rather than what ran"
+    },
+    {
+      "archive": "instruments/run_prepare_split_set.py",
+      "sha256": "81d2be30c54263addcc2e26e7ab8b500170dfb86cf1662f98e169a1e52ba1476",
+      "source_mtime_utc": "2026-11-01T05:12:13Z",
+      "relation": "Driver of the stage-split stamps: hashes the player before the first launch and after the last one, refuses to write a stamp if it moved, and reduces the prepare trace to per-stage medians.  Its docstring is the pre-registration; the addendum records the mis-bound digest that produced the superseded before stamp.",
+      "proof": "none: the file was not hashed at run time, so mtime ordering is the only evidence, and it says when a copy existed rather than what ran"
+    },
+    {
+      "archive": "instruments/canonical_sweep.py",
+      "sha256": "5c44f49665981999b4b865a9b954b827ffa0e3441abe80610ecc37aa4777f0b9",
+      "source_mtime_utc": "2026-11-01T03:29:29Z",
+      "relation": "Runs the migrator over the 22 repository chart fixtures and records the canonical text hash of every case, which is what makes the before/after byte sweep checkable.",
+      "proof": "none: the file was not hashed at run time, so mtime ordering is the only evidence, and it says when a copy existed rather than what ran"
+    },
+    {
+      "archive": "instruments/gen_serialize_golden.py",
+      "sha256": "d27e3a08fab45c5af53110cf14d5904ae951930085a442958605676472daac62",
+      "source_mtime_utc": "2026-11-01T03:50:00Z",
+      "relation": "Generates tests/json_support/serialize_golden.hpp from the pinned dump parameters.  Written after the after arm, so it cannot have influenced the measured binary.",
+      "proof": "none: the file was not hashed at run time, so mtime ordering is the only evidence, and it says when a copy existed rather than what ran"
+    },
+    {
+      "archive": "instruments/tabulate_startup.py",
+      "sha256": "3e319aa0e58a69c42331f009a3cfd829028fc1930e3232645bbf63a218ab9d1c",
+      "source_mtime_utc": "2026-11-01T05:45:51Z",
+      "relation": "The reduction instrument: reads only files in this archive and writes derived/.  Its output carries the checks (39) and the findings (9) that the report quotes.",
+      "proof": "none: the file was not hashed at run time, so mtime ordering is the only evidence, and it says when a copy existed rather than what ran"
+    }
+  ],
+  "superseded_attempts": [
+    {
+      "archive": "prepare-cost/before/prepare-split.original.json",
+      "state": "kept, quoted as superseded, and never used for a before/after difference",
+      "reason": "summarise ran after the 03:34 rebuild, so it wrote the after binary's digest beside the before arm's numbers; the corrected stamp recovers the digest from the watcher's raw samples and the original is kept beside it",
+      "quoted_in_report": true
+    },
+    {
+      "archive": "runs/20261101-a",
+      "state": "kept in full, superseded by 20261101-a2",
+      "reason": "six untraced then six traced processes cannot separate a trace effect from drift; a2 alternates the arms per process and is what the report quotes.  The a group's numbers are printed as the superseded attempt, with its own over-limit spreads, rather than dropped",
+      "quoted_in_report": true
+    },
+    {
+      "archive": "runs/smoke-w2",
+      "state": "kept in full: one crashed pilot and one working pilot",
+      "reason": "smoke-wf-01 is the threaded device-first patch and dies with 0xC0000409 because a single-threaded playback object is destroyed off-thread; smoke-wf2-01 is the thread-free rewrite.  Both are kept because the crash is why the design changed",
+      "quoted_in_report": true
+    }
+  ],
+  "superseded_notes": [
+    "No group and no process was dropped, re-sampled or re-ordered.  Group a is the only superseded group, and it is archived in full with its over-limit spreads intact.",
+    "timer_runs and walks are empty on purpose: this archive contains no GPU-timer run and no stack walk, so the keys exist only to say so rather than to be absent.",
+    "Two probes and five player builds appear across these groups.  Their digests are in binding; no number is spliced across builds, and the only cross-build claim is about scope vocabulary, which was checked name by name in both directions.",
+    "The report's headline first-frame comparison uses the watcher for the before arm and the player's own [player.startup_phase] line for the after arm.  That is not a same-instrument difference and the report says so; both instruments are recorded here so the two numbers can be checked independently.",
+    "This archive tree was rebuilt from scratch several times before the copy beside this manifest passed both checks.  Two attempts aborted, one on the watcher self-test group living beside runs/ rather than inside it and one on a sweep record that carries no output field because eleven of the 22 corpus charts are v4 and the migrator cannot read them.  One attempt failed its own check: two digests were cited that nothing in the archive recorded, and the file count compared a set that included validation.json against one that could not.  One attempt passed its own check but failed the independent verifier, which objected that derived_files[] did not carry the content hash every copied file carries.  No measurement was repeated and no archive was patched in place: each rebuild re-read the same sources, and the four defects are recorded here rather than quietly repaired."
+  ],
+  "excluded": [
+    {
+      "path": "__.pyc / __pycache__",
+      "reason": "byte-code cache; regenerated on import"
+    },
+    {
+      "path": "source-inventory.json",
+      "reason": "a scratch inventory made while writing this builder; the manifest supersedes it"
+    },
+    {
+      "path": "patch_probe.py / patch_prepare_trace_old.py and similar -old variants",
+      "reason": "earlier forms of a patch whose final form is archived; keeping both invites the wrong one being applied"
+    }
+  ],
+  "excluded_files": [],
+  "generated_files": {
+    "index.md": {
+      "archive": "index.md",
+      "authored": "D:\\Cuexis-redesign\\out\\verification-20261101\\evidence-staging\\r3-40k-startup\\authored\\index.md",
+      "bytes": 17960,
+      "sha256": "925280f90abd690797a5c77b908dbbf801d353955a112bcbdc7c975cdc3d9968",
+      "eol": "lf"
+    }
+  },
+  "binding": {
+    "head": "59e43daef283a1253a8689cc45e0252cd45a5681",
+    "head_subject": "Emit canonical JSON without a second value tree",
+    "branch": "Cuexis-redesign",
+    "product_recovery_point": "ff934843663d2e59e80983da1e5fc2fddf77ee17",
+    "probe": {
+      "source": "D:\\Cuexis-redesign\\tests\\player\\gpu_throughput_probe.cpp",
+      "source_sha256": "ff25101217404dc4c26ba7c3423cd10c6d577317a20d347e7a1c15b232bc5dd1",
+      "source_bytes": 23912,
+      "measured_by_group_a": "c5e1c317dc0836950078220d56b599f11cf1d5606dfdb7185fa34ccf40329168",
+      "watcher_group_w1": [
+        {
+          "sha256": "56a04af48e242e23853a2d49c8a41c5ce6907c7137c4de2bbcb0b587edebe284",
+          "bytes": 5672960,
+          "arms": [
+            "player-40k-untraced",
+            "player-40k-traced"
+          ]
+        },
+        {
+          "sha256": "ffc8ebf322ad46398765acbfb0f9771cb246e27e0d41442078da50bbb01a7133",
+          "bytes": 5744640,
+          "arms": [
+            "probe-40k-static-untraced",
+            "probe-40k-static-traced"
+          ]
+        }
+      ],
+      "on_disk_now": {
+        "sha256": "c718206d6e3bacff357944f6f2e6c64f055816fe0858f3fc80dc0d3a496eb6a3",
+        "bytes": 5730816
+      },
+      "note": "Three probe builds appear: the one groups a/a2/b measured is no longer on disk, the one w1 measured is also gone, and the on-disk binary was relinked by the serializer change.  The three differ in bytes but emit the same 19 prepare scopes in the same order, which is what makes their vocabulary comparable; their times are not comparable across builds."
+    },
+    "player": {
+      "watcher_groups": {
+        "w1": [
+          {
+            "sha256": "56a04af48e242e23853a2d49c8a41c5ce6907c7137c4de2bbcb0b587edebe284",
+            "bytes": 5672960,
+            "arms": [
+              "player-40k-untraced",
+              "player-40k-traced"
+            ]
+          },
+          {
+            "sha256": "ffc8ebf322ad46398765acbfb0f9771cb246e27e0d41442078da50bbb01a7133",
+            "bytes": 5744640,
+            "arms": [
+              "probe-40k-static-untraced",
+              "probe-40k-static-traced"
+            ]
+          }
+        ]
+      },
+      "before_arm": "8591b67a48f51cc5c67a70a1330d56fce41cadc36edaecc245b4a6c1e4008f1b",
+      "before_arm_bytes": 5676544,
+      "after_arm": "cb575e15cb0d93559a131c547fff15ae4b0a9b720cca7a8b18d38d193be3e94e",
+      "after_arm_bytes": 5674496,
+      "after_arm_matches_on_disk": true,
+      "before_arm_matches_after_original": true,
+      "on_disk_now": {
+        "sha256": "cb575e15cb0d93559a131c547fff15ae4b0a9b720cca7a8b18d38d193be3e94e",
+        "bytes": 5674496
+      },
+      "note": "The before arm's digest is recorded by the watcher in runs/20261101-c/raw/*.json and recovered by summarise; the after arm's is hashed by the runner before the first launch and after the last one.  before_arm_matches_after_original restates the provenance defect that the superseded stamp embodies: it bound the after-arm digest to the before-arm numbers, which is why it is not used for any difference."
+    },
+    "serializer": {
+      "source": "D:\\Cuexis-redesign\\engine\\json_support\\src\\serialize.cpp",
+      "source_sha256": "f3e549d742f23420bc6b4d9c310085738bb17c53f1617532938f1bc101cbd7a1",
+      "source_bytes": 11451,
+      "commit": "59e43da",
+      "note": "The file the after arm measured; it did not exist before that commit."
+    },
+    "migrator_sha256": "2e4a6ecda6c31e5b50085d0a785c3b8a902a31618a910859e725baaea08f3543",
+    "migrator_bytes": 847360,
+    "corpus_size": 22,
+    "canonical_40k": {
+      "input_sha256": "247cb8ef1ae66eb829fff5f58cdb466cb819396afdbac418a5b9814db408a0ae",
+      "input_bytes": 12571828,
+      "output_sha256": "0cf308c86e0dcd98d63a01b2a342867cb6911bc976362da779e4de2d42656f52",
+      "output_bytes": 32180288,
+      "note": "The 40000-entity case: the canonical text is 32 180 288 bytes and hashes to output_sha256 in both sweeps.  The three archived copies of those bytes (prepare-cost/before/40k-canonical.json.gz, before/work/...-t3.json.gz, after/work/...-t3.json.gz) must gunzip to that digest."
+    },
+    "tabulated_sha256": "2d8c1d149df65f8d99509de205e2b1cfd24628f05f833b6f606c59a5886de455",
+    "tabulated_source_sha256": "4ec48d660e949b9d58e1081c2f7f37fa2747e137a2d65e1b502a44ef9770b0ae",
+    "tabulated_sha256_note": "tabulated_sha256 is the archived copy, which is CRLF-normalised like every other text copy; tabulated_source_sha256 is the byte-exact file tabulate_startup.py wrote, and it is what a re-run has to reproduce.",
+    "recorded_executables": [
+      {
+        "sha256": "56a04af48e242e23853a2d49c8a41c5ce6907c7137c4de2bbcb0b587edebe284",
+        "exe": null,
+        "bytes": 5672960,
+        "seen_in": [
+          {
+            "archive": "runs/20261101-w1/watch-set.json",
+            "label": "player-40k-untraced-00"
+          },
+          {
+            "archive": "runs/20261101-w1/watch-set.json",
+            "label": "player-40k-traced-00"
+          },
+          {
+            "archive": "runs/20261101-w1/watch-set.json",
+            "label": "player-40k-untraced-01"
+          },
+          {
+            "archive": "runs/20261101-w1/watch-set.json",
+            "label": "player-40k-traced-01"
+          },
+          {
+            "archive": "runs/20261101-w1/watch-set.json",
+            "label": "player-40k-untraced-02"
+          },
+          {
+            "archive": "runs/20261101-w1/watch-set.json",
+            "label": "player-40k-traced-02"
+          },
+          {
+            "archive": "runs/watch/player-40k-traced-b.json",
+            "label": "player-40k-traced-b"
+          },
+          {
+            "archive": "runs/watch/player-40k-traced-c.json",
+            "label": "player-40k-traced-c"
+          },
+          {
+            "archive": "runs/watch/player-40k-traced.json",
+            "label": "player-40k-traced"
+          }
+        ]
+      },
+      {
+        "sha256": "6938a31a3d1a1bae67c41b39688f8b9aff7e04804aefef9c4bb345886d273399",
+        "exe": null,
+        "bytes": 5677568,
+        "seen_in": [
+          {
+            "archive": "runs/smoke-w2/smoke-wf-01.json",
+            "label": "smoke-wf-01"
+          }
+        ]
+      },
+      {
+        "sha256": "8591b67a48f51cc5c67a70a1330d56fce41cadc36edaecc245b4a6c1e4008f1b",
+        "exe": null,
+        "bytes": 5676544,
+        "seen_in": [
+          {
+            "archive": "runs/20261101-c/raw/writer-split-00.json",
+            "label": "writer-split-00"
+          },
+          {
+            "archive": "runs/20261101-c/raw/writer-split-01.json",
+            "label": "writer-split-01"
+          },
+          {
+            "archive": "runs/20261101-c/raw/writer-split-02.json",
+            "label": "writer-split-02"
+          }
+        ]
+      },
+      {
+        "sha256": "9da8939cd8d2066d67f883e16c67d7d76199c93a994ed1ffa075aaefa11abdb4",
+        "exe": null,
+        "bytes": 5677056,
+        "seen_in": [
+          {
+            "archive": "runs/20261101-w2/watch-set.json",
+            "label": "player-40k-untraced-00"
+          },
+          {
+            "archive": "runs/20261101-w2/watch-set.json",
+            "label": "player-40k-window-first-00"
+          },
+          {
+            "archive": "runs/20261101-w2/watch-set.json",
+            "label": "player-40k-window-first-close1-00"
+          },
+          {
+            "archive": "runs/20261101-w2/watch-set.json",
+            "label": "player-40k-untraced-close1-00"
+          },
+          {
+            "archive": "runs/20261101-w2/watch-set.json",
+            "label": "player-40k-untraced-01"
+          },
+          {
+            "archive": "runs/20261101-w2/watch-set.json",
+            "label": "player-40k-window-first-01"
+          },
+          {
+            "archive": "runs/20261101-w2/watch-set.json",
+            "label": "player-40k-untraced-02"
+          },
+          {
+            "archive": "runs/20261101-w2/watch-set.json",
+            "label": "player-40k-window-first-02"
+          },
+          {
+            "archive": "runs/smoke-w2/smoke-wf2-01.json",
+            "label": "smoke-wf2-01"
+          }
+        ]
+      },
+      {
+        "sha256": "c5e1c317dc0836950078220d56b599f11cf1d5606dfdb7185fa34ccf40329168",
+        "exe": "out\\build\\rpa-candidate-release\\bin\\cuexis_execution_device_probe.exe",
+        "bytes": null,
+        "seen_in": [
+          {
+            "archive": "runs/20261101-a/startup-set.json",
+            "label": "20261101-a"
+          },
+          {
+            "archive": "runs/20261101-a2/startup-set.json",
+            "label": "20261101-a2"
+          },
+          {
+            "archive": "runs/20261101-b/startup-set.json",
+            "label": "20261101-b"
+          }
+        ]
+      },
+      {
+        "sha256": "ffc8ebf322ad46398765acbfb0f9771cb246e27e0d41442078da50bbb01a7133",
+        "exe": null,
+        "bytes": 5744640,
+        "seen_in": [
+          {
+            "archive": "runs/20261101-w1/watch-set.json",
+            "label": "probe-40k-static-untraced-00"
+          },
+          {
+            "archive": "runs/20261101-w1/watch-set.json",
+            "label": "probe-40k-static-traced-00"
+          }
+        ]
+      }
+    ],
+    "recorded_executables_note": "Read out of the archived run records rather than typed in: each entry names the file that records the digest.  Several of these executables no longer exist on disk, and two of them (6938a31a..., the threaded start-up order that died with 0xC0000409, and 9da8939c..., the thread-free order that the w2 groups measured) are cited by the tabulation, which is why they are listed here instead of being left dangling."
+  },
+  "environment": {
+    "platform": "Windows-11-10.0.26300-SP0",
+    "platform_version": "10.0.26300",
+    "machine": "AMD64",
+    "processor": "AMD64 Family 25 Model 117 Stepping 2, AuthenticAMD",
+    "logical_cpus": 16,
+    "total_memory_bytes": 33568395264,
+    "python": "3.14.6",
+    "python_64bit": true,
+    "cmake": "cmake version 4.3.3",
+    "ninja": "1.13.2",
+    "note": "The watcher and the tabulator read wall clock through time.perf_counter; every timestamp in this archive is local wall clock and every mtime is converted to UTC only where the field name says _utc."
+  },
+  "totals": {
+    "raw_bytes": 113087767,
+    "archived_bytes": 5443309,
+    "files": 226,
+    "text": 215,
+    "gzip": 8,
+    "binary": 2
+  }
+}

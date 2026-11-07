@@ -30,7 +30,7 @@ set_tests_properties(cuexis_contract_version_gate PROPERTIES
 add_test(
     NAME cuexis_contract_s6_a2
     COMMAND "${Python3_EXECUTABLE}" -B
-        "${PROJECT_SOURCE_DIR}/tools/check_stage6_a2.py"
+        "${PROJECT_SOURCE_DIR}/tools/verification/check_stage6_a2.py"
 )
 
 set_tests_properties(cuexis_contract_s6_a2 PROPERTIES

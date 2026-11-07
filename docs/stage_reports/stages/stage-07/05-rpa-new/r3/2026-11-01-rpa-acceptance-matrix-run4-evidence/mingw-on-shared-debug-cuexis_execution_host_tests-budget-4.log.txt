@@ -1,0 +1,8 @@
+["D:\\Cuexis-redesign\\out\\build\\rpa-boundary-mingw-shared\\bin\\cuexis_execution_host_tests.exe", "[measurement]"]
+Filters: [measurement]
+Randomness seeded to: 485660926
+{"event":"b5.cpu.content_boundary","test_only":true,"requirements":1,"prepare_us":6037,"packed_bytes":3047,"sample_present_us":622,"misses":1}
+{"event":"b5.cpu.content_boundary","test_only":true,"requirements":256,"prepare_us":299934,"packed_bytes":229514,"sample_present_us":645,"misses":256}
+===============================================================================
+All tests passed (1262 assertions in 1 test case)
+

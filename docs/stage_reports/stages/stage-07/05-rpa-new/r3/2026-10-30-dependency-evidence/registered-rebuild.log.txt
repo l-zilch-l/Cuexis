@@ -1,0 +1,3 @@
+ninja: Entering directory `D:/Cuexis-redesign/out/verification-20261030/r3-next-v1/dependency-root-v2/verification/msvc-includes-e9932bc5cb77/build'
+[1/2] Building CXX object CMakeFiles\canary.dir\main.cpp.obj
+[2/2] Linking CXX executable canary.exe

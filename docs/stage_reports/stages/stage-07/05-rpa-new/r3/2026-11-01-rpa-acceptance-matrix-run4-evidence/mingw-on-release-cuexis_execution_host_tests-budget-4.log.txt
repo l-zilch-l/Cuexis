@@ -1,0 +1,8 @@
+["D:\\Cuexis-redesign\\out\\build\\rpa-mingw-release\\bin\\cuexis_execution_host_tests.exe", "[measurement]"]
+Filters: [measurement]
+Randomness seeded to: 2380603437
+{"event":"b5.cpu.content_boundary","test_only":true,"requirements":1,"prepare_us":1344,"packed_bytes":3047,"sample_present_us":300,"misses":1}
+{"event":"b5.cpu.content_boundary","test_only":true,"requirements":256,"prepare_us":42479,"packed_bytes":229514,"sample_present_us":201,"misses":256}
+===============================================================================
+All tests passed (4140 assertions in 1 test case)
+

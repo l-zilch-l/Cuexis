@@ -1,0 +1,18 @@
+2026-11-01T11:37:45.319+08:00 [info] [Cuexis Player] [player.startup] Starting Cuexis Player 26.10.19-1
+2026-11-01T11:37:45.320+08:00 [info] [Cuexis Player] [player.build_flavor] experimental
+2026-11-01T11:37:45.321+08:00 [info] [Cuexis Player] [player.config] Profile system-default, gain 1.000000
+2026-11-01T11:37:45.336+08:00 [info] [Cuexis Player] [player.startup_phase] content_resolved elapsed_us 15886 total_us 15886
+2026-11-01T11:37:47.085+08:00 [info] [Cuexis Player] [player.startup_phase] content_prepared elapsed_us 1748435 total_us 1764322
+2026-11-01T11:37:47.148+08:00 [info] [Cuexis Player] [player.sdl] Video driver: windows
+2026-11-01T11:37:47.393+08:00 [info] [Cuexis Player] [player.startup_phase] window_created elapsed_us 308508 total_us 2072831
+2026-11-01T11:37:47.404+08:00 [info] [Cuexis Player] [player.opengl] Version: 3.3.0 NVIDIA 616.64
+2026-11-01T11:37:47.404+08:00 [info] [Cuexis Player] [player.opengl] Vendor: NVIDIA Corporation
+2026-11-01T11:37:47.404+08:00 [info] [Cuexis Player] [player.opengl] Renderer: NVIDIA GeForce RTX 4060 Laptop GPU/PCIe/SSE2
+2026-11-01T11:37:47.404+08:00 [info] [Cuexis Player] [player.startup_phase] backend_created elapsed_us 10890 total_us 2083721
+2026-11-01T11:37:47.405+08:00 [info] [Cuexis Player] [player.config] Session identity b4eb849265cea6ca0ee0b5c867ac78dbca9122bcdb55970c51b6b21ebd7ffb16
+2026-11-01T11:37:47.405+08:00 [info] [Cuexis Player] [player.playback] Prepared objects: 40000, behaviors: 1, resources: 2
+2026-11-01T11:37:47.405+08:00 [info] [Cuexis Player] [player.startup_phase] content_committed elapsed_us 392 total_us 2084114
+2026-11-01T11:37:47.405+08:00 [info] [Cuexis Player] [player.config] Effective window 1280x720, windowed, audio closed
+2026-11-01T11:37:47.405+08:00 [info] [Cuexis Player] [player.startup_phase] transport_playing elapsed_us 14 total_us 2084128
+2026-11-01T11:37:47.466+08:00 [info] [Cuexis Player] [player.startup_phase] first_frame_presented elapsed_us 60863 total_us 2144992 opaque 40000 transparent 0 render_us 0
+2026-11-01T11:37:47.466+08:00 [info] [Cuexis Player] [player.snapshot] Objects: 40000, opaque draws: 40000, transparent draws: 0, debug commands: 0

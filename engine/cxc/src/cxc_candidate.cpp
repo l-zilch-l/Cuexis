@@ -35,13 +35,6 @@ void addError(core::Diagnostics& diagnostics, std::string code, std::string mess
         core::DiagnosticSeverity::Error, std::move(code), std::move(message), std::move(path)}));
 }
 
-[[nodiscard]] auto isSha256(std::string_view value) noexcept -> bool {
-    return value.size() == 64U && std::ranges::all_of(value, [](const char character) {
-               return (character >= '0' && character <= '9') ||
-                      (character >= 'a' && character <= 'f');
-           });
-}
-
 [[nodiscard]] auto readString(const json::Reader& reader, std::string_view field)
     -> std::optional<std::string> {
     const auto child = reader.optionalField(field);
@@ -257,19 +250,19 @@ auto parseCandidateChartEntryExtension(std::string_view extensionsJson,
                      "Chart entry sourcePath is not portable", fieldPath + "/sourcePath");
         }
         const auto sourceIdentity = readString(*item, "sourceSemanticIdentity");
-        if (sourceIdentity && !isSha256(*sourceIdentity)) {
+        if (sourceIdentity && !detail::isSha256(*sourceIdentity)) {
             addError(result.diagnostics, "cxc.chart_entry.identity_invalid",
                      "sourceSemanticIdentity must be lowercase SHA-256",
                      fieldPath + "/sourceSemanticIdentity");
         }
         const auto compiledIdentity = readString(*item, "compiledSemanticIdentity");
-        if (compiledIdentity && !isSha256(*compiledIdentity)) {
+        if (compiledIdentity && !detail::isSha256(*compiledIdentity)) {
             addError(result.diagnostics, "cxc.chart_entry.identity_invalid",
                      "compiledSemanticIdentity must be lowercase SHA-256",
                      fieldPath + "/compiledSemanticIdentity");
         }
         const auto artifactIdentity = readString(*item, "artifactIdentity");
-        if (artifactIdentity && !isSha256(*artifactIdentity)) {
+        if (artifactIdentity && !detail::isSha256(*artifactIdentity)) {
             addError(result.diagnostics, "cxc.chart_entry.identity_invalid",
                      "artifactIdentity must be lowercase SHA-256", fieldPath + "/artifactIdentity");
         }
@@ -325,42 +318,54 @@ auto parseCandidateChartEntryExtension(std::string_view extensionsJson,
     return result;
 }
 
-auto validateCandidateChartBytes(const CandidateChartEntry& entry, std::span<const std::byte> bytes)
+namespace {
+
+// Both explicit Playback entry loading and package-wide tools use this content validator.
+// Tools discard the typed artifact without copying the source bytes into an owning result.
+auto validateCandidateContent(const CandidateChartEntry& entry, std::span<const std::byte> bytes,
+                              const std::string& path, bool retainArtifact)
     -> CandidateChartResult {
     CandidateChartResult result;
-    const auto path = std::string{"$/extensions/cuexis.chart-entry.v1/entries"};
-    if (!entry.playback || entry.kind != "chart" || entry.encoding != "packed-chart") {
-        addError(result.diagnostics, "cxc.chart_entry.entry_invalid",
-                 "Selected entry is not a playback Packed Chart candidate", path);
-        return result;
-    }
-    if (!entry.compilerProfile || *entry.compilerProfile != candidateProfile) {
-        addError(result.diagnostics, "cxc.candidate.profile_unsupported",
-                 "Candidate compiler profile is not registered", path + "/compilerProfile");
-    }
-    if (!entry.artifactIdentity || !isSha256(*entry.artifactIdentity)) {
-        addError(result.diagnostics, "cxc.chart_entry.identity_invalid",
-                 "artifactIdentity must be lowercase SHA-256", path + "/artifactIdentity");
-    } else if (detail::sha256Hex(bytes) != *entry.artifactIdentity) {
-        addError(result.diagnostics, "cxc.candidate.artifact_identity_mismatch",
-                 "artifactIdentity does not match exact entry bytes", path + "/artifactIdentity");
-    }
-    if (!entry.compiledSemanticIdentity || !isSha256(*entry.compiledSemanticIdentity)) {
-        addError(result.diagnostics, "cxc.chart_entry.identity_invalid",
-                 "compiledSemanticIdentity must be lowercase SHA-256",
-                 path + "/compiledSemanticIdentity");
-    }
-    if (!entry.expandedEntityCount || !entry.expandedRequirementCount ||
-        *entry.expandedEntityCount > maxCandidateCount ||
-        *entry.expandedRequirementCount > maxCandidateCount) {
-        addError(result.diagnostics, "cxc.candidate.budget_exceeded",
-                 "Candidate metadata counts are outside the supported range", path);
-    }
     if (bytes.size() > maxPackedBytes) {
         addError(result.diagnostics, "cxc.candidate.budget_exceeded",
-                 "Packed candidate exceeds the 16 MiB file limit", path + "/path");
+                 "Candidate exceeds the 16 MiB input limit", path + "/path");
+        return result;
     }
-    if (result.diagnostics.hasErrors()) {
+    const bool dynamic = entry.compilerProfile == chart::behaviorCandidateProfile;
+    if (dynamic) {
+        auto compiled = chart::compileBehaviorCandidate(
+            {reinterpret_cast<const char*>(bytes.data()), bytes.size()});
+        if (!compiled) {
+            addError(result.diagnostics, "cxc.candidate.source_invalid",
+                     "Behavior source candidate compilation failed", path + "/path");
+            return result;
+        }
+        const auto identity =
+            chart::packed::semanticIdentityHex(compiled->metadata.semanticIdentity);
+        if (identity != *entry.compiledSemanticIdentity) {
+            addError(result.diagnostics, "cxc.candidate.compiled_identity_mismatch",
+                     "Behavior source semantic identity mismatch",
+                     path + "/compiledSemanticIdentity");
+            return result;
+        }
+        if (compiled->runtime.objects.size() != *entry.expandedEntityCount ||
+            *entry.expandedRequirementCount != 0) {
+            addError(result.diagnostics, "cxc.candidate.count_mismatch",
+                     "Behavior source decoded counts differ", path);
+            return result;
+        }
+        if (!retainArtifact) {
+            return result;
+        }
+        CandidateChart candidate;
+        candidate.entry = entry;
+        candidate.bytes.assign(bytes.begin(), bytes.end());
+        candidate.semantic.chartId = compiled->runtime.chartId;
+        candidate.semantic.mainMusic = compiled->runtime.mainMusic;
+        candidate.semanticIdentity = compiled->metadata.semanticIdentity;
+        candidate.artifactIdentity = *entry.artifactIdentity;
+        candidate.behavior = std::move(*compiled);
+        result.candidate = std::move(candidate);
         return result;
     }
 
@@ -368,7 +373,14 @@ auto validateCandidateChartBytes(const CandidateChartEntry& entry, std::span<con
     // header, flags/revision, CRC, profile, semantic identity and typed model validation gates.
     const auto decoded = chart::packed::decode(bytes);
     if (!decoded) {
-        appendPackedError(result.diagnostics, decoded.error(), path + "/path");
+        if (retainArtifact) {
+            appendPackedError(result.diagnostics, decoded.error(), path + "/path");
+        } else {
+            // Preserve the developer tools' existing aggregate decode-failure diagnostic.
+            addError(result.diagnostics, "cxc.candidate.packed_invalid",
+                     "Playback candidate bytes fail Foundation semantic validation",
+                     path + "/path");
+        }
         result.diagnostics.sortDeterministically();
         return result;
     }
@@ -400,6 +412,9 @@ auto validateCandidateChartBytes(const CandidateChartEntry& entry, std::span<con
         return result;
     }
 
+    if (!retainArtifact) {
+        return result;
+    }
     CandidateChart candidate;
     candidate.entry = entry;
     candidate.bytes.assign(bytes.begin(), bytes.end());
@@ -408,6 +423,52 @@ auto validateCandidateChartBytes(const CandidateChartEntry& entry, std::span<con
     candidate.artifactIdentity = detail::sha256Hex(bytes);
     result.candidate = std::move(candidate);
     return result;
+}
+
+} // namespace
+
+auto validateCandidateChartBytes(const CandidateChartEntry& entry, std::span<const std::byte> bytes)
+    -> CandidateChartResult {
+    CandidateChartResult result;
+    const auto path = std::string{"$/extensions/cuexis.chart-entry.v1/entries"};
+    const bool dynamic = entry.compilerProfile == chart::behaviorCandidateProfile;
+    if (!entry.playback || entry.kind != "chart" ||
+        entry.encoding != (dynamic ? "source-json" : "packed-chart")) {
+        addError(result.diagnostics, "cxc.chart_entry.entry_invalid",
+                 "Selected entry encoding does not match a playback chart profile", path);
+        return result;
+    }
+    if (!entry.compilerProfile || (*entry.compilerProfile != candidateProfile && !dynamic)) {
+        addError(result.diagnostics, "cxc.candidate.profile_unsupported",
+                 "Candidate compiler profile is not registered", path + "/compilerProfile");
+    }
+    if (!entry.artifactIdentity || !detail::isSha256(*entry.artifactIdentity)) {
+        addError(result.diagnostics, "cxc.chart_entry.identity_invalid",
+                 "artifactIdentity must be lowercase SHA-256", path + "/artifactIdentity");
+    } else if (detail::sha256Hex(bytes) != *entry.artifactIdentity) {
+        addError(result.diagnostics, "cxc.candidate.artifact_identity_mismatch",
+                 "artifactIdentity does not match exact entry bytes", path + "/artifactIdentity");
+    }
+    if (!entry.compiledSemanticIdentity || !detail::isSha256(*entry.compiledSemanticIdentity)) {
+        addError(result.diagnostics, "cxc.chart_entry.identity_invalid",
+                 "compiledSemanticIdentity must be lowercase SHA-256",
+                 path + "/compiledSemanticIdentity");
+    }
+    if (!entry.expandedEntityCount || !entry.expandedRequirementCount ||
+        *entry.expandedEntityCount > maxCandidateCount ||
+        *entry.expandedRequirementCount > maxCandidateCount) {
+        addError(result.diagnostics, "cxc.candidate.budget_exceeded",
+                 "Candidate metadata counts are outside the supported range", path);
+    }
+    if (bytes.size() > maxPackedBytes) {
+        addError(result.diagnostics, "cxc.candidate.budget_exceeded",
+                 "Packed candidate exceeds the 16 MiB file limit", path + "/path");
+    }
+    if (result.diagnostics.hasErrors()) {
+        return result;
+    }
+
+    return validateCandidateContent(entry, bytes, path, true);
 }
 
 auto validateCandidateChartEntry(const CxcPackage& package, std::string_view requestedPath)
@@ -511,10 +572,12 @@ auto validateCandidateChartExtension(const CxcPackage& package) -> core::Diagnos
             addError(diagnostics, "cxc.candidate.entry_duplicate",
                      "Candidate extension declares an entry path more than once", field + "/path");
         }
-        if (*kind != "chart" || *encoding != "packed-chart") {
+        const auto earlyProfile = item->optionalField("compilerProfile");
+        const auto earlyText = earlyProfile ? earlyProfile->readString() : std::nullopt;
+        const bool dynamic = earlyText == chart::behaviorCandidateProfile;
+        if (*kind != "chart" || *encoding != (dynamic ? "source-json" : "packed-chart")) {
             addError(diagnostics, "cxc.candidate.entry_unsupported",
-                     "Chart candidate entries must use kind=chart and encoding=packed-chart",
-                     field);
+                     "Chart candidate encoding must match its registered compiler profile", field);
             continue;
         }
         const auto* archiveEntry = findArchiveEntry(package, *path);
@@ -529,13 +592,9 @@ auto validateCandidateChartExtension(const CxcPackage& package) -> core::Diagnos
                      "Candidate entry bytes are unavailable", field + "/path");
             continue;
         }
-        if (bytes->size() > maxPackedBytes) {
-            addError(diagnostics, "cxc.candidate.budget_exceeded",
-                     "Packed Chart candidate exceeds the 16 MiB entry limit", field + "/path");
-        }
         const auto artifactIdentity = readRequiredString(*item, "artifactIdentity");
         const auto artifactText = artifactIdentity.value_or(std::string{});
-        if (!isSha256(artifactText)) {
+        if (!detail::isSha256(artifactText)) {
             addError(diagnostics, "cxc.candidate.identity_invalid",
                      "artifactIdentity must be lowercase SHA-256", field + "/artifactIdentity");
         } else if (artifactText != archiveEntry->sha256) {
@@ -545,7 +604,7 @@ auto validateCandidateChartExtension(const CxcPackage& package) -> core::Diagnos
         }
         const auto compiledIdentity = readRequiredString(*item, "compiledSemanticIdentity");
         const auto compiledText = compiledIdentity.value_or(std::string{});
-        if (!isSha256(compiledText)) {
+        if (!detail::isSha256(compiledText)) {
             addError(diagnostics, "cxc.candidate.identity_invalid",
                      "compiledSemanticIdentity must be lowercase SHA-256",
                      field + "/compiledSemanticIdentity");
@@ -562,7 +621,7 @@ auto validateCandidateChartExtension(const CxcPackage& package) -> core::Diagnos
             }
             if (const auto sourceIdentity = item->optionalField("sourceSemanticIdentity")) {
                 const auto identity = sourceIdentity->readString();
-                if (!isSha256(identity.value_or(std::string{}))) {
+                if (!detail::isSha256(identity.value_or(std::string{}))) {
                     addError(diagnostics, "cxc.candidate.identity_invalid",
                              "sourceSemanticIdentity must be lowercase SHA-256",
                              field + "/sourceSemanticIdentity");
@@ -571,7 +630,7 @@ auto validateCandidateChartExtension(const CxcPackage& package) -> core::Diagnos
         }
         const auto profile = readRequiredString(*item, "compilerProfile");
         const auto profileText = profile.value_or(std::string{});
-        if (profileText != candidateProfile) {
+        if (profileText != candidateProfile && !dynamic) {
             addError(diagnostics, "cxc.candidate.profile_unsupported",
                      "Candidate compilerProfile is not registered for Foundation revision 1",
                      field + "/compilerProfile");
@@ -597,36 +656,19 @@ auto validateCandidateChartExtension(const CxcPackage& package) -> core::Diagnos
 
         if (playbackEnabled) {
             hasPlayback = true;
-            const auto decoded = chart::packed::decode(
-                *bytes, chart::PackedChartLimits{.maxPackedFileBytes = maxPackedBytes});
-            if (!decoded) {
-                addError(diagnostics, "cxc.candidate.packed_invalid",
-                         "Playback candidate bytes fail Foundation semantic validation",
-                         field + "/path");
-            } else if (const auto identity = chart::packed::semanticIdentity(*decoded)) {
-                if (compiledIdentity.has_value() &&
-                    compiledText != chart::packed::semanticIdentityHex(*identity)) {
-                    addError(diagnostics, "cxc.candidate.compiled_identity_mismatch",
-                             "compiledSemanticIdentity does not match the decoded Packed semantic "
-                             "identity",
-                             field + "/compiledSemanticIdentity");
-                }
-                if (entityCount.has_value() && decoded->entities.size() != entityCountValue) {
-                    addError(diagnostics, "cxc.candidate.count_mismatch",
-                             "Packed entity count does not match candidate metadata",
-                             field + "/expandedEntityCount");
-                }
-                if (requirementCount.has_value() &&
-                    countRequirements(*decoded) != requirementCountValue) {
-                    addError(diagnostics, "cxc.candidate.count_mismatch",
-                             "Packed requirement count does not match candidate metadata",
-                             field + "/expandedRequirementCount");
-                }
-            } else {
-                addError(diagnostics, "cxc.candidate.packed_invalid",
-                         "Playback candidate bytes do not yield a canonical semantic identity",
-                         field + "/path");
-            }
+            CandidateChartEntry entry{*path,
+                                      *kind,
+                                      *encoding,
+                                      true,
+                                      std::nullopt,
+                                      std::nullopt,
+                                      compiledText,
+                                      artifactText,
+                                      profileText,
+                                      entityCountValue,
+                                      requirementCountValue};
+            auto validated = validateCandidateContent(entry, *bytes, field, false);
+            diagnostics.append(std::move(validated.diagnostics));
         }
     }
     if (!hasPlayback) {

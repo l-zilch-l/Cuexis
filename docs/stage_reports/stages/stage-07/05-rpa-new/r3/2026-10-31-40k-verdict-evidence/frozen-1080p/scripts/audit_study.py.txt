@@ -1,0 +1,51 @@
+from pathlib import Path
+import json,hashlib,math,statistics,csv
+root=Path.cwd();base=Path(__file__).resolve().parent
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+phases=['pilot','duration-pilot','coarse','fine','gap','sustain','sustain-lower','sustain-static-1300'];allrows=[];frames=0
+for phase in phases:
+ folder=base/phase;reg=json.loads((folder/'registration.json').read_text());rows=json.loads((folder/'results.json').read_text())
+ assert len(rows)==len(reg['plan'])
+ assert reg['binary_sha256']==sha(base/'gpu_scale.exe') and reg['source_sha256']==sha(root/'tests/player/gpu_throughput_probe.cpp')
+ assert reg['native_sha256']==sha(base/'native.py')
+ controller={'pilot':'run_scale.py','coarse':'run_study.py'}.get(phase,'run_refine.py')
+ assert reg['runner_sha256']==sha(base/controller)
+ for r in rows:
+  assert r['valid'] and r['exit']==0 and r['ac_line']==1
+  assert r['controls']==dict(affinity=65535,priority=16384,qos_control=1,qos_state=0)
+  identity=r['identity'];assert identity['width']==1920 and identity['height']==1080 and identity['fixture_revision']==3 and identity['pixel_rgba']==[255,204,51,255]
+  assert identity['in_view_centers']==identity['entities']==identity['draws_per_frame']==r['entities']
+  log=folder/f'{r["index"]:02}-{r["mode"]}-{r["entities"]}.log';assert sha(log)==r['log_sha256']
+  text=log.read_text();samples=[json.loads(line.split(' ',1)[1]) for line in text.splitlines() if line.startswith('GPU_THROUGHPUT_SAMPLE ')]
+  assert [s['ordinal'] for s in samples]==list(range(identity['frames']))
+  assert all(abs(sum(s[k] for k in ('update_us','extract_us','submit_us','present_us'))-s['total_us'])<.001 for s in samples)
+  assert abs(sum(s['cycle_us'] for s in samples)-identity['measured_wall_us'])<.01
+  assert samples[-1]['end_us']==identity['measured_wall_us']
+  for metric,st in r['statistics'].items():
+   values=sorted(s[metric] for s in samples);n=len(values)
+   assert st['n']==n and st['max_us']==values[-1]
+   assert abs(st['mean_us']-statistics.mean(values))<1e-6
+   assert st['p99_us']==values[math.ceil(.99*n)-1]
+  if r['seconds']:
+   assert identity['measured_wall_us']>=r['seconds']*1000000
+   bins=[sum(int(s['end_us']//1000000)==sec for s in samples) for sec in range(r['seconds'])]
+   assert bins==r['one_second_completed_frames']
+  frames+=len(samples);allrows.append(dict(r,phase=phase))
+assert len(allrows)==107
+confirmed=[]
+for mode,phase,n in [('render-only','sustain-lower',1800),('static','sustain-static-1300',1300)]:
+ subset=[r for r in allrows if r['phase']==phase and r['mode']==mode and r['entities']==n]
+ assert len(subset)==3 and all(r['budget_pass'] for r in subset)
+ confirmed.append(dict(mode=mode,entities=n,independent_processes=3,seconds_per_process=20,fps=[r['wall_fps'] for r in subset],p99_ms=[r['statistics']['cycle_us']['p99_us']/1000 for r in subset],minimum_one_second_fps=min(min(r['one_second_completed_frames']) for r in subset)))
+old=root/'out/verification-20261029/gpu-40k-v1';m=json.loads((old/'final-manifest.json').read_text())
+assert all(sha(old/'build'/p)==v for p,v in m['build'].items())
+assert all(sha(old/p)==v for p,v in m['artifacts'].items())
+assert sha(old/'final-gpu_throughput_probe.cpp')==m['sources']['tests/player/gpu_throughput_probe.cpp']
+audit=dict(valid_processes=len(allrows),measured_frames=frames,groups={phase:sum(r['phase']==phase for r in allrows) for phase in phases},confirmed=confirmed,all_hashes_samples_statistics_reverified=True,old_720p_build_and_evidence_unchanged=True,formal_acceptance=False)
+(base/'audit.json').write_text(json.dumps(audit,indent=2))
+fields=['phase','mode','entities','repeat','seconds','measured_frames','fps','mean_cycle_ms','p99_cycle_ms','max_cycle_ms','budget_pass','min_second_fps']
+with (base/'measurements.csv').open('w',newline='',encoding='utf-8-sig') as f:
+ writer=csv.DictWriter(f,fieldnames=fields);writer.writeheader()
+ for r in allrows:
+  writer.writerow(dict(phase=r['phase'],mode=r['mode'],entities=r['entities'],repeat=r['repeat'],seconds=r['seconds'],measured_frames=r['identity']['frames'],fps=r['wall_fps'],mean_cycle_ms=r['statistics']['cycle_us']['mean_us']/1000,p99_cycle_ms=r['statistics']['cycle_us']['p99_us']/1000,max_cycle_ms=r['statistics']['cycle_us']['max_us']/1000,budget_pass=r['budget_pass'],min_second_fps=min(r['one_second_completed_frames']) if r['one_second_completed_frames'] else ''))
+print(json.dumps(audit,indent=2))

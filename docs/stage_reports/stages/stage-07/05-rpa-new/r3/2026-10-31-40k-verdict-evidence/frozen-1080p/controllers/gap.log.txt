@@ -1,0 +1,12 @@
+{"group": "gap", "index": 0, "mode": "render-only", "entities": 1600, "valid": true, "fps": 420.0835798290428, "p99_ms": 3.1486, "passed": true, "min_second_fps": null}
+{"group": "gap", "index": 1, "mode": "render-only", "entities": 1700, "valid": true, "fps": 377.6042658205646, "p99_ms": 3.448, "passed": true, "min_second_fps": null}
+{"group": "gap", "index": 2, "mode": "render-only", "entities": 1800, "valid": true, "fps": 365.5043121894165, "p99_ms": 3.3694, "passed": true, "min_second_fps": null}
+{"group": "gap", "index": 3, "mode": "render-only", "entities": 1900, "valid": true, "fps": 341.6038665913924, "p99_ms": 3.9551, "passed": true, "min_second_fps": null}
+{"group": "gap", "index": 4, "mode": "render-only", "entities": 1900, "valid": true, "fps": 358.36308344197704, "p99_ms": 3.5749, "passed": true, "min_second_fps": null}
+{"group": "gap", "index": 5, "mode": "render-only", "entities": 1800, "valid": true, "fps": 364.10575111709164, "p99_ms": 3.5191, "passed": true, "min_second_fps": null}
+{"group": "gap", "index": 6, "mode": "render-only", "entities": 1700, "valid": true, "fps": 368.99186686576644, "p99_ms": 3.3638000000000003, "passed": true, "min_second_fps": null}
+{"group": "gap", "index": 7, "mode": "render-only", "entities": 1600, "valid": true, "fps": 382.7865482682354, "p99_ms": 4.1458, "passed": true, "min_second_fps": null}
+{"group": "gap", "index": 8, "mode": "render-only", "entities": 1600, "valid": true, "fps": 413.1631009543379, "p99_ms": 3.0569, "passed": true, "min_second_fps": null}
+{"group": "gap", "index": 9, "mode": "render-only", "entities": 1700, "valid": true, "fps": 380.901013729958, "p99_ms": 3.3315, "passed": true, "min_second_fps": null}
+{"group": "gap", "index": 10, "mode": "render-only", "entities": 1800, "valid": true, "fps": 348.17106898034854, "p99_ms": 3.845, "passed": true, "min_second_fps": null}
+{"group": "gap", "index": 11, "mode": "render-only", "entities": 1900, "valid": true, "fps": 332.9816676942851, "p99_ms": 3.7083000000000004, "passed": true, "min_second_fps": null}

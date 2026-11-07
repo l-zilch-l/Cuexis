@@ -66,12 +66,12 @@ finding；后续所有 CTest 证据均在 Developer shell 内取得。
 
 | 层 | 入口 | 位置 |
 | --- | --- | --- |
-| typed 编码 | `chart::packed::encode` | [packed_chart_tables.cpp](../../../../engine/chart/src/packed_chart_tables.cpp) |
+| typed 编码 | `chart::packed::encode` | `engine/chart/src/packed_chart_tables_*.cpp` |
 | 结构检查 | `chart::packed::inspect` | 同上 |
 | 语义解码 | `chart::packed::decode` | 同上 |
 | 文件/原子输出与读取桥 | `PackedChartWriter::size/writeAtomic`、`PackedChartReader::read/decode` | [packed_chart_io.cpp](../../../../engine/chart/src/packed_chart_io.cpp) |
 | 预算声明 | `ChartLimits`、`PackedChartLimits` | [limits.hpp](../../../../engine/chart/include/cuexis/chart/limits.hpp) |
-| CXC candidate 校验 | `tools::validateCandidateChartExtension` | [cxc_candidate.cpp](../../../../tools/cxc_common/src/cxc_candidate.cpp) |
+| CXC candidate 校验 | `tools::validateCandidateChartExtension` | [cxc_candidate.cpp](../../../../tools/cxc/cxc_common/src/cxc_candidate.cpp) |
 | CXC 包闭包 | `CxcPackageLoader` | [cxc_package.cpp](../../../../engine/cxc/src/cxc_package.cpp) |
 | 容量测试 | low-reuse 40k | [chart_foundation_capacity_tests.cpp](../../../../tests/chart/chart_foundation_capacity_tests.cpp) |
 

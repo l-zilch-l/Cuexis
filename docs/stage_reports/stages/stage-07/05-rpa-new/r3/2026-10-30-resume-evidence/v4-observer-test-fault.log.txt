@@ -1,0 +1,11 @@
+Filters: [r3c-fault],[r3c-budget],[r3c]
+Randomness seeded to: 1
+R3C_STAGE 901 768 0
+R3C_STAGE 1101 768 0
+R3C_STAGE 1301 768 0
+R3C_STAGE 1501 768 0
+R3C_STAGE 1701 768 0
+R3C_STAGE 1901 768 0
+===============================================================================
+All tests passed (1006 assertions in 14 test cases)
+

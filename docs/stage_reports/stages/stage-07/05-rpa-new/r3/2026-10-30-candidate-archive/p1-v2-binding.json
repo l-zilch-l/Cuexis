@@ -1,0 +1,14 @@
+{
+  "scope": "Claim ResourceRef binary lookup and local repeated-kind definition index only. Baseline explicitly overrides current typed-existence object from packed-exists-v1. Ordinary scalar common libs, no formal/final matrix claim.",
+  "head": "b1534a1f7482c59f6771685437576107ad7b0b9f",
+  "original_sha256": "5359b434b406d3d270f2c43d6b56ec19e0ad1110a9cac224b2ebccb826ca1b1f",
+  "candidate_sha256": "fada9eb3d18a8c443209ea258783796e74924a9bbd43ead14bcac4a12935a6f8",
+  "probe_sha256": "c8cefc6f476b033e4cb0961f991b7df5a47cb4628e6b23d3b306802a0ca37db5",
+  "binaries": {
+    "packed-baseline.exe": "ebdbd6baa3ce9b2053df3cd5583939fada7fcb7dcad0883c3febcbe1a32e891d",
+    "packed-candidate.exe": "556f05dae777133d7220a0ad27854ba007bd5341ab3b359d01b40996a42c363c",
+    "prepare-wire-baseline.exe": "abf5be8d2c09d8e2de1d66174020d837450220cb829da98ef22b9ceb6546c7b5",
+    "prepare-wire-candidate.exe": "86ff1cfef27a8201706600e7a5b04c9d2ca61b015bde3dddfd896d27d3e6087c"
+  },
+  "commands_sha256": "43e8c7746fda29490610231a49a1a68ba2c33975a3a321b6715aa2a7879b4a7a"
+}

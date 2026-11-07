@@ -1,0 +1,8 @@
+["D:\\Cuexis-redesign\\out\\build\\mingw-headless-debug\\bin\\cuexis_execution_host_tests.exe", "[measurement]"]
+Filters: [measurement]
+Randomness seeded to: 2184978702
+{"event":"b5.cpu.content_boundary","test_only":true,"requirements":1,"prepare_us":5142,"packed_bytes":3047,"sample_present_us":579,"misses":1}
+{"event":"b5.cpu.content_boundary","test_only":true,"requirements":256,"prepare_us":294933,"packed_bytes":229514,"sample_present_us":582,"misses":256}
+===============================================================================
+All tests passed (1414 assertions in 1 test case)
+

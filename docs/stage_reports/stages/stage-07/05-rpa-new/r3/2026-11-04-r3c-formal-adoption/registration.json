@@ -1,0 +1,516 @@
+{
+  "schema": "r3c.formal-pair.v1",
+  "formal": true,
+  "scope": "R3c baseline versus candidate on identical source except the archived R3c patch. CPU Host request through target present only; not physical GPU, load, memory-cap, R4, production or R3-exit acceptance.",
+  "started_local": "2026-11-04 04:53:10",
+  "cases": [
+    {
+      "id": "1k-h902",
+      "requirements": 1000,
+      "horizon": 902
+    },
+    {
+      "id": "40k-h5",
+      "requirements": 40000,
+      "horizon": 5
+    },
+    {
+      "id": "40k-h902",
+      "requirements": 40000,
+      "horizon": 902
+    }
+  ],
+  "design": {
+    "windows": 3,
+    "pairs_per_window": 3,
+    "seeks_per_process": 16,
+    "order_per_unit": [
+      "AB/BA/AB",
+      "BA/AB/BA",
+      "AB/BA/AB"
+    ],
+    "machine_warmup_seconds_per_process": 30,
+    "warmup_test": "PD machine CPU warmup",
+    "affinity_mask": 4,
+    "priority": "BELOW_NORMAL",
+    "power_throttling": "execution throttling OFF",
+    "no_parallel_build": true,
+    "no_retry_or_replacement": true
+  },
+  "decision_rule": "For each case, form the candidate/baseline ratio from each process's median request_to_present_us over 16 requests. Use Student-t 95% intervals on the log ratios for each window and all nine pairs. A case passes when the all-nine upper bound is <= 1.10. Every candidate request must also be <= 20000 us. The 15% (max-min)/median screen is reported for the formal unit and does not replace the ratio decision or discard slow values.",
+  "source": {
+    "baseline": {
+      "root": "D:\\Cuexis-r3formal-base",
+      "head": "c085688a3a58bc99d531f66aefb1d90ed73e33b7",
+      "status": "M engine/chart/src/canonical_chart_loader_units_internal.hpp\n M engine/chart/src/packed_chart_tables_decoder_internal.hpp\n M engine/playback/src/playback_session_execution.cpp\n M engine/playback/src/playback_session_prepare_internal.hpp\n M engine/render_opengl/src/open_gl_presentation_units_internal.hpp\n M examples/reference_host/src/host_runner.cpp\n M tests/animation/animation_mixer_test_fixture.hpp\n M tests/asset_publish/asset_publish_test_fixture.hpp\n M tests/chart/chart_v4_c2_fixture.hpp\n M tests/cxc/cxc_package_test_fixture.hpp\n M tests/judgement/gameplay_pattern_compile_fixture.hpp\n M tests/judgement/timebase_test_fixture.hpp\n M tests/pd/pd5_host_probe.cpp\n M tests/player/player_control_fixture.hpp\n M tests/rpa/rpa_b5_seek_host_tests.cpp",
+      "diff_sha256": "9ce318b17cc6072353244fec588bda43cbdab244bb3ea502ca2ce6863fa5a2a8",
+      "files": {
+        "tests/rpa/rpa_b5_seek_host_tests.cpp": "0da5fa6498cb8d116e96a935ec3d41e3e8e90c0fedcf4e3b4ae0edc441238825"
+      }
+    },
+    "candidate": {
+      "root": "D:\\Cuexis-r3c-v4",
+      "head": "c085688a3a58bc99d531f66aefb1d90ed73e33b7",
+      "status": "M engine/chart/src/canonical_chart_loader_units_internal.hpp\n M engine/chart/src/packed_chart_tables_decoder_internal.hpp\n M engine/judgement/include/cuexis/judgement/shared_sequence.hpp\n M engine/judgement/src/execution_kernel.hpp\n M engine/judgement/src/execution_kernel_advance.cpp\n M engine/judgement/src/execution_kernel_archive.cpp\n M engine/judgement/src/execution_kernel_impl_setup.cpp\n M engine/judgement/src/execution_kernel_internal.hpp\n M engine/judgement/src/execution_kernel_query.cpp\n M engine/judgement/src/execution_kernel_restore.cpp\n M engine/judgement/src/recovery_codec.cpp\n M engine/playback/src/playback_session_execution.cpp\n M engine/playback/src/playback_session_prepare_internal.hpp\n M engine/render_opengl/src/open_gl_presentation_units_internal.hpp\n M examples/reference_host/src/host_runner.cpp\n M tests/animation/animation_mixer_test_fixture.hpp\n M tests/asset_publish/asset_publish_test_fixture.hpp\n M tests/chart/chart_v4_c2_fixture.hpp\n M tests/cxc/cxc_package_test_fixture.hpp\n M tests/judgement/gameplay_pattern_compile_fixture.hpp\n M tests/judgement/timebase_test_fixture.hpp\n M tests/pd/pd5_host_probe.cpp\n M tests/player/player_control_fixture.hpp\n M tests/rpa/CMakeLists.txt\n A tests/rpa/rpa_b3_r3c_tests.cpp\n M tests/rpa/rpa_b5_seek_host_tests.cpp",
+      "diff_sha256": "71389b93a1db3d658c4652b9c6bb0ea7a0e02878a355755ee480f3857dc593b5",
+      "files": {
+        "tests/rpa/rpa_b5_seek_host_tests.cpp": "0da5fa6498cb8d116e96a935ec3d41e3e8e90c0fedcf4e3b4ae0edc441238825",
+        "tests/rpa/rpa_b3_r3c_tests.cpp": "9fdd9c41c6ce241b0ac60dfa74e85fd611dc48ac6dcf6d51c7f42ef459e0a041"
+      }
+    }
+  },
+  "binaries": {
+    "baseline": {
+      "path": "D:\\Cuexis-r3formal-base\\out\\build\\formal-release\\bin\\cuexis_execution_host_tests.exe",
+      "sha256": "1b72a366a222d136cf2f57abba10440b6898e9f58bb5aaaa1c99a5a594579660",
+      "size": 6190592
+    },
+    "candidate": {
+      "path": "D:\\Cuexis-r3c-v4\\out\\build\\formal-release\\bin\\cuexis_execution_host_tests.exe",
+      "sha256": "8e47ae866d08ca3b4c217964f5f967673ac4d20757d0ee839ef5a9852ee5eb94",
+      "size": 6217216
+    },
+    "baseline_warmup": {
+      "path": "D:\\Cuexis-r3formal-base\\out\\build\\formal-release\\bin\\cuexis_pd_baseline_probe.exe",
+      "sha256": "1d57e18c99f6faeb165d8f8efeece415409178ac8bdb2666b1f9fcf858b54600"
+    },
+    "candidate_warmup": {
+      "path": "D:\\Cuexis-r3c-v4\\out\\build\\formal-release\\bin\\cuexis_pd_baseline_probe.exe",
+      "sha256": "4bd43cbc16b60d10ddb0e6d47b688ce42c21782bdc02eb3fd02e7e45c24e2335"
+    }
+  },
+  "plan": [
+    {
+      "case": "1k-h902",
+      "requirements": 1000,
+      "horizon": 902,
+      "window": 0,
+      "pair": 0,
+      "variant": "A"
+    },
+    {
+      "case": "1k-h902",
+      "requirements": 1000,
+      "horizon": 902,
+      "window": 0,
+      "pair": 0,
+      "variant": "B"
+    },
+    {
+      "case": "1k-h902",
+      "requirements": 1000,
+      "horizon": 902,
+      "window": 0,
+      "pair": 1,
+      "variant": "A"
+    },
+    {
+      "case": "1k-h902",
+      "requirements": 1000,
+      "horizon": 902,
+      "window": 0,
+      "pair": 1,
+      "variant": "B"
+    },
+    {
+      "case": "1k-h902",
+      "requirements": 1000,
+      "horizon": 902,
+      "window": 0,
+      "pair": 2,
+      "variant": "A"
+    },
+    {
+      "case": "1k-h902",
+      "requirements": 1000,
+      "horizon": 902,
+      "window": 0,
+      "pair": 2,
+      "variant": "B"
+    },
+    {
+      "case": "1k-h902",
+      "requirements": 1000,
+      "horizon": 902,
+      "window": 1,
+      "pair": 0,
+      "variant": "B"
+    },
+    {
+      "case": "1k-h902",
+      "requirements": 1000,
+      "horizon": 902,
+      "window": 1,
+      "pair": 0,
+      "variant": "A"
+    },
+    {
+      "case": "1k-h902",
+      "requirements": 1000,
+      "horizon": 902,
+      "window": 1,
+      "pair": 1,
+      "variant": "B"
+    },
+    {
+      "case": "1k-h902",
+      "requirements": 1000,
+      "horizon": 902,
+      "window": 1,
+      "pair": 1,
+      "variant": "A"
+    },
+    {
+      "case": "1k-h902",
+      "requirements": 1000,
+      "horizon": 902,
+      "window": 1,
+      "pair": 2,
+      "variant": "B"
+    },
+    {
+      "case": "1k-h902",
+      "requirements": 1000,
+      "horizon": 902,
+      "window": 1,
+      "pair": 2,
+      "variant": "A"
+    },
+    {
+      "case": "1k-h902",
+      "requirements": 1000,
+      "horizon": 902,
+      "window": 2,
+      "pair": 0,
+      "variant": "A"
+    },
+    {
+      "case": "1k-h902",
+      "requirements": 1000,
+      "horizon": 902,
+      "window": 2,
+      "pair": 0,
+      "variant": "B"
+    },
+    {
+      "case": "1k-h902",
+      "requirements": 1000,
+      "horizon": 902,
+      "window": 2,
+      "pair": 1,
+      "variant": "A"
+    },
+    {
+      "case": "1k-h902",
+      "requirements": 1000,
+      "horizon": 902,
+      "window": 2,
+      "pair": 1,
+      "variant": "B"
+    },
+    {
+      "case": "1k-h902",
+      "requirements": 1000,
+      "horizon": 902,
+      "window": 2,
+      "pair": 2,
+      "variant": "A"
+    },
+    {
+      "case": "1k-h902",
+      "requirements": 1000,
+      "horizon": 902,
+      "window": 2,
+      "pair": 2,
+      "variant": "B"
+    },
+    {
+      "case": "40k-h5",
+      "requirements": 40000,
+      "horizon": 5,
+      "window": 0,
+      "pair": 0,
+      "variant": "A"
+    },
+    {
+      "case": "40k-h5",
+      "requirements": 40000,
+      "horizon": 5,
+      "window": 0,
+      "pair": 0,
+      "variant": "B"
+    },
+    {
+      "case": "40k-h5",
+      "requirements": 40000,
+      "horizon": 5,
+      "window": 0,
+      "pair": 1,
+      "variant": "A"
+    },
+    {
+      "case": "40k-h5",
+      "requirements": 40000,
+      "horizon": 5,
+      "window": 0,
+      "pair": 1,
+      "variant": "B"
+    },
+    {
+      "case": "40k-h5",
+      "requirements": 40000,
+      "horizon": 5,
+      "window": 0,
+      "pair": 2,
+      "variant": "A"
+    },
+    {
+      "case": "40k-h5",
+      "requirements": 40000,
+      "horizon": 5,
+      "window": 0,
+      "pair": 2,
+      "variant": "B"
+    },
+    {
+      "case": "40k-h5",
+      "requirements": 40000,
+      "horizon": 5,
+      "window": 1,
+      "pair": 0,
+      "variant": "B"
+    },
+    {
+      "case": "40k-h5",
+      "requirements": 40000,
+      "horizon": 5,
+      "window": 1,
+      "pair": 0,
+      "variant": "A"
+    },
+    {
+      "case": "40k-h5",
+      "requirements": 40000,
+      "horizon": 5,
+      "window": 1,
+      "pair": 1,
+      "variant": "B"
+    },
+    {
+      "case": "40k-h5",
+      "requirements": 40000,
+      "horizon": 5,
+      "window": 1,
+      "pair": 1,
+      "variant": "A"
+    },
+    {
+      "case": "40k-h5",
+      "requirements": 40000,
+      "horizon": 5,
+      "window": 1,
+      "pair": 2,
+      "variant": "B"
+    },
+    {
+      "case": "40k-h5",
+      "requirements": 40000,
+      "horizon": 5,
+      "window": 1,
+      "pair": 2,
+      "variant": "A"
+    },
+    {
+      "case": "40k-h5",
+      "requirements": 40000,
+      "horizon": 5,
+      "window": 2,
+      "pair": 0,
+      "variant": "A"
+    },
+    {
+      "case": "40k-h5",
+      "requirements": 40000,
+      "horizon": 5,
+      "window": 2,
+      "pair": 0,
+      "variant": "B"
+    },
+    {
+      "case": "40k-h5",
+      "requirements": 40000,
+      "horizon": 5,
+      "window": 2,
+      "pair": 1,
+      "variant": "A"
+    },
+    {
+      "case": "40k-h5",
+      "requirements": 40000,
+      "horizon": 5,
+      "window": 2,
+      "pair": 1,
+      "variant": "B"
+    },
+    {
+      "case": "40k-h5",
+      "requirements": 40000,
+      "horizon": 5,
+      "window": 2,
+      "pair": 2,
+      "variant": "A"
+    },
+    {
+      "case": "40k-h5",
+      "requirements": 40000,
+      "horizon": 5,
+      "window": 2,
+      "pair": 2,
+      "variant": "B"
+    },
+    {
+      "case": "40k-h902",
+      "requirements": 40000,
+      "horizon": 902,
+      "window": 0,
+      "pair": 0,
+      "variant": "A"
+    },
+    {
+      "case": "40k-h902",
+      "requirements": 40000,
+      "horizon": 902,
+      "window": 0,
+      "pair": 0,
+      "variant": "B"
+    },
+    {
+      "case": "40k-h902",
+      "requirements": 40000,
+      "horizon": 902,
+      "window": 0,
+      "pair": 1,
+      "variant": "A"
+    },
+    {
+      "case": "40k-h902",
+      "requirements": 40000,
+      "horizon": 902,
+      "window": 0,
+      "pair": 1,
+      "variant": "B"
+    },
+    {
+      "case": "40k-h902",
+      "requirements": 40000,
+      "horizon": 902,
+      "window": 0,
+      "pair": 2,
+      "variant": "A"
+    },
+    {
+      "case": "40k-h902",
+      "requirements": 40000,
+      "horizon": 902,
+      "window": 0,
+      "pair": 2,
+      "variant": "B"
+    },
+    {
+      "case": "40k-h902",
+      "requirements": 40000,
+      "horizon": 902,
+      "window": 1,
+      "pair": 0,
+      "variant": "B"
+    },
+    {
+      "case": "40k-h902",
+      "requirements": 40000,
+      "horizon": 902,
+      "window": 1,
+      "pair": 0,
+      "variant": "A"
+    },
+    {
+      "case": "40k-h902",
+      "requirements": 40000,
+      "horizon": 902,
+      "window": 1,
+      "pair": 1,
+      "variant": "B"
+    },
+    {
+      "case": "40k-h902",
+      "requirements": 40000,
+      "horizon": 902,
+      "window": 1,
+      "pair": 1,
+      "variant": "A"
+    },
+    {
+      "case": "40k-h902",
+      "requirements": 40000,
+      "horizon": 902,
+      "window": 1,
+      "pair": 2,
+      "variant": "B"
+    },
+    {
+      "case": "40k-h902",
+      "requirements": 40000,
+      "horizon": 902,
+      "window": 1,
+      "pair": 2,
+      "variant": "A"
+    },
+    {
+      "case": "40k-h902",
+      "requirements": 40000,
+      "horizon": 902,
+      "window": 2,
+      "pair": 0,
+      "variant": "A"
+    },
+    {
+      "case": "40k-h902",
+      "requirements": 40000,
+      "horizon": 902,
+      "window": 2,
+      "pair": 0,
+      "variant": "B"
+    },
+    {
+      "case": "40k-h902",
+      "requirements": 40000,
+      "horizon": 902,
+      "window": 2,
+      "pair": 1,
+      "variant": "A"
+    },
+    {
+      "case": "40k-h902",
+      "requirements": 40000,
+      "horizon": 902,
+      "window": 2,
+      "pair": 1,
+      "variant": "B"
+    },
+    {
+      "case": "40k-h902",
+      "requirements": 40000,
+      "horizon": 902,
+      "window": 2,
+      "pair": 2,
+      "variant": "A"
+    },
+    {
+      "case": "40k-h902",
+      "requirements": 40000,
+      "horizon": 902,
+      "window": 2,
+      "pair": 2,
+      "variant": "B"
+    }
+  ]
+}

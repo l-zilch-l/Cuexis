@@ -1,5 +1,6 @@
 #include "playback_candidate_internal.hpp"
 
+#include <cuexis/chart/behavior_candidate.hpp>
 #include <cuexis/chart/candidate_lowering.hpp>
 #include <cuexis/chart/packed_chart_tables.hpp>
 #include <cuexis/cxc/cxc_writer.hpp>
@@ -7,16 +8,27 @@
 #include <cuexis/playback/playback_source.hpp>
 #include <cuexis_internal/sha256.hpp>
 
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
+#include <algorithm>
+#include <atomic>
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
 #include <iterator>
+#include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
+
+#if defined(_WIN32)
+#include <process.h>
+#else
+#include <unistd.h>
+#endif
 
 namespace {
 
@@ -117,11 +129,21 @@ struct PackedCandidate final {
 class TemporaryDirectory final {
   public:
     TemporaryDirectory() {
-        static unsigned sequence = 0;
-        path_ = std::filesystem::temp_directory_path() /
-                ("cuexis-candidate-" + std::to_string(++sequence));
-        std::filesystem::remove_all(path_);
-        std::filesystem::create_directories(path_);
+        static std::atomic<unsigned> sequence{0};
+#if defined(_WIN32)
+        const auto process = _getpid();
+#else
+        const auto process = getpid();
+#endif
+        for (unsigned attempt = 0; attempt < 4096; ++attempt) {
+            path_ = std::filesystem::temp_directory_path() /
+                    ("cuexis-candidate-" + std::to_string(process) + "-" +
+                     std::to_string(sequence.fetch_add(1)));
+            if (std::filesystem::create_directory(path_)) {
+                return;
+            }
+        }
+        throw std::runtime_error{"Cannot reserve an isolated candidate fixture directory"};
     }
 
     ~TemporaryDirectory() {
@@ -168,6 +190,70 @@ TEST_CASE("Candidate factories stay disabled and do not read their inputs",
 
 #ifdef CUEXIS_ENABLE_CHART_V5_CANDIDATE
 
+TEST_CASE("V5 Behavior CXC owns and evaluates moving source across time discontinuities",
+          "[playback][candidate][behavior-candidate]") {
+    using namespace cuexis;
+    const auto fixture =
+        std::filesystem::path{CUEXIS_SOURCE_DIR} / "tests/fixtures/chart_format_update";
+    const auto text = readText(fixture / "behavior_candidate.v5.json");
+    auto compiled = chart::compileBehaviorCandidate(text);
+    REQUIRE(compiled);
+    cxc::CxcWriteRequest request;
+    request.entries = {
+        {"cuexis.project.json",
+         textBytes(readText(fixture / "static_project/cuexis.project.json"))},
+        {"assets/cuexis.asset-index.json",
+         textBytes(readText(fixture / "static_project/assets/cuexis.asset-index.json"))},
+        {"assets/charts/main.cuexis.chart.json",
+         textBytes(readText(fixture / "static_project/assets/charts/main.cuexis.chart.json"))},
+        {"compiled/chart.v5.json", textBytes(text)}};
+    auto extension = extensionJson(
+        {textBytes(text), chart::packed::semanticIdentityHex(compiled->metadata.semanticIdentity),
+         core::detail::sha256Hex(textBytes(text))},
+        "compiled/chart.v5.json");
+    const auto encoding = extension.find("packed-chart");
+    extension.replace(encoding, std::string{"packed-chart"}.size(), "source-json");
+    const auto profile = extension.find("candidate.static-tap-lanes4-v1");
+    extension.replace(profile, std::string{"candidate.static-tap-lanes4-v1"}.size(),
+                      chart::behaviorCandidateProfile);
+    const auto count = extension.find("\"expandedRequirementCount\":1");
+    extension.replace(count, std::string{"\"expandedRequirementCount\":1"}.size(),
+                      "\"expandedRequirementCount\":0");
+    request.extensionsJson = extension;
+    auto written = cxc::CxcWriter::write(std::move(request));
+    REQUIRE(written.hasValue());
+    auto source =
+        playback::PlaybackSource::fromCxcMemoryEntry(*written.bytes, "compiled/chart.v5.json");
+    REQUIRE(source);
+    auto restrictedSource =
+        playback::PlaybackSource::fromCxcMemoryEntry(*written.bytes, "compiled/chart.v5.json");
+    REQUIRE(restrictedSource);
+    written.bytes.reset(); // The source must retain both bytes and compiled typed data.
+    playback::PlaybackSession session;
+    auto restricted = session.capabilities();
+    REQUIRE(restricted);
+    std::erase(restricted->ids, playback::capabilityBehaviorEventV2);
+    playback::PlaybackSession unsupported{*restricted};
+    CHECK_FALSE(
+        unsupported.prepareLoad(std::move(*restrictedSource), playback::PlaybackMode::ChartClock)
+            .has_value());
+    REQUIRE(session.load(std::move(*source), playback::PlaybackMode::ChartClock));
+    CHECK(session.contentInfo()->chartFormatVersion == 5);
+    for (const auto [time, expected, discontinuity] : {std::tuple{0.0, 0.0F, 0ULL},
+                                                       {500.0, 1.0F, 0ULL},
+                                                       {1000.0, 2.0F, 0ULL},
+                                                       {500.0, 1.0F, 1ULL},
+                                                       {1500.0, 2.0F, 1ULL}}) {
+        REQUIRE(session.update({.chartTimeMs = time,
+                                .simulationDeltaTimeMs = 0,
+                                .timeDiscontinuityId = discontinuity}));
+        auto frame = session.extractFrame({.width = 16, .height = 16});
+        REQUIRE(frame);
+        REQUIRE(frame->objects.size() == 1);
+        CHECK(frame->objects[0].worldMatrix[13] == Catch::Approx(expected));
+    }
+}
+
 TEST_CASE("Explicit candidate file and memory sources prepare the same typed chart",
           "[playback][candidate][prepare]") {
     const auto candidate = packedCandidate();
@@ -180,6 +266,7 @@ TEST_CASE("Explicit candidate file and memory sources prepare the same typed cha
     auto prepared =
         session.prepareLoad(std::move(*memory), cuexis::playback::PlaybackMode::ChartClock);
     REQUIRE(prepared.has_value());
+#if defined(CUEXIS_PLAYBACK_STATIC_DEFINE)
     const auto* metadata = cuexis::playback::detail::CandidateMetadataAccess::prepared(*prepared);
     REQUIRE(metadata != nullptr);
     REQUIRE(metadata->objects.size() == 1);
@@ -188,9 +275,10 @@ TEST_CASE("Explicit candidate file and memory sources prepare the same typed cha
     CHECK(metadata->semanticIdentity ==
           cuexis::chart::packed::semanticIdentity(tapChart()).value());
     CHECK(metadata->resourceClosure.resources.empty());
+#endif
 
-    const auto expected =
-        cuexis::chart::assembleCandidatePreparedSemanticIdentity(metadata->semanticIdentity, {});
+    const auto expected = cuexis::chart::assembleCandidatePreparedSemanticIdentity(
+        cuexis::chart::packed::semanticIdentity(tapChart()).value(), {});
     REQUIRE(expected.has_value());
     REQUIRE(prepared->semanticIdentity().has_value());
     CHECK(prepared->semanticIdentity()->sha256 == expected->sha256);
@@ -199,9 +287,11 @@ TEST_CASE("Explicit candidate file and memory sources prepare the same typed cha
     CHECK(prepared->contentInfo()->chartId == "019b0000-0000-7abc-8def-000000000001");
 
     REQUIRE(session.commit(std::move(*prepared)).has_value());
+#if defined(CUEXIS_PLAYBACK_STATIC_DEFINE)
     const auto* active = cuexis::playback::detail::CandidateMetadataAccess::active(session);
     REQUIRE(active != nullptr);
     CHECK(active->objects[0].executionId == "019b0000-0000-7abc-8def-000000000010");
+#endif
     REQUIRE(
         session.update({.chartTimeMs = 0.0, .simulationDeltaTimeMs = 0.0, .timeDiscontinuityId = 0})
             .has_value());
@@ -279,7 +369,9 @@ TEST_CASE("Explicit project candidate entry prepares the packed chart rather tha
     auto v4Frame = v4Session.extractFrame({.width = 16, .height = 16});
     REQUIRE(v4Frame.has_value());
     CHECK(v4Frame->objects[0].id != frame->objects[0].id);
+#if defined(CUEXIS_PLAYBACK_STATIC_DEFINE)
     CHECK(cuexis::playback::detail::CandidateMetadataAccess::active(v4Session) == nullptr);
+#endif
 }
 
 TEST_CASE("Candidate prepare failure leaves the active session unchanged",
@@ -318,7 +410,9 @@ TEST_CASE("Candidate prepare failure leaves the active session unchanged",
     CHECK(session.state().value() == cuexis::playback::SessionState::Ready);
     CHECK(session.semanticIdentity()->sha256 == identity->sha256);
     CHECK(session.contentInfo()->chartFormatVersion == info->chartFormatVersion);
+#if defined(CUEXIS_PLAYBACK_STATIC_DEFINE)
     CHECK(cuexis::playback::detail::CandidateMetadataAccess::active(session) == nullptr);
+#endif
 }
 
 #endif

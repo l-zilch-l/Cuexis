@@ -11,19 +11,25 @@
 
 namespace cuexis::core::detail {
 
+enum class Sha256Backend { automatic, portable };
+
 class CUEXIS_CORE_API Sha256 final {
   public:
+    explicit Sha256(Sha256Backend backend = Sha256Backend::automatic) noexcept;
+    [[nodiscard]] static auto hardwareAvailable() noexcept -> bool;
     void update(std::span<const std::byte> bytes) noexcept;
     [[nodiscard]] auto finish() const noexcept -> std::array<std::uint8_t, 32>;
 
   private:
     void transform(const std::array<std::uint8_t, 64>& block) noexcept;
+    void transformPortable(const std::array<std::uint8_t, 64>& block) noexcept;
 
     std::array<std::uint32_t, 8> state_{0x6A09E667U, 0xBB67AE85U, 0x3C6EF372U, 0xA54FF53AU,
                                         0x510E527FU, 0x9B05688CU, 0x1F83D9ABU, 0x5BE0CD19U};
     std::array<std::uint8_t, 64> block_{};
     std::size_t blockSize_{};
     std::uint64_t totalBytes_{};
+    bool hardware_{};
 };
 
 [[nodiscard]] CUEXIS_CORE_API auto sha256(std::span<const std::byte> bytes) noexcept

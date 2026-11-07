@@ -1,0 +1,54 @@
+from pathlib import Path
+import ctypes,hashlib,json,shutil,subprocess
+root=Path.cwd();base=Path(__file__).resolve().parent;build=base/'product-sequence-build-v1';source=base/'product-sequence-source-v1';out=base/'gl-state-build-v3';out.mkdir(exist_ok=False)
+assert (build/'complete.json').is_file()
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+shell=ctypes.WinDLL('shell32');shell.CommandLineToArgvW.argtypes=[ctypes.c_wchar_p,ctypes.POINTER(ctypes.c_int)];shell.CommandLineToArgvW.restype=ctypes.POINTER(ctypes.c_wchar_p)
+k=ctypes.WinDLL('kernel32');k.LocalFree.argtypes=[ctypes.c_void_p]
+def split(line):
+ n=ctypes.c_int();p=shell.CommandLineToArgvW(line,ctypes.byref(n))
+ try:return [p[i] for i in range(n.value)]
+ finally:k.LocalFree(p)
+cache=dict(l.split('=',1) for l in (build/'CMakeCache.txt').read_text().splitlines() if '=' in l and not l.startswith(('#','//')))
+cc=json.loads((build/'compile_commands.json').read_text());commands=[]
+def run(args,label):
+ commands.append(dict(label=label,args=args));(out/'commands.json').write_text(json.dumps(commands,indent=2))
+ with (out/(label+'.log')).open('x',encoding='utf-8') as stream:r=subprocess.run(args,cwd=build,stdout=stream,stderr=subprocess.STDOUT)
+ print(label,r.returncode,flush=True)
+ if r.returncode:raise SystemExit(r.returncode)
+# Never mutate the successful common build. Compile missing adapter objects from
+# its exact compile commands into this new overlay and link them explicitly.
+
+def compile(suffix,path,name):
+ c=next(c for c in cc if c['file'].endswith('/'+suffix))
+ args=[a for a in split(c['command']) if not a.startswith(('/Fo','/Fd')) and not a.endswith('.cpp')]
+ args.insert(1,'/I'+str(Path(c['file']).parent))
+ obj=out/(name+'.obj');run([*args,'/Fo'+str(obj),'/Fd'+str(out/(name+'.pdb')),str(path)],'compile-'+name)
+ return str(obj)
+
+def commands_for(target):
+ block=(build/'build.ninja').read_text().split('build bin\\'+target+'.exe',1)[1].split('\n\n',1)[0]
+ objects=split(block.split(': CXX_EXECUTABLE_LINKER__'+target+'_Release ',1)[1].split(' | ',1)[0])
+ libs=split(next(l.split(' = ',1)[1] for l in block.splitlines() if l.startswith('  LINK_LIBRARIES = ')))
+ return objects,libs
+adapter_objects=[]
+for target in ('cuexis_audio_sdl','cuexis_platform_sdl','cuexis_render_opengl','cuexis_shader_cache'):
+ for entry in cc:
+  if ('/'+target+'.dir/') not in entry['output'].replace('\\','/'):
+   continue
+  path=Path(entry['file']);name=target+'-'+path.stem
+  adapter_objects.append(compile(path.name,path,name))
+baseline_objects=adapter_objects[:]
+candidate_gl=compile('open_gl_presentation.cpp',base/'gl-state-source-v2/open_gl_presentation.cpp','gl-candidate')
+candidate_objects=[candidate_gl if Path(p).name=='cuexis_render_opengl-open_gl_presentation.obj' else p for p in adapter_objects]
+gpu=compile('gpu_throughput_probe.cpp',source/'tests/player/gpu_throughput_probe.cpp','gpu-probe')
+timer=compile('gpu_timer.cpp',source/'engine/render_opengl/src/gpu_timer.cpp','gpu-timer')
+state_test=compile('gpu_throughput_probe.cpp',base/'gl-state-source-v2/state_test.cpp','state-test')
+objects,libs=commands_for('cuexis_execution_device_probe')
+for variant in ('baseline','candidate'):
+ valid_libs=[p for p in libs if Path(p).is_absolute() or not p.lower().endswith('.lib') or (build/p).is_file()]
+ run([cache['CMAKE_LINKER:FILEPATH'],'/NOLOGO','/machine:x64','/INCREMENTAL:NO','/subsystem:console','/OUT:'+str(out/('gpu-'+variant+'.exe')),gpu,timer,state_test,*(baseline_objects if variant=='baseline' else candidate_objects),*valid_libs],'link-'+variant)
+for dll in (build/'bin').glob('*.dll'):shutil.copyfile(dll,out/dll.name)
+for dll in (root/'out/verification-20261030/r3-resume-v1/budget-build-v3/bin').glob('*.dll'):
+ if not (out/dll.name).exists():shutil.copyfile(dll,out/dll.name)
+(out/'binding.json').write_text(json.dumps(dict(scope='Same fresh product sequence libs/headers/probe in both physical GPU binaries. Candidate overrides only GL presentation private CPP. No observers, no quota, no batch publication. Missing adapters freshly compiled explicitly, common successful build left immutable. No Runtime change; normal allocator.',source_binding_sha256=sha(base/'gl-state-source-v2/binding.json'),fresh_complete_sha256=sha(build/'complete.json'),commands_sha256=sha(out/'commands.json'),binaries={p.name:sha(p) for p in out.glob('*.exe')}),indent=2),encoding='utf-8')

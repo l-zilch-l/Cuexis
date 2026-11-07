@@ -1,0 +1,2901 @@
+#include "D:/Cuexis-redesign/out/verification-20261030/r3-resume-v1/budget-source-v4/engine/core/internal/cuexis_internal/execution_diagnostics.hpp"
+#include "D:/Cuexis-redesign/out/verification-20261030/r3-resume-v1/budget-source-v4/engine/core/internal/cuexis_internal/sha256.hpp"
+#include "D:/Cuexis-redesign/out/verification-20261030/r3-resume-v1/budget-source-v4/engine/judgement/src/execution_kernel.hpp"
+#include "D:/Cuexis-redesign/out/verification-20261030/r3-resume-v1/budget-source-v4/engine/judgement/src/execution_log.hpp"
+#include "D:/Cuexis-redesign/out/verification-20261030/r3-resume-v1/budget-source-v4/engine/judgement/src/execution_testing.hpp"
+#include "D:/Cuexis-redesign/out/verification-20261030/r3-resume-v1/budget-source-v4/engine/judgement/src/recovery_wire.hpp"
+#include "D:/Cuexis-redesign/out/verification-20261030/r3-resume-v1/budget-source-v4/tests/judgement/execution_reference.hpp"
+#include "D:/Cuexis-redesign/out/verification-20261030/r3-resume-v1/budget-source-v4/tests/judgement/execution_test_fixture.hpp"
+#include "D:/Cuexis-redesign/out/verification-20261030/r3-resume-v1/budget-source-v4/tests/support/environment.hpp"
+#include "tick_fault_probe.hpp"
+#include <Windows.h>
+#include <algorithm>
+#include <array>
+#include <catch2/generators/catch_generators.hpp>
+#include <chrono>
+#include <cstdlib>
+#include <cuexis/judgement/execution_scheduler.hpp>
+#include <cuexis/judgement/recovery_codec.hpp>
+#include <cuexis/playback/realtime_clock.hpp>
+#include <fstream>
+#include <iostream>
+#include <psapi.h>
+#include <thread>
+
+using namespace cuexis::judgement;
+using namespace cuexis::judgement::testing;
+
+TEST_CASE("Recovery wire cached sequence bytes remain exact after growth and detached mutation",
+          "[rpa][wire][redesign]") {
+    detail::SharedSequence<std::uint64_t> values;
+    for (std::uint64_t i = 0; i < 257; ++i)
+        values.push_back(i * i);
+    detail::wire::Writer cached, reference;
+    cached(values);
+    reference(values.materialize());
+    for (unsigned i = 0; i < 31; ++i) {
+        cached(values);
+        reference(values.materialize());
+    }
+    values.update(128, [](auto& value) { value = UINT64_MAX; });
+    cached(values);
+    reference(values.materialize());
+    values.push_back(12);
+    cached(values);
+    reference(values.materialize());
+    CHECK(cached.bytes == reference.bytes);
+    detail::SharedSequence<std::uint64_t> independent;
+    for (const auto value : values)
+        independent.push_back(value);
+    cached(independent);
+    reference(independent.materialize());
+    CHECK(cached.bytes == reference.bytes);
+    detail::wire::Writer measuring{true};
+    measuring(values, values, independent);
+    detail::wire::Writer materialized;
+    materialized(values.materialize(), values.materialize(), independent.materialize());
+    CHECK(measuring.bytes.empty());
+    CHECK(measuring.size() == materialized.bytes.size());
+    // Writer is reused by malformed-wire tests. Its public output can be cleared or edited.
+    cached.bytes.clear();
+    cached(values);
+    detail::wire::Writer fresh;
+    fresh(values.materialize());
+    CHECK(cached.bytes == fresh.bytes);
+    std::fill(cached.bytes.begin(), cached.bytes.end(), std::byte{0xff});
+    cached(values);
+    CHECK(std::equal(fresh.bytes.begin(), fresh.bytes.end(),
+                     cached.bytes.begin() + static_cast<std::ptrdiff_t>(fresh.bytes.size())));
+    detail::wire::Writer bounded, uncached, boundedMeasure{true};
+    for (std::uint64_t i = 0; i < 160; ++i) {
+        detail::SharedSequence<std::uint64_t> distinct{i, i + 1};
+        bounded(distinct, distinct);
+        boundedMeasure(distinct, distinct);
+        uncached(distinct.materialize(), distinct.materialize());
+    }
+    CHECK(bounded.bytes == uncached.bytes);
+    CHECK(boundedMeasure.size() == uncached.bytes.size());
+}
+
+TEST_CASE("Recovery cache admission preserves output edits and revision changes",
+          "[rpa][wire][redesign]") {
+    detail::SharedSequence<std::uint64_t> values{1, 2, 3};
+    detail::wire::Writer cached, fresh;
+    fresh(values.materialize());
+    cached(values);
+    cached.bytes.clear();
+    cached(values);
+    CHECK(cached.bytes == fresh.bytes);
+    std::fill(cached.bytes.begin(), cached.bytes.end(), std::byte{0xff});
+    cached(values);
+    CHECK(std::equal(fresh.bytes.begin(), fresh.bytes.end(),
+                     cached.bytes.begin() + static_cast<std::ptrdiff_t>(fresh.bytes.size())));
+    Fixture fixture;
+    auto assembled = assembleGameplay(fixture.request());
+    REQUIRE(assembled);
+    detail::SharedSequence<KernelProjection> projections{
+        KernelProjection{.judgementIdentity = assembled->prepared}};
+    detail::wire::Writer revisions, reference, measuring{true};
+    for (const auto revision : {2U, 2U, 3U, 3U, 3U, 2U}) {
+        revisions.revision = reference.revision = measuring.revision = revision;
+        revisions(projections);
+        reference(projections.materialize());
+        measuring(projections);
+    }
+    CHECK(revisions.bytes == reference.bytes);
+    CHECK(measuring.size() == reference.size());
+}
+
+TEST_CASE("Vendored FNV-1a preserves exact serial recurrence and continuation",
+          "[rpa][wire][fnv]") {
+    std::vector<std::byte> bytes(1025);
+    for (std::size_t i = 0; i < bytes.size(); ++i)
+        bytes[i] = static_cast<std::byte>(i & 255U);
+    for (std::size_t n = 0; n <= bytes.size(); ++n) {
+        const auto input = std::span<const std::byte>{bytes}.first(n);
+        std::uint64_t expected = 14695981039346656037ULL;
+        for (const auto value : input)
+            expected = (expected ^ std::to_integer<unsigned>(value)) * 1099511628211ULL;
+        CHECK(detail::wire::digest(input) == expected);
+        const auto split = n / 2;
+        const auto partial = cuexis::third_party::fnv1a64(input.first(split));
+        CHECK(cuexis::third_party::fnv1a64(input.subspan(split), partial) == expected);
+    }
+}
+
+namespace {
+struct Fixture3 {
+    Fixture base;
+    AssemblyRequest assembly;
+    std::optional<RulesetDeclaration> rules;
+    Fixture3() : assembly(base.request()) {
+        base.latePolicy = executionLate();
+        executionFields(assembly);
+        assembly.executionProfile = "gameplay.execution.t4-k4.rpa.v1";
+        assembly.identityDeclarations.engine.executionProfileToken = assembly.executionProfile;
+        assembly.identityDeclarations.engine.lateAlgorithmToken = "late.window.batch.v1";
+        assembly.identityDeclarations.engine.factSemanticRevision = "fact.semantic.rpa.v1";
+    }
+    auto prepared() -> PreparedGameplay {
+        auto p = prepareResolvedGameplay({assembly, {}});
+        INFO((p ? "" : std::string{p.error().message()}));
+        REQUIRE(p);
+        return *p;
+    }
+    auto configuration() -> SessionConfiguration {
+        InputMappingProfile mapping{
+            "mapping",
+            "v1",
+            *SourceClass::fromToken("keyboard"),
+            {{"domain.binding.one",
+              {makeDuration(1, 1), -100, 100, AmountBoundaryPolicy::inclusive}}}};
+        auto result = SessionConfiguration{OwnedInputMappingProfile{mapping},
+                                           OwnedTimebaseProfile{base.timebase},
+                                           base.latePolicy,
+                                           assembly.identityDeclarations,
+                                           "calibration.fixture",
+                                           assembly.executionProfile,
+                                           "late.window.batch.v1",
+                                           "fact.semantic.rpa.v1"};
+        if (rules) {
+            auto preparedRules = prepareRuleset(*rules);
+            REQUIRE(preparedRules);
+            result.ruleset = *preparedRules;
+        }
+        return result;
+    }
+    auto session() -> JudgementSession {
+        auto s = JudgementSession::create();
+        REQUIRE(s);
+        REQUIRE(s->configure(configuration()));
+        REQUIRE(s->prepare(prepared()));
+        return std::move(*s);
+    }
+};
+auto occurrence(std::int64_t t, std::uint64_t p, InputAction action,
+                std::string channel = "lane.one") -> CanonicalInput {
+    return {{ObservationTick{Tick{t}},
+             "domain.binding.one",
+             "keyboard",
+             std::move(channel),
+             action,
+             {},
+             p},
+            IngressSequence{p}};
+}
+auto view(JudgementSession& s) -> KernelProjection {
+    auto p = s.query();
+    REQUIRE(p);
+    return p->kernelView();
+}
+auto phase(const KernelProjection& p, PhaseKind kind) -> KernelPhaseState {
+    auto it = std::find_if(p.phases.begin(), p.phases.end(),
+                           [&](const auto& v) { return v.phase == kind; });
+    REQUIRE(it != p.phases.end());
+    return it->state;
+}
+constexpr RpaContext scope{1, 1, 1};
+auto scheduler(JudgementSession& s, RpaContext context, std::size_t capacity)
+    -> ExecutionScheduler {
+    auto result = ExecutionScheduler::create(s, context, TickSpan{3}, capacity);
+    REQUIRE(result);
+    return std::move(*result);
+}
+auto batch(std::uint64_t seq, std::int64_t tick, std::vector<CanonicalInput> inputs)
+    -> CaptureMessage {
+    const auto size = static_cast<std::uint64_t>(inputs.size());
+    return {scope, seq,
+            ClosedCaptureBatch{Tick{tick}, Tick{tick + 1}, seq, 0, 1, size, std::move(inputs)}};
+}
+auto controlRules(bool hooks) -> RulesetDeclaration;
+} // namespace
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+TEST_CASE("R3 exact preparation ledger distinguishes recovery candidates from replay work",
+          "[rpa][r3][observation]") {
+    namespace rpa = cuexis::internal::execution_diagnostics::rpa;
+    Fixture3 f;
+    auto live = f.session();
+    REQUIRE(live.submitCanonical({occurrence(900, 0, InputAction::press)}));
+    REQUIRE(live.advance(Tick{903}));
+    const auto saved = live.snapshot();
+    REQUIRE(saved);
+    const RecoveryInputs inputs{f.configuration(), f.prepared()};
+    rpa::SeekLedger ledger{};
+    {
+        rpa::SeekSinkScope sink{&ledger};
+        auto restored = JudgementSession::recover(*saved, inputs);
+        REQUIRE(restored);
+        CHECK(sameSnapshot(saved->state(), restored->snapshot()->state()));
+    }
+    const auto& preparation =
+        ledger.work[static_cast<std::size_t>(rpa::SeekPhase::s2CandidatePrep)];
+    const auto& execution =
+        ledger.work[static_cast<std::size_t>(rpa::SeekPhase::s4InternalExecution)];
+    CHECK(preparation.kernelPrepareCalls == 1);
+    CHECK(preparation.kernelPrepareSuccesses == preparation.kernelPrepareCalls);
+    CHECK(preparation.derivedIndexBuilds == preparation.kernelPrepareCalls);
+    CHECK(preparation.initialReserveCopies == preparation.kernelPrepareCalls);
+    CHECK(preparation.recoveryConfigCopies == preparation.kernelPrepareCalls);
+    CHECK(execution.draftCopies >= 1);
+    CHECK(execution.foldCopies >= 1);
+    CHECK(execution.finalizationCopies == 1);
+    CHECK(execution.faultReserveCopies >= 3);
+    CHECK(execution.tailRecordCopies == 1);
+    CHECK(execution.tailBatchElements == 1);
+    CHECK(execution.tailAdmissionElements == 1);
+    std::cout << "R3_PREPARE_LEDGER prepare_calls=" << preparation.kernelPrepareCalls
+              << " prepare_us=" << preparation.kernelPrepareUs
+              << " index_us=" << preparation.derivedIndexUs << " restore_validation_us="
+              << ledger.work[static_cast<std::size_t>(rpa::SeekPhase::s3Validation)]
+                     .rpaRestoreValidationUs
+              << " draft=" << execution.draftCopies << " reserve=" << execution.faultReserveCopies
+              << " fold=" << execution.foldCopies << " final=" << execution.finalizationCopies
+              << '\n';
+}
+#endif
+TEST_CASE("R3 early RPA cuts recover only the applied history and continue independently",
+          "[rpa][r3][recovery][seek]") {
+    const auto variant = GENERATE(0, 1, 2, 3);
+    const auto fold = GENERATE(false, true);
+    Fixture3 f;
+    if (fold)
+        f.rules = controlRules(true);
+    const RecoveryInputs inputs{f.configuration(), f.prepared()};
+    auto source = f.session();
+    auto reference = f.session();
+    const auto admitted = std::vector{occurrence(900, 0, InputAction::press),
+                                      occurrence(1000, 0, InputAction::release)};
+    REQUIRE(source.submitCanonical(admitted));
+    REQUIRE(reference.submitCanonical(admitted));
+    REQUIRE(source.advance(Tick{903}));
+    const RpaControlRecord pause{RpaControlKind::pause, Tick{900}, 0, 1, 0, {}};
+    const RpaControlRecord resume{RpaControlKind::resume,
+                                  Tick{900},
+                                  0,
+                                  1,
+                                  1,
+                                  {{0, occurrence(901, 0, InputAction::release).key}}};
+    REQUIRE(source.controlRpa(pause));
+    REQUIRE(source.controlRpa(resume));
+    REQUIRE(source.advance(Tick{1103}));
+    auto archive = source.archive();
+    REQUIRE(archive);
+    const auto originalBytes = encodeReplay(*archive);
+    REQUIRE(originalBytes);
+    const auto horizon = variant == 0 ? Tick{902} : Tick{903};
+    const ReplayCut cut = variant == 0 ? ReplayCut{1, horizon}
+                                       : ReplayCut{static_cast<std::uint64_t>(variant + 1), {}};
+    REQUIRE(reference.advance(horizon));
+    if (variant >= 2)
+        REQUIRE(reference.controlRpa(pause));
+    if (variant >= 3)
+        REQUIRE(reference.controlRpa(resume));
+    auto sought = f.session();
+    REQUIRE(sought.seek(*archive, horizon, cut));
+    CHECK(sameKernelResult(view(reference), view(sought)));
+    // A Seek preserves the complete source, while a Snapshot describes only applied work.
+    CHECK(sameReplayHistory(*archive, *sought.archive()));
+    const auto saved = sought.snapshot();
+    REQUIRE(saved);
+    CHECK(sameSnapshot(saved->state(), reference.snapshot()->state()));
+    auto wrongInputs = inputs;
+    wrongInputs.configuration.identityDeclarations.session.judgementConfigToken += ".different";
+    CHECK_FALSE(JudgementSession::recover(*saved, wrongInputs));
+    auto malformedData = std::make_shared<ReplayData>(archive->data());
+    malformedData->records.back().batch.push_back(occurrence(1040, 0, InputAction::press));
+    const ReplayArchive malformed{malformedData, std::make_shared<const RecoveryInputs>(inputs)};
+    CHECK_FALSE(sought.seek(malformed, horizon, cut));
+    CHECK(sameSnapshot(saved->state(), sought.snapshot()->state()));
+    REQUIRE(saved->state().kernel.rpa);
+    CHECK(saved->state().kernel.rpa->accepted.size() == 2);
+    CHECK(saved->state().pending.size() == (variant == 0 ? 2 : 1));
+    if (variant != 0)
+        CHECK(phase(saved->state().kernel, PhaseKind::head) == KernelPhaseState::Hit);
+    if (fold) {
+        REQUIRE(saved->state().kernel.fold);
+        CHECK(saved->state().kernel.fold->score == (variant == 0 || variant == 3 ? 0 : 2));
+    }
+    auto direct = JudgementSession::recover(*saved, inputs);
+    REQUIRE(direct);
+    CHECK(sameSnapshot(saved->state(), direct->snapshot()->state()));
+    const auto sourceBefore = source.snapshot();
+    REQUIRE(sourceBefore);
+    auto forked = source.forkForSeek(*archive, horizon, cut);
+    REQUIRE(forked);
+    CHECK(sameSnapshot(saved->state(), forked->snapshot()->state()));
+    CHECK(sameSnapshot(sourceBefore->state(), source.snapshot()->state()));
+    CHECK_FALSE(source.forkForSeek(malformed, horizon, cut));
+    CHECK(sameSnapshot(sourceBefore->state(), source.snapshot()->state()));
+    const auto bytes = encodeSnapshot(*saved);
+    REQUIRE(bytes);
+    auto decoded = decodeSnapshot(*bytes, inputs);
+    REQUIRE(decoded);
+    auto recovered = JudgementSession::recover(*decoded, inputs);
+    INFO((recovered ? "" : std::string{recovered.error().message()}));
+    REQUIRE(recovered);
+    CHECK(sameSnapshot(saved->state(), recovered->snapshot()->state()));
+    CHECK(view(*recovered).lastAdvanceHorizon == horizon);
+    CHECK(view(*recovered).processedFrontier == Tick{horizon.value() - 3});
+    CHECK(view(*recovered).rpa->paused == (variant == 2));
+    CHECK(view(sought).runScope != view(*recovered).runScope);
+    CHECK(view(*direct).runScope != view(*recovered).runScope);
+    // Continue independent states, including same-Tick control and a future input.
+    for (auto* session : {&reference, &sought, &*recovered, &*direct, &*forked}) {
+        if (variant == 2)
+            REQUIRE(session->controlRpa(resume));
+        if (variant == 0) {
+            REQUIRE(session->advance(Tick{903}));
+            REQUIRE(session->controlRpa(pause));
+            REQUIRE(session->controlRpa(resume));
+        }
+        REQUIRE(session->submitCanonical({occurrence(1040, 0, InputAction::press)}));
+        REQUIRE(session->advance(Tick{1103}));
+    }
+    CHECK(sameSnapshot(reference.snapshot()->state(), sought.snapshot()->state()));
+    CHECK(sameSnapshot(reference.snapshot()->state(), recovered->snapshot()->state()));
+    CHECK(sameSnapshot(reference.snapshot()->state(), direct->snapshot()->state()));
+    CHECK(sameSnapshot(reference.snapshot()->state(), forked->snapshot()->state()));
+    CHECK(phase(view(*recovered), PhaseKind::head) == KernelPhaseState::Hit);
+    CHECK(*encodeReplay(*archive) == *originalBytes);
+    detail::KernelTestControls finalFault{};
+    finalFault.failAdvanceFinalization = true;
+    REQUIRE(detail::KernelTestAccess::inject(source, finalFault));
+    REQUIRE_FALSE(source.advance(Tick{1200}));
+    const auto faulted = view(source);
+    auto fromFault = source.forkForSeek(*archive, horizon, cut);
+    REQUIRE_FALSE(fromFault);
+    auto directFaultSeek = source.seek(*archive, horizon, cut);
+    REQUIRE_FALSE(directFaultSeek);
+    CHECK(sameRecoveryError(fromFault.error(), directFaultSeek.error()));
+    CHECK(sameKernelResult(faulted, view(source)));
+    REQUIRE(source.reset());
+    REQUIRE(sought.reset());
+    CHECK(*encodeSnapshot(*saved) == *bytes);
+    CHECK(*encodeReplay(*archive) == *originalBytes);
+    auto replay = recovered->archive();
+    REQUIRE(replay);
+    auto evaluated = JudgementSession::evaluateReplay(*replay);
+    REQUIRE(evaluated);
+    CHECK(sameKernelResult(view(*recovered), *evaluated->result));
+}
+TEST_CASE("R3 recovered early RPA prefix preserves future semantic allocation failures",
+          "[rpa][r3][recovery][fault]") {
+    const auto failure = GENERATE(0, 1, 2, 3, 4);
+    const auto certified = GENERATE(false, true);
+    Fixture3 f;
+    f.rules = controlRules(true);
+    const RecoveryInputs inputs{f.configuration(), f.prepared()};
+    auto source = f.session();
+    REQUIRE(source.submitCanonical({occurrence(900, 0, InputAction::press)}));
+    REQUIRE(source.advance(Tick{903}));
+    auto reference = f.session();
+    REQUIRE(reference.submitCanonical({occurrence(900, 0, InputAction::press)}));
+    REQUIRE(reference.advance(Tick{903}));
+    REQUIRE(source.advance(Tick{1103}));
+    auto archive = source.archive();
+    REQUIRE(archive);
+    auto sought = f.session();
+    auto checkpoint = JudgementSession::checkpoint(*archive, Tick{903});
+    REQUIRE(checkpoint);
+    REQUIRE(sought.seek(*archive, Tick{903}, replayCutAt(*archive, Tick{903}),
+                        certified ? std::span<const ReplayCheckpoint>{&*checkpoint, 1}
+                                  : std::span<const ReplayCheckpoint>{}));
+    CHECK(detail::KernelTestAccess::certifiedPrefixRecords(sought) == (certified ? 2 : 0));
+    auto saved = sought.snapshot();
+    REQUIRE(saved);
+    const auto savedBytes = encodeSnapshot(*saved);
+    REQUIRE(savedBytes);
+    auto recovered = JudgementSession::recover(*saved, inputs);
+    REQUIRE(recovered);
+    detail::KernelTestControls controls{};
+    controls.failurePoint = failure == 1 ? detail::KernelFailurePoint::beforeFold
+                                         : detail::KernelFailurePoint::beforeSeal;
+    if (failure < 2)
+        controls.failedTick = Tick{1000};
+    controls.failAdvanceFinalization = failure == 2;
+    if (failure == 3)
+        controls.failRecordReservationHorizon = Tick{1103};
+    controls.failSubmitRecordReservation = failure == 4;
+    std::optional<cuexis::core::Error> expected;
+    std::optional<SnapshotDTO> expectedState;
+    for (auto* session : {&reference, &sought, &*recovered}) {
+        REQUIRE(detail::KernelTestAccess::inject(*session, controls));
+        const auto before = detail::KernelTestAccess::captureDTO(*session);
+        REQUIRE(before);
+        const auto oldArchive = session->archive();
+        REQUIRE(oldArchive);
+        std::optional<cuexis::core::Error> actual;
+        if (failure == 4) {
+            auto result = session->submitCanonical({occurrence(1040, 0, InputAction::press)});
+            REQUIRE_FALSE(result);
+            actual = result.error();
+        } else {
+            auto result = session->advance(Tick{1103});
+            REQUIRE_FALSE(result);
+            actual = result.error();
+        }
+        auto dto = detail::KernelTestAccess::captureDTO(*session);
+        REQUIRE(dto);
+        if (!expected) {
+            expected = actual;
+            expectedState = *dto;
+        }
+        CHECK(sameRecoveryError(expected, actual));
+        CHECK(sameSnapshot(*expectedState, *dto));
+        if (failure >= 3) {
+            CHECK(sameSnapshot(*before, *dto));
+            CHECK(sameReplayHistory(*oldArchive, *session->archive()));
+            REQUIRE(detail::KernelTestAccess::inject(*session, {}));
+            auto unaffected = session->snapshot();
+            REQUIRE(unaffected);
+            auto valid = JudgementSession::recover(*unaffected, inputs);
+            REQUIRE(valid);
+            auto encoded = encodeSnapshot(*unaffected);
+            REQUIRE(encoded);
+            REQUIRE(decodeSnapshot(*encoded, inputs));
+            REQUIRE(session->advance(Tick{1103}));
+        } else {
+            CHECK(dto->kernel.state == KernelSessionState::Faulted);
+            CHECK_FALSE(session->advance(Tick{1104}));
+            auto value = detail::KernelTestAccess::snapshotValue(*dto, inputs);
+            auto faultRecovery = JudgementSession::recover(value, inputs);
+            INFO((faultRecovery ? "" : std::string{faultRecovery.error().message()}));
+            REQUIRE(faultRecovery);
+            CHECK(sameKernelResult(dto->kernel, view(*faultRecovery)));
+        }
+    }
+    CHECK(*encodeSnapshot(*saved) == *savedBytes);
+}
+
+TEST_CASE("R3b one sealed checkpoint restores full state and preserves canonical branches",
+          "[rpa][r3b][recovery][checkpoint]") {
+    const auto controlCut = GENERATE(2U, 3U, 4U);
+    Fixture3 f;
+    f.rules = controlRules(true);
+    auto source = f.session();
+    REQUIRE(source.submitCanonical(
+        {occurrence(900, 0, InputAction::press), occurrence(1000, 0, InputAction::release)}));
+    REQUIRE(source.advance(Tick{903}));
+    const RpaControlRecord pause{RpaControlKind::pause, Tick{900}, 0, 1, 0, {}};
+    const RpaControlRecord resume{RpaControlKind::resume,
+                                  Tick{900},
+                                  0,
+                                  1,
+                                  1,
+                                  {{0, occurrence(901, 0, InputAction::release).key}}};
+    REQUIRE(source.controlRpa(pause));
+    REQUIRE(source.controlRpa(resume));
+    REQUIRE(source.submitCanonical({occurrence(1040, 0, InputAction::press)}));
+    REQUIRE(source.advance(Tick{1103}));
+    const auto archive = source.archive();
+    REQUIRE(archive);
+    const auto checkpoint = JudgementSession::checkpoint(*archive, Tick{903});
+    REQUIRE(checkpoint);
+    const ReplayCut cut{controlCut, {}};
+    auto origin = f.session();
+    auto restored = f.session();
+    REQUIRE(origin.seek(*archive, Tick{903}, cut));
+    REQUIRE(restored.seek(*archive, Tick{903}, cut, std::span{&*checkpoint, 1}));
+    CHECK(detail::KernelTestAccess::certifiedPrefixRecords(restored) == 2);
+    CHECK(sameSnapshot(origin.snapshot()->state(), restored.snapshot()->state()));
+    CHECK(*encodeSnapshot(*origin.snapshot()) == *encodeSnapshot(*restored.snapshot()));
+    CHECK(view(origin).runScope != view(restored).runScope);
+    CHECK(sameReplayHistory(*archive, *restored.archive()));
+    for (auto* session : {&origin, &restored}) {
+        if (controlCut == 2)
+            REQUIRE(session->controlRpa(pause));
+        if (controlCut < 4)
+            REQUIRE(session->controlRpa(resume));
+        REQUIRE(session->submitCanonical({occurrence(1040, 0, InputAction::press)}));
+        REQUIRE(session->advance(Tick{1103}));
+    }
+    CHECK(sameSnapshot(origin.snapshot()->state(), restored.snapshot()->state()));
+    const auto branch = restored.archive();
+    REQUIRE(branch);
+    CHECK(branch->data().eventCount == 3);
+    CHECK(sameReplayHistory(*archive, *branch));
+    CHECK(*encodeReplay(*origin.archive()) == *encodeReplay(*branch));
+    auto replayed = JudgementSession::evaluateReplay(*branch);
+    REQUIRE(replayed);
+    CHECK(sameKernelResult(view(restored), *replayed->result));
+    auto saved = restored.snapshot();
+    REQUIRE(saved);
+    REQUIRE(source.reset());
+    REQUIRE(restored.reset());
+    auto recovered = JudgementSession::recover(*saved, {f.configuration(), f.prepared()});
+    REQUIRE(recovered);
+    CHECK(sameSnapshot(saved->state(), recovered->snapshot()->state()));
+}
+
+TEST_CASE("R3b untrusted substituted partial and multiple hints retain origin behavior",
+          "[rpa][r3b][checkpoint][provenance]") {
+    Fixture3 f;
+    auto source = f.session();
+    REQUIRE(source.submitCanonical({occurrence(900, 0, InputAction::press)}));
+    REQUIRE(source.advance(Tick{903}));
+    REQUIRE(source.advance(Tick{1103}));
+    const auto archive = source.archive();
+    REQUIRE(archive);
+    const auto valid = JudgementSession::checkpoint(*archive, Tick{903});
+    REQUIRE(valid);
+    auto reference = f.session();
+    REQUIRE(reference.seek(*archive, Tick{1103}));
+    const ReplayArchive external{
+        archive->anchor(), std::make_shared<const RecoveryInputs>(f.configuration(), f.prepared())};
+    for (unsigned variant = 0; variant < 6; ++variant) {
+        auto hint = *valid;
+        if (variant == 0)
+            hint.state = std::make_shared<const SnapshotDTO>(*hint.state);
+        if (variant == 1)
+            hint.horizon = Tick{904};
+        if (variant == 2)
+            hint.cut.partialHorizon = Tick{903};
+        if (variant == 3)
+            hint.archive = external;
+        if (variant == 4)
+            hint = *JudgementSession::checkpoint(*archive, Tick{902});
+        const std::array hints{hint, hint};
+        auto checked = f.session();
+        REQUIRE(checked.seek(variant == 5 ? external : *archive, Tick{1103},
+                             replayCutAt(*archive, Tick{1103}), std::span{&hint, 1}));
+        CHECK(detail::KernelTestAccess::certifiedPrefixRecords(checked) == 0);
+        CHECK(sameSnapshot(reference.snapshot()->state(), checked.snapshot()->state()));
+        REQUIRE(checked.seek(*archive, Tick{1103}, replayCutAt(*archive, Tick{1103}), hints));
+        CHECK(detail::KernelTestAccess::certifiedPrefixRecords(checked) == 0);
+        CHECK(sameSnapshot(reference.snapshot()->state(), checked.snapshot()->state()));
+    }
+    detail::KernelTestControls failure{};
+    failure.failCertifiedRestore = true;
+    auto fallback = detail::ExecutionKernel::seekCandidate(*archive, Tick{1103}, &failure, nullptr,
+                                                           std::span{&*valid, 1});
+    REQUIRE(fallback);
+    CHECK((*fallback)->certifiedPrefixRecords() == 0);
+    CHECK(sameSnapshot(reference.snapshot()->state(), (*fallback)->snapshot().value()->dto));
+    auto partial = f.session();
+    REQUIRE(partial.seek(*archive, Tick{950}, ReplayCut{2, Tick{950}}, std::span{&*valid, 1}));
+    CHECK(detail::KernelTestAccess::certifiedPrefixRecords(partial) == 2);
+    auto partialOrigin = f.session();
+    REQUIRE(partialOrigin.seek(*archive, Tick{950}, ReplayCut{2, Tick{950}}));
+    CHECK(sameSnapshot(partial.snapshot()->state(), partialOrigin.snapshot()->state()));
+}
+
+TEST_CASE("R3b immutable log base preserves large payload and tail boundaries",
+          "[rpa][r3b][storage]") {
+    Fixture3 f;
+    auto source = f.session();
+    std::vector<CanonicalInput> batch;
+    for (std::uint64_t i = 0; i < 512; ++i)
+        batch.push_back(occurrence(900, i, InputAction::press));
+    REQUIRE(source.submitCanonical(batch));
+    REQUIRE(source.advance(Tick{903}));
+    const auto prefix = source.snapshot();
+    REQUIRE(prefix);
+    auto owner = std::make_shared<const SnapshotDTO>(prefix->state());
+    for (unsigned i = 1; i <= 33; ++i)
+        REQUIRE(source.advance(Tick{903 + i}));
+    const auto archive = source.archive();
+    REQUIRE(archive);
+    const auto checkpoint = JudgementSession::checkpoint(*archive, Tick{903});
+    REQUIRE(checkpoint);
+    for (const unsigned count : {0U, 31U, 32U, 33U}) {
+        auto base = std::make_shared<detail::ExecutionLogChunk>();
+        base->baseState = owner;
+        base->baseRecords = 2;
+        std::shared_ptr<const detail::ExecutionLogChunk> tail = base;
+        for (unsigned i = 0; i < count; ++i) {
+            auto next = detail::reserveLogAppend(tail);
+            next->records.push_back(archive->data().records[2 + i]);
+            tail = std::move(next);
+        }
+        const auto records = detail::flattenLog(tail);
+        CHECK(records.size() == 2 + count);
+        CHECK(records.front().batch == batch);
+        CHECK(records.front().admission == archive->data().records.front().admission);
+        ReplayData expected = archive->data();
+        expected.records.resize(2 + count);
+        const auto inputs = std::make_shared<const RecoveryInputs>(f.configuration(), f.prepared());
+        ReplayArchive actual{
+            std::make_shared<const ReplayData>(ReplayData{records, 512, archive->data().identity}),
+            inputs};
+        ReplayArchive oracle{std::make_shared<const ReplayData>(std::move(expected)), inputs};
+        CHECK(sameReplayHistory(actual, oracle));
+        auto origin = f.session();
+        auto restored = f.session();
+        const auto horizon = Tick{903 + count};
+        const ReplayCut cut{2 + count, {}};
+        REQUIRE(origin.seek(*archive, horizon, cut));
+        REQUIRE(restored.seek(*archive, horizon, cut, std::span{&*checkpoint, 1}));
+        CHECK(detail::KernelTestAccess::certifiedPrefixRecords(restored) == 2);
+        CHECK(sameSnapshot(origin.snapshot()->state(), restored.snapshot()->state()));
+        REQUIRE_FALSE(origin.submitCanonical(batch));
+        REQUIRE_FALSE(restored.submitCanonical(batch));
+        const auto branch = restored.archive();
+        REQUIRE(branch);
+        CHECK(branch->data().eventCount == 1024);
+        CHECK(sameReplayHistory(*branch, *origin.archive()));
+    }
+}
+
+TEST_CASE("R3b base releases source suffix and retired owning state independently",
+          "[rpa][r3b][lifetime]") {
+    Fixture3 f;
+    auto source = f.session();
+    REQUIRE(source.submitCanonical({occurrence(900, 0, InputAction::press)}));
+    REQUIRE(source.advance(Tick{903}));
+    for (unsigned i = 1; i <= 33; ++i)
+        REQUIRE(source.advance(Tick{903 + i}));
+    std::optional<ReplayArchive> archive;
+    {
+        auto value = source.archive();
+        REQUIRE(value);
+        archive.emplace(std::move(*value));
+    }
+    std::weak_ptr<const ReplayData> oldSource = archive->anchor();
+    std::weak_ptr<const SnapshotDTO> checkpointState;
+    auto restored = [&] {
+        auto checkpoint = JudgementSession::checkpoint(*archive, Tick{903});
+        REQUIRE(checkpoint);
+        checkpointState = checkpoint->state;
+        auto session = f.session();
+        REQUIRE(session.seek(*archive, Tick{904}, replayCutAt(*archive, Tick{904}),
+                             std::span{&*checkpoint, 1}));
+        return session;
+    }();
+    CHECK_FALSE(checkpointState.expired());
+    REQUIRE(restored.advance(Tick{905}));
+    archive.reset();
+    REQUIRE(source.reset());
+    CHECK(oldSource.expired());
+    auto result = restored.query();
+    REQUIRE(result);
+    auto snapshot = restored.snapshot();
+    REQUIRE(snapshot);
+    auto branch = restored.archive();
+    REQUIRE(branch);
+    const auto bytes = encodeSnapshot(*snapshot);
+    REQUIRE(bytes);
+    REQUIRE(restored.reset());
+    CHECK(checkpointState.expired());
+    CHECK(result->kernelView().lastAdvanceHorizon == Tick{905});
+    CHECK(*encodeSnapshot(*snapshot) == *bytes);
+    auto replay = JudgementSession::evaluateReplay(*branch);
+    REQUIRE(replay);
+    CHECK(sameKernelResult(result->kernelView(), *replay->result));
+}
+
+TEST_CASE("R3b restored prefix preserves future commit ID exhaustion",
+          "[rpa][r3b][fault][exhaustion]") {
+    Fixture3 f;
+    f.rules = controlRules(false);
+    auto source = f.session();
+    REQUIRE(source.submitCanonical({occurrence(900, 0, InputAction::press)}));
+    REQUIRE(source.advance(Tick{903}));
+    REQUIRE(source.advance(Tick{1103}));
+    auto archive = source.archive();
+    REQUIRE(archive);
+    auto checkpoint = JudgementSession::checkpoint(*archive, Tick{903});
+    REQUIRE(checkpoint);
+    auto origin = f.session();
+    auto restored = f.session();
+    REQUIRE(origin.seek(*archive, Tick{903}));
+    REQUIRE(restored.seek(*archive, Tick{903}, replayCutAt(*archive, Tick{903}),
+                          std::span{&*checkpoint, 1}));
+    CHECK(detail::KernelTestAccess::certifiedPrefixRecords(restored) == 2);
+    std::optional<cuexis::core::Error> expected;
+    std::optional<SnapshotDTO> state;
+    for (auto* session : {&origin, &restored}) {
+        detail::KernelTestControls ids{};
+        ids.nextCommitId = UINT64_MAX;
+        REQUIRE(detail::KernelTestAccess::inject(*session, ids));
+        REQUIRE(session->controlRpa({RpaControlKind::pause, Tick{900}, 0, 1, 0, {}}));
+        REQUIRE(session->controlRpa({RpaControlKind::resume,
+                                     Tick{900},
+                                     0,
+                                     1,
+                                     1,
+                                     {{0, occurrence(901, 0, InputAction::release).key}}}));
+        REQUIRE(session->submitCanonical({occurrence(1040, 0, InputAction::press)}));
+        auto failed = session->advance(Tick{1103});
+        REQUIRE_FALSE(failed);
+        auto dto = detail::KernelTestAccess::captureDTO(*session);
+        REQUIRE(dto);
+        if (!expected) {
+            expected = failed.error();
+            state = *dto;
+        }
+        CHECK(sameRecoveryError(expected, failed.error()));
+        CHECK(sameSnapshot(*state, *dto));
+        CHECK(dto->kernel.state == KernelSessionState::Faulted);
+    }
+}
+TEST_CASE("R3 empty RPA finalization preserves private reserve and owning results",
+          "[rpa][r3][empty-reserve]") {
+    const auto rules = GENERATE(0, 1, 2);
+    const auto injectIds = GENERATE(false, true);
+    Fixture3 f;
+    if (rules)
+        f.rules = controlRules(rules == 2);
+    auto live = f.session();
+    auto reference = f.session();
+    // Injection leaves an otherwise identical state and forces the full reserve-copy path.
+    REQUIRE(detail::KernelTestAccess::inject(reference, {}));
+    const auto equal = [&] {
+        auto actual = live.snapshot();
+        auto expected = reference.snapshot();
+        REQUIRE(actual);
+        REQUIRE(expected);
+        CHECK(sameSnapshot(actual->state(), expected->state()));
+        auto actualBytes = encodeSnapshot(*actual);
+        auto expectedBytes = encodeSnapshot(*expected);
+        REQUIRE(actualBytes);
+        REQUIRE(expectedBytes);
+        CHECK(*actualBytes == *expectedBytes);
+        auto a = live.archive();
+        auto b = reference.archive();
+        REQUIRE(a);
+        REQUIRE(b);
+        CHECK(sameReplayHistory(*a, *b));
+        auto archiveBytes = encodeReplay(*a);
+        auto referenceBytes = encodeReplay(*b);
+        REQUIRE(archiveBytes);
+        REQUIRE(referenceBytes);
+        CHECK(*archiveBytes == *referenceBytes);
+    };
+    REQUIRE(live.advance(Tick{1}));
+    REQUIRE(reference.advance(Tick{1}));
+    auto old = live.snapshot();
+    REQUIRE(old);
+    auto oldBytes = encodeSnapshot(*old);
+    REQUIRE(oldBytes);
+    const auto oldUnchanged = [&] {
+        auto currentBytes = encodeSnapshot(*old);
+        REQUIRE(currentBytes);
+        CHECK(*currentBytes == *oldBytes);
+    };
+    auto oldQuery = live.query();
+    REQUIRE(oldQuery);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    namespace rpa = cuexis::internal::execution_diagnostics::rpa;
+    rpa::SeekLedger actualLedger{}, referenceLedger{};
+    {
+        rpa::SeekSinkScope sink{&actualLedger};
+        REQUIRE(live.advance(Tick{2}));
+    }
+    {
+        rpa::SeekSinkScope sink{&referenceLedger};
+        REQUIRE(reference.advance(Tick{2}));
+    }
+    const auto index = static_cast<std::size_t>(rpa::SeekPhase::s4InternalExecution);
+    CHECK(actualLedger.work[index].faultReserveCopies == 0);
+    CHECK(referenceLedger.work[index].faultReserveCopies == 1);
+#else
+    REQUIRE(live.advance(Tick{2}));
+    REQUIRE(reference.advance(Tick{2}));
+#endif
+    equal();
+    const std::vector inputs{occurrence(900, 0, InputAction::press),
+                             occurrence(1000, 0, InputAction::release)};
+    REQUIRE(live.submitCanonical(inputs));
+    REQUIRE(reference.submitCanonical(inputs));
+    for (const auto h : {3, 903, 1103, 1104, 1105}) {
+        REQUIRE(live.advance(Tick{h}));
+        REQUIRE(reference.advance(Tick{h}));
+        equal();
+    }
+    for (auto* session : {&live, &reference}) {
+        REQUIRE(session->controlRpa({RpaControlKind::pause, Tick{1102}, 0, 1, 0, {}}));
+        REQUIRE(session->controlRpa({RpaControlKind::resume, Tick{1102}, 0, 1, 0, {}}));
+        REQUIRE(session->advance(Tick{1106}));
+    }
+    equal();
+    CHECK(oldQuery->kernelView().lastAdvanceHorizon == Tick{1});
+    oldUnchanged();
+    for (auto* session : {&live, &reference}) {
+        if (injectIds) {
+            detail::KernelTestControls controls{};
+            controls.nextCommitId = UINT64_MAX - 1;
+            REQUIRE(detail::KernelTestAccess::inject(*session, controls));
+            REQUIRE(session->advance(Tick{1107}));
+        }
+        detail::KernelTestControls failure{};
+        failure.failAdvanceFinalization = true;
+        REQUIRE(detail::KernelTestAccess::inject(*session, failure));
+        REQUIRE_FALSE(session->advance(Tick{1108}));
+    }
+    auto actual = detail::KernelTestAccess::captureDTO(live);
+    auto expected = detail::KernelTestAccess::captureDTO(reference);
+    REQUIRE(actual);
+    REQUIRE(expected);
+    CHECK(sameSnapshot(*actual, *expected));
+    CHECK(actual->kernel.state == KernelSessionState::Faulted);
+    CHECK(actual->kernel.faultStage == FaultStage::control);
+    CHECK(actual->kernel.lastAdvanceHorizon == Tick{injectIds ? 1107 : 1106});
+    oldUnchanged();
+}
+
+TEST_CASE("R3 reused empty reserve faults from the latest successful horizon",
+          "[rpa][r3][empty-reserve]") {
+    Fixture3 f;
+    auto live = f.session();
+    auto reference = f.session();
+    REQUIRE(detail::KernelTestAccess::inject(reference, {}));
+    for (const auto h : {1, 2}) {
+        REQUIRE(live.advance(Tick{h}));
+        REQUIRE(reference.advance(Tick{h}));
+    }
+    // No real Tick may rebuild the optimized reserve before this failure.
+    for (auto* session : {&live, &reference}) {
+        detail::KernelTestControls failure{};
+        failure.failAdvanceFinalization = true;
+        REQUIRE(detail::KernelTestAccess::inject(*session, failure));
+        REQUIRE_FALSE(session->advance(Tick{3}));
+    }
+    auto actual = detail::KernelTestAccess::captureDTO(live);
+    auto expected = detail::KernelTestAccess::captureDTO(reference);
+    REQUIRE(actual);
+    REQUIRE(expected);
+    CHECK(sameSnapshot(*actual, *expected));
+    CHECK(actual->kernel.state == KernelSessionState::Faulted);
+    CHECK(actual->kernel.faultStage == FaultStage::control);
+    CHECK(actual->kernel.processedFrontier == Tick{-1});
+    CHECK(actual->kernel.lastAdvanceHorizon == Tick{2});
+    CHECK(actual->kernel.requestedHorizon == Tick{3});
+}
+
+TEST_CASE("R3 deterministic rejected admission still branches and recovers",
+          "[rpa][r3][recovery][rejection]") {
+    Fixture3 f;
+    const RecoveryInputs inputs{f.configuration(), f.prepared()};
+    auto source = f.session();
+    const auto input = occurrence(900, 0, InputAction::press);
+    REQUIRE(source.submitCanonical({input}));
+    REQUIRE(source.advance(Tick{903}));
+    REQUIRE(source.advance(Tick{1103}));
+    const auto original = source.archive();
+    REQUIRE(original);
+    auto sought = f.session();
+    REQUIRE(sought.seek(*original, Tick{903}));
+    const auto before = view(sought);
+    auto rejection = sought.submitCanonical({input});
+    REQUIRE_FALSE(rejection);
+    CHECK(rejection.error().code() == "judgement.late.duplicate_queue_entry");
+    CHECK(sameKernelResult(before, view(sought)));
+    const auto branch = sought.archive();
+    REQUIRE(branch);
+    REQUIRE(branch->data().records.size() == 3);
+    CHECK(sameRecoveryError(branch->data().records.back().rejection, rejection.error()));
+    CHECK_FALSE(sameReplayHistory(*original, *branch));
+    auto snapshot = sought.snapshot();
+    REQUIRE(snapshot);
+    auto recovered = JudgementSession::recover(*snapshot, inputs);
+    REQUIRE(recovered);
+    CHECK(sameSnapshot(snapshot->state(), recovered->snapshot()->state()));
+    auto bytes = encodeSnapshot(*snapshot);
+    REQUIRE(bytes);
+    auto decoded = decodeSnapshot(*bytes, inputs);
+    REQUIRE(decoded);
+    CHECK(sameSnapshot(snapshot->state(), decoded->state()));
+    auto evaluation = JudgementSession::evaluateReplay(*branch);
+    REQUIRE(evaluation);
+    CHECK(sameKernelResult(before, *evaluation->result));
+}
+TEST_CASE("B3 T2 same Tick press release press preserves occurrence and contact identity",
+          "[rpa][b3]") {
+    Fixture3 f;
+    auto s = f.session();
+    const auto first = occurrence(900, 0, InputAction::press);
+    REQUIRE(s.submitCanonical(
+        {first, occurrence(900, 1, InputAction::release), occurrence(900, 2, InputAction::press)}));
+    REQUIRE(s.advance(Tick{903}));
+    const auto p = view(s);
+    REQUIRE(p.receipts.size() == 3);
+    CHECK(p.receipts[0].observationKey == first.key);
+    CHECK(p.receipts[1].observationKey.sourceLocalPosition == 1);
+    CHECK(p.receipts[2].observationKey.sourceLocalPosition == 2);
+    CHECK(phase(p, PhaseKind::head) == KernelPhaseState::Hit);
+    CHECK(phase(p, PhaseKind::body) == KernelPhaseState::Miss);
+    REQUIRE(p.contacts.size() == 1);
+    CHECK(p.contacts[0].startPressKey.sourceLocalPosition == 2);
+    auto a = s.archive();
+    REQUIRE(a);
+    auto e = JudgementSession::evaluateReplay(*a);
+    REQUIRE(e);
+    REQUIRE(e->result);
+    CHECK(sameKernelResult(p, *e->result));
+}
+TEST_CASE("B3 occurrence duplicate and slot conflict are atomic and distinguish content",
+          "[rpa][b3]") {
+    Fixture3 f;
+    auto s = f.session();
+    const auto input = occurrence(900, 0, InputAction::press);
+    REQUIRE(s.submitCanonical({input}));
+    const auto old = view(s);
+    auto duplicate = s.submitCanonical({input});
+    REQUIRE_FALSE(duplicate);
+    CHECK(duplicate.error().code() == "judgement.late.duplicate_queue_entry");
+    auto conflict = s.submitCanonical({occurrence(900, 0, InputAction::release)});
+    REQUIRE_FALSE(conflict);
+    CHECK(conflict.error().code() == "judgement.input.occurrence_conflict");
+    CHECK(sameKernelResult(old, view(s)));
+}
+TEST_CASE("B3 G1 waits at equal B and retains original horizon across reordered delivery",
+          "[rpa][b3]") {
+    Fixture3 f;
+    auto s = f.session();
+    auto d = scheduler(s, scope, 32);
+    auto r = d.request({scope, 7, 0, Tick{903}});
+    REQUIRE(r);
+    CHECK(r->disposition == AdvanceDisposition::waiting);
+    REQUIRE(d.deliver({scope, 1, CapturePrefix{Tick{900}}}));
+    CHECK_FALSE(d.confirmedSequence());
+    REQUIRE(d.deliver(batch(0, 899, {occurrence(899, 0, InputAction::press)})));
+    r = d.poll(7);
+    REQUIRE(r);
+    CHECK(r->disposition == AdvanceDisposition::waiting);
+    REQUIRE(d.deliver({scope, 2, CapturePrefix{Tick{901}}}));
+    r = d.poll(7);
+    REQUIRE(r);
+    CHECK(r->disposition == AdvanceDisposition::executed);
+    REQUIRE(r->result);
+    CHECK(r->result->lastAdvanceHorizon == Tick{903});
+    const auto before = view(s);
+    REQUIRE(d.deliver(batch(0, 899, {occurrence(899, 0, InputAction::press)})));
+    CHECK(sameKernelResult(before, view(s)));
+    REQUIRE(d.retire(7));
+    r = d.request({scope, 7, 0, Tick{903}});
+    REQUIRE_FALSE(r);
+    CHECK(r.error().code() == "host.rpa.request_retired");
+}
+TEST_CASE("B3 Q1 K1 invalid control does not cancel and valid control cannot revive advance",
+          "[rpa][b3]") {
+    Fixture3 f;
+    auto s = f.session();
+    auto d = scheduler(s, scope, 32);
+    REQUIRE(d.request({scope, 1, 0, Tick{903}}));
+    auto busy = d.request({scope, 2, 1, Tick{904}});
+    REQUIRE(busy);
+    CHECK(busy->disposition == AdvanceDisposition::busyNotAccepted);
+    REQUIRE_FALSE(d.acceptControl({2, 1, 1}, 1));
+    auto r = d.poll(1);
+    REQUIRE(r);
+    CHECK(r->disposition == AdvanceDisposition::waiting);
+    REQUIRE(d.acceptControl(scope, 1));
+    REQUIRE(d.deliver({scope, 0, CapturePrefix{Tick{1000}}}));
+    r = d.poll(1);
+    REQUIRE(r);
+    CHECK(r->disposition == AdvanceDisposition::canceledNotExecuted);
+    CHECK_FALSE(view(s).lastAdvanceHorizon);
+}
+TEST_CASE("B3 R2 release preserves head and misses body tail without observation error",
+          "[rpa][b3]") {
+    Fixture3 f;
+    auto s = f.session();
+    REQUIRE(s.submitCanonical({occurrence(900, 0, InputAction::press)}));
+    REQUIRE(s.advance(Tick{903}));
+    REQUIRE(s.controlRpa({RpaControlKind::pause, Tick{900}, 0, 1, 0, {}}));
+    const auto paused = view(s);
+    const RpaControlRecord resume{RpaControlKind::resume,
+                                  Tick{900},
+                                  0,
+                                  1,
+                                  1,
+                                  {{0, occurrence(901, 0, InputAction::release).key}}};
+    REQUIRE(s.controlRpa(resume));
+    const auto p = view(s);
+    CHECK(phase(p, PhaseKind::head) == KernelPhaseState::Hit);
+    CHECK(phase(p, PhaseKind::body) == KernelPhaseState::Miss);
+    CHECK(phase(p, PhaseKind::tail) == KernelPhaseState::Miss);
+    CHECK(p.contacts.empty());
+    CHECK(p.processedFrontier == paused.processedFrontier);
+    CHECK(p.lastAdvanceHorizon == paused.lastAdvanceHorizon);
+    for (const auto& fact : p.facts)
+        if (const auto* phaseFact = std::get_if<PhaseOutcomeFact>(&fact);
+            phaseFact && phaseFact->outcome == Outcome::miss) {
+            CHECK_FALSE(phaseFact->error);
+            CHECK_FALSE(phaseFact->evidence);
+            CHECK_FALSE(phaseFact->grade);
+            CHECK(std::holds_alternative<ReconciliationOrigin>(phaseFact->originId));
+        }
+    REQUIRE(s.controlRpa(resume));
+    CHECK(sameKernelResult(p, view(s)));
+    auto a = s.archive();
+    REQUIRE(a);
+    auto e = JudgementSession::evaluateReplay(*a);
+    REQUIRE(e);
+    CHECK(sameKernelResult(p, *e->result));
+    auto snapshot = s.snapshot();
+    REQUIRE(snapshot);
+    auto bytes = encodeSnapshot(*snapshot);
+    REQUIRE(bytes);
+    CHECK(std::to_integer<unsigned>((*bytes)[8]) == 3);
+    auto decoded = decodeSnapshot(*bytes, {f.configuration(), f.prepared()});
+    INFO((decoded ? "" : std::string{decoded.error().message()}));
+    REQUIRE(decoded);
+    CHECK(sameSnapshot(snapshot->state(), decoded->state()));
+    auto restored = JudgementSession::recover(*decoded, {f.configuration(), f.prepared()});
+    REQUIRE(restored);
+    CHECK(sameKernelResult(p, view(*restored)));
+}
+TEST_CASE("B3 rev3 replay wire rejects rev1 rev2 and retains all fields", "[rpa][b3]") {
+    Fixture3 f;
+    auto s = f.session();
+    REQUIRE(s.submitCanonical({occurrence(900, 0, InputAction::press)}));
+    REQUIRE(s.advance(Tick{903}));
+    auto a = s.archive();
+    REQUIRE(a);
+    auto bytes = encodeReplay(*a);
+    REQUIRE(bytes);
+    auto decoded = decodeReplay(*bytes, {f.configuration(), f.prepared()});
+    REQUIRE(decoded);
+    CHECK(sameReplayHistory(*a, *decoded));
+    for (const auto old : {1, 2}) {
+        auto changed = *bytes;
+        changed[8] = static_cast<std::byte>(old);
+        auto result = decodeReplay(changed, {f.configuration(), f.prepared()});
+        REQUIRE_FALSE(result);
+        CHECK(result.error().code() == "codec.version_unsupported");
+    }
+    for (std::size_t cut = 0; cut < bytes->size(); ++cut)
+        CHECK_FALSE(decodeReplay(std::span{*bytes}.first(cut), {f.configuration(), f.prepared()}));
+}
+TEST_CASE("B3 A1 final route failure terminates continuation and waiting trace is distinct",
+          "[rpa][b3]") {
+    Fixture3 f;
+    auto s = f.session();
+    auto d = scheduler(s, scope, 32);
+    REQUIRE(d.acceptControl(scope, 0));
+    REQUIRE(d.deliver({scope, 0, EndRunEpoch{Tick{900}, 1}}));
+    REQUIRE(d.pause());
+    const RpaControlRecord resume{RpaControlKind::resume, Tick{900}, 0, 1, 1, {}};
+    auto pending = d.resume(resume, {1, 2, 2}, true);
+    REQUIRE_FALSE(pending);
+    CHECK(pending.error().code() == "host.rpa.control_pending");
+    const auto before = view(s);
+    auto failed = d.resume({RpaControlKind::resume, Tick{900}, 0, 1, 0, {}}, {1, 2, 2}, true, true);
+    REQUIRE_FALSE(failed);
+    CHECK(failed.error().code() == "host.rpa.resume_aborted");
+    CHECK(sameKernelResult(before, view(s)));
+    auto again = d.resume({RpaControlKind::resume, Tick{900}, 1, 1, 0, {}}, {1, 2, 3}, true);
+    REQUIRE_FALSE(again);
+    CHECK(again.error().code() == "host.rpa.resume_aborted");
+    CHECK(d.suspended());
+}
+
+TEST_CASE("B3 T2 complete kernel matches independent source scanning oracle", "[rpa][b3][oracle]") {
+    Fixture3 f;
+    auto s = f.session();
+    std::vector<CanonicalInput> inputs{
+        occurrence(900, 0, InputAction::press), occurrence(900, 1, InputAction::release),
+        occurrence(900, 2, InputAction::press), occurrence(900, 0, InputAction::press, "lane.two")};
+    std::sort(inputs.begin(), inputs.end(),
+              [](const auto& a, const auto& b) { return a.key < b.key; });
+    std::vector<AdmittedObservation> expectedInputs;
+    for (const auto& input : inputs)
+        expectedInputs.push_back({input.key, Tick{900}, false, {}, {}});
+    auto expected = scanReference(f.prepared(), f.configuration(), expectedInputs, Tick{903});
+    expected.kernelWorkTick = Tick{900};
+    expected.sealedFactCursor = static_cast<std::uint64_t>(expected.facts.size());
+    expected.effectiveFactSemanticRevision = "fact.semantic.rpa.v1";
+    expected.rpa.emplace();
+    for (const auto& input : inputs)
+        expected.rpa->accepted.push_back(input.key);
+    expected.rpa->foldBaseTick = Tick{900};
+    REQUIRE(s.submitCanonical(inputs));
+    REQUIRE(s.advance(Tick{903}));
+    CHECK(sameKernelResult(expected, view(s)));
+}
+TEST_CASE("B3 control termination closes the last batch without fictitious later observation",
+          "[rpa][b3]") {
+    Fixture3 f;
+    auto s = f.session();
+    auto d = scheduler(s, scope, 32);
+    REQUIRE(d.acceptControl(scope, 0));
+    auto last = batch(0, 900, {occurrence(900, 0, InputAction::press)});
+    auto& closed = std::get<ClosedCaptureBatch>(last.payload);
+    closed.observedTick = Tick{900};
+    closed.epochTerminated = true;
+    closed.pauseEpoch = 1;
+    REQUIRE(d.deliver(last));
+    CHECK_FALSE(d.verifiedExclusive());
+    REQUIRE(d.deliver({scope, 1, EndRunEpoch{Tick{900}, 1}}));
+    REQUIRE(d.pause());
+    const auto p = view(s);
+    CHECK(p.rpa->paused);
+    CHECK(phase(p, PhaseKind::head) == KernelPhaseState::Hit);
+    CHECK(p.lastAdvanceHorizon == Tick{903});
+}
+TEST_CASE("B3 fragment gaps cannot authorize a prefix and fragments admit a single batch",
+          "[rpa][b3]") {
+    Fixture3 f;
+    auto s = f.session();
+    auto d = scheduler(s, scope, 32);
+    REQUIRE(d.request({scope, 1, 0, Tick{903}}));
+    auto first = batch(0, 900, {occurrence(900, 0, InputAction::press)});
+    auto second = batch(1, 900, {occurrence(900, 1, InputAction::release)});
+    auto& a = std::get<ClosedCaptureBatch>(first.payload);
+    auto& b = std::get<ClosedCaptureBatch>(second.payload);
+    a.fragmentCount = b.fragmentCount = 2;
+    a.totalMembers = b.totalMembers = 2;
+    b.batchId = a.batchId;
+    b.fragmentIndex = 1;
+    REQUIRE(d.deliver(second));
+    CHECK(d.admissions().empty());
+    REQUIRE(d.deliver(first));
+    REQUIRE(d.admissions().size() == 1);
+    REQUIRE(d.deliver({scope, 2, CapturePrefix{Tick{901}}}));
+    auto r = d.poll(1);
+    REQUIRE(r);
+    CHECK(r->disposition == AdvanceDisposition::executed);
+    REQUIRE(r->result);
+    CHECK(r->result->receipts.size() == 2);
+}
+TEST_CASE("B3 same H with different control cuts yields different reachable snapshots",
+          "[rpa][b3]") {
+    Fixture3 f;
+    auto s = f.session();
+    REQUIRE(s.submitCanonical({occurrence(900, 0, InputAction::press)}));
+    REQUIRE(s.advance(Tick{903}));
+    const auto beforeCut = s.archive();
+    REQUIRE(beforeCut);
+    REQUIRE(s.controlRpa({RpaControlKind::pause, Tick{900}, 0, 1, 0, {}}));
+    REQUIRE(s.controlRpa({RpaControlKind::resume,
+                          Tick{900},
+                          0,
+                          1,
+                          1,
+                          {{0, occurrence(901, 0, InputAction::release).key}}}));
+    const auto archive = s.archive();
+    REQUIRE(archive);
+    const auto after = view(s);
+    auto a = f.session();
+    REQUIRE(a.seek(*archive, Tick{903}, ReplayCut{2, {}}, {}));
+    const auto earlier = view(a);
+    auto b = f.session();
+    REQUIRE(b.seek(*archive, Tick{903}, ReplayCut{4, {}}, {}));
+    CHECK(sameKernelResult(after, view(b)));
+    CHECK_FALSE(sameKernelResult(earlier, after));
+    CHECK(earlier.lastAdvanceHorizon == after.lastAdvanceHorizon);
+    auto checkpoint = JudgementSession::checkpoint(*archive, Tick{903});
+    REQUIRE(checkpoint);
+    CHECK(checkpoint->archive.data().identity == archive->data().identity);
+}
+TEST_CASE("B3 future press release association interrupts only its actual paused contact",
+          "[rpa][b3]") {
+    Fixture3 f;
+    auto s = f.session();
+    REQUIRE(s.advance(Tick{902}));
+    REQUIRE(s.submitCanonical({occurrence(898, 0, InputAction::press)}));
+    REQUIRE(s.controlRpa({RpaControlKind::pause, Tick{899}, 0, 1, 0, {}}));
+    REQUIRE(s.controlRpa({RpaControlKind::resume,
+                          Tick{899},
+                          0,
+                          1,
+                          2,
+                          {{0, occurrence(901, 0, InputAction::release).key},
+                           {1, occurrence(902, 0, InputAction::press).key}}}));
+    REQUIRE(s.advance(Tick{904}));
+    const auto p = view(s);
+    CHECK(phase(p, PhaseKind::head) == KernelPhaseState::Hit);
+    CHECK(phase(p, PhaseKind::body) == KernelPhaseState::Miss);
+    CHECK(p.contacts.empty());
+    CHECK(p.rpa->deferred.empty());
+    REQUIRE(p.rpa->quarantine.size() == 1);
+    auto archive = s.archive();
+    REQUIRE(archive);
+    auto e = JudgementSession::evaluateReplay(*archive);
+    REQUIRE(e);
+    CHECK(sameKernelResult(p, *e->result));
+}
+TEST_CASE("B3 occurrence golden wire includes signed Tick and maximum source position",
+          "[rpa][b3][wire]") {
+    CanonicalObservationKey key{ObservationTick{Tick{-1}}, "d", "s",       "c",
+                                InputAction::press,        {},  UINT64_MAX};
+    cuexis::judgement::detail::wire::Writer writer;
+    writer.revision = 3;
+    writer(key);
+    constexpr std::string_view golden = "ffffffffffffffff010000000000000064010000000000000073010000"
+                                        "000000000063000001ffffffffffffffff";
+    std::string hex;
+    constexpr char digits[] = "0123456789abcdef";
+    for (const auto value : writer.bytes) {
+        const auto b = std::to_integer<unsigned>(value);
+        hex.push_back(digits[b >> 4]);
+        hex.push_back(digits[b & 15]);
+    }
+    CHECK(hex == golden);
+}
+
+namespace {
+auto controlRules(bool hooks = false) -> RulesetDeclaration {
+    RulesetDeclaration d{"cuexis.ruleset.finite",
+                         "1",
+                         "cuexis.finite-fold.1",
+                         "loadout.fixture",
+                         ProgramPolicy::locked,
+                         OutcomeScope::declared,
+                         {{"score", "1", "cuexis.finite-fold.1"},
+                          {"combo", "1", "cuexis.finite-fold.1"},
+                          {"statistics", "1", "cuexis.finite-fold.1"}},
+                         {0, INT64_MIN, INT64_MAX, ArithmeticPolicy::checked, 0, {}},
+                         {},
+                         false,
+                         false};
+    for (auto kind : {PhaseKind::head, PhaseKind::body, PhaseKind::tail}) {
+        d.score.rules.push_back({kind, Outcome::hit, {}, 2, true});
+        d.score.rules.push_back({kind, Outcome::miss, {}, -1, false});
+    }
+    if (hooks) {
+        d.modules.push_back({"hook", "1", "cuexis.finite-fold.1"});
+        d.hooks.push_back(
+            {"fold.bonus.u64", HookConsumer::fold, CombineOperator::maximum, {"hook"}, 3, false});
+    }
+    return d;
+}
+} // namespace
+TEST_CASE("B3 same q control suffix recomputes Fold and emits one hook at q plus one",
+          "[rpa][b3][fold]") {
+    Fixture3 f;
+    f.rules = controlRules(true);
+    auto s = f.session();
+    REQUIRE(s.submitCanonical({occurrence(900, 0, InputAction::press)}));
+    REQUIRE(s.advance(Tick{903}));
+    REQUIRE(s.controlRpa({RpaControlKind::pause, Tick{900}, 0, 1, 0, {}}));
+    REQUIRE(s.controlRpa({RpaControlKind::resume,
+                          Tick{900},
+                          0,
+                          1,
+                          1,
+                          {{0, occurrence(901, 0, InputAction::release).key}}}));
+    auto p = view(s);
+    REQUIRE(p.fold);
+    CHECK(p.fold->score == 0);
+    CHECK(p.fold->factCursor == p.sealedFactCursor);
+    REQUIRE(p.fold->produced.size() == 1);
+    CHECK(p.fold->produced[0].visibleTick == Tick{901});
+    auto a = s.archive();
+    REQUIRE(a);
+    auto e = JudgementSession::evaluateReplay(*a);
+    REQUIRE(e);
+    CHECK(sameKernelResult(p, *e->result));
+}
+TEST_CASE("B3 resume allocation rejection preserves paused kernel and Fold failure preserves seal",
+          "[rpa][b3][fault]") {
+    for (const auto sealed : {false, true}) {
+        Fixture3 f;
+        f.rules = controlRules();
+        auto s = f.session();
+        auto d = scheduler(s, scope, 32);
+        REQUIRE(s.submitCanonical({occurrence(900, 0, InputAction::press)}));
+        REQUIRE(d.acceptControl(scope, 0));
+        REQUIRE(d.deliver({scope, 0, EndRunEpoch{Tick{900}, 1}}));
+        REQUIRE(d.pause());
+        const auto before = view(s);
+        detail::KernelTestControls controls{};
+        controls.failedTick = Tick{900};
+        controls.failurePoint = sealed ? detail::KernelFailurePoint::beforeFold
+                                       : detail::KernelFailurePoint::beforeSeal;
+        REQUIRE(detail::KernelTestAccess::inject(s, controls));
+        auto failed = d.resume({RpaControlKind::resume,
+                                Tick{900},
+                                0,
+                                1,
+                                1,
+                                {{0, occurrence(901, 0, InputAction::release).key}}},
+                               {1, 2, 2}, true);
+        REQUIRE_FALSE(failed);
+        const auto p = view(s);
+        if (!sealed) {
+            CHECK(sameKernelResult(before, p));
+            CHECK(d.suspended());
+        } else {
+            CHECK(p.state == KernelSessionState::Faulted);
+            CHECK(p.faultStage == FaultStage::fold);
+            CHECK(p.sealedFactCursor == 3);
+            REQUIRE(p.fold);
+            CHECK(p.fold->factCursor == 1);
+            CHECK_FALSE(s.snapshot());
+            auto dto = detail::KernelTestAccess::captureDTO(s);
+            REQUIRE(dto);
+            auto snapshot =
+                detail::KernelTestAccess::snapshotValue(*dto, {f.configuration(), f.prepared()});
+            auto restored = JudgementSession::recover(snapshot, {f.configuration(), f.prepared()});
+            REQUIRE(restored);
+            CHECK(sameKernelResult(p, view(*restored)));
+            auto archive = s.archive();
+            REQUIRE(archive);
+            auto evaluation = detail::ExecutionKernel::evaluate(*archive, &controls);
+            REQUIRE(evaluation);
+            CHECK(sameKernelResult(p, *evaluation->result));
+        }
+    }
+}
+TEST_CASE("B3 clock invalid cancels wait and epoch Tick overflow cannot fabricate drain",
+          "[rpa][b3]") {
+    Fixture3 f;
+    auto s = f.session();
+    auto d = scheduler(s, scope, 32);
+    REQUIRE_FALSE(d.request({scope, 0, 0, Tick{INT64_MIN}}));
+    CHECK_FALSE(d.poll(0));
+    REQUIRE(d.request({scope, 1, 0, Tick{903}}));
+    REQUIRE(d.clockValid(false));
+    REQUIRE(d.deliver({scope, 0, CapturePrefix{Tick{1000}}}));
+    auto r = d.poll(1);
+    REQUIRE(r);
+    CHECK(r->disposition == AdvanceDisposition::clockInvalidNotExecuted);
+    CHECK_FALSE(view(s).lastAdvanceHorizon);
+    auto other = f.session();
+    auto overflow = scheduler(other, scope, 32);
+    REQUIRE(overflow.acceptControl(scope, 0));
+    REQUIRE(overflow.deliver({scope, 0, EndRunEpoch{Tick{INT64_MAX}, 1}}));
+    REQUIRE_FALSE(overflow.pause());
+    CHECK_FALSE(view(other).lastAdvanceHorizon);
+}
+TEST_CASE("B3 real monotonic clock measures H and frontier lag separately",
+          "[rpa][b3][measurement]") {
+    using namespace cuexis::playback;
+    Fixture3 f;
+    auto s = f.session();
+    auto d = scheduler(s, scope, 128);
+    auto bridge = RealtimeClock::create({1000000, 100, 128, "", true},
+                                        {{0, 1}, {0, 1}, {0, 1}, {1, 1}}, "steady.fixture", 1);
+    REQUIRE(bridge);
+    const auto origin = std::chrono::steady_clock::now();
+    auto now = [&] {
+        return std::chrono::duration_cast<std::chrono::microseconds>(
+                   std::chrono::steady_clock::now() - origin)
+            .count();
+    };
+    ClockObservation observation{"steady.fixture",
+                                 1,
+                                 1,
+                                 0,
+                                 1000000,
+                                 0,
+                                 ClockFramePosition{0, 1000000},
+                                 ClockFramePosition{0, 1000000},
+                                 {},
+                                 ClockPlaybackState::Playing,
+                                 ClockQuality::Exact,
+                                 false,
+                                 false,
+                                 false};
+    std::uint64_t publication = 0;
+    auto sampleClock = [&]() {
+        const auto stamp = now();
+        observation.sampleMonotonicUs = stamp;
+        observation.validUntilMonotonicUs = stamp + 1000000;
+        observation.source = ClockFramePosition{stamp, 1000000};
+        observation.presented = observation.source;
+        observation.publicationSequence = publication++;
+        return bridge->sample(observation, stamp);
+    };
+    std::vector<std::int64_t> horizonLag, frontierLag;
+    for (std::uint64_t i = 0; i < 32; ++i) {
+        const auto sampled = sampleClock();
+        REQUIRE(sampled);
+        REQUIRE(d.deliver({scope, i, CapturePrefix{Tick{sampled->horizon + 1}}}));
+        auto result = d.request({scope, i, i, Tick{sampled->horizon}});
+        REQUIRE(result);
+        REQUIRE(result->disposition == AdvanceDisposition::executed);
+        const auto measured = sampleClock();
+        REQUIRE(measured);
+        const auto p = view(s);
+        REQUIRE(p.lastAdvanceHorizon);
+        REQUIRE(p.processedFrontier);
+        horizonLag.push_back(measured->horizon - p.lastAdvanceHorizon->value());
+        frontierLag.push_back(measured->horizon - 3 - p.processedFrontier->value());
+        std::this_thread::sleep_for(std::chrono::milliseconds{1});
+    }
+    auto statistics = [](auto values) {
+        std::sort(values.begin(), values.end());
+        return std::vector<std::int64_t>{values[15], values[30], values[31], values.back()};
+    };
+    const auto h = statistics(horizonLag), frontier = statistics(frontierLag);
+    const auto json = std::string{"{\"testOnly\":true,\"samples\":32,\"unit\":\"us\",\"clock\":"
+                                  "\"std::chrono::steady_clock\",\"H_lag_p50_p95_p99_max\":["} +
+                      std::to_string(h[0]) + "," + std::to_string(h[1]) + "," +
+                      std::to_string(h[2]) + "," + std::to_string(h[3]) +
+                      "],\"frontier_lag_p50_p95_p99_max\":[" + std::to_string(frontier[0]) + "," +
+                      std::to_string(frontier[1]) + "," + std::to_string(frontier[2]) + "," +
+                      std::to_string(frontier[3]) + "]}";
+    std::cout << json << '\n';
+    const auto measurementDestination =
+        cuexis::test_support::environmentVariable("CUEXIS_B3_MEASUREMENT_FILE");
+    if (!measurementDestination.empty()) {
+        std::ofstream output{measurementDestination};
+        REQUIRE(output);
+        output << json << '\n';
+        REQUIRE(output);
+    }
+}
+
+TEST_CASE("RPA F3 kernel history measures recovery and Replay at declared content bounds",
+          "[rpa][b3][measurement][budget]") {
+    const auto count = GENERATE(std::size_t{1}, std::size_t{256});
+    Fixture3 f;
+    auto& document = f.assembly.sources[0].document;
+    const auto prototype = document.requirements[0];
+    document.requirements.clear();
+    std::erase_if(document.declarations, [](const auto& declaration) {
+        return declaration.kind == DeclarationKind::requirement;
+    });
+    document.relations[0].members.clear();
+    f.assembly.contentProfileLimits.maxRequirements =
+        MeasuredParameter<std::uint64_t>::measured(count);
+    for (std::size_t i = 0; i < count; ++i) {
+        auto requirement = prototype;
+        requirement.stableId.declarationOrdinal = static_cast<std::uint32_t>(100 + i);
+        requirement.identity.requirementLocalId = "budget." + std::to_string(i);
+        requirement.resourceClaims[0].claimPolicy.competition =
+            ClaimPolicyDeclaration::CompetitionKey{-1, static_cast<std::uint64_t>(i)};
+        document.declarations.push_back(testDeclaration(DeclarationKind::requirement,
+                                                        requirement.identity.requirementLocalId,
+                                                        requirement.stableId.declarationOrdinal));
+        document.relations[0].members.push_back(requirement.stableId);
+        document.requirements.push_back(std::move(requirement));
+    }
+    const auto elapsed = [](auto start) {
+        return std::chrono::duration_cast<std::chrono::nanoseconds>(
+                   std::chrono::steady_clock::now() - start)
+            .count();
+    };
+    auto start = std::chrono::steady_clock::now();
+    const auto prepared = f.prepared();
+    auto configuration = f.configuration();
+    auto s = JudgementSession::create();
+    REQUIRE(s);
+    REQUIRE(s->configure(configuration));
+    REQUIRE(s->prepare(prepared));
+    const auto prepareNs = elapsed(start);
+    start = std::chrono::steady_clock::now();
+    REQUIRE(s->advance(Tick{1100}));
+    const auto timerBurstNs = elapsed(start);
+    const auto expected = view(*s);
+    std::vector<std::int64_t> steadyNs;
+    for (std::int64_t i = 1; i <= 32; ++i) {
+        start = std::chrono::steady_clock::now();
+        REQUIRE(s->advance(Tick{1100 + i}));
+        steadyNs.push_back(elapsed(start));
+    }
+    const auto final = view(*s);
+    CHECK(final.facts.size() == expected.facts.size());
+    start = std::chrono::steady_clock::now();
+    auto snapshot = s->snapshot();
+    REQUIRE(snapshot);
+    auto snapshotBytes = encodeSnapshot(*snapshot);
+    REQUIRE(snapshotBytes);
+    const auto snapshotNs = elapsed(start);
+    start = std::chrono::steady_clock::now();
+    auto decoded = decodeSnapshot(*snapshotBytes, {configuration, prepared});
+    REQUIRE(decoded);
+    auto recovered = JudgementSession::recover(*decoded, {configuration, prepared});
+    REQUIRE(recovered);
+    const auto restoreNs = elapsed(start);
+    CHECK(sameKernelResult(final, view(*recovered)));
+    start = std::chrono::steady_clock::now();
+    auto archive = s->archive();
+    REQUIRE(archive);
+    auto replayBytes = encodeReplay(*archive);
+    REQUIRE(replayBytes);
+    const auto archiveNs = elapsed(start);
+    start = std::chrono::steady_clock::now();
+    auto replay = decodeReplay(*replayBytes, {configuration, prepared});
+    REQUIRE(replay);
+    auto evaluation = JudgementSession::evaluateReplay(*replay);
+    REQUIRE(evaluation);
+    const auto replayNs = elapsed(start);
+    CHECK(sameKernelResult(final, *evaluation->result));
+    auto seekSession = JudgementSession::create();
+    REQUIRE(seekSession);
+    REQUIRE(seekSession->configure(configuration));
+    REQUIRE(seekSession->prepare(prepared));
+    const auto cut = replayCutAt(*replay, Tick{1132});
+    start = std::chrono::steady_clock::now();
+    REQUIRE(seekSession->seek(*replay, Tick{1132}, cut));
+    const auto seekNs = elapsed(start);
+    CHECK(sameKernelResult(final, view(*seekSession)));
+    std::sort(steadyNs.begin(), steadyNs.end());
+    std::cout << "{\"event\":\"rpa.f3.kernel_budget\",\"test_only\":true,\"requirements\":" << count
+              << ",\"phases_per_requirement\":3,\"facts\":" << final.facts.size()
+              << ",\"prepare_ns\":" << prepareNs << ",\"timer_burst_ns\":" << timerBurstNs
+              << ",\"steady_samples\":32,\"steady_p50_ns\":" << steadyNs[15]
+              << ",\"steady_p95_ns\":" << steadyNs[30] << ",\"steady_max_ns\":" << steadyNs.back()
+              << ",\"snapshot_encode_ns\":" << snapshotNs
+              << ",\"snapshot_bytes\":" << snapshotBytes->size()
+              << ",\"snapshot_decode_recover_ns\":" << restoreNs
+              << ",\"archive_encode_ns\":" << archiveNs
+              << ",\"replay_bytes\":" << replayBytes->size()
+              << ",\"replay_decode_evaluate_ns\":" << replayNs << ",\"kernel_seek_ns\":" << seekNs
+              << ",\"replay_records\":" << replay->data().records.size()
+              << ",\"prepare_peak_heap_bytes\":null,\"production_max_seek_latency_ns\":null}\n";
+}
+
+TEST_CASE(
+    "B3 incomplete staged fragment remains unacknowledged and detects conflicting retransmission",
+    "[rpa][b3]") {
+    Fixture3 f;
+    auto s = f.session();
+    auto d = scheduler(s, scope, 32);
+    auto first = batch(0, 900, {occurrence(900, 0, InputAction::press)});
+    auto& fragment = std::get<ClosedCaptureBatch>(first.payload);
+    fragment.fragmentCount = 2;
+    fragment.totalMembers = 2;
+    REQUIRE(d.deliver(first));
+    CHECK_FALSE(d.confirmedSequence());
+    REQUIRE(d.deliver(first));
+    fragment.members[0].key.action = InputAction::release;
+    auto conflict = d.deliver(first);
+    REQUIRE_FALSE(conflict);
+    CHECK(conflict.error().code() == "host.rpa.message_conflict");
+    CHECK(d.suspended());
+}
+TEST_CASE("B3 repeated Pause Resume includes prior actual trace releases", "[rpa][b3]") {
+    Fixture3 f;
+    auto s = f.session();
+    REQUIRE(s.submitCanonical({occurrence(900, 0, InputAction::press)}));
+    REQUIRE(s.advance(Tick{903}));
+    REQUIRE(s.controlRpa({RpaControlKind::pause, Tick{900}, 0, 1, 0, {}}));
+    REQUIRE(s.controlRpa({RpaControlKind::resume,
+                          Tick{900},
+                          0,
+                          1,
+                          1,
+                          {{0, occurrence(901, 0, InputAction::release).key}}}));
+    REQUIRE(s.advance(Tick{905}));
+    REQUIRE(s.controlRpa({RpaControlKind::pause, Tick{902}, 1, 2, 0, {}}));
+    REQUIRE(s.controlRpa({RpaControlKind::resume,
+                          Tick{902},
+                          1,
+                          2,
+                          1,
+                          {{0, occurrence(903, 0, InputAction::press).key}}}));
+    CHECK(view(s).rpa->quarantine.size() == 1);
+    auto archive = s.archive();
+    REQUIRE(archive);
+    auto evaluated = JudgementSession::evaluateReplay(*archive);
+    REQUIRE(evaluated);
+    CHECK(sameKernelResult(view(s), *evaluated->result));
+}
+
+TEST_CASE("B3 different original Ticks forwarded to one dispatch retain canonical occurrence order",
+          "[rpa][b3]") {
+    Fixture3 f;
+    auto s = f.session();
+    REQUIRE(s.advance(Tick{902}));
+    REQUIRE(s.submitCanonical({occurrence(898, 0, InputAction::press)}));
+    REQUIRE(s.submitCanonical({occurrence(897, 0, InputAction::release)}));
+    REQUIRE(s.advance(Tick{903}));
+    auto p = view(s);
+    REQUIRE(p.receipts.size() == 2);
+    CHECK(p.receipts[0].observationKey.observationTick.tick() == Tick{897});
+    CHECK(p.receipts[1].observationKey.observationTick.tick() == Tick{898});
+    CHECK(p.receipts[0].dispatchTick == p.receipts[1].dispatchTick);
+    CHECK(phase(p, PhaseKind::head) == KernelPhaseState::Hit);
+    auto archive = s.archive();
+    REQUIRE(archive);
+    auto e = JudgementSession::evaluateReplay(*archive);
+    REQUIRE(e);
+    CHECK(sameKernelResult(p, *e->result));
+}
+TEST_CASE("B3 R2 without declared tail never creates a tail phase", "[rpa][b3]") {
+    Fixture3 f;
+    auto& requirement = f.assembly.sources[0].document.requirements[0];
+    requirement.phases.pop_back();
+    requirement.measure.components.pop_back();
+    requirement.requiresReleaseTailSemantics = false;
+    requirement.atomBindings.pop_back();
+    auto& timing = *requirement.timing;
+    timing.successWindows.erase(
+        std::remove_if(timing.successWindows.begin(), timing.successWindows.end(),
+                       [](const auto& w) { return w.phase.kind == PhaseKind::tail; }),
+        timing.successWindows.end());
+    timing.phaseTargets.erase(
+        std::remove_if(timing.phaseTargets.begin(), timing.phaseTargets.end(),
+                       [](const auto& a) { return a.phase == PhaseKind::tail; }),
+        timing.phaseTargets.end());
+    auto s = f.session();
+    REQUIRE(s.submitCanonical({occurrence(900, 0, InputAction::press)}));
+    REQUIRE(s.advance(Tick{903}));
+    REQUIRE(s.controlRpa({RpaControlKind::pause, Tick{900}, 0, 1, 0, {}}));
+    REQUIRE(s.controlRpa({RpaControlKind::resume,
+                          Tick{900},
+                          0,
+                          1,
+                          1,
+                          {{0, occurrence(901, 0, InputAction::release).key}}}));
+    auto p = view(s);
+    CHECK(phase(p, PhaseKind::body) == KernelPhaseState::Miss);
+    CHECK(std::none_of(p.phases.begin(), p.phases.end(),
+                       [](const auto& v) { return v.phase == PhaseKind::tail; }));
+}
+
+TEST_CASE("B3 pause release at body end and inside tail window preserves sealed outcomes",
+          "[rpa][b3]") {
+    for (const auto q : {999, 1000, 1020}) {
+        Fixture3 f;
+        auto s = f.session();
+        REQUIRE(s.submitCanonical({occurrence(900, 0, InputAction::press)}));
+        REQUIRE(s.advance(Tick{q + 3}));
+        const auto before = view(s);
+        REQUIRE(s.controlRpa({RpaControlKind::pause, Tick{q}, 0, 1, 0, {}}));
+        REQUIRE(s.controlRpa({RpaControlKind::resume,
+                              Tick{q},
+                              0,
+                              1,
+                              1,
+                              {{0, occurrence(q + 1, 0, InputAction::release).key}}}));
+        const auto after = view(s);
+        CHECK(phase(after, PhaseKind::head) == KernelPhaseState::Hit);
+        CHECK(phase(after, PhaseKind::body) ==
+              (q >= 1000 ? KernelPhaseState::Hit : KernelPhaseState::Miss));
+        CHECK(phase(after, PhaseKind::tail) == KernelPhaseState::Miss);
+        if (q >= 1020)
+            CHECK(after.facts == before.facts);
+        auto archive = s.archive();
+        REQUIRE(archive);
+        auto e = JudgementSession::evaluateReplay(*archive);
+        REQUIRE(e);
+        CHECK(sameKernelResult(after, *e->result));
+    }
+}
+
+TEST_CASE("B3 control and ControlDrain record golden fix rev3 field order", "[rpa][b3][wire]") {
+    const RpaControlRecord control{
+        RpaControlKind::pause, Tick{-1}, UINT64_MAX - 1, UINT64_MAX, 0, {}};
+    detail::wire::Writer writer;
+    writer.revision = 3;
+    writer(control);
+    auto hex = [](const auto& bytes) {
+        std::string result;
+        constexpr char digits[] = "0123456789abcdef";
+        for (const auto value : bytes) {
+            const auto b = std::to_integer<unsigned>(value);
+            result.push_back(digits[b >> 4]);
+            result.push_back(digits[b & 15]);
+        }
+        return result;
+    };
+    constexpr std::string_view golden = "00"
+                                        "ffffffffffffffff"
+                                        "feffffffffffffff"
+                                        "ffffffffffffffff"
+                                        "0000000000000000"
+                                        "0000000000000000";
+    CHECK(hex(writer.bytes) == golden);
+    detail::wire::Writer record;
+    record.revision = 3;
+    record(ReplayRecord{{}, {}, {}, {}, control, {}, false});
+    const auto expected =
+        std::string{"00000000000000000000000000000000000001"} + std::string{golden} + "0000";
+    CHECK(hex(record.bytes) == expected);
+    detail::wire::Writer drain;
+    drain.revision = 3;
+    drain(ReplayRecord{{}, {}, Tick{-1}, {}, {}, {}, true});
+    CHECK(hex(drain.bytes) == "0000000000000000000000000000000001ffffffffffffffff00000001");
+}
+
+TEST_CASE("B3 EOF clock drains remaining actual timer obligations through verified prefixes",
+          "[rpa][b3][clock]") {
+    using namespace cuexis::playback;
+    Fixture3 f;
+    auto s = f.session();
+    auto d = scheduler(s, scope, 64);
+    auto bridge = RealtimeClock::create({1000, 100, 64, "", true}, {{0, 1}, {0, 1}, {0, 1}, {1, 1}},
+                                        "tail.fixture", 1);
+    REQUIRE(bridge);
+    ClockObservation eof{"tail.fixture",
+                         1,
+                         1,
+                         0,
+                         1000,
+                         0,
+                         ClockFramePosition{500, 1000000},
+                         ClockFramePosition{500, 1000000},
+                         {},
+                         ClockPlaybackState::EndOfStream,
+                         ClockQuality::Exact,
+                         false,
+                         false,
+                         false};
+    REQUIRE(bridge->startTail(eof, 0, 2, {{1, 1}, 1020, 100, "", true}, 1040, 3));
+    const auto initial = view(s);
+    CHECK(initial.facts.empty());
+    const auto mid = bridge->sampleTail(100);
+    REQUIRE(mid);
+    REQUIRE(d.deliver({scope, 0, CapturePrefix{Tick{mid->observationTick}}}));
+    REQUIRE(d.request({scope, 1, 0, Tick{mid->horizon}}));
+    CHECK(view(s).facts.empty());
+    const auto final = bridge->sampleTail(600);
+    REQUIRE(final);
+    CHECK(final->horizon == 1043);
+    REQUIRE(d.deliver({scope, 1, CapturePrefix{Tick{final->observationTick}}}));
+    REQUIRE(d.request({scope, 2, 1, Tick{final->horizon}}));
+    const auto result = view(s);
+    CHECK(result.lastAdvanceHorizon == Tick{1043});
+    CHECK(phase(result, PhaseKind::head) == KernelPhaseState::Miss);
+    CHECK(phase(result, PhaseKind::body) == KernelPhaseState::Miss);
+    CHECK(phase(result, PhaseKind::tail) == KernelPhaseState::Miss);
+    auto archive = s.archive();
+    REQUIRE(archive);
+    auto e = JudgementSession::evaluateReplay(*archive);
+    REQUIRE(e);
+    CHECK(sameKernelResult(result, *e->result));
+}
+
+TEST_CASE("B3 resumed clock below ControlDrain waits before request acceptance", "[rpa][b3]") {
+    Fixture3 f;
+    auto s = f.session();
+    auto d = scheduler(s, scope, 32);
+    REQUIRE(d.acceptControl(scope, 0));
+    REQUIRE(d.deliver({scope, 0, EndRunEpoch{Tick{900}, 1}}));
+    REQUIRE(d.pause());
+    REQUIRE(view(s).lastAdvanceHorizon == Tick{903});
+    const RpaContext resumed{1, 2, 2};
+    REQUIRE(d.resume({RpaControlKind::resume, Tick{900}, 0, 1, 0, {}}, resumed, true));
+    REQUIRE(d.deliver({resumed, 0, CapturePrefix{Tick{902}}}));
+    const auto before = view(s);
+    auto early = d.request({resumed, 10, 1, Tick{901}});
+    REQUIRE_FALSE(early);
+    CHECK(early.error().code() == "host.rpa.control_pending");
+    CHECK_FALSE(d.poll(10));
+    CHECK_FALSE(d.suspended());
+    CHECK(sameKernelResult(before, view(s)));
+    // The refused request consumes neither the identity nor the command ordinal.
+    REQUIRE(d.deliver({resumed, 1, CapturePrefix{Tick{904}}}));
+    auto ready = d.request({resumed, 10, 1, Tick{904}});
+    REQUIRE(ready);
+    CHECK(ready->disposition == AdvanceDisposition::executed);
+    REQUIRE(ready->result);
+    CHECK(ready->result->lastAdvanceHorizon == Tick{904});
+    auto archive = s.archive();
+    REQUIRE(archive);
+    auto replay = JudgementSession::evaluateReplay(*archive);
+    REQUIRE(replay);
+    REQUIRE(replay->result);
+    CHECK(sameKernelResult(view(s), *replay->result));
+}
+TEST_CASE("B3 scheduler factory rejects invalid configuration without exceptions", "[rpa][b3]") {
+    Fixture3 f;
+    auto s = f.session();
+    CHECK_FALSE(ExecutionScheduler::create(s, scope, TickSpan{-1}, 32));
+    CHECK_FALSE(ExecutionScheduler::create(s, {0, 1, 1}, TickSpan{3}, 32));
+    CHECK_FALSE(ExecutionScheduler::create(s, {1, 0, 1}, TickSpan{3}, 32));
+    CHECK_FALSE(ExecutionScheduler::create(s, {1, 1, 0}, TickSpan{3}, 32));
+    CHECK_FALSE(ExecutionScheduler::create(s, scope, TickSpan{3}, 0));
+    auto empty = JudgementSession::create();
+    REQUIRE(empty);
+    CHECK_FALSE(ExecutionScheduler::create(*empty, scope, TickSpan{3}, 32));
+}
+
+TEST_CASE("R3 fixed ordinary allocator recovery cost", "[.r3-cost]") {
+    Fixture3 f;
+    auto& document = f.assembly.sources[0].document;
+    const auto prototype = document.requirements[0];
+    document.requirements.clear();
+    std::erase_if(document.declarations,
+                  [](const auto& d) { return d.kind == DeclarationKind::requirement; });
+    document.relations[0].members.clear();
+    constexpr unsigned count = 64;
+    f.assembly.contentProfileLimits.maxRequirements =
+        MeasuredParameter<std::uint64_t>::measured(count);
+    for (unsigned i = 0; i < count; ++i) {
+        auto r = prototype;
+        r.stableId.declarationOrdinal = 100 + i;
+        r.identity.requirementLocalId = "r3.cost." + std::to_string(i);
+        r.resourceClaims[0].claimPolicy.competition = ClaimPolicyDeclaration::CompetitionKey{-1, i};
+        document.declarations.push_back(
+            testDeclaration(DeclarationKind::requirement, r.identity.requirementLocalId, 100 + i));
+        document.relations[0].members.push_back(r.stableId);
+        document.requirements.push_back(std::move(r));
+    }
+    const RecoveryInputs inputs{f.configuration(), f.prepared()};
+    auto live = f.session();
+    REQUIRE(live.submitCanonical({occurrence(900, 0, InputAction::press)}));
+    REQUIRE(live.advance(Tick{903}));
+    const auto saved = live.snapshot();
+    REQUIRE(saved);
+    auto restored = JudgementSession::recover(*saved, inputs);
+    REQUIRE(restored);
+    CHECK(sameSnapshot(saved->state(), restored->snapshot()->state()));
+    for (unsigned i = 0; i < 64; ++i) {
+        auto warm = JudgementSession::recover(*saved, inputs);
+        REQUIRE(warm);
+    }
+    constexpr unsigned repetitions = 2048;
+    for (unsigned block = 0; block < 8; ++block) {
+        bool success = true;
+        const auto started = std::chrono::steady_clock::now();
+        for (unsigned i = 0; i < repetitions; ++i) {
+            auto recovered = JudgementSession::recover(*saved, inputs);
+            success = success && recovered.has_value();
+        }
+        const auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                            std::chrono::steady_clock::now() - started)
+                            .count();
+        REQUIRE(success);
+        std::cout << "R3_RECOVERY_COST requirements=" << count << " block=" << block
+                  << " repetitions=" << repetitions << " elapsed_ns=" << ns << '\n';
+    }
+}
+
+TEST_CASE("R3 redesign fixed scaling diagnostic compares origin and checkpoint forks",
+          "[.][rpa][redesign-perf]") {
+    if (cuexis::test_support::environmentVariable("CUEXIS_REDESIGN_BARRIER") == "1") {
+        static const bool admitted = [] {
+            std::string line;
+            return static_cast<bool>(std::getline(std::cin, line)) && line == "go";
+        }();
+        REQUIRE(admitted);
+    }
+    const auto count = GENERATE(std::size_t{64}, std::size_t{256}, std::size_t{2048});
+    Fixture3 f;
+    auto& document = f.assembly.sources[0].document;
+    const auto prototype = document.requirements[0];
+    document.requirements.clear();
+    std::erase_if(document.declarations,
+                  [](const auto& d) { return d.kind == DeclarationKind::requirement; });
+    document.relations[0].members.clear();
+    f.assembly.contentProfileLimits.maxRequirements =
+        MeasuredParameter<std::uint64_t>::measured(count);
+    for (std::size_t i = 0; i < count; ++i) {
+        auto requirement = prototype;
+        requirement.stableId.declarationOrdinal = static_cast<std::uint32_t>(100 + i);
+        requirement.identity.requirementLocalId = "redesign." + std::to_string(i);
+        requirement.resourceClaims[0].claimPolicy.competition =
+            ClaimPolicyDeclaration::CompetitionKey{-1, static_cast<std::uint64_t>(i)};
+        document.declarations.push_back(testDeclaration(DeclarationKind::requirement,
+                                                        requirement.identity.requirementLocalId,
+                                                        requirement.stableId.declarationOrdinal));
+        document.relations[0].members.push_back(requirement.stableId);
+        document.requirements.push_back(std::move(requirement));
+    }
+    const auto ns = [](auto start) {
+        return std::chrono::duration_cast<std::chrono::nanoseconds>(
+                   std::chrono::steady_clock::now() - start)
+            .count();
+    };
+    auto source = f.session();
+    REQUIRE(source.advance(Tick{1103}));
+    for (std::int64_t i = 1; i <= 32; ++i)
+        REQUIRE(source.advance(Tick{1103 + i}));
+    const auto archiveStart = std::chrono::steady_clock::now();
+    const auto archive = source.archive();
+    const auto archiveNs = ns(archiveStart);
+    REQUIRE(archive);
+    const auto start = std::chrono::steady_clock::now();
+    const auto checkpoint = JudgementSession::checkpoint(*archive, Tick{1119});
+    const auto checkpointNs = ns(start);
+    REQUIRE(checkpoint);
+    const auto expected = source.snapshot();
+    REQUIRE(expected);
+    const auto cut = replayCutAt(*archive, Tick{1135});
+    for (unsigned pair = 0; pair < 3; ++pair) {
+        for (const bool hinted : {false, true}) {
+            auto started = std::chrono::steady_clock::now();
+            auto forked = source.forkForSeek(*archive, Tick{1135}, cut,
+                                             hinted ? std::span{&*checkpoint, 1}
+                                                    : std::span<const ReplayCheckpoint>{});
+            const auto forkNs = ns(started);
+            REQUIRE(forked);
+            CHECK(detail::KernelTestAccess::certifiedPrefixRecords(*forked) == (hinted ? 17 : 0));
+            started = std::chrono::steady_clock::now();
+            auto saved = forked->snapshot();
+            const auto snapshotNs = ns(started);
+            REQUIRE(saved);
+            CHECK(sameSnapshot(saved->state(), expected->state()));
+            CHECK(forked->query()->kernelView().runScope != source.query()->kernelView().runScope);
+            saved = cuexis::core::unexpected(cuexis::core::Error{"test.release", "release"});
+            started = std::chrono::steady_clock::now();
+            forked = cuexis::core::unexpected(cuexis::core::Error{"test.release", "release"});
+            const auto releaseNs = ns(started);
+            std::cout << "{\"event\":\"r3.redesign\",\"requirements\":" << count
+                      << ",\"pair\":" << pair << ",\"hinted\":" << hinted
+                      << ",\"fork_ns\":" << forkNs << ",\"snapshot_ns\":" << snapshotNs
+                      << ",\"release_ns\":" << releaseNs << ",\"checkpoint_ns\":" << checkpointNs
+                      << ",\"archive_ns\":" << archiveNs << ",\"formal\":false}\n";
+        }
+    }
+}
+
+TEST_CASE("R3 native chunk anchors preserve exact prefixes partial cuts and source ownership",
+          "[rpa][redesign][native][recovery]") {
+    Fixture3 f;
+    auto source = f.session();
+    REQUIRE(source.advance(Tick{1103}));
+    for (std::int64_t i = 1; i <= 96; ++i)
+        REQUIRE(source.advance(Tick{1103 + i}));
+    const auto archive = source.archive();
+    REQUIRE(archive);
+    const auto identity = archive->canonicalIdentity();
+    REQUIRE(identity);
+    const auto wire = encodeReplay(*archive);
+    REQUIRE(wire);
+    CHECK(*identity == cuexis::core::detail::sha256(*wire));
+    const ReplayArchive external{archive->anchor(),
+                                 std::make_shared<const RecoveryInputs>(archive->dependencies())};
+    const auto externalIdentity = external.canonicalIdentity();
+    REQUIRE(externalIdentity);
+    CHECK(*externalIdentity == *identity);
+    for (const auto horizon : {1103, 1119, 1134, 1135, 1167, 1199}) {
+        INFO(horizon);
+        const auto cut = replayCutAt(*archive, Tick{horizon});
+        auto origin = source.forkForSeek(external, Tick{horizon}, cut);
+        auto native = source.forkForSeek(*archive, Tick{horizon}, cut);
+        REQUIRE(origin);
+        REQUIRE(native);
+        CHECK(detail::KernelTestAccess::nativePrefixRecords(*origin) == 0);
+        CHECK(detail::KernelTestAccess::nativePrefixRecords(*native) >= 1);
+        CHECK(sameSnapshot(origin->snapshot()->state(), native->snapshot()->state()));
+        CHECK(*encodeSnapshot(*origin->snapshot()) == *encodeSnapshot(*native->snapshot()));
+        CHECK(native->query()->kernelView().runScope != source.query()->kernelView().runScope);
+        REQUIRE(native->submitCanonical({occurrence(1250, 0, InputAction::press)}));
+        REQUIRE(native->advance(Tick{1300}));
+        const auto branch = native->archive();
+        REQUIRE(branch);
+        CHECK(branch->anchor() != archive->anchor());
+        const auto branchIdentity = branch->canonicalIdentity();
+        REQUIRE(branchIdentity);
+        CHECK(*branchIdentity != *identity);
+        auto evaluated = JudgementSession::evaluateReplay(*branch);
+        REQUIRE(evaluated);
+        CHECK(sameKernelResult(*evaluated->result, native->query()->kernelView()));
+    }
+    const ReplayCut partial{32, Tick{1134}};
+    auto direct = source.forkForSeek(external, Tick{1134}, partial);
+    auto native = source.forkForSeek(*archive, Tick{1134}, partial);
+    REQUIRE(direct);
+    REQUIRE(native);
+    CHECK(detail::KernelTestAccess::nativePrefixRecords(*native) == 32);
+    const auto saved = native->snapshot();
+    REQUIRE(saved);
+    CHECK(sameSnapshot(saved->state(), direct->snapshot()->state()));
+    REQUIRE(source.reset());
+    REQUIRE(native->reset());
+    auto recovered = JudgementSession::recover(*saved, archive->dependencies());
+    REQUIRE(recovered);
+    CHECK(sameSnapshot(saved->state(), recovered->snapshot()->state()));
+    CHECK(*encodeReplay(*archive) == *wire);
+}
+
+TEST_CASE("R3 external altered suffix never inherits native source trust",
+          "[rpa][redesign][native][rejection]") {
+    Fixture3 f;
+    auto source = f.session();
+    REQUIRE(source.advance(Tick{1103}));
+    for (std::int64_t i = 1; i <= 33; ++i)
+        REQUIRE(source.advance(Tick{1103 + i}));
+    const auto archive = source.archive();
+    REQUIRE(archive);
+    const auto before = source.snapshot();
+    REQUIRE(before);
+    auto data = archive->data();
+    auto changed = std::make_shared<KernelProjection>(*data.records[32].result);
+    changed->facts.update(0, [](auto& fact) { std::get<PhaseOutcomeFact>(fact).commitId += 1; });
+    data.records[32].result = changed;
+    ReplayArchive external{std::make_shared<const ReplayData>(std::move(data)),
+                           std::make_shared<const RecoveryInputs>(archive->dependencies())};
+    CHECK_FALSE(source.forkForSeek(external, Tick{1136}, replayCutAt(external, Tick{1136})));
+    CHECK(sameSnapshot(before->state(), source.snapshot()->state()));
+    CHECK(archive->data().records[32].result->facts != changed->facts);
+    CHECK(source.forkForSeek(*archive, Tick{1136}, replayCutAt(*archive, Tick{1136})));
+}
+
+TEST_CASE("R3 native branch drops source suffix and external identity never gains cache trust",
+          "[rpa][redesign][native][lifetime][identity]") {
+    Fixture3 f;
+    auto source = f.session();
+    REQUIRE(source.advance(Tick{1103}));
+    for (int i = 1; i <= 64; ++i)
+        REQUIRE(source.advance(Tick{1103 + i}));
+    auto archive = source.archive();
+    REQUIRE(archive);
+    const auto firstIdentity = archive->canonicalIdentity();
+    REQUIRE(firstIdentity);
+    auto mutableData = std::make_shared<ReplayData>(archive->data());
+    ReplayArchive external{mutableData,
+                           std::make_shared<const RecoveryInputs>(archive->dependencies())};
+    auto externalBefore = external.canonicalIdentity();
+    REQUIRE(externalBefore);
+    CHECK(*externalBefore == *firstIdentity);
+    // A publicly constructed mutable source must re-encode even after its previous hash
+    // was valid. The sealed source's bytes and cache remain unaffected.
+    mutableData->records.back().horizon = Tick{1168};
+    const auto externalAfter = external.canonicalIdentity();
+    REQUIRE(externalAfter);
+    CHECK(*externalAfter != *externalBefore);
+    const auto sealedAfter = archive->canonicalIdentity();
+    REQUIRE(sealedAfter);
+    CHECK(*sealedAfter == *firstIdentity);
+    std::weak_ptr<const KernelProjection> future = archive->data().records[63].result;
+    auto branch = source.forkForSeek(*archive, Tick{1104}, replayCutAt(*archive, Tick{1104}));
+    REQUIRE(branch);
+    REQUIRE(branch->advance(Tick{1105}));
+    mutableData->records.clear();
+    archive = cuexis::core::unexpected(cuexis::core::Error{"test.release", "release"});
+    REQUIRE(source.reset());
+    CHECK(future.expired());
+    const auto branched = branch->archive();
+    REQUIRE(branched);
+    auto evaluated = JudgementSession::evaluateReplay(*branched);
+    REQUIRE(evaluated);
+    CHECK(sameKernelResult(*evaluated->result, branch->query()->kernelView()));
+}
+
+TEST_CASE("R3 canonical wire fingerprint matches the preserved implementation",
+          "[.][rpa][redesign-wire]") {
+    const auto legacy = GENERATE(false, true);
+    Fixture3 f;
+    if (legacy) {
+        f.assembly.executionProfile = "gameplay.execution.t4-k4.v1";
+        f.assembly.identityDeclarations.engine.executionProfileToken = f.assembly.executionProfile;
+        f.assembly.identityDeclarations.engine.lateAlgorithmToken = "late.window.logical.v1";
+        f.assembly.identityDeclarations.engine.factSemanticRevision =
+            "fact.semantic.phase-local.v1";
+    }
+    auto configuration = f.configuration();
+    if (legacy) {
+        configuration.lateAlgorithmToken = "late.window.logical.v1";
+        configuration.factSemanticRevision = "fact.semantic.phase-local.v1";
+    }
+    auto session = JudgementSession::create();
+    REQUIRE(session);
+    REQUIRE(session->configure(configuration));
+    REQUIRE(session->prepare(f.prepared()));
+    auto press = occurrence(900, 0, InputAction::press);
+    auto release = occurrence(1000, 1, InputAction::release);
+    if (legacy) {
+        press.key.sourceLocalPosition.reset();
+        release.key.sourceLocalPosition.reset();
+    }
+    REQUIRE(session->submitCanonical({press, release}));
+    REQUIRE(session->advance(Tick{903}));
+    if (!legacy) {
+        REQUIRE(session->controlRpa({RpaControlKind::pause, Tick{900}, 0, 1, 0, {}}));
+        REQUIRE(session->controlRpa({RpaControlKind::resume, Tick{900}, 0, 1, 0, {}}));
+    }
+    for (int i = 0; i < 5; ++i)
+        REQUIRE(session->advance(Tick{1103 + i}));
+    const auto archive = session->archive();
+    const auto snapshot = session->snapshot();
+    REQUIRE(archive);
+    REQUIRE(snapshot);
+    const auto replayBytes = encodeReplay(*archive);
+    const auto snapshotBytes = encodeSnapshot(*snapshot);
+    REQUIRE(replayBytes);
+    REQUIRE(snapshotBytes);
+    std::cout << "R3_WIRE legacy=" << legacy
+              << " replay=" << cuexis::core::detail::sha256Hex(*replayBytes)
+              << " replay_bytes=" << replayBytes->size()
+              << " snapshot=" << cuexis::core::detail::sha256Hex(*snapshotBytes)
+              << " snapshot_bytes=" << snapshotBytes->size() << '\n';
+}
+
+TEST_CASE("R3 native anchors preserve pending input and pause resume suffixes",
+          "[rpa][redesign][native][controls]") {
+    Fixture3 f;
+    f.rules = controlRules(true);
+    auto source = f.session();
+    REQUIRE(source.submitCanonical(
+        {occurrence(900, 0, InputAction::press), occurrence(1000, 1, InputAction::release)}));
+    REQUIRE(source.advance(Tick{903}));
+    const auto pending = source.archive();
+    REQUIRE(pending);
+    auto pendingBranch = source.forkForSeek(*pending, Tick{903}, replayCutAt(*pending, Tick{903}));
+    REQUIRE(pendingBranch);
+    CHECK(detail::KernelTestAccess::nativePrefixRecords(*pendingBranch) == 0);
+    REQUIRE(source.advance(Tick{1003}));
+    for (int i = 1; i <= 36; ++i)
+        REQUIRE(source.advance(Tick{1003 + i}));
+    REQUIRE(source.controlRpa({RpaControlKind::pause, Tick{1036}, 0, 1, 0, {}}));
+    REQUIRE(source.controlRpa({RpaControlKind::resume, Tick{1036}, 0, 1, 0, {}}));
+    REQUIRE(source.advance(Tick{1103}));
+    const auto archive = source.archive();
+    REQUIRE(archive);
+    const ReplayArchive external{archive->anchor(),
+                                 std::make_shared<const RecoveryInputs>(archive->dependencies())};
+    for (const auto horizon : {903, 999, 1003, 1035, 1103}) {
+        INFO(horizon);
+        const auto cut = replayCutAt(*archive, Tick{horizon});
+        auto reference = source.forkForSeek(external, Tick{horizon}, cut);
+        auto branch = source.forkForSeek(*archive, Tick{horizon}, cut);
+        REQUIRE(reference);
+        REQUIRE(branch);
+        CHECK(sameSnapshot(reference->snapshot()->state(), branch->snapshot()->state()));
+        if (horizon == 1103)
+            CHECK(detail::KernelTestAccess::nativePrefixRecords(*branch) >= 32);
+        REQUIRE(reference->advance(Tick{1203}));
+        REQUIRE(branch->advance(Tick{1203}));
+        CHECK(*encodeSnapshot(*reference->snapshot()) == *encodeSnapshot(*branch->snapshot()));
+    }
+}
+
+TEST_CASE("R3 archive copies share a concurrent first canonical identity",
+          "[rpa][redesign][identity][concurrency]") {
+    Fixture3 f;
+    auto source = f.session();
+    REQUIRE(source.advance(Tick{1103}));
+    const auto archive = source.archive();
+    REQUIRE(archive);
+    const auto wire = encodeReplay(*archive);
+    REQUIRE(wire);
+    const auto expected = cuexis::core::detail::sha256(*wire);
+    std::array<std::optional<std::array<std::uint8_t, 32>>, 4> actual;
+    {
+        std::vector<std::jthread> workers;
+        for (std::size_t i = 0; i < actual.size(); ++i) {
+            workers.emplace_back([copy = *archive, &actual, i] {
+                const auto identity = copy.canonicalIdentity();
+                if (identity)
+                    actual[i] = *identity;
+            });
+        }
+    }
+    for (const auto& identity : actual) {
+        REQUIRE(identity);
+        CHECK(*identity == expected);
+    }
+}
+
+namespace {
+void expandTickFixture(Fixture3& f, unsigned count, unsigned wave = 0) {
+    f.rules = controlRules(false);
+    auto& doc = f.assembly.sources.front().document;
+    const auto prototype = doc.requirements.front();
+    doc.requirements.clear();
+    std::erase_if(doc.declarations,
+                  [](const auto& d) { return d.kind == DeclarationKind::requirement; });
+    doc.relations.front().members.clear();
+    f.assembly.contentProfileLimits.maxRequirements =
+        MeasuredParameter<std::uint64_t>::measured(count);
+    for (unsigned i = 0; i < count; ++i) {
+        auto r = prototype;
+        r.stableId.declarationOrdinal = 100 + i;
+        r.identity.requirementLocalId = "tick.prototype." + std::to_string(i);
+        r.resourceClaims.front().claimPolicy.competition =
+            ClaimPolicyDeclaration::CompetitionKey{-1, i};
+        if (wave) {
+            const auto shift = static_cast<std::int64_t>(i / wave) * 200;
+            auto moveTick = [shift](Tick& t) { t = Tick{t.value() + shift}; };
+            moveTick(r.timing->end);
+            for (auto& w : r.timing->successWindows) {
+                moveTick(w.start);
+                moveTick(w.end);
+            }
+            if (r.timing->body) {
+                moveTick(r.timing->body->start);
+                moveTick(r.timing->body->end);
+            }
+            for (auto& t : r.timing->phaseTargets)
+                moveTick(t.chartTick);
+        }
+        doc.declarations.push_back(
+            testDeclaration(DeclarationKind::requirement, r.identity.requirementLocalId, 100 + i));
+        doc.relations.front().members.push_back(r.stableId);
+        doc.requirements.push_back(std::move(r));
+    }
+}
+} // namespace
+TEST_CASE("R3c exploratory sealed Tick restores exact partial state", "[rpa][r3c][prototype]") {
+    Fixture3 f;
+    expandTickFixture(f, 256);
+    const auto prefix = GENERATE(0U, 1U, 2U, 3U, 4U);
+    auto made = detail::ExecutionKernel::prepare(f.configuration(), f.prepared());
+    REQUIRE(made);
+    auto writer = std::move(*made);
+    if (prefix >= 1 && prefix <= 3)
+        REQUIRE(writer->advance(Tick{100}));
+    if (prefix == 2)
+        REQUIRE(writer->advance(Tick{100}));
+    if (prefix == 3) {
+        REQUIRE(writer->controlRpa({RpaControlKind::pause, Tick{97}, 0, 1, 0, {}}));
+        REQUIRE(writer->controlRpa({RpaControlKind::resume, Tick{97}, 0, 1, 0, {}}));
+    }
+    if (prefix == 4)
+        REQUIRE(writer->submitCanonical({occurrence(900, 0, InputAction::press)}));
+    REQUIRE(writer->advance(Tick{1203}));
+    auto archive = writer->archive();
+    REQUIRE(detail::ExecutionKernel::tickPointCount(archive) > 0);
+    const auto originalWire = encodeReplay(archive);
+    REQUIRE(originalWire);
+    const ReplayArchive external{archive.anchor(),
+                                 std::make_shared<const RecoveryInputs>(archive.dependencies())};
+    CHECK(detail::ExecutionKernel::tickPointCount(external) == 0);
+    writer.reset();
+    for (const auto h : {902, 904, 1003, 1103, 1203}) {
+        INFO(h);
+        const auto cut = replayCutAt(archive, Tick{h});
+        auto expected = detail::ExecutionKernel::seekCandidate(external, Tick{h}, nullptr, &cut);
+        auto actual = detail::ExecutionKernel::seekCandidate(archive, Tick{h}, nullptr, &cut);
+        REQUIRE(expected);
+        REQUIRE(actual);
+        CHECK((*actual)->tickRestoreCount() == (h >= 904 && h < 1203 ? 1 : 0));
+        auto a = (*actual)->snapshot();
+        auto b = (*expected)->snapshot();
+        REQUIRE(a);
+        REQUIRE(b);
+        CHECK(sameSnapshot((*a)->dto, (*b)->dto));
+        const auto av = detail::KernelTestAccess::snapshotValue((*a)->dto, archive.dependencies());
+        const auto bv = detail::KernelTestAccess::snapshotValue((*b)->dto, archive.dependencies());
+        auto aw = encodeSnapshot(av);
+        auto bw = encodeSnapshot(bv);
+        REQUIRE(aw);
+        REQUIRE(bw);
+        CHECK(*aw == *bw);
+        if (prefix == 4) {
+            REQUIRE((*actual)->submitCanonical({occurrence(1300, 1, InputAction::release)}));
+            REQUIRE((*expected)->submitCanonical({occurrence(1300, 1, InputAction::release)}));
+        }
+        REQUIRE((*actual)->advance(Tick{1303}));
+        REQUIRE((*expected)->advance(Tick{1303}));
+        a = (*actual)->snapshot();
+        b = (*expected)->snapshot();
+        REQUIRE(a);
+        REQUIRE(b);
+        CHECK(sameSnapshot((*a)->dto, (*b)->dto));
+        const auto actualBranch = (*actual)->archive();
+        const auto expectedBranch = (*expected)->archive();
+        CHECK(sameReplayHistory(actualBranch, expectedBranch));
+        const auto actualReplayWire = encodeReplay(actualBranch);
+        const auto expectedReplayWire = encodeReplay(expectedBranch);
+        REQUIRE(actualReplayWire);
+        REQUIRE(expectedReplayWire);
+        CHECK(*actualReplayWire == *expectedReplayWire);
+    }
+    auto finalWire = encodeReplay(archive);
+    REQUIRE(finalWire);
+    CHECK(*finalWire == *originalWire);
+}
+
+TEST_CASE("R3c exploratory slots preserve earliest point and exact replay",
+          "[rpa][r3c][prototype]") {
+    Fixture3 f;
+    expandTickFixture(f, 1536, 256);
+    auto made = detail::ExecutionKernel::prepare(f.configuration(), f.prepared());
+    REQUIRE(made);
+    auto writer = std::move(*made);
+    REQUIRE(writer->advance(Tick{2503}));
+    auto archive = writer->archive();
+    CHECK(detail::ExecutionKernel::tickPointCount(archive) == 4);
+    const ReplayArchive external{archive.anchor(),
+                                 std::make_shared<const RecoveryInputs>(archive.dependencies())};
+    writer.reset();
+    for (const auto h : {902, 904, 1104, 1304, 1504, 1704, 1904, 2503}) {
+        INFO(h);
+        const auto cut = replayCutAt(archive, Tick{h});
+        auto a = detail::ExecutionKernel::seekCandidate(archive, Tick{h}, nullptr, &cut);
+        auto b = detail::ExecutionKernel::seekCandidate(external, Tick{h}, nullptr, &cut);
+        REQUIRE(a);
+        REQUIRE(b);
+        CHECK((*a)->tickRestoreCount() == (h >= 904 && h < 2503 ? 1 : 0));
+        auto av = (*a)->snapshot();
+        auto bv = (*b)->snapshot();
+        REQUIRE(av);
+        REQUIRE(bv);
+        CHECK(sameSnapshot((*av)->dto, (*bv)->dto));
+        auto aw = encodeSnapshot(
+            detail::KernelTestAccess::snapshotValue((*av)->dto, archive.dependencies()));
+        auto bw = encodeSnapshot(
+            detail::KernelTestAccess::snapshotValue((*bv)->dto, archive.dependencies()));
+        REQUIRE(aw);
+        REQUIRE(bw);
+        CHECK(*aw == *bw);
+    }
+}
+
+TEST_CASE("R3c ordinary writer capture diagnostic", "[.][r3c-writer]") {
+    std::string barrier;
+    REQUIRE(static_cast<bool>(std::getline(std::cin, barrier)));
+    const auto size = cuexis::test_support::environmentVariable("R3_WRITER_N");
+    const auto mode = cuexis::test_support::environmentVariable("R3_WRITER_CAPTURE");
+    const auto waveValue = cuexis::test_support::environmentVariable("R3_WRITER_WAVE");
+    REQUIRE_FALSE(size.empty());
+    REQUIRE_FALSE(mode.empty());
+    const auto n = static_cast<unsigned>(std::stoul(size));
+    const auto wave = !waveValue.empty() ? static_cast<unsigned>(std::stoul(waveValue)) : 0;
+    const bool capture = std::string_view{mode} == "1";
+    Fixture3 f;
+    expandTickFixture(f, n, wave);
+    const auto config = f.configuration();
+    const auto prepared = f.prepared();
+    const Tick target{wave ? 2503 : 1203};
+    std::optional<SnapshotDTO> expected;
+    for (unsigned attempt = 0; attempt < 3; ++attempt) {
+        auto made = detail::ExecutionKernel::prepare(config, prepared);
+        REQUIRE(made);
+        const auto start = std::chrono::steady_clock::now();
+        auto result = capture ? (*made)->advance(target) : (*made)->advanceForReplay(target);
+        const auto end = std::chrono::steady_clock::now();
+        REQUIRE(result);
+        const auto archive = (*made)->archive();
+        const auto points = detail::ExecutionKernel::tickPointCount(archive);
+        CHECK(points == (capture ? (wave ? 4 : 1) : 0));
+        auto snapshot = (*made)->snapshot();
+        REQUIRE(snapshot);
+        if (expected)
+            CHECK(sameSnapshot(*expected, (*snapshot)->dto));
+        else
+            expected = (*snapshot)->dto;
+        std::cout << "{\"event\":\"r3c.writer\",\"n\":" << n << ",\"wave\":" << wave
+                  << ",\"capture\":" << capture << ",\"attempt\":" << attempt << ",\"advance_us\":"
+                  << std::chrono::duration<double, std::micro>(end - start).count()
+                  << ",\"points\":" << points << "}\n";
+    }
+    auto wire =
+        encodeSnapshot(detail::KernelTestAccess::snapshotValue(*expected, {config, prepared}));
+    REQUIRE(wire);
+    std::cout << "R3_WRITER_WIRE " << wire->size() << " " << cuexis::core::detail::sha256Hex(*wire)
+              << "\n";
+}
+
+TEST_CASE("R3c payload limit refuses optional points without changing replay", "[r3c-budget]") {
+    Fixture3 f;
+    expandTickFixture(f, 256);
+    auto made = detail::ExecutionKernel::prepare(f.configuration(), f.prepared());
+    REQUIRE(made);
+    REQUIRE((*made)->setTickPayloadLimitForProbe(0));
+    REQUIRE((*made)->advance(Tick{1203}));
+    auto archive = (*made)->archive();
+    CHECK(detail::ExecutionKernel::tickPointCount(archive) == 0);
+    CHECK(detail::ExecutionKernel::tickPayloadBytes(archive) == 0);
+    const ReplayArchive external{archive.anchor(),
+                                 std::make_shared<const RecoveryInputs>(archive.dependencies())};
+    auto cut = replayCutAt(archive, Tick{1003});
+    auto actual = detail::ExecutionKernel::seekCandidate(archive, Tick{1003}, nullptr, &cut);
+    auto expected = detail::ExecutionKernel::seekCandidate(external, Tick{1003}, nullptr, &cut);
+    REQUIRE(actual);
+    REQUIRE(expected);
+    auto a = (*actual)->snapshot();
+    auto b = (*expected)->snapshot();
+    REQUIRE(a);
+    REQUIRE(b);
+    CHECK(sameSnapshot((*a)->dto, (*b)->dto));
+}
+
+TEST_CASE("R3c payload lease counts retired generations and refunds at last owner",
+          "[r3c-budget]") {
+    Fixture3 f;
+    expandTickFixture(f, 1536, 256);
+    auto made = detail::ExecutionKernel::prepare(f.configuration(), f.prepared());
+    REQUIRE(made);
+    auto writer = std::move(*made);
+    auto empty = writer->archive();
+    REQUIRE(writer->advance(Tick{904}));
+    auto oldest = writer->archive();
+    const auto first = detail::ExecutionKernel::tickPayloadBytes(oldest);
+    REQUIRE(first > 0);
+    std::vector<ReplayArchive> generations;
+    for (const auto h : {1104, 1304, 1504, 1704, 1904}) {
+        REQUIRE(writer->advance(Tick{h}));
+        generations.push_back(writer->archive());
+        CHECK(detail::ExecutionKernel::tickPayloadBytes(empty) <=
+              detail::ExecutionKernel::tickPayloadLimit(empty));
+    }
+    const auto before = detail::ExecutionKernel::tickPayloadBytes(empty);
+    CHECK(before > first);
+    CHECK_FALSE(writer->setTickPayloadLimitForProbe(0));
+    writer.reset();
+    CHECK(detail::ExecutionKernel::tickPayloadBytes(empty) == before);
+    generations.clear();
+    CHECK(detail::ExecutionKernel::tickPayloadBytes(empty) == first);
+    oldest = empty;
+    CHECK(detail::ExecutionKernel::tickPayloadBytes(empty) == 0);
+}
+
+TEST_CASE("R3c capacity visit keeps entry storage alive during reentrant mutation",
+          "[r3c-budget]") {
+    detail::SharedSequence<int> values;
+    for (int i = 0; i < 130; ++i)
+        values.push_back(i);
+    auto saved = values;
+    std::vector<std::pair<std::size_t, std::size_t>> expected, actual;
+    saved.visitStorageCapacity([&](auto n, auto width) { expected.emplace_back(n, width); });
+    values.visitStorageCapacity([&](auto n, auto width) {
+        actual.emplace_back(n, width);
+        values.clear();
+        values.push_back(7);
+    });
+    CHECK(actual == expected);
+    CHECK(saved.size() == 130);
+    CHECK(saved[129] == 129);
+    CHECK(values.size() == 1);
+    CHECK(values[0] == 7);
+}
+
+TEST_CASE("R3c nonzero remaining budget preserves old point and rejects larger new point",
+          "[r3c-budget]") {
+    Fixture3 f;
+    expandTickFixture(f, 1536, 256);
+    const auto config = f.configuration();
+    const auto prepared = f.prepared();
+    auto calibrate = detail::ExecutionKernel::prepare(config, prepared);
+    REQUIRE(calibrate);
+    REQUIRE((*calibrate)->advance(Tick{904}));
+    const auto first = detail::ExecutionKernel::tickPayloadBytes((*calibrate)->archive());
+    REQUIRE(first > 0);
+    auto made = detail::ExecutionKernel::prepare(config, prepared);
+    REQUIRE(made);
+    REQUIRE((*made)->setTickPayloadLimitForProbe(first * 2 - 1));
+    REQUIRE((*made)->advance(Tick{904}));
+    const auto original = (*made)->archive();
+    REQUIRE(detail::ExecutionKernel::tickPointCount(original) == 1);
+    REQUIRE(detail::ExecutionKernel::tickPayloadBytes(original) == first);
+    REQUIRE((*made)->advance(Tick{1104}));
+    auto archive = (*made)->archive();
+    CHECK(detail::ExecutionKernel::tickPointCount(archive) == 1);
+    CHECK(detail::ExecutionKernel::tickPayloadBytes(archive) == first);
+    const ReplayArchive external{archive.anchor(),
+                                 std::make_shared<const RecoveryInputs>(archive.dependencies())};
+    const auto cut = replayCutAt(archive, Tick{1103});
+    auto a = detail::ExecutionKernel::seekCandidate(archive, Tick{1103}, nullptr, &cut);
+    auto b = detail::ExecutionKernel::seekCandidate(external, Tick{1103}, nullptr, &cut);
+    REQUIRE(a);
+    REQUIRE(b);
+    auto av = (*a)->snapshot();
+    auto bv = (*b)->snapshot();
+    REQUIRE(av);
+    REQUIRE(bv);
+    CHECK(sameSnapshot((*av)->dto, (*bv)->dto));
+}
+
+TEST_CASE("R3c seek fork shares preparation payload charges", "[r3c-budget]") {
+    Fixture3 f;
+    expandTickFixture(f, 1536, 256);
+    auto made = detail::ExecutionKernel::prepare(f.configuration(), f.prepared());
+    REQUIRE(made);
+    auto empty = (*made)->archive();
+    REQUIRE((*made)->advance(Tick{904}));
+    auto original = (*made)->archive();
+    const auto first = detail::ExecutionKernel::tickPayloadBytes(empty);
+    REQUIRE(first > 0);
+    const auto cut = replayCutAt(original, Tick{904});
+    auto branch = detail::ExecutionKernel::seekCandidate(original, Tick{904}, nullptr, &cut);
+    REQUIRE(branch);
+    REQUIRE((*branch)->advance(Tick{1104}));
+    auto later = (*branch)->archive();
+    const auto both = detail::ExecutionKernel::tickPayloadBytes(empty);
+    CHECK(both > first);
+    CHECK(detail::ExecutionKernel::tickPayloadBytes(later) == both);
+    made->reset();
+    branch->reset();
+    original = empty;
+    CHECK(detail::ExecutionKernel::tickPayloadBytes(empty) == both - first);
+    later = empty;
+    CHECK(detail::ExecutionKernel::tickPayloadBytes(empty) == 0);
+}
+
+TEST_CASE("R3c append only floor requires shared complete pages and charges partial tail",
+          "[r3c-budget]") {
+    detail::SharedSequence<std::uint64_t> original;
+    for (std::uint64_t i = 0; i < 130; ++i)
+        original.push_back(i);
+    auto later = original;
+    std::size_t full = 0, retained = 0;
+    original.visitStorageCapacity([&](auto n, auto width) { full += n * width; });
+    const auto first =
+        original.visitAppendOnlyRetention([&](auto n, auto width) { retained += n * width; });
+    CHECK(first == 128);
+    CHECK(retained < full);
+    later.push_back(130);
+    CHECK(original.sharesCompletePrefixPagesWith(later));
+    later.update(129, [](auto& x) { x = 900; });
+    CHECK(original.sharesCompletePrefixPagesWith(later));
+    later.update(1, [](auto& x) { x = 901; });
+    CHECK_FALSE(original.sharesCompletePrefixPagesWith(later));
+    detail::SharedSequence<std::uint64_t> sameValues;
+    for (std::uint64_t i = 0; i < 130; ++i)
+        sameValues.push_back(i);
+    CHECK_FALSE(original.sharesCompletePrefixPagesWith(sameValues));
+    CHECK_FALSE(original.sharesCompletePrefixPagesWith({}));
+    detail::SharedSequence<std::uint64_t> empty;
+    CHECK(empty.sharesCompletePrefixPagesWith(original));
+    CHECK(empty.visitAppendOnlyRetention([](auto, auto) {}) == 0);
+    detail::SharedSequence<std::uint64_t> exact;
+    for (std::uint64_t i = 0; i < 128; ++i)
+        exact.push_back(i);
+    CHECK(exact.visitAppendOnlyRetention([](auto, auto) {}) == 128);
+    auto saved = original;
+    std::size_t reentrant = 0;
+    CHECK(original.visitAppendOnlyRetention([&](auto n, auto width) {
+        reentrant += n * width;
+        original.clear();
+        original.push_back(7);
+    }) == 128);
+    CHECK(reentrant == retained);
+    CHECK(saved.size() == 130);
+}
+
+TEST_CASE("R3c ordinary writer after origin archive release retains exact Fact floor",
+          "[r3c-budget]") {
+    Fixture3 f;
+    expandTickFixture(f, 1536, 256);
+    auto made = detail::ExecutionKernel::prepare(f.configuration(), f.prepared());
+    REQUIRE(made);
+    auto empty = (*made)->archive();
+    REQUIRE((*made)->advance(Tick{2503}));
+    auto archive = (*made)->archive();
+    auto wire = encodeReplay(archive);
+    REQUIRE(wire);
+    auto independent = decodeReplay(*wire, archive.dependencies());
+    REQUIRE(independent);
+    CHECK(independent->anchor() != archive.anchor());
+    std::weak_ptr<const ReplayData> original = archive.anchor();
+    const auto cut = replayCutAt(archive, Tick{1504});
+    auto branch = detail::ExecutionKernel::seekCandidate(archive, Tick{1504}, nullptr, &cut);
+    REQUIRE(branch);
+    auto expected = detail::ExecutionKernel::seekCandidate(*independent, Tick{1504}, nullptr, &cut);
+    REQUIRE(expected);
+    made->reset();
+    archive = empty;
+    CHECK_FALSE(original.expired());
+    REQUIRE((*branch)->advance(Tick{2504}));
+    CHECK(original.expired());
+    REQUIRE((*expected)->advanceForReplay(Tick{2504}));
+    auto a = (*branch)->snapshot();
+    auto b = (*expected)->snapshot();
+    REQUIRE(a);
+    REQUIRE(b);
+    CHECK(sameSnapshot((*a)->dto, (*b)->dto));
+    const auto av = (*branch)->archive();
+    const auto bv = (*expected)->archive();
+    CHECK(sameReplayHistory(av, bv));
+    auto aw = encodeReplay(av);
+    auto bw = encodeReplay(bv);
+    REQUIRE(aw);
+    REQUIRE(bw);
+    CHECK(*aw == *bw);
+}
+extern "C" void r3c_cache_event(unsigned stage, std::int64_t tick, std::uint64_t count) noexcept {
+    auto& p = tick_probe::plan;
+    ++p.events[stage];
+    if (stage == 6)
+        p.restoredFrontier = tick;
+    if (p.failureStage == static_cast<int>(stage) &&
+        (stage == 5 || stage == 10 || tick == p.failureTick)) {
+        if (stage == 0 || stage == 5 || stage == 10 || count > 0)
+            p.armed = true;
+    }
+}
+
+TEST_CASE("R3c real allocation failures preserve fault prefix and discard staged owners",
+          "[r3c-fault]") {
+    const auto stage = GENERATE(2, 3, 4);
+    Fixture3 f;
+    expandTickFixture(f, 256);
+    auto actual = f.session();
+    auto reference = f.session();
+    detail::KernelTestControls controls{};
+    controls.failAdvanceFinalization = stage == 2;
+    if (stage != 2) {
+        controls.failedTick = Tick{1000};
+        controls.failurePoint = stage == 3 ? detail::KernelFailurePoint::beforeFold
+                                           : detail::KernelFailurePoint::beforeSeal;
+    }
+    REQUIRE(detail::KernelTestAccess::inject(reference, controls));
+    const auto h = stage == 2 ? 904 : 1003;
+    tick_probe::plan = {};
+    tick_probe::plan.failureStage = stage;
+    tick_probe::plan.failureTick = stage == 2 ? h : 1000;
+    auto result = actual.advance(Tick{h});
+    const auto observed = tick_probe::plan;
+    tick_probe::plan = {};
+    REQUIRE_FALSE(result);
+    REQUIRE(observed.triggered);
+    REQUIRE(observed.events[1] == 1);
+    CHECK(observed.events[7] == 0);
+    REQUIRE_FALSE(reference.advance(Tick{h}));
+    auto a = detail::KernelTestAccess::captureDTO(actual);
+    auto b = detail::KernelTestAccess::captureDTO(reference);
+    REQUIRE(a);
+    REQUIRE(b);
+    CHECK(sameSnapshot(*a, *b));
+    auto archive = actual.archive();
+    REQUIRE(archive);
+    CHECK(detail::ExecutionKernel::tickPointCount(*archive) == 0);
+    CHECK(detail::ExecutionKernel::tickPayloadBytes(*archive) == 0);
+    CHECK(archive->data().records.size() == 1);
+    CHECK(a->kernel.state == KernelSessionState::Faulted);
+    auto aw = encodeSnapshot(detail::KernelTestAccess::snapshotValue(*a, archive->dependencies()));
+    auto bw = encodeSnapshot(detail::KernelTestAccess::snapshotValue(*b, archive->dependencies()));
+    REQUIRE(aw);
+    REQUIRE(bw);
+    CHECK(*aw == *bw);
+}
+
+TEST_CASE("R3c optional allocation misses use exact original replay", "[r3c-fault]") {
+    const auto stage = GENERATE(0, 5, 10);
+    Fixture3 f;
+    expandTickFixture(f, 256);
+    auto made = detail::ExecutionKernel::prepare(f.configuration(), f.prepared());
+    REQUIRE(made);
+    auto writer = std::move(*made);
+    if (stage == 0) {
+        tick_probe::plan = {};
+        tick_probe::plan.failureStage = 0;
+        tick_probe::plan.failureTick = 901;
+    }
+    auto advanced = writer->advance(Tick{1203});
+    auto capture = tick_probe::plan;
+    tick_probe::plan = {};
+    REQUIRE(advanced);
+    auto archive = writer->archive();
+    if (stage == 0) {
+        CHECK(capture.triggered);
+        CHECK(capture.events[9] == 1);
+        CHECK(capture.events[1] == 0);
+        CHECK(detail::ExecutionKernel::tickPointCount(archive) == 0);
+        CHECK(detail::ExecutionKernel::tickPayloadBytes(archive) == 0);
+    } else
+        REQUIRE(detail::ExecutionKernel::tickPointCount(archive) > 0);
+    const ReplayArchive external{archive.anchor(),
+                                 std::make_shared<const RecoveryInputs>(archive.dependencies())};
+    const auto cut = replayCutAt(archive, Tick{1003});
+    tick_probe::plan = {};
+    if (stage != 0)
+        tick_probe::plan.failureStage = stage;
+    auto actual = detail::ExecutionKernel::seekCandidate(archive, Tick{1003}, nullptr, &cut);
+    const auto observed = tick_probe::plan;
+    tick_probe::plan = {};
+    REQUIRE(actual);
+    if (stage != 0) {
+        CHECK(observed.triggered);
+        CHECK(observed.events[8] == 1);
+        CHECK(observed.events[6] == 0);
+    }
+    CHECK((*actual)->tickRestoreCount() == 0);
+    auto expected = detail::ExecutionKernel::seekCandidate(external, Tick{1003}, nullptr, &cut);
+    REQUIRE(expected);
+    auto a = (*actual)->snapshot();
+    auto b = (*expected)->snapshot();
+    REQUIRE(a);
+    REQUIRE(b);
+    CHECK(sameSnapshot((*a)->dto, (*b)->dto));
+    auto aw =
+        encodeSnapshot(detail::KernelTestAccess::snapshotValue((*a)->dto, archive.dependencies()));
+    auto bw =
+        encodeSnapshot(detail::KernelTestAccess::snapshotValue((*b)->dto, archive.dependencies()));
+    REQUIRE(aw);
+    REQUIRE(bw);
+    CHECK(*aw == *bw);
+}
+
+TEST_CASE("R3c observed eviction selects earliest and latest retained frontiers", "[r3c-fault]") {
+    Fixture3 f;
+    expandTickFixture(f, 1536, 256);
+    auto made = detail::ExecutionKernel::prepare(f.configuration(), f.prepared());
+    REQUIRE(made);
+    tick_probe::plan = {};
+    REQUIRE((*made)->advance(Tick{2503}));
+    const auto staged = tick_probe::plan;
+    tick_probe::plan = {};
+    REQUIRE(staged.stagedCount == 6);
+    for (std::size_t i = 0; i < 6; ++i) {
+        CHECK(staged.staged[i].frontier == 901 + static_cast<std::int64_t>(i) * 200);
+        CHECK(staged.staged[i].facts >= 512);
+        CHECK(staged.staged[i].ordinal == 0);
+        std::cout << "R3C_STAGE " << staged.staged[i].frontier << " " << staged.staged[i].facts
+                  << " " << staged.staged[i].ordinal << "\n";
+    }
+    auto archive = (*made)->archive();
+    constexpr std::array<std::pair<int, int>, 6> targets{
+        {{904, 901}, {1104, 901}, {1304, 901}, {1504, 1501}, {1704, 1701}, {1904, 1901}}};
+    for (const auto& [h, frontier] : targets) {
+        const auto cut = replayCutAt(archive, Tick{h});
+        tick_probe::plan = {};
+        auto result = detail::ExecutionKernel::seekCandidate(archive, Tick{h}, nullptr, &cut);
+        const auto observed = tick_probe::plan;
+        tick_probe::plan = {};
+        REQUIRE(result);
+        CHECK(observed.events[6] == 1);
+        CHECK(observed.restoredFrontier == frontier);
+    }
+}
+
+extern "C" void r3c_staged_point(std::int64_t frontier, std::uint64_t facts,
+                                 std::uint64_t ordinal) noexcept {
+    auto& p = tick_probe::plan;
+    if (p.stagedCount < 16)
+        p.staged[p.stagedCount++] = {frontier, facts, ordinal};
+}
+extern "C" bool r3c_counter_boundaries() noexcept;
+TEST_CASE("R3c budget observer rejects counter overflow and remaining quota overflow",
+          "[r3c-fault]") {
+    CHECK(r3c_counter_boundaries());
+}
+
+namespace {
+struct BudgetHeapSample {
+    std::size_t requested{}, storage{}, charge{}, privateBytes{}, workingSet{};
+};
+auto budgetHeapSample(const ReplayArchive& archive) -> BudgetHeapSample {
+    PROCESS_MEMORY_COUNTERS_EX info{};
+    const bool ok =
+        GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&info),
+                             sizeof(info)) != 0;
+    REQUIRE(ok);
+    return {tick_probe::live.load(), tick_probe::storage.load(),
+            detail::ExecutionKernel::tickPayloadBytes(archive), info.PrivateUsage,
+            info.WorkingSetSize};
+}
+} // namespace
+TEST_CASE("R3c budget actual heap tracks multiple generations and last archive release",
+          "[r3c-memory]") {
+    const auto n = GENERATE(1000U, 1536U, 40000U);
+    const unsigned wave = n == 1536 ? 256 : 0;
+    Fixture3 f;
+    expandTickFixture(f, n, wave);
+    const auto config = f.configuration();
+    const auto prepared = f.prepared();
+    {
+        auto warm = detail::ExecutionKernel::prepare(config, prepared);
+        REQUIRE(warm);
+    }
+    for (const bool capture : {false, true}) {
+        const auto requestedBefore = tick_probe::live.load();
+        const auto storageBefore = tick_probe::storage.load();
+        tick_probe::peak.store(requestedBefore);
+        tick_probe::storagePeak.store(storageBefore);
+        std::array<BudgetHeapSample, 5> samples{};
+        std::size_t points{};
+        {
+            auto made = detail::ExecutionKernel::prepare(config, prepared);
+            REQUIRE(made);
+            auto empty = (*made)->archive();
+            samples[0] = budgetHeapSample(empty);
+            {
+                std::vector<ReplayArchive> generations;
+                generations.reserve(wave ? 6 : 1);
+                if (wave) {
+                    for (const auto h : {904, 1104, 1304, 1504, 1704, 1904}) {
+                        REQUIRE((capture ? (*made)->advance(Tick{h})
+                                         : (*made)->advanceForReplay(Tick{h})));
+                        generations.push_back((*made)->archive());
+                    }
+                } else {
+                    REQUIRE((capture ? (*made)->advance(Tick{1203})
+                                     : (*made)->advanceForReplay(Tick{1203})));
+                    generations.push_back((*made)->archive());
+                }
+                points = detail::ExecutionKernel::tickPointCount(generations.back());
+                samples[1] = budgetHeapSample(empty);
+                made->reset();
+                samples[2] = budgetHeapSample(empty);
+                CHECK(samples[1].charge == samples[2].charge);
+                if (capture)
+                    CHECK(points == (wave ? 4 : 1));
+                else
+                    CHECK(points == 0);
+            }
+            samples[3] = budgetHeapSample(empty);
+            CHECK(samples[3].charge == 0);
+        }
+        const auto requestedAfter = tick_probe::live.load();
+        const auto storageAfter = tick_probe::storage.load();
+        CHECK(requestedAfter == requestedBefore);
+        CHECK(storageAfter == storageBefore);
+        for (std::size_t i = 0; i < 4; ++i)
+            std::cout << "{\"event\":\"r3c.budget_heap\",\"n\":" << n << ",\"wave\":" << wave
+                      << ",\"capture\":" << capture << ",\"phase\":" << i
+                      << ",\"requested_delta\":" << samples[i].requested - requestedBefore
+                      << ",\"crt_usable_delta\":" << samples[i].storage - storageBefore
+                      << ",\"payload_charge\":" << samples[i].charge
+                      << ",\"process_private_bytes\":" << samples[i].privateBytes
+                      << ",\"working_set\":" << samples[i].workingSet << ",\"points\":" << points
+                      << "}\n";
+        std::cout << "{\"event\":\"r3c.budget_release\",\"n\":" << n << ",\"capture\":" << capture
+                  << ",\"requested_peak_delta\":" << tick_probe::peak.load() - requestedBefore
+                  << ",\"crt_usable_peak_delta\":" << tick_probe::storagePeak.load() - storageBefore
+                  << ",\"requested_release_delta\":" << requestedAfter - requestedBefore
+                  << ",\"storage_release_delta\":" << storageAfter - storageBefore << "}\n";
+    }
+}
+
+extern "C" void r3c_floor_release(bool pointExpired, std::size_t live) noexcept {
+    auto& p = tick_probe::plan;
+    if (p.watchFloor) {
+        ++p.floorReleaseCount;
+        p.pointExpired = pointExpired;
+        p.floorLive = live;
+    }
+}
+TEST_CASE("R3c exact source floor releases after last point during archive assignment",
+          "[r3c-fault]") {
+    const bool move = GENERATE(false, true);
+    Fixture3 f;
+    expandTickFixture(f, 256);
+    auto made = detail::ExecutionKernel::prepare(f.configuration(), f.prepared());
+    REQUIRE(made);
+    auto empty = (*made)->archive();
+    REQUIRE((*made)->advance(Tick{1203}));
+    auto archive = (*made)->archive();
+    std::weak_ptr<const ReplayData> oldSource = archive.anchor();
+    REQUIRE(detail::ExecutionKernel::tickPayloadBytes(empty) > 0);
+    made->reset();
+    tick_probe::plan = {};
+    tick_probe::plan.watchFloor = true;
+    if (move)
+        archive = ReplayArchive{empty};
+    else
+        archive = empty;
+    const auto observed = tick_probe::plan;
+    tick_probe::plan = {};
+    CHECK(oldSource.expired());
+    REQUIRE(observed.floorReleaseCount == 1);
+    CHECK(observed.pointExpired);
+    CHECK(observed.floorLive == 0);
+    CHECK(detail::ExecutionKernel::tickPayloadBytes(empty) == 0);
+}
+
+extern "C" bool r3c_detach_last() noexcept {
+    return tick_probe::plan.detachLast;
+}
+extern "C" bool r3c_detach_final() noexcept {
+    return tick_probe::plan.detachFinal;
+}
+TEST_CASE("R3c actual promotion rejects equal but independently owned complete Fact page",
+          "[r3c-guard]") {
+    const bool last = GENERATE(false, true);
+    Fixture3 f;
+    expandTickFixture(f, 256);
+    auto made = detail::ExecutionKernel::prepare(f.configuration(), f.prepared());
+    REQUIRE(made);
+    auto empty = (*made)->archive();
+    tick_probe::plan = {};
+    tick_probe::plan.detachFinal = true;
+    tick_probe::plan.detachLast = last;
+    const auto advanced = (*made)->advance(Tick{1203});
+    const auto observed = tick_probe::plan;
+    tick_probe::plan = {};
+    REQUIRE(advanced);
+    REQUIRE(observed.events[1] == 1);
+    auto reference = detail::ExecutionKernel::prepare(f.configuration(), f.prepared());
+    REQUIRE(reference);
+    REQUIRE((*reference)->advanceForReplay(Tick{1203}));
+    auto final = (*made)->snapshot();
+    auto expected = (*reference)->snapshot();
+    REQUIRE(final);
+    REQUIRE(expected);
+    CHECK(sameSnapshot((*final)->dto, (*expected)->dto));
+    auto aw = encodeSnapshot(
+        detail::KernelTestAccess::snapshotValue((*final)->dto, (*made)->archive().dependencies()));
+    auto bw = encodeSnapshot(detail::KernelTestAccess::snapshotValue(
+        (*expected)->dto, (*reference)->archive().dependencies()));
+    REQUIRE(aw);
+    REQUIRE(bw);
+    CHECK(*aw == *bw);
+
+    auto archive = (*made)->archive();
+    CHECK(detail::ExecutionKernel::tickPointCount(archive) == 0);
+    CHECK(detail::ExecutionKernel::tickPayloadBytes(empty) == 0);
+    const ReplayArchive external{archive.anchor(),
+                                 std::make_shared<const RecoveryInputs>(archive.dependencies())};
+    const auto cut = replayCutAt(archive, Tick{1003});
+    auto a = detail::ExecutionKernel::seekCandidate(archive, Tick{1003}, nullptr, &cut);
+    auto b = detail::ExecutionKernel::seekCandidate(external, Tick{1003}, nullptr, &cut);
+    REQUIRE(a);
+    REQUIRE(b);
+    auto av = (*a)->snapshot();
+    auto bv = (*b)->snapshot();
+    REQUIRE(av);
+    REQUIRE(bv);
+    CHECK(sameSnapshot((*av)->dto, (*bv)->dto));
+}

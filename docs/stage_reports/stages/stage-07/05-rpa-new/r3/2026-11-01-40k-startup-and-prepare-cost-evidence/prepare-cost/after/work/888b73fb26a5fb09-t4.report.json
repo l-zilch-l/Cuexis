@@ -1,0 +1,24 @@
+{
+  "convertedBehaviors": 0,
+  "diagnostics": [],
+  "discardedFields": [],
+  "expandedTemplateObjects": 0,
+  "fieldCounts": {
+    "animationClips": 0,
+    "animationTemplateImports": 0,
+    "behaviors": 1,
+    "objects": 1,
+    "parameters": 0
+  },
+  "generatedBindings": 0,
+  "generatedClips": 0,
+  "generatedEvents": 0,
+  "generatedParameters": 0,
+  "rewrittenBindings": 0,
+  "sourceCanonicalIdentity": "396eefb37bebb51539bee1553d7736c59640bf5f91f370705dd0ada9a868bb48",
+  "sourceVersion": 3,
+  "targetCanonicalIdentity": "917eb1f11ff54f1938c58d5baa5224c7b2f96c6b6f6a50a714fe51710a32aa9a",
+  "targetVersion": 4,
+  "unboundBehaviorIds": [],
+  "warnings": []
+}

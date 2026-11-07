@@ -1,0 +1,22 @@
+{
+  "repo": "noloader/SHA-Intrinsics",
+  "revision": "d03795497f3e4576083fc2cd8fe0b924f24d0bb2",
+  "files": {
+    "sha256-x86.c": {
+      "url": "https://raw.githubusercontent.com/noloader/SHA-Intrinsics/d03795497f3e4576083fc2cd8fe0b924f24d0bb2/sha256-x86.c",
+      "sha256": "8e476fea360db2d3df0d381fe371c60aeda2d40df36d25ff91c6d4fb0e81636a"
+    },
+    "README.md": {
+      "url": "https://raw.githubusercontent.com/noloader/SHA-Intrinsics/d03795497f3e4576083fc2cd8fe0b924f24d0bb2/README.md",
+      "sha256": "1d8f1435c61e547d662f3069ab88e45915a5c65aac07895c9367121bf846c219"
+    }
+  },
+  "adaptation": {
+    "sha256_x86.cpp": "d5fcd5616e77ac1f0e30a1c4ec751b5d20de2c3422ef3cac2615fe5fd54c7b62",
+    "changes": [
+      "standard uint types instead of Windows.h",
+      "Cuexis namespace and function name",
+      "removed standalone TEST_MAIN only; compression unchanged"
+    ]
+  }
+}

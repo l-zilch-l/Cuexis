@@ -1,0 +1,66 @@
+add_library(cuexis_judgement STATIC)
+add_library(cuexis::judgement ALIAS cuexis_judgement)
+
+set_target_properties(cuexis_judgement PROPERTIES EXPORT_NAME InternalJudgement)
+
+target_sources(cuexis_judgement
+    PRIVATE
+        src/diagnostic.cpp
+        src/execution_profile.cpp
+        src/execution_scheduler.cpp
+        src/execution_kernel_advance.cpp
+        src/execution_kernel_archive.cpp
+        src/execution_kernel_impl_fold.cpp
+        src/execution_kernel_impl_phases.cpp
+        src/execution_kernel_impl_setup.cpp
+        src/execution_kernel_impl_signals.cpp
+        src/execution_kernel_internal.hpp
+        src/execution_kernel_prepare.cpp
+        src/execution_kernel_query.cpp
+        src/execution_kernel_restore.cpp
+        src/execution_kernel_submit.cpp
+        src/gameplay_assembler_assemble.cpp
+        src/gameplay_assembler_compile.cpp
+        src/gameplay_assembler_compile_internal.hpp
+        src/gameplay_assembler_compile_measure.cpp
+        src/gameplay_assembler_diagnostics.cpp
+        src/gameplay_assembler_grace.cpp
+        src/gameplay_assembler_graph.cpp
+        src/gameplay_assembler_identity.cpp
+        src/gameplay_assembler_internal.hpp
+        src/gameplay_assembler_pattern.cpp
+        src/gameplay_assembler_validate.cpp
+        src/gameplay_graph.cpp
+        src/gameplay_graph_diff.cpp
+        src/gameplay_graph_render.cpp
+        src/gameplay_graph_render_internal.hpp
+        src/gameplay_prepare.cpp
+        src/input.cpp
+        src/input_helpers.hpp
+        src/input_mapping.cpp
+        src/kernel_types.cpp
+        src/recovery_codec.cpp
+        src/recovery.cpp
+        src/ruleset.cpp
+        src/session.cpp
+        src/publication.cpp
+        src/timebase.cpp
+)
+
+# S1-04 / S7A-1: the internal archive is exported through CUEXIS_STATIC_IMPLEMENTATION_TARGETS and
+# the headers are not. There is deliberately no FILE_SET HEADERS and no install() rule here, so no
+# judgement header can reach the install tree.
+target_include_directories(cuexis_judgement PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
+
+target_include_directories(cuexis_judgement PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/internal)
+
+target_compile_features(cuexis_judgement PUBLIC cxx_std_20)
+
+# The typed kernel may depend on cuexis::core and on nothing else: no SDL, no OpenGL, no audio, no
+# audio_sdl, no world, no EnTT, no JSON DOM, no runtime and no platform adapter.
+target_link_libraries(cuexis_judgement
+    PUBLIC
+        cuexis::core
+)

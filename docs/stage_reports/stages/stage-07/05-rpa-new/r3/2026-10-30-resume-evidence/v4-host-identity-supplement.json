@@ -1,0 +1,13 @@
+{
+  "scope": "Final v4 candidate identity supplement; earlier v2/v3 scope strings in reused builder binding templates are historical labels. All common/template/public class definitions are fresh-v3; private kernel source-floor and test changes are v4. Instrumented variants are excluded from timing.",
+  "files": {
+    "binding.json": "cd1c9b686913ac19ae2acdf6cf4bdf66056885f0d21f5c0837d37df6b41ea5ae",
+    "commands.json": "6c722aca33a53d5fa5f85c98b77d06a2afb823ad96ac3a461519bbd96a89e3ac",
+    "host_probe.cpp": "a6fded967d5ce703c192d921891575970a750ba291b39bf9b099dbe8b043ae8d",
+    "kernel_disabled.cpp": "09080d86835aa9f0450b0dd1ea1d7718f2d1a9e3566b62a8891983ca1a7174ef",
+    "probe-baseline.exe": "29cd09d2c29938084bdb5309ae3000b3fdfdf64a3bdd0f8f4640dfbccf3b3bce",
+    "probe-candidate.exe": "2c87481453962613ce38671f247a4dafd6e68eeb96bedb306a5980c1506c4cbf",
+    "source-binding.json": "1f3e141c2d3480d69118b704ba51e6abe11408f98881e9f3bbe48e9cdd0a7909"
+  },
+  "v4_complete_sha256": "e1ea502e4c104fda22f336d1a419172ff61d187f222d2aad5bfd5a335a9c3a7b"
+}

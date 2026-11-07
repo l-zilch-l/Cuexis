@@ -1,0 +1,124 @@
+{
+  "schema": "pd5.element-sizes.v1",
+  "scope": "compile-time element sizes only; no workload, no allocation, no observation",
+  "toolchain": {
+    "family": "MSVC",
+    "msc_full_version": 195136256,
+    "arguments": "/std:c++20 /EHsc /MD /O2 /DNDEBUG"
+  },
+  "definitions": [
+    "CUEXIS_AUDIO_STATIC_DEFINE",
+    "CUEXIS_CONTENT_STATIC_DEFINE",
+    "CUEXIS_CORE_STATIC_DEFINE",
+    "CUEXIS_EXPERIMENTAL_BUILD=1",
+    "CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE=1",
+    "CUEXIS_PLAYBACK_STATIC_DEFINE",
+    "NOMINMAX",
+    "WIN32_LEAN_AND_MEAN",
+    "WIN32",
+    "_WINDOWS",
+    "NDEBUG"
+  ],
+  "include_directories": [
+    "D:\\Cuexis-pd5-40k-admission\\engine\\core\\internal",
+    "D:\\Cuexis-pd5-40k-admission\\app\\execution_host",
+    "D:\\Cuexis-pd5-40k-admission\\out\\build\\pd5-memory-ledger-release-20261023-3e5837f\\generated",
+    "D:\\Cuexis-pd5-40k-admission\\engine\\animation\\include",
+    "D:\\Cuexis-pd5-40k-admission\\engine\\assets\\include",
+    "D:\\Cuexis-pd5-40k-admission\\engine\\audio\\include",
+    "D:\\Cuexis-pd5-40k-admission\\engine\\audio_sdl\\include",
+    "D:\\Cuexis-pd5-40k-admission\\engine\\behavior\\include",
+    "D:\\Cuexis-pd5-40k-admission\\engine\\chart\\include",
+    "D:\\Cuexis-pd5-40k-admission\\engine\\content\\include",
+    "D:\\Cuexis-pd5-40k-admission\\engine\\core\\include",
+    "D:\\Cuexis-pd5-40k-admission\\engine\\cxc\\include",
+    "D:\\Cuexis-pd5-40k-admission\\engine\\debug\\include",
+    "D:\\Cuexis-pd5-40k-admission\\engine\\filesystem\\include",
+    "D:\\Cuexis-pd5-40k-admission\\engine\\gameplay\\include",
+    "D:\\Cuexis-pd5-40k-admission\\engine\\gameplay_packed\\include",
+    "D:\\Cuexis-pd5-40k-admission\\engine\\json_support\\include",
+    "D:\\Cuexis-pd5-40k-admission\\engine\\judgement\\include",
+    "D:\\Cuexis-pd5-40k-admission\\engine\\platform\\include",
+    "D:\\Cuexis-pd5-40k-admission\\engine\\playback\\include",
+    "D:\\Cuexis-pd5-40k-admission\\engine\\player_support\\include",
+    "D:\\Cuexis-pd5-40k-admission\\engine\\presentation_renderer\\include",
+    "D:\\Cuexis-pd5-40k-admission\\engine\\project\\include",
+    "D:\\Cuexis-pd5-40k-admission\\engine\\render\\include",
+    "D:\\Cuexis-pd5-40k-admission\\engine\\render_opengl\\include",
+    "D:\\Cuexis-pd5-40k-admission\\engine\\runtime\\include",
+    "D:\\Cuexis-pd5-40k-admission\\engine\\shader\\include",
+    "D:\\Cuexis-pd5-40k-admission\\engine\\world\\include",
+    "D:\\vcpkg\\installed\\x64-windows\\include"
+  ],
+  "sources": {
+    "cuexis/playback/execution_control.hpp": "ControlRequest、ControlReceipt、StepRequest、StepReceipt",
+    "app/execution_host/frame_delivery.hpp": "DeliveryInfo、DeliveryFingerprint",
+    "app/execution_host/session_worker.hpp": "SessionCommand"
+  },
+  "elements": [
+    {
+      "type": "HostContext",
+      "bytes": 80,
+      "bounds": "ControlRequest、StepKey、ConsumerRegistration 的内嵌 context"
+    },
+    {
+      "type": "ControlRequest",
+      "bytes": 616,
+      "bounds": "command.session 队列元素"
+    },
+    {
+      "type": "ControlReceipt",
+      "bytes": 35928,
+      "bounds": "receipt 保留单元"
+    },
+    {
+      "type": "StepRequest",
+      "bytes": 616,
+      "bounds": "ControlReceipt::steps 元素"
+    },
+    {
+      "type": "StepReceipt",
+      "bytes": 872,
+      "bounds": "ControlReceipt::steps 元素（含 effects）"
+    },
+    {
+      "type": "DeliveryInfo",
+      "bytes": 40,
+      "bounds": "history.request 元素的一半"
+    },
+    {
+      "type": "DeliveryFingerprint",
+      "bytes": 160,
+      "bounds": "history.request 元素的一半"
+    },
+    {
+      "type": "PresentReceipt",
+      "bytes": 224,
+      "bounds": "receipt 保留槽元素"
+    },
+    {
+      "type": "SessionCommand",
+      "bytes": 37680,
+      "bounds": "SessionWorker 队列元素（variant，取最大分支）"
+    },
+    {
+      "type": "std::optional<RequestRecord>",
+      "bytes": 208,
+      "bounds": "history.request 单槽（私嵌套类型的等价镜像）",
+      "mirror_of": "cuexis::playback::detail::FrameDelivery::RequestRecord",
+      "mirror_is_exact": true
+    },
+    {
+      "type": "std::optional<PresentReceipt>",
+      "bytes": 232,
+      "bounds": "receipt 保留槽（按 receiptCapacity 定容）"
+    }
+  ],
+  "probe_sha256": "49825f30b2748ae375b2534df6486bca0b8f4764a65ced624e429d097d181cee",
+  "tool_sha256": "61f99f1ef31c6c81db08f714ad2715fe4dbd6fb7265e90ab77ecadaef021a391",
+  "notes": [
+    "RequestRecord 是 FrameDelivery 的私有嵌套类型；镜像按成员顺序复写（DeliveryFingerprint + DeliveryInfo），两者均为非虚标准布局聚合，标准保证其大小与对齐一致",
+    "SessionCommand 是 variant，取最大分支即为队列元素的静态上界",
+    "容器节点、vector 冗余容量与分配器头部不在上述尺寸内，由上层容量声明另行计费"
+  ]
+}

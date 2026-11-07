@@ -46,6 +46,17 @@ target_sources(cuexis_core
 
 target_compile_features(cuexis_core PUBLIC cxx_std_20)
 
+option(CUEXIS_ENABLE_SHA_ACCELERATION "Enable runtime-dispatched SHA compression" ON)
+if(CUEXIS_ENABLE_SHA_ACCELERATION AND
+   CMAKE_SYSTEM_PROCESSOR MATCHES "^(AMD64|amd64|x86_64|X86_64|i.86|x86)$")
+    target_sources(cuexis_core PRIVATE "${PROJECT_SOURCE_DIR}/third_party/sha_intrinsics/sha256_x86.cpp")
+    target_compile_definitions(cuexis_core PRIVATE CUEXIS_SHA_X86=1)
+    if(NOT MSVC)
+        set_source_files_properties("${PROJECT_SOURCE_DIR}/third_party/sha_intrinsics/sha256_x86.cpp"
+            PROPERTIES COMPILE_OPTIONS "-msha;-mssse3;-msse4.1")
+    endif()
+endif()
+
 target_include_directories(cuexis_core
     PUBLIC
         $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/generated>

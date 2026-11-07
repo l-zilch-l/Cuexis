@@ -1,0 +1,41 @@
+{
+  "screen_pass": true,
+  "cases": [
+    {
+      "n": 40000,
+      "horizon": "902",
+      "process_median_us": {
+        "baseline": 237105.0,
+        "candidate": 2738.5
+      },
+      "change_percent": -98.84502646506822,
+      "first_us": {
+        "baseline": [
+          227763,
+          209507
+        ],
+        "candidate": [
+          2899,
+          2952
+        ]
+      },
+      "repeat_us": {
+        "baseline": [
+          254640,
+          231107,
+          247845,
+          243103
+        ],
+        "candidate": [
+          2401,
+          2525,
+          2786,
+          3056
+        ]
+      }
+    }
+  ],
+  "all_snapshot_wire_equal": true,
+  "raw_partial_full_bytes_equal": true,
+  "scope": "Exploratory 40K normal-allocator screen only. Retained-byte/retired-owner admission remains OPEN; fault and writer screens passed separately. No product retention or formal/GPU acceptance"
+}

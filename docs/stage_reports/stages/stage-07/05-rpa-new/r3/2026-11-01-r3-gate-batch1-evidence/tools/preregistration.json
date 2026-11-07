@@ -1,0 +1,99 @@
+{
+  "scope": "First batch of R3 formal-gate measurements on HEAD 6256af8: initial load, applicable Seek, formal repeatability, formal relative read. Diagnostic/test-only; it does not by itself constitute R3 technical acceptance, device verification or production acceptance, and a gate that cannot be measured with a comparable boundary is recorded as undecided rather than passed.",
+  "registered_local": "2026-11-01 21:15",
+  "registered_utc": "2026-11-01T13:15Z",
+  "source": {
+    "head": "6256af8b7d349b14a6d5b006d7632711152e96fa",
+    "worktree": "clean at registration; no tracked file may be edited while a group runs",
+    "authority": {
+      "gates": "docs/stage_plans/active/stage-07/05-rpa-new/plan.md 9.2-9.4",
+      "load_and_seek_boundaries": "same plan, section 9.3 rows 'chu ci load' and 'shi yong Seek'; pd5-measurement-proposal.md section 4 restates them",
+      "relative_read_rule": "plan 9.2 row 'du qu cai ding': whole-group upper bound <= 1.10 passes, lower bound > 1.10 is over, straddling is inconclusive; windows and raw paired ratios are disclosed",
+      "repeatability_rule": "plan 9.2 row 'chong fu xing': (max-min)/median <= 15% per declared window; slow values are kept"
+    }
+  },
+  "groups": [
+    {
+      "id": "load-gate-v1",
+      "gate": "initial load: every run <= 2000 ms, process start to first valid frame present-return",
+      "workload": "out/build/rpa-candidate-release/bin/cuexis_player.exe --smoke-test, which resolves assets/projects/stage3_project next to the executable",
+      "boundary": "process creation time (GetProcessTimes on the child) to the wall-clock timestamp embedded in the player's own first_frame_presented log line. The timestamp is taken at the logging call immediately after the first present returns, so the boundary is present-return plus one formatting step; it never excludes work that happened before the frame.",
+      "resolution": "child creation time is a FILETIME (100 ns); the log pattern carries milliseconds; the difference is therefore quantised to 1 ms, which is 0.25% of a 400 ms reading and 0.05% of the 2000 ms gate",
+      "runs": 9,
+      "fresh_process_per_run": true,
+      "serial": true,
+      "validity": [
+        "exit code 0",
+        "the log contains the registered smoke golden line 'Frame 5 summary=18316288860163381829'",
+        "the log contains exactly one first_frame_presented line",
+        "no run is retried or replaced; an invalid run is reported and leaves the group short"
+      ],
+      "statistics": "n=9 is below the 1000 samples the plan requires for a p99, so this group reports median, min, max and the (max-min)/median relative range only; the gate itself is a per-run maximum, not a percentile",
+      "declared_limitation": "the smoke scenario closes audio, so audio-device initialisation is not inside this boundary; the same player started with --mode audio measured about 953 ms to its first frame in an exploratory pilot (opaque 0), which is reported only as context, not as this gate"
+    },
+    {
+      "id": "repeatability-from-load-v1",
+      "gate": "formal repeatability: (max-min)/median <= 15%",
+      "source_group": "load-gate-v1",
+      "statistics": "computed on the 9 process-level load readings; a slow reading is kept",
+      "declared_limitation": "the plan's formal repeatability is stated per declared window; this group is a single window of nine processes, and that is what is reported"
+    },
+    {
+      "id": "seek-cost-v1",
+      "gate": "applicable Seek: every seek <= 20 ms, request to the rebuilt/bound target frame being available",
+      "workload": "cuexis_rpa_tests '[seek-matrix]' three fresh processes; each process emits 60 r3.seek.matrix events (records 33/129 x cut kinds 0-4 x external true/false x hint kinds none/checkpoint/uncertified)",
+      "boundary": "the event's own request_to_ready_us (request -> host->seek returns) and request_to_present_us (request -> present returns), both measured inside the test with steady_clock",
+      "statistics": "per process and pooled: median, p95 and max over the 60 events; n<1000 so no p99 is published",
+      "declared_limitation": "the matrix runs the CPU test renderer on 33/129-record content and stamps formal:false. The plan forbids shrinking the applicable scope, so this group is registered as COST EVIDENCE for the functional matrix and is explicitly NOT the applicable-Seek gate; the gate itself stays undecided unless a full-host measurement with the product renderer and the applicable content is registered separately",
+      "decision": "no pass/fail verdict is derived from this group for the 20 ms gate"
+    },
+    {
+      "id": "read-relative-v1",
+      "gate": "formal relative read: whole-group paired 95% interval upper bound <= 1.10",
+      "arms": "A = archived pre-PD source d344088236ae589c0b49a4994ef0fbddd6567ce2, B = current HEAD; same toolchain, each arm built in its own worktree",
+      "protocol": "3 windows x 3 A/B process pairs, >= 10 minutes between windows, paired log ratios, Student-t two-sided 95% interval, no extra rounds to reach a verdict",
+      "precondition_check": "the A arm is first attempted as a build; if the archived source does not configure or build with the current toolchain and dependency baseline, the group is recorded as undecided with the recorded failure and no substitute pair is invented"
+    }
+  ],
+  "shared_rules": [
+    "no re-sampling and no retries to pass",
+    "instrumented and ordinary runs are never mixed",
+    "every raw per-run record is archived with its log",
+    "a gate that cannot be measured with a comparable boundary is recorded as undecided, never as passed",
+    "no production threshold, scope or scenario is modified by this batch"
+  ],
+  "amendments": [
+    {
+      "at_local": "2026-11-01 21:06",
+      "group": "seek-cost-v1",
+      "field": "workload",
+      "was": "cuexis_rpa_tests '[seek-matrix]'",
+      "now": "cuexis_execution_host_tests '[seek-matrix]'",
+      "why": "The tag is registered in cuexis_execution_host_tests (tests/rpa/rpa_b5_host_tests.cpp includes r3_seek_matrix_tests.hpp; the CMakeLists puts that file in that executable, not in cuexis_rpa_tests). The first attempt matched no test cases and produced no readings; the aborted directory is preserved as seek.aborted-1. No measurement of this group had been taken before this correction."
+    },
+    {
+      "at_local": "2026-11-01 21:17",
+      "group": "read-relative-v1",
+      "why": "The A arm was reconstructed and both arms were piloted before the first measured pair, so the workload sizing and the harness adaptation are registered here rather than discovered later.",
+      "arm_a": {
+        "source": "d344088236ae589c0b49a4994ef0fbddd6567ce2 in a detached worktree out/_armA-d344088",
+        "build": "cmake --preset release --fresh -B out/build/armA-release -DCUEXIS_ENABLE_CHART_V5_CANDIDATE=ON, target cuexis_pd_baseline_probe, MSVC 19.51.36231, Ninja",
+        "harness_adaptation": "tests/pd/read_scaling_probe.hpp does not exist at d344088; the HEAD copy of that header was placed into the worktree and included at the end of its tests/pd/measurement_method_tests.cpp. The header is the repository's own 'common finite diagnostic harness, also compiled against the archived pre-PD source'; both arms therefore run the same probe code.",
+        "binary_sha256": "6af4edd2d365fb99e9df5b7da7e77dd6e45a6e284b37e7b8979dd1c1ed293a94"
+      },
+      "arm_b": {
+        "source": "HEAD 6256af8, existing out/build/rpa-candidate-release tree built by the fourth matrix",
+        "binary_sha256": "5d5829a6e1400222ac5543b813be058592c0821cd9582703b6074c37af1436b4"
+      },
+      "workload": {
+        "test": "PD finite read and update scaling (hidden tag [.])",
+        "counts": "CUEXIS_FOLLOW_COUNTS='1800 2000 2000' -> 1800 objects, 2000 operations per block, 3 read blocks",
+        "block_sizing": "the PD long-block calibration requires >=100000 us per block; a pilot at 200 operations produced 17-19 ms blocks, so the registered block is ten times larger and measures about 180-200 ms",
+        "warmup": "the harness warms 64 update+extract frames before its first timed block",
+        "identical_work_proof": "PD_FOLLOW_CONTENT sha256 of the chart text and the per-block snapshot digest must match between the two arms of a pair; a mismatch invalidates the pair"
+      },
+      "order": "3 pairs per window; within a window the first arm alternates (A,B,A for window 1, B,A,B for window 2, A,B,A for window 3); 3 s between pairs, 600 s between windows",
+      "statistics": "per pair: median of the three read blocks per arm, ratio B/A; per window: geometric mean and t(0.975, df=2) 95% interval; whole group: nine ratios, t(0.975, df=8); gate upper <= 1.10"
+    }
+  ]
+}

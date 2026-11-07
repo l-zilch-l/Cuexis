@@ -1,0 +1,81 @@
+"""Builds the prepare attribution probe with the project's own compile and link arguments.
+
+The flags are read out of the Release build.ninja instead of being restated here, so the probe is
+compiled exactly like the product and cannot drift from the configuration it is measuring.
+"""
+import json
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(r'D:\Cuexis-redesign')
+BUILD = ROOT / 'out' / 'build' / 'release'
+ARTIFACT = ROOT / 'out' / 'verification-20261031' / 'r3-prepare-attribution-v1'
+SOURCE = ARTIFACT / 'prepare_attribution.cpp'
+OBJECT = ARTIFACT / 'prepare_attribution.obj'
+EXE = ARTIFACT / 'prepare_attribution.exe'
+
+
+def unescape_ninja(value):
+    return value.replace('$:', ':').replace('$$', '$').replace('$ ', ' ')
+
+
+def edge_variables(ninja, marker):
+    lines = ninja.splitlines()
+    for index, line in enumerate(lines):
+        if marker in line and line.startswith('build '):
+            variables = {}
+            for follower in lines[index + 1 : index + 12]:
+                match = re.match(r'  (\w+) = (.*)', follower)
+                if match:
+                    variables[match.group(1)] = unescape_ninja(match.group(2))
+                elif variables:
+                    break
+            return variables
+    raise SystemExit(f'compile edge not found: {marker}')
+
+
+def link_libraries(ninja):
+    for line in ninja.splitlines():
+        if line.startswith('  LINK_LIBRARIES = ') and 'lib\\cuexis_player_support.lib' in line:
+            return unescape_ninja(line.split('=', 1)[1]).split()
+    raise SystemExit('player link libraries not found')
+
+
+def main():
+    ninja = (BUILD / 'build.ninja').read_text(encoding='utf-8', errors='replace')
+    variables = edge_variables(ninja, r'src\player_app.cpp.obj:')
+    includes = [value.replace('-I', '/I', 1) for value in variables['INCLUDES'].split()]
+    # The player reaches chart and json_support through playback, so the probe names those include
+    # roots itself instead of inheriting them.
+    includes.extend(f'/I{ROOT / "engine" / module / "include"}'
+                    for module in ('chart', 'json_support'))
+    defines = variables['DEFINES'].split()
+    flags = [flag for flag in variables['FLAGS'].split() if flag not in ('/WX',)]
+    libraries = link_libraries(ninja)
+
+    compile_args = ['cl.exe', '/nologo', '/c', '/TP', *defines, *flags, *includes,
+                    f'/Fo{OBJECT}', f'/Fd{ARTIFACT / "prepare_attribution.pdb"}', str(SOURCE)]
+    link_args = ['link.exe', '/nologo', '/INCREMENTAL:NO', '/subsystem:console', '/machine:x64',
+                 f'/OUT:{EXE}', f'/PDB:{ARTIFACT / "prepare_attribution_link.pdb"}', str(OBJECT),
+                 *libraries, 'psapi.lib', 'kernel32.lib', 'user32.lib']
+
+    for name, args in (('compile', compile_args), ('link', link_args)):
+        result = subprocess.run(args, cwd=BUILD, capture_output=True)
+        # MSVC reports in the console code page, so the log is decoded leniently rather than assumed
+        # to be UTF-8.
+        output = (result.stdout + result.stderr).decode('utf-8', 'replace')
+        (ARTIFACT / f'{name}.log').write_text(output, encoding='utf-8')
+        print(f'{name} exit {result.returncode}')
+        if result.returncode != 0:
+            print(output)
+            return 1
+    (ARTIFACT / 'compile.json').write_text(json.dumps(compile_args, indent=2), encoding='utf-8')
+    (ARTIFACT / 'link.json').write_text(json.dumps(link_args, indent=2), encoding='utf-8')
+    print(f'built {EXE}')
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

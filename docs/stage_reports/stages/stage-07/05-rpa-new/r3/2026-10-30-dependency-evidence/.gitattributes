@@ -1,0 +1,4 @@
+# Frozen evidence keeps original bytes and is not a text patch.
+*.txt binary
+*.json binary
+.gitattributes text eol=lf

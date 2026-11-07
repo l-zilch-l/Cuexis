@@ -5,6 +5,7 @@
 #include <cuexis/player_support/audio_device_profile.hpp>
 #include <cuexis/version.hpp>
 
+#include <algorithm>
 #include <optional>
 #include <string>
 #include <utility>
@@ -39,15 +40,20 @@ namespace {
 
 class SdlPlayerSurface final : public PlayerSurface {
   public:
-    explicit SdlPlayerSurface(platform_sdl::SdlWindow& window) : window_(window) {}
+    explicit SdlPlayerSurface(platform_sdl::SdlWindow& window,
+                              std::vector<std::uint32_t> gameplayKeys)
+        : window_(window), gameplayKeys_(std::move(gameplayKeys)) {}
 
     [[nodiscard]] auto pollInput() -> core::Result<PlayerInput> override {
         const auto events = window_.pollEvents();
         PlayerInput input;
         input.quitRequested = events.quitRequested;
+        input.focusLost = events.focusLost;
         input.actions.reserve(events.keys.size());
         for (const auto& key : events.keys) {
-            if (!key.pressed) {
+            input.keys.push_back({key.scanCode, key.pressed, key.timestampNs});
+            if (!key.pressed || std::find(gameplayKeys_.begin(), gameplayKeys_.end(),
+                                          key.scanCode) != gameplayKeys_.end()) {
                 continue;
             }
             if (auto action = inputActionFor(key.key); action.has_value()) {
@@ -67,6 +73,7 @@ class SdlPlayerSurface final : public PlayerSurface {
 
   private:
     platform_sdl::SdlWindow& window_;
+    std::vector<std::uint32_t> gameplayKeys_;
 };
 
 class SdlPlayerAudioSeat final : public PlayerAudioSeat {
@@ -326,8 +333,9 @@ auto logEffectiveWindow(platform_sdl::SdlWindow& window,
     return {};
 }
 
-auto makePlayerSurface(platform_sdl::SdlWindow& window) -> std::unique_ptr<PlayerSurface> {
-    return std::make_unique<SdlPlayerSurface>(window);
+auto makePlayerSurface(platform_sdl::SdlWindow& window, std::vector<std::uint32_t> gameplayKeys)
+    -> std::unique_ptr<PlayerSurface> {
+    return std::make_unique<SdlPlayerSurface>(window, std::move(gameplayKeys));
 }
 
 } // namespace cuexis::player

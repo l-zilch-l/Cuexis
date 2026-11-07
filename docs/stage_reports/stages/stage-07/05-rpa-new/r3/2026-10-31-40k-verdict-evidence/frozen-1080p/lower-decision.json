@@ -1,0 +1,8 @@
+{
+  "reason": "highest short-test points did not pass every sustained repetition; predeclared one lower capacity group, no replacement of failed samples",
+  "levels": {
+    "render-only": 1800,
+    "static": 1400
+  },
+  "previous_results_sha256": "2eb8ca282a086d04a1e17586e73a4bdf351495c7b7a452b7cd9943709a272345"
+}

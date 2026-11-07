@@ -1,0 +1,26 @@
+[
+  {
+    "variant": "baseline",
+    "exit": 0,
+    "valid": true,
+    "pixels": [
+      "GL_STATE_PIXEL 0 16669491920092391348 0 0 51 255",
+      "GL_STATE_PIXEL 1 4668077663010909504 255 0 0 255",
+      "GL_STATE_PIXEL 2 11910152564103518386 0 204 0 255",
+      "GL_STATE_PIXEL 3 16669491920092391348 0 0 51 255"
+    ],
+    "log_sha256": "a0a9e4dab7018a9b187daf202a0ebf4d4ad0fa055b280704b17728b0f00785d4"
+  },
+  {
+    "variant": "candidate",
+    "exit": 0,
+    "valid": true,
+    "pixels": [
+      "GL_STATE_PIXEL 0 16669491920092391348 0 0 51 255",
+      "GL_STATE_PIXEL 1 4668077663010909504 255 0 0 255",
+      "GL_STATE_PIXEL 2 11910152564103518386 0 204 0 255",
+      "GL_STATE_PIXEL 3 16669491920092391348 0 0 51 255"
+    ],
+    "log_sha256": "a0a9e4dab7018a9b187daf202a0ebf4d4ad0fa055b280704b17728b0f00785d4"
+  }
+]

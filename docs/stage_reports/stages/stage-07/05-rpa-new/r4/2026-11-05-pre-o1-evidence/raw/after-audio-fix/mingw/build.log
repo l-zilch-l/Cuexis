@@ -1,0 +1,52 @@
+[1/37] Building CXX object app/execution_host/CMakeFiles/cuexis_execution_host_support.dir/audio_worker.cpp.obj
+[2/37] Building CXX object app/execution_host/CMakeFiles/cuexis_execution_host_support.dir/session_worker_owner.cpp.obj
+[3/37] Building CXX object app/execution_host/CMakeFiles/cuexis_execution_host_support.dir/session_worker_dispatch.cpp.obj
+[4/37] Building CXX object tests/rpa/CMakeFiles/cuexis_execution_host_tests.dir/rpa_b5_failure_tests.cpp.obj
+[5/37] Building CXX object tests/rpa/CMakeFiles/cuexis_execution_host_tests.dir/rpa_b5_audio_tests.cpp.obj
+[6/37] Building CXX object app/execution_host/CMakeFiles/cuexis_execution_host_support.dir/session_worker.cpp.obj
+[7/37] Building CXX object tests/rpa/CMakeFiles/cuexis_host_protocol_tests.dir/__/pd/delivery_retirement_tests.cpp.obj
+[8/37] Linking CXX static library lib\libcuexis_execution_host_support.a
+[9/37] Building CXX object tests/rpa/CMakeFiles/cuexis_execution_host_tests.dir/rpa_b5_session_close_tests.cpp.obj
+[10/37] Building CXX object tests/rpa/CMakeFiles/cuexis_execution_host_tests.dir/rpa_b5_audio_tail_tests.cpp.obj
+[11/37] Building CXX object tests/rpa/CMakeFiles/cuexis_execution_host_tests.dir/rpa_b5_close_tests.cpp.obj
+[12/37] Building CXX object tests/rpa/CMakeFiles/cuexis_execution_host_tests.dir/rpa_b5_session_worker_tests.cpp.obj
+[13/37] Building CXX object tests/rpa/CMakeFiles/cuexis_execution_host_tests.dir/__/pd/retained_control_tests.cpp.obj
+[14/37] Building CXX object tests/rpa/CMakeFiles/cuexis_execution_host_tests.dir/rpa_b5_transcript_tests.cpp.obj
+[15/37] Building CXX object tests/rpa/CMakeFiles/cuexis_execution_host_tests.dir/rpa_b5_seek_host_tests.cpp.obj
+[16/37] Building CXX object tests/rpa/CMakeFiles/cuexis_execution_host_tests.dir/__/__/app/player/src/execution_host.cpp.obj
+[17/37] Building CXX object tests/rpa/CMakeFiles/cuexis_execution_host_tests.dir/__/__/app/player/src/execution_host_close.cpp.obj
+[18/37] Building CXX object tests/rpa/CMakeFiles/cuexis_execution_host_tests.dir/__/__/app/player/src/execution_host_frame.cpp.obj
+[19/37] Building CXX object tests/rpa/CMakeFiles/cuexis_execution_host_tests.dir/__/__/app/player/src/execution_host_rpa.cpp.obj
+[20/37] Building CXX object tests/pd/CMakeFiles/cuexis_pd_host_probe.dir/host_delivery_probe.cpp.obj
+[21/37] Building CXX object tests/rpa/CMakeFiles/cuexis_execution_host_tests.dir/__/__/app/player/src/execution_host_replay.cpp.obj
+[22/37] Building CXX object tests/pd/CMakeFiles/cuexis_pd_host_probe.dir/owner_wait_probe.cpp.obj
+[23/37] Building CXX object tests/pd/CMakeFiles/cuexis_pd_host_probe.dir/owner_channel_wait_tests.cpp.obj
+[24/37] Building CXX object tests/pd/CMakeFiles/cuexis_pd_host_probe.dir/pd5_host_probe.cpp.obj
+[25/37] Building CXX object tests/pd/CMakeFiles/cuexis_pd_host_probe.dir/pd5_matrix_probe.cpp.obj
+[26/37] Building CXX object tests/pd/CMakeFiles/cuexis_pd_host_probe.dir/__/__/app/player/src/execution_host.cpp.obj
+[27/37] Building CXX object tests/pd/CMakeFiles/cuexis_pd_host_probe.dir/__/__/app/player/src/execution_host_close.cpp.obj
+[28/37] Building CXX object tests/pd/CMakeFiles/cuexis_pd_host_probe.dir/coherent_retirement_tests.cpp.obj
+[29/37] Building CXX object tests/pd/CMakeFiles/cuexis_pd_host_probe.dir/__/__/app/player/src/execution_host_frame.cpp.obj
+[30/37] Building CXX object tests/pd/CMakeFiles/cuexis_pd_host_probe.dir/__/__/app/player/src/execution_host_rpa.cpp.obj
+[31/37] Building CXX object tests/pd/CMakeFiles/cuexis_pd_host_probe.dir/__/__/app/player/src/execution_host_replay.cpp.obj
+[32/37] Linking CXX executable bin\cuexis_pd_allocation_probe.exe
+[33/37] Linking CXX executable bin\cuexis_host_protocol_tests.exe
+Checking XDG_RUNTIME_DIR env var
+Checking TMPDIR env var
+Checking TMP env var
+[34/37] Linking CXX executable bin\cuexis_pd_baseline_probe.exe
+Checking XDG_RUNTIME_DIR env var
+Checking TMPDIR env var
+Checking TMP env var
+[35/37] Linking CXX executable bin\cuexis_execution_host_tests.exe
+Checking XDG_RUNTIME_DIR env var
+Checking TMPDIR env var
+Checking TMP env var
+[36/37] Linking CXX executable bin\cuexis_pd_host_probe.exe
+Checking XDG_RUNTIME_DIR env var
+Checking TMPDIR env var
+Checking TMP env var
+[37/37] Linking CXX executable bin\cuexis_playback_tests.exe
+Checking XDG_RUNTIME_DIR env var
+Checking TMPDIR env var
+Checking TMP env var

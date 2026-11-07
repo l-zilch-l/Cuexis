@@ -1,0 +1,37 @@
+#include "D:/Cuexis-redesign/tests/player/gpu_throughput_probe.cpp"
+#include <cuexis/presentation_renderer/draw_command.hpp>
+
+TEST_CASE("Neutral draw late inversion performance guard", "[.][draw-guard]") {
+    std::string go;
+    std::getline(std::cin, go);
+    REQUIRE(go == "go");
+    for (unsigned count : {1000U, 40000U}) {
+        PlaybackSession session;
+        auto prepared = throughputTake(session.prepareLoad(throughputSource(count, false), PlaybackMode::ChartClock));
+        const auto* manifest = prepared.presentationManifest();
+        REQUIRE(manifest);
+        std::vector<cuexis::playback::PortableResourcePtr> resources;
+        for (const auto& entry : manifest->entries)
+            resources.push_back(throughputTake(prepared.acquirePresentationResource(entry.reference)));
+        throughputTake(session.commit(std::move(prepared)));
+        throughputTake(session.update({0,0,1}));
+        auto snapshot = throughputTake(session.extractFrame({1920,1080}));
+        for (bool reverse : {false, true}) {
+            if (reverse) std::reverse(snapshot.objects.begin(),snapshot.objects.end());
+            else std::swap(snapshot.objects[count-2],snapshot.objects[count-1]);
+            std::uint64_t digest{};
+            for (unsigned iteration=0; iteration<11; ++iteration) {
+                const auto begin=Clock::now();
+                auto summary=throughputTake(cuexis::presentation_renderer::buildPresentationCommands(snapshot,resources,false,false,nullptr));
+                const auto end=Clock::now();
+                REQUIRE(summary.opaque.size()==count);
+                if (iteration==0) digest=summary.digest;
+                else REQUIRE(summary.digest==digest);
+                if (iteration>=3) std::cout << "DRAW_GUARD {\"n\":" << count << ",\"reverse\":" << (reverse?"true":"false")
+                    << ",\"iteration\":" << iteration-3 << ",\"duration_us\":" << std::setprecision(17) << throughputUs(begin,end)
+                    << ",\"digest\":" << summary.digest << "}\n";
+            }
+            if (!reverse) std::swap(snapshot.objects[count-2],snapshot.objects[count-1]);
+        }
+    }
+}

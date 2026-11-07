@@ -337,6 +337,12 @@ SDK_APPROVAL_PREFIX = "cuexis-sdk-api-approval-v1\n"
 SDK_OWNERS_FILE = ".github/sdk-api-owners.json"
 
 
+def _sdk_approval_body(comment: dict) -> str:
+    """Accept LF and CRLF records without changing the API-observed comment."""
+    body = comment.get("body", "")
+    return body.replace("\r\n", "\n") if isinstance(body, str) else ""
+
+
 def _github_json(repository: str, suffix: str):
     if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository):
         raise GateError("version.sdk_api.owner_config", "invalid repository identity")
@@ -366,7 +372,10 @@ def validate_sdk_approval(comment: dict, owners: list[str], expected: dict,
             str(comment.get("created_at", ""))[:10] != expected["utc_date"]):
         raise GateError("version.sdk_api.approval_invalid", "owner/date/unedited record required")
     body = comment.get("body", "")
-    if not isinstance(body, str) or len(body) > 8192 or not body.startswith(SDK_APPROVAL_PREFIX):
+    if not isinstance(body, str) or len(body) > 8192:
+        raise GateError("version.sdk_api.approval_invalid", "invalid approval record")
+    body = _sdk_approval_body(comment)
+    if not body.startswith(SDK_APPROVAL_PREFIX):
         raise GateError("version.sdk_api.approval_invalid", "invalid approval record")
     try:
         record = json.loads(body[len(SDK_APPROVAL_PREFIX):])
@@ -450,7 +459,7 @@ def sdk_owner_approval(repo_root: Path, base: str, candidate: str,
         for comment in comments:
             if (isinstance(comment, dict) and isinstance(comment.get("user"), dict) and
                     comment["user"].get("login") in config["owners"] and
-                    str(comment.get("body", "")).startswith(SDK_APPROVAL_PREFIX)):
+                    _sdk_approval_body(comment).startswith(SDK_APPROVAL_PREFIX)):
                 latest = comment
         if len(comments) < 100:
             break
@@ -459,7 +468,7 @@ def sdk_owner_approval(repo_root: Path, base: str, candidate: str,
     if latest is None:
         raise GateError("version.sdk_api.approval_required", "no unedited owner approval record")
     try:
-        record = json.loads(latest["body"][len(SDK_APPROVAL_PREFIX):])
+        record = json.loads(_sdk_approval_body(latest)[len(SDK_APPROVAL_PREFIX):])
         approved = record["candidate_sha"]
     except (ValueError, KeyError, TypeError) as error:
         raise GateError("version.sdk_api.approval_invalid", "latest record is invalid or revoked") from error

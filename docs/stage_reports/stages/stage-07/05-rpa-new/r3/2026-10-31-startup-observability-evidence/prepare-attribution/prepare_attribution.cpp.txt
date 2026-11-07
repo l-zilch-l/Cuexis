@@ -1,0 +1,302 @@
+// Attributes the 40K prepare cost to the document stages it is built from, and splits the parse
+// itself into the third-party DOM parse, the duplicate-key observer, and the Cuexis value copy.
+//
+// Every stage below is a call the product makes, timed in isolation on the same text: the raw
+// nlohmann DOM parse, the same parse through a re-implementation of the product's duplicate-key
+// observer, the Cuexis json::parse (observer plus value copy), the typed chart load, the canonical
+// identity pass, the version hint scan, and the complete PlaybackSession::prepareLoad. The last
+// stage minus the document stages is lowering and world build.
+//
+// Peak working set and private bytes are sampled between stages, because the same run answers the
+// 128 MiB product-budget question and peak is what a budget can only be compared against.
+
+#include <cuexis/chart/chart_loader.hpp>
+#include <cuexis/chart/chart_writer.hpp>
+#include <cuexis/json/parse.hpp>
+#include <cuexis/playback/playback_session.hpp>
+#include <cuexis/playback/playback_source.hpp>
+
+#include <nlohmann/json.hpp>
+
+#include <windows.h>
+#include <psapi.h>
+
+#include <chrono>
+#include <cstdio>
+#include <cstdlib>
+#include <fstream>
+#include <functional>
+#include <set>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+namespace {
+
+using Clock = std::chrono::steady_clock;
+
+struct Memory final {
+    double peakWorkingSetMiB{};
+    double privateMiB{};
+};
+
+// Mirrors engine/json_support/src/parse.cpp so the probe can price the observer on its own.
+class CountingObserver final {
+  public:
+    CountingObserver(std::size_t maxDepth, std::size_t maxStringBytes)
+        : maxDepth_(maxDepth), maxStringBytes_(maxStringBytes) {}
+
+    bool operator()(int, nlohmann::json::parse_event_t event, nlohmann::json& parsed) {
+        switch (event) {
+        case nlohmann::json::parse_event_t::object_start:
+            beginContainer();
+            objectKeys_.emplace_back();
+            break;
+        case nlohmann::json::parse_event_t::array_start:
+            beginContainer();
+            break;
+        case nlohmann::json::parse_event_t::object_end:
+            objectKeys_.pop_back();
+            endContainer();
+            break;
+        case nlohmann::json::parse_event_t::array_end:
+            endContainer();
+            break;
+        case nlohmann::json::parse_event_t::key: {
+            const auto& key = parsed.get_ref<const std::string&>();
+            enforceStringLimit(key);
+            if (!objectKeys_.back().insert(key).second && duplicateKey_.empty()) {
+                duplicateKey_ = key;
+            }
+            break;
+        }
+        case nlohmann::json::parse_event_t::value:
+            if (parsed.is_string()) {
+                enforceStringLimit(parsed.get_ref<const std::string&>());
+            }
+            break;
+        default:
+            break;
+        }
+        return true;
+    }
+
+    [[nodiscard]] auto duplicateKey() const noexcept -> std::string_view { return duplicateKey_; }
+
+  private:
+    void beginContainer() {
+        if (containerDepth_ >= maxDepth_) {
+            throw std::runtime_error{"JSON nesting depth exceeds the configured limit"};
+        }
+        ++containerDepth_;
+    }
+    void endContainer() noexcept { --containerDepth_; }
+    void enforceStringLimit(std::string_view value) const {
+        if (value.size() > maxStringBytes_) {
+            throw std::runtime_error{"JSON string limit exceeded"};
+        }
+    }
+
+    std::size_t maxDepth_;
+    std::size_t maxStringBytes_;
+    std::size_t containerDepth_{};
+    std::vector<std::set<std::string, std::less<>>> objectKeys_;
+    std::string duplicateKey_;
+};
+
+auto readText(const char* path) -> std::string {
+    std::ifstream input{path, std::ios::binary};
+    std::ostringstream buffer;
+    buffer << input.rdbuf();
+    return buffer.str();
+}
+
+auto elapsedMs(Clock::time_point from, Clock::time_point to) -> double {
+    return std::chrono::duration<double, std::milli>(to - from).count();
+}
+
+auto memory() -> Memory {
+    PROCESS_MEMORY_COUNTERS_EX counters{};
+    counters.cb = sizeof(counters);
+    if (GetProcessMemoryInfo(GetCurrentProcess(),
+                             reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&counters),
+                             sizeof(counters)) == 0) {
+        return {};
+    }
+    return Memory{static_cast<double>(counters.PeakWorkingSetSize) / 1048576.0,
+                  static_cast<double>(counters.PrivateUsage) / 1048576.0};
+}
+
+void report(const char* stage, double ms) {
+    const auto now = memory();
+    std::printf("%-26s %9.2f ms  peak_ws %7.1f MiB  private %7.1f MiB\n", stage, ms,
+                now.peakWorkingSetMiB, now.privateMiB);
+    std::fflush(stdout);
+}
+
+void printError(const cuexis::core::Error& error, int depth = 0) {
+    std::printf("%*s%s: %s\n", depth * 2, "", std::string{error.code()}.c_str(),
+                std::string{error.message()}.c_str());
+    for (const auto& context : error.context()) {
+        std::printf("%*s%s=%s\n", depth * 2 + 2, "", context.key.c_str(), context.value.c_str());
+    }
+    if (const auto* cause = error.cause(); cause != nullptr) {
+        printError(*cause, depth + 1);
+    }
+}
+
+} // namespace
+
+int main(int argc, char** argv) {
+    if (argc < 3) {
+        std::puts("usage: prepare_attribution <chart.json> <project-dir> [repeats] [no-prepare]");
+        return 2;
+    }
+    const int repeats = argc > 3 ? std::atoi(argv[3]) : 3;
+    const bool prepareEnabled = !(argc > 4 && std::string{argv[4]} == "no-prepare");
+    const std::string text = readText(argv[1]);
+    std::printf("chart bytes %zu repeats %d prepare %d\n", text.size(), repeats,
+                prepareEnabled ? 1 : 0);
+    const cuexis::json::ParseLimits parseLimits{16U * 1024U * 1024U, 64, 1024U * 1024U};
+    const cuexis::chart::ChartLimits chartLimits{};
+    int status = 0;
+    bool failed = false;
+
+    for (int repeat = 0; repeat < repeats && !failed; ++repeat) {
+        std::printf("-- repeat %d\n", repeat);
+
+        {
+            const auto start = Clock::now();
+            auto parsed = nlohmann::json::parse(text.begin(), text.end());
+            report("nlohmann raw", elapsedMs(start, Clock::now()));
+            std::printf("%-26s nodes %zu\n", "", parsed.size());
+        }
+
+        {
+            CountingObserver observer{parseLimits.maxDepth, parseLimits.maxStringBytes};
+            const auto start = Clock::now();
+            auto parsed =
+                nlohmann::json::parse(text.begin(), text.end(), std::ref(observer), true, false);
+            report("nlohmann + observer", elapsedMs(start, Clock::now()));
+            std::printf("%-26s nodes %zu duplicate '%s'\n", "", parsed.size(),
+                        std::string{observer.duplicateKey()}.c_str());
+        }
+
+        {
+            // Same callback mechanism, but the observer does no work at all: this prices the
+            // third-party callback path itself, separately from the duplicate-key bookkeeping.
+            const auto trivial = [](int, nlohmann::json::parse_event_t, nlohmann::json&) {
+                return true;
+            };
+            const auto start = Clock::now();
+            auto parsed = nlohmann::json::parse(text.begin(), text.end(), trivial, true, false);
+            report("nlohmann + trivial obs", elapsedMs(start, Clock::now()));
+            std::printf("%-26s nodes %zu\n", "", parsed.size());
+        }
+
+        {
+            const auto start = Clock::now();
+            auto parsed = cuexis::json::parse(text, parseLimits);
+            report("json.parse", elapsedMs(start, Clock::now()));
+            if (!parsed) {
+                printError(parsed.error());
+                failed = true;
+                status = 1;
+            }
+        }
+
+        if (!failed) {
+            // The one-pass SAX builder is already public: this is the cost a parse that did not go
+            // through the third-party DOM and a value copy would pay.
+            const cuexis::json::ValueParseLimits bounded{
+                parseLimits, static_cast<std::size_t>(-1), static_cast<std::size_t>(-1)};
+            const auto start = Clock::now();
+            auto built = cuexis::json::parseBounded(text, bounded);
+            report("json.parseBounded", elapsedMs(start, Clock::now()));
+            if (!built) {
+                printError(built.error());
+                failed = true;
+                status = 1;
+            }
+        }
+
+        if (!failed) {
+            const auto start = Clock::now();
+            auto canonical = cuexis::chart::ChartWriter::writeCanonicalJson(text, chartLimits);
+            report("writeCanonicalJson", elapsedMs(start, Clock::now()));
+            if (!canonical) {
+                printError(canonical.error());
+                failed = true;
+                status = 1;
+            } else {
+                std::printf("%-26s canonical bytes %zu\n", "", canonical->size());
+            }
+        }
+
+        if (!failed) {
+            const auto start = Clock::now();
+            auto loaded = cuexis::chart::ChartLoader::load(text, chartLimits);
+            report("ChartLoader.load", elapsedMs(start, Clock::now()));
+            if (!loaded.document) {
+                std::puts("ChartLoader.load failed");
+                failed = true;
+                status = 1;
+            } else {
+                std::printf("%-26s objects %zu\n", "", loaded.document->objects.size());
+            }
+        }
+
+        if (!failed) {
+            const auto start = Clock::now();
+            auto scan = cuexis::json::scanTopLevelInteger(text, "version", parseLimits);
+            report("scanTopLevelInteger", elapsedMs(start, Clock::now()));
+            std::printf("%-26s version %lld\n", "", static_cast<long long>(scan.value_or(-1)));
+        }
+
+        if (!failed && prepareEnabled) {
+            cuexis::playback::PlaybackSession session;
+            const auto start = Clock::now();
+            auto source = cuexis::playback::PlaybackSource::fromFilesystemProject(argv[2]);
+            report("fromFilesystemProject", elapsedMs(start, Clock::now()));
+            if (!source) {
+                printError(source.error());
+                failed = true;
+                status = 1;
+            } else {
+                const auto prepareStart = Clock::now();
+                auto prepared = session.prepareLoad(std::move(*source),
+                                                    cuexis::playback::PlaybackMode::ChartClock);
+                report("prepareLoad", elapsedMs(prepareStart, Clock::now()));
+                if (!prepared) {
+                    printError(prepared.error());
+                    failed = true;
+                    status = 1;
+                } else {
+                    const auto* info = prepared->contentInfo();
+                    std::printf("%-26s chart %s format v%u\n", "",
+                                info != nullptr ? info->chartId.c_str() : "?",
+                                info != nullptr ? info->chartFormatVersion : 0U);
+                    if (const auto identity = prepared->semanticIdentity(); identity.has_value()) {
+                        std::string hex;
+                        for (const auto byte : identity->sha256) {
+                            char digits[3]{};
+                            std::snprintf(digits, sizeof(digits), "%02x", byte);
+                            hex += digits;
+                        }
+                        std::printf("%-26s identity %s\n", "", hex.c_str());
+                    }
+                    const auto chartInfo = session.chartInfo();
+                    if (chartInfo) {
+                        std::printf(
+                            "%-26s objects %zu behaviors %zu renderable %zu resources %zu\n", "",
+                            chartInfo->objectCount, chartInfo->behaviorCount,
+                            chartInfo->renderableCount, chartInfo->resourceCount);
+                    }
+                    report("startup path total", elapsedMs(start, Clock::now()));
+                }
+            }
+        }
+    }
+    return status;
+}

@@ -1,0 +1,85 @@
+[
+  {
+    "stage": "configure",
+    "args": [
+      "cmake",
+      "-S",
+      "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-resume-v1\\budget-source-v3",
+      "-B",
+      "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-resume-v1\\budget-build-v3",
+      "-G",
+      "Ninja",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DCMAKE_TOOLCHAIN_FILE=D:/vcpkg/scripts/buildsystems/vcpkg.cmake",
+      "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+      "-DCUEXIS_ENABLE_CHART_V5_CANDIDATE=ON",
+      "-DCUEXIS_VERSION_SUFFIX=exp.candidate",
+      "-DCUEXIS_WARNINGS_AS_ERRORS=ON",
+      "-DCUEXIS_BUILD_DEVELOPER_TOOLS=ON",
+      "-DCUEXIS_LIBRARY_TYPE=STATIC"
+    ],
+    "exit": 0,
+    "seconds": 35.70626849999826
+  },
+  {
+    "stage": "build",
+    "args": [
+      "cmake",
+      "--build",
+      "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-resume-v1\\budget-build-v3",
+      "--parallel",
+      "1",
+      "--target",
+      "cuexis_rpa_tests",
+      "cuexis_judgement_tests",
+      "cuexis_execution_host_tests",
+      "cuexis_gameplay_packed_tests"
+    ],
+    "exit": 0,
+    "seconds": 836.113727699998
+  },
+  {
+    "stage": "test-cuexis_rpa_tests",
+    "args": [
+      "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-resume-v1\\budget-build-v3\\bin\\cuexis_rpa_tests.exe",
+      "~[r3c-writer]",
+      "--rng-seed",
+      "1"
+    ],
+    "exit": 0,
+    "seconds": 3.5853639999986626
+  },
+  {
+    "stage": "test-cuexis_judgement_tests",
+    "args": [
+      "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-resume-v1\\budget-build-v3\\bin\\cuexis_judgement_tests.exe",
+      "~[r3c-writer]",
+      "--rng-seed",
+      "1"
+    ],
+    "exit": 0,
+    "seconds": 0.6422244999994291
+  },
+  {
+    "stage": "test-cuexis_execution_host_tests",
+    "args": [
+      "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-resume-v1\\budget-build-v3\\bin\\cuexis_execution_host_tests.exe",
+      "~[r3c-writer]",
+      "--rng-seed",
+      "1"
+    ],
+    "exit": 0,
+    "seconds": 10.395127100000536
+  },
+  {
+    "stage": "test-cuexis_gameplay_packed_tests",
+    "args": [
+      "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-resume-v1\\budget-build-v3\\bin\\cuexis_gameplay_packed_tests.exe",
+      "~[r3c-writer]",
+      "--rng-seed",
+      "1"
+    ],
+    "exit": 0,
+    "seconds": 2.2939971999985573
+  }
+]

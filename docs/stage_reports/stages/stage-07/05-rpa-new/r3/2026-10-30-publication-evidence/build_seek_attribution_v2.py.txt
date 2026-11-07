@@ -1,0 +1,39 @@
+from pathlib import Path
+import ctypes,hashlib,json,shutil,subprocess
+root=Path.cwd();base=Path(__file__).resolve().parent;parent=root/'out/verification-20261030/r3-resume-v1'
+build=parent/'budget-build-v3';source=parent/'budget-source-v4';out=base/'seek-attribution-v2'
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+shell=ctypes.WinDLL('shell32');shell.CommandLineToArgvW.argtypes=[ctypes.c_wchar_p,ctypes.POINTER(ctypes.c_int)];shell.CommandLineToArgvW.restype=ctypes.POINTER(ctypes.c_wchar_p)
+k=ctypes.WinDLL('kernel32');k.LocalFree.argtypes=[ctypes.c_void_p]
+def split(line):
+ n=ctypes.c_int();p=shell.CommandLineToArgvW(line,ctypes.byref(n))
+ try:return [p[i] for i in range(n.value)]
+ finally:k.LocalFree(p)
+cache=dict(l.split('=',1) for l in (build/'CMakeCache.txt').read_text().splitlines() if '=' in l and not l.startswith(('#','//')))
+cc=json.loads((build/'compile_commands.json').read_text());commands=[]
+def run(args,label):
+ commands.append(dict(label=label,args=args));(out/'commands.json').write_text(json.dumps(commands,indent=2))
+ with (out/(label+'.log')).open('x',encoding='utf-8') as f:r=subprocess.run(args,cwd=build,stdout=f,stderr=subprocess.STDOUT)
+ print(label,r.returncode,flush=True)
+ if r.returncode:raise SystemExit(r.returncode)
+def compile(suffix,name,test=False):
+ c=next(c for c in cc if c['file'].endswith('/'+suffix) and (not test or 'cuexis_execution_host_tests' in c['output']))
+ args=[a for a in split(c['command']) if not a.startswith(('/Fo','/Fd')) and not a.endswith('.cpp')]
+ args=[a.replace(str(parent/'budget-source-v3'),str(source)).replace((parent/'budget-source-v3').as_posix(),source.as_posix()) for a in args]
+ original=Path(c['file']);relative=original.relative_to(parent/'budget-source-v3');original=source/relative
+ args.insert(1,'/I'+str(original.parent));obj=out/(name+'.obj')
+ run([*args,'/Fo'+str(obj),'/Fd'+str(out/(name+'.pdb')),str(out/(name+'.cpp'))],'compile-'+name)
+ return str(obj)
+kernel=compile('execution_kernel.cpp','execution_kernel')
+worker=compile('session_worker.cpp','session_worker')
+host=compile('execution_host.cpp','execution_host',True)
+probe=compile('rpa_b5_host_tests.cpp','host_probe',True)
+playback=compile('playback_session.cpp','playback_session')
+coordination=compile('host_candidate.cpp','host_candidate',True)
+block=(build/'build.ninja').read_text().split('build bin\\cuexis_execution_host_tests.exe',1)[1].split('\n\n',1)[0]
+objects=split(block.split(': CXX_EXECUTABLE_LINKER__cuexis_execution_host_tests_Release ',1)[1].split(' | ',1)[0])
+objects=[probe if 'rpa_b5_host_tests.cpp.obj' in p else host if p.endswith('execution_host.cpp.obj') else coordination if p.endswith('host_candidate.cpp.obj') else p for p in objects]
+libs=split(next(l.split(' = ',1)[1] for l in block.splitlines() if l.startswith('  LINK_LIBRARIES = ')))
+run([cache['CMAKE_LINKER:FILEPATH'],'/NOLOGO','/machine:x64','/INCREMENTAL:NO','/subsystem:console','/OUT:'+str(out/'probe.exe'),kernel,worker,playback,*objects,*libs],'link')
+for dll in (build/'bin').glob('*.dll'):shutil.copyfile(dll,out/dll.name)
+(out/'binding.json').write_text(json.dumps(dict(scope='Observed wall/CPU/cycles attribution only, no ordinary timing acceptance. Six TUs instrumented; identical v4 public/template definitions, fresh-v3 libraries. No root product source copied into this binary.',source_binding_sha256=sha(out/'source-binding.json'),commands_sha256=sha(out/'commands.json'),binary_sha256=sha(out/'probe.exe')),indent=2),encoding='utf-8')

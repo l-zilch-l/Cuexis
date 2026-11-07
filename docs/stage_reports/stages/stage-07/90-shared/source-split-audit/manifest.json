@@ -1,0 +1,57 @@
+{
+  "schema": "cuexis.evidence-manifest.v1",
+  "scope": "Independent audit of the 2026-11-03 source-split safety net at 562f54d3; archived report, audit tools and probes. Original English report is byte-identical to the audit run.",
+  "source_run": "out/_audit-2026-11-03/gate-audit at 562f54d3",
+  "content_sha256": "ace0838c52bdb6d3e3966658ae6191b658298a8b91bbd2ca8a3d4bced033073f",
+  "content_hash_algorithm": "sha256 over sorted UTF-8 records path + LF + sha256 + LF",
+  "files": [
+    {
+      "path": "AUDIT_REPORT.md",
+      "bytes": 13065,
+      "sha256": "e8d51c718cc38680d79401762e9b0b7c54f10ad657ffc946cde47d3506b22df0",
+      "eol": "lf"
+    },
+    {
+      "path": "index.md",
+      "bytes": 3522,
+      "sha256": "056e169308c4bf741f463c12278e961c87db3fd8c298b2f57b6fcae02920db07",
+      "eol": "lf"
+    },
+    {
+      "path": "tools/ast_inventory.py",
+      "bytes": 4035,
+      "sha256": "9007500f06d545c3f6e2b158ed6953316791f7487530b9b521a4523253122301",
+      "eol": "lf"
+    },
+    {
+      "path": "tools/compare_bodies.py",
+      "bytes": 5932,
+      "sha256": "45ddf60b2bdb30dd86e5cf089f72b283010475a9886d4d7305c403d7aa006a2c",
+      "eol": "lf"
+    },
+    {
+      "path": "tools/compare_split.py",
+      "bytes": 9218,
+      "sha256": "bc9233657370d0d540596a59e9ab465bd76072c61def25cb5a7e4f92ba70f1f3",
+      "eol": "lf"
+    },
+    {
+      "path": "tools/probe_amount.cpp",
+      "bytes": 278,
+      "sha256": "616113f83793fb35552c249acb182abab9bb802692c18f91d977d2c56f952a79",
+      "eol": "lf"
+    },
+    {
+      "path": "tools/probe_mapping.cpp",
+      "bytes": 275,
+      "sha256": "1671fbcc78c8f2cdd9aa65a98cc37a90d3eb3d38039b58f7ea268effb3a88ef9",
+      "eol": "lf"
+    },
+    {
+      "path": "tools/stage_new_only.py",
+      "bytes": 2203,
+      "sha256": "61c822ebb542b039f15abe6b0e20afd42fe4aa81ba94e6bc89524c73ad95c678",
+      "eol": "lf"
+    }
+  ]
+}

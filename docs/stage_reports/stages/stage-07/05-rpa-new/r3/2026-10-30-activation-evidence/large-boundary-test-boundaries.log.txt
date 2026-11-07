@@ -1,0 +1,5 @@
+Filters: [publication-large]
+Randomness seeded to: 1
+===============================================================================
+All tests passed (2016 assertions in 3 test cases)
+

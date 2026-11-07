@@ -1,0 +1,27 @@
+Read the v4 version member without building the whole value tree
+
+PlaybackSource::fromFilesystemProject asks chart::detail::loadV4IfPresent whether
+a chart document is v4 before the real prepare parse. That question is answered by
+one top-level member, but the answer was obtained by parsing the complete 13 MB
+document into a value tree and then parsing it again for the Load.
+
+json::scanTopLevelInteger is a bounded SAX hint scanner: it stops at the requested
+top-level integer, skips every other member, and returns nullopt for an absent or
+non-integer member, a non-object document, truncated text, or a reached limit. It
+never validates the document and its callers keep the real parse; the abort
+sentinel is translated back into a successful scan inside one translation unit.
+
+loadV4IfPresent now checks the version with the scanner and parses only when the
+document claims to be v4, so a v3 document costs a prefix instead of a full pass.
+The v4 path still parses twice, which is a separate duplication with its own fix
+shape and is not changed here.
+
+Localised 40K startup diagnostic, same fixture and machine, Release build:
+- content_resolved 8.030 s before, 18.2 ms after (18440 us in a second run).
+- startup total 26.283 s before, 17.899 s after; repeats 20.778 s, 18.126 s,
+  18.608 s. The residual spread is machine noise on one laptop, not a group.
+- 293 json_support assertions including twelve scanner cases, 42425 chart
+  assertions, 17185 playback assertions and 484 player control assertions pass.
+
+This is a localised product-startup diagnostic, not a 40K acceptance, not a full
+matrix and not a 240 FPS claim.

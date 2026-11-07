@@ -104,8 +104,8 @@ struct OrderedEntity final {
 
 } // namespace
 
-auto lowerCandidateRuntime(const CanonicalSemanticChart& chart, const ChartLimits& limits)
-    -> CandidateRuntimeArtifactResult {
+auto lowerStaticCandidateRuntime(const CanonicalSemanticChart& chart, const ChartLimits& limits,
+                                 bool gameplayValidated) -> CandidateRuntimeArtifactResult {
     auto diagnostics = detail::makeDiagnostics(limits);
     if (detail::rejectInvalidDiagnosticLimit(diagnostics, limits)) {
         return CandidateRuntimeArtifactResult{std::nullopt, std::move(diagnostics)};
@@ -130,8 +130,12 @@ auto lowerCandidateRuntime(const CanonicalSemanticChart& chart, const ChartLimit
         requirementCount += entity.requirements.size();
     }
 
-    if (auto profile = packed::profile_detail::validateFoundationProfile(chart); !profile) {
-        addError(diagnostics, profile.error(), "$/entities");
+    if (!gameplayValidated) {
+        if (auto profile = packed::profile_detail::validateFoundationProfile(chart); !profile)
+            addError(diagnostics, profile.error(), "$/entities");
+    } else if (requirementCount != 0) {
+        addError(diagnostics, "packed.profile.requirement_unsupported",
+                 "Gameplay presentation cannot contain legacy Requirements", "$/entities");
     }
     auto semanticIdentity = packed::semanticIdentity(chart);
     if (!semanticIdentity) {
@@ -317,6 +321,15 @@ auto lowerCandidateRuntime(const CanonicalSemanticChart& chart, const ChartLimit
     diagnostics.sortDeterministically();
     return CandidateRuntimeArtifactResult{
         CandidateRuntimeArtifact{std::move(runtime), std::move(metadata)}, std::move(diagnostics)};
+}
+
+auto lowerCandidateRuntime(const CanonicalSemanticChart& chart, const ChartLimits& limits)
+    -> CandidateRuntimeArtifactResult {
+    return lowerStaticCandidateRuntime(chart, limits, false);
+}
+auto lowerGameplayPresentationRuntime(const CanonicalSemanticChart& chart,
+                                      const ChartLimits& limits) -> CandidateRuntimeArtifactResult {
+    return lowerStaticCandidateRuntime(chart, limits, true);
 }
 
 void writeU32(detail::Sha256& hash, std::uint32_t value) noexcept {

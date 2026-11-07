@@ -1,0 +1,10 @@
+[0/2] Re-checking globbed directories...
+[1/7] Building CXX object engine\runtime\CMakeFiles\cuexis_runtime.dir\src\presentation_read.cpp.obj
+[2/7] Building CXX object engine\playback\CMakeFiles\cuexis_playback.dir\src\presentation_materializer.cpp.obj
+[3/7] Linking CXX static library lib\cuexis_runtime.lib
+[4/7] Building CXX object engine\playback\CMakeFiles\cuexis_playback.dir\src\playback_session.cpp.obj
+[5/7] Linking CXX static library lib\cuexis_playback-candidate.lib
+[6/7] Linking CXX executable bin\cuexis_pd_baseline_probe.exe
+Checking XDG_RUNTIME_DIR env var
+Checking TMPDIR env var
+Checking TMP env var

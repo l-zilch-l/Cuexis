@@ -1,0 +1,42 @@
+{
+  "base_head": "2ddbcafe22bd3facc63b4917cf99eeccc3d81cd1",
+  "generator": "baseline MSVC fresh candidate-headless-debug; fold_recovery_tests baseline exporter; 81 assertions pass",
+  "files": [
+    {
+      "path": "tests/fixtures/diagnostic_revision1/fold.replay",
+      "sha256": "0534773555ea58bc67cd78e9c43a7585d3b4f4471236af48b2a54aef52702d1f",
+      "bytes": 4966,
+      "origin": "testOnly injected Replay; same-controls evaluation verified"
+    },
+    {
+      "path": "tests/fixtures/diagnostic_revision1/fold.snapshot",
+      "sha256": "6481aadbb0c9c8bcf8d1dba8377a6767f7b3df319c0c0f417763f2c85f0e0439",
+      "bytes": 4935,
+      "origin": "internal testOnly DTO; public Faulted snapshot remains refused; original Reader/restore verified"
+    },
+    {
+      "path": "tests/fixtures/diagnostic_revision1/healthy.replay",
+      "sha256": "4a0ebb85fc4f49d722a513f153088a609d987a74ace45503588cdc33f07b44e1",
+      "bytes": 6727,
+      "origin": "public healthy Snapshot/Replay"
+    },
+    {
+      "path": "tests/fixtures/diagnostic_revision1/healthy.snapshot",
+      "sha256": "ef9e3c2d7b6a4ae200514b8e45616067435e3d6e4100de774589c69cdc2bba1c",
+      "bytes": 7334,
+      "origin": "public healthy Snapshot/Replay"
+    },
+    {
+      "path": "tests/fixtures/diagnostic_revision1/kernel.replay",
+      "sha256": "f02ff13a1c758637c44a6e6cb130c647537f48e912ac35abadf596e2b79d175c",
+      "bytes": 4189,
+      "origin": "testOnly injected Replay; same-controls evaluation verified"
+    },
+    {
+      "path": "tests/fixtures/diagnostic_revision1/kernel.snapshot",
+      "sha256": "3654c0717fea549345ab2f8f6d6f9a711222e93288f3d760ea45a95109a54e1e",
+      "bytes": 4237,
+      "origin": "internal testOnly DTO; public Faulted snapshot remains refused; original Reader/restore verified"
+    }
+  ]
+}

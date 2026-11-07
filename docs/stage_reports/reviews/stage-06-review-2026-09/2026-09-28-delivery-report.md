@@ -286,7 +286,7 @@ ELF 的 `lib`/`.so` 命名使归属判断既空转又误判。
 本节为**追加**内容，不改动本文 §2–§8 的任何原文、现象与证据。
 
 本文 §2 批次总表覆盖 R0–R8。批次 R9 在本文写成之后经 owner 另行裁定开启，因此不在该表内；其记录见
-[R9 参考宿主命令循环与 play/pause](../../stages/stage-06/2026-09-28-r9-reference-host-command-loop.md)
+[R9 参考宿主命令循环与 play/pause](2026-09-28-r9-reference-host-command-loop.md)
 与规范 [R9-reference-host-command-loop.md](../../../stage_plans/reviews/stage-06-review-remediation/R9-reference-host-command-loop.md)。
 
 本文 §5 第 1 项与 §7 把「交互命令循环」与 ADR 0042 `:350-351` 的冲突记为**未处置、需 owner 裁定**。
@@ -476,7 +476,7 @@ version.sdk_api.changed: SDK API changed from 0.7.0 to 0.7.1 without explicit ac
 为 additive 新名预留的位次。**阻塞全部来自门禁的放行通路未接线，不是兼容性问题。**
 
 经项目所有者于 2026-09-29 决定：**本批次不升版本**；`0.7.1` 连同本节实测的阻塞一并作为 Stage 7A 的
-关闭前置条件登记（[Stage 7 计划](../../../stage_plans/future/stage-07/plan.md)）。
+关闭前置条件登记（[Stage 7 计划](../../../stage_plans/active/stage-07/plan.md)）。
 
 ## 11. 追加订正（2026-09-29）：owner 接受 R9 退出，`SPEC-27` 记为 closed
 

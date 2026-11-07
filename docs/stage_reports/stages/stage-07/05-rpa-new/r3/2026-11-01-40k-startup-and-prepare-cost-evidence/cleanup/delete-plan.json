@@ -1,0 +1,97 @@
+{
+  "delete": [
+    {
+      "name": "candidate-debug",
+      "path": "D:\\Cuexis-redesign\\out\\build\\candidate-debug",
+      "exists": true,
+      "parent_ok": true,
+      "bytes": 19610478057
+    },
+    {
+      "name": "mingw-headless-debug",
+      "path": "D:\\Cuexis-redesign\\out\\build\\mingw-headless-debug",
+      "exists": true,
+      "parent_ok": true,
+      "bytes": 15296177112
+    },
+    {
+      "name": "rpa-candidate-shared-debug",
+      "path": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-shared-debug",
+      "exists": true,
+      "parent_ok": true,
+      "bytes": 12548918239
+    },
+    {
+      "name": "rpa-boundary-mingw-shared",
+      "path": "D:\\Cuexis-redesign\\out\\build\\rpa-boundary-mingw-shared",
+      "exists": true,
+      "parent_ok": true,
+      "bytes": 12415157135
+    },
+    {
+      "name": "b3-default-off",
+      "path": "D:\\Cuexis-redesign\\out\\build\\b3-default-off",
+      "exists": true,
+      "parent_ok": true,
+      "bytes": 10381864010
+    },
+    {
+      "name": "headless-shared-debug",
+      "path": "D:\\Cuexis-redesign\\out\\build\\headless-shared-debug",
+      "exists": true,
+      "parent_ok": true,
+      "bytes": 8325057839
+    },
+    {
+      "name": "headless-release",
+      "path": "D:\\Cuexis-redesign\\out\\build\\headless-release",
+      "exists": true,
+      "parent_ok": true,
+      "bytes": 3480789833
+    },
+    {
+      "name": "rpa-mingw-release",
+      "path": "D:\\Cuexis-redesign\\out\\build\\rpa-mingw-release",
+      "exists": true,
+      "parent_ok": true,
+      "bytes": 1153556575
+    },
+    {
+      "name": "r3-neutral-direct",
+      "path": "D:\\Cuexis-redesign\\out\\build\\r3-neutral-direct",
+      "exists": true,
+      "parent_ok": true,
+      "bytes": 227704407
+    },
+    {
+      "name": "r3-neutral-mingw",
+      "path": "D:\\Cuexis-redesign\\out\\build\\r3-neutral-mingw",
+      "exists": true,
+      "parent_ok": true,
+      "bytes": 154514091
+    }
+  ],
+  "keep": [
+    {
+      "name": "debug",
+      "path": "D:\\Cuexis-redesign\\out\\build\\debug",
+      "exists": true,
+      "parent_ok": true,
+      "bytes": 12184948251
+    },
+    {
+      "name": "release",
+      "path": "D:\\Cuexis-redesign\\out\\build\\release",
+      "exists": true,
+      "parent_ok": true,
+      "bytes": 3644916182
+    },
+    {
+      "name": "rpa-candidate-release",
+      "path": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release",
+      "exists": true,
+      "parent_ok": true,
+      "bytes": 5981427083
+    }
+  ]
+}

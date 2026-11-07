@@ -155,14 +155,15 @@ B0 不修改生产行为，只完善报告和建立分支清单。
 
 - [chart_v4_loader.cpp](../../../../engine/chart/src/chart_v4_loader.cpp)
 - [chart_v4_resolver.cpp](../../../../engine/chart/src/chart_v4_resolver.cpp)
-- [chart_v4_animation_reader_internal.cpp](../../../../engine/chart/src/chart_v4_animation_reader_internal.cpp)
+- `engine/chart/src/chart_v4_animation_reader_*.cpp`
 - [chart_parameter_resolver.cpp](../../../../engine/chart/src/chart_parameter_resolver.cpp)
 
 主要测试文件：
 
 - [chart_v4_loader_tests.cpp](../../../../tests/chart/chart_v4_loader_tests.cpp)
 - [chart_v4_resolver_tests.cpp](../../../../tests/chart/chart_v4_resolver_tests.cpp)
-- [chart_v4_c2_contract_tests.cpp](../../../../tests/chart/chart_v4_c2_contract_tests.cpp)
+- [chart_v4_c2_animation_tests.cpp](../../../../tests/chart/chart_v4_c2_animation_tests.cpp)
+- [chart_v4_c2_closure_tests.cpp](../../../../tests/chart/chart_v4_c2_closure_tests.cpp)
 - [cfu_f4_limits_tests.cpp](../../../../tests/chart/cfu_f4_limits_tests.cpp)
 
 优先矩阵：
@@ -186,7 +187,8 @@ B0 不修改生产行为，只完善报告和建立分支清单。
 
 主要测试文件：
 
-- [cxc_package_tests.cpp](../../../../tests/cxc/cxc_package_tests.cpp)
+- [cxc_package_loader_tests.cpp](../../../../tests/cxc/cxc_package_loader_tests.cpp)
+- [cxc_package_writer_tests.cpp](../../../../tests/cxc/cxc_package_writer_tests.cpp)
 - [cxc_manifest_loader_tests.cpp](../../../../tests/cxc/cxc_manifest_loader_tests.cpp)
 - [zip32_envelope_tests.cpp](../../../../tests/cxc/zip32_envelope_tests.cpp)
 - [cfu_f4_safety_tests.cpp](../../../../tests/cxc/cfu_f4_safety_tests.cpp)

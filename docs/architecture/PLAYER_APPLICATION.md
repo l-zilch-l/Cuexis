@@ -2,9 +2,17 @@
 
 状态：现行应用结构
 
-更新日期：2026-09-24
+更新日期：2026-10-28
 
 `cuexis_player` 是参考播放器，不是安装进 SDK 的组件。宿主集成走 `PlaybackSession`。Player 自己组合窗口、OpenGL backend、音频设备和帧循环。
+
+本页描述普通播放路径的应用结构。2026-10-09 的同步循环与 owner 耦合审查保留在
+[历史报告](../stage_reports/stages/stage-07/03-rpa-legacy/design/2026-10-09-realtime-architecture-review.md)，
+不能代表后续 candidate 实施。当前执行协调与各 owner 的职责见
+[ADR 0046](../adr/0046-realtime-playback-coordination.md)和
+[实时宿主边界](../api/realtime-host-boundary.md)，存储、恢复及缓存见
+[执行状态、恢复与准备路径](execution-state-and-recovery.md)；实施/接受状态见
+[CURRENT_STATUS](../CURRENT_STATUS.md)。不能据此直接把 PreparedPlayback 或 SDL renderer 移到 worker。
 
 正式内容路径是：
 

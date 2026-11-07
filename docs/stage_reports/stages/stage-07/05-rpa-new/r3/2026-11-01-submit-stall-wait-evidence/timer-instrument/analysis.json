@@ -1,0 +1,591 @@
+{
+  "1800|render-only": [
+    {
+      "log": "01-render-only-1800.log.txt",
+      "frames": 8078,
+      "cycle_us": {
+        "p50": 2448,
+        "p99": 3213,
+        "max": 6278.7
+      },
+      "submit_us": {
+        "p50": 2148.5,
+        "p99": 2699.7
+      },
+      "gpu_us": {
+        "p50": 242.688,
+        "p90": 349.184,
+        "p99": 543.744,
+        "max": 1382.4
+      },
+      "gpu_share_of_cycle_p50": 0.09913725490196078,
+      "gpu_vs_cycle_spearman": 0.7482,
+      "slow_frames": 2,
+      "slow_rate": 0.00025,
+      "slow_vs_fast": {
+        "slow_gpu_median": 1116.7,
+        "fast_gpu_median": 242.7,
+        "slow_gpu_ratio": 4.601,
+        "slow_submit_median": 4927.2,
+        "fast_submit_median": 2148.5,
+        "slow_cycle_median": 6241.1,
+        "fast_cycle_median": 2447.9,
+        "slow_present_median": 1287.3,
+        "fast_present_median": 289.2
+      }
+    },
+    {
+      "log": "02-render-only-1800.log.txt",
+      "frames": 8495,
+      "cycle_us": {
+        "p50": 2286,
+        "p99": 2916.5,
+        "max": 6073.5
+      },
+      "submit_us": {
+        "p50": 2010.8,
+        "p99": 2471.3
+      },
+      "gpu_us": {
+        "p50": 223.232,
+        "p90": 277.504,
+        "p99": 436.224,
+        "max": 1202.176
+      },
+      "gpu_share_of_cycle_p50": 0.09765179352580927,
+      "gpu_vs_cycle_spearman": 0.6118,
+      "slow_frames": 1,
+      "slow_rate": 0.00012,
+      "slow_vs_fast": {
+        "slow_gpu_median": 909.3,
+        "fast_gpu_median": 223.2,
+        "slow_gpu_ratio": 4.073,
+        "slow_submit_median": 5229.1,
+        "fast_submit_median": 2010.8,
+        "slow_cycle_median": 6073.5,
+        "fast_cycle_median": 2285.9,
+        "slow_present_median": 821.6,
+        "fast_present_median": 251.8
+      }
+    },
+    {
+      "log": "03-render-only-1800.log.txt",
+      "frames": 8636,
+      "cycle_us": {
+        "p50": 2254.7,
+        "p99": 2739.8,
+        "max": 3774.4
+      },
+      "submit_us": {
+        "p50": 1997.3,
+        "p99": 2410
+      },
+      "gpu_us": {
+        "p50": 222.208,
+        "p90": 262.144,
+        "p99": 384,
+        "max": 629.76
+      },
+      "gpu_share_of_cycle_p50": 0.09855324433405775,
+      "gpu_vs_cycle_spearman": 0.5824,
+      "slow_frames": 0,
+      "slow_rate": 0.0
+    }
+  ],
+  "1800|render-only|summary": {
+    "cycle_p50": 2286,
+    "gpu_p50": 223.232,
+    "gpu_p90": 277.504,
+    "gpu_share_p50": 0.09855324433405775,
+    "slow_rate": 0.00012
+  },
+  "1800|static": [
+    {
+      "log": "01-static-1800.log.txt",
+      "frames": 7450,
+      "cycle_us": {
+        "p50": 2644.9,
+        "p99": 3308.5,
+        "max": 4631.1
+      },
+      "submit_us": {
+        "p50": 2139,
+        "p99": 2469.7
+      },
+      "gpu_us": {
+        "p50": 317.44,
+        "p90": 352.256,
+        "p99": 498.688,
+        "max": 1145.856
+      },
+      "gpu_share_of_cycle_p50": 0.12001966047865703,
+      "gpu_vs_cycle_spearman": 0.7284,
+      "slow_frames": 0,
+      "slow_rate": 0.0
+    },
+    {
+      "log": "02-static-1800.log.txt",
+      "frames": 7528,
+      "cycle_us": {
+        "p50": 2623.8,
+        "p99": 3162.9,
+        "max": 4181.1
+      },
+      "submit_us": {
+        "p50": 2127.8,
+        "p99": 2437.6
+      },
+      "gpu_us": {
+        "p50": 314.368,
+        "p90": 345.088,
+        "p99": 466.944,
+        "max": 1731.584
+      },
+      "gpu_share_of_cycle_p50": 0.11981401021419315,
+      "gpu_vs_cycle_spearman": 0.7236,
+      "slow_frames": 0,
+      "slow_rate": 0.0
+    },
+    {
+      "log": "03-static-1800.log.txt",
+      "frames": 7558,
+      "cycle_us": {
+        "p50": 2613.7,
+        "p99": 3138.8,
+        "max": 3942.7
+      },
+      "submit_us": {
+        "p50": 2130.2,
+        "p99": 2427.9
+      },
+      "gpu_us": {
+        "p50": 315.392,
+        "p90": 346.112,
+        "p99": 440.32,
+        "max": 1217.536
+      },
+      "gpu_share_of_cycle_p50": 0.12066878371657039,
+      "gpu_vs_cycle_spearman": 0.6978,
+      "slow_frames": 0,
+      "slow_rate": 0.0
+    }
+  ],
+  "1800|static|summary": {
+    "cycle_p50": 2623.8,
+    "gpu_p50": 315.392,
+    "gpu_p90": 346.112,
+    "gpu_share_p50": 0.12001966047865703,
+    "slow_rate": 0.0
+  },
+  "2400|render-only": [
+    {
+      "log": "01-render-only-2400.log.txt",
+      "frames": 6379,
+      "cycle_us": {
+        "p50": 3107.3,
+        "p99": 3621.4,
+        "max": 4602.8
+      },
+      "submit_us": {
+        "p50": 2802.8,
+        "p99": 3255.5
+      },
+      "gpu_us": {
+        "p50": 407.552,
+        "p90": 446.464,
+        "p99": 614.4,
+        "max": 1671.168
+      },
+      "gpu_share_of_cycle_p50": 0.1311595275641232,
+      "gpu_vs_cycle_spearman": 0.7144,
+      "slow_frames": 0,
+      "slow_rate": 0.0
+    },
+    {
+      "log": "02-render-only-2400.log.txt",
+      "frames": 6406,
+      "cycle_us": {
+        "p50": 3090.4,
+        "p99": 3647.9,
+        "max": 5413.4
+      },
+      "submit_us": {
+        "p50": 2783.3,
+        "p99": 3295.5
+      },
+      "gpu_us": {
+        "p50": 406.528,
+        "p90": 444.416,
+        "p99": 585.728,
+        "max": 1643.52
+      },
+      "gpu_share_of_cycle_p50": 0.1315454310121667,
+      "gpu_vs_cycle_spearman": 0.6806,
+      "slow_frames": 0,
+      "slow_rate": 0.0
+    },
+    {
+      "log": "03-render-only-2400.log.txt",
+      "frames": 6365,
+      "cycle_us": {
+        "p50": 3114.3,
+        "p99": 3666.9,
+        "max": 5885
+      },
+      "submit_us": {
+        "p50": 2810.2,
+        "p99": 3308.9
+      },
+      "gpu_us": {
+        "p50": 407.552,
+        "p90": 446.464,
+        "p99": 621.568,
+        "max": 1092.608
+      },
+      "gpu_share_of_cycle_p50": 0.130864720804033,
+      "gpu_vs_cycle_spearman": 0.6882,
+      "slow_frames": 0,
+      "slow_rate": 0.0
+    }
+  ],
+  "2400|render-only|summary": {
+    "cycle_p50": 3107.3,
+    "gpu_p50": 407.552,
+    "gpu_p90": 446.464,
+    "gpu_share_p50": 0.1311595275641232,
+    "slow_rate": 0.0
+  },
+  "2400|static": [
+    {
+      "log": "01-static-2400.log.txt",
+      "frames": 5130,
+      "cycle_us": {
+        "p50": 3714.3,
+        "p99": 7238.7,
+        "max": 7872.3
+      },
+      "submit_us": {
+        "p50": 3012.2,
+        "p99": 6501
+      },
+      "gpu_us": {
+        "p50": 427.008,
+        "p90": 470.016,
+        "p99": 642.048,
+        "max": 2059.264
+      },
+      "gpu_share_of_cycle_p50": 0.1149632501413456,
+      "gpu_vs_cycle_spearman": 0.7003,
+      "slow_frames": 235,
+      "slow_rate": 0.04581,
+      "slow_vs_fast": {
+        "slow_gpu_median": 450.6,
+        "fast_gpu_median": 425.0,
+        "slow_gpu_ratio": 1.06,
+        "slow_submit_median": 6389.3,
+        "fast_submit_median": 2993.4,
+        "slow_cycle_median": 7121.2,
+        "fast_cycle_median": 3685.4,
+        "slow_present_median": 339.8,
+        "fast_present_median": 319.8
+      }
+    },
+    {
+      "log": "02-static-2400.log.txt",
+      "frames": 4995,
+      "cycle_us": {
+        "p50": 3830.3,
+        "p99": 7258.3,
+        "max": 8370
+      },
+      "submit_us": {
+        "p50": 3085.8,
+        "p99": 6498.7
+      },
+      "gpu_us": {
+        "p50": 420.864,
+        "p90": 466.944,
+        "p99": 612.352,
+        "max": 1738.752
+      },
+      "gpu_share_of_cycle_p50": 0.109877555282876,
+      "gpu_vs_cycle_spearman": 0.7315,
+      "slow_frames": 312,
+      "slow_rate": 0.06246,
+      "slow_vs_fast": {
+        "slow_gpu_median": 447.0,
+        "fast_gpu_median": 418.8,
+        "slow_gpu_ratio": 1.067,
+        "slow_submit_median": 6374.8,
+        "fast_submit_median": 3056.4,
+        "slow_cycle_median": 7118.7,
+        "fast_cycle_median": 3775.9,
+        "slow_present_median": 336.1,
+        "fast_present_median": 313.5
+      }
+    },
+    {
+      "log": "03-static-2400.log.txt",
+      "frames": 4899,
+      "cycle_us": {
+        "p50": 3864.3,
+        "p99": 7373,
+        "max": 9347.9
+      },
+      "submit_us": {
+        "p50": 3078.2,
+        "p99": 6462.3
+      },
+      "gpu_us": {
+        "p50": 431.104,
+        "p90": 505.856,
+        "p99": 1030.144,
+        "max": 2164.736
+      },
+      "gpu_share_of_cycle_p50": 0.11156069663328416,
+      "gpu_vs_cycle_spearman": 0.8362,
+      "slow_frames": 316,
+      "slow_rate": 0.0645,
+      "slow_vs_fast": {
+        "slow_gpu_median": 486.4,
+        "fast_gpu_median": 427.0,
+        "slow_gpu_ratio": 1.139,
+        "slow_submit_median": 6183.1,
+        "fast_submit_median": 3027,
+        "slow_cycle_median": 7160.8,
+        "fast_cycle_median": 3792.5,
+        "slow_present_median": 399.2,
+        "fast_present_median": 325.9
+      }
+    }
+  ],
+  "2400|static|summary": {
+    "cycle_p50": 3830.3,
+    "gpu_p50": 427.008,
+    "gpu_p90": 470.016,
+    "gpu_share_p50": 0.11156069663328416,
+    "slow_rate": 0.06246
+  },
+  "2800|render-only": [
+    {
+      "log": "01-render-only-2800.log.txt",
+      "frames": 4885,
+      "cycle_us": {
+        "p50": 3922.5,
+        "p99": 7351.3,
+        "max": 8547.5
+      },
+      "submit_us": {
+        "p50": 3573.4,
+        "p99": 6943.5
+      },
+      "gpu_us": {
+        "p50": 487.424,
+        "p90": 557.056,
+        "p99": 734.208,
+        "max": 2006.016
+      },
+      "gpu_share_of_cycle_p50": 0.1242636073932441,
+      "gpu_vs_cycle_spearman": 0.7415,
+      "slow_frames": 343,
+      "slow_rate": 0.07021,
+      "slow_vs_fast": {
+        "slow_gpu_median": 519.2,
+        "fast_gpu_median": 484.4,
+        "slow_gpu_ratio": 1.072,
+        "slow_submit_median": 6792.4,
+        "fast_submit_median": 3506.4,
+        "slow_cycle_median": 7155.9,
+        "fast_cycle_median": 3847.7,
+        "slow_present_median": 348.4,
+        "fast_present_median": 321.9
+      }
+    },
+    {
+      "log": "02-render-only-2800.log.txt",
+      "frames": 5048,
+      "cycle_us": {
+        "p50": 3783.5,
+        "p99": 7274.5,
+        "max": 7807.5
+      },
+      "submit_us": {
+        "p50": 3461.5,
+        "p99": 6925.2
+      },
+      "gpu_us": {
+        "p50": 477.184,
+        "p90": 543.744,
+        "p99": 740.352,
+        "max": 1768.448
+      },
+      "gpu_share_of_cycle_p50": 0.12612237346372407,
+      "gpu_vs_cycle_spearman": 0.7393,
+      "slow_frames": 283,
+      "slow_rate": 0.05606,
+      "slow_vs_fast": {
+        "slow_gpu_median": 507.9,
+        "fast_gpu_median": 475.1,
+        "slow_gpu_ratio": 1.069,
+        "slow_submit_median": 6802.2,
+        "fast_submit_median": 3426.5,
+        "slow_cycle_median": 7140.7,
+        "fast_cycle_median": 3741.3,
+        "slow_present_median": 327,
+        "fast_present_median": 307.2
+      }
+    },
+    {
+      "log": "03-render-only-2800.log.txt",
+      "frames": 5005,
+      "cycle_us": {
+        "p50": 3847.4,
+        "p99": 7253.3,
+        "max": 7915.4
+      },
+      "submit_us": {
+        "p50": 3513.5,
+        "p99": 6894.6
+      },
+      "gpu_us": {
+        "p50": 482.304,
+        "p90": 556.032,
+        "p99": 684.032,
+        "max": 1135.616
+      },
+      "gpu_share_of_cycle_p50": 0.1253584238706659,
+      "gpu_vs_cycle_spearman": 0.7333,
+      "slow_frames": 286,
+      "slow_rate": 0.05714,
+      "slow_vs_fast": {
+        "slow_gpu_median": 508.4,
+        "fast_gpu_median": 479.2,
+        "slow_gpu_ratio": 1.061,
+        "slow_submit_median": 6798.6,
+        "fast_submit_median": 3468.4,
+        "slow_cycle_median": 7128.1,
+        "fast_cycle_median": 3797.4,
+        "slow_present_median": 329.6,
+        "fast_present_median": 309.7
+      }
+    }
+  ],
+  "2800|render-only|summary": {
+    "cycle_p50": 3847.4,
+    "gpu_p50": 482.304,
+    "gpu_p90": 556.032,
+    "gpu_share_p50": 0.1253584238706659,
+    "slow_rate": 0.05714
+  },
+  "2800|static": [
+    {
+      "log": "01-static-2800.log.txt",
+      "frames": 4111,
+      "cycle_us": {
+        "p50": 4626.2,
+        "p99": 7702.8,
+        "max": 8513.1
+      },
+      "submit_us": {
+        "p50": 3752.3,
+        "p99": 6684.7
+      },
+      "gpu_us": {
+        "p50": 504.832,
+        "p90": 556.032,
+        "p99": 992.256,
+        "max": 2229.248
+      },
+      "gpu_share_of_cycle_p50": 0.1091245514677273,
+      "gpu_vs_cycle_spearman": 0.5759,
+      "slow_frames": 539,
+      "slow_rate": 0.13111,
+      "slow_vs_fast": {
+        "slow_gpu_median": 515.1,
+        "fast_gpu_median": 502.8,
+        "slow_gpu_ratio": 1.024,
+        "slow_submit_median": 6272.2,
+        "fast_submit_median": 3699.6,
+        "slow_cycle_median": 7160.1,
+        "fast_cycle_median": 4564.8,
+        "slow_present_median": 359.4,
+        "fast_present_median": 336.9
+      }
+    },
+    {
+      "log": "02-static-2800.log.txt",
+      "frames": 4147,
+      "cycle_us": {
+        "p50": 4594.2,
+        "p99": 7616.5,
+        "max": 8296.2
+      },
+      "submit_us": {
+        "p50": 3736.4,
+        "p99": 6709.7
+      },
+      "gpu_us": {
+        "p50": 501.76,
+        "p90": 556.032,
+        "p99": 782.336,
+        "max": 1234.944
+      },
+      "gpu_share_of_cycle_p50": 0.10921596795960124,
+      "gpu_vs_cycle_spearman": 0.5677,
+      "slow_frames": 520,
+      "slow_rate": 0.12539,
+      "slow_vs_fast": {
+        "slow_gpu_median": 508.9,
+        "fast_gpu_median": 500.7,
+        "slow_gpu_ratio": 1.016,
+        "slow_submit_median": 6254.1,
+        "fast_submit_median": 3637.4,
+        "slow_cycle_median": 7152.8,
+        "fast_cycle_median": 4540.3,
+        "slow_present_median": 339.2,
+        "fast_present_median": 325.8
+      }
+    },
+    {
+      "log": "03-static-2800.log.txt",
+      "frames": 3970,
+      "cycle_us": {
+        "p50": 4808.2,
+        "p99": 7863.5,
+        "max": 8828.4
+      },
+      "submit_us": {
+        "p50": 3898.2,
+        "p99": 6808.2
+      },
+      "gpu_us": {
+        "p50": 558.08,
+        "p90": 612.352,
+        "p99": 1043.456,
+        "max": 1792
+      },
+      "gpu_share_of_cycle_p50": 0.11606838317873634,
+      "gpu_vs_cycle_spearman": 0.5945,
+      "slow_frames": 551,
+      "slow_rate": 0.13879,
+      "slow_vs_fast": {
+        "slow_gpu_median": 572.4,
+        "fast_gpu_median": 556.0,
+        "slow_gpu_ratio": 1.029,
+        "slow_submit_median": 6234.7,
+        "fast_submit_median": 3823.9,
+        "slow_cycle_median": 7170.9,
+        "fast_cycle_median": 4745.9,
+        "slow_present_median": 365.2,
+        "fast_present_median": 341.4
+      }
+    }
+  ],
+  "2800|static|summary": {
+    "cycle_p50": 4626.2,
+    "gpu_p50": 504.832,
+    "gpu_p90": 556.032,
+    "gpu_share_p50": 0.10921596795960124,
+    "slow_rate": 0.13111
+  }
+}

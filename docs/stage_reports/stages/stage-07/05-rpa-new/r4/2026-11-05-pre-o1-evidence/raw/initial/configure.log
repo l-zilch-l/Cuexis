@@ -1,0 +1,183 @@
+-- Running vcpkg install
+Detecting compiler hash for triplet x64-windows...
+-- Automatically setting %HTTP(S)_PROXY% environment variables to "127.0.0.1:7890".
+Compiler found: D:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe
+The following packages will be built and installed:
+    catch2:x64-windows@3.15.2#1
+  * egl-registry:x64-windows@2025-05-27
+    entt:x64-windows@3.16.0
+  * fmt:x64-windows@12.2.0#1
+    glad[core,loader]:x64-windows@0.1.36
+    glm:x64-windows@1.0.3
+    json-schema-validator:x64-windows@2.4.0
+    minizip-ng:x64-windows@4.1.0
+    nlohmann-json:x64-windows@3.12.0#2
+  * opengl-registry:x64-windows@2026-01-26
+    sdl3:x64-windows@3.4.12
+    spdlog[core,fmt,tz-offset]:x64-windows@1.17.0#1
+    tl-expected:x64-windows@1.3.1
+  * vcpkg-cmake:x64-windows@2024-04-23
+  * vcpkg-cmake-config:x64-windows@2026-07-21
+Additional packages (*) will be modified to complete this operation.
+Restored 15 package(s) from C:\Users\Zilch\AppData\Local\vcpkg\archives in 724 ms. Use --debug to see more details.
+Installing 1/15 vcpkg-cmake-config:x64-windows@2026-07-21...
+vcpkg-cmake-config:x64-windows@2026-07-21 package ABI: 9909bc98c17e2b7344ba2dfb41e002623c5b79a2a336674f0e121e1098b1a2ec
+Elapsed time to handle vcpkg-cmake-config:x64-windows: 45.5 ms
+Installing 2/15 vcpkg-cmake:x64-windows@2024-04-23...
+vcpkg-cmake:x64-windows@2024-04-23 package ABI: 89328d57ab4cb3b455a421a3c5653320e6200b1e733ad0a7df3f5ab52d5d1f05
+Elapsed time to handle vcpkg-cmake:x64-windows: 94.1 ms
+Installing 3/15 entt:x64-windows@3.16.0...
+entt:x64-windows@3.16.0 package ABI: 2adbd99c1b508ded3175a54a763d5f08310b2201eb0f896c43aa3e159b59bbdc
+Elapsed time to handle entt:x64-windows: 156 ms
+Installing 4/15 glm:x64-windows@1.0.3...
+glm:x64-windows@1.0.3 package ABI: 541ba2de440eb86f720b0d815c8adeef495e9c64ced3c24a345faa82f5cec2d5
+Elapsed time to handle glm:x64-windows: 359 ms
+Installing 5/15 nlohmann-json:x64-windows@3.12.0#2...
+nlohmann-json:x64-windows@3.12.0#2 package ABI: 8a183fef0796fd9b9b90bcb7231a43c8f117b5ca1f46b176e3478c9ae1d36638
+Elapsed time to handle nlohmann-json:x64-windows: 107 ms
+Installing 6/15 json-schema-validator:x64-windows@2.4.0...
+json-schema-validator:x64-windows@2.4.0 package ABI: d7df33afe045de596695c53f8e6942113dbba2f8e05d8e025afa2a603c0193ef
+Elapsed time to handle json-schema-validator:x64-windows: 95.9 ms
+Installing 7/15 minizip-ng:x64-windows@4.1.0...
+minizip-ng:x64-windows@4.1.0 package ABI: d474aa2565dae223ed20455fb3a936f819b369b90a21cf5093c04167b90c109d
+Elapsed time to handle minizip-ng:x64-windows: 161 ms
+Installing 8/15 tl-expected:x64-windows@1.3.1...
+tl-expected:x64-windows@1.3.1 package ABI: 592426c7ae3b1e8f024d81a589bb46f5d3bcbcf27d4c843129e5848162dd4011
+Elapsed time to handle tl-expected:x64-windows: 56.1 ms
+Installing 9/15 egl-registry:x64-windows@2025-05-27...
+egl-registry:x64-windows@2025-05-27 package ABI: cc7119531256ee7d5b0e3e39f54245619b5158b82b5940b9d23dd00807edcecb
+Elapsed time to handle egl-registry:x64-windows: 30.8 ms
+Installing 10/15 opengl-registry:x64-windows@2026-01-26...
+opengl-registry:x64-windows@2026-01-26 package ABI: 011defb1f4e078f9f4357f120bbb19bbc01b60a79625af05f7102ecab39293ab
+Elapsed time to handle opengl-registry:x64-windows: 106 ms
+Installing 11/15 glad[core,loader]:x64-windows@0.1.36...
+glad[core,loader]:x64-windows@0.1.36 package ABI: 174eacfa87c3942c98b0a71ca5934032f193ac6a941e65ef19d8bd1b7800af6e
+Elapsed time to handle glad:x64-windows: 104 ms
+Installing 12/15 sdl3:x64-windows@3.4.12...
+sdl3:x64-windows@3.4.12 package ABI: f1da8afed31d3b41a171c6b3505d703391c0311d4eb41a81721b03349c35e2ae
+Elapsed time to handle sdl3:x64-windows: 184 ms
+Installing 13/15 fmt:x64-windows@12.2.0#1...
+fmt:x64-windows@12.2.0#1 package ABI: dad2b02e7fe6fd4419414ab1d707a258ccc011b5c208b01915fcedd4d960ea97
+Elapsed time to handle fmt:x64-windows: 178 ms
+Installing 14/15 spdlog[core,fmt,tz-offset]:x64-windows@1.17.0#1...
+spdlog[core,fmt,tz-offset]:x64-windows@1.17.0#1 package ABI: f4202a26bf6741cd142a21ee495fc9b1c2354a7e38719ec08fb0ad40432df971
+Elapsed time to handle spdlog:x64-windows: 196 ms
+Installing 15/15 catch2:x64-windows@3.15.2#1...
+catch2:x64-windows@3.15.2#1 package ABI: e722372c746f359ede14a52df6af5daad4cb0f6bdd647f0e8790d1279abcbea6
+Elapsed time to handle catch2:x64-windows: 224 ms
+Installed contents are licensed to you by owners. Microsoft is not responsible for, nor does it grant any licenses to, third-party packages.
+Some packages did not declare an SPDX license. Check the `copyright` file for each package for more information about their licensing.
+Packages installed in this vcpkg installation declare the following licenses:
+Apache-2.0
+BSL-1.0
+CC0-1.0
+MIT
+Zlib
+entt provides CMake targets:
+
+    find_package(EnTT CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE EnTT::EnTT)
+
+The package glm provides CMake targets:
+
+    find_package(glm CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE glm::glm)
+
+    # Or use the header-only version
+    find_package(glm CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE glm::glm-header-only)
+
+The package nlohmann-json provides CMake targets:
+
+    find_package(nlohmann_json CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE nlohmann_json::nlohmann_json)
+
+The package nlohmann-json can be configured to not provide implicit conversions via a custom triplet file:
+
+    set(nlohmann-json_IMPLICIT_CONVERSIONS OFF)
+
+For more information, see the docs here:
+    
+    https://json.nlohmann.me/api/macros/json_use_implicit_conversions/
+
+json-schema-validator provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(nlohmann_json_schema_validator CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE nlohmann_json_schema_validator::validator)
+
+minizip-ng provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(minizip-ng CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE MINIZIP::minizip-ng)
+
+minizip-ng provides pkg-config modules:
+
+  # Zip manipulation library
+  minizip-ng
+
+tl-expected provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(tl-expected CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE tl::expected)
+
+glad provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(glad CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE glad::glad)
+
+sdl3 provides CMake targets:
+
+  find_package(SDL3 CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE SDL3::SDL3)
+
+The package spdlog provides CMake targets:
+
+    find_package(spdlog CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE spdlog::spdlog)
+
+    # Or use the header-only version
+    find_package(spdlog CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE spdlog::spdlog_header_only)
+
+catch2 provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(Catch2 CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE Catch2::Catch2 Catch2::Catch2WithMain)
+
+catch2 provides pkg-config modules:
+
+  # A modern, C++-native test framework for C++14 and above (links in default main)
+  catch2-with-main
+
+  # A modern, C++-native, test framework for C++14 and above
+  catch2
+
+All requested installations completed successfully in: 2.1 s
+-- Running vcpkg install - done
+-- The CXX compiler identification is MSVC 19.51.36256.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: D:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Performing Test COMPILER_HAS_DEPRECATED_ATTR
+-- Performing Test COMPILER_HAS_DEPRECATED_ATTR - Failed
+-- Performing Test COMPILER_HAS_DEPRECATED
+-- Performing Test COMPILER_HAS_DEPRECATED - Success
+-- Found nlohmann_json: D:/Cuexis-worktree/out/build/r4/pre-o1/msvc-on-debug/vcpkg_installed/x64-windows/share/nlohmann_json/nlohmann_jsonConfig.cmake (found version "3.12.0")
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+-- Looking for pthread_create in pthreads
+-- Looking for pthread_create in pthreads - not found
+-- Looking for pthread_create in pthread
+-- Looking for pthread_create in pthread - not found
+-- Found Threads: TRUE
+-- Found Python3: C:/Users/Zilch/AppData/Local/Programs/Python/Python314/python.exe (found version "3.14.0") found components: Interpreter
+-- Configuring done (25.3s)
+-- Generating done (1.7s)
+-- Build files have been written to: D:/Cuexis-worktree/out/build/r4/pre-o1/msvc-on-debug

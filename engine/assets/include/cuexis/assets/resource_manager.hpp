@@ -248,8 +248,8 @@ class ResourceManager final {
 
 class ResourceScope final {
   public:
-    explicit ResourceScope(ResourceManager& manager) noexcept;
-    ~ResourceScope() = default;
+    explicit ResourceScope(ResourceManager& manager);
+    ~ResourceScope();
 
     ResourceScope(const ResourceScope&) = delete;
     auto operator=(const ResourceScope&) -> ResourceScope& = delete;
@@ -348,8 +348,10 @@ class ResourceScope final {
     void rollbackTo(std::size_t size) noexcept;
 
     std::weak_ptr<detail::ResourceManagerState> state_;
-    std::vector<Entry> entries_;
-    std::map<EntryKey, std::size_t, EntryKeyLess> entryIndex_;
+    struct Storage;
+    // Allocate containers only during preparation. Scope moves transfer this owner and
+    // cannot allocate a map sentinel inside a noexcept Runtime installation.
+    std::unique_ptr<Storage> storage_;
 };
 
 } // namespace cuexis::assets

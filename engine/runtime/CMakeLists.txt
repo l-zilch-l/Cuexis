@@ -1,6 +1,10 @@
 add_library(cuexis_runtime STATIC
     src/chart_world_instantiator.cpp
     src/runtime_session.cpp
+    src/runtime_session_evaluation.cpp
+    src/runtime_session_overrides.cpp
+    src/runtime_session_units_internal.hpp
+    src/presentation_read.cpp
 )
 add_library(cuexis::runtime ALIAS cuexis_runtime)
 
@@ -21,6 +25,8 @@ target_include_directories(cuexis_runtime PUBLIC
 )
 
 target_compile_features(cuexis_runtime PUBLIC cxx_std_20)
+target_include_directories(cuexis_runtime PRIVATE "${PROJECT_SOURCE_DIR}/engine/world/internal")
+target_include_directories(cuexis_runtime PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/internal")
 
 target_link_libraries(cuexis_runtime
     PUBLIC

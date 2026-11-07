@@ -1,0 +1,33 @@
+from pathlib import Path
+import ctypes,hashlib,json,shutil,subprocess
+root=Path.cwd();base=Path(__file__).resolve().parent;build=base/'publication-build-v2';out=base/'activation-host-v1';out.mkdir(exist_ok=False)
+assert (base/'activation-build-v1/complete.json').is_file()
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+shell=ctypes.WinDLL('shell32');shell.CommandLineToArgvW.argtypes=[ctypes.c_wchar_p,ctypes.POINTER(ctypes.c_int)];shell.CommandLineToArgvW.restype=ctypes.POINTER(ctypes.c_wchar_p)
+k=ctypes.WinDLL('kernel32');k.LocalFree.argtypes=[ctypes.c_void_p]
+def split(line):
+ n=ctypes.c_int();p=shell.CommandLineToArgvW(line,ctypes.byref(n))
+ try:return [p[i] for i in range(n.value)]
+ finally:k.LocalFree(p)
+cache=dict(l.split('=',1) for l in (build/'CMakeCache.txt').read_text().splitlines() if '=' in l and not l.startswith(('#','//')))
+block=(build/'build.ninja').read_text().split('build bin\\cuexis_execution_host_tests.exe',1)[1].split('\n\n',1)[0]
+objects=split(block.split(': CXX_EXECUTABLE_LINKER__cuexis_execution_host_tests_Release ',1)[1].split(' | ',1)[0])
+objects=[str(base/'publication-host-v1/host_probe.obj') if 'rpa_b5_host_tests.cpp.obj' in p else p for p in objects]
+libs=split(next(l.split(' = ',1)[1] for l in block.splitlines() if l.startswith('  LINK_LIBRARIES = ')))
+args=[cache['CMAKE_LINKER:FILEPATH'],'/NOLOGO','/machine:x64','/INCREMENTAL:NO','/subsystem:console','/OUT:'+str(out/'probe-candidate.exe'),str(base/'activation-build-v1/execution_kernel.obj'),str(base/'publication-host-v1/playback_baseline.obj'),*objects,*libs]
+with (out/'link.log').open('x',encoding='utf-8') as stream:r=subprocess.run(args,cwd=build,stdout=stream,stderr=subprocess.STDOUT)
+assert r.returncode==0,r.returncode
+shutil.copyfile(base/'publication-host-v1/probe-baseline.exe',out/'probe-baseline.exe')
+for dll in (build/'bin').glob('*.dll'):shutil.copyfile(dll,out/dll.name)
+(out/'binding.json').write_text(json.dumps(dict(scope='Ordinary v4 vs v5 activation capture only. Both use original single Fact publication, matching fresh common definitions/libs and identical fixture. Baseline exact frozen earlier binary; candidate only replaces private kernel.',commands=[args],activation_complete_sha256=sha(base/'activation-build-v1/complete.json'),binaries={p.name:sha(p) for p in out.glob('*.exe')}),indent=2),encoding='utf-8')
+s=(base/'run_publication_ordinary.py').read_text(encoding='utf-8')
+s=s.replace("out=base/('publication-'+mode+'-measure-v1')","out=base/('activation-'+mode+'-measure-v1')")
+s=s.replace("build=base/'publication-host-v1'", "build=base/'activation-host-v1'")
+s=s.replace("cases=[(1000,'902',3),(40000,'5',3),(40000,'902',3),(1000,'final',1)]", "cases=[(1000,'5',3),(40000,'5',3),(40000,'902',3),(1000,'final',3)]")
+s=s.replace('40K first-record H902 median improves >=20%;', '40K first-record H5 median improves >=50%;')
+s=s.replace('H5 and 1K final guard <=5% regression; 1K H902 <=10% regression.', '40K H902 and1K final guard <=5% regression; 1K H5 <=10% regression.')
+s=s.replace('Fixed ordinary bounded publication batch diagnostic. Both variants use v4 continuation.', 'Fixed ordinary v4 vs v5 activation capture diagnostic. Neither variant uses batch publication.')
+a=s.index('    numeric=all(');b=s.index('\nelse:numeric=',a)
+s=s[:a]+'''    numeric=all(s['change_percent']<=(-50 if s['n']==40000 and s['case']=='5' else 10 if s['n']==1000 and s['case']=='5' else 5) and max(s['first_us']['candidate']+s['repeat_us']['candidate'])<=20000 for s in summary)'''+s[b:]
+(base/'run_activation_ordinary.py').write_text(s,encoding='utf-8')
+print(out)

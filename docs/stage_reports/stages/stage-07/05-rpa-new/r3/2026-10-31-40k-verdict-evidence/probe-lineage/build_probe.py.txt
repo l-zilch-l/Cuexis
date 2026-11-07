@@ -1,0 +1,29 @@
+from pathlib import Path
+import ctypes as ct
+from ctypes import wintypes as w
+import hashlib,json,re,subprocess,shutil
+root=Path.cwd();base=root/'out/verification-20261029/gpu-1080p-scale-v1';old=root/'out/verification-20261029/gpu-40k-v1/build'
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+db=json.loads((old/'compile_commands.json').read_text());entry=next(e for e in db if e['file'].replace('\\','/').endswith('/tests/player/gpu_throughput_probe.cpp'))
+shell=ct.WinDLL('shell32');shell.CommandLineToArgvW.argtypes=[w.LPCWSTR,ct.POINTER(ct.c_int)];shell.CommandLineToArgvW.restype=ct.POINTER(w.LPWSTR)
+k=ct.WinDLL('kernel32');k.LocalFree.argtypes=[ct.c_void_p]
+n=ct.c_int();args=shell.CommandLineToArgvW(entry['command'],ct.byref(n))
+try:command=[args[i] for i in range(n.value)]
+finally:k.LocalFree(args)
+command=[a for a in command if not a.startswith(('/Fo','/Fd'))]+['/Fo'+str(base/'gpu_throughput_probe.obj'),'/Fd'+str(base/'gpu_throughput_probe.pdb')]
+commands=[command]
+with (base/'compile.log').open('x',encoding='utf-8') as log:
+ r=subprocess.run(command,cwd=old,stdout=log,stderr=subprocess.STDOUT)
+ if r.returncode:raise SystemExit(r.returncode)
+ninja=(old/'build.ninja').read_text();block=re.search(r'^build bin[\\/]cuexis_execution_device_probe\.exe:.*?(?=\nbuild |\Z)',ninja,re.M|re.S).group()
+objects=block.splitlines()[0].split(': CXX_EXECUTABLE_LINKER_',1)[1].split(' | ',1)[0].split()[1:]
+objects=[str(base/'gpu_throughput_probe.obj') if p.endswith('gpu_throughput_probe.cpp.obj') else p for p in objects]
+libs=re.search(r'^  LINK_LIBRARIES = (.+)$',block,re.M).group(1).split()
+command=['link.exe','/nologo','/MACHINE:X64','/SUBSYSTEM:CONSOLE','/INCREMENTAL:NO','/OUT:'+str(base/'gpu_scale.exe'),*objects,*libs];commands.append(command)
+with (base/'link.log').open('x',encoding='utf-8') as log:
+ r=subprocess.run(command,cwd=old,stdout=log,stderr=subprocess.STDOUT)
+ if r.returncode:raise SystemExit(r.returncode)
+for p in (old/'bin').glob('*.dll'):shutil.copyfile(p,base/p.name)
+(base/'build-commands.json').write_text(json.dumps(commands,indent=2))
+(base/'build-binding.json').write_text(json.dumps({'base_commit':subprocess.check_output(['git','rev-parse','HEAD']).decode().strip(),'method':'compile replacement test TU with original MSVC Release command; link read-only previously verified runtime objects/libraries; old bound build unchanged','source_sha256':sha(root/'tests/player/gpu_throughput_probe.cpp'),'binary_sha256':sha(base/'gpu_scale.exe'),'object_sha256':sha(base/'gpu_throughput_probe.obj'),'reused':{p:sha(old/p) for p in objects+libs if (old/p).is_file()},'cache_sha256':sha(old/'CMakeCache.txt'),'compile_commands_sha256':sha(old/'compile_commands.json')},indent=2))
+print('Compiled and linked independent 1080p scale probe; historical build is unchanged')

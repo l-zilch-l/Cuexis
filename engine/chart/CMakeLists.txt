@@ -7,22 +7,50 @@ target_sources(cuexis_chart
     PRIVATE
         src/animation_template_loader.cpp
         src/cxt_v2_loader.cpp
+        src/cxt_v2_loader_expand.cpp
+        src/cxt_v2_loader_parse_nodes.cpp
+        src/cxt_v2_loader_parse_values.cpp
+        src/cxt_v2_loader_reader.cpp
+        src/cxt_v2_loader_units_internal.hpp
         src/canonical_chart_loader.cpp
+        src/canonical_chart_loader_behaviors.cpp
+        src/canonical_chart_loader_primitives.cpp
+        src/canonical_chart_loader_sections.cpp
+        src/canonical_chart_loader_units_internal.hpp
         src/canonical_chart_template_internal.cpp
         src/chart_loader.cpp
         src/chart_migrator.cpp
         src/chart_parameter_resolver.cpp
         src/chart_runtime.cpp
         src/candidate_lowering.cpp
+        src/candidate_assembler.cpp
+        src/behavior_candidate.cpp
         src/chart_v4_loader.cpp
+        src/chart_v4_loader_animators.cpp
+        src/chart_v4_loader_parameters.cpp
+        src/chart_v4_loader_projection.cpp
         src/chart_v4_resolver.cpp
+        src/chart_v4_resolver_patching.cpp
+        src/chart_v4_resolver_program.cpp
+        src/chart_v4_resolver_units_internal.hpp
         src/chart_writer.cpp
         src/prepared_semantic_identity.cpp
         src/chart_v4_common_reader_internal.cpp
-        src/chart_v4_animation_reader_internal.cpp
+        src/chart_v4_animation_reader_animator.cpp
+        src/chart_v4_animation_reader_clip.cpp
+        src/chart_v4_animation_reader_values.cpp
         src/chart_project_path_internal.cpp
         src/packed_chart_primitives.cpp
-        src/packed_chart_tables.cpp
+        src/packed_chart_tables_decoder.cpp
+        src/packed_chart_tables_decoder_header.cpp
+        src/packed_chart_tables_decoder_identity.cpp
+        src/packed_chart_tables_decoder_internal.hpp
+        src/packed_chart_tables_decoder_model.cpp
+        src/packed_chart_tables_decoder_tables.cpp
+        src/packed_chart_tables_inspect.cpp
+        src/packed_chart_tables_sections.cpp
+        src/packed_chart_tables_units_internal.hpp
+        src/packed_chart_tables_writer.cpp
         src/packed_profile.cpp
         src/packed_semantic_identity.cpp
         src/packed_chart_io.cpp
@@ -37,6 +65,8 @@ target_sources(cuexis_chart
             include/cuexis/chart/animation_template_document.hpp
             include/cuexis/chart/animation_template_loader.hpp
             include/cuexis/chart/canonical_chart_loader.hpp
+            include/cuexis/chart/candidate_assembler.hpp
+            include/cuexis/chart/behavior_candidate.hpp
             include/cuexis/chart/canonical_semantic_chart.hpp
             include/cuexis/chart/cxt_v2_loader.hpp
             include/cuexis/chart/chart_document.hpp

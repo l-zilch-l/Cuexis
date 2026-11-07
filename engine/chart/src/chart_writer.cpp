@@ -5,6 +5,8 @@
 #include <cuexis/json/parse.hpp>
 #include <cuexis/json/value.hpp>
 
+#include <cuexis_internal/prepare_trace.hpp>
+
 #include "chart_writer_internal.hpp"
 
 #include <algorithm>
@@ -575,11 +577,18 @@ template <typename ComparePrimary>
 
 [[nodiscard]] auto serializeCanonical(json::Value value, bool sortBehaviorArrays = false)
     -> core::Result<std::string> {
-    auto normalized = canonicalize(value, sortBehaviorArrays);
-    if (!normalized) {
+    if (auto normalized =
+            [&] {
+                const internal::PrepareTraceScope trace{"chart_canonical_normalize"};
+                return canonicalize(value, sortBehaviorArrays);
+            }();
+        !normalized) {
         return core::unexpected(std::move(normalized.error()));
     }
-    auto serialized = json::serialize(value, json::SerializeStyle::Pretty);
+    auto serialized = [&] {
+        const internal::PrepareTraceScope trace{"chart_canonical_dump"};
+        return json::serialize(value, json::SerializeStyle::Pretty);
+    }();
     if (!serialized) {
         return serialized;
     }
@@ -685,6 +694,12 @@ auto detail::writeV4Value(json::Value value, const ChartLimits& limits)
     return serializeCanonical(std::move(value), true);
 }
 
+auto detail::writeCanonicalValue(json::Value value, const ChartLimits& limits)
+    -> core::Result<std::string> {
+    static_cast<void>(limits);
+    return serializeCanonical(std::move(value));
+}
+
 auto ChartWriter::write(const ChartDocument& document) -> core::Result<std::string> {
     auto value = chartDocumentValue(document);
     if (!value) {
@@ -702,7 +717,7 @@ auto ChartWriter::writeCanonicalJson(std::string_view jsonText, const ChartLimit
             core::Error{"chart.writer.source_invalid", "Chart source JSON is invalid"}.withCause(
                 std::move(parsed.error())));
     }
-    return serializeCanonical(std::move(*parsed));
+    return detail::writeCanonicalValue(std::move(*parsed), limits);
 }
 
 auto ChartWriter::writeV4(const ChartV4SourceDocument& document, const ChartLimits& limits)

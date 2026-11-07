@@ -1,0 +1,779 @@
+{
+  "scope": "Pre-registration of the second 1080p p99 budget-crossing ladder, on HEAD 6256af8 after the neutral-path CPU lever. Diagnostic only; it does not replace the frozen 2026-10-29 capacity list or the 2026-10-31 ladder at 8e275a5, and it does not constitute R3/R4 or production acceptance.",
+  "source_run": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1",
+  "copied_files": [
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-1800\\01-render-only-1800.log.txt",
+      "archive": "entities-1800/01-render-only-1800.log.txt",
+      "bytes": 2195098,
+      "sha256": "ec24cf1751e843263226e6c02e124afef375bcd6fd26cdcad6432c095785194d",
+      "source_sha256": "ec24cf1751e843263226e6c02e124afef375bcd6fd26cdcad6432c095785194d",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-1800\\01-static-1800.log.txt",
+      "archive": "entities-1800/01-static-1800.log.txt",
+      "bytes": 1916461,
+      "sha256": "2540fe0e360eec481b0cdc8e5bddf779c1c37a6433d1993829fb7ed14d5adc11",
+      "source_sha256": "2540fe0e360eec481b0cdc8e5bddf779c1c37a6433d1993829fb7ed14d5adc11",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-1800\\02-render-only-1800.log.txt",
+      "archive": "entities-1800/02-render-only-1800.log.txt",
+      "bytes": 2210930,
+      "sha256": "d073cf7fd5a5300be7f3901b800e2eb5426d0544ecc4237d1f7434d9661dfb9c",
+      "source_sha256": "d073cf7fd5a5300be7f3901b800e2eb5426d0544ecc4237d1f7434d9661dfb9c",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-1800\\02-static-1800.log.txt",
+      "archive": "entities-1800/02-static-1800.log.txt",
+      "bytes": 1907157,
+      "sha256": "b739488ebe30fcd9b04ee11ac3c77c4ee1697e04aaf4563cea49f879f57ab90b",
+      "source_sha256": "b739488ebe30fcd9b04ee11ac3c77c4ee1697e04aaf4563cea49f879f57ab90b",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-1800\\03-render-only-1800.log.txt",
+      "archive": "entities-1800/03-render-only-1800.log.txt",
+      "bytes": 2198534,
+      "sha256": "6485a0a69d1c8185beb85aa666c3fa66268ab20aac7c4066254e2e6e86859f71",
+      "source_sha256": "6485a0a69d1c8185beb85aa666c3fa66268ab20aac7c4066254e2e6e86859f71",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-1800\\03-static-1800.log.txt",
+      "archive": "entities-1800/03-static-1800.log.txt",
+      "bytes": 1925248,
+      "sha256": "4a1f6a026620d5c85860468ee166c17edf22e98267a36a3030639ea37027b5b4",
+      "source_sha256": "4a1f6a026620d5c85860468ee166c17edf22e98267a36a3030639ea37027b5b4",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-1800\\registration.json",
+      "archive": "entities-1800/registration.json",
+      "bytes": 1284,
+      "sha256": "b94f7a450df454bd20b52132f44b0cfa79067757a324e3843187d8c6098b4bc9",
+      "source_sha256": "b94f7a450df454bd20b52132f44b0cfa79067757a324e3843187d8c6098b4bc9",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-1800\\results.json",
+      "archive": "entities-1800/results.json",
+      "bytes": 22747,
+      "sha256": "b1e39c8c8c42675df77776f137182b172e4af417785bf96934a6501e347321b4",
+      "source_sha256": "b1e39c8c8c42675df77776f137182b172e4af417785bf96934a6501e347321b4",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-2400\\01-render-only-2400.log.txt",
+      "archive": "entities-2400/01-render-only-2400.log.txt",
+      "bytes": 1796017,
+      "sha256": "3c5cd42c5221f92bc03343d341e95a03a84173d807faf6d5343ac294a386dadd",
+      "source_sha256": "3c5cd42c5221f92bc03343d341e95a03a84173d807faf6d5343ac294a386dadd",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-2400\\01-static-2400.log.txt",
+      "archive": "entities-2400/01-static-2400.log.txt",
+      "bytes": 1480332,
+      "sha256": "e1b1105303b6b061cea0b4de308fd224100fb1b12257375c0f76ad945582a529",
+      "source_sha256": "e1b1105303b6b061cea0b4de308fd224100fb1b12257375c0f76ad945582a529",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-2400\\02-render-only-2400.log.txt",
+      "archive": "entities-2400/02-render-only-2400.log.txt",
+      "bytes": 1669452,
+      "sha256": "b26f761ae50cea05ebfcb072bf9d3bce639be2ea7d85fe081a48fb5941000b82",
+      "source_sha256": "b26f761ae50cea05ebfcb072bf9d3bce639be2ea7d85fe081a48fb5941000b82",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-2400\\02-static-2400.log.txt",
+      "archive": "entities-2400/02-static-2400.log.txt",
+      "bytes": 1478890,
+      "sha256": "11e942d81b78470ee777e238c664949f79c0ad6b22c0329703f13bc6643a3d14",
+      "source_sha256": "11e942d81b78470ee777e238c664949f79c0ad6b22c0329703f13bc6643a3d14",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-2400\\03-render-only-2400.log.txt",
+      "archive": "entities-2400/03-render-only-2400.log.txt",
+      "bytes": 1799213,
+      "sha256": "c67fbbe006f710665368fbf8e1cd3072530f928b9dcf111528de0197fbc7cb11",
+      "source_sha256": "c67fbbe006f710665368fbf8e1cd3072530f928b9dcf111528de0197fbc7cb11",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-2400\\03-static-2400.log.txt",
+      "archive": "entities-2400/03-static-2400.log.txt",
+      "bytes": 1482180,
+      "sha256": "4029a985f2ab56bdd5f75450342f45d81129fad8ed8cded8fc23fc897cfb0883",
+      "source_sha256": "4029a985f2ab56bdd5f75450342f45d81129fad8ed8cded8fc23fc897cfb0883",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-2400\\registration.json",
+      "archive": "entities-2400/registration.json",
+      "bytes": 1284,
+      "sha256": "1f38081cb12e0ffe06521f420fa6e41fc1116fce64bcc0178c33a271af8ad842",
+      "source_sha256": "1f38081cb12e0ffe06521f420fa6e41fc1116fce64bcc0178c33a271af8ad842",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-2400\\results.json",
+      "archive": "entities-2400/results.json",
+      "bytes": 22704,
+      "sha256": "c177419076dbe01252b84217ba1f8a1a0d5b4e8ea488ece2af8b3e986c266399",
+      "source_sha256": "c177419076dbe01252b84217ba1f8a1a0d5b4e8ea488ece2af8b3e986c266399",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-2600\\01-render-only-2600.log.txt",
+      "archive": "entities-2600/01-render-only-2600.log.txt",
+      "bytes": 1621937,
+      "sha256": "0dc2dccad4166758d571a62ee966e509e425202bf63aa587fec7722ce64dac1a",
+      "source_sha256": "0dc2dccad4166758d571a62ee966e509e425202bf63aa587fec7722ce64dac1a",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-2600\\01-static-2600.log.txt",
+      "archive": "entities-2600/01-static-2600.log.txt",
+      "bytes": 1451245,
+      "sha256": "95ab9c2c2b4d1fbcf491c5b77adb0137cb204f0cfeb98495d261ef0ab2b57b0b",
+      "source_sha256": "95ab9c2c2b4d1fbcf491c5b77adb0137cb204f0cfeb98495d261ef0ab2b57b0b",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-2600\\02-render-only-2600.log.txt",
+      "archive": "entities-2600/02-render-only-2600.log.txt",
+      "bytes": 1715781,
+      "sha256": "5bf1e71a0c060104168923289485e5603e9c7225fc9ef2b2c50c1dfc6286df05",
+      "source_sha256": "5bf1e71a0c060104168923289485e5603e9c7225fc9ef2b2c50c1dfc6286df05",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-2600\\02-static-2600.log.txt",
+      "archive": "entities-2600/02-static-2600.log.txt",
+      "bytes": 1402103,
+      "sha256": "d866b5cabbb004aa58feac2fb3608405054964d9b0db8af88467f63ab547eab6",
+      "source_sha256": "d866b5cabbb004aa58feac2fb3608405054964d9b0db8af88467f63ab547eab6",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-2600\\03-render-only-2600.log.txt",
+      "archive": "entities-2600/03-render-only-2600.log.txt",
+      "bytes": 1710880,
+      "sha256": "f9c3f1d5ddc131ff25891a8b950eb246cf2edc4226ec505913501c61b3d5dc2b",
+      "source_sha256": "f9c3f1d5ddc131ff25891a8b950eb246cf2edc4226ec505913501c61b3d5dc2b",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-2600\\03-static-2600.log.txt",
+      "archive": "entities-2600/03-static-2600.log.txt",
+      "bytes": 1407951,
+      "sha256": "ad3523cef4d10d8f01e2a84840ac2da140d2a6d566aad8be9249989897203eee",
+      "source_sha256": "ad3523cef4d10d8f01e2a84840ac2da140d2a6d566aad8be9249989897203eee",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-2600\\registration.json",
+      "archive": "entities-2600/registration.json",
+      "bytes": 1284,
+      "sha256": "fa14928fc084328bd8674bc3574a8407d9f9a66e1ac4b546c5c15ceca1f28304",
+      "source_sha256": "fa14928fc084328bd8674bc3574a8407d9f9a66e1ac4b546c5c15ceca1f28304",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-2600\\results.json",
+      "archive": "entities-2600/results.json",
+      "bytes": 22691,
+      "sha256": "4a736cd55eff12e1c7082aec6c6860797667a3241586f0182f1b67f2cfab9358",
+      "source_sha256": "4a736cd55eff12e1c7082aec6c6860797667a3241586f0182f1b67f2cfab9358",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-2800\\01-render-only-2800.log.txt",
+      "archive": "entities-2800/01-render-only-2800.log.txt",
+      "bytes": 1617939,
+      "sha256": "08bfe21fda6590c37a99369037bb0b38bf7a03e522b957b7787a003332d30b50",
+      "source_sha256": "08bfe21fda6590c37a99369037bb0b38bf7a03e522b957b7787a003332d30b50",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-2800\\01-static-2800.log.txt",
+      "archive": "entities-2800/01-static-2800.log.txt",
+      "bytes": 1271873,
+      "sha256": "4e5f5a6e2c5f07829ee24fd51cca9359b69fccc212e75329669e210b5a0f1ad0",
+      "source_sha256": "4e5f5a6e2c5f07829ee24fd51cca9359b69fccc212e75329669e210b5a0f1ad0",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-2800\\02-render-only-2800.log.txt",
+      "archive": "entities-2800/02-render-only-2800.log.txt",
+      "bytes": 1636301,
+      "sha256": "b65ea4ef023c5f28e0369b79d8bf07ce3d32ee3039fc6f254b302d2d86cd5988",
+      "source_sha256": "b65ea4ef023c5f28e0369b79d8bf07ce3d32ee3039fc6f254b302d2d86cd5988",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-2800\\02-static-2800.log.txt",
+      "archive": "entities-2800/02-static-2800.log.txt",
+      "bytes": 1293929,
+      "sha256": "b7645b4275e53cd104be932875307533ca90bf3e28ab874759fbac3be8372135",
+      "source_sha256": "b7645b4275e53cd104be932875307533ca90bf3e28ab874759fbac3be8372135",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-2800\\03-render-only-2800.log.txt",
+      "archive": "entities-2800/03-render-only-2800.log.txt",
+      "bytes": 1586163,
+      "sha256": "4fabf7322f305da4c330f0d15afd18efa8b363fce43f49cf87c5368b120573a3",
+      "source_sha256": "4fabf7322f305da4c330f0d15afd18efa8b363fce43f49cf87c5368b120573a3",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-2800\\03-static-2800.log.txt",
+      "archive": "entities-2800/03-static-2800.log.txt",
+      "bytes": 1307301,
+      "sha256": "5c5369846c2c44a3674e03d844910d93345076044a144587d24263f8754cd36a",
+      "source_sha256": "5c5369846c2c44a3674e03d844910d93345076044a144587d24263f8754cd36a",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-2800\\registration.json",
+      "archive": "entities-2800/registration.json",
+      "bytes": 1284,
+      "sha256": "ed5b40c8280f83beab4f06c0c64c7889aff2c223bc98c592e80c711e1abe7b0e",
+      "source_sha256": "ed5b40c8280f83beab4f06c0c64c7889aff2c223bc98c592e80c711e1abe7b0e",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-2800\\results.json",
+      "archive": "entities-2800/results.json",
+      "bytes": 22734,
+      "sha256": "be3096c28b14eb0a534b8da1b04c05c7ca0e67cc14689918e8b4e7127fc265eb",
+      "source_sha256": "be3096c28b14eb0a534b8da1b04c05c7ca0e67cc14689918e8b4e7127fc265eb",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3000\\01-render-only-3000.log.txt",
+      "archive": "entities-3000/01-render-only-3000.log.txt",
+      "bytes": 1521565,
+      "sha256": "7d9a0651c752f4d24724451c3180f7e1f31b52ca5ed3ebe7cedb612642a5eea5",
+      "source_sha256": "7d9a0651c752f4d24724451c3180f7e1f31b52ca5ed3ebe7cedb612642a5eea5",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3000\\01-static-3000.log.txt",
+      "archive": "entities-3000/01-static-3000.log.txt",
+      "bytes": 1157458,
+      "sha256": "4a13f79bc932ca7d328a975f6d5671d8f1b35a5142fe66f0263a05b0091bebef",
+      "source_sha256": "4a13f79bc932ca7d328a975f6d5671d8f1b35a5142fe66f0263a05b0091bebef",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3000\\02-render-only-3000.log.txt",
+      "archive": "entities-3000/02-render-only-3000.log.txt",
+      "bytes": 1562761,
+      "sha256": "3b85ae7e93fb0d009c9e47abdae965a4fc09451ba9680c635df455b667a4ab32",
+      "source_sha256": "3b85ae7e93fb0d009c9e47abdae965a4fc09451ba9680c635df455b667a4ab32",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3000\\02-static-3000.log.txt",
+      "archive": "entities-3000/02-static-3000.log.txt",
+      "bytes": 1229434,
+      "sha256": "286858008fe858d3bb80989117d4906436f44c0b58baa6ba6d8af88537fdd82d",
+      "source_sha256": "286858008fe858d3bb80989117d4906436f44c0b58baa6ba6d8af88537fdd82d",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3000\\03-render-only-3000.log.txt",
+      "archive": "entities-3000/03-render-only-3000.log.txt",
+      "bytes": 1524614,
+      "sha256": "756f2a2d520412514fa5299026fb7af47aae2fbe52b2ed0090a2bcfbc0c9c8f5",
+      "source_sha256": "756f2a2d520412514fa5299026fb7af47aae2fbe52b2ed0090a2bcfbc0c9c8f5",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3000\\03-static-3000.log.txt",
+      "archive": "entities-3000/03-static-3000.log.txt",
+      "bytes": 1250921,
+      "sha256": "9a9d99b810db3c57e36b5c891fc536eb64641820ba6822aefc1ed5a613f23cc3",
+      "source_sha256": "9a9d99b810db3c57e36b5c891fc536eb64641820ba6822aefc1ed5a613f23cc3",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3000\\registration.json",
+      "archive": "entities-3000/registration.json",
+      "bytes": 1284,
+      "sha256": "0fac035783e59f1256b7bd003234b50b94a7280f359677c95aa4e24db2ff779c",
+      "source_sha256": "0fac035783e59f1256b7bd003234b50b94a7280f359677c95aa4e24db2ff779c",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3000\\results.json",
+      "archive": "entities-3000/results.json",
+      "bytes": 22692,
+      "sha256": "24d950d0a8048032b939ba3e18095d75b81e887d5b938e68c08b52c1b15c4ef5",
+      "source_sha256": "24d950d0a8048032b939ba3e18095d75b81e887d5b938e68c08b52c1b15c4ef5",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3200\\01-render-only-3200.log.txt",
+      "archive": "entities-3200/01-render-only-3200.log.txt",
+      "bytes": 1460215,
+      "sha256": "b2364e3101d6239b1a2b1e58920b71cae72fdde31bed6abe6413577f100e6e52",
+      "source_sha256": "b2364e3101d6239b1a2b1e58920b71cae72fdde31bed6abe6413577f100e6e52",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3200\\01-static-3200.log.txt",
+      "archive": "entities-3200/01-static-3200.log.txt",
+      "bytes": 1123977,
+      "sha256": "4a07dcf8c3895fabf0b64b4c266a49c2c93f2988a962d0628068a84d937fc99f",
+      "source_sha256": "4a07dcf8c3895fabf0b64b4c266a49c2c93f2988a962d0628068a84d937fc99f",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3200\\02-render-only-3200.log.txt",
+      "archive": "entities-3200/02-render-only-3200.log.txt",
+      "bytes": 1465566,
+      "sha256": "31e9eb826821f0c5e8943c1b58276edc0ed4a11df1a3307e7d34610324fda9ef",
+      "source_sha256": "31e9eb826821f0c5e8943c1b58276edc0ed4a11df1a3307e7d34610324fda9ef",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3200\\02-static-3200.log.txt",
+      "archive": "entities-3200/02-static-3200.log.txt",
+      "bytes": 1122122,
+      "sha256": "cce254b185b787951852e8a523902c6d260acff96074dec4126eb031cfe6f345",
+      "source_sha256": "cce254b185b787951852e8a523902c6d260acff96074dec4126eb031cfe6f345",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3200\\03-render-only-3200.log.txt",
+      "archive": "entities-3200/03-render-only-3200.log.txt",
+      "bytes": 1350089,
+      "sha256": "5525c9fb6c59bdfe2c960446a19d7cce9a2444f285e40c68355bb8895e067a69",
+      "source_sha256": "5525c9fb6c59bdfe2c960446a19d7cce9a2444f285e40c68355bb8895e067a69",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3200\\03-static-3200.log.txt",
+      "archive": "entities-3200/03-static-3200.log.txt",
+      "bytes": 1173083,
+      "sha256": "6b6df380a4242653916329a17e3559fb85e821c9cca9f48073d2fe6aa40323f4",
+      "source_sha256": "6b6df380a4242653916329a17e3559fb85e821c9cca9f48073d2fe6aa40323f4",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3200\\registration.json",
+      "archive": "entities-3200/registration.json",
+      "bytes": 1284,
+      "sha256": "3e553ee1ee35c5b580b6539177e7176d2f7258d13ec53dc5565cd6a24d85cdf6",
+      "source_sha256": "3e553ee1ee35c5b580b6539177e7176d2f7258d13ec53dc5565cd6a24d85cdf6",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3200\\results.json",
+      "archive": "entities-3200/results.json",
+      "bytes": 22703,
+      "sha256": "ae6229b071625eb959f748101c274c9019c2afedf7302bf84e9e11e1e2a7c1aa",
+      "source_sha256": "ae6229b071625eb959f748101c274c9019c2afedf7302bf84e9e11e1e2a7c1aa",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3400\\01-render-only-3400.log.txt",
+      "archive": "entities-3400/01-render-only-3400.log.txt",
+      "bytes": 1374146,
+      "sha256": "b935a4aba5c627855a49c30d0a5e2a1cf5a683a65c7aed1de1cf550d1cb9544b",
+      "source_sha256": "b935a4aba5c627855a49c30d0a5e2a1cf5a683a65c7aed1de1cf550d1cb9544b",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3400\\01-static-3400.log.txt",
+      "archive": "entities-3400/01-static-3400.log.txt",
+      "bytes": 1114012,
+      "sha256": "1a72d5dffef1f2d559bfbdcc4ec2bf389b2bd96ccac7b0c2ec73f0fd82a433ef",
+      "source_sha256": "1a72d5dffef1f2d559bfbdcc4ec2bf389b2bd96ccac7b0c2ec73f0fd82a433ef",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3400\\02-render-only-3400.log.txt",
+      "archive": "entities-3400/02-render-only-3400.log.txt",
+      "bytes": 1377598,
+      "sha256": "b8834c9d87b4458ec13640b7cf70035c7081b8530c04b0b664ccec8fb36de5c8",
+      "source_sha256": "b8834c9d87b4458ec13640b7cf70035c7081b8530c04b0b664ccec8fb36de5c8",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3400\\02-static-3400.log.txt",
+      "archive": "entities-3400/02-static-3400.log.txt",
+      "bytes": 1146841,
+      "sha256": "3096d920e7637eea9b78f395043f45627755cc79f6794d69c8090112f1bc7d05",
+      "source_sha256": "3096d920e7637eea9b78f395043f45627755cc79f6794d69c8090112f1bc7d05",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3400\\03-render-only-3400.log.txt",
+      "archive": "entities-3400/03-render-only-3400.log.txt",
+      "bytes": 1371631,
+      "sha256": "9ea078dcc3130d605f81d1f04d79213410f8914a43a9c7c8d5314c7e0e2a0d6e",
+      "source_sha256": "9ea078dcc3130d605f81d1f04d79213410f8914a43a9c7c8d5314c7e0e2a0d6e",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3400\\03-static-3400.log.txt",
+      "archive": "entities-3400/03-static-3400.log.txt",
+      "bytes": 1100605,
+      "sha256": "7677400340ed63cf5af9e197c5b8a89f6a98a6b19e1094880a51bbfe88620430",
+      "source_sha256": "7677400340ed63cf5af9e197c5b8a89f6a98a6b19e1094880a51bbfe88620430",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3400\\registration.json",
+      "archive": "entities-3400/registration.json",
+      "bytes": 1284,
+      "sha256": "0f348e40832c9b92a81765286fab5778ae5c79861d468e1fa10ba90681fbdc86",
+      "source_sha256": "0f348e40832c9b92a81765286fab5778ae5c79861d468e1fa10ba90681fbdc86",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3400\\results.json",
+      "archive": "entities-3400/results.json",
+      "bytes": 22732,
+      "sha256": "536d589652ac164ef7fe2cc6a9b866c1e879ac768fe5b4e248013b1c04ff9f11",
+      "source_sha256": "536d589652ac164ef7fe2cc6a9b866c1e879ac768fe5b4e248013b1c04ff9f11",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3600\\01-render-only-3600.log.txt",
+      "archive": "entities-3600/01-render-only-3600.log.txt",
+      "bytes": 1247150,
+      "sha256": "53f8f588114b327caac93389ba380832cd3db2db1584ac058e1b699bed7cbd43",
+      "source_sha256": "53f8f588114b327caac93389ba380832cd3db2db1584ac058e1b699bed7cbd43",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3600\\01-static-3600.log.txt",
+      "archive": "entities-3600/01-static-3600.log.txt",
+      "bytes": 1049837,
+      "sha256": "79c372d0e36d3e98c13c28b21f19b6a36beca71972ba025eb8f0fc255b93b0b9",
+      "source_sha256": "79c372d0e36d3e98c13c28b21f19b6a36beca71972ba025eb8f0fc255b93b0b9",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3600\\02-render-only-3600.log.txt",
+      "archive": "entities-3600/02-render-only-3600.log.txt",
+      "bytes": 1223900,
+      "sha256": "2f901a78fa1ab9c19cb981d0826f0c3cb0bb98d59ba1e9fed7b9593c43926bd0",
+      "source_sha256": "2f901a78fa1ab9c19cb981d0826f0c3cb0bb98d59ba1e9fed7b9593c43926bd0",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3600\\02-static-3600.log.txt",
+      "archive": "entities-3600/02-static-3600.log.txt",
+      "bytes": 1050582,
+      "sha256": "e5517e6c266f9e71a9f99bb21a2cb3bdc4e76ddacc704f12ac5b9d3b8b487d47",
+      "source_sha256": "e5517e6c266f9e71a9f99bb21a2cb3bdc4e76ddacc704f12ac5b9d3b8b487d47",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3600\\03-render-only-3600.log.txt",
+      "archive": "entities-3600/03-render-only-3600.log.txt",
+      "bytes": 1222186,
+      "sha256": "a6490296169f92801de3febe0add736a91acccfab32eacb94945f8dde23e73e8",
+      "source_sha256": "a6490296169f92801de3febe0add736a91acccfab32eacb94945f8dde23e73e8",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3600\\03-static-3600.log.txt",
+      "archive": "entities-3600/03-static-3600.log.txt",
+      "bytes": 1039374,
+      "sha256": "5cadf28bc87c15cb9f59cb3d56ebe5deea40cee94f21ae47d91816bf5cde9642",
+      "source_sha256": "5cadf28bc87c15cb9f59cb3d56ebe5deea40cee94f21ae47d91816bf5cde9642",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3600\\registration.json",
+      "archive": "entities-3600/registration.json",
+      "bytes": 1284,
+      "sha256": "a86249369b10af37872b7a3113e759ea31ba0ba03b57893f1a156d0ebb553e41",
+      "source_sha256": "a86249369b10af37872b7a3113e759ea31ba0ba03b57893f1a156d0ebb553e41",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3600\\results.json",
+      "archive": "entities-3600/results.json",
+      "bytes": 22707,
+      "sha256": "cb7ad3c28550593e2a07856a0584912e4adb067c9418c28974bcb934286b7588",
+      "source_sha256": "cb7ad3c28550593e2a07856a0584912e4adb067c9418c28974bcb934286b7588",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3800\\01-render-only-3800.log.txt",
+      "archive": "entities-3800/01-render-only-3800.log.txt",
+      "bytes": 1172799,
+      "sha256": "22ca37b6339cdd92760176c7c665d80f81186f5bee127a9abb7e20550e56c6ac",
+      "source_sha256": "22ca37b6339cdd92760176c7c665d80f81186f5bee127a9abb7e20550e56c6ac",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3800\\01-static-3800.log.txt",
+      "archive": "entities-3800/01-static-3800.log.txt",
+      "bytes": 1018946,
+      "sha256": "316867c9d6c1956d718ffb0aaf60dbd37a69456545d674f1004cf484fd6f3b61",
+      "source_sha256": "316867c9d6c1956d718ffb0aaf60dbd37a69456545d674f1004cf484fd6f3b61",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3800\\02-render-only-3800.log.txt",
+      "archive": "entities-3800/02-render-only-3800.log.txt",
+      "bytes": 1156150,
+      "sha256": "e53703905e29e249ddfe6120d454b73f76e86a75da971328e005c2af6adb876e",
+      "source_sha256": "e53703905e29e249ddfe6120d454b73f76e86a75da971328e005c2af6adb876e",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3800\\02-static-3800.log.txt",
+      "archive": "entities-3800/02-static-3800.log.txt",
+      "bytes": 995928,
+      "sha256": "112d1ad48274932bcb2e0e9e5aa2dbb37e39bbe10b96ccc2a84d0689df08e2c1",
+      "source_sha256": "112d1ad48274932bcb2e0e9e5aa2dbb37e39bbe10b96ccc2a84d0689df08e2c1",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3800\\03-render-only-3800.log.txt",
+      "archive": "entities-3800/03-render-only-3800.log.txt",
+      "bytes": 1137096,
+      "sha256": "48c7134056e4e9e2ca3be9db8bb1ab801816d20401618684caf7349d451b1b81",
+      "source_sha256": "48c7134056e4e9e2ca3be9db8bb1ab801816d20401618684caf7349d451b1b81",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3800\\03-static-3800.log.txt",
+      "archive": "entities-3800/03-static-3800.log.txt",
+      "bytes": 985000,
+      "sha256": "8b20e7a4fe73b872e34e5284de88862d97ff45e764248c3889eaeb2e9c0b1250",
+      "source_sha256": "8b20e7a4fe73b872e34e5284de88862d97ff45e764248c3889eaeb2e9c0b1250",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3800\\registration.json",
+      "archive": "entities-3800/registration.json",
+      "bytes": 1284,
+      "sha256": "e3a0367276c2973f1946b325a8d4d8ed063ace3068db9f9e8f56bbd15c0d11f1",
+      "source_sha256": "e3a0367276c2973f1946b325a8d4d8ed063ace3068db9f9e8f56bbd15c0d11f1",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-3800\\results.json",
+      "archive": "entities-3800/results.json",
+      "bytes": 22733,
+      "sha256": "c1889585713d69fef53089534e9c1de2a32c63b3d66833948ba5f6aca5a1a1b3",
+      "source_sha256": "c1889585713d69fef53089534e9c1de2a32c63b3d66833948ba5f6aca5a1a1b3",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-4000\\01-render-only-4000.log.txt",
+      "archive": "entities-4000/01-render-only-4000.log.txt",
+      "bytes": 1152639,
+      "sha256": "e23486a8f8eff08e92adf1fa4d243813726946d84e5dd1f5fffa2cc623fb8851",
+      "source_sha256": "e23486a8f8eff08e92adf1fa4d243813726946d84e5dd1f5fffa2cc623fb8851",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-4000\\01-static-4000.log.txt",
+      "archive": "entities-4000/01-static-4000.log.txt",
+      "bytes": 946873,
+      "sha256": "6298c6efe7ae8bcbd48019656489729cd81b3d133dadf1f17ec0899587f6d0b2",
+      "source_sha256": "6298c6efe7ae8bcbd48019656489729cd81b3d133dadf1f17ec0899587f6d0b2",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-4000\\02-render-only-4000.log.txt",
+      "archive": "entities-4000/02-render-only-4000.log.txt",
+      "bytes": 1061938,
+      "sha256": "4e7f08c4eaf7468a27841b088dc1a74610f3d28480110f22ee4213be6b212469",
+      "source_sha256": "4e7f08c4eaf7468a27841b088dc1a74610f3d28480110f22ee4213be6b212469",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-4000\\02-static-4000.log.txt",
+      "archive": "entities-4000/02-static-4000.log.txt",
+      "bytes": 957135,
+      "sha256": "9df516d8d0649cb35af226b35f89c2f99763f2adeab940ad8de23a22c25ad32b",
+      "source_sha256": "9df516d8d0649cb35af226b35f89c2f99763f2adeab940ad8de23a22c25ad32b",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-4000\\03-render-only-4000.log.txt",
+      "archive": "entities-4000/03-render-only-4000.log.txt",
+      "bytes": 1114526,
+      "sha256": "268d5a22cab17ae9ec2d001b9ff49a3a38d24d92870b1b8103c81b5f87232f43",
+      "source_sha256": "268d5a22cab17ae9ec2d001b9ff49a3a38d24d92870b1b8103c81b5f87232f43",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-4000\\03-static-4000.log.txt",
+      "archive": "entities-4000/03-static-4000.log.txt",
+      "bytes": 960847,
+      "sha256": "d86faa9de6162f4eb8e30a01c5e28e092a5a68fc5e076969d65ee464f8c853f1",
+      "source_sha256": "d86faa9de6162f4eb8e30a01c5e28e092a5a68fc5e076969d65ee464f8c853f1",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-4000\\registration.json",
+      "archive": "entities-4000/registration.json",
+      "bytes": 1284,
+      "sha256": "5eff76f302a997b463c741d78c158891c38fcf1365fbb154f9fb8362e8ea4541",
+      "source_sha256": "5eff76f302a997b463c741d78c158891c38fcf1365fbb154f9fb8362e8ea4541",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-1\\entities-4000\\results.json",
+      "archive": "entities-4000/results.json",
+      "bytes": 22727,
+      "sha256": "f180a40a25a15aaca1b8f360bdf1ba201801c27d92f03d4643c5881071f3ea4e",
+      "source_sha256": "f180a40a25a15aaca1b8f360bdf1ba201801c27d92f03d4643c5881071f3ea4e",
+      "eol": "crlf"
+    }
+  ],
+  "attached_files": [
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\run_40k_refresh.py",
+      "archive": "tools/run_40k_refresh.py",
+      "bytes": 19910,
+      "sha256": "3d39ad2ac636016f4f7f58f937f91425ff84383b9fbacdd6bedac127dc9e22d0",
+      "source_sha256": "16a3f57a100613f85b823eb97300d9227fe8466a3692777cd82d7e2ab2a2648b",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\run_frontier_bracket.py",
+      "archive": "tools/run_frontier_bracket.py",
+      "bytes": 5956,
+      "sha256": "d13b3d3bf0df7cab0ea61e2ab105204339edd8908e86b75724a0abf205f5506e",
+      "source_sha256": "32bc24f39acb64650702e6d171e162e5e2221672ceda92a9c10609e36ee3e7e8",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\summarize_frontier.py",
+      "archive": "tools/summarize_frontier.py",
+      "bytes": 7664,
+      "sha256": "eda3e25f9af81600c0e1e6f75b79d4c221a5f27d828f9a99ca140dc5261df73b",
+      "source_sha256": "d5c72da818751905bf21c5f586fcb43dcef7bc0c9ec8de2dffe38e8396e5f77f",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\analyze_stall_shape.py",
+      "archive": "tools/analyze_stall_shape.py",
+      "bytes": 11184,
+      "sha256": "b55642e8538a503ed829fbe44517fecbc1e1262ec6023b3366de08044d0c4706",
+      "source_sha256": "279c9e0ac300319b21e19e3fac82023ea8beb13526b95b0b6c67dde116383344",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-preregistration.json",
+      "archive": "tools/frontier-rederive-preregistration.json",
+      "bytes": 8264,
+      "sha256": "2a69f2196b5e7c4b11284d3b60f9d3bf9fa2073561f942fe90c24fbf1e8f0338",
+      "source_sha256": "900c32e27a622429e6cdee2f03c65b64f42690d393ca58aa8667f036b9607e40",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-registration-addendum.json",
+      "archive": "tools/frontier-rederive-registration-addendum.json",
+      "bytes": 2909,
+      "sha256": "2e65800e75381ebcdd28bcbbe554186907e52eab0935167abce455b58d428792",
+      "source_sha256": "2f774bf5a205e793258a2e1018a5d10f257ea7218fd749967b5166a1ad54ef93",
+      "eol": "crlf"
+    }
+  ],
+  "derived_files": [
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-summary.json",
+      "archive": "derived/frontier-rederive-summary.json",
+      "bytes": 20414,
+      "sha256": "deb247345e60fe8ba99834ebaacea8f850bf6e0be1a3a36a91039a8c47bc0d30",
+      "source_sha256": "deb247345e60fe8ba99834ebaacea8f850bf6e0be1a3a36a91039a8c47bc0d30",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\frontier-rederive-v1\\frontier-rederive-verdict.json",
+      "archive": "derived/frontier-rederive-verdict.json",
+      "bytes": 12581,
+      "sha256": "3f590237d5f8ec2fa63e25c2741b45008d629182356a18ab8cf2794c353d1e91",
+      "source_sha256": "3f590237d5f8ec2fa63e25c2741b45008d629182356a18ab8cf2794c353d1e91",
+      "eol": "crlf"
+    }
+  ],
+  "superseded_attempts": [],
+  "diagnosis": null,
+  "excluded": [],
+  "generated_files": {
+    "index.md": "5ea873dcfecdcf1878dea2a7953990ac2a00aeab1bd3aed300a28f091940d778"
+  },
+  "binding": {
+    "head": "a93c9794c1d9772d1923178a6e49f11cb9d6d16b",
+    "registered_head": "6256af8b7d349b14a6d5b006d7632711152e96fa",
+    "registration_addendum_sha256": "2f774bf5a205e793258a2e1018a5d10f257ea7218fd749967b5166a1ad54ef93",
+    "probe_binary_sha256": "6b01a30f8b01b79cf7d2314be989e89cd42dc63cb9694e5c2794dc5d3af9c790",
+    "point_count": 10,
+    "completed_entity_counts": [
+      1800,
+      3000,
+      2400,
+      3400,
+      2600,
+      3600,
+      2800,
+      3800,
+      3200,
+      4000
+    ],
+    "registered_order": [
+      1800,
+      3000,
+      2400,
+      3400,
+      2600,
+      3600,
+      2800,
+      3800,
+      3200,
+      4000
+    ],
+    "pending_entity_counts": [],
+    "preregistration_sha256": "900c32e27a622429e6cdee2f03c65b64f42690d393ca58aa8667f036b9607e40",
+    "verdict_state": {
+      "render-only": "bracketed",
+      "static": "bracketed"
+    },
+    "verdict_bracket": {
+      "render-only": [
+        3600,
+        3800
+      ],
+      "static": [
+        2600,
+        2800
+      ]
+    },
+    "drift_vs_refresh_1800": {
+      "render-only": {
+        "relative_difference": -0.2695218813268962,
+        "band": "outside 10%"
+      },
+      "static": {
+        "relative_difference": -0.1861694988054012,
+        "band": "outside 10%"
+      }
+    },
+    "binary_matches_refresh": false,
+    "registration_addendum_observed_head": "a93c9794c1d9772d1923178a6e49f11cb9d6d16b"
+  }
+}

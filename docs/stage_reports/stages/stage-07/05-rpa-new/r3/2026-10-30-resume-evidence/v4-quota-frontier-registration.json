@@ -1,0 +1,28 @@
+{
+  "formal": false,
+  "product_cap_selected": false,
+  "scope": "40K six-wave/six-archive quota/cost curve only, values fixed before execution. No repeatability or memory acceptance. Limits chosen as binary-scale diagnostic points, not to pass a cap. Existing v4 header/kernel definitions; observed allocator and no timing claims.",
+  "mib": [
+    0,
+    32,
+    64,
+    128,
+    256,
+    512
+  ],
+  "h": [
+    904,
+    1104,
+    1304,
+    1504,
+    1704,
+    1904
+  ],
+  "samples": "Each point sampled after original record + exact archive publish. Writer then released while six archives remain, followed by last archive release; final Snapshot compared to no-capture oracle.",
+  "stop": "Functional invalidity or nonzero final allocation deltas stop; no replacement.",
+  "sources": {
+    "execution_kernel.cpp": "523f034f227c6d671bc50611d4468d631e4f5858baa82f3667958fd7e7ea7285",
+    "rpa_b3_tests.cpp": "8add58bb9c197553b6edd909b2cdf7a72eb0d289f783cd2a342ffcb0c636f2c7",
+    "tick_fault_probe.hpp": "b347643ce263b979b10cf415c02d9441f6c1749a283aa2cbdbeac0645bf7d21c"
+  }
+}

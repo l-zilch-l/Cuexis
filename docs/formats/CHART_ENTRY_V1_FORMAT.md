@@ -1,7 +1,12 @@
 # Cuexis Chart Entry Extension v1
 
-Status: Stage 6 candidate contract recorded by S6-A2. The entry factories and candidate
-Playback implementation are not present yet.
+状态：candidate（Stage 6 候选格式合同，阶段已关闭）
+
+更新日期：2026-10-22
+
+Status: Stage 6 candidate contract recorded by S6-A2. Explicit entry factories and static
+candidate Playback are implemented. The additional Behavior source profile below is a
+limited candidate implementation, not full Chart v5 release support.
 
 This document owns the field and selection contract for the registered extension
 cuexis.chart-entry.v1. The JSON shape is defined by
@@ -30,6 +35,12 @@ The Stage 6 candidate path is deliberately narrow:
 This contract is candidate-only. It does not enable a default Writer, a formal Chart v5
 capability, a stable C ABI, or a new SDK version.
 
+Gameplay V2 的独立 `gameplay-graph` Playback entry 不属于本 Stage 6 extension。现有
+candidate factory 只接受上文的 `packed-chart` tap profile；遇到带有 V2 Graph entry kind
+的未来扩展必须稳定拒绝，不能按 Packed Chart、source entry 或空表现路径解释。该扩展只有
+在 Stage 7A/Stage 8 的 manifest、Graph round-trip、prepared identity 和同一 Judgement
+kernel 证据全部接受后，才可加入新的 entry contract。
+
 ## 2. Extension Shape
 
 The value stored under extensions[cuexis.chart-entry.v1] is an object with one member:
@@ -51,7 +62,7 @@ true; source records may omit them.
 | sourceSemanticIdentity | lowercase SHA-256 | Optional source/build identity observation |
 | compiledSemanticIdentity | lowercase SHA-256 | Required for playback candidate records |
 | artifactIdentity | lowercase SHA-256 | Required for playback candidate records; hash of exact bytes |
-| compilerProfile | string | Required for playback; Stage 6 value is candidate.static-tap-lanes4-v1 |
+| compilerProfile | string | Required for playback; registered static or Behavior profile below |
 | expandedEntityCount | unsigned integer | Required for playback; maximum 40,000 |
 | expandedRequirementCount | unsigned integer | Required for playback; maximum 40,000 |
 
@@ -121,6 +132,7 @@ The minimum stable diagnostic set is:
 | cxc.candidate.revision_unsupported | Flags or candidateRevision is unsupported |
 | cxc.candidate.budget_exceeded | A file, section, decoded or count limit is exceeded |
 | cxc.candidate.packed_invalid | Packed structure, CRC, section or typed decode failed |
+| cxc.candidate.source_invalid | Behavior source JSON parsing or typed compilation failed |
 | cxc.candidate.artifact_identity_mismatch | Exact entry bytes do not match artifactIdentity |
 | cxc.candidate.compiled_identity_mismatch | Recomputed semantic identity does not match metadata |
 | cxc.candidate.resource_closure_invalid | A required resource is missing, duplicated or mismatched |
@@ -130,6 +142,33 @@ Profile rejection precedes semantic identity mismatch. A structurally valid but 
 artifact must not be made to look like a hash failure.
 
 ## 5. Typed Lowering And Identity Preservation
+
+The S7A-8 offline `cuexis_chart_candidate` tool consumes explicit fallback CXC, canonical
+Packed metadata, CXT v2 and frozen Binding/module/export inputs. Integer parameters are
+explicit `--parameter id=value` inputs. `assembleCandidateChart` validates base assertions,
+appends typed expansion and derives the registered Foundation lanes4 feature and resource
+uses through the existing Packed codecs. It writes `compiled/chart.packed`, entry metadata
+and the manifest `cuexis.candidate-closure.v1` report in one atomic CXC publication. Real explicit-entry Playback
+prepare validates assets before publication; failure preserves the old package.
+
+This versioned Foundation profile does not lower Gameplay v2/Capsule revision 3 or infer
+missing Gameplay v2 authored declarations. That author adapter retains its strict
+declared/derived contract. Judgement/Playback integration remains S7A-7 and production budget
+acceptance remains S7A-9; neither is certified by this tool.
+
+Candidate presets enable the existing build switch. Installed public library binary names
+gain `-candidate`; target names and public layouts remain invariant. Package metadata exposes
+`Cuexis_BUILD_FLAVOR` and `Cuexis_EXPERIMENTAL`. Experimental packages reject imports unless
+the consumer sets `Cuexis_ALLOW_EXPERIMENTAL=ON`; separate install prefixes are required,
+with a flavor stamp rejecting mixed installs before copying package files. Consumer permission
+cannot enable candidate decoding in production binaries.
+
+Player `--candidate-entry path` requires exactly one `--project` or `--cxc` locator; OFF parsing
+rejects it before opening input. Reference Host uses the same explicit Entry factories and
+reports package flavor. Legacy factories never select candidates implicitly. Consumers of
+the original Entry additions required SDK API `0.7.1` or newer in the same minor.
+The current Reference Host and Gameplay candidate consumers request `0.7.5`; its diagnostic
+and Recovery changes follow [VERSIONING](../guides/VERSIONING.md#075具体兼容差异).
 
 The offline typed assembler supplies chart metadata, expanded entities, parent relations,
 requirements and resource references. It derives the lanes4 feature and closure from validated
@@ -189,3 +228,127 @@ it does not expose Packed, CXC, CanonicalSemanticChart, Requirement or CXT AST t
 
 This file and the linked schema are A2 contract artifacts. They do not certify a Playback
 implementation or a release.
+
+## S7A-7/8 filesystem 多产物发布首用（2026-10-07）
+
+R78-09a B 沿既有 `cuexis.generation` / `cuexis.adopted` 格式，不修改 Foundation entry 的字段解释。
+Graph、Packed、closure report、project metadata 及必需资源必须属于同一个内容寻址的不可变 generation。
+离线工具先完成 typed 语义、闭包、真实 prepare 验证，再调用 `publishAndAdoptGeneration`。
+该事务持有整个 root 的既有进程共享 publication lock；generation 全量写入、重读和 hash 校验后，
+`cuexis.adopted` 的一次原子替换是 reader 可消费的唯一选择点。reader 先捕获一次该 manifest，
+只在被捕获的 generation 中解析后续相对路径；不能每读取一个产物重新取 adopted。
+旧 generation 不删除，旧 reader 在新发布后仍可读取完整旧集；未被 adopted 的完整 generation
+可以留存，不能被 reader 自动发现或作为隐式 fallback。并发 writer 命中既有 `asset.publish.busy`。
+
+原子替换前的任一错误保留旧 adopted 及完整旧输出；替换后的目录同步失败表示 durability 未确认，
+不能谎称旧 manifest 未改变，也不能执行第二次回滚替换。返回错误必须带 `commitVisible=true`。
+内容 identity 沿既有 generation 格式派生，包含排序后的 path / byteCount / exact SHA256 和 provenance；
+不接受新的物理或生产预算数值。单 CXC 沿原 `publishPackage` 路径，不改成目录 generation。
+本节仅定义首用发布事务，不能代替 Graph/Packed 七项 metadata 或生产 assembler 的验收。
+
+## S7A-7/8 Gameplay Entry v1 首用（2026-10-07）
+
+Gameplay 入口使用独立 `cuexis.gameplay-entry` / version 1 metadata 文档；不改变
+`cuexis.chart-entry.v1`、Foundation profile 或 CXC v1 ZIP32 Stored 的解释。
+该 metadata 存于 project optional `cuexis.gameplay-entry.v1` extension 的严格 `{entries:[metadata,...]}` 目录，
+只有显式 Gameplay factory 选择后才准入；旧 factory 不自动发现、编译或回退。
+一个文档只描述一个显式 portable `path`，`playback=true`；闭集 `entryKind` 为
+`packed-chart` / `gameplay-graph`；前者 encoding 为 `capsule.3` 或 `capsule.4`，后者为 `graph.1`。
+2026-10-22 owner 接受 [Capsule §13](GAMEPLAY_CAPSULE_V2_FORMAT.md) 的 revision 4：
+capsule.3/4 必须分别匹配 Header revision 3/4，未知或不匹配即拒绝，即使 compiled hash 相同。
+metadata version 1 不变，旧 factory 不自动发现新入口；graph.1 原义和预算不升级。
+`author-source` 非播放入口，不能作为上述 encoding 的别名。
+
+根对象所有字段均必需、禁止未知/重复键：format、version、path、playback、entryKind、encoding、
+compilerProfile、expandedEntityCount、expandedRequirementCount，以及以下七项中的后六项
+（entryKind 为第一项）：compiledSemanticIdentity、artifactIdentity、rulesetBinding、
+capabilityClosure、resourcePresentationClosure、sourceOf。
+compiledSemanticIdentity 是沿显式 Gameplay.2 semantic codec（Capsule 3/4 同完整 preimage）的 SHA256；
+revision 4 的 Reader/Writer/metadata 共用 §13 的 count+digest，不能先构造旧版冗余字典或绕过 profile。
+artifactIdentity 是 exact entry
+bytes SHA256，均为 lowercase 64 hex。先核验物理 metadata、路径和 exact hash，再解码所选载荷一次，
+重建并比较 compiled identity、计数及完整闭包；任一失败不发布 source。
+compilerProfile 是 canonical sourceClosure 的实际 token，不能由读取方补默认值。
+
+rulesetBinding 是完整 `cuexis.gameplay-configuration` version 1 envelope，精确比较调用方显式
+配置；该物理记录包含实际 Ruleset module/build/order、mapping/timebase/session 声明及表现绑定，
+并不使其中纯表现字段进入 Judgement 四分量。configuration 的语义仍由实际 prepare 校验。
+capabilityClosure 包含 canonical declared、derived 和 requiredFeatures 三数组：capability 行为
+`[id,revision]`，feature 行为 string；逐项比较 typed graph，禁止伪造 feature/proof 或补齐缺项。
+resourcePresentationClosure 包含 gameplayResources（canonical resource IDs）、chartResources
+（`[assetId,use]`，use 沿现有 CanonicalResourceUseKind 整数）、assets（按 id 排序的完整 typed asset
+描述及按原顺序的 dependencies）和 bindings（configuration 中的完整 bindings array）。
+所有资源还须经当前 source/provider 的真实 prepare 完整性检查，GameplayOnly 不能豁免坏 hash。
+sourceOf 首版明确为 `{kind:"not-packaged",documentIds:[canonical source document IDs]}`；源未随包
+携带时不得虚构 sourcePath 或接受不可验证的源 byte hash；离线 source bytes 与 provenance 留在
+assembler evidence。新 packaged 变体须另行冻结，当前稳定拒绝。
+
+metadata JSON 使用调用方显式正值 testOnly decode budget（bytes/depth/string/values/elements），
+不采纳生产数值；count 使用 u64/i64 checked integer token，不经 f64，count 不用于未核验 reserve。
+形状、未知版本和 hash/闭包不一致均经现有公共 `playback.gameplay.invalid`，category 分别为
+invalid_relation / identity_closure_incomplete；预算为 capability.budget_insufficient / budget_exceeded，
+severity=error、faulted=false。CXC loader 仍先完成既有 package 全闭包校验；metadata 不替代容器验证。
+
+Gameplay project extension 的容器为严格 `{entries:[metadata,...]}`，而每行仍是上述独立
+`cuexis.gameplay-entry` version 1 文档；数组非空、path 唯一，数量沿既有 CXC/project 物理限额。
+这是 Graph 与 Packed 同批多产物的显式目录，不以文件后缀或字段存在猜版本。
+每行完整验证、全部路径/hash 纳入容器闭包；显式 factory 按 entryPath 选择恰好一行，
+不隐式选择首行，重复 path 稳定拒绝。sourceOf 的 not-packaged 形状不变。
+
+### S7A-7/8 离线 Gameplay assembler CLI 首用（2026-10-08）
+
+`cuexis_gameplay_assemble` 仅 candidate ON developer tools 构建，生产工具入口复用现有
+Gameplay author typed compiler，编译一次后由同一 canonical artifact 写 Graph 1 与 Capsule 3。
+显式参数为 --base CXC、--foundation Foundation Packed、--source、--source-kind inline/cxt、
+--entry-id、--configuration（上述完整 configuration JSON）、--output、--publish cxc/filesystem、
+--test-only true、--configuration-budget 五项正整数、--graph-budget 七项正整数。
+CXT 另需 --binding/--module/--export，可重复 --parameter id=i64，参数必须checked整数。
+实际工具 profile 为 `gameplay.author.t4-k4.v1`，identity/configuration 必须显式，能力来自 SDK
+静态 registry，author declared/derived feature 和 uniqueness proof 由原 compiler 校验，
+不提供任意 feature/proof 注入选项。所有新数值仅 caller test-only 编解码预算，content生产界仍pending。
+
+完整 fallback CXC 资源/index/project 保留，两个 compiled artifacts 的 metadata 都加入 project
+Gameplay entries 目录；CXC manifest 的 optional `cuexis.gameplay-closure.v1` 保存两个完整 metadata
+及原 compiler 计数、source exact SHA、prepared 验证结果和 budget acceptance=false，
+不把 source path/hash 当作 packaged sourceOf。先以两载荷分别构建实际 source、
+Presentation/GameplayOnly prepare+commit，任何失败不发布。CXC使用原publishPackage；filesystem
+把同一已验证闭包放入不可变 generation，closure report作为 provenance sidecar，
+publishAndAdoptGeneration一次切换，reader只捕获一次adopted。pack/unpack没有隐式author编译。
+
+CLI 首用拓扑按原 P78-05 A：`cuexis_chart_candidate --gameplay` 为既有 CLI 的显式 dispatch，
+原 Foundation 参数路径保持；`cuexis_gameplay_assemble` 仅为相同 dispatch 的兼容执行名，
+两者调用同一实现/编译器/发布路径，不能形成第二编译或判定语义。
+发布前验证 mode 沿现有 Playback 内容合同：有 mainMusic 使用 HostClock，没有时使用 ChartClock；
+该选择只用于无设备的静态 prepare 验证，不自动打开音频设备，不接受生产时钟/校准承诺。
+
+
+## 7. Behavior Source Candidate Profile
+
+The explicit `candidate.behavior-v2-v1` profile selects `kind=chart`, `encoding=source-json`,
+`playback=true`. It does not extend the static Packed profile or register Packed Behavior sections.
+Its source is `cuexis.chart` version 5 with UUID Objects and `behavior.event` version 2.
+The component structure follows the existing typed Object representation; Renderable alpha and
+`render.alpha` event endpoints are exact integers in [0,255], normalized once at compile.
+Old `material.opacity` author events and Behavior version 1 are rejected. Position, scale,
+Quaternion rotation, visibility and existing typed event/step properties use the shared evaluator.
+Parameters, templates, Clips and animation template imports must be empty. Gameplay requirements
+are absent: `expandedRequirementCount` must be zero. Counts are compared against compiled Objects,
+with the existing 40,000 entry count ceiling and 16 MiB input ceiling.
+
+Package-wide validation uses the same profile-selected content validation as explicit entry
+factories. Static Packed entries keep their binary decoder; Behavior source entries use the typed
+source compiler. Package-wide tools discard the validated artifact, while Playback factories retain
+it for prepare. Both paths enforce the input budget before decoding or compilation.
+
+Factory validation checks exact source bytes, parses and compiles once, then compares the typed
+semantic identity and expanded counts. Typed canonical identity uses domain
+`cuexis.chart.v5.behavior-candidate.1` plus canonical typed lowering and the sorted Object alpha map.
+The existing static Packed semantic domain and bytes are unchanged. The owning typed artifact,
+source bytes and provider survive caller storage teardown; prepare and update do not reparse JSON.
+Resource closure includes Object mesh/material, step material changes and main music.
+Playback requires `cuexis.behavior.event.v2`, plus existing presentation and visibility capabilities
+where used. Candidate-disabled builds reject explicit entry factories before reading content.
+
+The default v4 Project entry remains a compatibility fallback. The host must explicitly select
+the source-json path; version, file extension or content sniffing never selects this profile.
+See [Chart v5 authoring](../guides/CHART_V5_AUTHORING.md) for the supported source dialect and limits.

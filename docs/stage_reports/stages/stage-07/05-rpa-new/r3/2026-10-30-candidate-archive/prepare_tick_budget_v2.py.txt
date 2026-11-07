@@ -1,0 +1,127 @@
+from pathlib import Path
+import hashlib,json,shutil,subprocess
+base=Path(__file__).resolve().parent;draft=base/'tick-prototype-v1';source=draft/'budget-source-v2';shutil.copytree(draft/'budget-source-v1',source)
+sequence=source/'engine/judgement/include/cuexis/judgement/shared_sequence.hpp'
+s=sequence.read_text(encoding='utf-8');old='''        if (!pages_)
+            return;
+        visitor(1, sizeof(Directory));
+        visitor(pages_->capacity(), sizeof(typename Directory::value_type));
+        for (const auto& page : *pages_) {''';new='''        const auto owner = pages_;
+        if (!owner)
+            return;
+        visitor(1, sizeof(Directory));
+        visitor(owner->capacity(), sizeof(typename Directory::value_type));
+        for (const auto& page : *owner) {''';assert s.count(old)==1;s=s.replace(old,new);sequence.write_text(s,encoding='utf-8')
+header=source/'engine/judgement/src/execution_kernel.hpp';s=header.read_text(encoding='utf-8');s=s.replace('    auto setTickPayloadLimitForProbe(std::size_t) noexcept -> bool;','''    // Probe-only: caller must quiesce the entire preparation lineage, not just its live counter.
+    auto setTickPayloadLimitForProbe(std::size_t) noexcept -> bool;''');header.write_text(s,encoding='utf-8')
+cpp=source/'engine/judgement/src/execution_kernel.cpp';s=cpp.read_text(encoding='utf-8')
+s=s.replace('    std::size_t total_{};\n    bool valid_{true};','    std::size_t total_{};\n    std::size_t limit_;\n    bool valid_{true};')
+s=s.replace('    static constexpr std::uint32_t revision = 3;','''    explicit TickPayloadCounter(std::size_t limit) noexcept : limit_(limit) {}
+    static constexpr std::uint32_t revision = 3;''')
+s=s.replace('(SIZE_MAX - total_) / width','(limit_ - total_) / width')
+old='''            for (const auto& row : value)
+                dynamic(row);''';new='''            for (const auto& row : value) {
+                if (!valid_) break;
+                dynamic(row);
+            }''';assert s.count(old)==2;s=s.replace(old,new)
+s=s.replace('''        for (const auto& matcher : state.matchers)
+            dynamic(matcher.states);''','''        for (const auto& matcher : state.matchers) {
+            if (!valid_) break;
+            dynamic(matcher.states);
+        }''')
+s=s.replace('''        for (auto current = prefix.get(); current; current = current->previous.get()) {''','''        for (auto current = prefix.get(); current && valid_; current = current->previous.get()) {''')
+s=s.replace('''            for (const auto& record : current->records)
+                (*this)(record.batch, record.admission, record.control, record.rejection);''','''            for (const auto& record : current->records) {
+                if (!valid_) break;
+                (*this)(record.batch, record.admission, record.control, record.rejection);
+            }''')
+old='''        return nativeAnchorEligible && historyAvailable && !testControls &&''';new='''        return preparation && preparation->tickBudget &&
+               preparation->tickBudget->live.load(std::memory_order_relaxed) < preparation->tickBudget->limit &&
+               nativeAnchorEligible && historyAvailable && !testControls &&''';assert s.count(old)==1;s=s.replace(old,new)
+old='''                    TickPayloadCounter charge;
+                    charge.add(1, sizeof(NativeTickPoint));''';new='''                    const auto& budget = impl_->preparation->tickBudget;
+                    const auto used = budget->live.load(std::memory_order_relaxed);
+                    TickPayloadCounter charge{budget->limit-std::min(budget->limit,used)};
+                    charge.add(1, sizeof(NativeTickPoint));''';assert s.count(old)==1;s=s.replace(old,new)
+old='''                    const auto& budget = impl_->preparation->tickBudget;
+                    if (bytes && budget && capture->recording->records.empty() &&''';new='''                    if (bytes && capture->recording->records.empty() &&''';assert s.count(old)==1;s=s.replace(old,new)
+cpp.write_text(s,encoding='utf-8')
+test=source/'tests/rpa/rpa_b3_tests.cpp';s=test.read_text(encoding='utf-8');s+='''
+TEST_CASE("R3c capacity visit keeps entry storage alive during reentrant mutation", "[r3c-budget]") {
+    detail::SharedSequence<int> values;
+    for (int i=0;i<130;++i) values.push_back(i);
+    auto saved=values;
+    std::vector<std::pair<std::size_t,std::size_t>> expected,actual;
+    saved.visitStorageCapacity([&](auto n,auto width){expected.emplace_back(n,width);});
+    values.visitStorageCapacity([&](auto n,auto width){
+        actual.emplace_back(n,width);
+        values.clear();
+        values.push_back(7);
+    });
+    CHECK(actual==expected);
+    CHECK(saved.size()==130);
+    CHECK(saved[129]==129);
+    CHECK(values.size()==1);
+    CHECK(values[0]==7);
+}
+
+TEST_CASE("R3c nonzero remaining budget preserves old point and rejects larger new point", "[r3c-budget]") {
+    Fixture3 f;
+    expandTickFixture(f,1536,256);
+    const auto config=f.configuration();
+    const auto prepared=f.prepared();
+    auto calibrate=detail::ExecutionKernel::prepare(config,prepared);
+    REQUIRE(calibrate);
+    REQUIRE((*calibrate)->advance(Tick{904}));
+    const auto first=detail::ExecutionKernel::tickPayloadBytes((*calibrate)->archive());
+    REQUIRE(first>0);
+    auto made=detail::ExecutionKernel::prepare(config,prepared);
+    REQUIRE(made);
+    REQUIRE((*made)->setTickPayloadLimitForProbe(first*2-1));
+    REQUIRE((*made)->advance(Tick{904}));
+    const auto original=(*made)->archive();
+    REQUIRE(detail::ExecutionKernel::tickPointCount(original)==1);
+    REQUIRE(detail::ExecutionKernel::tickPayloadBytes(original)==first);
+    REQUIRE((*made)->advance(Tick{1104}));
+    auto archive=(*made)->archive();
+    CHECK(detail::ExecutionKernel::tickPointCount(archive)==1);
+    CHECK(detail::ExecutionKernel::tickPayloadBytes(archive)==first);
+    const ReplayArchive external{archive.anchor(),std::make_shared<const RecoveryInputs>(archive.dependencies())};
+    const auto cut=replayCutAt(archive,Tick{1103});
+    auto a=detail::ExecutionKernel::seekCandidate(archive,Tick{1103},nullptr,&cut);
+    auto b=detail::ExecutionKernel::seekCandidate(external,Tick{1103},nullptr,&cut);
+    REQUIRE(a); REQUIRE(b);
+    auto av=(*a)->snapshot(); auto bv=(*b)->snapshot();
+    REQUIRE(av); REQUIRE(bv);
+    CHECK(sameSnapshot((*av)->dto,(*bv)->dto));
+}
+
+TEST_CASE("R3c seek fork shares preparation payload charges", "[r3c-budget]") {
+    Fixture3 f;
+    expandTickFixture(f,1536,256);
+    auto made=detail::ExecutionKernel::prepare(f.configuration(),f.prepared());
+    REQUIRE(made);
+    auto empty=(*made)->archive();
+    REQUIRE((*made)->advance(Tick{904}));
+    auto original=(*made)->archive();
+    const auto first=detail::ExecutionKernel::tickPayloadBytes(empty);
+    REQUIRE(first>0);
+    const auto cut=replayCutAt(original,Tick{904});
+    auto branch=detail::ExecutionKernel::seekCandidate(original,Tick{904},nullptr,&cut);
+    REQUIRE(branch);
+    REQUIRE((*branch)->advance(Tick{1104}));
+    auto later=(*branch)->archive();
+    const auto both=detail::ExecutionKernel::tickPayloadBytes(empty);
+    CHECK(both>first);
+    CHECK(detail::ExecutionKernel::tickPayloadBytes(later)==both);
+    made->reset(); branch->reset(); original=empty;
+    CHECK(detail::ExecutionKernel::tickPayloadBytes(empty)==both);
+    later=empty;
+    CHECK(detail::ExecutionKernel::tickPayloadBytes(empty)==0);
+}
+''';test.write_text(s,encoding='utf-8')
+subprocess.run(['clang-format','-i',str(sequence),str(header),str(cpp),str(test)],check=True)
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+(draft/'budget-source-v2.json').write_text(json.dumps(dict(scope='Unaccepted shadow v2: capacity callback snapshot safety; quota early stop; nonzero/retired/fork accounting tests. Same 128MiB experimental payload limit, no caps acceptance.',sources={str(p.relative_to(source)):sha(p) for p in (sequence,header,cpp,test)}),indent=2))
+b=(base/'build_tick_budget.py').read_text().replace("source=draft/'budget-source-v1'","source=draft/'budget-source-v2'").replace("build=draft/'budget-build-v1'","build=draft/'budget-build-v2'")
+(base/'build_tick_budget_v2.py').write_text(b)

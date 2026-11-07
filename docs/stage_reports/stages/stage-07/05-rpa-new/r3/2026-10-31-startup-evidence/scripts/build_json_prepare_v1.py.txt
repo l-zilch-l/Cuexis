@@ -1,0 +1,24 @@
+from pathlib import Path
+import json, shutil
+
+root = Path.cwd()
+base = Path(__file__).resolve().parent
+old = base / 'gl-state-build-v3'
+out = base / 'json-prepare-build-v1'
+script = (base / 'build_gl_state_v3_generated.py').read_text()
+script = script[:script.index('adapter_objects=[]')]
+script = script.replace("out=base/'gl-state-build-v3'", "out=base/'json-prepare-build-v1'")
+exec(compile(script, str(base / 'build_gl_state_v3_generated.py'), 'exec'))
+probe = compile('gpu_throughput_probe.cpp', base / 'json_prepare_probe.cpp', 'prepare-probe')
+args = next(c['args'] for c in json.loads((old / 'commands.json').read_text()) if c['label'] == 'link-baseline')
+for variant in ('baseline', 'candidate'):
+    command = [('/OUT:' + str(out / ('prepare-' + variant + '.exe'))) if a.startswith('/OUT:') else
+               probe if a == str(old / 'gpu-probe.obj') else a for a in args]
+    parser = str(base / 'json-sax-build-v2' / ('parse-' + variant + '.obj'))
+    run([command[0], parser, *command[1:]], 'link-' + variant)
+dependencies = root/'out/verification-20261030/r3-resume-v1/budget-build-v3/vcpkg_installed/x64-windows/bin'
+for dll in dependencies.glob('*.dll'): shutil.copyfile(dll, out / dll.name)
+(out/'binding.json').write_text(json.dumps(dict(scope='Ordinary allocator CPU legacy prepare only; shared identical libraries; sole change SAX parser. Fixture before timer, commit/update/digest after. No physical window created.',
+    candidate_sha256=sha(base/'json-sax-source-v2/parse.cpp'), probe_sha256=sha(base/'json_prepare_probe.cpp'),
+    included_probe_sha256=sha(root/'tests/player/gpu_throughput_probe.cpp'), commands_sha256=sha(out/'commands.json'),
+    files={p.name:sha(p) for p in out.iterdir() if p.suffix in ('.exe','.dll')}),indent=2),encoding='utf-8')

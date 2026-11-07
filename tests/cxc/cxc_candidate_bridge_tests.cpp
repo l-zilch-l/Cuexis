@@ -1,13 +1,22 @@
+#include "cxc_test_support.hpp"
+
 #include <cuexis/chart/canonical_semantic_chart.hpp>
 #include <cuexis/chart/packed_chart_tables.hpp>
 #include <cuexis/cxc/cxc_candidate.hpp>
+#include <cuexis/cxc/cxc_manifest_loader.hpp>
+#include <cuexis/cxc/cxc_writer.hpp>
+#include <filesystem>
+#include <fstream>
+#include <iterator>
 
 #include "cxc_hash_internal.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 
+#include <array>
 #include <string>
 #include <string_view>
+#include <utility>
 
 namespace {
 
@@ -57,6 +66,57 @@ namespace {
 }
 
 } // namespace
+
+TEST_CASE("CXC manifest and candidate identities require exactly 64 lowercase hex characters",
+          "[cxc][manifest][candidate][sha256]") {
+    const std::string valid = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+    const std::array cases{
+        std::pair{valid, true},
+        std::pair{std::string(64, '0'), true},
+        std::pair{std::string(64, 'f'), true},
+        std::pair{std::string{}, false},
+        std::pair{valid.substr(0, 63), false},
+        std::pair{valid + "0", false},
+        std::pair{"A" + valid.substr(1), false},
+        std::pair{valid.substr(0, 63) + "F", false},
+        std::pair{valid.substr(0, 32) + "g" + valid.substr(33), false},
+        std::pair{valid.substr(0, 32) + "-" + valid.substr(33), false},
+        std::pair{valid.substr(0, 32) + " " + valid.substr(33), false},
+    };
+
+    for (const auto& [value, accepted] : cases) {
+        INFO("SHA-256 text: " << value);
+        const auto manifest = cuexis::cxc::CxcManifestLoader::load(
+            R"({"format":"cuexis.cxc","version":1,"project":"cuexis.project.json",
+                "entries":[{"path":"cuexis.project.json","byteCount":1,"sha256":")" +
+            value + R"("}],"requiredExtensions":[],"extensions":{}})");
+        CHECK(manifest.hasValue() == accepted);
+        CHECK(hasCode(manifest.diagnostics, "cxc.entry.hash_mismatch") == !accepted);
+        if (accepted) {
+            REQUIRE(manifest.document.has_value());
+            REQUIRE(manifest.document->entries.size() == 1);
+            CHECK(manifest.document->entries.front().sha256 == value);
+        }
+
+        for (const auto field :
+             {std::string_view{"artifactIdentity"}, std::string_view{"compiledSemanticIdentity"},
+              std::string_view{"sourceSemanticIdentity"}}) {
+            INFO("Candidate field: " << field);
+            auto entry = entryJson("compiled/chart.packed", true,
+                                   field == "artifactIdentity" ? value : valid,
+                                   field == "compiledSemanticIdentity" ? value : valid,
+                                   "candidate.static-tap-lanes4-v1", 1, 1);
+            if (field == "sourceSemanticIdentity") {
+                entry.pop_back();
+                entry += ",\"sourceSemanticIdentity\":\"" + value + "\"}";
+            }
+            const auto candidate = cuexis::cxc::parseCandidateChartEntryExtension(
+                extensionJson(entry), "compiled/chart.packed");
+            CHECK(candidate.hasValue() == accepted);
+            CHECK(hasCode(candidate.diagnostics, "cxc.chart_entry.identity_invalid") == !accepted);
+        }
+    }
+}
 
 TEST_CASE("Candidate bridge selects one playback entry and decodes it once",
           "[cxc][candidate][bridge]") {
@@ -150,4 +210,103 @@ TEST_CASE("Candidate bridge rejects profile, revision, count, order and path con
         "compiled/chart.packed");
     CHECK_FALSE(nested.hasValue());
     CHECK(hasCode(nested.diagnostics, "cxc.chart_entry.duplicate_path"));
+}
+
+TEST_CASE("Package and selected entry validators share Behavior source validation",
+          "[cxc][candidate][behavior-validation]") {
+    using namespace cuexis;
+    const auto fixture = std::filesystem::path{CUEXIS_SOURCE_DIR} /
+                         "tests/fixtures/chart_format_update/behavior_candidate.v5.json";
+    std::ifstream input{fixture, std::ios::binary};
+    REQUIRE(input.good());
+    std::string source{std::istreambuf_iterator<char>{input}, std::istreambuf_iterator<char>{}};
+    const auto compiled = chart::compileBehaviorCandidate(source);
+    REQUIRE(compiled);
+    auto identity = chart::packed::semanticIdentityHex(compiled->metadata.semanticIdentity);
+    auto entities = static_cast<std::uint64_t>(compiled->runtime.objects.size());
+    std::uint64_t requirements = 0;
+    std::string profile{chart::behaviorCandidateProfile};
+    std::string encoding{"source-json"};
+    bool badArtifact = false;
+    bool accepted = false;
+    std::string expectedCode;
+    SECTION("mixed Packed and source-json entries are accepted") {
+        accepted = true;
+    }
+    SECTION("semantic identity mismatch is rejected") {
+        identity = std::string(64, '0');
+        expectedCode = "cxc.candidate.compiled_identity_mismatch";
+    }
+    SECTION("object count mismatch is rejected") {
+        ++entities;
+        expectedCode = "cxc.candidate.count_mismatch";
+    }
+    SECTION("Behavior requirements must be zero") {
+        requirements = 1;
+        expectedCode = "cxc.candidate.count_mismatch";
+    }
+    SECTION("malformed JSON with matching byte identity is rejected") {
+        source = "{";
+        expectedCode = "cxc.candidate.source_invalid";
+    }
+    SECTION("byte identity mismatch is rejected") {
+        badArtifact = true;
+        expectedCode = "cxc.candidate.artifact_identity_mismatch";
+    }
+    SECTION("wrong encoding is rejected") {
+        encoding = "packed-chart";
+    }
+    SECTION("unregistered profile is rejected") {
+        profile = "candidate.unknown";
+        encoding = "packed-chart";
+        expectedCode = "cxc.candidate.profile_unsupported";
+    }
+    SECTION("Behavior input above 16 MiB is rejected before compilation") {
+        source.resize(16U * 1024U * 1024U + 1U, ' ');
+        expectedCode = "cxc.candidate.budget_exceeded";
+    }
+    auto request = cxc::test::makeV4StaticRequest();
+    const auto packed = chart::packed::encode(tapChart());
+    REQUIRE(packed);
+    const auto packedIdentity = chart::packed::semanticIdentity(tapChart());
+    REQUIRE(packedIdentity);
+    const std::string packedPath{"compiled/a.packed"};
+    const std::string sourcePath{"compiled/z.v5.json"};
+    const auto sourceBytes = cxc::test::binaryEntry(sourcePath, source);
+    const auto artifact =
+        badArtifact ? std::string(64, '0') : cxc::detail::sha256Hex(sourceBytes.bytes);
+    auto sourceEntry =
+        entryJson(sourcePath, true, artifact, identity, profile, entities, requirements);
+    const auto encodingAt = sourceEntry.find("packed-chart");
+    REQUIRE(encodingAt != std::string::npos);
+    sourceEntry.replace(encodingAt, std::string{"packed-chart"}.size(), encoding);
+    request.entries.push_back(cxc::test::binaryEntry(
+        packedPath, {reinterpret_cast<const char*>(packed->data()), packed->size()}));
+    request.entries.push_back(sourceBytes);
+    request.extensionsJson =
+        extensionJson(entryJson(packedPath, true, cxc::detail::sha256Hex(*packed),
+                                chart::packed::semanticIdentityHex(*packedIdentity),
+                                "candidate.static-tap-lanes4-v1", 1, 1) +
+                      "," + sourceEntry);
+    const auto written = cxc::CxcWriter::write(std::move(request));
+    REQUIRE(written.hasValue());
+    const auto loaded = cxc::CxcPackageLoader::loadMemory(*written.bytes);
+    REQUIRE(loaded.hasValue());
+    const auto aggregate = cxc::validateCandidateChartExtension(*loaded.package);
+    const auto selected = cxc::validateCandidateChartEntry(*loaded.package, sourcePath);
+    CHECK(aggregate.hasErrors() == !accepted);
+    CHECK(selected.hasValue() == accepted);
+    if (!expectedCode.empty()) {
+        CHECK(hasCode(aggregate, expectedCode));
+        CHECK(hasCode(selected.diagnostics, expectedCode));
+        for (const auto& diagnostic : aggregate.items()) {
+            CHECK(std::string{diagnostic.fieldPath()}.starts_with(
+                "$/extensions/cuexis.chart-entry.v1/entries/1"));
+        }
+    }
+    if (accepted) {
+        REQUIRE(selected.candidate->behavior);
+        CHECK(selected.candidate->behavior->runtime.objects.size() == entities);
+        CHECK(selected.candidate->bytes == sourceBytes.bytes);
+    }
 }

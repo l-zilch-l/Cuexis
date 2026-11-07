@@ -1,0 +1,7 @@
+from pathlib import Path
+
+base=Path(__file__).resolve().parent
+source=(base/'build_gl_startup_v1.py').read_text(encoding='utf-8')
+source=source.replace('gl-startup-build-v1','gl-startup-build-v2')
+source=source.replace("for dll in old.glob('*.dll'):","for dll in (base/'json-sax-runtime-v3').glob('*.dll'):")
+exec(compile(source,str(base/'build_gl_startup_v1.py'),'exec'))

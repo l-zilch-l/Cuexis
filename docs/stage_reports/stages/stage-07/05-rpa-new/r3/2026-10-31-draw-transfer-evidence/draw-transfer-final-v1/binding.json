@@ -1,0 +1,9 @@
+{
+  "scope": "Final formatted root draw CPP explicit recompile plus exact previously tested characterization objects and matching common library definitions. Focused actual regression, not fresh whole-repo matrix.",
+  "root_source_sha256": "45dc935f891d2811c90640ec6006c91c5f3d4fe8fd64597859ea83381249cd03",
+  "commands_sha256": "c5cdf89c7d9b15d236f3e170d58537dbf240607d7b9ed9bcafd9fa21914bbcfb",
+  "binaries": {
+    "neutral-tests.exe": "611196518f6bf05b11743ac9cdeaaba82d973cc6fe9d667454b668dc3a2cf19f",
+    "opengl-tests.exe": "7b28fe1350ce2cf075ad78c4ae9a7039066ef4f81e7b889678a816da618a67e3"
+  }
+}

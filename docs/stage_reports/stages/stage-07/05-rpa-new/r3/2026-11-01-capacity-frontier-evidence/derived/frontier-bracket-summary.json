@@ -1,0 +1,629 @@
+{
+  "scope": "Pre-registration of a 1080p p99 budget-crossing bracket at HEAD 466ff76. Diagnostic only; it does not replace the frozen capacity lower bound and does not constitute R3/R4 or production acceptance.",
+  "head": "8e275a59d6ff18d88a8193643254dc0d3fb9c034",
+  "binary_sha256": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8",
+  "preregistration": "frontier-bracket-preregistration.json",
+  "registered_order": [
+    1800,
+    2400,
+    2000,
+    2600,
+    2100,
+    2800,
+    2200,
+    2300
+  ],
+  "completed": [
+    1800,
+    2400,
+    2000,
+    2600,
+    2100,
+    2800,
+    2200,
+    2300
+  ],
+  "pending": [],
+  "records": [
+    {
+      "entities": 1800,
+      "run": "entities-1800",
+      "head": "8e275a59d6ff18d88a8193643254dc0d3fb9c034",
+      "binary_sha256": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8",
+      "created_utc": "2026-10-31T23:54:15.947639+00:00",
+      "modes": {
+        "render-only": {
+          "frames": [
+            8361,
+            8393,
+            8446
+          ],
+          "min_second_fps": [
+            404,
+            405,
+            411
+          ],
+          "wall_fps": [
+            418.0101594517027,
+            419.6194747813071,
+            422.26557902132606
+          ],
+          "wall_fps_median": 419.6194747813071,
+          "p99_us": [
+            2916.1,
+            2747.9,
+            2657.5
+          ],
+          "p99_us_median": 2747.9,
+          "p99_relative_range": 0.09410822810145926,
+          "fps_relative_range": 0.01014113935450962,
+          "all_passed_budget": true,
+          "p99_vs_budget": 0.659496,
+          "over_budget": [
+            20,
+            8,
+            0
+          ]
+        },
+        "static": {
+          "frames": [
+            6831,
+            7167,
+            6945
+          ],
+          "min_second_fps": [
+            317,
+            335,
+            318
+          ],
+          "wall_fps": [
+            341.54835886013564,
+            358.3151610168943,
+            347.23266614530604
+          ],
+          "wall_fps_median": 347.23266614530604,
+          "p99_us": [
+            3570,
+            3324.3,
+            3754.4
+          ],
+          "p99_us_median": 3570,
+          "p99_relative_range": 0.12047619047619045,
+          "fps_relative_range": 0.0482869378128793,
+          "all_passed_budget": true,
+          "p99_vs_budget": 0.8567999999999999,
+          "over_budget": [
+            20,
+            9,
+            48
+          ]
+        }
+      }
+    },
+    {
+      "entities": 2400,
+      "run": "entities-2400",
+      "head": "8e275a59d6ff18d88a8193643254dc0d3fb9c034",
+      "binary_sha256": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8",
+      "created_utc": "2026-10-31T23:56:32.603473+00:00",
+      "modes": {
+        "render-only": {
+          "frames": [
+            6156,
+            6266,
+            6215
+          ],
+          "min_second_fps": [
+            290,
+            304,
+            295
+          ],
+          "wall_fps": [
+            307.78407217426496,
+            313.28524269864266,
+            310.7099277406193
+          ],
+          "wall_fps_median": 310.7099277406193,
+          "p99_us": [
+            3916.5,
+            3575.4,
+            3718.7
+          ],
+          "p99_us_median": 3718.7,
+          "p99_relative_range": 0.09172560303331807,
+          "fps_relative_range": 0.01770516495684707,
+          "all_passed_budget": true,
+          "p99_vs_budget": 0.8924879999999998,
+          "over_budget": [
+            34,
+            2,
+            15
+          ]
+        },
+        "static": {
+          "frames": [
+            4366,
+            4408,
+            4335
+          ],
+          "min_second_fps": [
+            204,
+            202,
+            204
+          ],
+          "wall_fps": [
+            218.28991500592673,
+            220.35708325446538,
+            216.70518753426978
+          ],
+          "wall_fps_median": 218.28991500592673,
+          "p99_us": [
+            7440.2,
+            7386.3,
+            7408.3
+          ],
+          "p99_us_median": 7408.3,
+          "p99_relative_range": 0.00727562328739382,
+          "fps_relative_range": 0.016729566824451994,
+          "all_passed_budget": false,
+          "p99_vs_budget": 1.777992,
+          "over_budget": [
+            2918,
+            2865,
+            3015
+          ]
+        }
+      }
+    },
+    {
+      "entities": 2000,
+      "run": "entities-2000",
+      "head": "8e275a59d6ff18d88a8193643254dc0d3fb9c034",
+      "binary_sha256": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8",
+      "created_utc": "2026-10-31T23:58:49.453609+00:00",
+      "modes": {
+        "render-only": {
+          "frames": [
+            7421,
+            7584,
+            7481
+          ],
+          "min_second_fps": [
+            356,
+            364,
+            355
+          ],
+          "wall_fps": [
+            371.032735846801,
+            379.1963597149467,
+            374.04611740130133
+          ],
+          "wall_fps_median": 374.04611740130133,
+          "p99_us": [
+            3289.2,
+            3007,
+            3121.9
+          ],
+          "p99_us_median": 3121.9,
+          "p99_relative_range": 0.09039367052115693,
+          "fps_relative_range": 0.02182518007368385,
+          "all_passed_budget": true,
+          "p99_vs_budget": 0.7492559999999999,
+          "over_budget": [
+            25,
+            0,
+            8
+          ]
+        },
+        "static": {
+          "frames": [
+            6216,
+            6260,
+            6671
+          ],
+          "min_second_fps": [
+            292,
+            289,
+            320
+          ],
+          "wall_fps": [
+            310.7968469659875,
+            312.97262584928006,
+            333.50178064504547
+          ],
+          "wall_fps_median": 312.97262584928006,
+          "p99_us": [
+            4016.7,
+            3986,
+            3431.1
+          ],
+          "p99_us_median": 3986,
+          "p99_relative_range": 0.14691419969894629,
+          "fps_relative_range": 0.07254606890122103,
+          "all_passed_budget": true,
+          "p99_vs_budget": 0.9566399999999999,
+          "over_budget": [
+            43,
+            41,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "entities": 2600,
+      "run": "entities-2600",
+      "head": "8e275a59d6ff18d88a8193643254dc0d3fb9c034",
+      "binary_sha256": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8",
+      "created_utc": "2026-11-01T00:01:06.094463+00:00",
+      "modes": {
+        "render-only": {
+          "frames": [
+            5544,
+            5875,
+            5854
+          ],
+          "min_second_fps": [
+            239,
+            282,
+            279
+          ],
+          "wall_fps": [
+            277.1372921449064,
+            293.70443616229596,
+            292.6990165313045
+          ],
+          "wall_fps_median": 292.6990165313045,
+          "p99_us": [
+            7084.3,
+            3760.4,
+            3847.6
+          ],
+          "p99_us_median": 3847.6,
+          "p99_relative_range": 0.8638891776691964,
+          "fps_relative_range": 0.056601297174559195,
+          "all_passed_budget": false,
+          "p99_vs_budget": 0.9234239999999999,
+          "over_budget": [
+            355,
+            2,
+            2
+          ]
+        },
+        "static": {
+          "frames": [
+            4172,
+            4076,
+            4261
+          ],
+          "min_second_fps": [
+            192,
+            191,
+            203
+          ],
+          "wall_fps": [
+            208.55210079624962,
+            203.757646935508,
+            213.02118462435587
+          ],
+          "wall_fps_median": 208.55210079624962,
+          "p99_us": [
+            7576.3,
+            7823.2,
+            7392.6
+          ],
+          "p99_us_median": 7576.3,
+          "p99_relative_range": 0.056835130604648634,
+          "fps_relative_range": 0.044418337928411065,
+          "all_passed_budget": false,
+          "p99_vs_budget": 1.818312,
+          "over_budget": [
+            3378,
+            3523,
+            3282
+          ]
+        }
+      }
+    },
+    {
+      "entities": 2100,
+      "run": "entities-2100",
+      "head": "8e275a59d6ff18d88a8193643254dc0d3fb9c034",
+      "binary_sha256": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8",
+      "created_utc": "2026-11-01T00:03:22.827544+00:00",
+      "modes": {
+        "render-only": {
+          "frames": [
+            7152,
+            7021,
+            7203
+          ],
+          "min_second_fps": [
+            335,
+            328,
+            347
+          ],
+          "wall_fps": [
+            357.5872484387207,
+            351.01823109499475,
+            360.09809005982737
+          ],
+          "wall_fps_median": 357.5872484387207,
+          "p99_us": [
+            3394.9,
+            3739.9,
+            3149.4
+          ],
+          "p99_us_median": 3394.9,
+          "p99_relative_range": 0.17393737665321513,
+          "fps_relative_range": 0.025392009934573016,
+          "all_passed_budget": true,
+          "p99_vs_budget": 0.814776,
+          "over_budget": [
+            15,
+            40,
+            2
+          ]
+        },
+        "static": {
+          "frames": [
+            6148,
+            6246,
+            6300
+          ],
+          "min_second_fps": [
+            294,
+            299,
+            304
+          ],
+          "wall_fps": [
+            307.39504171797705,
+            312.27948323795124,
+            314.95714378144567
+          ],
+          "wall_fps_median": 312.27948323795124,
+          "p99_us": [
+            3772,
+            3649,
+            3591.5
+          ],
+          "p99_us_median": 3649,
+          "p99_relative_range": 0.049465607015620715,
+          "fps_relative_range": 0.024215814580769084,
+          "all_passed_budget": true,
+          "p99_vs_budget": 0.87576,
+          "over_budget": [
+            9,
+            6,
+            3
+          ]
+        }
+      }
+    },
+    {
+      "entities": 2800,
+      "run": "entities-2800",
+      "head": "8e275a59d6ff18d88a8193643254dc0d3fb9c034",
+      "binary_sha256": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8",
+      "created_utc": "2026-11-01T00:05:39.514265+00:00",
+      "modes": {
+        "render-only": {
+          "frames": [
+            4797,
+            4644,
+            4621
+          ],
+          "min_second_fps": [
+            213,
+            211,
+            212
+          ],
+          "wall_fps": [
+            239.84040398543655,
+            232.15291822741887,
+            231.00170909271418
+          ],
+          "wall_fps_median": 232.15291822741887,
+          "p99_us": [
+            7314.8,
+            7328.6,
+            7300.2
+          ],
+          "p99_us_median": 7314.8,
+          "p99_relative_range": 0.003882539508940852,
+          "fps_relative_range": 0.03807272792523726,
+          "all_passed_budget": false,
+          "p99_vs_budget": 1.755552,
+          "over_budget": [
+            1794,
+            2325,
+            2358
+          ]
+        },
+        "static": {
+          "frames": [
+            3919,
+            4040,
+            3876
+          ],
+          "min_second_fps": [
+            184,
+            195,
+            181
+          ],
+          "wall_fps": [
+            195.9118510648014,
+            201.97225305187573,
+            193.79918991938612
+          ],
+          "wall_fps_median": 195.9118510648014,
+          "p99_us": [
+            7983.8,
+            7747.7,
+            7975.5
+          ],
+          "p99_us_median": 7975.5,
+          "p99_relative_range": 0.029603159676509356,
+          "fps_relative_range": 0.04171806395615247,
+          "all_passed_budget": false,
+          "p99_vs_budget": 1.9141199999999998,
+          "over_budget": [
+            3587,
+            3672,
+            3550
+          ]
+        }
+      }
+    },
+    {
+      "entities": 2200,
+      "run": "entities-2200",
+      "head": "8e275a59d6ff18d88a8193643254dc0d3fb9c034",
+      "binary_sha256": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8",
+      "created_utc": "2026-11-01T00:07:56.301051+00:00",
+      "modes": {
+        "render-only": {
+          "frames": [
+            6796,
+            6888,
+            6907
+          ],
+          "min_second_fps": [
+            315,
+            334,
+            331
+          ],
+          "wall_fps": [
+            339.74708948701874,
+            344.36034001964,
+            345.3403598238555
+          ],
+          "wall_fps_median": 344.36034001964,
+          "p99_us": [
+            3640.2,
+            3281.4,
+            3275.8
+          ],
+          "p99_us_median": 3281.4,
+          "p99_relative_range": 0.1110501615164258,
+          "fps_relative_range": 0.016242492781014733,
+          "all_passed_budget": true,
+          "p99_vs_budget": 0.787536,
+          "over_budget": [
+            20,
+            9,
+            0
+          ]
+        },
+        "static": {
+          "frames": [
+            6038,
+            5812,
+            6041
+          ],
+          "min_second_fps": [
+            290,
+            281,
+            291
+          ],
+          "wall_fps": [
+            301.8736268105937,
+            290.56811305527333,
+            302.00916987027944
+          ],
+          "wall_fps_median": 301.8736268105937,
+          "p99_us": [
+            3789.3,
+            3946.8,
+            3759.4
+          ],
+          "p99_us_median": 3789.3,
+          "p99_relative_range": 0.049455044467315884,
+          "fps_relative_range": 0.03790015357050265,
+          "all_passed_budget": true,
+          "p99_vs_budget": 0.909432,
+          "over_budget": [
+            5,
+            9,
+            7
+          ]
+        }
+      }
+    },
+    {
+      "entities": 2300,
+      "run": "entities-2300",
+      "head": "8e275a59d6ff18d88a8193643254dc0d3fb9c034",
+      "binary_sha256": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8",
+      "created_utc": "2026-11-01T00:10:13.009104+00:00",
+      "modes": {
+        "render-only": {
+          "frames": [
+            6596,
+            6532,
+            6481
+          ],
+          "min_second_fps": [
+            312,
+            309,
+            310
+          ],
+          "wall_fps": [
+            329.75900106339776,
+            326.56731551022716,
+            324.01572237672974
+          ],
+          "wall_fps_median": 326.56731551022716,
+          "p99_us": [
+            3503.7,
+            3613.1,
+            3554.7
+          ],
+          "p99_us_median": 3554.7,
+          "p99_relative_range": 0.030776155512420203,
+          "fps_relative_range": 0.0175868141540581,
+          "all_passed_budget": true,
+          "p99_vs_budget": 0.8531279999999999,
+          "over_budget": [
+            10,
+            16,
+            11
+          ]
+        },
+        "static": {
+          "frames": [
+            4991,
+            5304,
+            5234
+          ],
+          "min_second_fps": [
+            223,
+            230,
+            225
+          ],
+          "wall_fps": [
+            249.53827544412826,
+            265.18764623350023,
+            261.68886906395437
+          ],
+          "wall_fps_median": 261.68886906395437,
+          "p99_us": [
+            7226.5,
+            7184.3,
+            7194.6
+          ],
+          "p99_us_median": 7194.6,
+          "p99_relative_range": 0.005865510243793931,
+          "fps_relative_range": 0.059801438423226966,
+          "all_passed_budget": false,
+          "p99_vs_budget": 1.726704,
+          "over_budget": [
+            1250,
+            751,
+            824
+          ]
+        }
+      }
+    }
+  ]
+}

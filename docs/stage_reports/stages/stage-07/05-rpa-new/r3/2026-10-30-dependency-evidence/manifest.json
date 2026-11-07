@@ -1,0 +1,62 @@
+{
+  "scope": "MSVC Ninja dependency repair only. Local CMake4.3/MSVC19.51.36256 on Chinese Windows. Original and VSLANG1033 canaries fail; raw prefix and registered root CTest pass. No product runtime or performance acceptance.",
+  "head": "472398af7e93ac35feeef79d01bb364cdd38941e",
+  "registered_test": {
+    "name": "cuexis_msvc_dependency_tracking",
+    "passed": true,
+    "initial": 17,
+    "changed": 18,
+    "source_dir": "D:\\Cuexis-redesign",
+    "build_dir": "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-next-v1\\dependency-root-v3",
+    "layouts": [
+      "standalone",
+      "embedded"
+    ],
+    "elapsed_seconds": 13.75
+  },
+  "failed_root_configuration": {
+    "path": "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-next-v1\\dependency-root-v1",
+    "reason": "PowerShell split unquoted exp.dependency suffix, before project/compilation. Retained; no result claimed."
+  },
+  "sources": {
+    "CMakeLists.txt": "4f267c8b5ed9d40635a55276e4840c2bd322bb0b93cbbcf9395c2d28c29c2617",
+    "cmake/CuexisMsvcDependencies.cmake": "576a1048283f71418edcf94d204d1d5cd8310575652a3a7660a8f90898f99de1",
+    "cmake/VerifyMsvcDependencyTracking.cmake": "054a7b9e40ff4f0a55ab3111652c507bc45106b5ecf9fa959718df84f7bf8c94"
+  },
+  "files": {
+    ".gitattributes": "39e2506312c5d76b8e3fdb171b75b2755c3242401ce13b444eaeb401e4895589",
+    "old-prefix-results.json": "41e5edd9f91c77eef0cb79fc63637cfc6d7184dd64cb1ab07013b0db109cee5d",
+    "raw-prefix-dependencies.txt": "181107784196de607932b1807b88b85ea71bb4de3607bb681bf33cbc1c4a3c36",
+    "raw-prefix-rebuild.txt": "311f8d82e2c3258ed4fa5dce2c11e271da0c3d7491d1420a2c8f694b2a5e972e",
+    "raw-prefix-results.json": "ec1cdfeb0fdab8e3473cdc2fbdb9d93daffb2a9c9de98a6869bd9ba1897713c0",
+    "registered-configure.err.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "registered-configure.log.txt": "f850102941129dca45935669a57455db0966e67f71b47da35d89a59009a36246",
+    "registered-ctest.txt": "00d53a7316bf6a78d9db8c8d5b824c03f6a7c7f6df17683ea23a2eb67aefdf7f",
+    "registered-dependencies.log.txt": "12b433dabbcc5cc6ccf3f8d7c66871a7f12ee45fb36b9c623e21086ab9b93b2a",
+    "registered-initial.err.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "registered-initial.log.txt": "96d6d4f094357a1e52db5fcfdf9731f45240272e7e69cc574a9f0f5cb6f9d61c",
+    "registered-rebuild.err.txt": "50d02ae9d35712704b75a48950f3056124d37085b81a2fe4543f62b1006278f6",
+    "registered-rebuild.log.txt": "d1f16efbc4ffb7263ae879369720d50c5c3fc21938a2a5a253ddb8d75ebb7a5a",
+    "registered-v3-ctest.txt": "9a0858bdabe4a3984403502c31cf321c21e1cfe3cb095967093321396b8645da",
+    "registered-v3-embedded-configure.err.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "registered-v3-embedded-configure.log.txt": "7207979954d186cba7e36e4f620024d0102efddfe886017d3f93123465f2a4fd",
+    "registered-v3-embedded-dependencies.log.txt": "79e12839dfd205e02fb07161b3cfdd0da4b2688468a27cec5ce308d246138e95",
+    "registered-v3-embedded-initial.err.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "registered-v3-embedded-initial.log.txt": "96d6d4f094357a1e52db5fcfdf9731f45240272e7e69cc574a9f0f5cb6f9d61c",
+    "registered-v3-embedded-rebuild.err.txt": "00e020d9d68ddb964685bff857b7b3d610f5665f8647063200f0a44ca8da040c",
+    "registered-v3-embedded-rebuild.log.txt": "9e78657f04cbae9e4e60eaadada204468fe374a33fb5bed990e4c4da0db2721f",
+    "registered-v3-standalone-configure.err.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "registered-v3-standalone-configure.log.txt": "b2284554ad7332e3d031c353a07c27ee4e5b0bbf3a30612b43f89a679af85ec6",
+    "registered-v3-standalone-dependencies.log.txt": "307321a5a9eac5fc84a4d6d0da49ea1382865e7b60486876666029bc65c60f3a",
+    "registered-v3-standalone-initial.err.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "registered-v3-standalone-initial.log.txt": "96d6d4f094357a1e52db5fcfdf9731f45240272e7e69cc574a9f0f5cb6f9d61c",
+    "registered-v3-standalone-rebuild.err.txt": "09012928b839980629082909135246cf78168ebf03c998e533b1cecf02af3b28",
+    "registered-v3-standalone-rebuild.log.txt": "5df9bda0a31e6a0a8d0562f59af56aad40150315aefa0f0aa205382ce31602cb",
+    "verify_build_dependencies.py.txt": "f0dc2bb581434edd4baff51a33ff8acd627022520f7030dd512d18d45bfed87e",
+    "verify_raw_prefix.py.txt": "6326a45ad5df2e8328283e765cf127d68008ee6ab05c1385f58ad42bab108f15"
+  },
+  "console": {
+    "input_code_page": 936,
+    "output_code_page": 65001
+  }
+}

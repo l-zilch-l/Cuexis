@@ -46,10 +46,13 @@ enum class WindowKey : std::uint8_t {
 struct WindowKeyEvent final {
     WindowKey key{WindowKey::Unknown};
     bool pressed{false};
+    std::uint32_t scanCode{0};
+    std::uint64_t timestampNs{0};
 };
 
 struct WindowEvents final {
     bool quitRequested{false};
+    bool focusLost{false};
     // Key transitions observed since the previous call, in arrival order. Auto-repeat is not
     // reported, so one press yields exactly one event.
     std::vector<WindowKeyEvent> keys;

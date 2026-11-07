@@ -2,7 +2,7 @@
 
 状态：现行 ADR 索引
 
-更新日期：2026-09-20
+更新日期：2026-10-28
 
 ADR 是决策理由的权威来源。字段级合同和实施证据分别见 [格式索引](../formats/README.md)
 与 [阶段报告索引](../stage_reports/README.md)。
@@ -51,3 +51,8 @@ ADR 是决策理由的权威来源。字段级合同和实施证据分别见 [�
 | [0040](0040-stage-5-material-shader-contracts.md) | Stage 5 Material/Shader 合同 | 已接受，阶段 5；S5-A 已冻结 |
 | [0041](0041-legacy-format-exit-policy.md) | Legacy 格式和兼容路径退出政策 | 已接受；Full Review 整改 |
 | [0042](0042-stage-6-productization-boundaries.md) | Stage 6 显式 candidate、身份、渲染分层、事务、媒体与发行边界 | 已接受；设计冻结，**实施状态订正于 2026-09-29**：D02/D04–D07 已实现，D01/D03/D08 部分实现（详见该 ADR 状态行与[复核交付报告](../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md) §10） |
+| [0043](0043-gameplay-judgement-ruleset-convergence.md) | Gameplay Judgement / Ruleset I 收敛边界 | proposed；工作稿，待 owner acceptance |
+| [0044](0044-gameplay-v2-semantic-kernel.md) | Gameplay V2 语义内核与冻结边界 | 决策已接受；V2 文档组仍为 candidate；后续分批实施与接受状态见 CURRENT_STATUS |
+| [0045](0045-gameplay-v2-execution-profile.md) | S7A-3/4 完整 execution profile | candidate；保留原设计/授权，后续分批实施与 RPA 增量见当前状态及补充合同，不冒充阶段验收 |
+| [0046](0046-realtime-playback-coordination.md) | 实时播放的时间、执行与发布边界 | accepted design；当前分支已有 candidate 实施，未发行；接受状态见 CURRENT_STATUS |
+| [0047](0047-pd-feedback-lifetime-and-delivery-retirement.md) | PD 显式反馈寿命、交付许可与回收边界 | accepted design；2026-10-19 owner 接受三项决定，SDK 0.9.0；PD-4 内部实施/适用本地门禁完成，设备/正式性能未验收 |

@@ -1,0 +1,5 @@
+{
+  "scope": "Unselected neutral draw-only optimization: skip already sorted input under exact same total comparator and move temporary owning commands to final summary. Same digest/order/error/public types; no cache.",
+  "baseline_sha256": "a9452dec2b4ca6a848590ee56e21febba6f4973758295fb3994c1d22432fc91f",
+  "candidate_sha256": "45dc935f891d2811c90640ec6006c91c5f3d4fe8fd64597859ea83381249cd03"
+}

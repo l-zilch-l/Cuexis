@@ -2,12 +2,40 @@
 
 状态：现行文档入口
 
-更新日期：2026-09-16
+更新日期：2026-10-26
 
 本文档是 Cuexis 文档的导航页，不复制产品合同、阶段证据或完整字段定义。当前项目状态只
 以 [CURRENT_STATUS.md](CURRENT_STATUS.md) 为准。
 
+定位入口：[Stage 7 阶段、计划与材料一览](stage_plans/active/stage-07/README.md)；报告、批次与原始证据从该表直接进入。
+
+## 当前工作入口
+
+- 查RPA领域词义：[Glossary](api/GLOSSARY.md)。
+- 查当前进度：[CURRENT_STATUS](CURRENT_STATUS.md)。
+- 实施 Stage 7A：[plan-a S7A-7/8接手与决策](stage_plans/active/stage-07/01-a/plan.md#34-s7a-78-下一轮决策首用合同与接手2026-10-07)；全局路线见[Stage 7总计划](stage_plans/active/stage-07/plan.md)。
+- 查高级判定路线：[Stage7B+](stage_plans/active/stage-07/06-b/plan.md)；实时架构、命名及实体设备/同步验收：[RPA计划（2026-10-11，已归档）](archive/stage-07-planning/03-rpa-legacy/2026-10-11-rpa-plan.md)；判定/表现解耦重构：[Stage 7-PD计划](stage_plans/active/stage-07/04-pd/plan.md)。
+- 查 RPA 性能整改、已退出的 R1 与进行中的 R2（第三候选已停止，整合验证进行中）：[RPA性能整改候选设计](stage_plans/active/stage-07/05-rpa-new/plan.md)、[R1实施计划](stage_plans/active/stage-07/05-rpa-new/r1/plan.md)；历史性能修改方案：[2026-10-14 已归档](archive/stage-07-planning/03-rpa-legacy/2026-10-14-rpa-performance-modification-plan.md)。
+- 查方案与反例：[5/6候选实施输入](proposals/implementation-input/stage-07/s7a-5-6-design-selection.md)。
+- 当前实施只在 `D:/Cuexis-worktree`；准入树只读保留，迁移验证与授权边界见[两树整合记录](stage_reports/stages/stage-07/90-shared/worktree-consolidation/2026-10-26-worktree-consolidation.md)。
+- 查已有证据：[Stage 7分类报告索引](stage_reports/stages/stage-07/README.md)。
+
+## 按用途查找
+
+| 要回答的问题 | 文档类别 / 入口 |
+| --- | --- |
+| 为什么这样设计、是否接受 | [ADR](adr/README.md) |
+| 字段和运行语义是什么 | [格式与系统Spec](formats/README.md)；发布SDK调用见 [API](api/README.md) |
+| 接下来做什么、按什么门禁退出 | [阶段计划](stage_plans/README.md) |
+| 哪次实现/审查/验证提供了证据 | [阶段与专题报告](stage_reports/README.md) |
+| 如何构建、编码和维护版本 | [工程指南与政策](guides/README.md) |
+| 尚未生产化的方案、研究或样例 | [候选输入](proposals/README.md)、[样例](examples/README.md) |
+| 被取代的计划和历史背景 | [归档](archive/README.md)；旧名称见 [迁移映射](legacy-paths.md) |
+
 ## 推荐阅读顺序
+
+带注解的完整路线——每一步读什么、每份文档回答什么问题、哪些地方最容易读错——见
+[阅读顺序](guides/reading-order.md)。下面是精简版：
 
 1. [当前状态](CURRENT_STATUS.md)
 2. [项目指南](PROJECT_GUIDE.md)
@@ -15,6 +43,8 @@
    - [音乐游戏玩法抽象模型](architecture/GAMEPLAY_ABSTRACTION_MODEL.md)
 4. [ADR 索引](adr/README.md)，先读 ADR 0027、0024、0025、0026、0037、0038 和 0040
 5. [格式索引](formats/README.md)
+   - [Gameplay Judgement Spec](formats/GAMEPLAY_JUDGEMENT_SPEC.md)（已 superseded；Gameplay I 历史候选基线）
+   - [Gameplay V2 Spec](formats/GAMEPLAY_V2_SPEC.md)（Stage 7A 的 V2 字段与运行语义唯一权威，candidate）
 6. [Stage 6 关闭报告](stage_reports/stages/stage-06/completion.md)（阶段已关闭并归档）
 7. [指南索引](guides/README.md)
 8. [API 参考](api/README.md)
@@ -49,13 +79,15 @@
 - [项目路线图](ROADMAP.md)
 - [文档整理政策](DOCUMENTATION_POLICY.md)
 - [Playback SDK API 参考](api/README.md)
+- [Gameplay Judgement ABI（已 superseded）](api/GAMEPLAY_JUDGEMENT_ABI.md)
+- [Gameplay V2 ABI（候选）](api/GAMEPLAY_V2_ABI.md)
 
 ## 格式和运行语义
 
 - [格式索引](formats/README.md)
 - [Chart v1/v2/v3 生产格式](formats/CHART_FORMAT.md)
 - [Chart v4 接受合同](formats/CHART_V4_FORMAT.md)
-- [Chart v4 谱面编写指南](guides/CHART_V4_AUTHORING.md)
+- [Chart v5 谱面编写指南](guides/CHART_V5_AUTHORING.md)
 - [CXC v1 接受合同](formats/CXC_FORMAT.md)
 - [CXT v1 接受合同](formats/CXT_FORMAT.md)
 - [CXT v2 候选合同](formats/CXT_V2_FORMAT.md)
@@ -115,5 +147,6 @@
 - [Chart Format Foundation F4-F6 Packed tables/IO 报告](stage_reports/stages/chart-format-foundation/2026-09-07-f4-f6-packed-tables-io.md)
 - [260830-followup 最终关闭报告](stage_reports/reviews/260830-followup/2026-09-01-final.md)
 - [Full Review 最终关闭](stage_reports/reviews/full-review-2026-08/2026-08-30-final.md)
+- [候选提案索引](proposals/README.md)
 - [候选示例索引](examples/README.md)
 - [历史文档归档](archive/README.md)

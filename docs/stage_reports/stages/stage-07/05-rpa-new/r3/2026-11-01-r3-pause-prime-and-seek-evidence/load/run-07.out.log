@@ -1,0 +1,35 @@
+2026-11-02T01:25:34.907+08:00 [info] [Cuexis Player] [player.startup] Starting Cuexis Player 26.10.19-1
+2026-11-02T01:25:34.908+08:00 [info] [Cuexis Player] [player.build_flavor] experimental
+2026-11-02T01:25:34.909+08:00 [info] [Cuexis Player] [player.config] Profile system-default, gain 1.000000
+2026-11-02T01:25:34.912+08:00 [info] [Cuexis Player] [player.startup_phase] content_resolved elapsed_us 3422 total_us 3423
+2026-11-02T01:25:34.915+08:00 [info] [Cuexis Player] [player.startup_phase] content_prepared elapsed_us 2463 total_us 5886
+2026-11-02T01:25:34.984+08:00 [info] [Cuexis Player] [player.sdl] Video driver: windows
+2026-11-02T01:25:35.256+08:00 [info] [Cuexis Player] [player.startup_phase] window_created elapsed_us 341173 total_us 347059
+2026-11-02T01:25:35.444+08:00 [info] [Cuexis Player] [player.opengl] Version: 3.3.0 NVIDIA 616.64
+2026-11-02T01:25:35.444+08:00 [info] [Cuexis Player] [player.opengl] Vendor: NVIDIA Corporation
+2026-11-02T01:25:35.444+08:00 [info] [Cuexis Player] [player.opengl] Renderer: NVIDIA GeForce RTX 4060 Laptop GPU/PCIe/SSE2
+2026-11-02T01:25:35.444+08:00 [info] [Cuexis Player] [player.startup_phase] backend_created elapsed_us 187740 total_us 534799
+2026-11-02T01:25:35.445+08:00 [info] [Cuexis Player] [player.config] Session identity b4eb849265cea6ca0ee0b5c867ac78dbca9122bcdb55970c51b6b21ebd7ffb16
+2026-11-02T01:25:35.445+08:00 [info] [Cuexis Player] [player.playback] Prepared objects: 2, behaviors: 1, resources: 4
+2026-11-02T01:25:35.445+08:00 [info] [Cuexis Player] [player.startup_phase] content_committed elapsed_us 1446 total_us 536246
+2026-11-02T01:25:35.445+08:00 [info] [Cuexis Player] [player.config] Effective window 1280x720, windowed, audio closed
+2026-11-02T01:25:35.445+08:00 [info] [Cuexis Player] [player.startup_phase] transport_playing elapsed_us 12 total_us 536259
+2026-11-02T01:25:35.448+08:00 [info] [Cuexis Player] [player.startup_phase] first_frame_presented elapsed_us 2344 total_us 538603 opaque 1 transparent 0 render_us 0
+2026-11-02T01:25:35.448+08:00 [info] [Cuexis Player] [player.snapshot] Objects: 2, opaque draws: 1, transparent draws: 0, debug commands: 0
+2026-11-02T01:25:35.448+08:00 [info] [Cuexis Player] [player.smoke_test] Frame 0 summary=4536622714229612252 pixel=255,204,51,255 render_us=1229.200000
+2026-11-02T01:25:35.457+08:00 [info] [Cuexis Player] [player.smoke_test] Minimized drawable 1280x720
+2026-11-02T01:25:35.469+08:00 [info] [Cuexis Player] [player.smoke_test] Restore kept digest 4536622714229612252 at drawable 1280x720
+2026-11-02T01:25:35.471+08:00 [info] [Cuexis Player] [player.smoke_test] Debug summary parity held for omitted, empty, and populated scenes
+2026-11-02T01:25:35.471+08:00 [info] [Cuexis Player] [player.smoke_test] Frame 1 summary=18316288860163381829 pixel=51,32,71,192 render_us=622.000000
+2026-11-02T01:25:35.472+08:00 [info] [Cuexis Player] [player.smoke_test] Frame 2 summary=6031808768634287893 pixel=14,16,18,255 render_us=904.700000
+2026-11-02T01:25:35.472+08:00 [info] [Cuexis Player] [player.smoke_test] Failed reload preserved the active OpenGL presentation cache
+2026-11-02T01:25:35.478+08:00 [info] [Cuexis Player] [player.smoke_test] Failed adapter preparation preserved the active OpenGL presentation cache
+2026-11-02T01:25:35.482+08:00 [info] [Cuexis Player] [player.smoke_test] Legacy presentation candidate was rejected before Playback commit
+2026-11-02T01:25:35.483+08:00 [info] [Cuexis Player] [player.smoke_test] Frame 3 summary=2834431608312018687 pixel=29,17,53,201 render_us=435.900000
+2026-11-02T01:25:35.493+08:00 [info] [Cuexis Player] [player.smoke_test] Outstanding candidate rejection preserved the first candidate
+2026-11-02T01:25:35.499+08:00 [info] [Cuexis Player] [player.config] Session identity b4eb849265cea6ca0ee0b5c867ac78dbca9122bcdb55970c51b6b21ebd7ffb16
+2026-11-02T01:25:35.499+08:00 [info] [Cuexis Player] [player.playback] Prepared objects: 2, behaviors: 1, resources: 4
+2026-11-02T01:25:35.499+08:00 [info] [Cuexis Player] [player.smoke_test] Successful reload activated a complete OpenGL presentation cache
+2026-11-02T01:25:35.499+08:00 [info] [Cuexis Player] [player.smoke_test] Frame 4 summary=4536622714229612252 pixel=255,204,51,255 render_us=307.400000
+2026-11-02T01:25:35.500+08:00 [info] [Cuexis Player] [player.smoke_test] Frame 5 summary=18316288860163381829 pixel=51,32,71,192 render_us=636.000000
+2026-11-02T01:25:35.500+08:00 [info] [Cuexis Player] [player.smoke_test] Completed frames: 6

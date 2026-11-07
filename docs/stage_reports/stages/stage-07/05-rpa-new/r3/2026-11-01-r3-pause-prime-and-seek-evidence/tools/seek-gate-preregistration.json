@@ -1,0 +1,28 @@
+{
+  "scope": "Applicable-Seek gate: full host seek on the real OpenGL backend at two replay sizes. Diagnostic/test-only. It covers the repeated hot-reuse and cold-process classes; it says nothing about external archive certification, natural checkpoint first use or the no-checkpoint fallback.",
+  "registered_local": "2026-11-02 01:40",
+  "instrument": {
+    "exe": "out/build/rpa-candidate-release/bin/cuexis_execution_device_probe.exe",
+    "sha256": "21413400319d2801ca032a8c25519622aacbaf4da2f68ee3aeca968581598ea3",
+    "test": "PD5 scripted seek timing probe",
+    "note": "added in this batch: host pause -> replayCut -> seek -> sample -> present on the device renderer, with host capacity sized for a repeated-seek loop"
+  },
+  "workload": {
+    "replay_records": [
+      129,
+      1024
+    ],
+    "seeks_per_process": 16,
+    "horizon": "1103 + 7000 * index",
+    "renderer": "real OpenGL backend",
+    "vsync": false
+  },
+  "runs": "6 fresh processes per replay size",
+  "boundary": "request -> replayCut + seek return (request_to_ready_us); request -> target frame present return (request_to_present_us)",
+  "gate": "every covered seek <= 20 ms",
+  "statistics": "per process: median and max over 16 seeks; per replay size: max across processes decides",
+  "validity": [
+    "exit code 0",
+    "16 PD5_SEEK rows per process"
+  ]
+}

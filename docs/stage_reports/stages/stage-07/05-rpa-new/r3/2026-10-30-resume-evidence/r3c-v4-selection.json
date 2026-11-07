@@ -1,0 +1,15 @@
+{
+  "selected": false,
+  "product_promoted": false,
+  "head": "a6e3b31",
+  "reason": "Local latest-source Seek numerical gates pass but repetition screen exceeds15%; product memory quota/headroom decision remains open. Source and evidence archived for review; not merged into engine tree.",
+  "sources": {
+    "engine/judgement/include/cuexis/judgement/shared_sequence.hpp": "c129cc4ad49e786691256ee55370f8f65e379afdc68fdceaf80dee8ef7c782ee",
+    "engine/judgement/src/execution_kernel.cpp": "9ef90b44badf0c3ad4e295c7acc5012c92eb4654a3f1aab0faa3244cf649c870",
+    "engine/judgement/src/execution_kernel.hpp": "5481f8e9cfa808e2010e0e9f65d1ca763f4d976c786246647e42d1a3645a9f6c",
+    "engine/judgement/src/recovery_codec.cpp": "f9ae67c31b44309571bfbfecd9900d1d0aebbaa1c61f5ab708f963460ee8c8dc",
+    "tests/rpa/rpa_b3_tests.cpp": "5f7ec64f62a3e96a18a92385784a1991b784124bd5284e4124d41ab85c47c284"
+  },
+  "parent_fresh_v3_complete_sha256": "bf2350aabd089662bc55eac77b11f5b1e9f48888d5ee6ce4fecbbc2800356a6a",
+  "v4_complete_sha256": "e1ea502e4c104fda22f336d1a419172ff61d187f222d2aad5bfd5a335a9c3a7b"
+}

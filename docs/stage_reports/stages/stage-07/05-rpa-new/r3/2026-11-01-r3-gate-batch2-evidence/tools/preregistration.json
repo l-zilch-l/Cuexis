@@ -1,0 +1,78 @@
+{
+  "scope": "Second R3 gate batch on HEAD: Pause/Resume/resize, Reset, Close, request->ready and GPU render. The instrument is the repository's own PD5 scripted host timing probe compiled into cuexis_execution_device_probe, so the renderer is the real OpenGL backend rather than the CPU test renderer. Diagnostic/test-only: it decides only the gates it measures, and D2/D3/Snapshot/queue are recorded as undecided because no comparable non-intrusive boundary exists.",
+  "registered_local": "2026-11-01 22:10",
+  "registered_utc": "2026-11-01T14:10Z",
+  "source": {
+    "head": "6256af8b7d349b14a6d5b006d7632711152e96fa",
+    "instrument": "out/build/rpa-candidate-release/bin/cuexis_execution_device_probe.exe",
+    "instrument_sha256": "6b01a30f8b01b79cf7d2314be989e89cd42dc63cb9694e5c2794dc5d3af9c790",
+    "why_this_instrument": "tests/pd/pd5_device_probe.cpp defines CUEXIS_PD5_DEVICE and includes pd5_host_probe.cpp, so the same scripted host harness runs against OpenGlBackend with the GPU timer query enabled; the plain cuexis_pd_host_probe target compiles the CPU TestPresentationRenderer instead and cannot produce gpu_render at all.",
+    "authority": "docs/stage_plans/active/stage-07/05-rpa-new/plan.md 9.2-9.4; pd5-measurement-proposal.md section 4"
+  },
+  "groups": [
+    {
+      "id": "pd5-controls-v1",
+      "gates": [
+        "Pause <= 50 ms per operation",
+        "Resume <= 50 ms per operation",
+        "resize <= 50 ms per operation",
+        "Reset <= 1000 ms per operation",
+        "Close <= 1000 ms per operation"
+      ],
+      "workload": "CUEXIS_PD5_MODE=controls, CUEXIS_PD5_CYCLES=20, CUEXIS_PD5_SMOKE=1 (hidden window)",
+      "per_cycle_operations": "pause, resume, pause, reset_paused (close+reload+pause), resume, reset_running (close+reload), resize 960x540/1280x720 alternating",
+      "boundary": "the probe's control() lambda records start before the command, confirmed after the host call returns, and end after the next frame's present returns, so each reading is command -> state confirmed -> usable frame presented",
+      "statistics": "the plan fixes controls to the max of every pre-declared operation in the window, not a percentile; 3 fresh processes x 20 cycles = 60 readings per control metric, and the reported value is the maximum",
+      "validity": [
+        "exit code 0 (the probe's own assertions on receipt status, storage live count and Replay equivalence must hold)",
+        "each control metric has exactly 20 readings per process and close exactly 1",
+        "the probe prints PD5_ID with mode=controls and gpu_timer=true"
+      ]
+    },
+    {
+      "id": "pd5-stream-v1",
+      "gates": [
+        "request->ready per-process p99 <= 4.167 ms",
+        "GPU render per-process p99 <= 4.167 ms"
+      ],
+      "workload": "CUEXIS_PD5_MODE=stream, CUEXIS_PD5_FRAMES=1200, CUEXIS_PD5_WARMUP=64, CUEXIS_PD5_RATE=240, CUEXIS_PD5_GPU_TIMER=1, CUEXIS_PD5_SMOKE=1",
+      "boundary": "request_to_ready covers clock poll -> host->advance -> host->sample returning the frame the caller can use; gpu_render is the timer-query interval around the backend's GPU command range. present_call and request_to_present_return are reported separately and are never substituted for either gate.",
+      "statistics": "per-process p99 over 1200 samples (the plan requires n>=1000 for a p99); three fresh processes, gate passes only if every process passes",
+      "validity": [
+        "exit code 0",
+        "request_to_ready, gpu_render, cpu_submit, present_call and request_to_present_return each have exactly 1200 readings per process",
+        "PD5_ID reports gpu_timer=true, frames=1200, warmup_frames=64",
+        "every advance returns Executed at the requested horizon (the probe asserts this per frame)"
+      ]
+    },
+    {
+      "id": "d2-d3-snapshot-queue-v1",
+      "gates": [
+        "D2 Judgement/Fold per-process p99 <= 1 ms",
+        "D3 Projection/Runtime per-process p99 <= 2 ms",
+        "Snapshot materialization per-process p99 <= 2 ms",
+        "consumer/worker queue per-process p99 <= 1 ms"
+      ],
+      "decision": "undecided",
+      "reason": "no instrument exposes a comparable non-intrusive boundary for these four stages on this source. The plan says that when such a boundary is missing the budget is recorded as undecided and that probe timestamps cannot be accepted in its place; PD-5 reached the same conclusion, so this batch does not invent one."
+    }
+  ],
+  "out_of_scope": [
+    "applicable Seek: still undecided. The functional matrix runs the CPU test renderer at 33/129 records and stamps formal:false, and the device probe's host harness has no seek scenario, so no reading here is the 20 ms gate.",
+    "initial load: measured in the first batch and not repeated.",
+    "relative read: measured in the first batch and not repeated."
+  ],
+  "shared_rules": [
+    "no re-sampling and no retries to pass",
+    "a pilot run with 8-16 frames was used only to confirm the instrument emits gpu_render; it is not part of any group",
+    "machine left otherwise idle during both groups",
+    "no threshold, scope or scenario is modified by this batch"
+  ],
+  "amendments": [
+    {
+      "at_local": "2026-11-01 21:54",
+      "group": "pd5-controls-v1",
+      "what": "The first attempt completed its first process but the driver crashed while computing statistics, because the local statistics() helper shadowed the imported statistics module. No reading was printed or recorded; the process log is preserved as controls.aborted-1/run-00.log.txt and is not used. The fix renames the import alias; the group was then run as registered with three fresh processes."
+    }
+  ]
+}

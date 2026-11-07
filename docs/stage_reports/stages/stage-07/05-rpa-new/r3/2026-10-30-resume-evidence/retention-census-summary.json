@@ -1,0 +1,26 @@
+[
+  {
+    "n": 1000,
+    "wave": 0,
+    "requested_extra": 11303,
+    "storage_extra": 11559,
+    "charged": 6115528,
+    "all_released_zero": true
+  },
+  {
+    "n": 40000,
+    "wave": 0,
+    "requested_extra": 323303,
+    "storage_extra": 323559,
+    "charged": 244028048,
+    "all_released_zero": true
+  },
+  {
+    "n": 40000,
+    "wave": 6667,
+    "requested_extra": 1176174,
+    "storage_extra": 1178062,
+    "charged": 966657872,
+    "all_released_zero": true
+  }
+]

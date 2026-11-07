@@ -1,0 +1,188 @@
+attempts 40 threads 34
+tid   2292 samples   11
+        rip ntdll.dll                             11 100.0%
+        sys   4 NtWaitForSingleObject               11
+        chain NtWaitForSingleObject x11  [SDL3.dll +0x14c94f <- SDL3.dll +0xbf298 <- SDL3.dll +0x167a72 <- ucrtbase.dll +0x2cd30]
+tid   2536 samples    5
+        rip ntdll.dll                              5 100.0%
+        sys   4 NtWaitForSingleObject                5
+        chain NtWaitForSingleObject x5  [nvwgf2umx.dll +0x936798]
+tid   3220 samples   40
+        rip ntdll.dll                             40 100.0%
+        sys 486 NtWaitForWorkViaWorkerFactory       40
+        chain NtWaitForWorkViaWorkerFactory x40  [KERNEL32.DLL +0x2cd87 <- ntdll.dll +0xacaec]
+tid   5732 samples   40
+        rip ntdll.dll                             40 100.0%
+        sys 486 NtWaitForWorkViaWorkerFactory       40
+        chain NtWaitForWorkViaWorkerFactory x40  [KERNEL32.DLL +0x2cd87 <- ntdll.dll +0xacaec]
+tid   5736 samples    5
+        rip ntdll.dll                              5 100.0%
+        sys   4 NtWaitForSingleObject                5
+        chain NtWaitForSingleObject x5  [nvwgf2umx.dll +0x936798]
+tid   6064 samples    5
+        rip ntdll.dll                              5 100.0%
+        sys   4 NtWaitForSingleObject                5
+        chain NtWaitForSingleObject x5  [nvwgf2umx.dll +0x936798]
+tid   6260 samples   10
+        rip ntdll.dll                             10 100.0%
+        sys  91 NtWaitForMultipleObjects            10
+        chain NtWaitForMultipleObjects x10  [crypt32.dll +0x9b4d7]
+tid   6844 samples    5
+        rip ntdll.dll                              5 100.0%
+        sys   4 NtWaitForSingleObject                5
+        chain NtWaitForSingleObject x5  [nvwgf2umx.dll +0x936798]
+tid   8760 samples    8
+        rip ntdll.dll                              8 100.0%
+        sys 486 NtWaitForWorkViaWorkerFactory        8
+        chain NtWaitForWorkViaWorkerFactory x8  [KERNEL32.DLL +0x2cd87 <- ntdll.dll +0xacaec]
+tid  16256 samples    5
+        rip ntdll.dll                              5 100.0%
+        sys   4 NtWaitForSingleObject                5
+        chain NtWaitForSingleObject x5  [nvwgf2umx.dll +0x95a07b <- unmapped +0x20a01c91600 <- nvwgf2umx.dll +0xee5bae]
+tid  16380 samples   40 <- render thread
+        rip cuexis_execution_device_probe.exe     23  57.5%
+        rip ntdll.dll                             10  25.0%
+        rip VCRUNTIME140.dll                       3   7.5%
+        rip ucrtbase.dll                           1   2.5%
+        rip KERNEL32.DLL                           1   2.5%
+        sys  37 NtQueryInformationThread             3
+        sys  30 NtFreeVirtualMemory                  1
+        chain NtQueryInformationThread x3  [nvoglv64.dll +0xa1ca32]
+        chain NtFreeVirtualMemory x1  [ntdll.dll +0x10ce97 <- ntdll.dll +0x6067e <- ntdll.dll +0x61708 <- ntdll.dll +0x2bc2a]
+tid  17112 samples    9
+        rip ntdll.dll                              9 100.0%
+        sys  91 NtWaitForMultipleObjects             9
+        chain NtWaitForMultipleObjects x9  [KERNELBASE.dll +0x22641 <- nvoglv64.dll +0xa51597]
+tid  17224 samples    5
+        rip ntdll.dll                              5 100.0%
+        sys   4 NtWaitForSingleObject                5
+        chain NtWaitForSingleObject x5  [nvwgf2umx.dll +0x9a539f <- unmapped +0x20a7ecc2c80 <- unmapped +0x7ef15ffd10 <- unmapped +0x20a00000000]
+tid  17384 samples    5
+        rip ntdll.dll                              5 100.0%
+        sys   4 NtWaitForSingleObject                5
+        chain NtWaitForSingleObject x5  [nvwgf2umx.dll +0x936798]
+tid  18968 samples    4
+        rip ntdll.dll                              4 100.0%
+        sys  91 NtWaitForMultipleObjects             4
+        chain NtWaitForMultipleObjects x4  [KERNELBASE.dll +0x22641 <- nvwgf2umx.dll +0x9a0a67]
+tid  19172 samples    8
+        rip ntdll.dll                              8 100.0%
+        sys  91 NtWaitForMultipleObjects             8
+        chain NtWaitForMultipleObjects x8  [combase.dll +0x3feae <- combase.dll +0x1157af <- combase.dll +0x1156bf <- KERNEL32.DLL +0x2cd87]
+tid  19784 samples    5
+        rip ntdll.dll                              5 100.0%
+        sys  91 NtWaitForMultipleObjects             5
+        chain NtWaitForMultipleObjects x5  [KERNELBASE.dll +0x22641 <- nvwgf2umx.dll +0x14c206]
+tid  20164 samples    5
+        rip ntdll.dll                              5 100.0%
+        sys   4 NtWaitForSingleObject                5
+        chain NtWaitForSingleObject x5  [nvwgf2umx.dll +0x936798]
+tid  20960 samples    5
+        rip ntdll.dll                              5 100.0%
+        sys   4 NtWaitForSingleObject                5
+        chain NtWaitForSingleObject x5  [nvwgf2umx.dll +0x936798]
+tid  21936 samples    5
+        rip ntdll.dll                              5 100.0%
+        sys   4 NtWaitForSingleObject                5
+        chain NtWaitForSingleObject x5  [nvwgf2umx.dll +0x936798]
+tid  23600 samples    5
+        rip ntdll.dll                              5 100.0%
+        sys   4 NtWaitForSingleObject                5
+        chain NtWaitForSingleObject x5  [nvwgf2umx.dll +0x936798]
+tid  23980 samples    5
+        rip ntdll.dll                              5 100.0%
+        sys   4 NtWaitForSingleObject                5
+        chain NtWaitForSingleObject x5  [nvwgf2umx.dll +0x936798]
+tid  24328 samples    9
+        rip ntdll.dll                              6  66.7%
+        rip nvoglv64.dll                           2  22.2%
+        rip imagehlp.dll                           1  11.1%
+        sys   4 NtWaitForSingleObject                5
+        chain NtWaitForSingleObject x4  [nvoglv64.dll +0xa1cd8a <- unmapped +0x20a224400c0 <- unmapped +0x20a22d60f88 <- unmapped +0x7e00000000]
+        chain NtWaitForSingleObject x1  [nvoglv64.dll +0xa1cd8a <- unmapped +0x20a224400c0 <- unmapped +0x20a22d60f88 <- unmapped +0x20a00000000]
+tid  25328 samples    5
+        rip ntdll.dll                              5 100.0%
+        sys   4 NtWaitForSingleObject                5
+        chain NtWaitForSingleObject x5  [nvwgf2umx.dll +0x936798]
+tid  27112 samples    8
+        rip ntdll.dll                              8 100.0%
+        sys 486 NtWaitForWorkViaWorkerFactory        8
+        chain NtWaitForWorkViaWorkerFactory x8  [KERNEL32.DLL +0x2cd87 <- ntdll.dll +0xacaec]
+tid  27188 samples    5
+        rip ntdll.dll                              5 100.0%
+        sys   4 NtWaitForSingleObject                5
+        chain NtWaitForSingleObject x5  [nvwgf2umx.dll +0x936798]
+tid  27396 samples    8
+        rip ntdll.dll                              8 100.0%
+        sys 486 NtWaitForWorkViaWorkerFactory        8
+        chain NtWaitForWorkViaWorkerFactory x8  [KERNEL32.DLL +0x2cd87 <- ntdll.dll +0xacaec]
+tid  28136 samples    5
+        rip ntdll.dll                              5 100.0%
+        sys   4 NtWaitForSingleObject                5
+        chain NtWaitForSingleObject x5  [nvwgf2umx.dll +0x936798]
+tid  28520 samples    5
+        rip ntdll.dll                              5 100.0%
+        sys   4 NtWaitForSingleObject                5
+        chain NtWaitForSingleObject x5  [nvwgf2umx.dll +0x936798]
+tid  28676 samples   40
+        rip ntdll.dll                             40 100.0%
+        sys 486 NtWaitForWorkViaWorkerFactory       40
+        chain NtWaitForWorkViaWorkerFactory x40  [KERNEL32.DLL +0x2cd87 <- ntdll.dll +0xacaec]
+tid  28884 samples    8
+        rip win32u.dll                             8 100.0%
+tid  29312 samples    5
+        rip ntdll.dll                              5 100.0%
+        sys   4 NtWaitForSingleObject                5
+        chain NtWaitForSingleObject x5  [nvwgf2umx.dll +0x936798]
+tid  29328 samples    8
+        rip ntdll.dll                              8 100.0%
+        sys 486 NtWaitForWorkViaWorkerFactory        8
+        chain NtWaitForWorkViaWorkerFactory x8  [KERNEL32.DLL +0x2cd87 <- ntdll.dll +0xacaec]
+tid  29496 samples    5
+        rip ntdll.dll                              5 100.0%
+        sys   4 NtWaitForSingleObject                5
+        chain NtWaitForSingleObject x5  [nvwgf2umx.dll +0x936798]
+
+render thread tid=16380 exe-rip share 57.5%, 4 walks
+  [1] NtFreeVirtualMemory (24 frames)
+         0 ntdll.dll +0x161184
+         1 ntdll.dll +0xa9adf
+         2 ntdll.dll +0x10ce97
+         3 ntdll.dll +0x6067e
+         4 ntdll.dll +0x61708
+         5 ntdll.dll +0x2bc2a
+         6 ntdll.dll +0x1d200
+         7 ntdll.dll +0x2a004
+         8 ntdll.dll +0x1d168
+         9 ucrtbase.dll +0x12d7b
+        10 cuexis_execution_device_probe.exe +0x10a68e
+        11 cuexis_execution_device_probe.exe +0x3b8c46
+        12 cuexis_execution_device_probe.exe +0x3b96e8
+        13 cuexis_execution_device_probe.exe +0x3b7213
+        14 cuexis_execution_device_probe.exe +0x3b6ce7
+        15 cuexis_execution_device_probe.exe +0x3b6b5c
+        16 cuexis_execution_device_probe.exe +0x3c1f52
+        17 cuexis_execution_device_probe.exe +0x3cbda6
+        18 cuexis_execution_device_probe.exe +0x2fbf81
+        19 cuexis_execution_device_probe.exe +0xee4aa
+        20 cuexis_execution_device_probe.exe +0xf4379
+        21 cuexis_execution_device_probe.exe +0xf8574
+        22 cuexis_execution_device_probe.exe +0xf800b
+        23 cuexis_execution_device_probe.exe +0x3164f
+  [2] NtQueryInformationThread (3 frames)
+         0 ntdll.dll +0x161264
+         1 KERNELBASE.dll +0xbb3e8
+         2 nvoglv64.dll +0xa1ca32
+  [3] NtQueryInformationThread (3 frames)
+         0 ntdll.dll +0x161264
+         1 KERNELBASE.dll +0xbb3e8
+         2 nvoglv64.dll +0xa1ca32
+  [4] NtQueryInformationThread (3 frames)
+         0 ntdll.dll +0x161264
+         1 KERNELBASE.dll +0xbb3e8
+         2 nvoglv64.dll +0xa1ca32
+  miss     1 open 87
+  named-by-mapped-file   104 nvwgf2umx.dll
+  named-by-mapped-file    25 nvoglv64.dll
+  named-by-mapped-file    10 crypt32.dll
+  named-by-mapped-file     2 imagehlp.dll

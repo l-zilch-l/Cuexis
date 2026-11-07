@@ -1,0 +1,24 @@
+Filters: "PD5 scripted seek timing probe"
+Randomness seeded to: 4168847242
+PD_ENV {"label":"seek-begin","pid":1808,"tid":18964,"process_affinity_error":0,"process_affinity":65535,"system_affinity":65535,"processor_group_error":0,"processor_group":0,"processor_number":2,"process_priority":32,"thread_priority":0,"process_power_error":0,"process_power_control":0,"process_power_state":0,"thread_power_error":0,"thread_power_control":0,"thread_power_state":0}
+PD5_SEEK_ID {"schema":"pd5.seek.v1","records":1024,"seeks":16,"seek_class":"fallback","hints":1,"certified_records":0}
+PD5_SEEK {"records":1024,"seek_class":"fallback","index":0,"horizon":1103,"request_to_ready_us":397,"request_to_present_us":1073,"state_matches_oracle":true}
+PD5_SEEK {"records":1024,"seek_class":"fallback","index":1,"horizon":8103,"request_to_ready_us":416,"request_to_present_us":1029,"state_matches_oracle":true}
+PD5_SEEK {"records":1024,"seek_class":"fallback","index":2,"horizon":15103,"request_to_ready_us":311,"request_to_present_us":838,"state_matches_oracle":true}
+PD5_SEEK {"records":1024,"seek_class":"fallback","index":3,"horizon":22103,"request_to_ready_us":394,"request_to_present_us":874,"state_matches_oracle":true}
+PD5_SEEK {"records":1024,"seek_class":"fallback","index":4,"horizon":29103,"request_to_ready_us":386,"request_to_present_us":984,"state_matches_oracle":true}
+PD5_SEEK {"records":1024,"seek_class":"fallback","index":5,"horizon":36103,"request_to_ready_us":297,"request_to_present_us":757,"state_matches_oracle":true}
+PD5_SEEK {"records":1024,"seek_class":"fallback","index":6,"horizon":43103,"request_to_ready_us":330,"request_to_present_us":794,"state_matches_oracle":true}
+PD5_SEEK {"records":1024,"seek_class":"fallback","index":7,"horizon":50103,"request_to_ready_us":554,"request_to_present_us":1214,"state_matches_oracle":true}
+PD5_SEEK {"records":1024,"seek_class":"fallback","index":8,"horizon":57103,"request_to_ready_us":395,"request_to_present_us":905,"state_matches_oracle":true}
+PD5_SEEK {"records":1024,"seek_class":"fallback","index":9,"horizon":64103,"request_to_ready_us":319,"request_to_present_us":736,"state_matches_oracle":true}
+PD5_SEEK {"records":1024,"seek_class":"fallback","index":10,"horizon":71103,"request_to_ready_us":606,"request_to_present_us":1162,"state_matches_oracle":true}
+PD5_SEEK {"records":1024,"seek_class":"fallback","index":11,"horizon":78103,"request_to_ready_us":340,"request_to_present_us":825,"state_matches_oracle":true}
+PD5_SEEK {"records":1024,"seek_class":"fallback","index":12,"horizon":85103,"request_to_ready_us":347,"request_to_present_us":896,"state_matches_oracle":true}
+PD5_SEEK {"records":1024,"seek_class":"fallback","index":13,"horizon":92103,"request_to_ready_us":603,"request_to_present_us":1292,"state_matches_oracle":true}
+PD5_SEEK {"records":1024,"seek_class":"fallback","index":14,"horizon":99103,"request_to_ready_us":396,"request_to_present_us":1213,"state_matches_oracle":true}
+PD5_SEEK {"records":1024,"seek_class":"fallback","index":15,"horizon":106103,"request_to_ready_us":609,"request_to_present_us":1335,"state_matches_oracle":true}
+PD5_SEEK_VERIFY {"records":1024,"seek_class":"fallback","verified":16,"mismatched":0}
+===============================================================================
+All tests passed (74 assertions in 1 test case)
+

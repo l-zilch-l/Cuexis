@@ -1,0 +1,38 @@
+from pathlib import Path
+import ctypes,hashlib,json,shutil,subprocess
+root=Path.cwd();base=Path(__file__).resolve().parent;build=base/'product-sequence-build-v1';source=base/'product-sequence-source-v1';out=base/'gl-state-build-v2';out.mkdir(exist_ok=False)
+assert (build/'complete.json').is_file()
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+shell=ctypes.WinDLL('shell32');shell.CommandLineToArgvW.argtypes=[ctypes.c_wchar_p,ctypes.POINTER(ctypes.c_int)];shell.CommandLineToArgvW.restype=ctypes.POINTER(ctypes.c_wchar_p)
+k=ctypes.WinDLL('kernel32');k.LocalFree.argtypes=[ctypes.c_void_p]
+def split(line):
+ n=ctypes.c_int();p=shell.CommandLineToArgvW(line,ctypes.byref(n))
+ try:return [p[i] for i in range(n.value)]
+ finally:k.LocalFree(p)
+cache=dict(l.split('=',1) for l in (build/'CMakeCache.txt').read_text().splitlines() if '=' in l and not l.startswith(('#','//')))
+cc=json.loads((build/'compile_commands.json').read_text());commands=[]
+def run(args,label):
+ commands.append(dict(label=label,args=args));(out/'commands.json').write_text(json.dumps(commands,indent=2))
+ with (out/(label+'.log')).open('x',encoding='utf-8') as stream:r=subprocess.run(args,cwd=build,stdout=stream,stderr=subprocess.STDOUT)
+ print(label,r.returncode,flush=True)
+ if r.returncode:raise SystemExit(r.returncode)
+run(['cmake','--build',str(build),'--parallel','1','--target','cuexis_execution_device_probe','cuexis_render_tests','cuexis_render_opengl_tests'],'build-adapters')
+def compile(suffix,path,name):
+ c=next(c for c in cc if c['file'].endswith('/'+suffix))
+ args=[a for a in split(c['command']) if not a.startswith(('/Fo','/Fd')) and not a.endswith('.cpp')]
+ args.insert(1,'/I'+str(Path(c['file']).parent))
+ obj=out/(name+'.obj');run([*args,'/Fo'+str(obj),'/Fd'+str(out/(name+'.pdb')),str(path)],'compile-'+name)
+ return str(obj)
+gl=compile('open_gl_presentation.cpp',base/'gl-state-source-v2/open_gl_presentation.cpp','gl-candidate')
+probe=compile('gpu_throughput_probe.cpp',source/'tests/player/gpu_throughput_probe.cpp','gpu-probe')
+state_test=compile('gpu_throughput_probe.cpp',base/'gl-state-source-v2/state_test.cpp','state-test')
+block=(build/'build.ninja').read_text().split('build bin\\cuexis_execution_device_probe.exe',1)[1].split('\n\n',1)[0]
+objects=split(block.split(': CXX_EXECUTABLE_LINKER__cuexis_execution_device_probe_Release ',1)[1].split(' | ',1)[0])
+libs=split(next(l.split(' = ',1)[1] for l in block.splitlines() if l.startswith('  LINK_LIBRARIES = ')))
+for variant in ('baseline','candidate'):
+ objects2=[probe if 'gpu_throughput_probe.cpp.obj' in p else p for p in objects]
+ run([cache['CMAKE_LINKER:FILEPATH'],'/NOLOGO','/machine:x64','/INCREMENTAL:NO','/subsystem:console','/OUT:'+str(out/('gpu-'+variant+'.exe')),*([gl] if variant=='candidate' else []),state_test,*objects2,*libs],'link-'+variant)
+for dll in (build/'bin').glob('*.dll'):shutil.copyfile(dll,out/dll.name)
+run([str(build/'bin/cuexis_render_tests.exe'),'--rng-seed','1'],'test-render')
+run([str(build/'bin/cuexis_render_opengl_tests.exe'),'--rng-seed','1'],'test-opengl')
+(out/'binding.json').write_text(json.dumps(dict(scope='Same fresh product sequence libs/headers/probe in both physical GPU binaries. Candidate overrides only GL presentation private CPP. No observers, no quota, no batch publication. No code change affecting Runtime; all runtime frames remain normal allocator.',source_binding_sha256=sha(base/'gl-state-source-v2/binding.json'),fresh_complete_sha256=sha(build/'complete.json'),commands_sha256=sha(out/'commands.json'),binaries={p.name:sha(p) for p in out.glob('*.exe')}),indent=2),encoding='utf-8')

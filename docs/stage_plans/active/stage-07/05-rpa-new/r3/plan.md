@@ -1,0 +1,231 @@
+# R3 implementation and verification
+
+状态：local implementation and verification complete。用户于 2026-10-26 授权本次接手完成 R3；owner 于 2026-11-02 作出四项门裁定，门账收口为 15 项通过 + 0 项部分，最终本地同源矩阵已通过；2026-11-04 owner 以 hosted delta 裁定确认 hosted 口径并关闭 R3，见 §9–§12。
+本登记从 [总计划](../plan.md) §8 消费范围和依赖，不扩展到 R4 正式接受或 Stage 7 关闭。
+返回 [New RPA 索引](../README.md)。
+
+2026-10-28 owner 重新要求接手 R3 重构优化，唯一实施树仍为 `D:/Cuexis-redesign` / `Cuexis-redesign`。
+[已冻结 prepare 复制消除](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-28-r3-resolved-prepare-copy.md)
+已完成本地回归、所有权与字节核验及新 0.9.1 固定诊断；setup 有局部收益，1K 基线重复性超门和
+40K 首次 Seek 上升保留，不追加样本改判，不作为 R3/R4 退出。下文历史证据不回填。
+
+后续[setup / Seek 轻量归因](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-28-r3-seek-noise-attribution.md)
+定位恢复后的完整 Fact 投影为当前 40K 主要成本，确认零绑定下仍构造 40K owning keys；同映像及 A/A
+未支持把原差值直接判为复制候选的算法退化。1K 原高点与具体运行态机制仍未裁定；本轮未改产品实现。
+
+2026-10-29 [零绑定投影修复与通用方案撤回](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-29-r3-projection-empty-and-general-attempt.md)
+保留逐 Fact 校验后跳过空索引 key 构造的最小修复，固定普通 Host 对照中 40K 首次中位数下降 84.5%。
+通用方案微基准改善但 10K Host 三对均变慢，已恢复最小修复并保留失败证据；
+旧窗口与 15% / 20 ms 门限不改，正式、设备、内存和 R3/R4 接受仍独立。
+
+同日 [40K 可见实体 GPU 吞吐核验](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-29-r3-40k-physical-gpu-throughput.md)
+完成有限设备诊断：正常帧路径仍远超 240 FPS 预算，需继续细分 update / extract / render submit。
+旧 Seek 的 40K requirements 与本轮 40K renderable entities 不同，不混用其成本或接受结论。
+
+后续 [1080P 实体容量扫描](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-29-r3-1080p-entity-capacity.md)
+以完整帧 cycle p99、平均及每秒窗口共同判断稳定 240；确认本机简单实体模型的仅渲染 1800、
+静态 update / extract / render 1300 实体，各三次 20 秒持续通过。更高档位的尾部失败保留，
+未以平均 FPS 或补样改判；正常帧扩容仍是后续优化项，不作为 R3/R4 接受。
+
+R3b 的首个候选见[显式可信恢复提案](trusted-restore-candidate.md)，已按总计划 §8.2 允许的最终 archive 工厂入口实施并完成本地核验；当前候选预算未通过，R3 未退出，按 §12.2 交裁定包。不再要求重复授权，也不声称自然 checkpoint 已覆盖首次 Seek。
+2026-10-29 P3 [Runtime 外观重复查询优化](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-29-r3-runtime-appearance-lookup.md)
+保留一次实体定位代替四次查询，固定普通对照 40K 静态 update 下降约 51.3%，完整周期下降约 7.8%。
+四套相关定向回归通过；1K 候选 update 相对波动超原门，正式、容量及全矩阵接受不改判。
+后续[本帧触及集合优化](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-29-r3-runtime-touched-membership.md)
+以每实体标记消除线性去重，保留有序插入的三份索引同步，40K 全量动画 update 下降约 68.0%，
+完整周期下降约 47.7%；两个新组 24 进程 / 1800 帧，静态路径无对应中位数退化。
+原 C 因晚插入反例失败停止，15 个完整及 1 个中断进程独立保留，不补完原组。P3 与 R3 仍未退出。
+2026-11-01 [40K 启动可观测性与 prepare 成本](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-01-r3-40k-startup-observability-and-cost.md)
+先提交 `451599f` 恢复点再改动：新增 14 个启动阶段与 19 个 prepare scope 的观测、外部窗口观察器和
+默认关闭的窗口优先顺序；随后 `59e43da` 让 canonical 文本直接由 `json::Value` 写出，不再经 nlohmann
+DOM 二次构造。40K 首次帧 2 476 121 → 2 148 938 µs（−13.2%），canonical dump 391 141 → 91 237 µs，
+仍高于 2000 ms 门 148.9 ms（7.4%），不声称过门。owner 已裁定 40K 属测试极端情况，不再为此做 SAX 型
+读取器重构；`chart_canonical_normalize` 的 21 次逐键探测合并为下一项最便宜改动，本轮只登记未实施。
+窗口优先顺序可提前约 2.08 s 出现窗口但不改善首帧，且 prepare 期间不泵消息，保留为默认关闭的诊断顺序。
+2026-10-27 本地功能/兼容、反例、宏隔离和成本范围见[核验报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3a-recovery-and-prepare.md)。
+后续可信前缀候选另见 [R3b 核验报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3b-certified-prefix-and-cost.md)，不复用 R3a 的性能身份。
+后续 [空推进 reserve 限定尝试](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-empty-reserve-attempt.md)
+已取得局部收益，2048 的可信内核恢复仍约 168 ms。代理继续负责技术设计，预算未解决已及时告知，未要求用户代写方案。
+历史 [高 requirements 耗时归因](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-high-requirements-attribution.md)
+确认主要成本为后缀最终化复制、完整结果比较和新内核准备；本批仅诊断，未进一步改产品或进入 R3c。
+
+2026-10-27 用户另行授权在 `D:/Cuexis-redesign` / `Cuexis-redesign` 内重构，禁止涉及其他分支。
+当前候选改为分页共享 phases/facts/matchers、共享不可变准备、自然日志锚点及封存来源精确 SHA 缓存；
+见[重构核验报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-redesign.md)。
+首次 identity 成本完整计入请求，不通过预热或放宽 20 ms 预算宣告通过。下文历史起点和旧证据保持不变。
+后续[首次身份归因](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-cold-identity-attribution.md)
+已确认完整归档重复结果及 SHA/FNV 全量扫描为主要成本；该轮只做独立诊断，未进一步改产品。
+
+用户随后授权先提交恢复点再比较不同优化方案。`198ab96` 固定 SHA 加速和有界编码器。
+当前内置宿主采用运行时 owning source binding，canonical SHA 路径保留作对照及外部消费。
+来源绑定不是 validation/native recovery 凭证，wire 不变；candidate C++ 布局改变须整体 rebuild。
+固定 33/129 条历史与 64/256/2048 requirements 的首次/重复 Seek 对照及最终回归见
+[来源绑定实验](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-source-binding-experiment.md)。
+下表 S0 为原诊断路径，当前所选来源路径不执行 canonical 编码/hash。局部延迟改善不代表 R3/R4 退出。
+
+后续[完整 Packed 索引优化](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-packed-index-optimization.md)
+已按精确归因替换 Graph/owner/声明重复查找；普通完整入口的 10K 准备为 2.90–3.01 s，
+40K 为约 27.3 s，首次请求到 CPU 测试呈现约 16.2–16.5 ms。
+四配置相关回归、字节指纹和差异报告对照通过；prepare 内部剩余成本待进一步细分，
+本地规模点值不作为 R3/R4 退出或设备/生产接受。
+
+后续[prepare 声明查找优化](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-27-r3-prepare-declaration-optimization.md)
+已用实际扫描量定位 assembler merge/验证中的两处平方查找并改为二分；独立普通对照中
+40K 完整准备由 27.6–27.8 s 降至 7.44–7.63 s。新旧成功/拒绝行为、字节及四配置相关回归
+通过，timer/identity/closure 等剩余成本继续跟踪；接受范围不变。
+
+
+## 1. 起点和独立差异
+
+实施树 `D:/Cuexis-worktree`，分支 `stage-7`，起始 HEAD
+`c4bc5d4456ffe4778a90f9bae410638c0016a8eb`。入口只读核验通过：两棵树、75 个绑定文件、
+146 个归档后缺失项相符。已有 R2 接受和技术收尾文档保持原字节。
+`out/rpa-r3-20261026/entry.json`、`entry-files.zip`、`entry-dirty.patch` 保存起始字节和 2186 路径清单。
+原历史证据树不作为实施树，不重跑旧控制器。代码和观测分别保留可撤差异。
+
+## 2. 相位和 owning 出口
+
+| 相位 | 实际路径 | 本批处理 |
+| --- | --- | --- |
+| S0 | Host 编码 Replay 和 SHA-256 | 保持原 canonical bytes/hash；sealedIdentityKnown 的旧未知量不改写 |
+| S1 | Host capture/软件/renderer/audio fence 与确认 | 保留 R1 路径、代数、超时和当前线程拓扑 |
+| S2 | Playback makeGameplaySession；内核 prepare；Impl 派生索引、RecoveryInputs、初始 reserve | 从真实调用处新增 prepare/index/配置复制计数及嵌套时间，区分被丢弃候选 |
+| S3 | 全源 shape/eventCount/dialect；prefix 执行、Snapshot 恢复与比较 | 先验证早期 cut 闭包；外部输入继续全验证 |
+| S4 | submit/control/advance；draft/reserve/Fold/finalization；32-record 尾块 | 实际复制点分类计数；嵌套 batch/admission/trace 计元素，不冒充 bytes |
+| S5 | owning query、readSince、projection、swap 和旧 owner 释放 | 保护现有共享 query 和增量出版；不每帧 flatten |
+| S6 | 新 clock/context、sample/目标帧 | 内核计时不能承担请求到目标画面的 20 ms 接受 |
+
+PreparedGameplay、RecoveryInputs、query 的 RuntimeState、ReplayArchive、SnapshotPayload 和
+Checkpoint 都是独立 owning 出口。query 共享已封存 active，captureState 明确物化全量 DTO，
+archive 明确物化日志。旧结果持有自身 owner，关闭/替换不能修改其字节或复活旧 scope。
+
+## 3. 动态写集与提交门
+
+| 成员 | 写集和独占工作 | 成功前缀/故障处理 |
+| --- | --- | --- |
+| matchers、activeRequirements、timerCursor | activation/timer/input/full Tick | draft 独占；pre-seal 失败留旧前缀 |
+| coverageHistory、contacts、ownership、phases/resources | input/timer/reconciliation/ledger，可覆写、删除 | 不视为 append-only；reserve 在 seal 前完成 |
+| facts/receipts/observers、nextCommitId/exhaustion | ledger 提交和 ID 消耗 | 旧 owning projection 不变；Fold 失败仍保存已 seal kernel |
+| Fold、RPA foldAtTickStart/baseTick/foldedControlCount | 同 Tick control 可回到 Tick 起始 Fold 并重算 | 第二 fault reserve 和 Fold 提交独立，不删除 reserve |
+| accepted/quarantine/deferred/controls/pending | admission、resume、输入分派，有删除和跨未来输入关系 | active、pending、日志在各现有事务边界一致提交 |
+| signalVisibility | 仅内部 checking signalTicks 注入写入，不是正常产品事件 | 普通路径为空；测试注入恢复并不由 DTO 自动闭合，不用其证明可信 checkpoint |
+| recording/logTail、seekSource | 受控日志 append 和外部完整源引用 | logTail 是实际执行前缀，seekSource 是完整源；成功新操作清除 seekSource |
+
+本表是现有表示审计，尚不授权把这些容器统一替换为持久容器。动态表示候选仍须逐成员成本、
+故障、物化与生命周期证明。R3b 可信来源、全状态闭包、首次成本/容量门及 R3c 语义门继续适用。
+
+## 4. 已复现的恢复链与最小修复
+
+固定小 fixture 包含 press@900、未来 release@1000，H=903、pause/resume@cut900 及未来 advance。
+四种目标为 partial H=902、H=903 的 2/3/4 条完整记录。原点参考直接执行相同前缀。
+原源码下四种 Snapshot 均混入未来源历史，sameSnapshot 不等，decodeSnapshot 均失败：
+`out/rpa-r3-20261026/early-cut-red.log`，1 case / 163 assertions，8 failures。
+
+最小修复只让 captureState 从 logTail 物化已应用历史，包含真实 partial advance；archive()
+仍返回完整源。未改变公开 DTO、wire revision、身份算法或截断源。首次修复验证为 1 case /
+259 assertions，通过；后续补 Fold/故障/旧值和完整适用矩阵，不能凭此宣布 R3 已完成。
+
+## 5. 验证与成本登记
+
+先功能及结构计数，再普通 allocator 时间和独立内存取证。观测宏 ON 的计数/相位不接受正式性能；
+普通构建必须编译宏 OFF。计数只记录真实发生的调用，旧 R0 粗粒度字段不改写历史定义。
+时间字段嵌套，不求和。未知 configValues、公开 DTO 字节和嵌套字符串成本继续标缺证据。
+
+小规模观测固定为一次结构用例；不重跑到通过，失败保留并按新源码身份继续功能修复。
+普通时间对照在执行前另存源/工具/编译器/库/二进制/fixture 身份、固定顺序次数和停止条件。
+40k 相位、ETW/WPR、设备及 R4 正式窗口不由这些小规模结果代替。
+
+配置首尝试因 PowerShell 未引用 `exp.candidate` 失败，错误日志和失败目录保留；
+新有效 Debug 构建为 `out/build/rpa-r3-entry-debug-v2-20261026`。
+
+## 6. 2026-11-02 owner 裁定
+
+owner 于 2026-11-02 作出四项裁定：本轮不运行 hosted CI；接受“可开关阶段计时 + 归因 + 开销披露”
+作为 D2 / D3 / Snapshot / 排队 的登记方式；接受 40K @ 240 FPS 判定为结构性不可能；接受内存预算超过
+128 MiB。
+
+后果：四项阶段门由未判定转为通过（判据不变，读数来自 `out/build/pd-metrics`，约 +12 % 插桩开销已披露），
+R3 门账为 **14 项通过 + 1 项部分（适用 Seek 覆盖 2/5 类）+ 0 项未判定**。仍未完成：适用 Seek 余下 3 类、
+最终源码上的同源矩阵重跑（矩阵绑 `6256af8`，其后 `presentation_materializer.cpp` 与
+`open_gl_backend.cpp` 有产品改动）、hosted 同 SHA、R3b 预算候选与 R3c 原型的采用决定、
+owner 对 R3 退出的裁定。裁定文本与边界见
+[四项门裁定](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-02-r3-owner-gate-rulings.md)。
+
+## 7. 2026-11-03 owner 口径裁定
+
+owner 于 2026-11-03 裁定：父计划 §9.2 的 15% `(max-min)/median` 只在正式单元（3 个预声明窗口 ×
+每窗 3 对独立进程）上绑定，本地 guard 组的相对极差只作披露；A/B 裁决改用同表的配对对数比值 +
+Student-t 区间（上界 ≤1.10）。判据、阈值、样本规则与失败保留规则一条未改，历史记录文本不追改。
+
+同日测出被替换的 screen 的分辨力并登记：同一份未改动二进制、每进程 3 次请求时，9 个进程的 36 个
+两两组合有 11 个越过 15%、4 个不亚于 R3c v4 的 22.43%；每进程改成 16 次后 0 个越界。按比值读，
+v4 的两个收益项为 0.0754 [0.0187, 0.3041] 与 0.0106 [0.0101, 0.0111]，**在 n=2 下不能判的是
+40K H5 保护项**（1.0067 [0.8602, 1.1782]）。因此正式单元登记须同时写定每进程请求数（父计划未规定，
+Seek 建议 16 次）。R3c v4 与归档的 parse-once 原型仍为 `selected: false`，本裁定不采用任何候选。
+
+同一批修复了文件拆分留下的 candidate 配置编译错误（`publicTick` 缺声明）：`debug` / `release` /
+`headless-*` 不编译该配置，故拆分后的全绿不覆盖它。裁定文本见
+[口径裁定](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-03-r3-repeatability-scope-ruling.md)，
+读数、复算与预注册见
+[分辨率报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-03-r3-seek-repeatability-resolution/index.md)。
+
+## 8. 2026-11-03 legacy parse-once 产品读数
+
+树复用（`legacyCanonicalText`）不是待决候选：重做版由 `466ff76a` 引入产品，`loadDocumentStage` 消费
+dispatch 给出的身份字节，取不到时回落文本入口。本轮按当前源码补了 A/B 读数：A 侧只把 dispatch 的
+产出切断（即 `466ff76a` 之前的形状），三对 × 三规模，配对比值为 0.7139 [0.6574, 0.7753]（1K）、
+0.6747 [0.6504, 0.7000]（10K）、0.6949 [0.6660, 0.7250]（40K），identity 与 frame digest 全程一致。
+第一组 A 侧只切断消费、保留生产的读数（−34~−37%）高估收益，原样归档为 superseded。
+单窗口三对，不是九对正式单元，不构成 load 或阶段接受。见
+[parse-once 产品读数](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-03-r3-parse-once-product-reading/index.md)。
+
+## 9. 2026-11-04 适用 Seek 五类闭包
+
+原 [适用 Seek 余下三类](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-03-r3-seek-remaining-classes/index.md)
+已完成 36 个进程 / 576 次请求，原批次最差 1,880 µs。磁盘事故后又在独立工作树
+`D:/Cuexis-r3seek-verify` 上用同一归档探针重放同一预注册：36/36 进程有效、576/576 oracle 一致、
+最差 1,249 µs，六组均通过。复核证据见
+[2026-11-04-r3-seek-recheck](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3-seek-recheck/index.md)，
+原批次不回填。
+
+结合既有“同档重复热使用”和“冷进程”，五类适用 Seek 均有独立本地读数。R3 门账因此由
+**14 项通过 + 1 项部分**更新为 **15 项通过 + 0 项部分**；这不改变设备、hosted、生产或 R3 退出边界。
+
+## 10. 2026-11-04 R3c 正式采用单元与决定
+
+按 2026-11-03 owner 口径建立 3 窗 × 每窗 3 对、每进程 16 次 Seek 的正式 A/B 单元。v1/v2 在测量前
+因 harness 错误停止；v3 在 `GetProcessInformation` 处停止；v4 的首个 baseline 进程完成 30 秒预热并
+取得 7 个请求后，在第 8 次重复 `pause` 处失败。控制器按“不重试、不替换”规则立即停止，最终为
+1 行无效、0 个有效进程、三个 case 均 `inconclusive`。
+
+因此 R3c 记为 **不采用**：`selected: false`、`product_promoted: false`；128 MiB 只是准备正式单元的
+技术倾向，未升级为产品 quota 决定，主树未应用候选补丁。四次尝试、`registration.json`、`results.json`
+和原始日志全部保留。完整记录见
+[最终本地验证与 R3c 决定](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3-final-validation-and-r3c-decision.md)。
+R3b 可信恢复边界、40K @ 240 FPS 和旧 128 MiB 绝对内存上限均不重开。
+
+## 11. 最终矩阵与剩余工作
+
+2026-11-04 在冻结提交 `d70df15a` 上完成最终 11 行本地同源验收矩阵：11/11 行 `local_pass`，
+13,635 个 CTest 用例、0 失败、120 个候选 measurement 事件；逐行及清单级
+`source_unchanged=true`。独立复算验证全部阶段日志 SHA-256，并将 5,052 个受检文件的主工作树字节
+与运行清单闭合、与同一提交的全新 checkout 做行结束符归一化内容闭合。证据见
+[最终矩阵证据](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-rpa-acceptance-matrix-final-evidence/index.md)；
+逐行结果与未执行边界也登记在
+[最终本地验证与 R3c 决定](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3-final-validation-and-r3c-decision.md)。
+
+剩余只有：
+
+- hosted 同 SHA：原判断为“仍未验证、不得标记通过或豁免”；2026-11-04 owner 以 delta 裁定确认口径，见 §12。
+- R3 退出：原判断为“只由 owner 裁定”；owner 已同日裁定关闭，见 §12。
+
+## 12. 2026-11-04 hosted 口径裁定与 R3 关闭
+
+owner 于 2026-11-04 裁定：同源矩阵证据继续绑定 `d70df15a`；hosted 三平台在 `de73aa2c` 全绿
+（Linux Quality `41838690080`/`41838719915`、Windows MSVC `41838690136`/`41838719809`、
+Windows MinGW `41838689826`/`41838720171`），两提交之间的 7 个提交只含 include-only、test-only、
+离线工具、版本字符串与一处等价重构，故接受为 R3 的 hosted 口径，并据此关闭 R3。冻结点 `d70df15a`
+本身缺少四项平台修复，直接 hosted 必然失败，因此这一缺口不是“可补跑而未跑”。裁定范围、准入类别
+与“不构成先例”边界见
+[R3 hosted 口径裁定与批次退出](../../../../../stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3-hosted-delta-and-exit-ruling.md)。
+R3 关闭不扩展到 R4、设备验证、生产接受或 Stage 7 关闭。

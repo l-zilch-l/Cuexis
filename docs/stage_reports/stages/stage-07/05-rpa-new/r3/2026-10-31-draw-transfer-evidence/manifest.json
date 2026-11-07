@@ -1,0 +1,635 @@
+{
+  "scope": "Original exact bytes copied, frozen measurement groups unmodified. Product change only neutral draw CPP, old SDK/wire/digest contract.",
+  "files": [
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-source-v1\\binding.json",
+      "archive": "draw-transfer-source-v1/binding.json",
+      "bytes": 403,
+      "sha256": "0d80a8de4e0ce810eca8418e84d12314767d3ce5f5d0c55bb304facdbda83356"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-source-v1\\draw_command.cpp",
+      "archive": "draw-transfer-source-v1/draw_command.cpp.txt",
+      "bytes": 24184,
+      "sha256": "45dc935f891d2811c90640ec6006c91c5f3d4fe8fd64597859ea83381249cd03"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-build-v1\\binding.json",
+      "archive": "draw-transfer-build-v1/binding.json",
+      "bytes": 1176,
+      "sha256": "4c8db5bd0fe3f176ea8edeb385ad0c593eeb3f47740138e0d39447d74575484a"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-build-v1\\commands.json",
+      "archive": "draw-transfer-build-v1/commands.json",
+      "bytes": 21065,
+      "sha256": "3a9b0398f7df3e9a97b82d64e27ced7a02ceeba63a3ccc2cd4afed6cdeb9170c"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-build-v1\\compile-draw-baseline.log",
+      "archive": "draw-transfer-build-v1/compile-draw-baseline.log.txt",
+      "bytes": 18,
+      "sha256": "2772827e6ad1e9842c8a20354988a8693c35d811fa5e988b7eecb0b190bb8f35"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-build-v1\\compile-draw-candidate.log",
+      "archive": "draw-transfer-build-v1/compile-draw-candidate.log.txt",
+      "bytes": 18,
+      "sha256": "2772827e6ad1e9842c8a20354988a8693c35d811fa5e988b7eecb0b190bb8f35"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-build-v1\\compile-neutral-tests.log",
+      "archive": "draw-transfer-build-v1/compile-neutral-tests.log.txt",
+      "bytes": 33,
+      "sha256": "617f71a4a8dbbdf68f449dbaceb64a3659ae56bd71ea57083bea8cb0c082587a"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-build-v1\\link-gpu-baseline.log",
+      "archive": "draw-transfer-build-v1/link-gpu-baseline.log.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-build-v1\\link-gpu-candidate.log",
+      "archive": "draw-transfer-build-v1/link-gpu-candidate.log.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-build-v1\\link-neutral-baseline.log",
+      "archive": "draw-transfer-build-v1/link-neutral-baseline.log.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-build-v1\\link-neutral-candidate.log",
+      "archive": "draw-transfer-build-v1/link-neutral-candidate.log.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-tests-v2\\binding.json",
+      "archive": "draw-transfer-tests-v2/binding.json",
+      "bytes": 638,
+      "sha256": "fffd366ec11b3ad7cd8fb35f14dcd5409b18b03df3d311b8c0f131503f3cf05d"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-tests-v2\\commands.json",
+      "archive": "draw-transfer-tests-v2/commands.json",
+      "bytes": 7318,
+      "sha256": "7373f5d68337cfa75a31460fba5dd83024b72b4335b324587ffc77ac716af73c"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-tests-v2\\compile-neutral-characterization.log",
+      "archive": "draw-transfer-tests-v2/compile-neutral-characterization.log.txt",
+      "bytes": 36,
+      "sha256": "0073f2ca38db8e229aa0e4cfe1061ccaa268a08efe8d2690ec3190d35fc04e3a"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-tests-v2\\link-baseline.log",
+      "archive": "draw-transfer-tests-v2/link-baseline.log.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-tests-v2\\link-candidate.log",
+      "archive": "draw-transfer-tests-v2/link-candidate.log.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-check-v1\\baseline.log",
+      "archive": "draw-transfer-check-v1/baseline.log.txt",
+      "bytes": 9809,
+      "sha256": "0cd04aeeee41597172da42c26c22d238e6db00c831b4a12854c99887466fb5da"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-check-v1\\candidate.log",
+      "archive": "draw-transfer-check-v1/candidate.log.txt",
+      "bytes": 9809,
+      "sha256": "0cd04aeeee41597172da42c26c22d238e6db00c831b4a12854c99887466fb5da"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-check-v1\\decision.json",
+      "archive": "draw-transfer-check-v1/decision.json",
+      "bytes": 280,
+      "sha256": "bb523d0ad6f0977750125b60dd10a533e2605ca91035764488498e7457190e16"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\decision.json",
+      "archive": "draw-transfer-measure-v1/decision.json",
+      "bytes": 5091,
+      "sha256": "86fd219ed8e46ba9180ebfd1224db3e8ef828e57e8330b898417ee2f1b5026f3"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\plan.json",
+      "archive": "draw-transfer-measure-v1/plan.json",
+      "bytes": 2706,
+      "sha256": "d822354cdc9a1b58c959ffbf80dd809a6fdea4020daea64c90c0c00e9b7c09b7"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\results.json",
+      "archive": "draw-transfer-measure-v1/results.json",
+      "bytes": 41933,
+      "sha256": "c465b9d9ab47b89094e78885a7b2555f957aeaa6ee95d77ef163b3cbcc5bd31a"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\00-baseline\\00-render-only-1000.log",
+      "archive": "draw-transfer-measure-v1/00-baseline/00-render-only-1000.log.txt",
+      "bytes": 12552,
+      "sha256": "c072df511a716f8c7fb6639157ae81fbad2b70cd3617e31fa128f64c877f4daa"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\00-baseline\\registration.json",
+      "archive": "draw-transfer-measure-v1/00-baseline/registration.json",
+      "bytes": 1249,
+      "sha256": "3aafe722608bfffb3a61e1395b79b5dfc98f93c5eae66e1baaae7800b28c954b"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\00-baseline\\results.json",
+      "archive": "draw-transfer-measure-v1/00-baseline/results.json",
+      "bytes": 2592,
+      "sha256": "9d3dc036ebf44fe314d3791195fc0b8da891b24a4e221a3b5b8eef941d8665a7"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\01-candidate\\00-render-only-1000.log",
+      "archive": "draw-transfer-measure-v1/01-candidate/00-render-only-1000.log.txt",
+      "bytes": 12661,
+      "sha256": "548d9b86fb6a713fdce41c26511df347dc4e0a7e5ffa9c134eecabe4bab161ef"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\01-candidate\\registration.json",
+      "archive": "draw-transfer-measure-v1/01-candidate/registration.json",
+      "bytes": 1250,
+      "sha256": "6df372c095b149e4dbbbebae612172a22c3be761d516f60636da6030f0d9bf3c"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\01-candidate\\results.json",
+      "archive": "draw-transfer-measure-v1/01-candidate/results.json",
+      "bytes": 2592,
+      "sha256": "cb03c675c594cb65ca2efedcdefd0794cbee6adf694d894c053e913a5e6d6a3d"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\02-candidate\\00-render-only-1000.log",
+      "archive": "draw-transfer-measure-v1/02-candidate/00-render-only-1000.log.txt",
+      "bytes": 12621,
+      "sha256": "3664c0adf1c7eb674056254d821573ed9279d7b33d946ce504b7f4b0927f9ed7"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\02-candidate\\registration.json",
+      "archive": "draw-transfer-measure-v1/02-candidate/registration.json",
+      "bytes": 1250,
+      "sha256": "b4a9c6fb7c8ffe8c3da72bfdc82be7b8cd673e4daa6516d1cda39a3ef61832b5"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\02-candidate\\results.json",
+      "archive": "draw-transfer-measure-v1/02-candidate/results.json",
+      "bytes": 2593,
+      "sha256": "55b4b709471f0f988207df13ff2333dd79db52fb8e66384fb435e35edde7e868"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\03-baseline\\00-render-only-1000.log",
+      "archive": "draw-transfer-measure-v1/03-baseline/00-render-only-1000.log.txt",
+      "bytes": 12654,
+      "sha256": "1b26cf9d79f08cc5f45578d61586777f5f525641903a56250552eaca77b996ce"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\03-baseline\\registration.json",
+      "archive": "draw-transfer-measure-v1/03-baseline/registration.json",
+      "bytes": 1249,
+      "sha256": "bc5631023ac866b11baeddf1f5b16efee4239dc36a82065f964a479616833a5b"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\03-baseline\\results.json",
+      "archive": "draw-transfer-measure-v1/03-baseline/results.json",
+      "bytes": 2591,
+      "sha256": "0055fe514d7e5033392f2980ab7e9652b2f8896627e10cadb5bea0bc2c90f5ee"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\04-baseline\\00-static-1000.log",
+      "archive": "draw-transfer-measure-v1/04-baseline/00-static-1000.log.txt",
+      "bytes": 14174,
+      "sha256": "4c6c30a0edeb37c2265b9bb61fa7a7a92553f4ccb9928d2dc7071e960e8c19d8"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\04-baseline\\registration.json",
+      "archive": "draw-transfer-measure-v1/04-baseline/registration.json",
+      "bytes": 1244,
+      "sha256": "b11342703434475f441d357b100871bcc3c2d55d1465f1150de6d7a2b569f6a4"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\04-baseline\\results.json",
+      "archive": "draw-transfer-measure-v1/04-baseline/results.json",
+      "bytes": 2655,
+      "sha256": "e09ca49ff06750488bb8cea6e9b51899db806ece3a2db70a779c59ff4c96d804"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\05-candidate\\00-static-1000.log",
+      "archive": "draw-transfer-measure-v1/05-candidate/00-static-1000.log.txt",
+      "bytes": 14124,
+      "sha256": "8f0daeaeba10baded3c699c4dc464cc5b90816cb51ff9d66327d4b4791b65f5c"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\05-candidate\\registration.json",
+      "archive": "draw-transfer-measure-v1/05-candidate/registration.json",
+      "bytes": 1245,
+      "sha256": "d4d840a25897f6c2504d0ed81fbeb5b8b12151a0ad1b3078cd2220cf60e246c8"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\05-candidate\\results.json",
+      "archive": "draw-transfer-measure-v1/05-candidate/results.json",
+      "bytes": 2654,
+      "sha256": "366c3df3a3cca8f8c5a854fbfe0402cc50747d6bf8ab298ee676ee03fa7d2df9"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\06-candidate\\00-static-1000.log",
+      "archive": "draw-transfer-measure-v1/06-candidate/00-static-1000.log.txt",
+      "bytes": 14295,
+      "sha256": "195900145aab10ee038dd9d1d9b710862e38b9403c729456283788f3f4347e26"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\06-candidate\\registration.json",
+      "archive": "draw-transfer-measure-v1/06-candidate/registration.json",
+      "bytes": 1245,
+      "sha256": "3c6f6386d8ada1c3547a5e1b50d9f47811232ee8f74af2f757092e5bfb4f942a"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\06-candidate\\results.json",
+      "archive": "draw-transfer-measure-v1/06-candidate/results.json",
+      "bytes": 2626,
+      "sha256": "77701c3062d29f26a4ace4b65dd58f32b277b860334c73614df16f8ec02244c6"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\07-baseline\\00-static-1000.log",
+      "archive": "draw-transfer-measure-v1/07-baseline/00-static-1000.log.txt",
+      "bytes": 14169,
+      "sha256": "81487dbd0c5afe6fe32445d7293e49844525caa0ffc06c2686920d33e2473b91"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\07-baseline\\registration.json",
+      "archive": "draw-transfer-measure-v1/07-baseline/registration.json",
+      "bytes": 1244,
+      "sha256": "f3663a52a5224bf5e039d194a3f25b69537a8f8c16c893d2353109990cb110b9"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\07-baseline\\results.json",
+      "archive": "draw-transfer-measure-v1/07-baseline/results.json",
+      "bytes": 2632,
+      "sha256": "fb3b75fa333960622264408e78b6ddb440d37c534e6b9158352d4f1870534fee"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\08-baseline\\00-render-only-40000.log",
+      "archive": "draw-transfer-measure-v1/08-baseline/00-render-only-40000.log.txt",
+      "bytes": 13533,
+      "sha256": "12f31835ca91229fbc216ff58c171c861236de2a9f5ffb718dceec93d7d1f65f"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\08-baseline\\registration.json",
+      "archive": "draw-transfer-measure-v1/08-baseline/registration.json",
+      "bytes": 1250,
+      "sha256": "cf4e52941af6e0fbd2919ddedb4ea1bb24e257028fe0e600c7848d8fd17cef23"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\08-baseline\\results.json",
+      "archive": "draw-transfer-measure-v1/08-baseline/results.json",
+      "bytes": 2619,
+      "sha256": "ad7fa04a2e7b869edc3ddada6ca26738ba32f7add7eb0f3f9101d88b5d44c166"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\09-candidate\\00-render-only-40000.log",
+      "archive": "draw-transfer-measure-v1/09-candidate/00-render-only-40000.log.txt",
+      "bytes": 13380,
+      "sha256": "866f892df5144edd480968b881059f4de3448179c9282c8f5a36f2158a5af1c9"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\09-candidate\\registration.json",
+      "archive": "draw-transfer-measure-v1/09-candidate/registration.json",
+      "bytes": 1251,
+      "sha256": "7e0d1db74181777903b9db701dcafa92e8d8aaab5cc0a3a2da3fd6497d58349d"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\09-candidate\\results.json",
+      "archive": "draw-transfer-measure-v1/09-candidate/results.json",
+      "bytes": 2600,
+      "sha256": "bb0592b9101df7a5d7a5a7fbaeebe4c1ba051ae35a361acfdd9859e3013330bd"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\10-candidate\\00-render-only-40000.log",
+      "archive": "draw-transfer-measure-v1/10-candidate/00-render-only-40000.log.txt",
+      "bytes": 13538,
+      "sha256": "762c23218e283f2503263ae3eae8391769b8dc0278079e0a9beb2eedb1cf1ef9"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\10-candidate\\registration.json",
+      "archive": "draw-transfer-measure-v1/10-candidate/registration.json",
+      "bytes": 1251,
+      "sha256": "aaa416575ef4e343aff683f340cfba78daa8dd3da16212b69906773a7429e646"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\10-candidate\\results.json",
+      "archive": "draw-transfer-measure-v1/10-candidate/results.json",
+      "bytes": 2612,
+      "sha256": "cab7df38988bf8eac1420aeeaee477e73bc1ce87360cc32091545783616224ac"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\11-baseline\\00-render-only-40000.log",
+      "archive": "draw-transfer-measure-v1/11-baseline/00-render-only-40000.log.txt",
+      "bytes": 13496,
+      "sha256": "824a1b9df11e49ac92b22685240e5fc4a7b8d3ed49cc1026b116c449121d5f72"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\11-baseline\\registration.json",
+      "archive": "draw-transfer-measure-v1/11-baseline/registration.json",
+      "bytes": 1250,
+      "sha256": "143af4c723b6954948cfc6be68927e6b74ca331f6911d582a93c8cd8eb8559d8"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\11-baseline\\results.json",
+      "archive": "draw-transfer-measure-v1/11-baseline/results.json",
+      "bytes": 2580,
+      "sha256": "4a5c22dabc3282331bd5d9695546b479e63806a7b3ce26979b2103ff6ad2b24f"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\12-baseline\\00-static-40000.log",
+      "archive": "draw-transfer-measure-v1/12-baseline/00-static-40000.log.txt",
+      "bytes": 15236,
+      "sha256": "6bec7bd38395a1f45072d0a42e9e63adcdcf874b779b1b1bd6db935a48bcbfc0"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\12-baseline\\registration.json",
+      "archive": "draw-transfer-measure-v1/12-baseline/registration.json",
+      "bytes": 1245,
+      "sha256": "3fa04125921cb5ad93d9687432356f4e3c9d789a2eedace6d7ef6ff756bbc1ed"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\12-baseline\\results.json",
+      "archive": "draw-transfer-measure-v1/12-baseline/results.json",
+      "bytes": 2648,
+      "sha256": "0c498bb9671897b8f987992f5b59ea953c16897361620276584f7a3316936b5c"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\13-candidate\\00-static-40000.log",
+      "archive": "draw-transfer-measure-v1/13-candidate/00-static-40000.log.txt",
+      "bytes": 15276,
+      "sha256": "b80b779e22a8a8312f60f3979f7c58f935aaef575fbf2ca8b7889c57ff6a550e"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\13-candidate\\registration.json",
+      "archive": "draw-transfer-measure-v1/13-candidate/registration.json",
+      "bytes": 1246,
+      "sha256": "3ce7f669d120f8cbe8ac6446c8eabb02f4a48615e3fb294e24e54a7375c6149e"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\13-candidate\\results.json",
+      "archive": "draw-transfer-measure-v1/13-candidate/results.json",
+      "bytes": 2658,
+      "sha256": "86fb6ca7c3a96a215a320d52488d6a5d45034a678fc53e518112cf13be9944a7"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\14-candidate\\00-static-40000.log",
+      "archive": "draw-transfer-measure-v1/14-candidate/00-static-40000.log.txt",
+      "bytes": 15305,
+      "sha256": "4e6b9309f1659ba5d30ca4056899780bafb4ca2cd130c4beaec683dd457c52cf"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\14-candidate\\registration.json",
+      "archive": "draw-transfer-measure-v1/14-candidate/registration.json",
+      "bytes": 1246,
+      "sha256": "842ee45cf329a8c87c7c295d35636883179ae8ada399b459465ed2ca855f05e4"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\14-candidate\\results.json",
+      "archive": "draw-transfer-measure-v1/14-candidate/results.json",
+      "bytes": 2678,
+      "sha256": "be52c5720af32a56888a126c0c0a50173b18577916318c41aedbf10c7138989c"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\15-baseline\\00-static-40000.log",
+      "archive": "draw-transfer-measure-v1/15-baseline/00-static-40000.log.txt",
+      "bytes": 15107,
+      "sha256": "ecfb4bb4e7220cb13d52a6874310a8ee24ef410b0578e6993849b917f29f1c9a"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\15-baseline\\registration.json",
+      "archive": "draw-transfer-measure-v1/15-baseline/registration.json",
+      "bytes": 1245,
+      "sha256": "a6d7ca701e53bcac805c369b45d69b4e9daa47b4e4d5f4922d9397e1e69d36ff"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-measure-v1\\15-baseline\\results.json",
+      "archive": "draw-transfer-measure-v1/15-baseline/results.json",
+      "bytes": 2648,
+      "sha256": "4fcf5b21995a8adb3979c0024802a2468ebe63d62a2f42fbe588609f67636f87"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-regression-v1\\binding.json",
+      "archive": "draw-transfer-regression-v1/binding.json",
+      "bytes": 935,
+      "sha256": "945eb2878d58bdd0d3b63d69e2375c874be45fe48074741d90ae28b15da22fa1"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-regression-v1\\commands.json",
+      "archive": "draw-transfer-regression-v1/commands.json",
+      "bytes": 10177,
+      "sha256": "6c1852a471f689cf84767b03170e7807502176208b4abf27455e15e7c8b007d3"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-regression-v1\\compile-open_gl_config_tests.log",
+      "archive": "draw-transfer-regression-v1/compile-open_gl_config_tests.log.txt",
+      "bytes": 26,
+      "sha256": "55c0e9401e6356a5bcec98e0c7f3d2d50e913370fc118ae9b2c567dc17a9ea4d"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-regression-v1\\compile-open_gl_presentation_tests.log",
+      "archive": "draw-transfer-regression-v1/compile-open_gl_presentation_tests.log.txt",
+      "bytes": 32,
+      "sha256": "98b9dd35b73ebf69155a64eeb28183ad75d3646ae1a7a00f2f7bcfcb96bea66d"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-regression-v1\\link-opengl.log",
+      "archive": "draw-transfer-regression-v1/link-opengl.log.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-regression-v1\\test.log",
+      "archive": "draw-transfer-regression-v1/test.log.txt",
+      "bytes": 160,
+      "sha256": "58f6d891e86aa577e972f698c06d8f0d6e774c5785d5d176a3f04dff75779d18"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-guard-build-v1\\binding.json",
+      "archive": "draw-transfer-guard-build-v1/binding.json",
+      "bytes": 679,
+      "sha256": "1983547bf0623f77ce478053ebd94832a9aa29dd4528ff8d6a9b9bca42041691"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-guard-build-v1\\commands.json",
+      "archive": "draw-transfer-guard-build-v1/commands.json",
+      "bytes": 12462,
+      "sha256": "ed1406e8483a3b3bc457b834bc70230ad0471017dce910c9b4e0d087543527ad"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-guard-build-v1\\compile-guard-probe.log",
+      "archive": "draw-transfer-guard-build-v1/compile-guard-probe.log.txt",
+      "bytes": 25,
+      "sha256": "0eb19bc38d617c53b311d96a78cd617c6f1238340bd006ce28c5c4d819d8c644"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-guard-build-v1\\link-baseline.log",
+      "archive": "draw-transfer-guard-build-v1/link-baseline.log.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-guard-build-v1\\link-candidate.log",
+      "archive": "draw-transfer-guard-build-v1/link-candidate.log.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-guard-measure-v1\\00-baseline.log",
+      "archive": "draw-transfer-guard-measure-v1/00-baseline.log.txt",
+      "bytes": 3823,
+      "sha256": "5f09d5856c03fa70fee49c9a557504c9470740d97e3b9bbdcd567df036e887cc"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-guard-measure-v1\\01-candidate.log",
+      "archive": "draw-transfer-guard-measure-v1/01-candidate.log.txt",
+      "bytes": 3817,
+      "sha256": "b2b7e17d97fe35d2fe8b7cc151dd725bcaf5110d2f2afdbc65bc8f195443caf0"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-guard-measure-v1\\02-candidate.log",
+      "archive": "draw-transfer-guard-measure-v1/02-candidate.log.txt",
+      "bytes": 3739,
+      "sha256": "60327f92288cc3eda3c11291318a28235c895a8cb6226b7a877e8626cd44562a"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-guard-measure-v1\\03-baseline.log",
+      "archive": "draw-transfer-guard-measure-v1/03-baseline.log.txt",
+      "bytes": 3795,
+      "sha256": "c84dc705ecaeae7dc94e7a8163575f443dcf7a35399a389dad29c9196d5e88f3"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-guard-measure-v1\\decision.json",
+      "archive": "draw-transfer-guard-measure-v1/decision.json",
+      "bytes": 2327,
+      "sha256": "a25f643525fde3a216f3c7bec1c4d9ce2835d58235db5308e902d353e402daa5"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-guard-measure-v1\\registration.json",
+      "archive": "draw-transfer-guard-measure-v1/registration.json",
+      "bytes": 616,
+      "sha256": "3c892decb8dd178e80da3013e26d696046dc5b93d646f0c1e8e6a8ff7876f695"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-guard-measure-v1\\results.json",
+      "archive": "draw-transfer-guard-measure-v1/results.json",
+      "bytes": 21941,
+      "sha256": "fdcc6c8ddfccf34c027679d685824ef0af601d7f0ed334e6a7ca1a1350414694"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-final-v1\\binding.json",
+      "archive": "draw-transfer-final-v1/binding.json",
+      "bytes": 610,
+      "sha256": "bce2c6ee9ee2289469d85b76b2f377733ddb4a49c6c6a3b8e034d355bde7ac6d"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-final-v1\\commands.json",
+      "archive": "draw-transfer-final-v1/commands.json",
+      "bytes": 8876,
+      "sha256": "c5cdf89c7d9b15d236f3e170d58537dbf240607d7b9ed9bcafd9fa21914bbcfb"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-final-v1\\compile-draw-final.log",
+      "archive": "draw-transfer-final-v1/compile-draw-final.log.txt",
+      "bytes": 18,
+      "sha256": "2772827e6ad1e9842c8a20354988a8693c35d811fa5e988b7eecb0b190bb8f35"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-final-v1\\link-neutral.log",
+      "archive": "draw-transfer-final-v1/link-neutral.log.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-final-v1\\link-opengl.log",
+      "archive": "draw-transfer-final-v1/link-opengl.log.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-final-v1\\test-neutral.log",
+      "archive": "draw-transfer-final-v1/test-neutral.log.txt",
+      "bytes": 9809,
+      "sha256": "0cd04aeeee41597172da42c26c22d238e6db00c831b4a12854c99887466fb5da"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw-transfer-final-v1\\test-opengl.log",
+      "archive": "draw-transfer-final-v1/test-opengl.log.txt",
+      "bytes": 160,
+      "sha256": "58f6d891e86aa577e972f698c06d8f0d6e774c5785d5d176a3f04dff75779d18"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\prepare_draw_transfer_v1.py",
+      "archive": "scripts/prepare_draw_transfer_v1.py.txt",
+      "bytes": 2297,
+      "sha256": "c95fadd753936c1fd0b0aec93a9c2cb529f1518fc9d4a663ba7651d6172f5807"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\build_draw_transfer_v1.py",
+      "archive": "scripts/build_draw_transfer_v1.py.txt",
+      "bytes": 2078,
+      "sha256": "aeec5047f7874bff5e27e610398967b93180bb3565061d3eaaccbe3c748d7398"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\build_draw_transfer_tests_v2.py",
+      "archive": "scripts/build_draw_transfer_tests_v2.py.txt",
+      "bytes": 1373,
+      "sha256": "1ed6e00146779892f4db29bf7e72c990dfc7344dbd0b5128f3c76fb9ec6ffe91"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\run_draw_transfer_v1.py",
+      "archive": "scripts/run_draw_transfer_v1.py.txt",
+      "bytes": 3914,
+      "sha256": "61c2b5fc0080e9d930dd07e6036ae1d715b160a638ca667e6e88bf8e43c4b66a"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw_transfer_characterization.cpp",
+      "archive": "scripts/draw_transfer_characterization.cpp.txt",
+      "bytes": 2983,
+      "sha256": "39b66eb275e770c76a6ca3858bcb8b7513aee1d06b4edb6a30fd53fbe9765966"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\draw_transfer_guard.cpp",
+      "archive": "scripts/draw_transfer_guard.cpp.txt",
+      "bytes": 2144,
+      "sha256": "2183227ce12ba833b353d2e7381eeef3577bc3ef0c9d57aceeb6ac9120a03906"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\build_draw_regression_v1.py",
+      "archive": "scripts/build_draw_regression_v1.py.txt",
+      "bytes": 1644,
+      "sha256": "f48d3ec49e1606a8634a515444e5ad0ea86e96734361411afbed944ac180471f"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\build_draw_guard_v1.py",
+      "archive": "scripts/build_draw_guard_v1.py.txt",
+      "bytes": 1399,
+      "sha256": "c93387f255c86a947efb861693a8ba03572aec2061eaa08a8643085f6c66ae9e"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\run_draw_guard_v1.py",
+      "archive": "scripts/run_draw_guard_v1.py.txt",
+      "bytes": 3869,
+      "sha256": "30449ca8880607d8c445048dc894e98617eda64a5cc49715c76448990448344b"
+    },
+    {
+      "source": "out\\verification-20261030\\r3-next-v1\\build_draw_final_v1.py",
+      "archive": "scripts/build_draw_final_v1.py.txt",
+      "bytes": 1850,
+      "sha256": "8982544152a681f79fdda632570ada01f9ee12f246cd74a6c6186de9b2d866c7"
+    }
+  ]
+}

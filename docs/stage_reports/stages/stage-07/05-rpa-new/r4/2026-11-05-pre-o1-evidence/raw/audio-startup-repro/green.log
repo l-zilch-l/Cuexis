@@ -1,0 +1,5 @@
+Filters: "B5 Close waits for a failed audio owner's drained exit before binding participants"
+Randomness seeded to: 2165536047
+===============================================================================
+All tests passed (7 assertions in 1 test case)
+

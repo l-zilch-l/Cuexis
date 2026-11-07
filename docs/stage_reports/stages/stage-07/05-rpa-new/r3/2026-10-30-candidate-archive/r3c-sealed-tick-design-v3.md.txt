@@ -1,0 +1,64 @@
+# R3c cache payload lease experiment
+
+Status: unaccepted isolated shadow, not a product implementation or registered memory profile.
+Supersedes the four-slot-only admission of v2; original snapshots and bindings stay immutable.
+
+## Scope and counter
+
+One optional shared TickPayloadBudget belongs to ExecutionPreparation. Each point acquires a
+move-only lease before allocating its metadata and staging. Atomic live payload includes staged,
+current and retired points from all branches/archives sharing that preparation. Promotion moves
+existing owners and never charges again. The last point owner refunds; budget owns no point,
+kernel or worker, so destruction cannot call a closed owner and creates no cycle.
+
+The trial limit is 128 MiB of conservatively charged payload storage. This is an experiment
+parameter, not an inferred B0 cap, physical-memory headroom, registered profile or production
+default. No cap sweep is planned to force admission. Optional budget allocation failure disables
+capture. Overflow, unavailable estimates and insufficient quota mean a miss, preserving original
+Seek validity and budgets. The existing four-slot policy remains a separate local count limit.
+
+## Charge closure
+
+Charge RuntimeState and NativeTickPoint object storage. Traverse KernelProjection through the
+existing wire fields visitor at fixed revision 3 to count vector capacity and nested string
+capacity+1. This visitor measures storage, never canonical wire length. SSO is deliberately
+overcharged. For SharedSequence, a read-only numeric callback reports actual Directory object,
+directory capacity, Page objects and each page capacity; all shared storage is charged in full
+for each point. Matcher states, coverageHistory, activeRequirements and signalVisibility receive
+explicit traversal because the projection wire walker does not contain them.
+
+PreparedIdentity canonical storage and runScope remain mandatory preparation/source owners;
+they are not a new owner category introduced by cache retention. Strings/vectors inside phase,
+fact, identity, evidence, ownership, Fold and RPA accepted/quarantine/deferred/control/trace rows
+are covered by the visitor. A core::Error or unknown shared payload is not safely inspectable,
+so it refuses admission rather than guessing private string capacity.
+
+Charge all prefix ExecutionLogChunk objects, records capacity and batch/admission/control/trace
+payload. Reject a Snapshot baseState prefix. Do not recursively charge record.result states:
+while staging/current, Impl.logTail necessarily owns the exact prefix; while archived, the
+internally sealed full ReplayData necessarily owns those same record results. A Tick point is
+never publicly constructible or exported by itself. Source shape/provenance checks remain before
+selection. recording must have no records, but its ReplayData object/vector capacity is charged.
+
+Excluded from this payload counter: allocator metadata, shared_ptr control blocks, CRT usable
+rounding, RSS/commit, GPU, mandatory source/preparation, and the existing archive/index owner
+graph. These require their independent observations and original caps. Each live archive index
+has fixed additional TickPoints metadata; client-held owning archives can grow without a global
+process cap, just as the mandatory historical source payload can. This mechanism bounds optional
+point payload charges per preparation lineage, not all memory of arbitrary client handles.
+
+## Required checks
+
+- Finite positive state, Snapshot bytes, full future-branch Replay bytes, continued inputs/control.
+- Zero/tight quota miss preserves replay; retained generation uses one shared ledger; old archive
+  holds charge after eviction/writer close; last owner refunds; overflow refuses admission.
+- Real capture/restore allocation failure, staged-then-finalization/Fold/seal fault no promotion,
+  and a deliberately bad promotion mutant must be rejected.
+- Ordinary source generation overhead and first/repeat end-to-end Seek with unchanged budgets.
+- Actual requested-heap observation including multiple points and multiple retained generations.
+- Field coverage review whenever RuntimeState, wire traversal or SharedSequence ownership changes.
+
+The private probe setter requires exclusive use and no outstanding charge. It is not an SDK
+configuration API or production method for changing an active budget. Full fresh related build
+is required because SharedSequence's definition changes; old common template definitions must
+not be mixed into this candidate.

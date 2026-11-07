@@ -1,0 +1,15 @@
+{
+  "scope": "Only neutral draw CPP differs. Both physical binaries share SAX v2 for startup, no instancing or state cache. Original public/template definitions and shared paged-active libraries. Correct Release DLLs.",
+  "source_binding_sha256": "0d80a8de4e0ce810eca8418e84d12314767d3ce5f5d0c55bb304facdbda83356",
+  "commands_sha256": "3a9b0398f7df3e9a97b82d64e27ced7a02ceeba63a3ccc2cd4afed6cdeb9170c",
+  "files": {
+    "fmt.dll": "8219387a1b0de304630a67564a0ec30271e061c1e92cc77ae7cf9753a5f75214",
+    "gpu-baseline.exe": "e2c8be33a2b9bea7a7e860495c422ff9597f479c6fbcad78968a8f13b7eee847",
+    "gpu-candidate.exe": "4432e75861808a08ff5d94a2360b6b4869e1d01cb39a70da064634de9193087a",
+    "neutral-baseline.exe": "6f6134bb8e34c7fad2ab8dd2cd5959ddff0cfdb3f1ebe835a13c51df5eeb3631",
+    "neutral-candidate.exe": "fd4d6c517387671f234c77e7597b8b0b9a86c8b602e7dde094b91e7a34a23bf5",
+    "nlohmann_json_schema_validator.dll": "1c0a7cdcd718802c79052f323f52e63afcedac969dd7eb5a44d12c521502f248",
+    "SDL3.dll": "cedddd9456105f8b2df78c33a0282c170b86b0d16146a8ccbb0c6e01571ee783",
+    "spdlog.dll": "a7c410914f4aff0cb84f642ff91da8a6b1a85d21cb0de11e88a3a37dc7575214"
+  }
+}

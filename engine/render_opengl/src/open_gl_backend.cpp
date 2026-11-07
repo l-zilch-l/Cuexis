@@ -7,6 +7,7 @@
 
 #include <cuexis/render_opengl/open_gl_backend.hpp>
 
+#include "../internal/cuexis_internal/gpu_storage_observer.hpp"
 #include "open_gl_presentation_internal.hpp"
 
 #include <cuexis/core/error.hpp>
@@ -468,6 +469,19 @@ auto OpenGlBackend::create(platform_sdl::SdlWindow& window,
     }
     const DebugPipeline pipeline = *pipelineResult;
 
+    // Prime the swap chain before any content is submitted. On this host the second SwapWindow
+    // after a fresh window and context blocks for 170-190 ms with essentially no GPU work in it
+    // (2026-11-01: gpu timer 1.024 us on that frame, unchanged by vsync, by window visibility and
+    // by a frozen or live frame; waiting after the window exists does not help, only the gap
+    // between the first two presents does, and 200 ms of spacing dissolves it). Paying it here
+    // keeps the first presented content frame and the first user pause free of the stall; the cost
+    // lands inside backend creation, which the initial-load budget has room for.
+    glClearColor(0.0F, 0.0F, 0.0F, 1.0F);
+    glClear(GL_COLOR_BUFFER_BIT);
+    SDL_GL_SwapWindow(nativeWindow);
+    glClear(GL_COLOR_BUFFER_BIT);
+    SDL_GL_SwapWindow(nativeWindow);
+
     return OpenGlBackend{std::move(windowLease),
                          contextGuard.release(),
                          std::move(info),
@@ -533,7 +547,22 @@ auto OpenGlBackend::close() -> core::Result<void> {
                                             "OpenGL backend must be closed on its owner thread"}
                                     .withContext("operation", "close"));
     }
+#if defined(CUEXIS_ALLOCATION_LIFETIME_OBSERVER)
+    // Separate observer only: explicit GPU completion before resource reclamation.
+    if (context_) {
+        auto* native = static_cast<SDL_Window*>(window_.nativeHandle());
+        if (!SDL_GL_MakeCurrent(native, static_cast<SDL_GLContext>(context_)))
+            return core::unexpected(core::Error{"pd5.gpu.context", "Observer context unavailable"});
+        glFinish();
+        if (glGetError() != GL_NO_ERROR)
+            return core::unexpected(core::Error{"pd5.gpu.drain", "GPU observer completion failed"});
+        test_only::GpuStorage::report("before-device-release", true);
+    }
+#endif
     release();
+#if defined(CUEXIS_ALLOCATION_LIFETIME_OBSERVER)
+    test_only::GpuStorage::report("after-device-release", true);
+#endif
     return {};
 }
 
@@ -607,6 +636,7 @@ auto OpenGlBackend::renderFrame(const render::RenderFrame& frame) -> core::Resul
                            frame.viewProjection.values.data());
         glBindVertexArray(debugVertexArray_);
         glBindBuffer(GL_ARRAY_BUFFER, debugVertexBuffer_);
+        test_only::GpuStorage::charge(1, debugVertexBuffer_, vertices.size() * sizeof(DebugVertex));
         glBufferData(GL_ARRAY_BUFFER,
                      static_cast<GLsizeiptr>(vertices.size() * sizeof(DebugVertex)),
                      vertices.data(), GL_DYNAMIC_DRAW);
@@ -649,6 +679,7 @@ void OpenGlBackend::release() noexcept {
     if (canReleaseGpuResources) {
         presentation_.reset();
         if (debugVertexBuffer_ != 0) {
+            test_only::GpuStorage::release(1, debugVertexBuffer_);
             glDeleteBuffers(1, &debugVertexBuffer_);
         }
         if (debugVertexArray_ != 0) {

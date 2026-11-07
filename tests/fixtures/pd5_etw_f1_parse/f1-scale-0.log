@@ -1,0 +1,48 @@
+PD5_PROCESS_START {"pid": 2508, "qpc": 919406213446, "frequency": 10000000, "boundary": "before-native-CreateProcess"}
+Filters: "PD machine CPU warmup"
+RNG seed: 1987920842
+PD_MACHINE_WARMUP {"seconds":30,"checksum":10774485851396243457}
+test cases: 1 | 1 passed
+assertions: - none -
+
+
+PD5_PROCESS_START {"pid": 29952, "qpc": 919707542723, "frequency": 10000000, "boundary": "before-native-CreateProcess"}
+Filters: "PD finite read and update scaling"
+RNG seed: 1
+PD_ENV {"label":"begin","pid":29952,"tid":25620,"process_affinity_error":0,"process_affinity":4,"system_affinity":65535,"processor_group_error":0,"processor_group":0,"processor_number":2,"process_priority":32,"thread_priority":0,"process_power_error":0,"process_power_control":0,"process_power_state":0,"thread_power_error":0,"thread_power_control":0,"thread_power_state":0}
+PD_FOLLOW_CONTENT {"objects":1,"sha256":"5b62459da36dc51bae8208b805c6b55a313239189c51a0adbc9cd3180372f31f"}
+PD_FOLLOW_ROW {"objects":1,"mode":"read","block":0,"operations":2097152,"elapsed_us":547946.30000000005,"cpu_us":546875,"cycles":2070569871,"digest":406385184661979036,"ordinal":64}
+PD_FOLLOW_ROW {"objects":1,"mode":"read","block":1,"operations":2097152,"elapsed_us":549412.90000000002,"cpu_us":546875,"cycles":2072239549,"digest":406385184661979036,"ordinal":64}
+PD_FOLLOW_ROW {"objects":1,"mode":"read","block":2,"operations":2097152,"elapsed_us":548571.09999999998,"cpu_us":546875,"cycles":2072661351,"digest":406385184661979036,"ordinal":64}
+PD_FOLLOW_CONTENT {"objects":1,"sha256":"5b62459da36dc51bae8208b805c6b55a313239189c51a0adbc9cd3180372f31f"}
+PD_FOLLOW_ROW {"objects":1,"mode":"updated","block":0,"operations":262144,"elapsed_us":514511.5,"cpu_us":515625,"cycles":1946472398,"digest":15325512711279083682,"ordinal":262208}
+PD_FOLLOW_ROW {"objects":1,"mode":"updated","block":1,"operations":262144,"elapsed_us":516576.40000000002,"cpu_us":515625,"cycles":1955871836,"digest":14411613978951249851,"ordinal":524352}
+PD_FOLLOW_ROW {"objects":1,"mode":"updated","block":2,"operations":262144,"elapsed_us":515859.70000000001,"cpu_us":515625,"cycles":1952556363,"digest":8888359698472657018,"ordinal":786496}
+PD_FOLLOW_CONTENT {"objects":8,"sha256":"79336a08b8586ba36126491785c6cef2e5ead9440304adf6f88b9cab48d8c12e"}
+PD_FOLLOW_ROW {"objects":8,"mode":"read","block":0,"operations":1048576,"elapsed_us":721584.40000000002,"cpu_us":687500,"cycles":2672562212,"digest":15885602215650409316,"ordinal":64}
+PD_FOLLOW_ROW {"objects":8,"mode":"read","block":1,"operations":1048576,"elapsed_us":694886.19999999995,"cpu_us":687500,"cycles":2628934000,"digest":15885602215650409316,"ordinal":64}
+PD_FOLLOW_ROW {"objects":8,"mode":"read","block":2,"operations":1048576,"elapsed_us":696948,"cpu_us":703125,"cycles":2625955350,"digest":15885602215650409316,"ordinal":64}
+PD_FOLLOW_CONTENT {"objects":8,"sha256":"79336a08b8586ba36126491785c6cef2e5ead9440304adf6f88b9cab48d8c12e"}
+PD_FOLLOW_ROW {"objects":8,"mode":"updated","block":0,"operations":131072,"elapsed_us":382221,"cpu_us":375000,"cycles":1446793575,"digest":61652830063923866,"ordinal":131136}
+PD_FOLLOW_ROW {"objects":8,"mode":"updated","block":1,"operations":131072,"elapsed_us":382459.20000000001,"cpu_us":390625,"cycles":1447106486,"digest":12269755099397442522,"ordinal":262208}
+PD_FOLLOW_ROW {"objects":8,"mode":"updated","block":2,"operations":131072,"elapsed_us":381259.59999999998,"cpu_us":375000,"cycles":1442627715,"digest":15468458633049095830,"ordinal":393280}
+PD_FOLLOW_CONTENT {"objects":64,"sha256":"86efc39d0ae5810777ce63d42aa150f751ddcb29ec9ca7b6984508fb88661b20"}
+PD_FOLLOW_ROW {"objects":64,"mode":"read","block":0,"operations":262144,"elapsed_us":1019148.2,"cpu_us":1031250,"cycles":3853109939,"digest":13929917494894464460,"ordinal":64}
+PD_FOLLOW_ROW {"objects":64,"mode":"read","block":1,"operations":262144,"elapsed_us":1015509,"cpu_us":1015625,"cycles":3843281920,"digest":13929917494894464460,"ordinal":64}
+PD_FOLLOW_ROW {"objects":64,"mode":"read","block":2,"operations":262144,"elapsed_us":1017751.4,"cpu_us":1015625,"cycles":3851712205,"digest":13929917494894464460,"ordinal":64}
+PD_FOLLOW_CONTENT {"objects":64,"sha256":"86efc39d0ae5810777ce63d42aa150f751ddcb29ec9ca7b6984508fb88661b20"}
+PD_FOLLOW_ROW {"objects":64,"mode":"updated","block":0,"operations":32768,"elapsed_us":380347.29999999999,"cpu_us":375000,"cycles":1438901868,"digest":1028182477962306922,"ordinal":32832}
+PD_FOLLOW_ROW {"objects":64,"mode":"updated","block":1,"operations":32768,"elapsed_us":383446.40000000002,"cpu_us":375000,"cycles":1449836696,"digest":14430735518410053078,"ordinal":65600}
+PD_FOLLOW_ROW {"objects":64,"mode":"updated","block":2,"operations":32768,"elapsed_us":382377.5,"cpu_us":375000,"cycles":1446970328,"digest":11532950772464382646,"ordinal":98368}
+PD_FOLLOW_CONTENT {"objects":256,"sha256":"9d8060325744241e03f123e1c973a58d333aa95065e153757dcb6b47b966b93c"}
+PD_FOLLOW_ROW {"objects":256,"mode":"read","block":0,"operations":65536,"elapsed_us":1043718.2,"cpu_us":1031250,"cycles":3948920367,"digest":4191972335828955947,"ordinal":64}
+PD_FOLLOW_ROW {"objects":256,"mode":"read","block":1,"operations":65536,"elapsed_us":1045424.6,"cpu_us":1000000,"cycles":3952302584,"digest":4191972335828955947,"ordinal":64}
+PD_FOLLOW_ROW {"objects":256,"mode":"read","block":2,"operations":65536,"elapsed_us":1043980.7,"cpu_us":1031250,"cycles":3949042866,"digest":4191972335828955947,"ordinal":64}
+PD_FOLLOW_CONTENT {"objects":256,"sha256":"9d8060325744241e03f123e1c973a58d333aa95065e153757dcb6b47b966b93c"}
+PD_FOLLOW_ROW {"objects":256,"mode":"updated","block":0,"operations":8192,"elapsed_us":344927.20000000001,"cpu_us":343750,"cycles":1305115934,"digest":5523310976524494842,"ordinal":8256}
+PD_FOLLOW_ROW {"objects":256,"mode":"updated","block":1,"operations":8192,"elapsed_us":342306.79999999999,"cpu_us":343750,"cycles":1295328848,"digest":963131343215099466,"ordinal":16448}
+PD_FOLLOW_ROW {"objects":256,"mode":"updated","block":2,"operations":8192,"elapsed_us":344011.90000000002,"cpu_us":343750,"cycles":1299716208,"digest":4451443524270504478,"ordinal":24640}
+PD_ENV {"label":"end","pid":29952,"tid":25620,"process_affinity_error":0,"process_affinity":4,"system_affinity":65535,"processor_group_error":0,"processor_group":0,"processor_number":2,"process_priority":32,"thread_priority":0,"process_power_error":0,"process_power_control":0,"process_power_state":0,"thread_power_error":0,"thread_power_control":0,"thread_power_state":0}
+All tests passed (109 assertions in 1 test case)
+
+

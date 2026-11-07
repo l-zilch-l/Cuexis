@@ -136,10 +136,12 @@ struct DebugVertex final {
 };
 
 // Per-draw GPU retention resolved from the neutral draw command. The neutral builder owns the
-// ordering, split, validation, and digest; this only carries the GL handles that cannot live in
-// the backend-neutral layer.
+// ordering, split, and validation; this only carries a pointer to the builder-owned command plus
+// the GL handles that cannot live in the backend-neutral layer. The command is non-owning: it
+// points into the DrawSummary the frame is currently rendering and is cleared with the scratch
+// vector before that summary goes away.
 struct PreparedDraw final {
-    presentation_renderer::DrawCommand command;
+    const presentation_renderer::DrawCommand* command{};
     const GpuMesh* mesh{};
     const GpuMaterial* material{};
     const GpuTexture* texture{};
@@ -159,6 +161,7 @@ struct PresentationResourceSet final {
 };
 
 struct OpenGlPresentationBackendState final {
+    bool pixelReadbackEnabled{};
     PresentationPipeline pipeline;
     std::optional<PresentationResourceSet> active;
     std::optional<PresentationResourceSet> pending;

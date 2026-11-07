@@ -1,0 +1,14 @@
+[
+  {
+    "executable": "cuexis_rpa_tests",
+    "exit_code": 0
+  },
+  {
+    "executable": "cuexis_host_protocol_tests",
+    "exit_code": 0
+  },
+  {
+    "executable": "cuexis_execution_host_tests",
+    "exit_code": 0
+  }
+]

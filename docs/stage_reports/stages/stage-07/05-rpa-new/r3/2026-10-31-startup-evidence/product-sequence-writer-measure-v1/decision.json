@@ -1,0 +1,173 @@
+{
+  "local_numeric_gate": true,
+  "repeatability_screen": true,
+  "local_screen_pass": true,
+  "summary": [
+    {
+      "n": 1000,
+      "case": 0,
+      "median_us": {
+        "baseline": 10348.2,
+        "candidate": 10358.8
+      },
+      "process_samples": {
+        "baseline": [
+          10904.7,
+          10139.2,
+          10348.2
+        ],
+        "candidate": [
+          10358.8,
+          10235.1,
+          11306.4
+        ]
+      },
+      "change_percent": 0.10243327341952213,
+      "relative_range_percent": {
+        "baseline": 7.397421773835062,
+        "candidate": 10.341931497856887
+      },
+      "first_us": {
+        "baseline": [
+          10904.7,
+          11192.7,
+          10991.7
+        ],
+        "candidate": [
+          10625.3,
+          10235.1,
+          10480.1
+        ]
+      },
+      "repeat_us": {
+        "baseline": [
+          10174.9,
+          11607.1,
+          10139.2,
+          10136,
+          10348.2,
+          10082.9
+        ],
+        "candidate": [
+          10358.8,
+          10192.6,
+          10417.3,
+          10105.8,
+          11306.4,
+          11599.2
+        ]
+      }
+    },
+    {
+      "n": 40000,
+      "case": 0,
+      "median_us": {
+        "baseline": 636397,
+        "candidate": 631293
+      },
+      "process_samples": {
+        "baseline": [
+          641183,
+          636397,
+          623301
+        ],
+        "candidate": [
+          631293,
+          620097,
+          632340
+        ]
+      },
+      "change_percent": -0.8020150943514825,
+      "relative_range_percent": {
+        "baseline": 2.8098812533685735,
+        "candidate": 1.9393530420898062
+      },
+      "first_us": {
+        "baseline": [
+          641183,
+          691653,
+          616042
+        ],
+        "candidate": [
+          729115,
+          620097,
+          632340
+        ]
+      },
+      "repeat_us": {
+        "baseline": [
+          726899,
+          607578,
+          636397,
+          601537,
+          660850,
+          623301
+        ],
+        "candidate": [
+          631293,
+          621477,
+          618117,
+          692266,
+          650007,
+          620631
+        ]
+      }
+    },
+    {
+      "n": 1536,
+      "case": 256,
+      "median_us": {
+        "baseline": 16470.9,
+        "candidate": 16433.3
+      },
+      "process_samples": {
+        "baseline": [
+          15284.1,
+          16470.9,
+          16937.5
+        ],
+        "candidate": [
+          16433.3,
+          15778.7,
+          17471.3
+        ]
+      },
+      "change_percent": -0.2282813932450667,
+      "relative_range_percent": {
+        "baseline": 10.038309989132346,
+        "candidate": 10.299818052369266
+      },
+      "first_us": {
+        "baseline": [
+          17243,
+          16470.9,
+          19892.1
+        ],
+        "candidate": [
+          16231.6,
+          15697.5,
+          17653.8
+        ]
+      },
+      "repeat_us": {
+        "baseline": [
+          15284.1,
+          14846.6,
+          16639.9,
+          16009.8,
+          16844.1,
+          16937.5
+        ],
+        "candidate": [
+          16997.5,
+          16433.3,
+          16052.2,
+          15778.7,
+          17471.3,
+          16554.2
+        ]
+      }
+    }
+  ],
+  "scope": "Fixed diagnostic only; no formal CI, physical GPU, load, product memory quota or stage acceptance. Raw output/logs remain immutable."
+}

@@ -2,7 +2,7 @@
 
 状态：现行架构总览
 
-更新日期：2026-08-10
+更新日期：2026-10-28
 
 依据：[ADR 0027](../adr/0027-playback-sdk-product-boundary.md)
 
@@ -36,10 +36,15 @@ PlaybackSession / PreparedPlayback
 RuntimeFrame / SourceClockSample
 FrameSnapshot / FrameDigest
 portable presentation acquisition
-future InputEvent / JudgementResult / ReplayData
+candidate Gameplay / execution coordination (explicit opt-in)
 ```
 
 公共头不得暴露 EnTT、SDL、OpenGL/GLAD、JSON DOM、RuntimeSession、World 或实现日志类型。
+
+当前分支 SDK API 为 `0.9.1` preview，candidate Gameplay / 执行协调入口与普通播放路径显式区分，
+不把内部 Judgement 类型作为宿主 API。入口和所有权见 [API 索引](../api/README.md)与
+[实时宿主边界](../api/realtime-host-boundary.md)，当前交付/接受状态见
+[CURRENT_STATUS](../CURRENT_STATUS.md)。
 
 ## 内容流
 
@@ -69,6 +74,17 @@ SourceClockSample
 ```
 
 FrameSnapshot 是唯一公共帧。Adapter 可以派生内部命令包，但不能建立第二套 Runtime 求值路径。
+
+## 执行状态与恢复
+
+当前 candidate 保留单一 kernel / Fold，将不可变准备结果、历史前缀与运行实例的可变状态分开。
+phase / fact / matcher 使用分页共享和写时分离；内部封存来源可复用准备与自然恢复锚点。
+内置 Host 的 Seek 默认用 owning Replay 来源绑定，canonical 内容摘要及外部导入验证仍保留。
+Runtime 自有 Transform 更新使用可信缓存，可变 World 回调使其失效；默认更新路径保留完整验证。
+
+所有权、信任前提、缓存上限及维护约束集中在
+[执行状态、恢复与准备路径](execution-state-and-recovery.md)。这些内部设计不改变产品分层，
+也不自动构成设备或生产性能接受。
 
 ## 时间与确定性
 
@@ -106,6 +122,7 @@ pack、prepare 或 Playback 隐式执行。
 - [模块边界](MODULE_BOUNDARIES.md)
 - [Player 应用结构](PLAYER_APPLICATION.md)
 - [RuntimeSession](RUNTIME_SESSION.md)
+- [执行状态、恢复与准备路径](execution-state-and-recovery.md)
 - [配置所有权 ADR](../adr/0024-configuration-ownership-and-staged-formats.md)
 - [Chart/Runtime/World ADR](../adr/0007-chart-runtime-world-boundary.md)
 - [属性求值 ADR](../adr/0009-property-evaluation-and-conflicts.md)

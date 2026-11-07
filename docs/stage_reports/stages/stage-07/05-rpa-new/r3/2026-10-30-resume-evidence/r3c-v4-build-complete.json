@@ -1,0 +1,15 @@
+{
+  "scope": "Ordinary v4 private source-floor candidate; all installed/shared/template definitions identical to fresh v3. Only kernel and RPA B3 recompiled; all four binaries relinked. No performance or product acceptance.",
+  "parent_complete_sha256": "bf2350aabd089662bc55eac77b11f5b1e9f48888d5ee6ce4fecbbc2800356a6a",
+  "changed_sources": {
+    "engine/judgement/src/execution_kernel.cpp": "9ef90b44badf0c3ad4e295c7acc5012c92eb4654a3f1aab0faa3244cf649c870",
+    "tests/rpa/rpa_b3_tests.cpp": "5f7ec64f62a3e96a18a92385784a1991b784124bd5284e4124d41ab85c47c284"
+  },
+  "binaries": {
+    "cuexis_execution_host_tests.exe": "158abd6f9e9e29c9bd978abac98bf8a598ceb3040ba709a1b5868f0b8ab95e03",
+    "cuexis_gameplay_packed_tests.exe": "0e2132e0bf64da32c230efc68df650f2b90a4b1e04270cfb585cb3f0840fc71f",
+    "cuexis_judgement_tests.exe": "aee191fcf2acdfbc5af1770543c21a45b94fb9b45376c36bd439153a9ef38d07",
+    "cuexis_rpa_tests.exe": "eec177aa9c0ed44ab0c3e5fa1535a53a482462dd869d6ea21c3851acf5f8ee8b"
+  },
+  "commands_sha256": "5862c2129c6fcc925c35833541cea69cbf7cef60600fcfd40f1d70da2adc23bc"
+}

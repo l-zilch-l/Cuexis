@@ -1,0 +1,16 @@
+from pathlib import Path
+base=Path(__file__).resolve().parent
+s=(base/'build_publication_host.py').read_text()
+s=s.replace("out=base/'publication-host-v1'", "out=base/'combined-source-v1'")
+s=s.replace("baseline=compile('playback_session.cpp','playback_baseline')", "playback=compile('playback_session.cpp','playback_session')")
+a=s.index("for variant in ('baseline','candidate'):");b=s.index('for dll in ',a)
+s=s[:a]+'''run([cache['CMAKE_LINKER:FILEPATH'],'/NOLOGO','/machine:x64','/INCREMENTAL:NO','/subsystem:console','/OUT:'+str(out/'probe-candidate.exe'),str(base/'activation-build-v1/execution_kernel.obj'),playback,*objects,*libs],'link-candidate')
+shutil.copyfile(base/'publication-host-v1/probe-baseline.exe',out/'probe-baseline.exe')
+'''+s[b:]
+s=s.replace("source_binding_sha256=sha(out/'source-binding.json')", "source_binding_sha256=sha(out/'binding.json')")
+s=s.replace("(out/'binding.json').write_text", "(out/'build-binding.json').write_text")
+s+='''
+run([str(out/'probe-candidate.exe'),'[publication-large]','--rng-seed','1'],'test-boundaries')
+assert 'All tests passed' in (out/'test-boundaries.log').read_text(encoding='utf-8')
+'''
+exec(compile(s,str(base/'build_publication_host.py'),'exec'))

@@ -1,0 +1,32 @@
+{
+  "scope": "Opaque adjacent instancing screen; identical paged-sequence library and responsive startup in both; no formal acceptance",
+  "created_utc": "2026-10-30T15:58:38.564368+00:00",
+  "head": "b7233fc14aeb3f90bb69b96dc4bc61e163b38548",
+  "plan": [
+    {
+      "entities": 40000,
+      "mode": "render-only",
+      "repeat": 0,
+      "variant": "baseline",
+      "frames": 60
+    }
+  ],
+  "binary_sha256": "85d6757fded4d5a99c1828765db5fa3480e75cded774af5d462a6b271e596bff",
+  "source_sha256": "c6c832d0f4d07c1532f8588e2143f2e5bce0bff7c8a7976ce24c91b6293c4122",
+  "runner_sha256": "424e1b619f786fcb0ea10f73dd3af0679e7adb63acd60b2c48f04d3c076e6904",
+  "native_sha256": "44f9c49e8ec353a6386a7b481f178859abcf1c46b11688db70bb411ed21f15ce",
+  "viewport": [
+    1920,
+    1080
+  ],
+  "affinity": 65535,
+  "priority": "BelowNormal",
+  "qos": "execution throttling OFF",
+  "timer": false,
+  "normal_allocator": true,
+  "metrics": "OFF",
+  "warmup": "at least 8 frames and 2000ms",
+  "budget_us": 4166.666666666667,
+  "pass_rule": "wall FPS>=240 and cycle p99<=4.166667ms; duration runs additionally every full 1-second bin >=240 completed frames",
+  "stop": "invalid process stops; budget failures are retained capacity points, never replaced or extended"
+}

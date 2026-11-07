@@ -1,8 +1,8 @@
 # Deferred Design Proposals
 
-状态：active index
+状态：historical/deferred index
 
-更新日期：2026-08-28
+更新日期：2026-10-01
 
 本目录保存已讨论或已接受方向、但尚未进入当前实施阶段的设计输入。它们不是生产 API、
 格式合同或当前阶段承诺；实际排期以 [ROADMAP.md](../../ROADMAP.md) 和
@@ -13,8 +13,8 @@
 - [Shader Pipeline](SHADER_PIPELINE.md): historical design input; production contract is
   [MATERIAL_SHADER.md](../../formats/MATERIAL_SHADER.md) and
   [Stage 5 plan](../../stage_plans/completed/stage-05/plan.md)
-- [Particle Timeline](PARTICLE_TIMELINE.md): [Stage 8 plan](../../stage_plans/future/stage-08/plan.md)
-- [Android and Mobile Strategy](MOBILE_STRATEGY.md): [Stage 9B plan](../../stage_plans/deferred/stage-09b/plan.md)
+- [Particle Timeline](PARTICLE_TIMELINE.md): [Stage 13 plan](../../stage_plans/future/stage-13/plan.md)
+- [Android and Mobile Strategy](MOBILE_STRATEGY.md): [Stage 12 plan](../../stage_plans/future/stage-12/plan.md)
 
 ## Compatibility Entries
 

@@ -1,0 +1,19 @@
+{
+  "format": "cuexis.asset-index",
+  "version": 1,
+  "assets": [
+    {
+      "id": "mesh",
+      "type": "mesh",
+      "source": "meshes/triangle.mesh.bin",
+      "dependencies": []
+    },
+    {
+      "id": "material",
+      "type": "material",
+      "source": "materials/opaque.material.bin",
+      "dependencies": []
+    }
+  ],
+  "extensions": {}
+}

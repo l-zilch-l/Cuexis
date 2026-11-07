@@ -24,11 +24,6 @@ constexpr std::size_t maxNormalizedRecords = 100'000;
 constexpr double depthQuantization = 4096.0;
 constexpr double signedIntegerLimit = 0x1p63;
 
-struct OrderedDraw final {
-    std::size_t objectIndex{};
-    DrawCommand command;
-};
-
 struct Point3 final {
     double x{};
     double y{};
@@ -214,7 +209,31 @@ void hashCommand(SummaryHash& hash, const DrawCommand& command) noexcept {
     hash.writeU64(std::bit_cast<std::uint64_t>(command.transparentDepthKey));
 }
 
-[[nodiscard]] auto summaryDigest(const DrawSummary& summary) noexcept -> std::uint64_t {
+[[nodiscard]] auto validateDebugPass(bool debugPassEnabled, const render::RenderScene* debugScene,
+                                     std::size_t& debugCommandCount) -> core::Result<void> {
+    debugCommandCount = 0;
+    if (!debugPassEnabled || debugScene == nullptr) {
+        return {};
+    }
+    if (debugScene->size() > render::RenderScene::maxCommandCount) {
+        return core::unexpected(core::Error{"presentation.renderer.debug.limit",
+                                            "RenderScene command limit was exceeded"});
+    }
+    for (const auto& command : debugScene->commands()) {
+        if (command.type != render::RenderCommandType::DebugLine ||
+            !core::isFinite(command.start) || !core::isFinite(command.end) ||
+            !render::isValidColor(command.color)) {
+            return core::unexpected(core::Error{"presentation.renderer.debug.invalid",
+                                                "RenderScene contains an invalid Debug command"});
+        }
+    }
+    debugCommandCount = debugScene->size();
+    return {};
+}
+
+} // namespace
+
+auto summaryDigest(const DrawSummary& summary) noexcept -> std::uint64_t {
     SummaryHash hash;
     hash.writeU32(summary.version);
     hash.writeU32(summary.viewportWidth);
@@ -240,30 +259,6 @@ void hashCommand(SummaryHash& hash, const DrawCommand& command) noexcept {
     }
     return hash.value();
 }
-
-[[nodiscard]] auto validateDebugPass(bool debugPassEnabled, const render::RenderScene* debugScene,
-                                     std::size_t& debugCommandCount) -> core::Result<void> {
-    debugCommandCount = 0;
-    if (!debugPassEnabled || debugScene == nullptr) {
-        return {};
-    }
-    if (debugScene->size() > render::RenderScene::maxCommandCount) {
-        return core::unexpected(core::Error{"presentation.renderer.debug.limit",
-                                            "RenderScene command limit was exceeded"});
-    }
-    for (const auto& command : debugScene->commands()) {
-        if (command.type != render::RenderCommandType::DebugLine ||
-            !core::isFinite(command.start) || !core::isFinite(command.end) ||
-            !render::isValidColor(command.color)) {
-            return core::unexpected(core::Error{"presentation.renderer.debug.invalid",
-                                                "RenderScene contains an invalid Debug command"});
-        }
-    }
-    debugCommandCount = debugScene->size();
-    return {};
-}
-
-} // namespace
 
 auto buildPresentationCommands(const playback::FrameSnapshot& snapshot,
                                std::span<const playback::PortableResourcePtr> resources,
@@ -294,7 +289,6 @@ auto buildPresentationCommands(const playback::FrameSnapshot& snapshot,
         return core::unexpected(std::move(debug.error()));
     }
     if (manifestEmpty) {
-        summary.digest = summaryDigest(summary);
         return summary;
     }
     if (snapshot.objects.size() > maxNormalizedRecords) {
@@ -371,10 +365,8 @@ auto buildPresentationCommands(const playback::FrameSnapshot& snapshot,
     std::sort(textures.begin(), textures.end(), byReference);
     std::sort(shaders.begin(), shaders.end(), byReference);
 
-    std::vector<OrderedDraw> opaque;
-    std::vector<OrderedDraw> transparent;
-    opaque.reserve(snapshot.objects.size());
-    transparent.reserve(snapshot.objects.size());
+    summary.opaque.reserve(snapshot.objects.size());
+    summary.transparent.reserve(snapshot.objects.size());
     bool cameraValidated = false;
     for (std::size_t objectIndex = 0; objectIndex < snapshot.objects.size(); ++objectIndex) {
         const auto& object = snapshot.objects[objectIndex];
@@ -450,32 +442,31 @@ auto buildPresentationCommands(const playback::FrameSnapshot& snapshot,
             return core::unexpected(nonFiniteError(object.id, "material_opacity"));
         }
 
-        OrderedDraw draw;
+        DrawCommand draw;
+        draw.objectId = object.id;
         draw.objectIndex = objectIndex;
-        draw.command.objectId = object.id;
-        draw.command.objectIndex = objectIndex;
         std::copy(std::begin(object.worldMatrix), std::end(object.worldMatrix),
-                  draw.command.worldMatrix.begin());
-        draw.command.mesh = *object.mesh;
-        draw.command.material = *object.material;
+                  draw.worldMatrix.begin());
+        draw.mesh = *object.mesh;
+        draw.material = *object.material;
         for (std::size_t component = 0; component < 3; ++component) {
             if (!std::isfinite(material->material.baseColor[component]) ||
                 !std::isfinite(object.materialTint[component])) {
                 return core::unexpected(nonFiniteError(object.id, "effective_rgb"));
             }
-            draw.command.effectiveColor[component] =
+            draw.effectiveColor[component] =
                 static_cast<double>(material->material.baseColor[component]) *
                 static_cast<double>(object.materialTint[component]);
-            if (!std::isfinite(draw.command.effectiveColor[component])) {
+            if (!std::isfinite(draw.effectiveColor[component])) {
                 return core::unexpected(nonFiniteError(object.id, "effective_rgb"));
             }
         }
         if (!std::isfinite(material->material.baseColor[3])) {
             return core::unexpected(nonFiniteError(object.id, "effective_alpha"));
         }
-        draw.command.effectiveColor[3] =
+        draw.effectiveColor[3] =
             static_cast<double>(material->material.baseColor[3]) * object.materialOpacity;
-        if (!std::isfinite(draw.command.effectiveColor[3])) {
+        if (!std::isfinite(draw.effectiveColor[3])) {
             return core::unexpected(nonFiniteError(object.id, "effective_alpha"));
         }
 
@@ -485,50 +476,46 @@ auto buildPresentationCommands(const playback::FrameSnapshot& snapshot,
         if (!finitePoint(localCenter) || !finitePoint(worldCenter) || !finitePoint(viewCenter)) {
             return core::unexpected(nonFiniteError(object.id, "depth_transform"));
         }
-        draw.command.depthMeters = -viewCenter.z;
-        const double scaledDepth = draw.command.depthMeters * depthQuantization;
+        draw.depthMeters = -viewCenter.z;
+        const double scaledDepth = draw.depthMeters * depthQuantization;
         const double roundedDepth = std::round(scaledDepth);
-        if (!std::isfinite(draw.command.depthMeters) || !std::isfinite(scaledDepth) ||
+        if (!std::isfinite(draw.depthMeters) || !std::isfinite(scaledDepth) ||
             !std::isfinite(roundedDepth) || roundedDepth < -signedIntegerLimit ||
             roundedDepth >= signedIntegerLimit) {
             return core::unexpected(nonFiniteError(object.id, "depth"));
         }
-        draw.command.transparentDepthKey = static_cast<std::int64_t>(roundedDepth);
-        draw.command.backFaceCulling = !material->material.doubleSided;
-        draw.command.pass =
-            material->material.alphaMode == playback::PresentationAlphaMode::Blend ||
-                    draw.command.effectiveColor[3] < 1.0
-                ? PresentationPass::Transparent
-                : PresentationPass::Opaque;
-        draw.command.depthWrite = draw.command.pass == PresentationPass::Opaque;
-        draw.command.sourceOverBlend = draw.command.pass == PresentationPass::Transparent;
-        if (draw.command.pass == PresentationPass::Opaque) {
-            opaque.push_back(std::move(draw));
+        draw.transparentDepthKey = static_cast<std::int64_t>(roundedDepth);
+        draw.backFaceCulling = !material->material.doubleSided;
+        draw.pass = material->material.alphaMode == playback::PresentationAlphaMode::Blend ||
+                            draw.effectiveColor[3] < 1.0
+                        ? PresentationPass::Transparent
+                        : PresentationPass::Opaque;
+        draw.depthWrite = draw.pass == PresentationPass::Opaque;
+        draw.sourceOverBlend = draw.pass == PresentationPass::Transparent;
+        if (draw.pass == PresentationPass::Opaque) {
+            summary.opaque.push_back(std::move(draw));
         } else {
-            transparent.push_back(std::move(draw));
+            summary.transparent.push_back(std::move(draw));
         }
     }
 
-    std::sort(opaque.begin(), opaque.end(), [](const auto& left, const auto& right) {
-        return std::tie(left.command.objectId, left.objectIndex) <
-               std::tie(right.command.objectId, right.objectIndex);
-    });
-    std::sort(transparent.begin(), transparent.end(), [](const auto& left, const auto& right) {
-        if (left.command.transparentDepthKey != right.command.transparentDepthKey) {
-            return left.command.transparentDepthKey > right.command.transparentDepthKey;
+    const auto opaqueLess = [](const auto& left, const auto& right) {
+        return std::tie(left.objectId, left.objectIndex) <
+               std::tie(right.objectId, right.objectIndex);
+    };
+    const auto transparentLess = [](const auto& left, const auto& right) {
+        if (left.transparentDepthKey != right.transparentDepthKey) {
+            return left.transparentDepthKey > right.transparentDepthKey;
         }
-        return std::tie(left.command.objectId, left.objectIndex) <
-               std::tie(right.command.objectId, right.objectIndex);
-    });
-    summary.opaque.reserve(opaque.size());
-    summary.transparent.reserve(transparent.size());
-    for (const auto& draw : opaque) {
-        summary.opaque.push_back(draw.command);
+        return std::tie(left.objectId, left.objectIndex) <
+               std::tie(right.objectId, right.objectIndex);
+    };
+    if (!std::is_sorted(summary.opaque.begin(), summary.opaque.end(), opaqueLess)) {
+        std::sort(summary.opaque.begin(), summary.opaque.end(), opaqueLess);
     }
-    for (const auto& draw : transparent) {
-        summary.transparent.push_back(draw.command);
+    if (!std::is_sorted(summary.transparent.begin(), summary.transparent.end(), transparentLess)) {
+        std::sort(summary.transparent.begin(), summary.transparent.end(), transparentLess);
     }
-    summary.digest = summaryDigest(summary);
     return summary;
 }
 

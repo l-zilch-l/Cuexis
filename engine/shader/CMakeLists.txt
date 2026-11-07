@@ -68,6 +68,9 @@ target_link_libraries(cuexis_shader_cache
 if(CUEXIS_BUILD_SHADER_TOOLS)
     add_library(cuexis_shader STATIC
         src/shader_compiler.cpp
+        src/shader_compiler_reflection.cpp
+        src/shader_compiler_sources.cpp
+        src/shader_compiler_units_internal.hpp
         src/shader_pipeline_cache.cpp
     )
     add_library(cuexis::shader ALIAS cuexis_shader)

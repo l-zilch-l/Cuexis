@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Catch2TestRun name="cuexis_execution_host_tests.exe" rng-seed="3040731962" xml-format-version="3" catch2-version="3.15.2">
+  <TestCase name="B5 queued execution uses owner clock instead of stale submission time" tags="[b5][clock][rpa][worker]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_session_worker_tests.cpp" line="86">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD4 actual host long steady state reclaims frames with a tiny observation journal" tags="[long-host][pd][pd4]" filename="D:\Cuexis-worktree\tests\pd\retained_control_tests.cpp" line="344">
+    <OverallResult success="true" skips="0">
+      <StdOut>
+PD4_LONG_HOST {"attempts":5000,"payload_peak":2,"journal_bytes":5872,"journal_peak_bytes":5872,"replay_equal":true}
+      </StdOut>
+    </OverallResult>
+  </TestCase>
+  <TestCase name="R1 C10 retire replay uses the original ledger without a second generation change" tags="[c10][r1][rpa][worker]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_session_close_tests.cpp" line="136">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 failed audio creation retains accepted replies through shutdown" tags="[b5][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_failure_tests.cpp" line="56">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 full capture queue preserves control cut space and owning fault evidence" tags="[b5][fault][host]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_close_tests.cpp" line="479">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R1 real worker delivery failure preserves the first Close error" tags="[first-error][host][r1][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_audio_tail_tests.cpp" line="43">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R1 C6 failed accepted Load cleans its own identity before independent Close" tags="[c6][host][r1][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_close_tests.cpp" line="437">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 owner channel reserves control and reply slots in FIFO order" tags="[b5][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_audio_tests.cpp" line="104">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R1 application lifetime drains while callback captures survive exception unwinding" tags="[clock][lifetime][r1][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_seek_host_tests.cpp" line="6">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 capture readiness confirms the actual cut without inventing one" tags="[b5][capture][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_capture_tests.cpp" line="148">
+    <Section name="Fence before cut is terminal rejected" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_capture_tests.cpp" line="152">
+      <OverallResults successes="1" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <Section name="Fence after cut is applied and duplicate does not create deliveries" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_capture_tests.cpp" line="155">
+      <OverallResults successes="4" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R1 an exception at a Close boundary retains the original cause and phase" tags="[continuation][exception][r1][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_seek_host_tests.cpp" line="192">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD3c Pause drain redraws older last success and Resume preserves source" tags="[pd][retained-control]" filename="D:\Cuexis-worktree\tests\pd\retained_control_tests.cpp" line="97">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R3 Host Seek verifies origin state and target frame across cuts and hints" tags="[b5][rpa][seek-matrix]" filename="D:\Cuexis-worktree\tests\rpa\r3_seek_matrix_tests.hpp" line="4">
+    <OverallResult success="true" skips="0">
+      <StdOut>
+{"event":"r3.seek.matrix","records":33,"cut_kind":0,"external":0,"hint_kind":0,"request_to_ready_us":4563,"request_to_present_us":5485,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":0,"external":0,"hint_kind":1,"request_to_ready_us":4042,"request_to_present_us":5097,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":0,"external":0,"hint_kind":2,"request_to_ready_us":5082,"request_to_present_us":6058,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":0,"external":1,"hint_kind":0,"request_to_ready_us":4482,"request_to_present_us":6789,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":0,"external":1,"hint_kind":1,"request_to_ready_us":4955,"request_to_present_us":5938,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":0,"external":1,"hint_kind":2,"request_to_ready_us":5256,"request_to_present_us":6263,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":1,"external":0,"hint_kind":0,"request_to_ready_us":3117,"request_to_present_us":4218,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":1,"external":0,"hint_kind":1,"request_to_ready_us":7161,"request_to_present_us":8125,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":1,"external":0,"hint_kind":2,"request_to_ready_us":8234,"request_to_present_us":9373,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":1,"external":1,"hint_kind":0,"request_to_ready_us":12493,"request_to_present_us":14056,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":1,"external":1,"hint_kind":1,"request_to_ready_us":5545,"request_to_present_us":6439,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":1,"external":1,"hint_kind":2,"request_to_ready_us":6597,"request_to_present_us":7681,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":2,"external":0,"hint_kind":0,"request_to_ready_us":4678,"request_to_present_us":5700,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":2,"external":0,"hint_kind":1,"request_to_ready_us":4957,"request_to_present_us":6000,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":2,"external":0,"hint_kind":2,"request_to_ready_us":5437,"request_to_present_us":6515,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":2,"external":1,"hint_kind":0,"request_to_ready_us":5747,"request_to_present_us":7359,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":2,"external":1,"hint_kind":1,"request_to_ready_us":4964,"request_to_present_us":5894,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":2,"external":1,"hint_kind":2,"request_to_ready_us":5777,"request_to_present_us":7623,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":3,"external":0,"hint_kind":0,"request_to_ready_us":2999,"request_to_present_us":3950,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":3,"external":0,"hint_kind":1,"request_to_ready_us":2712,"request_to_present_us":3561,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":3,"external":0,"hint_kind":2,"request_to_ready_us":2713,"request_to_present_us":3575,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":3,"external":1,"hint_kind":0,"request_to_ready_us":3723,"request_to_present_us":4720,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":3,"external":1,"hint_kind":1,"request_to_ready_us":3677,"request_to_present_us":4774,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":3,"external":1,"hint_kind":2,"request_to_ready_us":4322,"request_to_present_us":5612,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":4,"external":0,"hint_kind":0,"request_to_ready_us":5510,"request_to_present_us":7787,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":4,"external":0,"hint_kind":1,"request_to_ready_us":2762,"request_to_present_us":3934,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":4,"external":0,"hint_kind":2,"request_to_ready_us":2618,"request_to_present_us":3560,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":4,"external":1,"hint_kind":0,"request_to_ready_us":4354,"request_to_present_us":5748,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":4,"external":1,"hint_kind":1,"request_to_ready_us":3969,"request_to_present_us":4922,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":33,"cut_kind":4,"external":1,"hint_kind":2,"request_to_ready_us":3781,"request_to_present_us":4932,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":0,"external":0,"hint_kind":0,"request_to_ready_us":4014,"request_to_present_us":5137,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":0,"external":0,"hint_kind":1,"request_to_ready_us":13181,"request_to_present_us":16380,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":0,"external":0,"hint_kind":2,"request_to_ready_us":16663,"request_to_present_us":18654,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":0,"external":1,"hint_kind":0,"request_to_ready_us":8896,"request_to_present_us":10801,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":0,"external":1,"hint_kind":1,"request_to_ready_us":11146,"request_to_present_us":12145,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":0,"external":1,"hint_kind":2,"request_to_ready_us":10378,"request_to_present_us":11467,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":1,"external":0,"hint_kind":0,"request_to_ready_us":2215,"request_to_present_us":3202,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":1,"external":0,"hint_kind":1,"request_to_ready_us":20824,"request_to_present_us":21732,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":1,"external":0,"hint_kind":2,"request_to_ready_us":22821,"request_to_present_us":25741,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":1,"external":1,"hint_kind":0,"request_to_ready_us":15849,"request_to_present_us":17125,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":1,"external":1,"hint_kind":1,"request_to_ready_us":22921,"request_to_present_us":24141,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":1,"external":1,"hint_kind":2,"request_to_ready_us":14918,"request_to_present_us":15803,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":2,"external":0,"hint_kind":0,"request_to_ready_us":3699,"request_to_present_us":5619,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":2,"external":0,"hint_kind":1,"request_to_ready_us":10477,"request_to_present_us":11483,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":2,"external":0,"hint_kind":2,"request_to_ready_us":12053,"request_to_present_us":13187,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":2,"external":1,"hint_kind":0,"request_to_ready_us":9370,"request_to_present_us":10454,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":2,"external":1,"hint_kind":1,"request_to_ready_us":10094,"request_to_present_us":10925,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":2,"external":1,"hint_kind":2,"request_to_ready_us":11850,"request_to_present_us":14031,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":3,"external":0,"hint_kind":0,"request_to_ready_us":3178,"request_to_present_us":4501,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":3,"external":0,"hint_kind":1,"request_to_ready_us":2842,"request_to_present_us":3867,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":3,"external":0,"hint_kind":2,"request_to_ready_us":5743,"request_to_present_us":6951,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":3,"external":1,"hint_kind":0,"request_to_ready_us":3643,"request_to_present_us":4702,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":3,"external":1,"hint_kind":1,"request_to_ready_us":5603,"request_to_present_us":6622,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":3,"external":1,"hint_kind":2,"request_to_ready_us":4102,"request_to_present_us":5032,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":4,"external":0,"hint_kind":0,"request_to_ready_us":2424,"request_to_present_us":3107,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":4,"external":0,"hint_kind":1,"request_to_ready_us":2372,"request_to_present_us":3478,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":4,"external":0,"hint_kind":2,"request_to_ready_us":2406,"request_to_present_us":3199,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":4,"external":1,"hint_kind":0,"request_to_ready_us":3385,"request_to_present_us":4122,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":4,"external":1,"hint_kind":1,"request_to_ready_us":3285,"request_to_present_us":4365,"renderer":"cpu-test","formal":false}
+{"event":"r3.seek.matrix","records":129,"cut_kind":4,"external":1,"hint_kind":2,"request_to_ready_us":2980,"request_to_present_us":3877,"renderer":"cpu-test","formal":false}
+      </StdOut>
+    </OverallResult>
+  </TestCase>
+  <TestCase name="R1 C4 a fresh Close cannot reuse an unconfirmed different control fence sequence" tags="[admission][c4][r1][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_session_close_tests.cpp" line="231">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 worker safely rejects invalid delivery after local construction" tags="[b5][rpa][worker]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_session_worker_tests.cpp" line="34">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 capture Close retains owning evidence and requires actual cut and acknowledgements" tags="[b5][capture][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_capture_tests.cpp" line="77">
+    <Section name="Normal delivery acknowledgement preserves its separate meaning" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_capture_tests.cpp" line="90">
+      <OverallResults successes="3" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <Section name="Explicit software retirement retains undelivered evidence without ACK" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_capture_tests.cpp" line="96">
+      <OverallResults successes="4" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 inverse seek mapping preserves rational offsets and rejects unavailable source" tags="[b5][clock][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_capture_tests.cpp" line="210">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R1 C7 failed Close without old fence rejects software retirement" tags="[c7][r1][rpa][worker]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_session_close_tests.cpp" line="7">
+    <OverallResult success="true" skips="0">
+      <StdOut>
+R1.C7.retire=0,error=host.rpa.control_pending,generation=2->2,ledgerApplied=0
+      </StdOut>
+    </OverallResult>
+  </TestCase>
+  <TestCase name="R1 C2 rejects each corrupted Close retirement binding without unloading" tags="[c2][r1][rpa][worker]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_session_close_tests.cpp" line="24">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 paused clock observations use frozen rational position without granting advance" tags="[b5][clock][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_capture_tests.cpp" line="163">
+    <Section name="Paused observation cannot lower normal horizon" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_capture_tests.cpp" line="179">
+      <OverallResults successes="2" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <Section name="Same publication changed payload is rejected" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_capture_tests.cpp" line="186">
+      <OverallResults successes="1" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R1 C8 suspended or failed status without accepted binding cannot unload" tags="[c8][r1][rpa][worker]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_session_close_tests.cpp" line="76">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD4 paused retained revocation degrades explicitly and legal Resume restores delivery" tags="[pd][pd4][retained-control]" filename="D:\Cuexis-worktree\tests\pd\retained_control_tests.cpp" line="405">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD3c unknown device and replacement generation forbid retained submission" tags="[pd][retained-control]" filename="D:\Cuexis-worktree\tests\pd\retained_control_tests.cpp" line="262">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 declared 256 requirement boundary completes simultaneous timers and Replay" tags="[b5][host][measurement]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_seek_host_tests.cpp" line="231">
+    <OverallResult success="true" skips="0">
+      <StdOut>
+{"event":"b5.cpu.content_boundary","test_only":true,"requirements":1,"prepare_us":14419,"packed_bytes":3047,"sample_present_us":764,"misses":1}
+{"event":"b5.cpu.content_boundary","test_only":true,"requirements":256,"prepare_us":958480,"packed_bytes":229514,"sample_present_us":1174,"misses":256}
+      </StdOut>
+    </OverallResult>
+  </TestCase>
+  <TestCase name="B5 headless EOF tail preserves owners through Pause Resume and terminal execution" tags="[b5][host][tail]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_audio_tail_tests.cpp" line="334">
+    <OverallResult success="true" skips="0">
+      <StdOut>
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":417,"clock_h":2248,"h_lag":1416,"frontier_lag":1416,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":343,"clock_h":2790,"h_lag":1958,"frontier_lag":1958,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":603,"clock_h":3519,"h_lag":874,"frontier_lag":874,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":405,"clock_h":4081,"h_lag":1436,"frontier_lag":1436,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":584,"clock_h":4771,"h_lag":823,"frontier_lag":823,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":304,"clock_h":5206,"h_lag":1258,"frontier_lag":1258,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":529,"clock_h":5844,"h_lag":736,"frontier_lag":736,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":376,"clock_h":6376,"h_lag":1268,"frontier_lag":1268,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":615,"clock_h":7155,"h_lag":933,"frontier_lag":933,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":362,"clock_h":7713,"h_lag":1491,"frontier_lag":1491,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":589,"clock_h":8447,"h_lag":836,"frontier_lag":836,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":672,"clock_h":9315,"h_lag":1704,"frontier_lag":1704,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":793,"clock_h":10288,"h_lag":1164,"frontier_lag":1164,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":430,"clock_h":11030,"h_lag":1906,"frontier_lag":1906,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":796,"clock_h":12037,"h_lag":1168,"frontier_lag":1168,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":376,"clock_h":12695,"h_lag":1826,"frontier_lag":1826,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":820,"clock_h":13671,"h_lag":1094,"frontier_lag":1094,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":496,"clock_h":17056,"h_lag":4479,"frontier_lag":4479,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":678,"clock_h":17878,"h_lag":985,"frontier_lag":985,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":329,"clock_h":18367,"h_lag":1474,"frontier_lag":1474,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":546,"clock_h":19012,"h_lag":741,"frontier_lag":741,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":525,"clock_h":19713,"h_lag":1442,"frontier_lag":1442,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":1133,"clock_h":20988,"h_lag":1430,"frontier_lag":1430,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":370,"clock_h":21628,"h_lag":2070,"frontier_lag":2070,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":696,"clock_h":22592,"h_lag":1105,"frontier_lag":1105,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":345,"clock_h":23114,"h_lag":1627,"frontier_lag":1627,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":588,"clock_h":23848,"h_lag":859,"frontier_lag":859,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":401,"clock_h":24417,"h_lag":1428,"frontier_lag":1428,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":571,"clock_h":25110,"h_lag":898,"frontier_lag":898,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":350,"clock_h":25701,"h_lag":1489,"frontier_lag":1489,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":580,"clock_h":26450,"h_lag":882,"frontier_lag":882,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":959,"clock_h":27595,"h_lag":2027,"frontier_lag":2027,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":818,"clock_h":28708,"h_lag":1864,"frontier_lag":1864,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":428,"clock_h":29337,"h_lag":2493,"frontier_lag":2493,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":775,"clock_h":30296,"h_lag":1117,"frontier_lag":1117,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":447,"clock_h":30967,"h_lag":1788,"frontier_lag":1788,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":1179,"clock_h":32307,"h_lag":1487,"frontier_lag":1487,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":397,"clock_h":32926,"h_lag":2106,"frontier_lag":2106,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":659,"clock_h":33707,"h_lag":923,"frontier_lag":923,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":372,"clock_h":34283,"h_lag":1499,"frontier_lag":1499,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":807,"clock_h":35231,"h_lag":1093,"frontier_lag":1093,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":1181,"clock_h":36799,"h_lag":2661,"frontier_lag":2661,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":664,"clock_h":37748,"h_lag":1242,"frontier_lag":1242,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":314,"clock_h":38234,"h_lag":1728,"frontier_lag":1728,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":583,"clock_h":39055,"h_lag":937,"frontier_lag":937,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":383,"clock_h":39616,"h_lag":1498,"frontier_lag":1498,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":746,"clock_h":40523,"h_lag":1076,"frontier_lag":1076,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":374,"clock_h":41069,"h_lag":1622,"frontier_lag":1622,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":620,"clock_h":41825,"h_lag":894,"frontier_lag":894,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":334,"clock_h":42315,"h_lag":1384,"frontier_lag":1384,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":588,"clock_h":43040,"h_lag":854,"frontier_lag":854,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":390,"clock_h":43560,"h_lag":1374,"frontier_lag":1374,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":854,"clock_h":44668,"h_lag":1274,"frontier_lag":1274,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":387,"clock_h":45235,"h_lag":1841,"frontier_lag":1841,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":618,"clock_h":46003,"h_lag":913,"frontier_lag":913,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":288,"clock_h":46440,"h_lag":1350,"frontier_lag":1350,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":842,"clock_h":47421,"h_lag":1085,"frontier_lag":1085,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":393,"clock_h":48063,"h_lag":1727,"frontier_lag":1727,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":630,"clock_h":48830,"h_lag":913,"frontier_lag":913,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":384,"clock_h":49503,"h_lag":1586,"frontier_lag":1586,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":589,"clock_h":50230,"h_lag":852,"frontier_lag":852,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":344,"clock_h":50739,"h_lag":1361,"frontier_lag":1361,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":504,"clock_h":51391,"h_lag":768,"frontier_lag":768,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":364,"clock_h":51916,"h_lag":1293,"frontier_lag":1293,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":610,"clock_h":52678,"h_lag":906,"frontier_lag":906,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":357,"clock_h":53195,"h_lag":1423,"frontier_lag":1423,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":584,"clock_h":53928,"h_lag":865,"frontier_lag":865,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":842,"clock_h":55165,"h_lag":2102,"frontier_lag":2102,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":960,"clock_h":56348,"h_lag":1412,"frontier_lag":1412,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":385,"clock_h":56967,"h_lag":2031,"frontier_lag":2031,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":724,"clock_h":57840,"h_lag":1015,"frontier_lag":1015,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":490,"clock_h":58518,"h_lag":1693,"frontier_lag":1693,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":630,"clock_h":59307,"h_lag":947,"frontier_lag":947,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":346,"clock_h":59813,"h_lag":1453,"frontier_lag":1453,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":692,"clock_h":60692,"h_lag":1007,"frontier_lag":1007,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":410,"clock_h":61299,"h_lag":1614,"frontier_lag":1614,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":689,"clock_h":62178,"h_lag":1045,"frontier_lag":1045,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":390,"clock_h":62749,"h_lag":1616,"frontier_lag":1616,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":614,"clock_h":63514,"h_lag":907,"frontier_lag":907,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":481,"clock_h":64213,"h_lag":1606,"frontier_lag":1606,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":725,"clock_h":65107,"h_lag":1051,"frontier_lag":1051,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":380,"clock_h":65652,"h_lag":1596,"frontier_lag":1596,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":669,"clock_h":66475,"h_lag":951,"frontier_lag":951,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":338,"clock_h":66991,"h_lag":1467,"frontier_lag":1467,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":656,"clock_h":67782,"h_lag":905,"frontier_lag":905,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":392,"clock_h":68321,"h_lag":1444,"frontier_lag":1444,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":757,"clock_h":69258,"h_lag":1102,"frontier_lag":1102,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":421,"clock_h":69851,"h_lag":1695,"frontier_lag":1695,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":553,"clock_h":70565,"h_lag":858,"frontier_lag":858,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":353,"clock_h":71237,"h_lag":1530,"frontier_lag":1530,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":540,"clock_h":71928,"h_lag":821,"frontier_lag":821,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":493,"clock_h":72577,"h_lag":1470,"frontier_lag":1470,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":866,"clock_h":73609,"h_lag":1159,"frontier_lag":1159,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":531,"clock_h":74354,"h_lag":1904,"frontier_lag":1904,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":966,"clock_h":75481,"h_lag":1335,"frontier_lag":1335,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":368,"clock_h":76091,"h_lag":1945,"frontier_lag":1945,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":687,"clock_h":76906,"h_lag":944,"frontier_lag":944,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":654,"clock_h":77830,"h_lag":1868,"frontier_lag":1868,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":767,"clock_h":78783,"h_lag":1154,"frontier_lag":1154,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":618,"clock_h":79719,"h_lag":2090,"frontier_lag":2090,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":913,"clock_h":80805,"h_lag":1236,"frontier_lag":1236,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":578,"clock_h":81639,"h_lag":2070,"frontier_lag":2070,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":779,"clock_h":82618,"h_lag":1257,"frontier_lag":1257,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":545,"clock_h":83438,"h_lag":2077,"frontier_lag":2077,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":612,"clock_h":84227,"h_lag":955,"frontier_lag":955,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":306,"clock_h":84676,"h_lag":1404,"frontier_lag":1404,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":690,"clock_h":85496,"h_lag":940,"frontier_lag":940,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":379,"clock_h":86062,"h_lag":1506,"frontier_lag":1506,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":828,"clock_h":87159,"h_lag":1239,"frontier_lag":1239,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":2780,"clock_h":90103,"h_lag":4183,"frontier_lag":4183,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":700,"clock_h":90998,"h_lag":1177,"frontier_lag":1177,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":487,"clock_h":91666,"h_lag":1845,"frontier_lag":1845,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":636,"clock_h":92517,"h_lag":984,"frontier_lag":984,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":301,"clock_h":92975,"h_lag":1442,"frontier_lag":1442,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":899,"clock_h":94152,"h_lag":1302,"frontier_lag":1302,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":591,"clock_h":95067,"h_lag":2217,"frontier_lag":2217,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":703,"clock_h":95944,"h_lag":1033,"frontier_lag":1033,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":382,"clock_h":96504,"h_lag":1593,"frontier_lag":1593,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":1053,"clock_h":97745,"h_lag":1375,"frontier_lag":1375,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":730,"clock_h":98716,"h_lag":2346,"frontier_lag":2346,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":847,"clock_h":99741,"h_lag":1201,"frontier_lag":1201,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":409,"clock_h":100003,"h_lag":1463,"frontier_lag":1463,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.owner_sample","test_only":true,"fixture":"single_requirement_tail","request_us":1168,"clock_h":100003,"h_lag":0,"frontier_lag":0,"sealed_cursor":1,"folded_cursor":1}
+{"event":"b5.cpu.close","test_only":true,"close_join_us":2675,"session_capacity":64,"session_control_reserve":16,"capture_capacity":64}
+      </StdOut>
+    </OverallResult>
+  </TestCase>
+  <TestCase name="B5 realtime main host cuts after inspection and drives Pause Resume Seek Close" tags="[b5][host][realtime]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_audio_tail_tests.cpp" line="130">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="Audio publication preserves device observation time across service polls" tags="[b5][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_audio_tests.cpp" line="52">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 suspended Close directs its own cleanup without a normal fence" tags="[b5][close][rpa][worker]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_session_worker_tests.cpp" line="126">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 Close retires the fence of an unconfirmed candidate" tags="[b5][c3][close][r1][rpa][worker]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_session_close_tests.cpp" line="389">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R0 close flush fault records delivery cause and still completes" tags="[b5][observation][r0][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_close_tests.cpp" line="541">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 Close cleanup retires a suspended non-Close control before the join" tags="[b5][c1][close][r1][rpa][worker]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_session_close_tests.cpp" line="290">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 fault Close can release undelivered records only after an owning export" tags="[b5][capture][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_capture_tests.cpp" line="122">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R1 Close interruption continues each original acceptance step confirmation and exit" tags="[continuation][phases][r1][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_transcript_tests.cpp" line="209">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD3c retained backing survives newer World and sender mutation" tags="[pd][retained-control]" filename="D:\Cuexis-worktree\tests\pd\retained_control_tests.cpp" line="227">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 deadline retains original tail job until pumped Close completes" tags="[b5][deadline][fault][host]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_close_tests.cpp" line="330">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="Finite audio endpoints bound extrapolation before explicit EOF tail" tags="[b5][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_audio_tail_tests.cpp" line="5">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 main host drives actual owners and pumps while awaiting directed Close" tags="[b5][host]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_close_tests.cpp" line="6">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="PD3c pure EOF clock binding preserves the successful presentation" tags="[pd][retained-control]" filename="D:\Cuexis-worktree\tests\pd\retained_control_tests.cpp" line="201">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R1 close export failure preserves its cause while the original Close completes" tags="[b5][observation][r1][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_close_tests.cpp" line="584">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R0 public operation transcript is identical with observation on and off" tags="[equivalence][r0][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_transcript_tests.cpp" line="6">
+    <OverallResult success="true" skips="0">
+      <StdOut>
+R0EQ.resize=host.rpa.control_pending
+R0EQ.load=294,1,1,0
+R0EQ.capture=skipped
+R0EQ.advance=32,0,32000000
+R0EQ.records=32
+R0EQ.replay=b5b80c5ac7628951f9f9ec23f03079a71bd8eaa5a859e7bd516fc288bd887585,bytes=41183
+R0EQ.evaluation=-1,1,1
+R0EQ.snapshot=1,640x480
+R0EQ.present=0
+R0EQ.close=6,host.rpa.owner_closed,1
+R0EQ.digest=b4608fbfd7a89706d5c982fa8e57132e4dbb12abde7fa019cc762bbf6c1a7bf2
+      </StdOut>
+    </OverallResult>
+  </TestCase>
+  <TestCase name="B5 tail replica adopts actual source actions rather than reply arrival times" tags="[b5][clock]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_capture_tests.cpp" line="6">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 audio factory exception retires its local device before exit publication" tags="[b5][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_audio_tests.cpp" line="245">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R1 C4 same-sequence Close confirmation requires the complete accepted proof" tags="[c4][r1][rpa][worker]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_session_close_tests.cpp" line="172">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 tail reply interruption is queried before main closes the new clock scope" tags="[b5][fault][host]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_close_tests.cpp" line="269">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 retained renderer readiness rejects stale identity before fencing" tags="[b5][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_failure_tests.cpp" line="11">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 stale control receipt cannot release the Close fence" tags="[b5][c5][close][r1][rpa][worker]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_session_close_tests.cpp" line="400">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R1 Close clock starts at zero and includes join at the fixed 1000 ms boundary" tags="[budget][clock][r1][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_transcript_tests.cpp" line="379">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R1 C7a failed Close step with old fence rejects after valid retirement" tags="[c7a][r1][rpa][worker]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_session_close_tests.cpp" line="19">
+    <OverallResult success="true" skips="0">
+      <StdOut>
+R1.C7a.closeStep=0,error=host.rpa.control_pending,ledgerApplied=0
+      </StdOut>
+    </OverallResult>
+  </TestCase>
+  <TestCase name="PD4 host updates without credit and reports NoRetainedFrame after explicit revocation" tags="[pd][pd4][retained-control]" filename="D:\Cuexis-worktree\tests\pd\retained_control_tests.cpp" line="294">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R1 expired total or original transport deadline retains a pumpable Close and captures" tags="[budget][clock][continuation][r1][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_transcript_tests.cpp" line="422">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 host rejects unaccepted budgets and closes CPU preparation failure" tags="[b5][host]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_close_tests.cpp" line="421">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 Prepared and software commit stay on worker with owning frame transfer" tags="[b5][rpa][worker]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_session_worker_tests.cpp" line="42">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R1 a dispatched Close step remains pending until its original typed reply arrives" tags="[inflight][observation][r1][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_seek_host_tests.cpp" line="127">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R1 C7a failed Close with old fence rejects software retirement" tags="[c7a][r1][rpa][worker]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_session_close_tests.cpp" line="11">
+    <OverallResult success="true" skips="0">
+      <StdOut>
+R1.C7a.retire=0,error=host.rpa.control_pending,generation=2->2,ledgerApplied=0
+      </StdOut>
+    </OverallResult>
+  </TestCase>
+  <TestCase name="R1 C7 failed Close step without old fence rejects after valid retirement" tags="[c7][r1][rpa][worker]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_session_close_tests.cpp" line="15">
+    <OverallResult success="true" skips="0">
+      <StdOut>
+R1.C7.closeStep=0,error=host.rpa.control_pending,ledgerApplied=0
+      </StdOut>
+    </OverallResult>
+  </TestCase>
+  <TestCase name="R1 Close consumes the original archive or inspection reply exactly once" tags="[continuation][old-job][r1][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_transcript_tests.cpp" line="282">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 Load ordinals continue into realtime while Waiting leaves owner input loop free" tags="[b5][rpa][worker]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_session_worker_tests.cpp" line="68">
+    <Section name="Paused owner can close directly" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_session_worker_tests.cpp" line="72">
+      <OverallResults successes="45" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <Section name="Actual owning Replay Seek restarts execution ordinals in a new epoch" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_session_worker_tests.cpp" line="75">
+      <OverallResults successes="234" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <Section name="Actual owning Replay Seek restarts execution ordinals in a new epoch" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_session_worker_tests.cpp" line="75">
+      <OverallResults successes="301" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <Section name="Actual R2 consumes owning final trace once on worker" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_session_worker_tests.cpp" line="79">
+      <OverallResults successes="130" failures="0" expectedFailures="0" skipped="false"/>
+    </Section>
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 audio service owns device decode and publication without render drive" tags="[b5][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_audio_tests.cpp" line="136">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="R1 C9 retains capture and audio prerequisites on normal and cleanup paths" tags="[c9][r1][rpa][worker]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_session_close_tests.cpp" line="98">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 Session owner has separate thread and preserves control reply capacity" tags="[b5][rpa][worker]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_session_worker_tests.cpp" line="8">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 explicit host suspension preserves real owner terminal status" tags="[b5][host][rpa]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_capture_tests.cpp" line="191">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <TestCase name="B5 main closes after audio factory failure before Load acceptance" tags="[b5][fault][host]" filename="D:\Cuexis-worktree\tests\rpa\rpa_b5_seek_host_tests.cpp" line="328">
+    <OverallResult success="true" skips="0"/>
+  </TestCase>
+  <OverallResults successes="50797" failures="0" expectedFailures="0" skips="0"/>
+  <OverallResultsCases successes="62" failures="0" expectedFailures="0" skips="0"/>
+</Catch2TestRun>

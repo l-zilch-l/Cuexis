@@ -1,0 +1,36 @@
+from pathlib import Path
+import ctypes,hashlib,json,shutil,subprocess
+root=Path.cwd();base=Path(__file__).resolve().parent
+build=base/'budget-build-v3';source=base/'budget-source-v4';out=base/'budget-v4-host-v1'
+assert (base/'budget-build-v4/complete.json').is_file()
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+shell=ctypes.WinDLL('shell32');shell.CommandLineToArgvW.argtypes=[ctypes.c_wchar_p,ctypes.POINTER(ctypes.c_int)];shell.CommandLineToArgvW.restype=ctypes.POINTER(ctypes.c_wchar_p)
+k=ctypes.WinDLL('kernel32');k.LocalFree.argtypes=[ctypes.c_void_p]
+def split(line):
+    count=ctypes.c_int();p=shell.CommandLineToArgvW(line,ctypes.byref(count))
+    try:return [p[i] for i in range(count.value)]
+    finally:k.LocalFree(p)
+cache=dict(l.split('=',1) for l in (build/'CMakeCache.txt').read_text().splitlines() if '=' in l and not l.startswith(('#','//')))
+cc=json.loads((build/'compile_commands.json').read_text());commands=[]
+def run(args,label):
+    commands.append(dict(label=label,args=args));(out/'commands.json').write_text(json.dumps(commands,indent=2))
+    with (out/(label+'.log')).open('x',encoding='utf-8') as f:r=subprocess.run(args,cwd=build,stdout=f,stderr=subprocess.STDOUT)
+    print(label,r.returncode,flush=True)
+    if r.returncode:raise SystemExit(r.returncode)
+def compile(suffix,path,name):
+    c=next(c for c in cc if c['file'].endswith('/'+suffix))
+    args=[a for a in split(c['command']) if not a.startswith(('/Fo','/Fd')) and not a.endswith('.cpp')]
+    args=[a.replace(str(base/'budget-source-v3'),str(source)).replace((base/'budget-source-v3').as_posix(),source.as_posix()) for a in args]
+    args.insert(1,'/I'+str(source/'engine/judgement/src'))
+    obj=out/(name+'.obj');run([*args,'/Fo'+str(obj),'/Fd'+str(out/(name+'.pdb')),str(path)],'compile-'+name)
+    return str(obj)
+disabled=compile('execution_kernel.cpp',out/'kernel_disabled.cpp','kernel-disabled')
+probe=compile('rpa_b5_host_tests.cpp',out/'host_probe.cpp','host-probe')
+block=(build/'build.ninja').read_text().split('build bin\\cuexis_execution_host_tests.exe',1)[1].split('\n\n',1)[0]
+objects=split(block.split(': CXX_EXECUTABLE_LINKER__cuexis_execution_host_tests_Release ',1)[1].split(' | ',1)[0])
+objects=[probe if 'rpa_b5_host_tests.cpp.obj' in p else p for p in objects]
+libs=split(next(l.split(' = ',1)[1] for l in block.splitlines() if l.startswith('  LINK_LIBRARIES = ')))
+for variant in ('baseline','candidate'):
+    run([cache['CMAKE_LINKER:FILEPATH'],'/NOLOGO','/machine:x64','/INCREMENTAL:NO','/subsystem:console','/OUT:'+str(out/('probe-'+variant+'.exe')),*([disabled] if variant=='baseline' else [str(base/'budget-build-v4/kernel.obj')]),*objects,*libs],'link-'+variant)
+for dll in (build/'bin').glob('*.dll'):shutil.copyfile(dll,out/dll.name)
+(out/'binding.json').write_text(json.dumps(dict(scope='Ordinary same-v3 source/fixture/classes pair. Baseline private tick quota zero; candidate keeps historical128MiB diagnostic parameter. No production quota/whole-process cap acceptance.',source_binding_sha256=sha(out/'source-binding.json'),commands_sha256=sha(out/'commands.json'),fresh_complete_sha256=sha(base/'budget-build-v4/complete.json'),binaries={p.name:sha(p) for p in out.glob('*.exe')}),indent=2),encoding='utf-8')

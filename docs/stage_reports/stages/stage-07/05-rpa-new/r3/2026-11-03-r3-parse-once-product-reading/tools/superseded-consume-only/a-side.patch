@@ -1,0 +1,17 @@
+diff --git a/engine/playback/src/playback_session_prepare_stages.cpp b/engine/playback/src/playback_session_prepare_stages.cpp
+index 59527234..3fdc1529 100644
+--- a/engine/playback/src/playback_session_prepare_stages.cpp
++++ b/engine/playback/src/playback_session_prepare_stages.cpp
+@@ -89,9 +89,9 @@ namespace prepare_detail {
+     // travels the text entry point instead, which reports the writer error unchanged.
+     const internal::PrepareTraceScope traceCanonical{"load_canonical"};
+     std::string canonicalText;
+-    if (loaded.legacyCanonicalText.has_value()) {
+-        canonicalText = std::move(*loaded.legacyCanonicalText);
+-    } else {
++    // TEMPORARY MEASUREMENT A-SIDE: the dispatcher's canonical bytes are ignored so the writer
++    // re-parses the source text, which is the behaviour before the tree was owned once.
++    {
+         auto canonical = chart::ChartWriter::writeCanonicalJson(context.chartJson, context.limits);
+         if (!canonical) {
+             addErrorDiagnostic(diagnostics, canonical.error());

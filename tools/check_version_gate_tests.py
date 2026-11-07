@@ -5,12 +5,15 @@ from __future__ import annotations
 import ast
 import json
 import os
+import re
+import shlex
 import shutil
 import subprocess
 import tempfile
 import unittest
 from datetime import date
 from pathlib import Path
+from unittest.mock import patch
 
 import check_version_gate as gate
 from update_version import Version
@@ -49,6 +52,49 @@ def resolve_git() -> str | None:
     return None
 
 
+# A shell can answer `exit 0` and `git --version` while living in a different
+# filesystem view. `C:\Windows\System32\bash.exe` is the WSL launcher: its
+# filename contains no "wsl" and inside WSL `git` resolves, so a name-only check
+# selects it even though it cannot read the Windows workspace the bootstrap
+# block materializes into. The guard therefore has to test the invariant the
+# block actually depends on.
+SYSTEM_BASH = Path(os.environ.get("SystemRoot", r"C:\Windows")) / "System32" / "bash.exe"
+SHELL_VIEW_MARKER = "cuexis-shell-view-probe"
+
+
+def is_system_bash(shell: str) -> bool:
+    """True when `shell` resolves to the Windows WSL launcher under System32."""
+    try:
+        return os.path.normcase(os.path.abspath(shell)) == os.path.normcase(
+            os.path.abspath(SYSTEM_BASH)
+        )
+    except (OSError, ValueError):
+        return False
+
+
+def reads_marker_through_native_path(shell: str) -> bool:
+    """True when `shell` can read a marker through a native absolute path.
+
+    Git Bash and MSYS2 translate `C:\\...`-style paths and a POSIX shell on
+    Linux reads the POSIX path unchanged, so both keep working. A shell in a
+    different filesystem view cannot resolve the string at all, which is the
+    case that must never be selected for the bootstrap block.
+    """
+    try:
+        with tempfile.TemporaryDirectory() as directory:
+            marker = Path(directory) / SHELL_VIEW_MARKER
+            marker.write_text("ok", encoding="ascii")
+            probe = subprocess.run(
+                [shell, "-c", "test -f %s" % shlex.quote(str(marker))],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=30,
+            )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return probe.returncode == 0
+
+
 def usable_posix_shell() -> str | None:
     """Returns a shell that can actually execute the bootstrap block, or None.
 
@@ -66,6 +112,14 @@ def usable_posix_shell() -> str | None:
 
     Non-UTF-8 bytes are tolerated here precisely because a broken shim emits
     localized text; the caller only needs to know whether the shell is usable.
+
+    The last probe is the invariant the bootstrap block actually depends on: the
+    shell must read a marker through the native absolute path spelling of the
+    workspace. A shell in another filesystem view -- the WSL launcher reached
+    through `C:\\Windows\\System32\\bash.exe` -- answers `exit 0` and even
+    `git --version` but cannot resolve that path, so a name-only check would
+    select it and turn the positive bootstrap case into a false "lacks <file>"
+    failure.
     """
     shell = shutil.which("bash")
     if shell is None:
@@ -83,7 +137,9 @@ def usable_posix_shell() -> str | None:
         return None
     # The WSL shim identifies itself in its banner; reject it even when the
     # probe happens to succeed on a machine with a working WSL distribution.
-    if "wsl" in Path(shell).name.lower():
+    # The launcher itself is named `bash.exe`, so the banner check alone never
+    # matches it; the resolved System32 path is rejected as well.
+    if "wsl" in Path(shell).name.lower() or is_system_bash(shell):
         return None
     try:
         git_probe = subprocess.run(
@@ -95,6 +151,8 @@ def usable_posix_shell() -> str | None:
     except (OSError, subprocess.SubprocessError):
         return None
     if git_probe.returncode != 0:
+        return None
+    if not reads_marker_through_native_path(shell):
         return None
     return shell
 
@@ -320,6 +378,7 @@ class VersionGateTests(unittest.TestCase):
         text = WORKFLOW.read_text(encoding="utf-8")
         for token in (
             "pull_request:",
+            "pull_request_target:",
             "merge_group:",
             "push:",
             "workflow_dispatch:",
@@ -338,8 +397,34 @@ class VersionGateTests(unittest.TestCase):
             "--trusted-utc-date",
         ):
             self.assertIn(token, text)
-        self.assertNotIn("github.event.pull_request.head.sha", text)
+        self.assertIn("github.event.pull_request.head.sha", text)
+        self.assertIn("Never check out or execute PR code", text)
         self.assertNotIn("${GITHUB_WORKSPACE}/tools/check_version_gate.py", text)
+
+    def test_pre_merge_pr_trigger_and_job_mapping_stay_reachable(self) -> None:
+        text = WORKFLOW.read_text(encoding="utf-8")
+        # The target event uses the base workflow. Removing pull_request from the
+        # candidate before master has the target trigger leaves the PR with no run.
+        events, jobs = text.split("\njobs:\n", 1)
+        for event in ("pull_request", "pull_request_target"):
+            # Extract the complete indented event body, rather than only its first line.
+            block = re.search(r"(?m)^  " + event + r":\n((?:    .*\n)+)", events)
+            self.assertIsNotNone(block)
+            self.assertIn("- master", block.group(1))
+            self.assertIn("synchronize", block.group(1))
+        pre_merge = jobs.split("  post-merge-audit:\n", 1)[0]
+        pr = "startsWith(github.event_name, 'pull_request')"
+        self.assertIn("if: " + pr + " || github.event_name == 'merge_group'", pre_merge)
+        self.assertIn("ref: ${{ " + pr + " && github.event.pull_request.base.sha || github.sha }}",
+                      pre_merge)
+        for variable, expression in (
+            ("CUEXIS_BASE_SHA", "github.event.pull_request.base.sha || github.event.merge_group.base_sha"),
+            ("CUEXIS_CANDIDATE_SHA", "github.event.pull_request.head.sha || github.sha"),
+            ("CUEXIS_EVENT", "'pull_request' || github.event_name"),
+        ):
+            self.assertIn(variable + ": ${{ " + pr + " && " + expression + " }}", pre_merge)
+        self.assertIn("git fetch --no-tags origin", pre_merge)
+        self.assertNotIn("ref: ${{ github.event.pull_request.head.sha }}", pre_merge)
 
     def test_workflow_does_not_silently_bypass_bootstrap_or_trust_candidate_tests(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")
@@ -468,6 +553,7 @@ class VersionGateTests(unittest.TestCase):
         "tools/check_version_gate_tests.py",
         "tools/update_version.py",
         ".github/workflows/version-gate.yml",
+        ".github/sdk-api-owners.json",
     )
     # The bootstrap block materializes the gate files plus the two canonical
     # templates it renders its fixtures from, so the materialize assertion must
@@ -599,8 +685,9 @@ class VersionGateTests(unittest.TestCase):
         if shell is None:
             self.skipTest(
                 "no usable POSIX shell available to execute the bootstrap block; "
-                "`bash` is absent, resolves to the WSL shim, or its PATH cannot "
-                "resolve `git` (the block shells out to git by bare name)"
+                "`bash` is absent, resolves to the WSL shim, its PATH cannot "
+                "resolve `git` (the block shells out to git by bare name), or it "
+                "cannot read a marker through the native workspace path"
             )
         script = self._bootstrap_script()
         with tempfile.TemporaryDirectory() as directory:
@@ -667,6 +754,65 @@ class VersionGateTests(unittest.TestCase):
             self.assertNotEqual(0, completed.returncode)
             self.assertIn("version.bootstrap.required", captured(completed))
 
+    def test_rejects_a_shell_that_cannot_read_the_workspace_path(self) -> None:
+        # A shell can answer `exit 0` and `git --version` while living in a
+        # different filesystem view: that is exactly how the WSL launcher
+        # (`C:\Windows\System32\bash.exe`, a filename that contains no "wsl")
+        # slips past a name-only check. If such a shell were selected, the
+        # positive bootstrap case would fail with a false "lacks <file>" and
+        # the negative case could pass vacuously, so it must be rejected.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fake = root / ("bash.cmd" if os.name == "nt" else "bash")
+            if os.name == "nt":
+                # `findstr` is addressed through %SystemRoot% on purpose: this
+                # stand-in must not depend on the caller's PATH resolving any
+                # external tool, or a trimmed PATH would turn the marker probe
+                # into a false pass and the test into a false failure.
+                content = (
+                    "@echo off\r\n"
+                    'echo %* | "%SystemRoot%\\System32\\findstr.exe" /C:"MARKER" >nul\r\n'
+                    "if %errorlevel%==0 exit /b 1\r\n"
+                    "exit /b 0\r\n"
+                )
+            else:
+                content = (
+                    "#!/bin/sh\n"
+                    'case "$*" in\n'
+                    "  *MARKER*) exit 1 ;;\n"
+                    "  *) exit 0 ;;\n"
+                    "esac\n"
+                )
+            fake.write_text(content.replace("MARKER", SHELL_VIEW_MARKER), encoding="ascii")
+            if os.name != "nt":
+                fake.chmod(0o755)
+
+            original = os.environ.get("PATH", "")
+            os.environ["PATH"] = str(root) + os.pathsep + original
+            try:
+                resolved = shutil.which("bash")
+                if resolved is None or os.path.normcase(str(resolved)) != os.path.normcase(
+                    str(fake)
+                ):
+                    self.skipTest(
+                        "this platform cannot resolve a `bash` stand-in on PATH, so the "
+                        "view-mismatch rejection cannot be exercised here"
+                    )
+                # The stand-in passes the trivial probe the guard used to rely on.
+                trivial = subprocess.run(
+                    [str(fake), "-c", "exit 0"],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    timeout=30,
+                )
+                self.assertEqual(0, trivial.returncode)
+                # It cannot read the marker through the native path, so it must
+                # never be selected for the bootstrap block.
+                self.assertFalse(reads_marker_through_native_path(str(fake)))
+                self.assertIsNone(usable_posix_shell())
+            finally:
+                os.environ["PATH"] = original
+
     def _bootstrap_script(self) -> str:
         """Extracts the trusted-baseline materialize block from the workflow.
 
@@ -705,6 +851,144 @@ class VersionGateTests(unittest.TestCase):
                 date(2026, 9, 20),
                 "live",
             )
+
+
+class SdkOwnerApprovalTests(unittest.TestCase):
+    def test_real_git_tree_and_api_owner_record(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            def git(*args):
+                return subprocess.check_output([gate.git_executable(), "-C", str(root), *args]).decode().strip()
+            git("init", "-q")
+            git("config", "user.name", "Gate Test")
+            git("config", "user.email", "gate@example.invalid")
+            (root / "cmake").mkdir()
+            (root / ".github").mkdir()
+            version = (TOOLS.parent / "cmake/CuexisVersion.cmake").read_text()
+            version = re.sub(r'set\(CUEXIS_SDK_API_VERSION "[^"]+"\)', 'set(CUEXIS_SDK_API_VERSION "0.7.0")', version)
+            (root / "cmake/CuexisVersion.cmake").write_text(version)
+            (root / "vcpkg.json").write_text((TOOLS.parent / "vcpkg.json").read_text())
+            (root / gate.SDK_OWNERS_FILE).write_text(json.dumps({"format": "cuexis.sdk-api-owners",
+                "version": 1, "owners": ["l-zilch-l"], "repository": "l-zilch-l/Cuexis"}))
+            git("add", ".")
+            git("commit", "-qm", "trusted baseline")
+            base = git("rev-parse", "HEAD")
+            (root / "cmake/CuexisVersion.cmake").write_text(version.replace('"0.7.0"', '"0.7.1"'))
+            git("add", ".")
+            git("commit", "-qm", "candidate")
+            candidate = git("rev-parse", "HEAD")
+            expected, comment = self.record()
+            expected.update(base_sha=base, candidate_sha=candidate,
+                            candidate_tree_sha=git("rev-parse", "HEAD^{tree}"))
+            comment["body"] = gate.SDK_APPROVAL_PREFIX + json.dumps(expected)
+            def api(repository, suffix):
+                return {"head": {"sha": candidate}} if suffix == "pulls/32" else [comment]
+            with patch.object(gate, "_github_json", side_effect=api), patch.dict(os.environ, {"GITHUB_REPOSITORY": "l-zilch-l/Cuexis"}):
+                self.assertEqual(gate.sdk_owner_approval(root, base, candidate, date(2026, 10, 6), 32,
+                                                         "pull_request"), 123)
+                newer = dict(comment, id=124, body="cuexis-sdk-api-approval-v1\r\n{}")
+                with patch.object(gate, "_github_json", side_effect=lambda repository, suffix:
+                                  {"head": {"sha": candidate}} if suffix == "pulls/32"
+                                  else [comment, newer]):
+                    with self.assertRaises(gate.GateError):
+                        gate.sdk_owner_approval(root, base, candidate, date(2026, 10, 6), 32,
+                                                "pull_request")
+                comment["body"] = comment["body"].replace("\n", "\r\n")
+                self.assertEqual(gate.sdk_owner_approval(root, base, candidate, date(2026, 10, 6), 32,
+                                                         "pull_request"), 123)
+                git("branch", "topic", candidate)
+                git("checkout", "-q", "-B", "master", base)
+                git("merge", "--squash", "topic")
+                git("commit", "-qm", "squash candidate")
+                merged = git("rev-parse", "HEAD")
+                git("branch", "-D", "topic")
+                fresh = root / "fresh"
+                subprocess.check_call([gate.git_executable(), "clone", "-q", "--no-local",
+                                       str(root), str(fresh)])
+                self.assertNotEqual(gate._run_git(fresh, "cat-file", "-e",
+                                                  candidate + "^{commit}").returncode, 0)
+                original_run = gate._run_git
+                def fetching(repo, *arguments):
+                    if arguments and arguments[0] == "fetch":
+                        self.assertEqual(arguments[-2], "https://github.com/l-zilch-l/Cuexis.git")
+                        self.assertEqual(arguments[-1], candidate)
+                        return original_run(repo, *arguments[:-2], str(root), candidate)
+                    return original_run(repo, *arguments)
+                with patch.object(gate, "_run_git", side_effect=fetching):
+                    self.assertEqual(gate.sdk_owner_approval(fresh, base, merged,
+                        date(2026, 10, 6), 32, "push"), 123)
+                comment["user"]["login"] = "intruder"
+                with self.assertRaises(gate.GateError):
+                    gate.sdk_owner_approval(root, base, candidate, date(2026, 10, 6), 32, "pull_request")
+
+    def record(self):
+        expected = {"repository": "l-zilch-l/Cuexis", "pr": 32, "base_sha": "a" * 40,
+                    "candidate_sha": "b" * 40, "candidate_tree_sha": "c" * 40,
+                    "from": "0.7.0", "to": "0.7.1", "utc_date": "2026-10-06"}
+        comment = {"id": 123, "user": {"login": "l-zilch-l", "type": "User"},
+                   "created_at": "2026-10-06T12:00:00Z", "updated_at": "2026-10-06T12:00:00Z",
+                   "body": gate.SDK_APPROVAL_PREFIX + json.dumps(expected)}
+        return expected, comment
+
+    def test_exact_owner_record_and_merge_tree(self):
+        expected, comment = self.record()
+        self.assertEqual(gate.validate_sdk_approval(comment, ["l-zilch-l"], expected,
+                                                   "pull_request", "c" * 40), 123)
+        merged = dict(expected, candidate_sha="d" * 40)
+        self.assertEqual(gate.validate_sdk_approval(comment, ["l-zilch-l"], merged,
+                                                   "push", "c" * 40), 123)
+        with self.assertRaises(gate.GateError):
+            gate.validate_sdk_approval(comment, ["l-zilch-l"], merged, "push", "e" * 40)
+
+    def test_crlf_preserves_approval_checks_and_raw_body_bound(self):
+        expected, comment = self.record()
+        comment["body"] = comment["body"].replace("\n", "\r\n")
+        self.assertEqual(gate.validate_sdk_approval(comment, ["l-zilch-l"], expected,
+                                                   "pull_request", "c" * 40), 123)
+        with self.assertRaises(gate.GateError):
+            gate.validate_sdk_approval(comment, ["l-zilch-l"], dict(expected, pr=33),
+                                       "pull_request", "c" * 40)
+        comment["updated_at"] = "2026-10-06T13:00:00Z"
+        with self.assertRaises(gate.GateError):
+            gate.validate_sdk_approval(comment, ["l-zilch-l"], expected,
+                                       "pull_request", "c" * 40)
+        comment["updated_at"] = comment["created_at"]
+        comment["user"] = {"login": "intruder", "type": "User"}
+        with self.assertRaises(gate.GateError):
+            gate.validate_sdk_approval(comment, ["l-zilch-l"], expected,
+                                       "pull_request", "c" * 40)
+        comment["user"] = {"login": "l-zilch-l", "type": "User"}
+        comment["body"] += "\r\n" * 4096
+        with self.assertRaises(gate.GateError):
+            gate.validate_sdk_approval(comment, ["l-zilch-l"], expected,
+                                       "pull_request", "c" * 40)
+
+    def test_stale_sha_base_sdk_date_or_actor_never_grants_permission(self):
+        for field, value in (("candidate_sha", "e" * 40), ("base_sha", "f" * 40),
+                             ("candidate_tree_sha", "e" * 40), ("to", "0.8.0"),
+                             ("utc_date", "2026-10-07"), ("pr", True)):
+            with self.subTest(field=field):
+                expected, comment = self.record()
+                wrong = dict(expected, **{field: value})
+                comment["body"] = gate.SDK_APPROVAL_PREFIX + json.dumps(wrong)
+                with self.assertRaises(gate.GateError):
+                    gate.validate_sdk_approval(comment, ["l-zilch-l"], expected,
+                                               "pull_request", "c" * 40)
+        for user in ({"login": "intruder", "type": "User"},
+                     {"login": "l-zilch-l", "type": "Bot"}):
+            expected, comment = self.record()
+            comment["user"] = user
+            with self.assertRaises(gate.GateError):
+                gate.validate_sdk_approval(comment, ["l-zilch-l"], expected,
+                                           "pull_request", "c" * 40)
+        expected, comment = self.record()
+        comment["updated_at"] = "2026-10-06T13:00:00Z"
+        with self.assertRaises(gate.GateError):
+            gate.validate_sdk_approval(comment, ["l-zilch-l"], expected,
+                                       "pull_request", "c" * 40)
+
+    def test_cli_boolean_cannot_grant_authorization(self):
+        self.assertEqual(gate.main(["--check-current", "--allow-sdk-api-change"]), 1)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,65 @@
+Filters: [r3c-cost-census]
+Randomness seeded to: 1
+{"event":"r3c.retention_census","n":1000,"wave":0,"limit":0,"phase":0,"requested_delta":2299822,"crt_usable_delta":2626286,"charge":0,"private_bytes":25317376,"working_set":29859840,"points":0}
+{"event":"r3c.retention_census","n":1000,"wave":0,"limit":0,"phase":1,"requested_delta":7629141,"crt_usable_delta":9114357,"charge":0,"private_bytes":35237888,"working_set":39452672,"points":0}
+{"event":"r3c.retention_census","n":1000,"wave":0,"limit":0,"phase":2,"requested_delta":7614646,"crt_usable_delta":9098582,"charge":0,"private_bytes":35237888,"working_set":39452672,"points":0}
+{"event":"r3c.retention_census","n":1000,"wave":0,"limit":0,"phase":3,"requested_delta":7614646,"crt_usable_delta":9098582,"charge":0,"private_bytes":35237888,"working_set":39452672,"points":0}
+{"event":"r3c.retention_census","n":1000,"wave":0,"limit":0,"phase":4,"requested_delta":2293654,"crt_usable_delta":2618902,"charge":0,"private_bytes":26279936,"working_set":29941760,"points":0}
+{"event":"r3c.retention_release","n":1000,"wave":0,"limit":0,"peak_requested_delta":11741466,"peak_crt_usable_delta":14094298,"released_delta":0,"storage_released_delta":0}
+{"event":"r3c.retention_census","n":1000,"wave":0,"limit":134217728,"phase":0,"requested_delta":2299822,"crt_usable_delta":2626286,"charge":0,"private_bytes":25219072,"working_set":29806592,"points":1}
+{"event":"r3c.retention_census","n":1000,"wave":0,"limit":134217728,"phase":1,"requested_delta":7640444,"crt_usable_delta":9125916,"charge":6115528,"private_bytes":35340288,"working_set":39411712,"points":1}
+{"event":"r3c.retention_census","n":1000,"wave":0,"limit":134217728,"phase":2,"requested_delta":7625949,"crt_usable_delta":9110141,"charge":6115528,"private_bytes":35340288,"working_set":39411712,"points":1}
+{"event":"r3c.retention_census","n":1000,"wave":0,"limit":134217728,"phase":3,"requested_delta":7625949,"crt_usable_delta":9110141,"charge":6115528,"private_bytes":35340288,"working_set":39411712,"points":1}
+{"event":"r3c.retention_census","n":1000,"wave":0,"limit":134217728,"phase":4,"requested_delta":2293654,"crt_usable_delta":2618902,"charge":0,"private_bytes":25333760,"working_set":29855744,"points":1}
+{"event":"r3c.retention_release","n":1000,"wave":0,"limit":134217728,"peak_requested_delta":11741466,"peak_crt_usable_delta":14094298,"released_delta":0,"storage_released_delta":0}
+{"event":"r3c.retention_census","n":1000,"wave":0,"limit":18446744073709551615,"phase":0,"requested_delta":2299822,"crt_usable_delta":2626286,"charge":0,"private_bytes":25202688,"working_set":29851648,"points":1}
+{"event":"r3c.retention_census","n":1000,"wave":0,"limit":18446744073709551615,"phase":1,"requested_delta":7640444,"crt_usable_delta":9125916,"charge":6115528,"private_bytes":35250176,"working_set":39403520,"points":1}
+{"event":"r3c.retention_census","n":1000,"wave":0,"limit":18446744073709551615,"phase":2,"requested_delta":7625949,"crt_usable_delta":9110141,"charge":6115528,"private_bytes":35250176,"working_set":39403520,"points":1}
+{"event":"r3c.retention_census","n":1000,"wave":0,"limit":18446744073709551615,"phase":3,"requested_delta":7625949,"crt_usable_delta":9110141,"charge":6115528,"private_bytes":35250176,"working_set":39403520,"points":1}
+{"event":"r3c.retention_census","n":1000,"wave":0,"limit":18446744073709551615,"phase":4,"requested_delta":2293654,"crt_usable_delta":2618902,"charge":0,"private_bytes":25759744,"working_set":30117888,"points":1}
+{"event":"r3c.retention_release","n":1000,"wave":0,"limit":18446744073709551615,"peak_requested_delta":11741466,"peak_crt_usable_delta":14094298,"released_delta":0,"storage_released_delta":0}
+{"event":"r3c.retention_census","n":40000,"wave":0,"limit":0,"phase":0,"requested_delta":91285760,"crt_usable_delta":104248192,"charge":0,"private_bytes":953962496,"working_set":899223552,"points":0}
+{"event":"r3c.retention_census","n":40000,"wave":0,"limit":0,"phase":1,"requested_delta":303503837,"crt_usable_delta":362787005,"charge":0,"private_bytes":1292197888,"working_set":1232318464,"points":0}
+{"event":"r3c.retention_census","n":40000,"wave":0,"limit":0,"phase":2,"requested_delta":303177342,"crt_usable_delta":362459230,"charge":0,"private_bytes":1292197888,"working_set":1232318464,"points":0}
+{"event":"r3c.retention_census","n":40000,"wave":0,"limit":0,"phase":3,"requested_delta":303177342,"crt_usable_delta":362459230,"charge":0,"private_bytes":1292197888,"working_set":1232318464,"points":0}
+{"event":"r3c.retention_census","n":40000,"wave":0,"limit":0,"phase":4,"requested_delta":91279592,"crt_usable_delta":104240808,"charge":0,"private_bytes":938688512,"working_set":888070144,"points":0}
+{"event":"r3c.retention_release","n":40000,"wave":0,"limit":0,"peak_requested_delta":463568821,"peak_crt_usable_delta":557532597,"released_delta":0,"storage_released_delta":0}
+R3C_QUOTA_MISS 901 244028048 198803392 43275024 0 134217728
+{"event":"r3c.retention_census","n":40000,"wave":0,"limit":134217728,"phase":0,"requested_delta":91285760,"crt_usable_delta":104248192,"charge":0,"private_bytes":955715584,"working_set":898797568,"points":0}
+{"event":"r3c.retention_census","n":40000,"wave":0,"limit":134217728,"phase":1,"requested_delta":303503837,"crt_usable_delta":362787005,"charge":0,"private_bytes":1295044608,"working_set":1231396864,"points":0}
+{"event":"r3c.retention_census","n":40000,"wave":0,"limit":134217728,"phase":2,"requested_delta":303177342,"crt_usable_delta":362459230,"charge":0,"private_bytes":1295044608,"working_set":1231396864,"points":0}
+{"event":"r3c.retention_census","n":40000,"wave":0,"limit":134217728,"phase":3,"requested_delta":303177342,"crt_usable_delta":362459230,"charge":0,"private_bytes":1295044608,"working_set":1231396864,"points":0}
+{"event":"r3c.retention_census","n":40000,"wave":0,"limit":134217728,"phase":4,"requested_delta":91279592,"crt_usable_delta":104240808,"charge":0,"private_bytes":1006964736,"working_set":955785216,"points":0}
+{"event":"r3c.retention_release","n":40000,"wave":0,"limit":134217728,"peak_requested_delta":463568821,"peak_crt_usable_delta":557532597,"released_delta":0,"storage_released_delta":0}
+{"event":"r3c.retention_census","n":40000,"wave":0,"limit":18446744073709551615,"phase":0,"requested_delta":91285760,"crt_usable_delta":104248192,"charge":0,"private_bytes":959246336,"working_set":903995392,"points":1}
+{"event":"r3c.retention_census","n":40000,"wave":0,"limit":18446744073709551615,"phase":1,"requested_delta":303827140,"crt_usable_delta":363110564,"charge":244028048,"private_bytes":1293910016,"working_set":1230950400,"points":1}
+{"event":"r3c.retention_census","n":40000,"wave":0,"limit":18446744073709551615,"phase":2,"requested_delta":303500645,"crt_usable_delta":362782789,"charge":244028048,"private_bytes":1293910016,"working_set":1230950400,"points":1}
+{"event":"r3c.retention_census","n":40000,"wave":0,"limit":18446744073709551615,"phase":3,"requested_delta":303500645,"crt_usable_delta":362782789,"charge":244028048,"private_bytes":1293910016,"working_set":1230950400,"points":1}
+{"event":"r3c.retention_census","n":40000,"wave":0,"limit":18446744073709551615,"phase":4,"requested_delta":91279592,"crt_usable_delta":104240808,"charge":0,"private_bytes":1003565056,"working_set":953315328,"points":1}
+{"event":"r3c.retention_release","n":40000,"wave":0,"limit":18446744073709551615,"peak_requested_delta":463568821,"peak_crt_usable_delta":557532597,"released_delta":0,"storage_released_delta":0}
+{"event":"r3c.retention_census","n":40000,"wave":6667,"limit":0,"phase":0,"requested_delta":91285760,"crt_usable_delta":104248192,"charge":0,"private_bytes":970772480,"working_set":918454272,"points":0}
+{"event":"r3c.retention_census","n":40000,"wave":6667,"limit":0,"phase":1,"requested_delta":338092323,"crt_usable_delta":408218435,"charge":0,"private_bytes":1261731840,"working_set":1203482624,"points":0}
+{"event":"r3c.retention_census","n":40000,"wave":6667,"limit":0,"phase":2,"requested_delta":337756669,"crt_usable_delta":407881373,"charge":0,"private_bytes":1261731840,"working_set":1203482624,"points":0}
+{"event":"r3c.retention_census","n":40000,"wave":6667,"limit":0,"phase":3,"requested_delta":156391584,"crt_usable_delta":186773792,"charge":0,"private_bytes":1155911680,"working_set":1102233600,"points":0}
+{"event":"r3c.retention_census","n":40000,"wave":6667,"limit":0,"phase":4,"requested_delta":91279592,"crt_usable_delta":104240808,"charge":0,"private_bytes":1027162112,"working_set":974659584,"points":0}
+{"event":"r3c.retention_release","n":40000,"wave":6667,"limit":0,"peak_requested_delta":369323129,"peak_crt_usable_delta":445449433,"released_delta":0,"storage_released_delta":0}
+R3C_QUOTA_MISS 1101 111361400 66341032 43275024 78127952 134217728
+R3C_QUOTA_MISS 1301 144509640 99435936 43275024 78127952 134217728
+R3C_QUOTA_MISS 1501 177735344 132608304 43275024 78127952 134217728
+R3C_QUOTA_MISS 1701 210887312 165706936 43275024 78127952 134217728
+R3C_QUOTA_MISS 1901 244036224 198802528 43275024 78127952 134217728
+{"event":"r3c.retention_census","n":40000,"wave":6667,"limit":134217728,"phase":0,"requested_delta":91285760,"crt_usable_delta":104248192,"charge":0,"private_bytes":969969664,"working_set":913162240,"points":1}
+{"event":"r3c.retention_census","n":40000,"wave":6667,"limit":134217728,"phase":1,"requested_delta":338148962,"crt_usable_delta":408275330,"charge":78127952,"private_bytes":1264783360,"working_set":1200398336,"points":1}
+{"event":"r3c.retention_census","n":40000,"wave":6667,"limit":134217728,"phase":2,"requested_delta":337813308,"crt_usable_delta":407938268,"charge":78127952,"private_bytes":1264783360,"working_set":1200398336,"points":1}
+{"event":"r3c.retention_census","n":40000,"wave":6667,"limit":134217728,"phase":3,"requested_delta":156448223,"crt_usable_delta":186830687,"charge":78127952,"private_bytes":1139712000,"working_set":1082851328,"points":1}
+{"event":"r3c.retention_census","n":40000,"wave":6667,"limit":134217728,"phase":4,"requested_delta":91279592,"crt_usable_delta":104240808,"charge":0,"private_bytes":1070374912,"working_set":1002098688,"points":1}
+{"event":"r3c.retention_release","n":40000,"wave":6667,"limit":134217728,"peak_requested_delta":369379768,"peak_crt_usable_delta":445506328,"released_delta":0,"storage_released_delta":0}
+{"event":"r3c.retention_census","n":40000,"wave":6667,"limit":18446744073709551615,"phase":0,"requested_delta":91285760,"crt_usable_delta":104248192,"charge":0,"private_bytes":960991232,"working_set":907280384,"points":4}
+{"event":"r3c.retention_census","n":40000,"wave":6667,"limit":18446744073709551615,"phase":1,"requested_delta":339268497,"crt_usable_delta":409396497,"charge":966657872,"private_bytes":1266679808,"working_set":1201061888,"points":4}
+{"event":"r3c.retention_census","n":40000,"wave":6667,"limit":18446744073709551615,"phase":2,"requested_delta":338932843,"crt_usable_delta":409059435,"charge":966657872,"private_bytes":1266679808,"working_set":1201061888,"points":4}
+{"event":"r3c.retention_census","n":40000,"wave":6667,"limit":18446744073709551615,"phase":3,"requested_delta":156448223,"crt_usable_delta":186830687,"charge":78127952,"private_bytes":1154609152,"working_set":1096880128,"points":4}
+{"event":"r3c.retention_census","n":40000,"wave":6667,"limit":18446744073709551615,"phase":4,"requested_delta":91279592,"crt_usable_delta":104240808,"charge":0,"private_bytes":1038143488,"working_set":979087360,"points":4}
+{"event":"r3c.retention_release","n":40000,"wave":6667,"limit":18446744073709551615,"peak_requested_delta":370166905,"peak_crt_usable_delta":446294745,"released_delta":0,"storage_released_delta":0}
+===============================================================================
+All tests passed (141 assertions in 1 test case)
+

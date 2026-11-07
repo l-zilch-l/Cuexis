@@ -1,0 +1,20 @@
+from pathlib import Path
+import json,shutil
+
+root=Path.cwd();base=Path(__file__).resolve().parent;old=base/'draw-transfer-build-v1';out=base/'draw-transfer-final-v1'
+script=(base/'build_gl_state_v3_generated.py').read_text();script=script[:script.index('adapter_objects=[]')]
+script=script.replace("out=base/'gl-state-build-v3'","out=base/'draw-transfer-final-v1'")
+exec(compile(script,str(base/'build_gl_state_v3_generated.py'),'exec'))
+candidate=compile('draw_command.cpp',root/'engine/presentation_renderer/src/draw_command.cpp','draw-final')
+args=next(c['args'] for c in json.loads((base/'draw-transfer-tests-v2/commands.json').read_text()) if c['label']=='link-candidate')
+args=[('/OUT:'+str(out/'neutral-tests.exe')) if a.startswith('/OUT:') else candidate if a==str(old/'draw-candidate.obj') else a for a in args]
+run(args,'link-neutral')
+args=next(c['args'] for c in json.loads((base/'draw-transfer-regression-v1/commands.json').read_text()) if c['label']=='link-opengl')
+args=[('/OUT:'+str(out/'opengl-tests.exe')) if a.startswith('/OUT:') else candidate if a==str(old/'draw-candidate.obj') else a for a in args]
+run(args,'link-opengl')
+for dll in old.glob('*.dll'):shutil.copyfile(dll,out/dll.name)
+import os
+run([str(out/'neutral-tests.exe'),'--rng-seed','1'],'test-neutral')
+os.environ['SDL_VIDEODRIVER']='dummy'
+run([str(out/'opengl-tests.exe'),'--rng-seed','1'],'test-opengl')
+(out/'binding.json').write_text(json.dumps(dict(scope='Final formatted root draw CPP explicit recompile plus exact previously tested characterization objects and matching common library definitions. Focused actual regression, not fresh whole-repo matrix.',root_source_sha256=sha(root/'engine/presentation_renderer/src/draw_command.cpp'),commands_sha256=sha(out/'commands.json'),binaries={p.name:sha(p) for p in out.glob('*.exe')}),indent=2),encoding='utf-8')

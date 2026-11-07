@@ -1,0 +1,10 @@
+{
+  "scope": "Existing 2 neutral suites plus owning-string/permutation characterization; candidate/baseline production objects reused unchanged.",
+  "test_sha256": "39b66eb275e770c76a6ca3858bcb8b7513aee1d06b4edb6a30fd53fbe9765966",
+  "parent_binding_sha256": "4c8db5bd0fe3f176ea8edeb385ad0c593eeb3f47740138e0d39447d74575484a",
+  "commands_sha256": "7373f5d68337cfa75a31460fba5dd83024b72b4335b324587ffc77ac716af73c",
+  "binaries": {
+    "neutral-baseline.exe": "4156b9828f2b3a6d1529d94e548f2c0f74c2f1f910aee97242667dbac2689a28",
+    "neutral-candidate.exe": "ff97f93c95aeed63e70618545e650bffb04bcb746073182520ea83468e369bd1"
+  }
+}

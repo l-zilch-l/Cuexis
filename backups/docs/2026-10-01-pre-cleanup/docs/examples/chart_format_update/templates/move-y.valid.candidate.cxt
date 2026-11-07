@@ -1,0 +1,36 @@
+{
+  "format": "cuexis.animation-template",
+  "version": 1,
+  "templateId": "motion.move-y",
+  "metadata": {
+    "name": "moveY"
+  },
+  "application": {
+    "coordinateSpace": "local",
+    "blendMode": "additive",
+    "iterations": 1,
+    "fillMode": "hold"
+  },
+  "clip": {
+    "version": 1,
+    "durationBeats": { "numerator": 1, "denominator": 1 },
+    "tracks": [
+      {
+        "property": "transform.position.y",
+        "segments": [
+          {
+            "startBeat": { "numerator": 0, "denominator": 1 },
+            "durationBeats": { "numerator": 1, "denominator": 1 },
+            "startValue": 0.0,
+            "endValue": 1.0,
+            "startSlope": 1.0,
+            "endSlope": 1.0
+          }
+        ]
+      }
+    ],
+    "stepTracks": []
+  },
+  "requiredExtensions": [],
+  "extensions": {}
+}

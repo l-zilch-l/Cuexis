@@ -1,0 +1,810 @@
+{
+  "scope": "Pause gate after swap-chain priming, and the applicable Seek gate on the device probe.",
+  "source_run": "out\\verification-20261101\\r3-refactor-v1",
+  "copied_files": [
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\pd5-prime\\results.json",
+      "archive": "pause/results.json",
+      "bytes": 25416,
+      "sha256": "8d0aae055183974f873431d8a7f0d7844c4f99549750a434781d879e157b67b8",
+      "source_sha256": "26077b6bed56dd3ddaf871ff3335575878bec31b412111ed6a3f679d63bedf75",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\results.json",
+      "archive": "load/results.json",
+      "bytes": 7431,
+      "sha256": "7b11a46fce0e49e9a9d6d52906f12d25b22475b9f034dc4d0a36509820efaae1",
+      "source_sha256": "2aaf911926d4a5877311a061c63ff092fb818b528c211e60f8f20489d8422336",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-00.err.log",
+      "archive": "load/run-00.err.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-00.out.log",
+      "archive": "load/run-00.out.log",
+      "bytes": 4515,
+      "sha256": "5b2c31ddeae926f0f22fedda00d4c7add01214fc401adf68cdbcf135142dac52",
+      "source_sha256": "5b2c31ddeae926f0f22fedda00d4c7add01214fc401adf68cdbcf135142dac52",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-01.err.log",
+      "archive": "load/run-01.err.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-01.out.log",
+      "archive": "load/run-01.out.log",
+      "bytes": 4514,
+      "sha256": "04897923c21a303b48ee5dabb3252f7f360caee67c6e20c80040f06d90e45855",
+      "source_sha256": "04897923c21a303b48ee5dabb3252f7f360caee67c6e20c80040f06d90e45855",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-02.err.log",
+      "archive": "load/run-02.err.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-02.out.log",
+      "archive": "load/run-02.out.log",
+      "bytes": 4515,
+      "sha256": "7b6364e5e7bb5b3089a745c45ad0035d9a0fdf883a6bed4d3c09ca9292b96ac4",
+      "source_sha256": "7b6364e5e7bb5b3089a745c45ad0035d9a0fdf883a6bed4d3c09ca9292b96ac4",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-03.err.log",
+      "archive": "load/run-03.err.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-03.out.log",
+      "archive": "load/run-03.out.log",
+      "bytes": 4514,
+      "sha256": "ab9941c10de9b8d164de57154a694c453cc03ef2d2ebbe4c5b922fbeb22c515d",
+      "source_sha256": "ab9941c10de9b8d164de57154a694c453cc03ef2d2ebbe4c5b922fbeb22c515d",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-04.err.log",
+      "archive": "load/run-04.err.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-04.out.log",
+      "archive": "load/run-04.out.log",
+      "bytes": 4514,
+      "sha256": "c8304f9f7c95f7f21b204e8f13608e501b8d839494b9a1c9e54f6152fd707441",
+      "source_sha256": "c8304f9f7c95f7f21b204e8f13608e501b8d839494b9a1c9e54f6152fd707441",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-05.err.log",
+      "archive": "load/run-05.err.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-05.out.log",
+      "archive": "load/run-05.out.log",
+      "bytes": 4516,
+      "sha256": "a4508f2530f800507bc1d6b0867691918854135d08ed5ad18a635cb6bffcbcb1",
+      "source_sha256": "a4508f2530f800507bc1d6b0867691918854135d08ed5ad18a635cb6bffcbcb1",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-06.err.log",
+      "archive": "load/run-06.err.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-06.out.log",
+      "archive": "load/run-06.out.log",
+      "bytes": 4515,
+      "sha256": "040e6d18a7a2ac0b0d86d06e1f9024c32797892b85b942a41ce651655eb90498",
+      "source_sha256": "040e6d18a7a2ac0b0d86d06e1f9024c32797892b85b942a41ce651655eb90498",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-07.err.log",
+      "archive": "load/run-07.err.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-07.out.log",
+      "archive": "load/run-07.out.log",
+      "bytes": 4513,
+      "sha256": "e11bc2fb3dc3f39c5815d17a1537fecf8a01ac3e2caaaf9acc216aa89c0934eb",
+      "source_sha256": "e11bc2fb3dc3f39c5815d17a1537fecf8a01ac3e2caaaf9acc216aa89c0934eb",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-08.err.log",
+      "archive": "load/run-08.err.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-08.out.log",
+      "archive": "load/run-08.out.log",
+      "bytes": 4514,
+      "sha256": "feb7896b6f73b9d0cd184e675c14a5a14fd3f35b08663fad6d1aaf7ffe5479e9",
+      "source_sha256": "feb7896b6f73b9d0cd184e675c14a5a14fd3f35b08663fad6d1aaf7ffe5479e9",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\seek\\records-1024-run-0.log.txt",
+      "archive": "seek/records-1024-run-0.log.txt",
+      "bytes": 1990,
+      "sha256": "f1bbb7fb2ed49268fe3b492f4886c19fcdf5a919a99e4bfc83bd5fa485f2eb18",
+      "source_sha256": "f1bbb7fb2ed49268fe3b492f4886c19fcdf5a919a99e4bfc83bd5fa485f2eb18",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\seek\\records-1024-run-1.log.txt",
+      "archive": "seek/records-1024-run-1.log.txt",
+      "bytes": 1989,
+      "sha256": "03e173caffce01d644fa8d8dcdfeb7eefe54ee21a5576bb6f4c84fa99d373e43",
+      "source_sha256": "03e173caffce01d644fa8d8dcdfeb7eefe54ee21a5576bb6f4c84fa99d373e43",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\seek\\records-1024-run-2.log.txt",
+      "archive": "seek/records-1024-run-2.log.txt",
+      "bytes": 1990,
+      "sha256": "a95e9c2e54ec50c7f9affef5d51232a62bda36c792ed7bce4a9ba8e4ec6aee76",
+      "source_sha256": "a95e9c2e54ec50c7f9affef5d51232a62bda36c792ed7bce4a9ba8e4ec6aee76",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\seek\\records-1024-run-3.log.txt",
+      "archive": "seek/records-1024-run-3.log.txt",
+      "bytes": 1990,
+      "sha256": "dbf81ef0067e85022bae73fbadee2cbc8083a9d6ab67defdad54005c140ea951",
+      "source_sha256": "dbf81ef0067e85022bae73fbadee2cbc8083a9d6ab67defdad54005c140ea951",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\seek\\records-1024-run-4.log.txt",
+      "archive": "seek/records-1024-run-4.log.txt",
+      "bytes": 1993,
+      "sha256": "b202e6598dd3e8c6dd56d636cdd2abdf653990dd5e1e9c6789381453484b76cc",
+      "source_sha256": "b202e6598dd3e8c6dd56d636cdd2abdf653990dd5e1e9c6789381453484b76cc",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\seek\\records-1024-run-5.log.txt",
+      "archive": "seek/records-1024-run-5.log.txt",
+      "bytes": 1989,
+      "sha256": "237541955426847baf01d5ad703db08a4ebc4f70021bf76fe57f13362ab65781",
+      "source_sha256": "237541955426847baf01d5ad703db08a4ebc4f70021bf76fe57f13362ab65781",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\seek\\records-129-run-0.log.txt",
+      "archive": "seek/records-129-run-0.log.txt",
+      "bytes": 1973,
+      "sha256": "bd8aa8dbda1f0e8683dc2d7ac1b778d347233a1746960fc045e13d4ef0b8c30e",
+      "source_sha256": "bd8aa8dbda1f0e8683dc2d7ac1b778d347233a1746960fc045e13d4ef0b8c30e",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\seek\\records-129-run-1.log.txt",
+      "archive": "seek/records-129-run-1.log.txt",
+      "bytes": 1973,
+      "sha256": "56a1c438453ee24b03ed6ed09d7921dfba754486e0eff811fba26856af0ccc55",
+      "source_sha256": "56a1c438453ee24b03ed6ed09d7921dfba754486e0eff811fba26856af0ccc55",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\seek\\records-129-run-2.log.txt",
+      "archive": "seek/records-129-run-2.log.txt",
+      "bytes": 1972,
+      "sha256": "735de1847197c89e91b8812387882d9894dca733025f973dc962e72856956fc4",
+      "source_sha256": "735de1847197c89e91b8812387882d9894dca733025f973dc962e72856956fc4",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\seek\\records-129-run-3.log.txt",
+      "archive": "seek/records-129-run-3.log.txt",
+      "bytes": 1973,
+      "sha256": "2f788ed7559a229fb0df4c6431ea5a16577bbbe7f0970bfa71ec3849432fb080",
+      "source_sha256": "2f788ed7559a229fb0df4c6431ea5a16577bbbe7f0970bfa71ec3849432fb080",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\seek\\records-129-run-4.log.txt",
+      "archive": "seek/records-129-run-4.log.txt",
+      "bytes": 1973,
+      "sha256": "e6b7a59cc41d9920c8466d319bfe3897522ff06e274b2a8d6fa6bcca5472efce",
+      "source_sha256": "e6b7a59cc41d9920c8466d319bfe3897522ff06e274b2a8d6fa6bcca5472efce",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\seek\\records-129-run-5.log.txt",
+      "archive": "seek/records-129-run-5.log.txt",
+      "bytes": 1973,
+      "sha256": "53ff6846f787e5abfa147337f9025e1fc7eaaafb07e7228738b351f5c944beae",
+      "source_sha256": "53ff6846f787e5abfa147337f9025e1fc7eaaafb07e7228738b351f5c944beae",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\seek\\results.json",
+      "archive": "seek/results.json",
+      "bytes": 4458,
+      "sha256": "20ab88dde7de81957cce51a7da64ab5621493611e8f75d040ab27acf88bdfd10",
+      "source_sha256": "20ab88dde7de81957cce51a7da64ab5621493611e8f75d040ab27acf88bdfd10",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\seek-gate-preregistration.json",
+      "archive": "tools/seek-gate-preregistration.json",
+      "bytes": 1372,
+      "sha256": "f0f87517c2637b566eca5c7b385cd60785d870beed536de2231db67739c48d49",
+      "source_sha256": "f0f87517c2637b566eca5c7b385cd60785d870beed536de2231db67739c48d49",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\run_load_prime.py",
+      "archive": "tools/run_load_prime.py",
+      "bytes": 7841,
+      "sha256": "3db3210b80a7668edbedd718291c847195b14112678d0689cc5c648c2d850176",
+      "source_sha256": "3db3210b80a7668edbedd718291c847195b14112678d0689cc5c648c2d850176",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\run_pd5_prime.py",
+      "archive": "tools/run_pd5_prime.py",
+      "bytes": 8062,
+      "sha256": "93ab6fced1dcbe2014e784953dd50ba2a43888e3d9a8e109cc01d54547a45acb",
+      "source_sha256": "93ab6fced1dcbe2014e784953dd50ba2a43888e3d9a8e109cc01d54547a45acb",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\pd-stages\\metrics-run0.14636629735580373714.jsonl",
+      "archive": "stages/metrics-run0.14636629735580373714.jsonl",
+      "bytes": 33098,
+      "sha256": "45fb0c4dc08c7e4f19413c497ae54ae751453f2b6b2996ad514d3db3d97249e2",
+      "source_sha256": "45fb0c4dc08c7e4f19413c497ae54ae751453f2b6b2996ad514d3db3d97249e2",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\pd-stages\\metrics-run0.3785868569449726999.jsonl",
+      "archive": "stages/metrics-run0.3785868569449726999.jsonl",
+      "bytes": 208865,
+      "sha256": "9ecaf6949a1d24848bb1229e33e8a52d9bf3c647f0658ab4e826d163c4709256",
+      "source_sha256": "9ecaf6949a1d24848bb1229e33e8a52d9bf3c647f0658ab4e826d163c4709256",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\pd-stages\\metrics-run1.2826614761954232866.jsonl",
+      "archive": "stages/metrics-run1.2826614761954232866.jsonl",
+      "bytes": 33030,
+      "sha256": "fea74f9c01d63d5c150cdbc826fd2d7f9dad702ff9a34f2a14b9659d7a40a5f9",
+      "source_sha256": "fea74f9c01d63d5c150cdbc826fd2d7f9dad702ff9a34f2a14b9659d7a40a5f9",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\pd-stages\\metrics-run1.4149297889677847341.jsonl",
+      "archive": "stages/metrics-run1.4149297889677847341.jsonl",
+      "bytes": 208507,
+      "sha256": "594b9be9123729264501e2897c234868c1cd2dabc946d6882f3d1e22279e0283",
+      "source_sha256": "594b9be9123729264501e2897c234868c1cd2dabc946d6882f3d1e22279e0283",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\pd-stages\\metrics-run2.12381055063590825383.jsonl",
+      "archive": "stages/metrics-run2.12381055063590825383.jsonl",
+      "bytes": 33588,
+      "sha256": "62ff4acd1f4fd15beb98c7fc80ebc8a0f49d2b5a8d8281f5e25cc39c41adb715",
+      "source_sha256": "62ff4acd1f4fd15beb98c7fc80ebc8a0f49d2b5a8d8281f5e25cc39c41adb715",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\pd-stages\\metrics-run2.15311054722416238495.jsonl",
+      "archive": "stages/metrics-run2.15311054722416238495.jsonl",
+      "bytes": 209572,
+      "sha256": "255cb88f9b7963ee7984d92ad38c3a75fbe5f3f13ea95c5d6fa7bcb808829f41",
+      "source_sha256": "255cb88f9b7963ee7984d92ad38c3a75fbe5f3f13ea95c5d6fa7bcb808829f41",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\pd-stages\\results.json",
+      "archive": "stages/results.json",
+      "bytes": 12338,
+      "sha256": "f05050660f774cced8a49e5a62647c035193ae99132185639bfda1ef88675d0a",
+      "source_sha256": "f05050660f774cced8a49e5a62647c035193ae99132185639bfda1ef88675d0a",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\pd-stages\\metrics-run0.14636629735580373714.jsonl",
+      "archive": "stages/metrics-run0.14636629735580373714.jsonl",
+      "bytes": 33098,
+      "sha256": "45fb0c4dc08c7e4f19413c497ae54ae751453f2b6b2996ad514d3db3d97249e2",
+      "source_sha256": "45fb0c4dc08c7e4f19413c497ae54ae751453f2b6b2996ad514d3db3d97249e2",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\pd-stages\\metrics-run0.3785868569449726999.jsonl",
+      "archive": "stages/metrics-run0.3785868569449726999.jsonl",
+      "bytes": 208865,
+      "sha256": "9ecaf6949a1d24848bb1229e33e8a52d9bf3c647f0658ab4e826d163c4709256",
+      "source_sha256": "9ecaf6949a1d24848bb1229e33e8a52d9bf3c647f0658ab4e826d163c4709256",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\pd-stages\\metrics-run1.2826614761954232866.jsonl",
+      "archive": "stages/metrics-run1.2826614761954232866.jsonl",
+      "bytes": 33030,
+      "sha256": "fea74f9c01d63d5c150cdbc826fd2d7f9dad702ff9a34f2a14b9659d7a40a5f9",
+      "source_sha256": "fea74f9c01d63d5c150cdbc826fd2d7f9dad702ff9a34f2a14b9659d7a40a5f9",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\pd-stages\\metrics-run1.4149297889677847341.jsonl",
+      "archive": "stages/metrics-run1.4149297889677847341.jsonl",
+      "bytes": 208507,
+      "sha256": "594b9be9123729264501e2897c234868c1cd2dabc946d6882f3d1e22279e0283",
+      "source_sha256": "594b9be9123729264501e2897c234868c1cd2dabc946d6882f3d1e22279e0283",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\pd-stages\\metrics-run2.12381055063590825383.jsonl",
+      "archive": "stages/metrics-run2.12381055063590825383.jsonl",
+      "bytes": 33588,
+      "sha256": "62ff4acd1f4fd15beb98c7fc80ebc8a0f49d2b5a8d8281f5e25cc39c41adb715",
+      "source_sha256": "62ff4acd1f4fd15beb98c7fc80ebc8a0f49d2b5a8d8281f5e25cc39c41adb715",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\pd-stages\\metrics-run2.15311054722416238495.jsonl",
+      "archive": "stages/metrics-run2.15311054722416238495.jsonl",
+      "bytes": 209572,
+      "sha256": "255cb88f9b7963ee7984d92ad38c3a75fbe5f3f13ea95c5d6fa7bcb808829f41",
+      "source_sha256": "255cb88f9b7963ee7984d92ad38c3a75fbe5f3f13ea95c5d6fa7bcb808829f41",
+      "eol": "crlf"
+    }
+  ],
+  "attached_files": [],
+  "excluded": [],
+  "generated_files": {
+    "index.md": "e71621b25b371738c2b2599a1238f08ae310d909d6e40360348e2df129aa505b"
+  },
+  "binding": {
+    "head": "84277a63",
+    "pause_verdicts": {
+      "pause": {
+        "budget_ms": 50,
+        "max_ms": 16.754,
+        "decision": "pass"
+      },
+      "resume": {
+        "budget_ms": 50,
+        "max_ms": 4.844,
+        "decision": "pass"
+      },
+      "reset_paused": {
+        "budget_ms": 1000,
+        "max_ms": 17.062,
+        "decision": "pass"
+      },
+      "reset_running": {
+        "budget_ms": 1000,
+        "max_ms": 16.27,
+        "decision": "pass"
+      },
+      "resize": {
+        "budget_ms": 50,
+        "max_ms": 3.978,
+        "decision": "pass"
+      },
+      "close": {
+        "budget_ms": 1000,
+        "max_ms": 5.059,
+        "decision": "pass"
+      }
+    },
+    "load_summary": {
+      "valid_runs": 9,
+      "invalid_runs": 0,
+      "min_ms": 580.022,
+      "median_ms": 587.382,
+      "max_ms": 603.216,
+      "relative_range": 0.039487,
+      "gate_pass_per_run": true,
+      "repeatability_pass": true
+    },
+    "seek_summary": {
+      "129": {
+        "valid_processes": 6,
+        "per_process_max_us": [
+          709,
+          756,
+          811,
+          819,
+          722,
+          941
+        ],
+        "worst_us": 941,
+        "gate_20ms": "pass"
+      },
+      "1024": {
+        "valid_processes": 6,
+        "per_process_max_us": [
+          956,
+          735,
+          996,
+          779,
+          1012,
+          805
+        ],
+        "worst_us": 1012,
+        "gate_20ms": "pass"
+      }
+    },
+    "instrument_sha256": "57e5a29b56a80ba117cb282e19276583f2233b0d8e6122e23921476fb2993de5",
+    "stage_attribution": {
+      "feedback": {
+        "count": [
+          1200,
+          1200,
+          1200
+        ],
+        "median_us": [
+          0.1,
+          0.1,
+          0.1
+        ],
+        "p95_us": [
+          0.2,
+          0.2,
+          0.2
+        ],
+        "p99_us": [
+          0.3,
+          0.3,
+          0.3
+        ],
+        "max_us": [
+          0.4,
+          11.1,
+          0.5
+        ]
+      },
+      "judgement": {
+        "count": [
+          1200,
+          1200,
+          1200
+        ],
+        "median_us": [
+          13.2,
+          13.4,
+          13.7
+        ],
+        "p95_us": [
+          23,
+          21.6,
+          22.6
+        ],
+        "p99_us": [
+          122.2,
+          45.8,
+          46.8
+        ],
+        "max_us": [
+          184,
+          155.2,
+          157
+        ]
+      },
+      "ledger_publish": {
+        "count": [
+          1200,
+          1200,
+          1200
+        ],
+        "median_us": [
+          1.1,
+          1.1,
+          1.3
+        ],
+        "p95_us": [
+          1.5,
+          1.5,
+          1.8
+        ],
+        "p99_us": [
+          1.8,
+          1.9,
+          2
+        ],
+        "max_us": [
+          11.4,
+          116.2,
+          64
+        ]
+      },
+      "projection": {
+        "count": [
+          1200,
+          1200,
+          1200
+        ],
+        "median_us": [
+          9.1,
+          8.9,
+          9.5
+        ],
+        "p95_us": [
+          12.3,
+          11.9,
+          12.5
+        ],
+        "p99_us": [
+          19.2,
+          19.1,
+          17.9
+        ],
+        "max_us": [
+          585.5,
+          276.9,
+          94.8
+        ]
+      },
+      "queue": {
+        "count": [
+          6000,
+          6000,
+          6000
+        ],
+        "median_us": [
+          12.0,
+          11.9,
+          12.2
+        ],
+        "p95_us": [
+          21.7,
+          20.3,
+          18.7
+        ],
+        "p99_us": [
+          88.4,
+          40.2,
+          26.2
+        ],
+        "max_us": [
+          1285.3,
+          2244.5,
+          11176.6
+        ]
+      },
+      "receipt": {
+        "count": [
+          1201,
+          1201,
+          1201
+        ],
+        "median_us": [
+          1,
+          1,
+          1
+        ],
+        "p95_us": [
+          1.4,
+          1.4,
+          1.3
+        ],
+        "p99_us": [
+          1.7,
+          1.5,
+          1.6
+        ],
+        "max_us": [
+          129.9,
+          78.8,
+          78.4
+        ]
+      },
+      "renderer": {
+        "count": [
+          2400,
+          2400,
+          2400
+        ],
+        "median_us": [
+          476.55,
+          322.25,
+          368.45
+        ],
+        "p95_us": [
+          3862.2,
+          3870.8,
+          3809.5
+        ],
+        "p99_us": [
+          3991.4,
+          3987.2,
+          3865
+        ],
+        "max_us": [
+          1645130.0,
+          17321.9,
+          7575.6
+        ]
+      },
+      "runtime": {
+        "count": [
+          1200,
+          1200,
+          1200
+        ],
+        "median_us": [
+          3.8,
+          3.7,
+          3.6
+        ],
+        "p95_us": [
+          4.9,
+          4.9,
+          4.6
+        ],
+        "p99_us": [
+          6.2,
+          6.4,
+          6
+        ],
+        "max_us": [
+          155.9,
+          50.7,
+          43.2
+        ]
+      },
+      "runtime_commit": {
+        "count": [
+          1200,
+          1200,
+          1200
+        ],
+        "median_us": [
+          0.4,
+          0.4,
+          0.4
+        ],
+        "p95_us": [
+          0.6,
+          0.6,
+          0.6
+        ],
+        "p99_us": [
+          0.7,
+          0.7,
+          0.7
+        ],
+        "max_us": [
+          13.8,
+          0.9,
+          11.5
+        ]
+      },
+      "runtime_prepare": {
+        "count": [
+          1200,
+          1200,
+          1200
+        ],
+        "median_us": [
+          11.8,
+          11.4,
+          12.8
+        ],
+        "p95_us": [
+          15.8,
+          15.2,
+          16.4
+        ],
+        "p99_us": [
+          25.6,
+          25.8,
+          22.5
+        ],
+        "max_us": [
+          157.2,
+          155.5,
+          90
+        ]
+      },
+      "runtime_state_copy": {
+        "count": [
+          1200,
+          1200,
+          1200
+        ],
+        "median_us": [
+          5.6,
+          5.4,
+          5.9
+        ],
+        "p95_us": [
+          7.6,
+          7.2,
+          7.9
+        ],
+        "p99_us": [
+          12.5,
+          8.8,
+          11.5
+        ],
+        "max_us": [
+          102.4,
+          119.5,
+          20.2
+        ]
+      },
+      "snapshot": {
+        "count": [
+          1200,
+          1200,
+          1200
+        ],
+        "median_us": [
+          5.7,
+          5.8,
+          6.3
+        ],
+        "p95_us": [
+          8.8,
+          8.1,
+          9.6
+        ],
+        "p99_us": [
+          18.4,
+          11,
+          12.2
+        ],
+        "max_us": [
+          135.7,
+          132.7,
+          23.8
+        ]
+      }
+    },
+    "instrument_overhead": {
+      "request_to_ready_median_us": {
+        "normal": 270.5,
+        "metrics": 303.0
+      },
+      "ratio": 1.12
+    }
+  }
+}

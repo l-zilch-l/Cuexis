@@ -1,0 +1,24 @@
+{
+  "scope": "Final v4 diagnostic evidence checkpoint; no product promotion or stage acceptance.",
+  "head_before_commit": "a6e3b31e3b179c1fdd69210092d74d9630c6fd33",
+  "product_sources_equal_ff93484": true,
+  "ordinary_writer_group": "12 processes, numeric+repeatability local guards pass",
+  "ordinary_seek_group": "14 processes, numeric gate pass; repeatability screen FAIL; no replacement",
+  "quota_frontier": "predeclared0/32/64/128/256/512MiB,100assertions,all final requested/storagezero",
+  "v4_related_cases": 428,
+  "v4_fault_cases": 14,
+  "v4_fault_assertions": 1006,
+  "guard_assertions": 58,
+  "source_floor_negative": "32 assertions /4 expected failures,exit42",
+  "promotion_guard_negative": "58assertions/4expectedfailures,exit42",
+  "format_checked_files": 5,
+  "version": "26.10.19-1 / SDK0.9.1",
+  "patch_sha256": "ff8c6cf02be801620e4ccbc49be2b633b75e76f468664e77582c9acd8646dcc0",
+  "selection": false,
+  "limits": [
+    "No Debug/SHARED/MinGW/install-consumer/finalfullCTest for v4",
+    "No formal CI/GPU/device/production/memory-profile acceptance",
+    "128MiB remains historical trial quota,not selected productcap",
+    "Source scope label supplements clarify earlier stale generated binding labels"
+  ]
+}

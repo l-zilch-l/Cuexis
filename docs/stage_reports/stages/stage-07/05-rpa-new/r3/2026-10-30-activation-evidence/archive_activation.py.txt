@@ -1,0 +1,32 @@
+from pathlib import Path
+import hashlib,json,shutil,difflib
+root=Path.cwd();base=Path(__file__).resolve().parent
+out=root/'docs/stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-30-activation-evidence';out.mkdir(exist_ok=False)
+(out/'.gitattributes').write_text('*.txt binary\n*.json binary\n*.patch binary\n.gitattributes text eol=lf\n',encoding='ascii',newline='\n')
+mapping={}
+for label,folder in (('activation-seek','activation-seek-measure-v1'),('combined-seek','combined-seek-measure-v1'),('paged-seek','active-sequence-seek-measure-v1'),('paged-writer-invalid','active-sequence-writer-measure-v1'),('paged-writer','active-sequence-writer-measure-v2')):
+ for name in ('registration.json','results.json','decision.json'):
+  if (base/folder/name).is_file():mapping[label+'-'+name]=base/folder/name
+for label,folder in (('activation','activation-build-v1'),('paged','active-sequence-build-v1'),('order','active-sequence-order-build-v1')):
+ for name in ('complete.json','test-cuexis_rpa_tests.log','test-cuexis_judgement_tests.log','test-cuexis_execution_host_tests.log','test-cuexis_gameplay_packed_tests.log'):
+  if (base/folder/name).is_file():mapping[label+'-'+name+('.txt' if name.endswith('.log') else '')]=base/folder/name
+for label,folder in (('activation-observer','activation-observer-v4'),('paged-observer','active-sequence-observer-v1'),('large-boundary','combined-source-v2')):
+ for name in ('binding.json','build-binding.json','source-binding.json','test-fault.log','test-memory.log','test-boundaries.log'):
+  if (base/folder/name).is_file():mapping[label+'-'+name+('.txt' if name.endswith('.log') else '')]=base/folder/name
+for label,folder in (('v5','activation-source-v1'),('v6','active-sequence-source-v3')):
+ for name in ('execution_kernel.cpp','rpa_b3_tests.cpp','binding.json'):
+  mapping[label+'-'+name+('.txt' if name.endswith('.cpp') else '')]=base/folder/name
+for label,folder in (('combo','combined-source-v2'),('observer','active-sequence-observer-v1')):
+ for name in ('playback_session.cpp','host_probe.cpp','execution_kernel.cpp','tick_fault_probe.hpp'):
+  if (base/folder/name).is_file():mapping[label+'-'+name+'.txt']=base/folder/name
+for p in base.glob('*.py'):
+ if any(word in p.name for word in ('activation','combined','active_sequence')):mapping[p.name+'.txt']=p
+for name,path in mapping.items():shutil.copyfile(path,out/name)
+parent=root/'out/verification-20261030/r3-resume-v1/budget-source-v4'
+paths={'engine/judgement/src/execution_kernel.cpp':base/'active-sequence-source-v3/execution_kernel.cpp','engine/judgement/internal/cuexis/judgement/publication.hpp':base/'publication-source-v1/engine/judgement/internal/cuexis/judgement/publication.hpp','engine/judgement/src/publication.cpp':base/'publication-source-v1/engine/judgement/src/publication.cpp','engine/playback/src/playback_session.cpp':base/'combined-source-v2/playback_session.cpp'}
+patch=''.join(''.join(difflib.unified_diff((parent/p).read_text(encoding='utf-8').splitlines(keepends=True),candidate.read_text(encoding='utf-8').splitlines(keepends=True),fromfile='a/'+p,tofile='b/'+p)) for p,candidate in paths.items())
+(out/'v6-unselected-relative-v4.patch').write_text(patch,encoding='utf-8',newline='\n')
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+(out/'identity-supplement.json').write_text(json.dumps(dict(scope='Frozen build receipts contain inherited scope text v4/v5; actual linked commands are authoritative. This supplement binds actual v6 private kernel + activation + lazy batch. Public/internal header definitions from publication fresh build are consistent.',actual_kernel=dict(source_sha256=sha(base/'active-sequence-source-v1/execution_kernel.cpp'),object_sha256=sha(base/'active-sequence-build-v1/execution_kernel.obj')),actual_playback=dict(source_sha256=sha(base/'combined-source-v2/playback_session.cpp'),object_sha256=sha(base/'combined-source-v2/playback_session.obj')),baseline='v4 kernel and original single read',selected=False),indent=2),encoding='utf-8',newline='\n')
+(out/'manifest.json').write_text(json.dumps(dict(selected=False,reason='v5 H5 huge gain but H902 guard fails. Combined/v6 numeric guards pass; full process repeatability fails. v6 writer numeric overhead passes,1K repeatability fails. No forced passing resample.',failed_observers={'v1':'Prepared source corrected to stable owner and namespace before any compilation; original remains. Regeneration refused existing directory.','v2':'Wrong testing::sameSnapshot namespace compile failure.','v3':'Fault37assertions pass;40K memory fixture uses old revision3 Packed envelope and exceeds string budget; partial1K results retained.','v4':'Uses existing revision4 Packed path, real fault37 and memory50 assertions pass.'},writer_invalid='New activation creates2points but old hidden test expected1;fixed test-only expectation in new group, no product change.',scope='Local private prototypes only. Entire out tree remains. No R3/R4/production quota or stage acceptance.',files={p.name:sha(p) for p in out.iterdir() if p.is_file()}),indent=2),encoding='utf-8',newline='\n')
+print(out)

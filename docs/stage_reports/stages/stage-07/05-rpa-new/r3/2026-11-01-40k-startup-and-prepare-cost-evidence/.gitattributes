@@ -1,0 +1,12 @@
+# Frozen evidence keeps its original bytes. The copied text files are CRLF and hashed as CRLF, the
+# log and canonical-text streams are deterministic gzip archives, and the manifest binds every file
+# by sha256, so git must not normalise any of them on checkout. index.md and this file are LF.
+*.txt binary
+*.json binary
+*.py binary
+*.log binary
+*.gz binary
+*.bat binary
+*.bin binary
+index.md text eol=lf
+.gitattributes text eol=lf

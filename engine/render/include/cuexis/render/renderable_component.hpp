@@ -8,16 +8,21 @@
 #include <cuexis/assets/resource_handle.hpp>
 #include <cuexis/core/math.hpp>
 
+#include <cstddef>
 #include <string>
 
 namespace cuexis::render {
 
 struct RenderableComponent final {
+    static constexpr std::size_t page_size = 128;
+
     assets::MeshHandle mesh{};
     assets::MaterialHandle material{};
 };
 
 struct AppearanceComponent final {
+    static constexpr std::size_t page_size = 128;
+
     bool visible{true};
     std::string materialAssetId;
     double opacity{1.0};

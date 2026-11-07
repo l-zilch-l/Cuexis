@@ -214,6 +214,8 @@ struct PresentationCapabilities final {
     std::uint32_t maxMaterialParameters{};
     std::uint32_t maxTextureBindings{};
     std::vector<std::string> hostExtensionIds{};
+    friend auto operator==(const PresentationCapabilities&, const PresentationCapabilities&)
+        -> bool = default;
 };
 
 struct PresentationRequest final {

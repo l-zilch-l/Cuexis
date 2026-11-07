@@ -1,0 +1,12 @@
+{
+  "scope": "Private legacy parse-once plus identical direct SAX v2 object. Matching original public/class/template definitions. All changed private function callers compiled with overlay private headers; no public layout change.",
+  "source_binding_sha256": "6799ab2709bdf9ac99b2f89633203c6fafd6529f6a3fb5b8f23be1fef2a24abd",
+  "commands_sha256": "2d90236b1cb9acf04fd89ddf9742e0dfda282f500832d64a281a99d758b77ee1",
+  "files": {
+    "fmt.dll": "8219387a1b0de304630a67564a0ec30271e061c1e92cc77ae7cf9753a5f75214",
+    "nlohmann_json_schema_validator.dll": "1c0a7cdcd718802c79052f323f52e63afcedac969dd7eb5a44d12c521502f248",
+    "prepare-candidate.exe": "9ed716c7c13254b3b99e8206d5ba6e2efcbf3cf8120a934dc8ace72db7f1fd9e",
+    "SDL3.dll": "cedddd9456105f8b2df78c33a0282c170b86b0d16146a8ccbb0c6e01571ee783",
+    "spdlog.dll": "a7c410914f4aff0cb84f642ff91da8a6b1a85d21cb0de11e88a3a37dc7575214"
+  }
+}

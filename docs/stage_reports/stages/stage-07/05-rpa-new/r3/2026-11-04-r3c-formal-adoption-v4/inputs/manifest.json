@@ -1,0 +1,21 @@
+{
+  "schema": "cuexis.evidence-manifest.v1",
+  "scope": "R3c formal pair inputs: shared pristine-source delta and seek harness patch used by the formal adoption unit; the unit was not adopted.",
+  "source_run": "out/_r3c-formal (patches applied to D:/Cuexis-r3formal-base and D:/Cuexis-r3c-v4)",
+  "content_sha256": "8bdce239daf82b635d88ce9f7361a897be8a2271c2b357e4980cdd244adee623",
+  "content_hash_algorithm": "sha256 over sorted UTF-8 records path + LF + sha256 + LF",
+  "files": [
+    {
+      "path": "common-source.patch",
+      "bytes": 52533,
+      "sha256": "bb5b64910b38205c10fd6a7647deed1d08d28cd0872346e519cb17fe2625762a",
+      "eol": "lf"
+    },
+    {
+      "path": "seek-harness.patch",
+      "bytes": 4875,
+      "sha256": "1b3a03e453d72ca2bb77d6c584ec7f974bd040199da45a4285736544d788c12b",
+      "eol": "lf"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "scope": "Exact original parser executable with correct app-local Release DLLs; immutable source/binary, corrected runtime dependency binding.",
+  "parent_binding_sha256": "870e35cd808b77e1ff731597af7abaebf378001a66cf104340c14309c4a5fe5a",
+  "files": {
+    "fmt.dll": "8219387a1b0de304630a67564a0ec30271e061c1e92cc77ae7cf9753a5f75214",
+    "gpu-baseline.exe": "78842f8862c803790b49da06aec28549d1e790b75a0dc6473013b3223f6dabb1",
+    "nlohmann_json_schema_validator.dll": "1c0a7cdcd718802c79052f323f52e63afcedac969dd7eb5a44d12c521502f248",
+    "SDL3.dll": "cedddd9456105f8b2df78c33a0282c170b86b0d16146a8ccbb0c6e01571ee783",
+    "spdlog.dll": "a7c410914f4aff0cb84f642ff91da8a6b1a85d21cb0de11e88a3a37dc7575214"
+  }
+}

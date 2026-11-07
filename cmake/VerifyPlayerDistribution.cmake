@@ -22,7 +22,8 @@ foreach(required IN ITEMS
         CUEXIS_GENERATOR
         CUEXIS_BUILD_TYPE
         CUEXIS_LIBRARY_TYPE
-        CUEXIS_VERSION_DISPLAY)
+        CUEXIS_VERSION_DISPLAY
+        CUEXIS_SDK_API_VERSION)
     if(NOT DEFINED ${required} OR "${${required}}" STREQUAL "")
         message(FATAL_ERROR "${required} is required")
     endif()
@@ -105,7 +106,7 @@ endforeach()
 foreach(metadata IN ITEMS
         "format=cuexis.player-distribution"
         "display_version=${CUEXIS_VERSION_DISPLAY}"
-        "sdk_api_version=0.7.0"
+        "sdk_api_version=${CUEXIS_SDK_API_VERSION}"
         "library_type=${CUEXIS_LIBRARY_TYPE}"
         "build_type=${CUEXIS_BUILD_TYPE}"
         "resources=assets")

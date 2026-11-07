@@ -1,0 +1,42 @@
+{
+  "finished_utc": "2026-10-31T16:01:29.7974894Z",
+  "head": "466ff76a0b2a2f45b90280331bded77897ef6421",
+  "worktree_dirty": false,
+  "probe": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_execution_device_probe.exe",
+  "probe_sha256": "91ed0d303c09ef92e6abab9e30b63c87da77322d1dc7132c6b45204c220578b9",
+  "player": "D:\\Cuexis-redesign\\out\\build\\release\\bin\\cuexis_player.exe",
+  "player_sha256": "e4148f55ba7e0dbd4a774830d8becb56dc4ef107364b9bfeb879c513931a50a6",
+  "steps": [
+    {
+      "name": "run-1",
+      "exit": 0,
+      "seconds": 71.6,
+      "note": "1080p 40000, 120 frames"
+    },
+    {
+      "name": "run-2-720p",
+      "exit": 0,
+      "seconds": 72.4,
+      "note": "720p 40000, same binary"
+    },
+    {
+      "name": "run-3-1800-sustain",
+      "exit": 0,
+      "seconds": 142.6,
+      "note": "1080p 1800, 20 s windows"
+    },
+    {
+      "name": "run-4-1300-sustain",
+      "exit": 0,
+      "seconds": 149.6,
+      "note": "1080p 1300, 20 s windows"
+    },
+    {
+      "name": "run-head-after-v8",
+      "exit": 0,
+      "seconds": 31.2,
+      "note": "product startup"
+    }
+  ],
+  "failed": null
+}

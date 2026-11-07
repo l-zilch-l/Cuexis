@@ -1,0 +1,50 @@
+{
+  "integration_tests": [
+    {
+      "batch": "rpa_b3",
+      "test_files": 6,
+      "test_cases": 56,
+      "files": [
+        "tests\\rpa\\rpa_b3_checkpoint_tests.cpp",
+        "tests\\rpa\\rpa_b3_clock_tests.cpp",
+        "tests\\rpa\\rpa_b3_control_tests.cpp",
+        "tests\\rpa\\rpa_b3_native_tests.cpp",
+        "tests\\rpa\\rpa_b3_recovery_tests.cpp",
+        "tests\\rpa\\rpa_b3_schedule_tests.cpp"
+      ]
+    },
+    {
+      "batch": "rpa_b4",
+      "test_files": 4,
+      "test_cases": 36,
+      "files": [
+        "tests\\rpa\\rpa_b4_capacity_tests.cpp",
+        "tests\\rpa\\rpa_b4_close_tests.cpp",
+        "tests\\rpa\\rpa_b4_owner_tests.cpp",
+        "tests\\rpa\\rpa_b4_renderer_tests.cpp"
+      ]
+    },
+    {
+      "batch": "rpa_b5",
+      "test_files": 9,
+      "test_cases": 62,
+      "files": [
+        "tests\\rpa\\rpa_b5_audio_tail_tests.cpp",
+        "tests\\rpa\\rpa_b5_audio_tests.cpp",
+        "tests\\rpa\\rpa_b5_capture_tests.cpp",
+        "tests\\rpa\\rpa_b5_close_tests.cpp",
+        "tests\\rpa\\rpa_b5_failure_tests.cpp",
+        "tests\\rpa\\rpa_b5_seek_host_tests.cpp",
+        "tests\\rpa\\rpa_b5_session_close_tests.cpp",
+        "tests\\rpa\\rpa_b5_session_worker_tests.cpp",
+        "tests\\rpa\\rpa_b5_transcript_tests.cpp"
+      ]
+    }
+  ],
+  "protected_files": 3048,
+  "changed_protected_files": [],
+  "remote_master": "3076948ce403ea0da6fbe389835b6a4c9defbcd3",
+  "remote_stage7": "de73aa2c474fe142ef3d85764346fcd2773afce5",
+  "pr32_state": "OPEN",
+  "r4_remote_branch_exists": false
+}

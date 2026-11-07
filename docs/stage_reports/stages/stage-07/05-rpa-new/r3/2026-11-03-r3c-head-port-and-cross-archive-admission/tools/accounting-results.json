@@ -1,0 +1,1413 @@
+{
+  "scope": "Fixed diagnostic only; test-only Catch2 case behind a hidden tag. No formal CI, no product quota acceptance, no stage exit. Process memory is observation only, sampled from outside the test process.",
+  "process_memory_method": "K32GetProcessMemoryInfo private bytes / working set, sampled from the harness",
+  "source": {
+    "head": "c085688a3a58bc99d531f66aefb1d90ed73e33b7",
+    "diff_sha256": "35c35d08d30bcf8db9a99364290ddbf0bd57dc3337722d6c1e90c2c581798b47",
+    "files": {
+      "engine/judgement/include/cuexis/judgement/shared_sequence.hpp": "c129cc4ad49e786691256ee55370f8f65e379afdc68fdceaf80dee8ef7c782ee",
+      "engine/judgement/src/execution_kernel.hpp": "6cd9ad78f9044f52c56ec4c503d3fb31ff886ba0995f1c58de0fb565f67e30b6",
+      "engine/judgement/src/execution_kernel_advance.cpp": "535285ae54c95021bba8755423df620ac3d05caf838ab6a60ca755f441e9b862",
+      "engine/judgement/src/execution_kernel_archive.cpp": "2276a82f5d05f3100f4c13f5eb6ea2f87f261bec84b818486edd06823b775edb",
+      "engine/judgement/src/execution_kernel_impl_setup.cpp": "d850fbb6c64f1cb355eb1a87a4a03ae18637909b2e195c6684557739f3ee3db9",
+      "engine/judgement/src/execution_kernel_internal.hpp": "126a02cbd43916e4702da8971b8178953286e0bea6cd7e21c4eff0aee73220a9",
+      "engine/judgement/src/execution_kernel_query.cpp": "eb9846a6ba1c942faf6b106de1d8fb575bb402452e81948d8ff8a968d7120bf3",
+      "engine/judgement/src/execution_kernel_restore.cpp": "677c42fe773bd11b2efec924d27a0ee4863c62c4f2283fd81331495fff2f0c5b",
+      "engine/judgement/src/recovery_codec.cpp": "f9ae67c31b44309571bfbfecd9900d1d0aebbaa1c61f5ab708f963460ee8c8dc",
+      "tests/rpa/CMakeLists.txt": "e1758f0e6f7e4e0814acb8acdcad5b73100a3dadc0171b3b9f32d37c55a23f7d",
+      "tests/rpa/rpa_b3_r3c_tests.cpp": "9fdd9c41c6ce241b0ac60dfa74e85fd611dc48ac6dcf6d51c7f42ef459e0a041"
+    }
+  },
+  "binary": {
+    "path": "D:\\Cuexis-r3c-v4\\out\\build\\r3c-debug\\bin\\cuexis_rpa_tests.exe",
+    "sha256": "141ebe95e50e3789899085c876aa24cae52176aa73ffb4fbe738ab5ccb36584b",
+    "size": 10445824
+  },
+  "filter": "[.][r3c-accounting]",
+  "cases": [
+    {
+      "requirements": 1000,
+      "wave": 0,
+      "capture": true,
+      "limit_mib_requested": 0,
+      "exit_code": 0,
+      "diagnostic_passed": true,
+      "events": [
+        {
+          "event": "r3c.accounting",
+          "n": 1000,
+          "wave": 0,
+          "capture": 1,
+          "horizon": 904,
+          "points": 1,
+          "admitted_bytes": 1429416,
+          "live_bytes": 1429416,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 1000,
+          "wave": 0,
+          "capture": 1,
+          "horizon": 1104,
+          "points": 1,
+          "admitted_bytes": 1429416,
+          "live_bytes": 1429416,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 1000,
+          "wave": 0,
+          "capture": 1,
+          "horizon": 1304,
+          "points": 1,
+          "admitted_bytes": 1429416,
+          "live_bytes": 1429416,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 1000,
+          "wave": 0,
+          "capture": 1,
+          "horizon": 1504,
+          "points": 1,
+          "admitted_bytes": 1429416,
+          "live_bytes": 1429416,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 1000,
+          "wave": 0,
+          "capture": 1,
+          "horizon": 1704,
+          "points": 1,
+          "admitted_bytes": 1429416,
+          "live_bytes": 1429416,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 1000,
+          "wave": 0,
+          "capture": 1,
+          "horizon": 1904,
+          "points": 1,
+          "admitted_bytes": 1429416,
+          "live_bytes": 1429416,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting_release",
+          "n": 1000,
+          "wave": 0,
+          "live_bytes": 1429416
+        },
+        {
+          "event": "r3c.accounting_final",
+          "n": 1000,
+          "wave": 0,
+          "live_bytes": 0
+        }
+      ],
+      "process_memory": {
+        "baseline": {
+          "private_bytes": 446464,
+          "working_set_bytes": 2048000,
+          "peak_working_set_bytes": 2048000,
+          "pagefile_bytes": 446464
+        },
+        "peak": {
+          "private_bytes": 73244672,
+          "working_set_bytes": 81076224,
+          "peak_working_set_bytes": 84037632,
+          "pagefile_bytes": 73244672
+        },
+        "released": null,
+        "horizons": [
+          {
+            "horizon": 904,
+            "private_bytes": 73244672,
+            "working_set_bytes": 81076224,
+            "peak_working_set_bytes": 84037632,
+            "pagefile_bytes": 73244672
+          },
+          {
+            "horizon": 1104,
+            "private_bytes": 73244672,
+            "working_set_bytes": 81088512,
+            "peak_working_set_bytes": 84037632,
+            "pagefile_bytes": 73244672
+          },
+          {
+            "horizon": 1304,
+            "private_bytes": 73244672,
+            "working_set_bytes": 81092608,
+            "peak_working_set_bytes": 84037632,
+            "pagefile_bytes": 73244672
+          },
+          {
+            "horizon": 1504,
+            "private_bytes": 73244672,
+            "working_set_bytes": 81092608,
+            "peak_working_set_bytes": 84037632,
+            "pagefile_bytes": 73244672
+          },
+          {
+            "horizon": 1704,
+            "private_bytes": 73244672,
+            "working_set_bytes": 81092608,
+            "peak_working_set_bytes": 84037632,
+            "pagefile_bytes": 73244672
+          },
+          {
+            "horizon": 1904,
+            "private_bytes": 73244672,
+            "working_set_bytes": 81096704,
+            "peak_working_set_bytes": 84037632,
+            "pagefile_bytes": 73244672
+          }
+        ]
+      },
+      "stderr_tail": []
+    },
+    {
+      "requirements": 1536,
+      "wave": 256,
+      "capture": true,
+      "limit_mib_requested": 0,
+      "exit_code": 0,
+      "diagnostic_passed": true,
+      "events": [
+        {
+          "event": "r3c.accounting",
+          "n": 1536,
+          "wave": 256,
+          "capture": 1,
+          "horizon": 904,
+          "points": 1,
+          "admitted_bytes": 2001448,
+          "live_bytes": 2001448,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 1536,
+          "wave": 256,
+          "capture": 1,
+          "horizon": 1104,
+          "points": 2,
+          "admitted_bytes": 4015800,
+          "live_bytes": 4015800,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 1536,
+          "wave": 256,
+          "capture": 1,
+          "horizon": 1304,
+          "points": 3,
+          "admitted_bytes": 6032344,
+          "live_bytes": 6032344,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 1536,
+          "wave": 256,
+          "capture": 1,
+          "horizon": 1504,
+          "points": 4,
+          "admitted_bytes": 8051224,
+          "live_bytes": 8051224,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 1536,
+          "wave": 256,
+          "capture": 1,
+          "horizon": 1704,
+          "points": 4,
+          "admitted_bytes": 8058088,
+          "live_bytes": 10072440,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 1536,
+          "wave": 256,
+          "capture": 1,
+          "horizon": 1904,
+          "points": 4,
+          "admitted_bytes": 8065096,
+          "live_bytes": 12095992,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting_release",
+          "n": 1536,
+          "wave": 256,
+          "live_bytes": 12095992
+        },
+        {
+          "event": "r3c.accounting_final",
+          "n": 1536,
+          "wave": 256,
+          "live_bytes": 0
+        }
+      ],
+      "process_memory": {
+        "baseline": {
+          "private_bytes": 446464,
+          "working_set_bytes": 2048000,
+          "peak_working_set_bytes": 2048000,
+          "pagefile_bytes": 446464
+        },
+        "peak": {
+          "private_bytes": 106176512,
+          "working_set_bytes": 113582080,
+          "peak_working_set_bytes": 113582080,
+          "pagefile_bytes": 106176512
+        },
+        "released": null,
+        "horizons": [
+          {
+            "horizon": 904,
+            "private_bytes": 88838144,
+            "working_set_bytes": 96555008,
+            "peak_working_set_bytes": 96555008,
+            "pagefile_bytes": 88838144
+          },
+          {
+            "horizon": 1104,
+            "private_bytes": 89436160,
+            "working_set_bytes": 97202176,
+            "peak_working_set_bytes": 97202176,
+            "pagefile_bytes": 89436160
+          },
+          {
+            "horizon": 1304,
+            "private_bytes": 93048832,
+            "working_set_bytes": 100683776,
+            "peak_working_set_bytes": 100683776,
+            "pagefile_bytes": 93048832
+          },
+          {
+            "horizon": 1504,
+            "private_bytes": 97460224,
+            "working_set_bytes": 105029632,
+            "peak_working_set_bytes": 105029632,
+            "pagefile_bytes": 97460224
+          },
+          {
+            "horizon": 1704,
+            "private_bytes": 101728256,
+            "working_set_bytes": 109182976,
+            "peak_working_set_bytes": 109182976,
+            "pagefile_bytes": 101728256
+          },
+          {
+            "horizon": 1904,
+            "private_bytes": 106176512,
+            "working_set_bytes": 113582080,
+            "peak_working_set_bytes": 113582080,
+            "pagefile_bytes": 106176512
+          }
+        ]
+      },
+      "stderr_tail": [],
+      "cache_attribution": [
+        {
+          "horizon": 904,
+          "private_bytes": 88838144,
+          "replay_only_private_bytes": 89088000,
+          "cache_attributed_bytes": -249856
+        },
+        {
+          "horizon": 1104,
+          "private_bytes": 89436160,
+          "replay_only_private_bytes": 89681920,
+          "cache_attributed_bytes": -245760
+        },
+        {
+          "horizon": 1304,
+          "private_bytes": 93048832,
+          "replay_only_private_bytes": 93011968,
+          "cache_attributed_bytes": 36864
+        },
+        {
+          "horizon": 1504,
+          "private_bytes": 97460224,
+          "replay_only_private_bytes": 97394688,
+          "cache_attributed_bytes": 65536
+        },
+        {
+          "horizon": 1704,
+          "private_bytes": 101728256,
+          "replay_only_private_bytes": 101879808,
+          "cache_attributed_bytes": -151552
+        },
+        {
+          "horizon": 1904,
+          "private_bytes": 106176512,
+          "replay_only_private_bytes": 106041344,
+          "cache_attributed_bytes": 135168
+        }
+      ]
+    },
+    {
+      "requirements": 1536,
+      "wave": 256,
+      "capture": false,
+      "limit_mib_requested": 0,
+      "exit_code": 0,
+      "diagnostic_passed": true,
+      "events": [
+        {
+          "event": "r3c.accounting",
+          "n": 1536,
+          "wave": 256,
+          "capture": 0,
+          "horizon": 904,
+          "points": 0,
+          "admitted_bytes": 0,
+          "live_bytes": 0,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 1536,
+          "wave": 256,
+          "capture": 0,
+          "horizon": 1104,
+          "points": 0,
+          "admitted_bytes": 0,
+          "live_bytes": 0,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 1536,
+          "wave": 256,
+          "capture": 0,
+          "horizon": 1304,
+          "points": 0,
+          "admitted_bytes": 0,
+          "live_bytes": 0,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 1536,
+          "wave": 256,
+          "capture": 0,
+          "horizon": 1504,
+          "points": 0,
+          "admitted_bytes": 0,
+          "live_bytes": 0,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 1536,
+          "wave": 256,
+          "capture": 0,
+          "horizon": 1704,
+          "points": 0,
+          "admitted_bytes": 0,
+          "live_bytes": 0,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 1536,
+          "wave": 256,
+          "capture": 0,
+          "horizon": 1904,
+          "points": 0,
+          "admitted_bytes": 0,
+          "live_bytes": 0,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting_release",
+          "n": 1536,
+          "wave": 256,
+          "live_bytes": 0
+        },
+        {
+          "event": "r3c.accounting_final",
+          "n": 1536,
+          "wave": 256,
+          "live_bytes": 0
+        }
+      ],
+      "process_memory": {
+        "baseline": {
+          "private_bytes": 446464,
+          "working_set_bytes": 2048000,
+          "peak_working_set_bytes": 2048000,
+          "pagefile_bytes": 446464
+        },
+        "peak": {
+          "private_bytes": 106041344,
+          "working_set_bytes": 113262592,
+          "peak_working_set_bytes": 113262592,
+          "pagefile_bytes": 106041344
+        },
+        "released": null,
+        "horizons": [
+          {
+            "horizon": 904,
+            "private_bytes": 89088000,
+            "working_set_bytes": 96657408,
+            "peak_working_set_bytes": 96657408,
+            "pagefile_bytes": 89088000
+          },
+          {
+            "horizon": 1104,
+            "private_bytes": 89681920,
+            "working_set_bytes": 97280000,
+            "peak_working_set_bytes": 97284096,
+            "pagefile_bytes": 89681920
+          },
+          {
+            "horizon": 1304,
+            "private_bytes": 93011968,
+            "working_set_bytes": 100478976,
+            "peak_working_set_bytes": 100478976,
+            "pagefile_bytes": 93011968
+          },
+          {
+            "horizon": 1504,
+            "private_bytes": 97394688,
+            "working_set_bytes": 104783872,
+            "peak_working_set_bytes": 104783872,
+            "pagefile_bytes": 97394688
+          },
+          {
+            "horizon": 1704,
+            "private_bytes": 101879808,
+            "working_set_bytes": 109170688,
+            "peak_working_set_bytes": 109170688,
+            "pagefile_bytes": 101879808
+          },
+          {
+            "horizon": 1904,
+            "private_bytes": 106041344,
+            "working_set_bytes": 113262592,
+            "peak_working_set_bytes": 113262592,
+            "pagefile_bytes": 106041344
+          }
+        ]
+      },
+      "stderr_tail": [],
+      "cache_attribution": [
+        {
+          "horizon": 904,
+          "private_bytes": 89088000,
+          "replay_only_private_bytes": 88838144,
+          "cache_attributed_bytes": 249856
+        },
+        {
+          "horizon": 1104,
+          "private_bytes": 89681920,
+          "replay_only_private_bytes": 89436160,
+          "cache_attributed_bytes": 245760
+        },
+        {
+          "horizon": 1304,
+          "private_bytes": 93011968,
+          "replay_only_private_bytes": 93048832,
+          "cache_attributed_bytes": -36864
+        },
+        {
+          "horizon": 1504,
+          "private_bytes": 97394688,
+          "replay_only_private_bytes": 97460224,
+          "cache_attributed_bytes": -65536
+        },
+        {
+          "horizon": 1704,
+          "private_bytes": 101879808,
+          "replay_only_private_bytes": 101728256,
+          "cache_attributed_bytes": 151552
+        },
+        {
+          "horizon": 1904,
+          "private_bytes": 106041344,
+          "replay_only_private_bytes": 106176512,
+          "cache_attributed_bytes": -135168
+        }
+      ]
+    },
+    {
+      "requirements": 40000,
+      "wave": 0,
+      "capture": true,
+      "limit_mib_requested": 0,
+      "exit_code": 0,
+      "diagnostic_passed": true,
+      "events": [
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 0,
+          "capture": 1,
+          "horizon": 904,
+          "points": 1,
+          "admitted_bytes": 52323608,
+          "live_bytes": 52323608,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 0,
+          "capture": 1,
+          "horizon": 1104,
+          "points": 1,
+          "admitted_bytes": 52323608,
+          "live_bytes": 52323608,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 0,
+          "capture": 1,
+          "horizon": 1304,
+          "points": 1,
+          "admitted_bytes": 52323608,
+          "live_bytes": 52323608,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 0,
+          "capture": 1,
+          "horizon": 1504,
+          "points": 1,
+          "admitted_bytes": 52323608,
+          "live_bytes": 52323608,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 0,
+          "capture": 1,
+          "horizon": 1704,
+          "points": 1,
+          "admitted_bytes": 52323608,
+          "live_bytes": 52323608,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 0,
+          "capture": 1,
+          "horizon": 1904,
+          "points": 1,
+          "admitted_bytes": 52323608,
+          "live_bytes": 52323608,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting_release",
+          "n": 40000,
+          "wave": 0,
+          "live_bytes": 52323608
+        },
+        {
+          "event": "r3c.accounting_final",
+          "n": 40000,
+          "wave": 0,
+          "live_bytes": 0
+        }
+      ],
+      "process_memory": {
+        "baseline": {
+          "private_bytes": 450560,
+          "working_set_bytes": 2048000,
+          "peak_working_set_bytes": 2048000,
+          "pagefile_bytes": 450560
+        },
+        "peak": {
+          "private_bytes": 2825908224,
+          "working_set_bytes": 2756395008,
+          "peak_working_set_bytes": 2870423552,
+          "pagefile_bytes": 2825908224
+        },
+        "released": null,
+        "horizons": [
+          {
+            "horizon": 904,
+            "private_bytes": 2824937472,
+            "working_set_bytes": 2755424256,
+            "peak_working_set_bytes": 2870423552,
+            "pagefile_bytes": 2824937472
+          },
+          {
+            "horizon": 1104,
+            "private_bytes": 2825584640,
+            "working_set_bytes": 2756071424,
+            "peak_working_set_bytes": 2870423552,
+            "pagefile_bytes": 2825584640
+          },
+          {
+            "horizon": 1304,
+            "private_bytes": 2825584640,
+            "working_set_bytes": 2756079616,
+            "peak_working_set_bytes": 2870423552,
+            "pagefile_bytes": 2825584640
+          },
+          {
+            "horizon": 1504,
+            "private_bytes": 2825584640,
+            "working_set_bytes": 2756079616,
+            "peak_working_set_bytes": 2870423552,
+            "pagefile_bytes": 2825584640
+          },
+          {
+            "horizon": 1704,
+            "private_bytes": 2825584640,
+            "working_set_bytes": 2756079616,
+            "peak_working_set_bytes": 2870423552,
+            "pagefile_bytes": 2825584640
+          },
+          {
+            "horizon": 1904,
+            "private_bytes": 2825908224,
+            "working_set_bytes": 2756395008,
+            "peak_working_set_bytes": 2870423552,
+            "pagefile_bytes": 2825908224
+          }
+        ]
+      },
+      "stderr_tail": []
+    },
+    {
+      "requirements": 40000,
+      "wave": 256,
+      "capture": true,
+      "limit_mib_requested": 0,
+      "exit_code": 0,
+      "diagnostic_passed": true,
+      "events": [
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 256,
+          "capture": 1,
+          "horizon": 904,
+          "points": 1,
+          "admitted_bytes": 51967496,
+          "live_bytes": 51967496,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 256,
+          "capture": 1,
+          "horizon": 1104,
+          "points": 2,
+          "admitted_bytes": 103947896,
+          "live_bytes": 103947896,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 256,
+          "capture": 1,
+          "horizon": 1304,
+          "points": 2,
+          "admitted_bytes": 103947896,
+          "live_bytes": 103947896,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 256,
+          "capture": 1,
+          "horizon": 1504,
+          "points": 2,
+          "admitted_bytes": 103947896,
+          "live_bytes": 103947896,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 256,
+          "capture": 1,
+          "horizon": 1704,
+          "points": 2,
+          "admitted_bytes": 103947896,
+          "live_bytes": 103947896,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 256,
+          "capture": 1,
+          "horizon": 1904,
+          "points": 2,
+          "admitted_bytes": 103947896,
+          "live_bytes": 103947896,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting_release",
+          "n": 40000,
+          "wave": 256,
+          "live_bytes": 103947896
+        },
+        {
+          "event": "r3c.accounting_final",
+          "n": 40000,
+          "wave": 256,
+          "live_bytes": 0
+        }
+      ],
+      "process_memory": {
+        "baseline": {
+          "private_bytes": 446464,
+          "working_set_bytes": 2048000,
+          "peak_working_set_bytes": 2048000,
+          "pagefile_bytes": 446464
+        },
+        "peak": {
+          "private_bytes": 1969532928,
+          "working_set_bytes": 1927647232,
+          "peak_working_set_bytes": 2172764160,
+          "pagefile_bytes": 1969532928
+        },
+        "released": null,
+        "horizons": [
+          {
+            "horizon": 904,
+            "private_bytes": 1966469120,
+            "working_set_bytes": 1924419584,
+            "peak_working_set_bytes": 2172764160,
+            "pagefile_bytes": 1966469120
+          },
+          {
+            "horizon": 1104,
+            "private_bytes": 1967206400,
+            "working_set_bytes": 1925332992,
+            "peak_working_set_bytes": 2172764160,
+            "pagefile_bytes": 1967206400
+          },
+          {
+            "horizon": 1304,
+            "private_bytes": 1968013312,
+            "working_set_bytes": 1926320128,
+            "peak_working_set_bytes": 2172764160,
+            "pagefile_bytes": 1968013312
+          },
+          {
+            "horizon": 1504,
+            "private_bytes": 1969045504,
+            "working_set_bytes": 1927094272,
+            "peak_working_set_bytes": 2172764160,
+            "pagefile_bytes": 1969045504
+          },
+          {
+            "horizon": 1704,
+            "private_bytes": 1969532928,
+            "working_set_bytes": 1927647232,
+            "peak_working_set_bytes": 2172764160,
+            "pagefile_bytes": 1969532928
+          },
+          {
+            "horizon": 1904,
+            "private_bytes": 1969532928,
+            "working_set_bytes": 1927950336,
+            "peak_working_set_bytes": 2172764160,
+            "pagefile_bytes": 1969532928
+          }
+        ]
+      },
+      "stderr_tail": [],
+      "cache_attribution": [
+        {
+          "horizon": 904,
+          "private_bytes": 1966469120,
+          "replay_only_private_bytes": 1966354432,
+          "cache_attributed_bytes": 114688
+        },
+        {
+          "horizon": 1104,
+          "private_bytes": 1967206400,
+          "replay_only_private_bytes": 1967308800,
+          "cache_attributed_bytes": -102400
+        },
+        {
+          "horizon": 1304,
+          "private_bytes": 1968013312,
+          "replay_only_private_bytes": 1968455680,
+          "cache_attributed_bytes": -442368
+        },
+        {
+          "horizon": 1504,
+          "private_bytes": 1969045504,
+          "replay_only_private_bytes": 1969041408,
+          "cache_attributed_bytes": 4096
+        },
+        {
+          "horizon": 1704,
+          "private_bytes": 1969532928,
+          "replay_only_private_bytes": 1969041408,
+          "cache_attributed_bytes": 491520
+        },
+        {
+          "horizon": 1904,
+          "private_bytes": 1969532928,
+          "replay_only_private_bytes": 1969041408,
+          "cache_attributed_bytes": 491520
+        }
+      ]
+    },
+    {
+      "requirements": 40000,
+      "wave": 256,
+      "capture": false,
+      "limit_mib_requested": 0,
+      "exit_code": 0,
+      "diagnostic_passed": true,
+      "events": [
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 256,
+          "capture": 0,
+          "horizon": 904,
+          "points": 0,
+          "admitted_bytes": 0,
+          "live_bytes": 0,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 256,
+          "capture": 0,
+          "horizon": 1104,
+          "points": 0,
+          "admitted_bytes": 0,
+          "live_bytes": 0,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 256,
+          "capture": 0,
+          "horizon": 1304,
+          "points": 0,
+          "admitted_bytes": 0,
+          "live_bytes": 0,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 256,
+          "capture": 0,
+          "horizon": 1504,
+          "points": 0,
+          "admitted_bytes": 0,
+          "live_bytes": 0,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 256,
+          "capture": 0,
+          "horizon": 1704,
+          "points": 0,
+          "admitted_bytes": 0,
+          "live_bytes": 0,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 256,
+          "capture": 0,
+          "horizon": 1904,
+          "points": 0,
+          "admitted_bytes": 0,
+          "live_bytes": 0,
+          "limit": 134217728,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting_release",
+          "n": 40000,
+          "wave": 256,
+          "live_bytes": 0
+        },
+        {
+          "event": "r3c.accounting_final",
+          "n": 40000,
+          "wave": 256,
+          "live_bytes": 0
+        }
+      ],
+      "process_memory": {
+        "baseline": {
+          "private_bytes": 446464,
+          "working_set_bytes": 2048000,
+          "peak_working_set_bytes": 2048000,
+          "pagefile_bytes": 446464
+        },
+        "peak": {
+          "private_bytes": 1969041408,
+          "working_set_bytes": 1927090176,
+          "peak_working_set_bytes": 2173816832,
+          "pagefile_bytes": 1969041408
+        },
+        "released": null,
+        "horizons": [
+          {
+            "horizon": 904,
+            "private_bytes": 1966354432,
+            "working_set_bytes": 1924063232,
+            "peak_working_set_bytes": 2173816832,
+            "pagefile_bytes": 1966354432
+          },
+          {
+            "horizon": 1104,
+            "private_bytes": 1967308800,
+            "working_set_bytes": 1925263360,
+            "peak_working_set_bytes": 2173816832,
+            "pagefile_bytes": 1967308800
+          },
+          {
+            "horizon": 1304,
+            "private_bytes": 1968455680,
+            "working_set_bytes": 1926389760,
+            "peak_working_set_bytes": 2173816832,
+            "pagefile_bytes": 1968455680
+          },
+          {
+            "horizon": 1504,
+            "private_bytes": 1969041408,
+            "working_set_bytes": 1927090176,
+            "peak_working_set_bytes": 2173816832,
+            "pagefile_bytes": 1969041408
+          },
+          {
+            "horizon": 1704,
+            "private_bytes": 1969041408,
+            "working_set_bytes": 1927413760,
+            "peak_working_set_bytes": 2173816832,
+            "pagefile_bytes": 1969041408
+          },
+          {
+            "horizon": 1904,
+            "private_bytes": 1969041408,
+            "working_set_bytes": 1927987200,
+            "peak_working_set_bytes": 2173816832,
+            "pagefile_bytes": 1969041408
+          }
+        ]
+      },
+      "stderr_tail": [],
+      "cache_attribution": [
+        {
+          "horizon": 904,
+          "private_bytes": 1966354432,
+          "replay_only_private_bytes": 1966469120,
+          "cache_attributed_bytes": -114688
+        },
+        {
+          "horizon": 1104,
+          "private_bytes": 1967308800,
+          "replay_only_private_bytes": 1967206400,
+          "cache_attributed_bytes": 102400
+        },
+        {
+          "horizon": 1304,
+          "private_bytes": 1968455680,
+          "replay_only_private_bytes": 1968013312,
+          "cache_attributed_bytes": 442368
+        },
+        {
+          "horizon": 1504,
+          "private_bytes": 1969041408,
+          "replay_only_private_bytes": 1969045504,
+          "cache_attributed_bytes": -4096
+        },
+        {
+          "horizon": 1704,
+          "private_bytes": 1969041408,
+          "replay_only_private_bytes": 1969532928,
+          "cache_attributed_bytes": -491520
+        },
+        {
+          "horizon": 1904,
+          "private_bytes": 1969041408,
+          "replay_only_private_bytes": 1969532928,
+          "cache_attributed_bytes": -491520
+        }
+      ]
+    },
+    {
+      "requirements": 40000,
+      "wave": 256,
+      "capture": true,
+      "limit_mib_requested": 256,
+      "exit_code": 0,
+      "diagnostic_passed": true,
+      "events": [
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 256,
+          "capture": 1,
+          "horizon": 904,
+          "points": 1,
+          "admitted_bytes": 51967496,
+          "live_bytes": 51967496,
+          "limit": 268435456,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 256,
+          "capture": 1,
+          "horizon": 1104,
+          "points": 2,
+          "admitted_bytes": 103947896,
+          "live_bytes": 103947896,
+          "limit": 268435456,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 256,
+          "capture": 1,
+          "horizon": 1304,
+          "points": 3,
+          "admitted_bytes": 155930488,
+          "live_bytes": 155930488,
+          "limit": 268435456,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 256,
+          "capture": 1,
+          "horizon": 1504,
+          "points": 4,
+          "admitted_bytes": 207915416,
+          "live_bytes": 207915416,
+          "limit": 268435456,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 256,
+          "capture": 1,
+          "horizon": 1704,
+          "points": 4,
+          "admitted_bytes": 207922280,
+          "live_bytes": 259902680,
+          "limit": 268435456,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 256,
+          "capture": 1,
+          "horizon": 1904,
+          "points": 4,
+          "admitted_bytes": 207922280,
+          "live_bytes": 259902680,
+          "limit": 268435456,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting_release",
+          "n": 40000,
+          "wave": 256,
+          "live_bytes": 259902680
+        },
+        {
+          "event": "r3c.accounting_final",
+          "n": 40000,
+          "wave": 256,
+          "live_bytes": 0
+        }
+      ],
+      "process_memory": {
+        "baseline": {
+          "private_bytes": 450560,
+          "working_set_bytes": 2048000,
+          "peak_working_set_bytes": 2048000,
+          "pagefile_bytes": 450560
+        },
+        "peak": {
+          "private_bytes": 1968463872,
+          "working_set_bytes": 1926750208,
+          "peak_working_set_bytes": 2173759488,
+          "pagefile_bytes": 1968463872
+        },
+        "released": null,
+        "horizons": [
+          {
+            "horizon": 904,
+            "private_bytes": 1966100480,
+            "working_set_bytes": 1924141056,
+            "peak_working_set_bytes": 2173759488,
+            "pagefile_bytes": 1966100480
+          },
+          {
+            "horizon": 1104,
+            "private_bytes": 1966952448,
+            "working_set_bytes": 1925201920,
+            "peak_working_set_bytes": 2173759488,
+            "pagefile_bytes": 1966952448
+          },
+          {
+            "horizon": 1304,
+            "private_bytes": 1968099328,
+            "working_set_bytes": 1926139904,
+            "peak_working_set_bytes": 2173759488,
+            "pagefile_bytes": 1968099328
+          },
+          {
+            "horizon": 1504,
+            "private_bytes": 1968455680,
+            "working_set_bytes": 1926582272,
+            "peak_working_set_bytes": 2173759488,
+            "pagefile_bytes": 1968455680
+          },
+          {
+            "horizon": 1704,
+            "private_bytes": 1968463872,
+            "working_set_bytes": 1926750208,
+            "peak_working_set_bytes": 2173759488,
+            "pagefile_bytes": 1968463872
+          },
+          {
+            "horizon": 1904,
+            "private_bytes": 1968463872,
+            "working_set_bytes": 1927614464,
+            "peak_working_set_bytes": 2173759488,
+            "pagefile_bytes": 1968463872
+          }
+        ]
+      },
+      "stderr_tail": []
+    },
+    {
+      "requirements": 40000,
+      "wave": 256,
+      "capture": true,
+      "limit_mib_requested": 512,
+      "exit_code": 0,
+      "diagnostic_passed": true,
+      "events": [
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 256,
+          "capture": 1,
+          "horizon": 904,
+          "points": 1,
+          "admitted_bytes": 51967496,
+          "live_bytes": 51967496,
+          "limit": 536870912,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 256,
+          "capture": 1,
+          "horizon": 1104,
+          "points": 2,
+          "admitted_bytes": 103947896,
+          "live_bytes": 103947896,
+          "limit": 536870912,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 256,
+          "capture": 1,
+          "horizon": 1304,
+          "points": 3,
+          "admitted_bytes": 155930488,
+          "live_bytes": 155930488,
+          "limit": 536870912,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 256,
+          "capture": 1,
+          "horizon": 1504,
+          "points": 4,
+          "admitted_bytes": 207915416,
+          "live_bytes": 207915416,
+          "limit": 536870912,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 256,
+          "capture": 1,
+          "horizon": 1704,
+          "points": 4,
+          "admitted_bytes": 207922280,
+          "live_bytes": 259902680,
+          "limit": 536870912,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting",
+          "n": 40000,
+          "wave": 256,
+          "capture": 1,
+          "horizon": 1904,
+          "points": 4,
+          "admitted_bytes": 207929288,
+          "live_bytes": 311892280,
+          "limit": 536870912,
+          "refused": 0
+        },
+        {
+          "event": "r3c.accounting_release",
+          "n": 40000,
+          "wave": 256,
+          "live_bytes": 311892280
+        },
+        {
+          "event": "r3c.accounting_final",
+          "n": 40000,
+          "wave": 256,
+          "live_bytes": 0
+        }
+      ],
+      "process_memory": {
+        "baseline": {
+          "private_bytes": 446464,
+          "working_set_bytes": 2048000,
+          "peak_working_set_bytes": 2048000,
+          "pagefile_bytes": 446464
+        },
+        "peak": {
+          "private_bytes": 1981661184,
+          "working_set_bytes": 1937842176,
+          "peak_working_set_bytes": 2177601536,
+          "pagefile_bytes": 1981661184
+        },
+        "released": null,
+        "horizons": [
+          {
+            "horizon": 904,
+            "private_bytes": 1976762368,
+            "working_set_bytes": 1933705216,
+            "peak_working_set_bytes": 2177601536,
+            "pagefile_bytes": 1976762368
+          },
+          {
+            "horizon": 1104,
+            "private_bytes": 1977896960,
+            "working_set_bytes": 1934712832,
+            "peak_working_set_bytes": 2177601536,
+            "pagefile_bytes": 1977896960
+          },
+          {
+            "horizon": 1304,
+            "private_bytes": 1979006976,
+            "working_set_bytes": 1935667200,
+            "peak_working_set_bytes": 2177601536,
+            "pagefile_bytes": 1979006976
+          },
+          {
+            "horizon": 1504,
+            "private_bytes": 1980268544,
+            "working_set_bytes": 1936760832,
+            "peak_working_set_bytes": 2177601536,
+            "pagefile_bytes": 1980268544
+          },
+          {
+            "horizon": 1704,
+            "private_bytes": 1981661184,
+            "working_set_bytes": 1937842176,
+            "peak_working_set_bytes": 2177601536,
+            "pagefile_bytes": 1981661184
+          },
+          {
+            "horizon": 1904,
+            "private_bytes": 1981661184,
+            "working_set_bytes": 1938079744,
+            "peak_working_set_bytes": 2177601536,
+            "pagefile_bytes": 1981661184
+          }
+        ]
+      },
+      "stderr_tail": []
+    }
+  ]
+}

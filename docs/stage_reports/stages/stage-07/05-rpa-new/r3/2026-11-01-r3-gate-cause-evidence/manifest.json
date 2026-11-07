@@ -1,0 +1,39 @@
+{
+  "scope": "Root-cause evidence for the two over-budget gates: the pause overrun is a one-time second-swap stall and the read regression is per-object registry memory traffic. Diagnostic only; every instrument and product edit used to obtain these numbers was reverted.",
+  "source_run": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-repair-v1",
+  "copied_files": [
+    {
+      "source": "out\\verification-20261101\\r3-repair-v1\\attempt\\cause-analysis.json",
+      "archive": "attempt/cause-analysis.json",
+      "bytes": 4243,
+      "sha256": "58c756bcf1683a119125dc40e07864258379ea8d83a996fe3555b70b46c59bec",
+      "source_sha256": "58c756bcf1683a119125dc40e07864258379ea8d83a996fe3555b70b46c59bec",
+      "eol": "crlf"
+    }
+  ],
+  "attached_files": [],
+  "excluded": [],
+  "generated_files": {
+    "index.md": "746e0da38362ac7d15bc30040c0ce50cd925619ebb05883ddf1e627dd453bb20"
+  },
+  "binding": {
+    "head": "6256af8b7d349b14a6d5b006d7632711152e96fa",
+    "read_ratios": {
+      "E0": 1.0175,
+      "E1": 0.8247,
+      "E2": 1.0068,
+      "E3": 1.0392
+    },
+    "pause_split": {
+      "pause_call_us": 258,
+      "frozen_sample_us": 49,
+      "frozen_present_us": 175836,
+      "total_us": 176141
+    },
+    "reverted": [
+      "tests/pd/pd5_host_probe.cpp diagnostics",
+      "engine/runtime presentation read ablations",
+      "engine/playback materializer bulk-read rewrite"
+    ]
+  }
+}

@@ -1,0 +1,349 @@
+{
+  "selected": "in-place neutral draw command construction",
+  "selected_on": "2026-10-31",
+  "commit": "97b2570d7cb6ee90d250a5b707ed4b1ab92e52c8",
+  "commit_subject": "Build neutral draw commands in place without ordered copies",
+  "parent": "0a575c4496f476111bd320f4d021e73ebda59771",
+  "changed_paths": [
+    "engine/presentation_renderer/src/draw_command.cpp"
+  ],
+  "source_sha256_raw": "634157c2f12da2e15c6974d9d09014240070ff976b9bebc181a11848e3807b2e",
+  "source_bytes_raw": 23353,
+  "source_sha256_git_blob": "2ac765aebc59b57385e824f3feb86f2b614238b4",
+  "baseline_sha256_raw": "483ef1b7fb0d6b2e28a072677e813609d800053b50969190b2ba12640e6a7ee9",
+  "baseline_sha256_git_blob": "40fefc93ed22df316197e4b2c8b1d886127dd409",
+  "binding": {
+    "scope": "Only the neutral draw CPP differs between the two physical binaries; same product-sequence Release libraries, same characterization object, same app-local Release DLLs. Focused regression and equivalence check, not a fresh whole-repo matrix.",
+    "source_binding_sha256": "233ec8073718301a752fb832d411c9a17adb5c9817ea5431fbf3136fbc20daf4",
+    "characterization_sha256": "39b66eb275e770c76a6ca3858bcb8b7513aee1d06b4edb6a30fd53fbe9765966",
+    "probe_source_sha256": "e98f1dac026e51cfebdfb331c657bdb9a6e77e6896a493f6c57a8040fdcd07f0",
+    "commands_sha256": "9120cafc50c0dc9f58647d3d66e7da14f468e9b326f0fa2c7b33a6bf991de330",
+    "binaries": {
+      "gpu-baseline.exe": "2281f4577aba3227f6d1312b9cf978c08cf0854a6ef72cbaa36cf8149de535d8",
+      "gpu-candidate.exe": "80b6c1886b7ee91191fa8d70b24f3e78d12eb3fbebc4209e8024662b99d0af77",
+      "neutral-baseline.exe": "4a2b6acae9f16c38bebe9fe3bac5e2aeaa9cbca2fa66503fc4cc822654e2d7c8",
+      "neutral-candidate.exe": "605e50e5ca1a7ead59f1e32fc0e07a1a83281e4fb8f4c4ca4fe5f805e52bc222",
+      "opengl-baseline.exe": "23f5a5dbf09a0da6f34cd10b0c4e2f4816b7393850ad21ef7723543f5f73e140",
+      "opengl-candidate.exe": "5817630799e94dbe7471dd9d1c3adfe3c1d3fb5bc93c8e7ad9693cc8de55bcc3"
+    }
+  },
+  "equivalence": {
+    "permutations": 24,
+    "order_digest_and_owning_payload_equal_between_variants": true,
+    "candidate_matches_archived_selected_evidence": true,
+    "neutral_assertions": {
+      "baseline": "All tests passed (399 assertions in 3 test cases)",
+      "candidate": "All tests passed (399 assertions in 3 test cases)",
+      "opengl-candidate": "All tests passed (140 assertions in 22 test cases)"
+    },
+    "logs": {
+      "neutral-baseline.log": "0cd04aeeee41597172da42c26c22d238e6db00c831b4a12854c99887466fb5da",
+      "neutral-candidate.log": "0cd04aeeee41597172da42c26c22d238e6db00c831b4a12854c99887466fb5da",
+      "opengl-candidate.log": "58f6d891e86aa577e972f698c06d8f0d6e774c5785d5d176a3f04dff75779d18"
+    },
+    "note": "Equivalence of observable output and focused regression only. No performance claim is made by this group."
+  },
+  "group": {
+    "plan": [
+      {
+        "entities": 1000,
+        "mode": "render-only",
+        "repeat": 0,
+        "variant": "baseline",
+        "frames": 60
+      },
+      {
+        "entities": 1000,
+        "mode": "render-only",
+        "repeat": 0,
+        "variant": "candidate",
+        "frames": 60
+      },
+      {
+        "entities": 1000,
+        "mode": "render-only",
+        "repeat": 1,
+        "variant": "candidate",
+        "frames": 60
+      },
+      {
+        "entities": 1000,
+        "mode": "render-only",
+        "repeat": 1,
+        "variant": "baseline",
+        "frames": 60
+      },
+      {
+        "entities": 1000,
+        "mode": "static",
+        "repeat": 0,
+        "variant": "baseline",
+        "frames": 60
+      },
+      {
+        "entities": 1000,
+        "mode": "static",
+        "repeat": 0,
+        "variant": "candidate",
+        "frames": 60
+      },
+      {
+        "entities": 1000,
+        "mode": "static",
+        "repeat": 1,
+        "variant": "candidate",
+        "frames": 60
+      },
+      {
+        "entities": 1000,
+        "mode": "static",
+        "repeat": 1,
+        "variant": "baseline",
+        "frames": 60
+      },
+      {
+        "entities": 40000,
+        "mode": "render-only",
+        "repeat": 0,
+        "variant": "baseline",
+        "frames": 60
+      },
+      {
+        "entities": 40000,
+        "mode": "render-only",
+        "repeat": 0,
+        "variant": "candidate",
+        "frames": 60
+      },
+      {
+        "entities": 40000,
+        "mode": "render-only",
+        "repeat": 1,
+        "variant": "candidate",
+        "frames": 60
+      },
+      {
+        "entities": 40000,
+        "mode": "render-only",
+        "repeat": 1,
+        "variant": "baseline",
+        "frames": 60
+      },
+      {
+        "entities": 40000,
+        "mode": "static",
+        "repeat": 0,
+        "variant": "baseline",
+        "frames": 60
+      },
+      {
+        "entities": 40000,
+        "mode": "static",
+        "repeat": 0,
+        "variant": "candidate",
+        "frames": 60
+      },
+      {
+        "entities": 40000,
+        "mode": "static",
+        "repeat": 1,
+        "variant": "candidate",
+        "frames": 60
+      },
+      {
+        "entities": 40000,
+        "mode": "static",
+        "repeat": 1,
+        "variant": "baseline",
+        "frames": 60
+      }
+    ],
+    "non_inferiority_gate": true,
+    "repeatability_screen": true,
+    "resolution_note": "Expected effect is far below the 15% process-to-process repeatability band, so this group can only exclude a regression, never establish an improvement.",
+    "summary": [
+      {
+        "n": 1000,
+        "mode": "render-only",
+        "values": {
+          "baseline": {
+            "submit_us": {
+              "samples_us": [
+                1179.2583333333334,
+                1193.3466666666666
+              ],
+              "median_us": 1186.3025,
+              "relative_range_percent": 1.187583549165001
+            },
+            "cycle_us": {
+              "samples_us": [
+                1234.605,
+                1247.46
+              ],
+              "median_us": 1241.0325,
+              "relative_range_percent": 1.0358310519668112
+            }
+          },
+          "candidate": {
+            "submit_us": {
+              "samples_us": [
+                1184.6616666666666,
+                1198.2166666666667
+              ],
+              "median_us": 1191.4391666666666,
+              "relative_range_percent": 1.137699714700784
+            },
+            "cycle_us": {
+              "samples_us": [
+                1236.2683333333334,
+                1253.675
+              ],
+              "median_us": 1244.9716666666668,
+              "relative_range_percent": 1.398157655528963
+            }
+          }
+        },
+        "submit_change": 0.4329980478559703,
+        "cycle_change": 0.3174104357997809
+      },
+      {
+        "n": 1000,
+        "mode": "static",
+        "values": {
+          "baseline": {
+            "submit_us": {
+              "samples_us": [
+                1196.5983333333334,
+                1166.4116666666666
+              ],
+              "median_us": 1181.505,
+              "relative_range_percent": 2.5549334676253355
+            },
+            "cycle_us": {
+              "samples_us": [
+                1514.4266666666667,
+                1536.765
+              ],
+              "median_us": 1525.5958333333333,
+              "relative_range_percent": 1.4642366507075126
+            }
+          },
+          "candidate": {
+            "submit_us": {
+              "samples_us": [
+                1132.3666666666668,
+                1136.815
+              ],
+              "median_us": 1134.5908333333334,
+              "relative_range_percent": 0.3920649808411049
+            },
+            "cycle_us": {
+              "samples_us": [
+                1446.7083333333333,
+                1488.8766666666668
+              ],
+              "median_us": 1467.7925,
+              "relative_range_percent": 2.872908352736066
+            }
+          }
+        },
+        "submit_change": -3.9707124952214956,
+        "cycle_change": -3.788902150252771
+      },
+      {
+        "n": 40000,
+        "mode": "render-only",
+        "values": {
+          "baseline": {
+            "submit_us": {
+              "samples_us": [
+                52172.11,
+                48697.95166666667
+              ],
+              "median_us": 50435.03083333334,
+              "relative_range_percent": 6.888383482532154
+            },
+            "cycle_us": {
+              "samples_us": [
+                52275.3,
+                48825.278333333335
+              ],
+              "median_us": 50550.28916666667,
+              "relative_range_percent": 6.824929636488893
+            }
+          },
+          "candidate": {
+            "submit_us": {
+              "samples_us": [
+                44045.25833333333,
+                44031.511666666665
+              ],
+              "median_us": 44038.384999999995,
+              "relative_range_percent": 0.031215192534117656
+            },
+            "cycle_us": {
+              "samples_us": [
+                44164.246666666666,
+                44172.18
+              ],
+              "median_us": 44168.21333333333,
+              "relative_range_percent": 0.0179616351548164
+            }
+          }
+        },
+        "submit_change": -12.682942247961703,
+        "cycle_change": -12.625201435131917
+      },
+      {
+        "n": 40000,
+        "mode": "static",
+        "values": {
+          "baseline": {
+            "submit_us": {
+              "samples_us": [
+                49505.59,
+                47882.46333333333
+              ],
+              "median_us": 48694.026666666665,
+              "relative_range_percent": 3.333317816942359
+            },
+            "cycle_us": {
+              "samples_us": [
+                62748.87666666667,
+                60980.79666666667
+              ],
+              "median_us": 61864.83666666667,
+              "relative_range_percent": 2.857972469120991
+            }
+          },
+          "candidate": {
+            "submit_us": {
+              "samples_us": [
+                44357.92,
+                44353.361666666664
+              ],
+              "median_us": 44355.64083333333,
+              "relative_range_percent": 0.010276783849121415
+            },
+            "cycle_us": {
+              "samples_us": [
+                57824.22,
+                57672.14333333333
+              ],
+              "median_us": 57748.18166666667,
+              "relative_range_percent": 0.2633445110782583
+            }
+          }
+        },
+        "submit_change": -8.909482600466811,
+        "cycle_change": -6.65427280149612
+      }
+    ]
+  },
+  "scope": {
+    "product_acceptance": false,
+    "full_matrix": false,
+    "capacity_240fps": false,
+    "note": "Localised neutral builder evidence only. 40K render-only stays about 10.6x over the 4.167 ms frame budget, the six-item ledger, the same-source matrix, R3/R4 and device/production acceptance stay open."
+  }
+}

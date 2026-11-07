@@ -1,0 +1,9 @@
+Filters: [product-writer]
+Randomness seeded to: 1
+{"event":"r3c.writer","n":40000,"wave":0,"capture":0,"attempt":0,"advance_us":641183}
+{"event":"r3c.writer","n":40000,"wave":0,"capture":0,"attempt":1,"advance_us":726899}
+{"event":"r3c.writer","n":40000,"wave":0,"capture":0,"attempt":2,"advance_us":607578}
+R3_WRITER_WIRE 213085823 3c75b9fd7737c664a7e094eee8ebd00d5be1a339be6c42e7431e07f7c4897b71
+===============================================================================
+All tests passed (22 assertions in 1 test case)
+

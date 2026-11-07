@@ -1,0 +1,44 @@
+{
+  "plan": [
+    {
+      "n": 40000,
+      "horizon": "902",
+      "repeat": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "repeat": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "repeat": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "repeat": 1,
+      "variant": "baseline"
+    }
+  ],
+  "attempts": 3,
+  "records": 129,
+  "identity": "owningSource",
+  "content": "packed",
+  "formal": false,
+  "affinity": 4,
+  "priority": "BelowNormal",
+  "qos": "execution throttling OFF",
+  "purpose": "40K first-record partial H902 only. No full matrix or formal run; fixed direction screen after finite headless/fault/writer checks. Separate first and repeat requests; cut and required identity work inside timer. Two AB/BA pairs per partial case and one AB final guard, 4 total processes; no replacement/extension; stop on functional invalidity.",
+  "runner_sha256": "5c90c56dbfe6353cf8977f7abb4ac63b8872ff30ee540c0bc03ee5eb94bef62b",
+  "binding_sha256": "ad38a28d1b68f4434cfa87cdf84d180489dcd01dde5f4382f2a74df18023bf5b",
+  "binaries": {
+    "baseline": "9c0f764b69fe26cacf256eb14344043a23e3f5eef615cca765a02cc76c126c2b",
+    "candidate": "b444854b6f7efd8a09db46df5c06fa4838cceae3ec334d3b4679cba1fdca666d"
+  },
+  "decision": "Exploratory 40K screen only: improve process-median request-to-present >=50% to justify retained-byte admission design. Fault/branch/eviction tests passed separately; byte caps remain open. NOT a retention or acceptance gate. Exact final snapshot wire SHA/size and full raw partial bytes match. First and repeated requests remain separate; no formal acceptance."
+}

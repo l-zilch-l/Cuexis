@@ -1,0 +1,3542 @@
+{
+  "schema": "cuexis.r2-exit-evidence.v1",
+  "snapshot_utc": "2026-10-26T10:00:25.540407+00:00",
+  "role": "Review evidence, not owner acceptance or permission to rerun frozen measurement controllers",
+  "head": "cccbd47eda8ecd65e018ec31063ec027c39bd04e",
+  "branch": "stage-7",
+  "current_R2_inputs": {
+    "engine/playback/src/presentation_materializer.cpp": "b310863c9f804060f3883f39749a898c78334b09cb22ec74d4676dbdddd4d607",
+    "engine/playback/src/presentation_materializer.hpp": "24563a07595c85ab7588c1ce0632b2bfca62984197606102db366729ab4048fb",
+    "engine/runtime/internal/cuexis/runtime/presentation_read.hpp": "15aeb4ae8d85308e1d6a968281d5cde4330380cadf3fba55ea4aaaf7d7ec2e8f",
+    "engine/runtime/src/presentation_read.cpp": "80d89e92ddcd801a119d2aa430a3b976bb66e9ccab41d1af98a0a1a3a1df11dd",
+    "tests/pd/presentation_read_tests.hpp": "2bcbe0903879f017f95a9de68a9fca9e09e8dee6a263c22a756e3ff3f4eb06ef",
+    "tests/pd/presentation_state_tests.cpp": "7109416c0410c8a549e3de77f5108e64f03566e11641f7870190edc3d6f81d4e",
+    "tests/pd/r2_snapshot_tests.hpp": "477272d845696a0225ea6fae87f862d766d4cc35e93a7866e67fdfe9ba587e8f",
+    "tests/pd/r2_legacy_materializer.hpp": "c00107b53f4db8ddf059f8a35a8cf0845fc343b08f92bc80452646e5dc91a4a0",
+    "tests/playback/CMakeLists.txt": "6901f10eb196b3aa4fb36610dd158e52f4183138710130a8eb170f2ffd832f3b"
+  },
+  "r2_owner_exit_accepted": false,
+  "r4_formal_accepted": false,
+  "coverage": "Original bytes of selected logs, metadata, raw samples, scripts, source inputs and rollback proofs; originals kept in place",
+  "exclusions": [
+    "Large exe/lib/object files, compiler/toolchain binaries, all transitive dependency contents, ETL and unrelated build outputs",
+    "Original bindings preserve excluded artifact paths and hashes; this archive is not a standalone full Windows build environment"
+  ],
+  "missing_historical_log_references": [],
+  "records": [
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\baseline-source.json",
+      "archive_path": "historical/out/rpa-r2-20261025/baseline-source.json",
+      "category": "historical-candidate",
+      "bytes": 370401,
+      "sha256": "094d053cced6971e622098da923207f846c7023e35d633326a8ca0ee9e51d2d5"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\candidate-source.json",
+      "archive_path": "historical/out/rpa-r2-20261025/candidate-source.json",
+      "category": "historical-candidate",
+      "bytes": 370648,
+      "sha256": "e81101a0e18ef0e50a2931e5448f834114455fa67cdefc32c478213d06f61e5e"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\A-build-binding-check.txt",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/A-build-binding-check.txt",
+      "category": "historical-candidate-window",
+      "bytes": 65,
+      "sha256": "7716162f3cd3b99cf3b8a8dd6decf324e08c7e941aae7e730baba5e4fc8c075b"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\A-header-dependencies.txt",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/A-header-dependencies.txt",
+      "category": "historical-candidate-window",
+      "bytes": 17961,
+      "sha256": "67a7c47c0127787557a65e0d5e70a148ff37b868912696640d5330ab85f5c183"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\B-build-binding-check.txt",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/B-build-binding-check.txt",
+      "category": "historical-candidate-window",
+      "bytes": 65,
+      "sha256": "7716162f3cd3b99cf3b8a8dd6decf324e08c7e941aae7e730baba5e4fc8c075b"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\B-header-dependencies.txt",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/B-header-dependencies.txt",
+      "category": "historical-candidate-window",
+      "bytes": 17961,
+      "sha256": "1b24fefe604602afb9f5f8f980e4851a71e5e8cf9aa7e537482510d806da4817"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\C-build-binding-check.txt",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/C-build-binding-check.txt",
+      "category": "historical-candidate-window",
+      "bytes": 65,
+      "sha256": "7716162f3cd3b99cf3b8a8dd6decf324e08c7e941aae7e730baba5e4fc8c075b"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\C-header-dependencies.txt",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/C-header-dependencies.txt",
+      "category": "historical-candidate-window",
+      "bytes": 17961,
+      "sha256": "3afd0fc16e2808b88a0678f9baeb49ac37f746f6172dac6635161d3cc6a2339c"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\Q4-build-binding-check.txt",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/Q4-build-binding-check.txt",
+      "category": "historical-candidate-window",
+      "bytes": 65,
+      "sha256": "7716162f3cd3b99cf3b8a8dd6decf324e08c7e941aae7e730baba5e4fc8c075b"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\Q4-header-dependencies.txt",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/Q4-header-dependencies.txt",
+      "category": "historical-candidate-window",
+      "bytes": 17961,
+      "sha256": "e342a58b5b6c002967044cbeecd00c094ad5bd01131dae218ba36849d76f544b"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\analysis.json",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/analysis.json",
+      "category": "historical-candidate-window",
+      "bytes": 4754,
+      "sha256": "1bbbfbeca42e74e921c82cf2334bdc55445ed5b571e35c0e777cd1ae1ee53bb1"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\candidate-claim.json",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/candidate-claim.json",
+      "category": "historical-candidate-window",
+      "bytes": 177,
+      "sha256": "531363a02672a11884bed7ac2c5dc490db4ef2c385a9d8d6600cfb5030f70500"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\claim.json",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/claim.json",
+      "category": "historical-candidate-window",
+      "bytes": 168,
+      "sha256": "932052f8ac56d8943a7869f0a9ac52fa1d029d932af362db0f3bda1f234fb9e5"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\fixture-A.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/fixture-A.log",
+      "category": "historical-candidate-window",
+      "bytes": 1906,
+      "sha256": "d76ad917e5b582281018f230f24ef827501f8cf6a66a29355a1919fbf65486b4"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\fixture-B.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/fixture-B.log",
+      "category": "historical-candidate-window",
+      "bytes": 1906,
+      "sha256": "e85a62d44469f2ef480c8371f08806e3cb7fb28c1dece6bcfcba3d13a5752af1"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\fixture-C.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/fixture-C.log",
+      "category": "historical-candidate-window",
+      "bytes": 1905,
+      "sha256": "58c80c09837b9ab0f4ae22ab75ea14851e1e58eced3bf37c848c89d8e33d56c5"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\fixture-Q4.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/fixture-Q4.log",
+      "category": "historical-candidate-window",
+      "bytes": 1906,
+      "sha256": "76c238d50a5c01934a33527cc9db6ebaf43943054b33952811dc0667f224f5ea"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\fixture-validation.json",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/fixture-validation.json",
+      "category": "historical-candidate-window",
+      "bytes": 7084,
+      "sha256": "bb33cadc379d53c5e135a9a9c4b82b46b48f3bf221f362aabb7cc62fa1895ebe"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\processes\\candidate-r1-B.json",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/processes/candidate-r1-B.json",
+      "category": "historical-candidate-window",
+      "bytes": 3963,
+      "sha256": "f17da6e8d37269930e9e095df0eb3a93e7dd0a266f41dc253b937a5555dbf8b1"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\processes\\candidate-r1-C.json",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/processes/candidate-r1-C.json",
+      "category": "historical-candidate-window",
+      "bytes": 3970,
+      "sha256": "f7066c23b78f7c2e1271e3f4ddbc15538aab454a1a4923390ac0312ef4527d16"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\processes\\candidate-r2-B.json",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/processes/candidate-r2-B.json",
+      "category": "historical-candidate-window",
+      "bytes": 3966,
+      "sha256": "1b32bec840c602098548e4cfb74a9aa6f6456f529b889eb0dad794ac36fe7fb1"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\processes\\candidate-r2-C.json",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/processes/candidate-r2-C.json",
+      "category": "historical-candidate-window",
+      "bytes": 3972,
+      "sha256": "c2a462c4f534784fcf2598ba76ffa04171115c9508c452c9662ac6c350c3d3a0"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\processes\\candidate-r3-B.json",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/processes/candidate-r3-B.json",
+      "category": "historical-candidate-window",
+      "bytes": 3967,
+      "sha256": "406501803e7a8e3f87d277687f39bc2be06dcc473d532e80acdccb7527236921"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\processes\\candidate-r3-C.json",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/processes/candidate-r3-C.json",
+      "category": "historical-candidate-window",
+      "bytes": 3968,
+      "sha256": "f07fb43cbacdac404ec4c84ffd9d81ebc5b2cb55718dd2b789dbf8f04ab60f3a"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\processes\\reanchor-r1-A.json",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/processes/reanchor-r1-A.json",
+      "category": "historical-candidate-window",
+      "bytes": 1352,
+      "sha256": "dbc770d4b58d0ba679699dd769c5b778df3bf978ad4b36935bec657f0fd33a52"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\processes\\reanchor-r1-B.json",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/processes/reanchor-r1-B.json",
+      "category": "historical-candidate-window",
+      "bytes": 1353,
+      "sha256": "ad66afe24e564abb2bc96c0dc2749eabd0dfba0944214240fdf268caffe808ef"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\processes\\reanchor-r1-Q4.json",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/processes/reanchor-r1-Q4.json",
+      "category": "historical-candidate-window",
+      "bytes": 1359,
+      "sha256": "883565b81e105c92928c0f6ba084defe3ab35bf5eecccf78e91d30ab01657ce0"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\processes\\reanchor-r2-A.json",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/processes/reanchor-r2-A.json",
+      "category": "historical-candidate-window",
+      "bytes": 1349,
+      "sha256": "7b1e13457db9e5132f3f24e0c5cf3380ea577c10ce7816bd1eca5fb002c3a6fc"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\processes\\reanchor-r2-B.json",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/processes/reanchor-r2-B.json",
+      "category": "historical-candidate-window",
+      "bytes": 1350,
+      "sha256": "428d08b5787dd886cfea99db3e3ddbd5bf25a654532b4e311011ffe8e27788ad"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\processes\\reanchor-r2-Q4.json",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/processes/reanchor-r2-Q4.json",
+      "category": "historical-candidate-window",
+      "bytes": 1363,
+      "sha256": "f5e93e9eed8aa02fdb1cafd1a5278282d1e4c349dca6fd616b9a857bfce180e3"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\processes\\reanchor-r3-A.json",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/processes/reanchor-r3-A.json",
+      "category": "historical-candidate-window",
+      "bytes": 1356,
+      "sha256": "d6438b8fb68eef65e2a8261202611f4dc60f0215d7e9687b3a024596aa80f98f"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\processes\\reanchor-r3-B.json",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/processes/reanchor-r3-B.json",
+      "category": "historical-candidate-window",
+      "bytes": 1351,
+      "sha256": "090974eafa7a749c70647b1324e314dabe5a3b2db418b6e624cce638c120df33"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\processes\\reanchor-r3-Q4.json",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/processes/reanchor-r3-Q4.json",
+      "category": "historical-candidate-window",
+      "bytes": 1362,
+      "sha256": "58c552813df491bd1ffc24f07c795d1f5018d9b1377afa98aeab0a30a66e69ea"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\candidate-r1-B-warmup.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/candidate-r1-B-warmup.log",
+      "category": "historical-candidate-window",
+      "bytes": 286,
+      "sha256": "3a5fe50a697e4479dbbf7aa0b33f8558192b3043a9fb743db7eeedb76d10411d"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\candidate-r1-B.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/candidate-r1-B.log",
+      "category": "historical-candidate-window",
+      "bytes": 35947,
+      "sha256": "92cff3367149727d8e06a9d0425afa6e4c13ed424aaceda1e8f9e1cc43116b8e"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\candidate-r1-C-warmup.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/candidate-r1-C-warmup.log",
+      "category": "historical-candidate-window",
+      "bytes": 285,
+      "sha256": "4190c7748355530eb80732a20d9ecb42d67b7a47f95a76a2bcbc2ed0edbbade3"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\candidate-r1-C.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/candidate-r1-C.log",
+      "category": "historical-candidate-window",
+      "bytes": 36032,
+      "sha256": "36a3ad652e79eb20109f4b1e7c101f5cb0b8436e4722f0fc2589c782b39dcc8d"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\candidate-r2-B-warmup.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/candidate-r2-B-warmup.log",
+      "category": "historical-candidate-window",
+      "bytes": 285,
+      "sha256": "076e07301534882728a3ea07a895fa0d5fd53f42ac8c7553f791d2ff0ea8b2e9"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\candidate-r2-B.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/candidate-r2-B.log",
+      "category": "historical-candidate-window",
+      "bytes": 36118,
+      "sha256": "ccee7398d4be2fedeaf2dad3ea0f1039cd7136e9d6b49093703174bae6afb5aa"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\candidate-r2-C-warmup.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/candidate-r2-C-warmup.log",
+      "category": "historical-candidate-window",
+      "bytes": 283,
+      "sha256": "d0e7827bbf92e9246910e4676370ee41829e9bbd7ace9b187e15351482416fa0"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\candidate-r2-C.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/candidate-r2-C.log",
+      "category": "historical-candidate-window",
+      "bytes": 36025,
+      "sha256": "b7e6f5a46a2dea28d229455c46ab494c0fc777f9995349ec3d4795d4f610674d"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\candidate-r3-B-warmup.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/candidate-r3-B-warmup.log",
+      "category": "historical-candidate-window",
+      "bytes": 286,
+      "sha256": "6d015065c564f230f74d63a2fb01dee316222a4594e816cbbe292a0098f60822"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\candidate-r3-B.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/candidate-r3-B.log",
+      "category": "historical-candidate-window",
+      "bytes": 35983,
+      "sha256": "b43258ad665e4d6fc1b28125b1e4ae85167a283baaacae730b12443c4626d864"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\candidate-r3-C-warmup.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/candidate-r3-C-warmup.log",
+      "category": "historical-candidate-window",
+      "bytes": 284,
+      "sha256": "73fc46227af5d6a27b797290ccb966bf69d1d92f8e6725c14f3fba1c89f18cea"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\candidate-r3-C.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/candidate-r3-C.log",
+      "category": "historical-candidate-window",
+      "bytes": 35994,
+      "sha256": "1fcdf27dc52e995d201d7975c2ce588bffb3c79c6dfc4f3849d4bb0fe26cc62b"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\reanchor-r1-A-warmup.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/reanchor-r1-A-warmup.log",
+      "category": "historical-candidate-window",
+      "bytes": 284,
+      "sha256": "0153dc4450b91f9bf98352a3757a7c7913211fdf07c5634abb4ed4521bf56c0a"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\reanchor-r1-A.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/reanchor-r1-A.log",
+      "category": "historical-candidate-window",
+      "bytes": 9144,
+      "sha256": "da3abcb3a0c5b4c0959831c3370edf8a3fc2639b2fc82ab5d5ece3d0a7080f05"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\reanchor-r1-B-warmup.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/reanchor-r1-B-warmup.log",
+      "category": "historical-candidate-window",
+      "bytes": 284,
+      "sha256": "d3ea31b7fa0ecf405d88dc03d0ec5daeefaf089f10eedfde9ed06a03c71bd8c6"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\reanchor-r1-B.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/reanchor-r1-B.log",
+      "category": "historical-candidate-window",
+      "bytes": 9093,
+      "sha256": "9c5fa3c510125304c5f8c048e0ab228fa51bd96aad1cf9efb66c771b7565e080"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\reanchor-r1-Q4-warmup.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/reanchor-r1-Q4-warmup.log",
+      "category": "historical-candidate-window",
+      "bytes": 285,
+      "sha256": "e0603d42119b154f7f6efe8c315a6165439f80ecf980b42ba3fc7710884ef7a1"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\reanchor-r1-Q4.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/reanchor-r1-Q4.log",
+      "category": "historical-candidate-window",
+      "bytes": 9124,
+      "sha256": "2af66a3144defdd4fa81b12e8d70681b489827ea145beed33af5303303d41717"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\reanchor-r2-A-warmup.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/reanchor-r2-A-warmup.log",
+      "category": "historical-candidate-window",
+      "bytes": 284,
+      "sha256": "271e9c6478ec67922160d62219c8a88d747abe90199628d8076646d6ab0d8564"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\reanchor-r2-A.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/reanchor-r2-A.log",
+      "category": "historical-candidate-window",
+      "bytes": 9221,
+      "sha256": "efd3b28e9abf93edaace1c26176484ac940dd8157a06de0747487d440a2c31bd"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\reanchor-r2-B-warmup.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/reanchor-r2-B-warmup.log",
+      "category": "historical-candidate-window",
+      "bytes": 284,
+      "sha256": "1a109a0fc5fdb7e3332c08ae748880a8ca186d71abd7b165e597430c0431f5ca"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\reanchor-r2-B.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/reanchor-r2-B.log",
+      "category": "historical-candidate-window",
+      "bytes": 9167,
+      "sha256": "a711b1fecb2163c28d78ea952e720bec23ff54327127e5a5a21de5aff2528517"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\reanchor-r2-Q4-warmup.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/reanchor-r2-Q4-warmup.log",
+      "category": "historical-candidate-window",
+      "bytes": 284,
+      "sha256": "07c122629447159085987047b323b34c79527658b53232b188de266e769d0df5"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\reanchor-r2-Q4.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/reanchor-r2-Q4.log",
+      "category": "historical-candidate-window",
+      "bytes": 9129,
+      "sha256": "ef5dd471092803322dc6b646e81116e4c24665e10f663f73c2603b20d2e5f9f2"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\reanchor-r3-A-warmup.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/reanchor-r3-A-warmup.log",
+      "category": "historical-candidate-window",
+      "bytes": 286,
+      "sha256": "68da582a2b269c1a13b4972347071ab218d98684ab88fb55207ca6bac1dad343"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\reanchor-r3-A.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/reanchor-r3-A.log",
+      "category": "historical-candidate-window",
+      "bytes": 9231,
+      "sha256": "f6e7e5f5e329f5001d068cf18b87932965e752177d1d124777b30257a6cb8b4c"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\reanchor-r3-B-warmup.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/reanchor-r3-B-warmup.log",
+      "category": "historical-candidate-window",
+      "bytes": 284,
+      "sha256": "4e55cac6b1fd861c592ef77a73b4dd573b9d8b557efeec640818cb5d3374adc6"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\reanchor-r3-B.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/reanchor-r3-B.log",
+      "category": "historical-candidate-window",
+      "bytes": 9198,
+      "sha256": "59424cea56ef159abd0d5081345dbb9b96f7e69023f0b53cf33bd88db0d47229"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\reanchor-r3-Q4-warmup.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/reanchor-r3-Q4-warmup.log",
+      "category": "historical-candidate-window",
+      "bytes": 284,
+      "sha256": "600f3b980b5d728b1d42d8d1dce086e15d48df9d60367df090d2f4a4c0c4fe2e"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\raw\\reanchor-r3-Q4.log",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/raw/reanchor-r3-Q4.log",
+      "category": "historical-candidate-window",
+      "bytes": 9190,
+      "sha256": "f3c90584435eacd4a2bcd0d2987856a87c58bf5a907b3e14eacb0391be5fb5ac"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\reanchor-descriptive-noise.json",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/reanchor-descriptive-noise.json",
+      "category": "historical-candidate-window",
+      "bytes": 1273,
+      "sha256": "8ab0bbaaac513ee67050865928449b2263088a5c3d5dd7f375e4fe9903da2527"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\reanchor-investigation.json",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/reanchor-investigation.json",
+      "category": "historical-candidate-window",
+      "bytes": 1279,
+      "sha256": "2abfbd729b0b3e1becc57c22da67f7fd499105157d3ff56b6b545f67cec46078"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\reanchor-results.json",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/reanchor-results.json",
+      "category": "historical-candidate-window",
+      "bytes": 15393,
+      "sha256": "59015a50d22569855dc24d3dbd59eff0d3ab9755b4d3cf218d762063f051aaea"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\registration.json",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/registration.json",
+      "category": "historical-candidate-window",
+      "bytes": 521348,
+      "sha256": "d745805fa7871d7ecd9239ff8ef21d545982f351bb0c74c310e4d39e96a9e93d"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\diagnostic\\results.json",
+      "archive_path": "historical/out/rpa-r2-20261025/diagnostic/results.json",
+      "category": "historical-candidate-window",
+      "bytes": 44126,
+      "sha256": "297dcfc593d7c7b0b406ce2bb1affd2d1f330a835cc84115387448875a289028"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\final-audit.json",
+      "archive_path": "historical/out/rpa-r2-20261025/final-audit.json",
+      "category": "historical-candidate",
+      "bytes": 4117,
+      "sha256": "2aee10fa4ca94f363426129ee5d05526dff4ee9cd96c6ac33928dea4c5a4561b"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\integration-results.json",
+      "archive_path": "historical/out/rpa-r2-20261025/integration-results.json",
+      "category": "historical-candidate",
+      "bytes": 4164,
+      "sha256": "83ead29d8015af6b1ec57227ff2b425939b32dc5f2ce01e7cb39d8099e939be0"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-20261025\\start-manifest.json",
+      "archive_path": "historical/out/rpa-r2-20261025/start-manifest.json",
+      "category": "rollback-origin",
+      "bytes": 20294,
+      "sha256": "5b73626358196c4e597b78af5e0918b048f97dee1cb095053254050a7033813e"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-direct-row-20261025\\start-manifest.json",
+      "archive_path": "historical/out/rpa-r2-direct-row-20261025/start-manifest.json",
+      "category": "rollback-origin",
+      "bytes": 21671,
+      "sha256": "fb7a3ce2dd0149e61fc2b6cff26c199e75e47b77cc001553791e6b7b0ff2bda6"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\baseline-source.json",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/baseline-source.json",
+      "category": "historical-candidate",
+      "bytes": 370446,
+      "sha256": "819c6b73f1b4467090f4d32f9b574a860ebf4e7255d32878234da450e4fe7837"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\candidate-source.json",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/candidate-source.json",
+      "category": "historical-candidate",
+      "bytes": 370981,
+      "sha256": "acb622cbd4203f4332991dbda6e76c74aea65bdfefb84c2d2cdc9c8ef4544b3b"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\B-build-binding-check.txt",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/B-build-binding-check.txt",
+      "category": "historical-candidate-window",
+      "bytes": 65,
+      "sha256": "7716162f3cd3b99cf3b8a8dd6decf324e08c7e941aae7e730baba5e4fc8c075b"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\B-header-dependencies.txt",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/B-header-dependencies.txt",
+      "category": "historical-candidate-window",
+      "bytes": 17961,
+      "sha256": "9118bcf1b6bf4202bc021fe7a77f5563b2b4b8ff1c5de0b964f5d9abfaf54242"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\D-build-binding-check.txt",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/D-build-binding-check.txt",
+      "category": "historical-candidate-window",
+      "bytes": 65,
+      "sha256": "7716162f3cd3b99cf3b8a8dd6decf324e08c7e941aae7e730baba5e4fc8c075b"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\D-header-dependencies.txt",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/D-header-dependencies.txt",
+      "category": "historical-candidate-window",
+      "bytes": 17961,
+      "sha256": "734143cda8c81724487641bd396aedb51bfeb8cc6192c9f388b629968ed5ff50"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\claim.json",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/claim.json",
+      "category": "historical-candidate-window",
+      "bytes": 167,
+      "sha256": "9b62b258812f5cd55e3a6a83607bcc6c34c41be3b4c7ddafc5b5cb826173f9d6"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\fixture-B.log",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/fixture-B.log",
+      "category": "historical-candidate-window",
+      "bytes": 1907,
+      "sha256": "e397c30edb2d58a6c0d7f002f5faf4b4604ee7eb32ed12b59d9e4a0b9f1ea449"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\fixture-D.log",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/fixture-D.log",
+      "category": "historical-candidate-window",
+      "bytes": 1907,
+      "sha256": "e01cfdbd8eece0b606ba58dbee586e880d26b094a9b8d66aac1028c8cc04f88a"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\fixture-validation.json",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/fixture-validation.json",
+      "category": "historical-candidate-window",
+      "bytes": 3598,
+      "sha256": "7ca33f45eabb99c45cf93cc06732554efc23eccde267d78020564ecd82ffec51"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\processes\\r1-B.json",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/processes/r1-B.json",
+      "category": "historical-candidate-window",
+      "bytes": 3958,
+      "sha256": "96d5e07a051d92887775d046fa8e93deef020c000e00d789999072ff0b2f42de"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\processes\\r1-D.json",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/processes/r1-D.json",
+      "category": "historical-candidate-window",
+      "bytes": 3950,
+      "sha256": "dea3386fd753985e71fc50d1e9437b6d2e2e0ea9657a4d9d09ba1bed3290407a"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\processes\\r2-B.json",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/processes/r2-B.json",
+      "category": "historical-candidate-window",
+      "bytes": 3951,
+      "sha256": "b82e486030f0086d1710588927a2cf4acd2b6f96e17b764344481520d0c3d356"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\processes\\r2-D.json",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/processes/r2-D.json",
+      "category": "historical-candidate-window",
+      "bytes": 3946,
+      "sha256": "076d9f024d3b06104e4b61a30953291467088db401d55cdaccbd892b1074e658"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\processes\\r3-B.json",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/processes/r3-B.json",
+      "category": "historical-candidate-window",
+      "bytes": 3964,
+      "sha256": "54bf86369457b6b267d7b7d1b3e687476ad6ed9ad79e5a4795d8afe8b52ea4a1"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\processes\\r3-D.json",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/processes/r3-D.json",
+      "category": "historical-candidate-window",
+      "bytes": 3962,
+      "sha256": "17cff02971907be63192681f33d334234b5115bf5c3ef281eef9dee0b8803720"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\raw\\r1-B-warmup.log",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/raw/r1-B-warmup.log",
+      "category": "historical-candidate-window",
+      "bytes": 285,
+      "sha256": "6d6ac36f9ada81b3ff4be79e8d15751f1e49821264cf5136052cd9470ea5bb41"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\raw\\r1-B.log",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/raw/r1-B.log",
+      "category": "historical-candidate-window",
+      "bytes": 36011,
+      "sha256": "baf69b751b61ae0e1016985ce7b563f705c0115e4938b4449239a35684700f16"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\raw\\r1-D-warmup.log",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/raw/r1-D-warmup.log",
+      "category": "historical-candidate-window",
+      "bytes": 286,
+      "sha256": "606218ced6f41797ef90ce856aa3db6103a78730329a82ea67ba06d1cf4c1e5b"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\raw\\r1-D.log",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/raw/r1-D.log",
+      "category": "historical-candidate-window",
+      "bytes": 35973,
+      "sha256": "53b6e8d5ee981245cd946383635da9b1c6fa3a1d33e4a76251be0f82400a9f83"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\raw\\r2-B-warmup.log",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/raw/r2-B-warmup.log",
+      "category": "historical-candidate-window",
+      "bytes": 286,
+      "sha256": "1cb30c6c7e1e1182eb256f5e2e2f1d12991f0b36d792afe93826220ead2040e7"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\raw\\r2-B.log",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/raw/r2-B.log",
+      "category": "historical-candidate-window",
+      "bytes": 35961,
+      "sha256": "344f103f3e5c6a880403f6f6939c936ad5f2d7ddcd1605040272dd9ac58309de"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\raw\\r2-D-warmup.log",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/raw/r2-D-warmup.log",
+      "category": "historical-candidate-window",
+      "bytes": 286,
+      "sha256": "07317c3e9eda9a9d3eb205167b666a68583ab319071a114406600b05bf6782e2"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\raw\\r2-D.log",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/raw/r2-D.log",
+      "category": "historical-candidate-window",
+      "bytes": 35979,
+      "sha256": "c1fb4cc242021b3b09c3c0ef075c28a70b34563735edea8eb3c506cbef7f5251"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\raw\\r3-B-warmup.log",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/raw/r3-B-warmup.log",
+      "category": "historical-candidate-window",
+      "bytes": 284,
+      "sha256": "d02456e03d5891833117ab489d9c3af79bcadff5d0f703991c06f00b905b2d34"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\raw\\r3-B.log",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/raw/r3-B.log",
+      "category": "historical-candidate-window",
+      "bytes": 35932,
+      "sha256": "486d7ee101f5b1021264300044f1fe9a5418cbcc6de19971fd2d936f1c93885b"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\raw\\r3-D-warmup.log",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/raw/r3-D-warmup.log",
+      "category": "historical-candidate-window",
+      "bytes": 286,
+      "sha256": "0161c5d64d44053dac65ceeccdea21c61757329af8087668cb362150225af246"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\raw\\r3-D.log",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/raw/r3-D.log",
+      "category": "historical-candidate-window",
+      "bytes": 36003,
+      "sha256": "1a97fa60bd31abce07d7b7671c563158585f91aebf3d783e3672e48d6ee4ee2b"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\registration.json",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/registration.json",
+      "category": "historical-candidate-window",
+      "bytes": 271781,
+      "sha256": "e0b6ceca808f27964ebc3e8bc67a033a1cfccc3c410ad25130c35e4abe391cdf"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\diagnostic\\results.json",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/diagnostic/results.json",
+      "category": "historical-candidate-window",
+      "bytes": 31627,
+      "sha256": "d9e5a29689e92b63ebe55662b2470ee292df8aea83c3d152823e822722e2425e"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\final-audit.json",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/final-audit.json",
+      "category": "historical-candidate",
+      "bytes": 4224,
+      "sha256": "d8cfb53e1a386c337513f72e1f4724c5fb45a0b8bbf68ddd1ba1e5be70f30d8e"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\integration-results.json",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/integration-results.json",
+      "category": "historical-candidate",
+      "bytes": 3067,
+      "sha256": "ed91eb6b1b93ce2c66c3afe69825010574ef04758bb7826191df5e0ba89019f5"
+    },
+    {
+      "source_path": "D:\\Cuexis-pd5-40k-admission\\out\\rpa-r2-single-row-20261025\\start-manifest.json",
+      "archive_path": "historical/out/rpa-r2-single-row-20261025/start-manifest.json",
+      "category": "historical-candidate",
+      "bytes": 21647,
+      "sha256": "3953947f731db6f5fcf5bbf9e685726a39334efcd9a5156abadd99d040795745"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\docs\\CURRENT_STATUS.md",
+      "archive_path": "main/docs/CURRENT_STATUS.md",
+      "category": "documentation-snapshot",
+      "bytes": 24258,
+      "sha256": "fd899467778b5b065870bc363d2922ef6376aca1a394fb29b4545714bd404754"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\docs\\DOCUMENTATION_POLICY.md",
+      "archive_path": "main/docs/DOCUMENTATION_POLICY.md",
+      "category": "documentation-snapshot",
+      "bytes": 8099,
+      "sha256": "e2d6a38c74f419559056d9479ee7c8e6fe87929eca20e73dbf4b8f7109236797"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\05-rpa-new\\plan.md",
+      "archive_path": "main/docs/stage_plans/active/stage-07/05-rpa-new/plan.md",
+      "category": "documentation-snapshot",
+      "bytes": 120355,
+      "sha256": "3c0d4902725939b7bc43036410e1c3d770c8f803ee9bde7055db37b8d2f4ea4a"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\docs\\stage_reports\\stages\\stage-07\\05-rpa-new\\README.md",
+      "archive_path": "main/docs/stage_reports/stages/stage-07/05-rpa-new/README.md",
+      "category": "documentation-snapshot",
+      "bytes": 1351,
+      "sha256": "24da03e2a248a74cd73852fe3c8c8d663b32f884dc26bd3a5f53cf5a9d24d17f"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\docs\\stage_reports\\stages\\stage-07\\05-rpa-new\\evidence-catalog.md",
+      "archive_path": "main/docs/stage_reports/stages/stage-07/05-rpa-new/evidence-catalog.md",
+      "category": "documentation-snapshot",
+      "bytes": 5928,
+      "sha256": "f1934779e9f44cdf7bd46003cce0d235c36b4967ecc05b190410a6d106656a4d"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\docs\\stage_reports\\stages\\stage-07\\05-rpa-new\\r2\\2026-10-25-r2-borrowed-presentation.md",
+      "archive_path": "main/docs/stage_reports/stages/stage-07/05-rpa-new/r2/2026-10-25-r2-borrowed-presentation.md",
+      "category": "dated-reports-and-index",
+      "bytes": 12577,
+      "sha256": "c9d97b947a6b6a0868f890a1a6db3f82c39c5d8d1616976b5794a5e302a9ffcc"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\docs\\stage_reports\\stages\\stage-07\\05-rpa-new\\r2\\2026-10-25-r2-single-row-continuation.md",
+      "archive_path": "main/docs/stage_reports/stages/stage-07/05-rpa-new/r2/2026-10-25-r2-single-row-continuation.md",
+      "category": "dated-reports-and-index",
+      "bytes": 7704,
+      "sha256": "267e2c5adfa1121540f49d75704e91d3d2cff5af28d5678c3864c591923f4bad"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\docs\\stage_reports\\stages\\stage-07\\05-rpa-new\\r2\\2026-10-26-r2-baseline-state-diagnostics.md",
+      "archive_path": "main/docs/stage_reports/stages/stage-07/05-rpa-new/r2/2026-10-26-r2-baseline-state-diagnostics.md",
+      "category": "dated-reports-and-index",
+      "bytes": 4775,
+      "sha256": "0feebd61badcea05169ae078ee721a75e25b66acfc42c42150c49b6ea9a7b8eb"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\docs\\stage_reports\\stages\\stage-07\\05-rpa-new\\r2\\2026-10-26-r2-direct-result-continuation.md",
+      "archive_path": "main/docs/stage_reports/stages/stage-07/05-rpa-new/r2/2026-10-26-r2-direct-result-continuation.md",
+      "category": "dated-reports-and-index",
+      "bytes": 9903,
+      "sha256": "8195a297bc41f86f3a35c77529147bb46e93576f31cf170ccaf5826aa320c458"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\docs\\stage_reports\\stages\\stage-07\\05-rpa-new\\r2\\2026-10-26-r2-exit-report.md",
+      "archive_path": "main/docs/stage_reports/stages/stage-07/05-rpa-new/r2/2026-10-26-r2-exit-report.md",
+      "category": "dated-reports-and-index",
+      "bytes": 9766,
+      "sha256": "d00057c7aaa1bbb7e6d2b11cdfd0b4447d7e71fe498b46bfe3dd6c939a178a3d"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\docs\\stage_reports\\stages\\stage-07\\05-rpa-new\\r2\\2026-10-26-r2-high-qos-local-benefit.md",
+      "archive_path": "main/docs/stage_reports/stages/stage-07/05-rpa-new/r2/2026-10-26-r2-high-qos-local-benefit.md",
+      "category": "dated-reports-and-index",
+      "bytes": 8228,
+      "sha256": "5498d6a4f78ba2dbbc666a81c6d1e717750da8d6b88681fb9b90e15e506325bd"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\docs\\stage_reports\\stages\\stage-07\\05-rpa-new\\r2\\2026-10-26-r2-public-n1-and-common-objects.md",
+      "archive_path": "main/docs/stage_reports/stages/stage-07/05-rpa-new/r2/2026-10-26-r2-public-n1-and-common-objects.md",
+      "category": "dated-reports-and-index",
+      "bytes": 7012,
+      "sha256": "d45a59b28fa1f56bc0a38e59ae3799cab14ba3eca57be7c8f29040e209e5df1c"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\docs\\stage_reports\\stages\\stage-07\\05-rpa-new\\r2\\README.md",
+      "archive_path": "main/docs/stage_reports/stages/stage-07/05-rpa-new/r2/README.md",
+      "category": "dated-reports-and-index",
+      "bytes": 1727,
+      "sha256": "f6f0f2c211ca05a4df5a0d8fc325f34abcca57ad01dba3589787f1075a3b3a07"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\engine\\playback\\src\\presentation_materializer.cpp",
+      "archive_path": "main/engine/playback/src/presentation_materializer.cpp",
+      "category": "current-R2-input",
+      "bytes": 8658,
+      "sha256": "b310863c9f804060f3883f39749a898c78334b09cb22ec74d4676dbdddd4d607"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\engine\\playback\\src\\presentation_materializer.hpp",
+      "archive_path": "main/engine/playback/src/presentation_materializer.hpp",
+      "category": "current-R2-input",
+      "bytes": 2763,
+      "sha256": "24563a07595c85ab7588c1ce0632b2bfca62984197606102db366729ab4048fb"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\engine\\runtime\\internal\\cuexis\\runtime\\presentation_read.hpp",
+      "archive_path": "main/engine/runtime/internal/cuexis/runtime/presentation_read.hpp",
+      "category": "current-R2-input",
+      "bytes": 4336,
+      "sha256": "15aeb4ae8d85308e1d6a968281d5cde4330380cadf3fba55ea4aaaf7d7ec2e8f"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\engine\\runtime\\src\\presentation_read.cpp",
+      "archive_path": "main/engine/runtime/src/presentation_read.cpp",
+      "category": "current-R2-input",
+      "bytes": 8288,
+      "sha256": "80d89e92ddcd801a119d2aa430a3b976bb66e9ccab41d1af98a0a1a3a1df11dd"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\consolidation-20261026-9c2e7b\\logs\\debug-build-attempt-5.log",
+      "archive_path": "main/out/consolidation-20261026-9c2e7b/logs/debug-build-attempt-5.log",
+      "category": "reused-build-consumer-log",
+      "bytes": 4282,
+      "sha256": "7068275eaecc434c9c720ebb567976ac11a71d697c82c9ef5f0a93979f79b19b"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\consolidation-20261026-9c2e7b\\logs\\debug-configure-attempt-6.log",
+      "archive_path": "main/out/consolidation-20261026-9c2e7b/logs/debug-configure-attempt-6.log",
+      "category": "reused-build-consumer-log",
+      "bytes": 4748,
+      "sha256": "154deada9d29ee0d5d3c9e323142e94c103496707164bcb45c8ec1ce4c814974"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\consolidation-20261026-9c2e7b\\logs\\debug-final-tests-attempt-2.log",
+      "archive_path": "main/out/consolidation-20261026-9c2e7b/logs/debug-final-tests-attempt-2.log",
+      "category": "reused-build-consumer-log",
+      "bytes": 322115,
+      "sha256": "ed690aa3b9f78dc07afed6434d807eb68497ef093ff07892e5d2de72faf5d96e"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\consolidation-20261026-9c2e7b\\logs\\debug-tests-attempt-2.log",
+      "archive_path": "main/out/consolidation-20261026-9c2e7b/logs/debug-tests-attempt-2.log",
+      "category": "reused-build-consumer-log",
+      "bytes": 323576,
+      "sha256": "3e7fa4f851a1b2d872336fd89492bc35d091a963986c0cca40027f3e4fe844fc"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\consolidation-20261026-9c2e7b\\logs\\observation-debug-build-attempt-3.log",
+      "archive_path": "main/out/consolidation-20261026-9c2e7b/logs/observation-debug-build-attempt-3.log",
+      "category": "reused-build-consumer-log",
+      "bytes": 4860,
+      "sha256": "22df6f35f2ee1a1143ce398b98bb81b703453228a234da29b93487851b249b68"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\consolidation-20261026-9c2e7b\\logs\\observation-debug-configure-attempt-3.log",
+      "archive_path": "main/out/consolidation-20261026-9c2e7b/logs/observation-debug-configure-attempt-3.log",
+      "category": "reused-build-consumer-log",
+      "bytes": 1323,
+      "sha256": "97f203da8eba26d8428707a9bc67e06e136e8493f57afa18e394753cc2ec36ae"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\consolidation-20261026-9c2e7b\\logs\\observation-debug-final-tests-attempt-2.log",
+      "archive_path": "main/out/consolidation-20261026-9c2e7b/logs/observation-debug-final-tests-attempt-2.log",
+      "category": "reused-build-consumer-log",
+      "bytes": 140846,
+      "sha256": "32e8f6765f5ac81df483680a70581c2a6b5074895bd7c792d20bfbf728c9d950"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\consolidation-20261026-9c2e7b\\logs\\observation-debug-focused-tests.log",
+      "archive_path": "main/out/consolidation-20261026-9c2e7b/logs/observation-debug-focused-tests.log",
+      "category": "reused-build-consumer-log",
+      "bytes": 126166,
+      "sha256": "79314a2b3934b6df05a3092c0675d7f74098088916794c3e57262541b0cf2c7f"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\consolidation-20261026-9c2e7b\\logs\\observation-release-build-attempt-3.log",
+      "archive_path": "main/out/consolidation-20261026-9c2e7b/logs/observation-release-build-attempt-3.log",
+      "category": "reused-build-consumer-log",
+      "bytes": 4894,
+      "sha256": "fcb0019e3c12718a0f952ed5bfe764a6485b206424a3028516af4814d00eb86d"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\consolidation-20261026-9c2e7b\\logs\\observation-release-configure-attempt-3.log",
+      "archive_path": "main/out/consolidation-20261026-9c2e7b/logs/observation-release-configure-attempt-3.log",
+      "category": "reused-build-consumer-log",
+      "bytes": 1325,
+      "sha256": "d05e151d50e03e0a42fb6ea4b02340716cb5357e5d97a9906aef59f07053c4b6"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\consolidation-20261026-9c2e7b\\logs\\observation-release-final-tests-attempt-2.log",
+      "archive_path": "main/out/consolidation-20261026-9c2e7b/logs/observation-release-final-tests-attempt-2.log",
+      "category": "reused-build-consumer-log",
+      "bytes": 140848,
+      "sha256": "8536aabe35e46605e98ebd01183fccc049fd58d6ff1745504b5ea8fe2c82194b"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\consolidation-20261026-9c2e7b\\logs\\observation-release-focused-tests.log",
+      "archive_path": "main/out/consolidation-20261026-9c2e7b/logs/observation-release-focused-tests.log",
+      "category": "reused-build-consumer-log",
+      "bytes": 126168,
+      "sha256": "273a573987c7cdc24155eef62917dfc0db5625ee13b772917279aa975bf8afc6"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\consolidation-20261026-9c2e7b\\logs\\release-build-attempt-4.log",
+      "archive_path": "main/out/consolidation-20261026-9c2e7b/logs/release-build-attempt-4.log",
+      "category": "reused-build-consumer-log",
+      "bytes": 4316,
+      "sha256": "e78e5f7851e83198d3777f058a6770e2cfe85a4d79d0e4e6edbe3c89fc2a4d62"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\consolidation-20261026-9c2e7b\\logs\\release-configure-attempt-4.log",
+      "archive_path": "main/out/consolidation-20261026-9c2e7b/logs/release-configure-attempt-4.log",
+      "category": "reused-build-consumer-log",
+      "bytes": 1291,
+      "sha256": "d9d8f0df9a3e598110178f6115528018f8ceadde23467a3834d536c5fcfb3b36"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\consolidation-20261026-9c2e7b\\logs\\release-final-tests-attempt-2.log",
+      "archive_path": "main/out/consolidation-20261026-9c2e7b/logs/release-final-tests-attempt-2.log",
+      "category": "reused-build-consumer-log",
+      "bytes": 322117,
+      "sha256": "c91d9fd9df7ca9ae6c3bba055e9c32b17a20308b5c7748e20220cd84d06b24e2"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\consolidation-20261026-9c2e7b\\logs\\release-tests.log",
+      "archive_path": "main/out/consolidation-20261026-9c2e7b/logs/release-tests.log",
+      "category": "reused-build-consumer-log",
+      "bytes": 324063,
+      "sha256": "cd4cfd6122b71d2fc0dd9b59b24615983c1a1c4e00cf5d6e6a433f45f5ca65a4"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\consolidation-20261026-9c2e7b\\logs\\shared-release-build-attempt-3.log",
+      "archive_path": "main/out/consolidation-20261026-9c2e7b/logs/shared-release-build-attempt-3.log",
+      "category": "reused-build-consumer-log",
+      "bytes": 65,
+      "sha256": "7716162f3cd3b99cf3b8a8dd6decf324e08c7e941aae7e730baba5e4fc8c075b"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\consolidation-20261026-9c2e7b\\logs\\shared-release-configure-attempt-3.log",
+      "archive_path": "main/out/consolidation-20261026-9c2e7b/logs/shared-release-configure-attempt-3.log",
+      "category": "reused-build-consumer-log",
+      "bytes": 1012,
+      "sha256": "dc7b6f8f84bc62a3b888985fb13615407bacbefa7dbafc8d51e98faf115812c6"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\consolidation-20261026-9c2e7b\\logs\\shared-release-final-tests-attempt-2.log",
+      "archive_path": "main/out/consolidation-20261026-9c2e7b/logs/shared-release-final-tests-attempt-2.log",
+      "category": "reused-build-consumer-log",
+      "bytes": 135050,
+      "sha256": "325bffd697b2073a32d691fa1289987b4f9cba6b315194c84d12d34c940df851"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\consolidation-20261026-9c2e7b\\logs\\shared-release-focused-tests.log",
+      "archive_path": "main/out/consolidation-20261026-9c2e7b/logs/shared-release-focused-tests.log",
+      "category": "reused-build-consumer-log",
+      "bytes": 127841,
+      "sha256": "f0e820f1cd1e334f71ec4700a5966a8e98761c61e88b4a92714c679adf3aa62f"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\B-dependents.txt",
+      "archive_path": "main/out/r2-common-objects-20261026/B-dependents.txt",
+      "category": "r2-common-objects-20261026",
+      "bytes": 891,
+      "sha256": "718a822d27945803a6c0a7ce4f262b07296602ef09859644a48c058b1a9d046d"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\B-extract-presentation_materializer.cpp.obj.json",
+      "archive_path": "main/out/r2-common-objects-20261026/B-extract-presentation_materializer.cpp.obj.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 448,
+      "sha256": "ed38caf023d7a827c00247d252a024d5550311f2813c7b756804027fe7f4ae80"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\B-extract-presentation_materializer.cpp.obj.log",
+      "archive_path": "main/out/r2-common-objects-20261026/B-extract-presentation_materializer.cpp.obj.log",
+      "category": "r2-common-objects-20261026",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\B-extract-presentation_read.cpp.obj.json",
+      "archive_path": "main/out/r2-common-objects-20261026/B-extract-presentation_read.cpp.obj.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 419,
+      "sha256": "618689def87d41f8b53d5996eb330d1ff67951b190a4bc6726db2a1cfb8d21c6"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\B-extract-presentation_read.cpp.obj.log",
+      "archive_path": "main/out/r2-common-objects-20261026/B-extract-presentation_read.cpp.obj.log",
+      "category": "r2-common-objects-20261026",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\B-link.json",
+      "archive_path": "main/out/r2-common-objects-20261026/B-link.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 3459,
+      "sha256": "b1449e727dc68eee440b828971a8d8f717ca9c9f05f0ffd0ca9ef6d233593075"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\B-link.log",
+      "archive_path": "main/out/r2-common-objects-20261026/B-link.log",
+      "category": "r2-common-objects-20261026",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\B-list.json",
+      "archive_path": "main/out/r2-common-objects-20261026/B-list.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 235,
+      "sha256": "872319b667e9900f486c9683baf69b38432461d25675b679b9ca46a58d714b16"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\B-list.log",
+      "archive_path": "main/out/r2-common-objects-20261026/B-list.log",
+      "category": "r2-common-objects-20261026",
+      "bytes": 43,
+      "sha256": "0a5f38c9f65ef81c5ec810fe6a4a392b1c226e47d45d081d6bc789042f3d1f43"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\E-dependents.txt",
+      "archive_path": "main/out/r2-common-objects-20261026/E-dependents.txt",
+      "category": "r2-common-objects-20261026",
+      "bytes": 891,
+      "sha256": "b5f39ba585fbad7b5a8043cb96426bba85901b5bca1a64cf7b64e9f29f022ce2"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\E-extract-presentation_materializer.cpp.obj.json",
+      "archive_path": "main/out/r2-common-objects-20261026/E-extract-presentation_materializer.cpp.obj.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 448,
+      "sha256": "762c11a1b473c09f7ac109cc6cb804d28ef0ac38d20cbc6e2c49e3167a10119b"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\E-extract-presentation_materializer.cpp.obj.log",
+      "archive_path": "main/out/r2-common-objects-20261026/E-extract-presentation_materializer.cpp.obj.log",
+      "category": "r2-common-objects-20261026",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\E-extract-presentation_read.cpp.obj.json",
+      "archive_path": "main/out/r2-common-objects-20261026/E-extract-presentation_read.cpp.obj.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 419,
+      "sha256": "3a9216970597912eced6597e78444bbcec536c34be9a1cb1567c2dc9b20e150e"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\E-extract-presentation_read.cpp.obj.log",
+      "archive_path": "main/out/r2-common-objects-20261026/E-extract-presentation_read.cpp.obj.log",
+      "category": "r2-common-objects-20261026",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\E-link.json",
+      "archive_path": "main/out/r2-common-objects-20261026/E-link.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 3459,
+      "sha256": "919c09bc403ad6a939d0635757c6b58deeb773f926e39bc94c54d78a163b7c3d"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\E-link.log",
+      "archive_path": "main/out/r2-common-objects-20261026/E-link.log",
+      "category": "r2-common-objects-20261026",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\E-list.json",
+      "archive_path": "main/out/r2-common-objects-20261026/E-list.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 235,
+      "sha256": "a1d148126f9bc69315050cf670e30c540867ceb90f92006e419f3f74b3eb7c4f"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\E-list.log",
+      "archive_path": "main/out/r2-common-objects-20261026/E-list.log",
+      "category": "r2-common-objects-20261026",
+      "bytes": 43,
+      "sha256": "0a5f38c9f65ef81c5ec810fe6a4a392b1c226e47d45d081d6bc789042f3d1f43"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\audit_results.py",
+      "archive_path": "main/out/r2-common-objects-20261026/audit_results.py",
+      "category": "r2-common-objects-20261026",
+      "bytes": 4688,
+      "sha256": "075781eb1625d17f12e1169c3dc34afdeba1966e28223e3ec02cb8afa2b3679a"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\build.json",
+      "archive_path": "main/out/r2-common-objects-20261026/build.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 10263,
+      "sha256": "a23cfa3d66f5e54b1c63891d4832ebaa8a467b22bc8e8e2172102b6ab5516b38"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\build.py",
+      "archive_path": "main/out/r2-common-objects-20261026/build.py",
+      "category": "r2-common-objects-20261026",
+      "bytes": 4262,
+      "sha256": "9f37e8d8d0b8a79f1851e077dc6c72f3512129590775e86bc5c51c61436809b8"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\check_docs.py",
+      "archive_path": "main/out/r2-common-objects-20261026/check_docs.py",
+      "category": "r2-common-objects-20261026",
+      "bytes": 841,
+      "sha256": "2d9cadeda75877a33a27d1a92576ab8b6864f5daf6eaa5321ff6112ec6e65ae4"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\claim.json",
+      "archive_path": "main/out/r2-common-objects-20261026/claim.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 169,
+      "sha256": "a22cd09491b773dc739560b665eeb33fb1ec35a49be3e097b1ad3b440b64b5ed"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\common-driver-compile.json",
+      "archive_path": "main/out/r2-common-objects-20261026/common-driver-compile.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 2384,
+      "sha256": "9a42df4706da2130c758f13a8737ea0ba13a652694502b92952e6a8a52f93a92"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\common-driver-compile.log",
+      "archive_path": "main/out/r2-common-objects-20261026/common-driver-compile.log",
+      "category": "r2-common-objects-20261026",
+      "bytes": 30,
+      "sha256": "3c5f4434165035a693c0cc422eebd522d8468fdd831bfe15d922016fdd59f575"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\completion.json",
+      "archive_path": "main/out/r2-common-objects-20261026/completion.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 806,
+      "sha256": "93e8eeab3ae12f566e3a2d9cf340cdf994b60aefc608f3a7c4de220342acf0fe"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\diff-check.json",
+      "archive_path": "main/out/r2-common-objects-20261026/diff-check.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 239,
+      "sha256": "3b5ab8de2f598fbe6bac15a0a7e60b9d60ba39dab28e5682cd712803e388ed13"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\diff-check.log",
+      "archive_path": "main/out/r2-common-objects-20261026/diff-check.log",
+      "category": "r2-common-objects-20261026",
+      "bytes": 4533,
+      "sha256": "b75125f49f67786acad3bd3179a7d6abe0a675255bab76c0cfa9a50f9f790962"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\docs-check.json",
+      "archive_path": "main/out/r2-common-objects-20261026/docs-check.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 281,
+      "sha256": "8b3befacb9d038244b2dfdaae5fc8cd092a6ba822a7b2ba9273ce88e80850ed6"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\docs-check.log",
+      "archive_path": "main/out/r2-common-objects-20261026/docs-check.log",
+      "category": "r2-common-objects-20261026",
+      "bytes": 92,
+      "sha256": "a2060b35efe804a592285000a7fec0f043f3a5fd10013282e9748aeba6331e26"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\docs-update.json",
+      "archive_path": "main/out/r2-common-objects-20261026/docs-update.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 1112,
+      "sha256": "0b58d0ef9e68d30e747364c0ef4f1fbd2d753b234db7d9a9530816da6e73ccf1"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\exit-review.json",
+      "archive_path": "main/out/r2-common-objects-20261026/exit-review.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 4505,
+      "sha256": "34cbb67cead7cc857d9dccc2fb6dec5b16c103d171f8d8338c493bb3645014fd"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\final-evidence-verification.json",
+      "archive_path": "main/out/r2-common-objects-20261026/final-evidence-verification.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 1516,
+      "sha256": "343ed95dcf7e80ed38b481667ba57df2c602502f65fca54a523bd62e64473462"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\finish_docs.py",
+      "archive_path": "main/out/r2-common-objects-20261026/finish_docs.py",
+      "category": "r2-common-objects-20261026",
+      "bytes": 12304,
+      "sha256": "7900293e2936d254e62877708afc70205c31a183302e7df7bcd0996684e7301f"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\fixture-B.log",
+      "archive_path": "main/out/r2-common-objects-20261026/fixture-B.log",
+      "category": "r2-common-objects-20261026",
+      "bytes": 2126,
+      "sha256": "a93959292edf47be868eeecaedba87d5d46a6f52bf04d044c5d5f7785afe47eb"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\fixture-E.log",
+      "archive_path": "main/out/r2-common-objects-20261026/fixture-E.log",
+      "category": "r2-common-objects-20261026",
+      "bytes": 2128,
+      "sha256": "f50fdac8c5ff8e51febb06615cf0ae4c351236923224aec1b7161e931c46a61c"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\fixture-validation.json",
+      "archive_path": "main/out/r2-common-objects-20261026/fixture-validation.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 4188,
+      "sha256": "8368ed2a93747e77a39b0a21aebecb96da84ef151f280c995e3374e949b29d30"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\independent-results-audit.json",
+      "archive_path": "main/out/r2-common-objects-20261026/independent-results-audit.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 3378,
+      "sha256": "ee9c1838d210880bf06286469dfb538fe4d77826504a55f751974c19addf2a83"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\processes\\r1-B.json",
+      "archive_path": "main/out/r2-common-objects-20261026/processes/r1-B.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 4789,
+      "sha256": "3d0dd58e1bcec2daa739254262fa0ed9bb8b6b5f6e4c0ecdf6fa67441ea0653f"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\processes\\r1-E.json",
+      "archive_path": "main/out/r2-common-objects-20261026/processes/r1-E.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 4799,
+      "sha256": "4704e0040f951361fa9783d77ebd0b29beeab1e55f364fee5088128ba2d7bb53"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\processes\\r2-B.json",
+      "archive_path": "main/out/r2-common-objects-20261026/processes/r2-B.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 4796,
+      "sha256": "2fa4a30789703ce44705bda53abea158930dbdfacc3b03f446b9769ed8634202"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\processes\\r2-E.json",
+      "archive_path": "main/out/r2-common-objects-20261026/processes/r2-E.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 4791,
+      "sha256": "0e6f4f14435283b64f008084797f7db806eceb1fae0f010b4bc881106f0122e0"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\processes\\r3-B.json",
+      "archive_path": "main/out/r2-common-objects-20261026/processes/r3-B.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 4799,
+      "sha256": "f56dbda8ca57d3de6639a06cb2674cd83bbf4316f8b3e7664821eaa0a37d5ae9"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\processes\\r3-E.json",
+      "archive_path": "main/out/r2-common-objects-20261026/processes/r3-E.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 4795,
+      "sha256": "eed1c1d18ad73135d9e4473f462b5b9b12bbc47176ec977161989627b329a3f6"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\qualify.py",
+      "archive_path": "main/out/r2-common-objects-20261026/qualify.py",
+      "category": "r2-common-objects-20261026",
+      "bytes": 3690,
+      "sha256": "5e480f4fca639e8fb68833394f5e165d6a7289881ae65772585c0f73f713046a"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\raw\\r1-B-read.log",
+      "archive_path": "main/out/r2-common-objects-20261026/raw/r1-B-read.log",
+      "category": "r2-common-objects-20261026",
+      "bytes": 36025,
+      "sha256": "1bd299a0df78d55f181b6fb24b5f70ac82ee80cd611ef8c01fc959042ef4e099"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\raw\\r1-B-warmup.log",
+      "archive_path": "main/out/r2-common-objects-20261026/raw/r1-B-warmup.log",
+      "category": "r2-common-objects-20261026",
+      "bytes": 507,
+      "sha256": "a301404b9f5f8aba80a041267a08e9376445a20cf5f080fa9b2382204e375f0f"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\raw\\r1-E-read.log",
+      "archive_path": "main/out/r2-common-objects-20261026/raw/r1-E-read.log",
+      "category": "r2-common-objects-20261026",
+      "bytes": 36006,
+      "sha256": "5ebaa403322a4a004e9d415ed28331ab712b3733c8cb20f425532679b1581fe9"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\raw\\r1-E-warmup.log",
+      "archive_path": "main/out/r2-common-objects-20261026/raw/r1-E-warmup.log",
+      "category": "r2-common-objects-20261026",
+      "bytes": 507,
+      "sha256": "c7a015e3eb107ef85e4f85458f4a4bfd69737df17eb1a61ca2bd0db3dd273770"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\raw\\r2-B-read.log",
+      "archive_path": "main/out/r2-common-objects-20261026/raw/r2-B-read.log",
+      "category": "r2-common-objects-20261026",
+      "bytes": 36032,
+      "sha256": "3d642eb66b2d855c3d10d155e45c5403c1f9943415abe084171937db0d4eefc1"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\raw\\r2-B-warmup.log",
+      "archive_path": "main/out/r2-common-objects-20261026/raw/r2-B-warmup.log",
+      "category": "r2-common-objects-20261026",
+      "bytes": 507,
+      "sha256": "d339604be7e6f670f90f40f040dc3b72a4e850a2f21c67f988b1b09019316351"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\raw\\r2-E-read.log",
+      "archive_path": "main/out/r2-common-objects-20261026/raw/r2-E-read.log",
+      "category": "r2-common-objects-20261026",
+      "bytes": 35984,
+      "sha256": "18f7831337a2fb6379386963f39f9a1d74ff67d956b0c97b87ccc340d4ba0299"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\raw\\r2-E-warmup.log",
+      "archive_path": "main/out/r2-common-objects-20261026/raw/r2-E-warmup.log",
+      "category": "r2-common-objects-20261026",
+      "bytes": 504,
+      "sha256": "74cd564c675ad9f39e8b19be93d30f2d39248bd0f4fa3093b4b818597820f963"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\raw\\r3-B-read.log",
+      "archive_path": "main/out/r2-common-objects-20261026/raw/r3-B-read.log",
+      "category": "r2-common-objects-20261026",
+      "bytes": 35951,
+      "sha256": "af7e6e6942e751a29c3f3a6b4da0f561a16252016c0057d251c0ac3e0bbb5509"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\raw\\r3-B-warmup.log",
+      "archive_path": "main/out/r2-common-objects-20261026/raw/r3-B-warmup.log",
+      "category": "r2-common-objects-20261026",
+      "bytes": 504,
+      "sha256": "1b1e08da4b031d98ce7dd43f855c5c5f51d173d60f0e6a7402cf2885874bf6d5"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\raw\\r3-E-read.log",
+      "archive_path": "main/out/r2-common-objects-20261026/raw/r3-E-read.log",
+      "category": "r2-common-objects-20261026",
+      "bytes": 36054,
+      "sha256": "a1568f3ecc9433b9095a615f72a1385fcfb0d53b19d01fe3357bd6bf4f9f3762"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\raw\\r3-E-warmup.log",
+      "archive_path": "main/out/r2-common-objects-20261026/raw/r3-E-warmup.log",
+      "category": "r2-common-objects-20261026",
+      "bytes": 506,
+      "sha256": "9492f76b50c3d374d5824c8185f7785969c6c6ec359fc6d02f3cc3649f5516da"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\registration.json",
+      "archive_path": "main/out/r2-common-objects-20261026/registration.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 15140,
+      "sha256": "fb6be68714dce2053083a1ed9549df50a02ae760146dea12f2d42e1be8f2bac9"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\results.json",
+      "archive_path": "main/out/r2-common-objects-20261026/results.json",
+      "category": "r2-common-objects-20261026",
+      "bytes": 37314,
+      "sha256": "92a4e217fcee77206718ee673cbc049f5b5cd08255354542a4c3869041caaf67"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\verify.py",
+      "archive_path": "main/out/r2-common-objects-20261026/verify.py",
+      "category": "r2-common-objects-20261026",
+      "bytes": 3890,
+      "sha256": "cfc1446ea0a46357bf97b3fa80a2d0db2bef06f09e7372d2ffcbda5f98b3a063"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-common-objects-20261026\\window.py",
+      "archive_path": "main/out/r2-common-objects-20261026/window.py",
+      "category": "r2-common-objects-20261026",
+      "bytes": 5916,
+      "sha256": "44db501ae8bd15635caf3291e3e33962fcddeb73b01bc586271597e8ee8cac1a"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-exit-report-20261026\\before\\docs\\CURRENT_STATUS.md",
+      "archive_path": "main/out/r2-exit-report-20261026/before/docs/CURRENT_STATUS.md",
+      "category": "pre-report-document-bytes",
+      "bytes": 23849,
+      "sha256": "b23be8c3a56b70bdd2f5cb005851d87c963b2908020087095362489f970386d2"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-exit-report-20261026\\before\\docs\\stage_plans\\active\\stage-07\\05-rpa-new\\plan.md",
+      "archive_path": "main/out/r2-exit-report-20261026/before/docs/stage_plans/active/stage-07/05-rpa-new/plan.md",
+      "category": "pre-report-document-bytes",
+      "bytes": 119649,
+      "sha256": "d1dbfece573ea4d9a6fa17aa5ae732cf20df38ee8f0e3da5aa316d10ba30f961"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-exit-report-20261026\\before\\docs\\stage_reports\\stages\\stage-07\\05-rpa-new\\README.md",
+      "archive_path": "main/out/r2-exit-report-20261026/before/docs/stage_reports/stages/stage-07/05-rpa-new/README.md",
+      "category": "pre-report-document-bytes",
+      "bytes": 1351,
+      "sha256": "d7d2c26d6b27e69902e650538d7a4a8c9b3c398f3f4193162887c3f4f46efd15"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-exit-report-20261026\\before\\docs\\stage_reports\\stages\\stage-07\\05-rpa-new\\evidence-catalog.md",
+      "archive_path": "main/out/r2-exit-report-20261026/before/docs/stage_reports/stages/stage-07/05-rpa-new/evidence-catalog.md",
+      "category": "pre-report-document-bytes",
+      "bytes": 5623,
+      "sha256": "10deee32f6995f46c10eb9bed6835617d40e176b9eb3b8b8058980e45df23973"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-exit-report-20261026\\before\\docs\\stage_reports\\stages\\stage-07\\05-rpa-new\\r2\\README.md",
+      "archive_path": "main/out/r2-exit-report-20261026/before/docs/stage_reports/stages/stage-07/05-rpa-new/r2/README.md",
+      "category": "pre-report-document-bytes",
+      "bytes": 1390,
+      "sha256": "003e76143c46026bc18206b534701cb2e0cd5d0af5857c521baab7a3e416ee2e"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-exit-report-20261026\\package_evidence.py",
+      "archive_path": "main/out/r2-exit-report-20261026/package_evidence.py",
+      "category": "report-organization-tool-and-start-state",
+      "bytes": 7845,
+      "sha256": "11ae77910a0a4cb6a8ffae6b1743da819965c5a296ef8806b33bb9e66a6d0b53"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-exit-report-20261026\\prepare.py",
+      "archive_path": "main/out/r2-exit-report-20261026/prepare.py",
+      "category": "report-organization-tool-and-start-state",
+      "bytes": 1748,
+      "sha256": "7962636fc34274ddd652a7470c9b4cc8afc30b2fa40febba1ec5616bb524c9e0"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-exit-report-20261026\\start.json",
+      "archive_path": "main/out/r2-exit-report-20261026/start.json",
+      "category": "report-organization-tool-and-start-state",
+      "bytes": 336573,
+      "sha256": "84635ff0e96a537b8849985cce4269ef67bf2da79d0bcc17acdcc6183e9ff73e"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-exit-report-20261026\\update_docs.py",
+      "archive_path": "main/out/r2-exit-report-20261026/update_docs.py",
+      "category": "report-organization-tool-and-start-state",
+      "bytes": 4271,
+      "sha256": "a2a16cfdf31e30c98f343bac7d940337a7926a4508c42fa1cd51815201e756d2"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-exit-report-20261026\\verify_archive.py",
+      "archive_path": "main/out/r2-exit-report-20261026/verify_archive.py",
+      "category": "report-organization-tool-and-start-state",
+      "bytes": 4259,
+      "sha256": "69d683cc1a2d04436b862247f28f430ce5a251b911c77403d2d4e14c819ea5e6"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\build.json",
+      "archive_path": "main/out/r2-n1-ablation-20261026/build.json",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 7820,
+      "sha256": "68803a2991ba14f53938ae833cd2f61a9be80ac9e142102ed9b78b159dc38044"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\build_run.py",
+      "archive_path": "main/out/r2-n1-ablation-20261026/build_run.py",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 7317,
+      "sha256": "e02221b2cccbf3ef9a941b6d92f064188c66612e896791edb5dbb26d35387c99"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\claim.json",
+      "archive_path": "main/out/r2-n1-ablation-20261026/claim.json",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 143,
+      "sha256": "18a11d7fe0939eef7cbdb90ce019868dd6bb64775a9684a3c2593d588a5b53b3"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\fixture.hpp",
+      "archive_path": "main/out/r2-n1-ablation-20261026/fixture.hpp",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 3809,
+      "sha256": "7e7cd3fa87aab38888fed6327eccc8744409622a726411df515fe9e23a51835e"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\legacy-compile.json",
+      "archive_path": "main/out/r2-n1-ablation-20261026/legacy-compile.json",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 3054,
+      "sha256": "4953daca6d5cbb6095e9272015385da160e074ff7a69f897d097a56c9c402e0b"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\legacy-compile.log",
+      "archive_path": "main/out/r2-n1-ablation-20261026/legacy-compile.log",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 12,
+      "sha256": "12335647b688c2256bdd9f8f8175307982376ffa1925b53970d317c4cfea4b30"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\legacy.cpp",
+      "archive_path": "main/out/r2-n1-ablation-20261026/legacy.cpp",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 39,
+      "sha256": "639a4faa57adaf4460928eed8122d9003bc4496bd266e5ceda7aa306381873c0"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\link-console.json",
+      "archive_path": "main/out/r2-n1-ablation-20261026/link-console.json",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 3316,
+      "sha256": "08e9850a4bb6f600fd1d155391d242e036ac7cfe95a55a08f71073538485c3a1"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\link-console.log",
+      "archive_path": "main/out/r2-n1-ablation-20261026/link-console.log",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\link-fixed.json",
+      "archive_path": "main/out/r2-n1-ablation-20261026/link-fixed.json",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 3273,
+      "sha256": "da37ef8d7904bce390a6d6909e7af34cd7a29283539a6661cfc3cd93ad17c376"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\link-fixed.log",
+      "archive_path": "main/out/r2-n1-ablation-20261026/link-fixed.log",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 51,
+      "sha256": "86e79102fcb108ca70f7d713e64502fd68cdfdd2ed1c8deb1a4e17a4c6c7be57"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\link.json",
+      "archive_path": "main/out/r2-n1-ablation-20261026/link.json",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 3156,
+      "sha256": "b80f06eecf6dc28e272fc7dc8fc57a1140d1f68b97031a9efdb8bbc82653efe4"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\link.log",
+      "archive_path": "main/out/r2-n1-ablation-20261026/link.log",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 51,
+      "sha256": "86e79102fcb108ca70f7d713e64502fd68cdfdd2ed1c8deb1a4e17a4c6c7be57"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\list-tests-supported.json",
+      "archive_path": "main/out/r2-n1-ablation-20261026/list-tests-supported.json",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 304,
+      "sha256": "4fae152bd39d66325fd111d70b81080dab0d8b10dd75468c338f87e821cbd2ef"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\list-tests-supported.log",
+      "archive_path": "main/out/r2-n1-ablation-20261026/list-tests-supported.log",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 43,
+      "sha256": "0a5f38c9f65ef81c5ec810fe6a4a392b1c226e47d45d081d6bc789042f3d1f43"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\list-tests.json",
+      "archive_path": "main/out/r2-n1-ablation-20261026/list-tests.json",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 304,
+      "sha256": "7aebcc367b86825649ae88612c012dde4a105064a6367eddbcec48272ea4a813"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\list-tests.log",
+      "archive_path": "main/out/r2-n1-ablation-20261026/list-tests.log",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 95,
+      "sha256": "74dc4be48017091bdf3808d60adcdc9560e89131afacbeabac1165b0d22280d5"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\probe-compile.json",
+      "archive_path": "main/out/r2-n1-ablation-20261026/probe-compile.json",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 3050,
+      "sha256": "bb2ecfd92668000b3bd4f51cb9f8ed1a310b5a965e18cf3096bc0a20d31e4d79"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\probe-compile.log",
+      "archive_path": "main/out/r2-n1-ablation-20261026/probe-compile.log",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 11,
+      "sha256": "25d4f66c7c01d5b35c220cb97ffdd1608405f4ab45160497e6cc7ea3079676cf"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\probe-symbols.json",
+      "archive_path": "main/out/r2-n1-ablation-20261026/probe-symbols.json",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 303,
+      "sha256": "841b63d73476396b8f0a9c6de97c5f40f9ec433b9610b1e7ec566a54995d0787"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\probe-symbols.log",
+      "archive_path": "main/out/r2-n1-ablation-20261026/probe-symbols.log",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 2621161,
+      "sha256": "4a63afdda973a5cbe3cb8a5dbc6dbb6a22c08b13141b729d8c2dd570b060b087"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\probe.cpp",
+      "archive_path": "main/out/r2-n1-ablation-20261026/probe.cpp",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 5363,
+      "sha256": "cf1739b52cc7f991174bb935204b281844894581b8d24ce13b211057dfa34d7f"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\raw.log",
+      "archive_path": "main/out/r2-n1-ablation-20261026/raw.log",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 3293,
+      "sha256": "acedd653b428fe0c3c07b5c2ca228a2da7939c04733dc6420978d63f45a30040"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\registration.json",
+      "archive_path": "main/out/r2-n1-ablation-20261026/registration.json",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 10381,
+      "sha256": "c41878b89ff7bef8969756eb92b6e214d5a18909359c985f919b66786f64a3ff"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\results.json",
+      "archive_path": "main/out/r2-n1-ablation-20261026/results.json",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 4278,
+      "sha256": "d2242ba862c50a6d8c4e5fd3eb2315eb2b7addcba0f240cbb3dbf560bf11309e"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-ablation-20261026\\verification.json",
+      "archive_path": "main/out/r2-n1-ablation-20261026/verification.json",
+      "category": "r2-n1-ablation-20261026",
+      "bytes": 446,
+      "sha256": "5513445c95f7932433c57b0809fcdc82d54c8f1d19cb37203434af27549185ad"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\build.json",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/build.json",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 7770,
+      "sha256": "0bc9f6db6173f0e29e81a9d6d3bf10167c608c896a9f9030962c22d477457bae"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\claim.json",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/claim.json",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 143,
+      "sha256": "d0d128ef078aec3a622cd8b24b647a1f00d7291a32dda84b6dc4f022abba25ab"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\control.py",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/control.py",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 8715,
+      "sha256": "e008ba6630b7ffdb5b215cc6740e7d6ae8c083560e8ff9305f5a99fa40aee756"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\current-compile.json",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/current-compile.json",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 3066,
+      "sha256": "a41f1fe9f44a7b5ca6fa10b06f0470e82f4b3f346e8d701921de237c7bd5322c"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\current-compile.log",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/current-compile.log",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 13,
+      "sha256": "5100c022a9dc9982af741e0831455d8a66406c5f96630035fa9fc9ed5cf0561f"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\current.cpp",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/current.cpp",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 158,
+      "sha256": "e20d42e590f42514f33e8b42cab00c735513a019db8d14f43eea9e2d7f51bc45"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\dispatch-compile.json",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/dispatch-compile.json",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 3069,
+      "sha256": "3ce10ad0a2a8153f5a12740c5107607983d6b26f272ceaa45a92737c4d04d013"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\dispatch-compile.log",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/dispatch-compile.log",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 14,
+      "sha256": "032ccfab82256af326a6ef868e029751ffd3362098943437eaf8174c8e170981"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\dispatch-symbols.json",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/dispatch-symbols.json",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 232,
+      "sha256": "2f8ce018a12a480f25c594bc0feecb12309c7cf4926a6b23a785c08c0c0cf359"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\dispatch-symbols.log",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/dispatch-symbols.log",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 46742,
+      "sha256": "adcd3ae620beb783efa0ddda260d85b43a6f94599301478b39cb56d36ace8215"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\dispatch.cpp",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/dispatch.cpp",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 1053,
+      "sha256": "38f9313ecd1b0e6ddb8201241b9ca3420271b7b4ce1dc448ac8df39661ccdb33"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\dispatch.hpp",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/dispatch.hpp",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 98,
+      "sha256": "da83f80c9adda84d5e857bf8e20bf774e6644a1017a6cdd2e7faebe1eca4f80e"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\legacy-compile.json",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/legacy-compile.json",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 3063,
+      "sha256": "ebdb17afb0006c7816a5082b9605ac455b2495c541393636202ba074b2f6590c"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\legacy-compile.log",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/legacy-compile.log",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 12,
+      "sha256": "12335647b688c2256bdd9f8f8175307982376ffa1925b53970d317c4cfea4b30"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\legacy.cpp",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/legacy.cpp",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 39,
+      "sha256": "639a4faa57adaf4460928eed8122d9003bc4496bd266e5ceda7aa306381873c0"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\link.json",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/link.json",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 3509,
+      "sha256": "8c73c0f42bcdf2bf83483dc370f9fee26a32cbfea70bbf15d531e869dde54a60"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\link.log",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/link.log",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\list-tests.json",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/list-tests.json",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 227,
+      "sha256": "2224f7bbd7a0fd04a50edfd334a760831b24bdc877e8a91a7090254df2bfb0a2"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\list-tests.log",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/list-tests.log",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 43,
+      "sha256": "0a5f38c9f65ef81c5ec810fe6a4a392b1c226e47d45d081d6bc789042f3d1f43"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\prepare.py",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/prepare.py",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 5104,
+      "sha256": "6bf0448a2f3d4e47cb7f5aea462cabec0257e779b68937b6ad07ca35777a1e87"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\probe-compile.json",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/probe-compile.json",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 3060,
+      "sha256": "f3b1ad814481df6c32a15407caa2a76d71c3aebb4ef41e3633d622dd8fb753fc"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\probe-compile.log",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/probe-compile.log",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 11,
+      "sha256": "25d4f66c7c01d5b35c220cb97ffdd1608405f4ab45160497e6cc7ea3079676cf"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\probe.cpp",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/probe.cpp",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 5103,
+      "sha256": "cde5aa49df61eb737f6bd6dec1ab0b3152d6d11e24d8ae0a0997ce6558e21b82"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\process-1.log",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/process-1.log",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 1533,
+      "sha256": "f30e5c112f4b72bc7d9a322becc5aa7799c110b4dbd1b2b8fb8891803770a5ef"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\registration.json",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/registration.json",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 12319,
+      "sha256": "50cd17d15d174ca5cebd32eb28a23a7f81a7a6aee9b54a261bcf1d05ff4de9c7"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-20261026\\stopped.json",
+      "archive_path": "main/out/r2-n1-public-ablation-20261026/stopped.json",
+      "category": "r2-n1-public-ablation-20261026",
+      "bytes": 341,
+      "sha256": "2cf45b01be330f9b20f54ad94f9985de0aa5ea7e18303c25d089425d7c2a8415"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\analyze_existing.py",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/analyze_existing.py",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 1618,
+      "sha256": "55e8cae668b3ca21c6d133ec45f64bbc0af953d2c0d9c879e1ea35205fa79b8d"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\build.json",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/build.json",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 7773,
+      "sha256": "161013a3c4e3819d3b66a93f9879fbddda472e4006afb45fd59fb3f4828f409b"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\claim.json",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/claim.json",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 143,
+      "sha256": "fbf5db094d0491020a2910a8456aba7e4b02d4048b2456454b5dd59384270723"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\compare_objects.py",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/compare_objects.py",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 1472,
+      "sha256": "66232eafd7a6dc8d0bd70071367ccc04c2138b81f4e6aa5cbf832910fe87e761"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\control.py",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/control.py",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 8932,
+      "sha256": "0d06152f6bc406809030891608b772e488c65943ca608f348711f4edff98b724"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\current-compile.json",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/current-compile.json",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 3075,
+      "sha256": "75ce0f03ce86165b4578cd9e3fff71ad8435f741411e06009a5e355f11110ae5"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\current-compile.log",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/current-compile.log",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 13,
+      "sha256": "5100c022a9dc9982af741e0831455d8a66406c5f96630035fa9fc9ed5cf0561f"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\current.cpp",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/current.cpp",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 158,
+      "sha256": "e20d42e590f42514f33e8b42cab00c735513a019db8d14f43eea9e2d7f51bc45"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\dispatch-compile.json",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/dispatch-compile.json",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 3078,
+      "sha256": "0964e7caac90016fd7497b339550e4f71295799ab88431f536919b33eb40c81d"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\dispatch-compile.log",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/dispatch-compile.log",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 14,
+      "sha256": "032ccfab82256af326a6ef868e029751ffd3362098943437eaf8174c8e170981"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\dispatch-symbols.json",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/dispatch-symbols.json",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 235,
+      "sha256": "dfa44fe035c88384ab77467065d3d3e22f2cdd137c9364a5637ebaeaea283690"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\dispatch-symbols.log",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/dispatch-symbols.log",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 46745,
+      "sha256": "93564c3ce8df7541e9f1323d34f7bed7a188747d7212216f396a7a906ff347c6"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\dispatch.cpp",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/dispatch.cpp",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 1053,
+      "sha256": "38f9313ecd1b0e6ddb8201241b9ca3420271b7b4ce1dc448ac8df39661ccdb33"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\dispatch.hpp",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/dispatch.hpp",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 98,
+      "sha256": "da83f80c9adda84d5e857bf8e20bf774e6644a1017a6cdd2e7faebe1eca4f80e"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\existing-window-clocks.json",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/existing-window-clocks.json",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 8428,
+      "sha256": "b3666fa82e1823759daa432d0eaf6c73a7db569ff8aaec6361fb5c8bca6f56b8"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\legacy-compile.json",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/legacy-compile.json",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 3072,
+      "sha256": "7f5673a299be8abb31fee67a7c3439c3153401a3e2841123e7019027d7b8eb6b"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\legacy-compile.log",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/legacy-compile.log",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 12,
+      "sha256": "12335647b688c2256bdd9f8f8175307982376ffa1925b53970d317c4cfea4b30"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\legacy.cpp",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/legacy.cpp",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 39,
+      "sha256": "639a4faa57adaf4460928eed8122d9003bc4496bd266e5ceda7aa306381873c0"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\link.json",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/link.json",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 3527,
+      "sha256": "c3b9bf5587159d31a9691e5a26c19aa6745cabe63a04fa122b2054cdea70be02"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\link.log",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/link.log",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\list-tests.json",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/list-tests.json",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 230,
+      "sha256": "9525208af0cdda9846ee2237f150ecfc1003e8ec85cd9394e8982bfa0d5f50a9"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\list-tests.log",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/list-tests.log",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 43,
+      "sha256": "0a5f38c9f65ef81c5ec810fe6a4a392b1c226e47d45d081d6bc789042f3d1f43"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\method-change.json",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/method-change.json",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 765,
+      "sha256": "cbe31dca0fc8529fc330d6779b866af587d77cbb84052cb01852d6f23228e37e"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\normalize_objects.py",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/normalize_objects.py",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 2064,
+      "sha256": "91d201446cf0f072c738a15650edbf1d2527c9c875ff1708e5c7ce44f27df34e"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\object-comparison\\B-extract.log",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/object-comparison/B-extract.log",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\object-comparison\\B-playback-session.asm",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/object-comparison/B-playback-session.asm",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 21895659,
+      "sha256": "3f1d25ca96ef7b7963f560f858f6c0960ea6474006b97f328ffa032826908fe0"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\object-comparison\\E-extract.log",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/object-comparison/E-extract.log",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\object-comparison\\E-playback-session.asm",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/object-comparison/E-playback-session.asm",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 21895659,
+      "sha256": "515f6d11d83edbd78799d3a31a0e084de8f2ab05f2eaf8b2d314d0ace5f9ba6f"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\object-comparison\\comparison-normalized.json",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/object-comparison/comparison-normalized.json",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 8126,
+      "sha256": "8019d2e198b36501d50a2a42356db313de1708a3928ca0ed860c1690856ec21a"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\object-comparison\\comparison.json",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/object-comparison/comparison.json",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 8261,
+      "sha256": "631237f75ccf7c5b13820b6799b6c015cfaeb09fd82ba6a3d9122364018e0d37"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\object-comparison\\extraction.json",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/object-comparison/extraction.json",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 977,
+      "sha256": "1873b5b1b6c50acdadb77cac4b91411e097b55ad5cc1248a1debe467df5acb14"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\object-comparison\\function-difference-10.txt",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/object-comparison/function-difference-10.txt",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 540,
+      "sha256": "18be5fb47da4bb7137744057f15bb9d31617381fe8275774e19ae835dd31114f"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\object-comparison\\function-difference-14.txt",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/object-comparison/function-difference-14.txt",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 940,
+      "sha256": "cd0f30c602ed1b9401fe41de7c543e1a57c266d695b4d6f5a72df681baab64f5"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\object-comparison\\function-difference-15.txt",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/object-comparison/function-difference-15.txt",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 940,
+      "sha256": "3246ee9e5dd3c4972012f06abdab0909884ba2787cf6a6d5c1ffe15a43d26c96"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\object-comparison\\function-difference-16.txt",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/object-comparison/function-difference-16.txt",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 940,
+      "sha256": "ef10494e51447a08b37c90d9b305b2bfc6d16b4594fbb1b739ee44219246b21e"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\object-comparison\\function-difference-17.txt",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/object-comparison/function-difference-17.txt",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 940,
+      "sha256": "974f20dc2cbcd7ecab6faa8a6fb1237b67acfdb32f43576ca3c3eb5759dea72a"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\object-comparison\\function-difference-7.txt",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/object-comparison/function-difference-7.txt",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 1627,
+      "sha256": "5404ce3f62d2cbf68271512dca3ac7cbd061a3dfe44dabe9cb8de5490b634155"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\object-comparison\\function-difference-9.txt",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/object-comparison/function-difference-9.txt",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 1545,
+      "sha256": "d2c932bea38a6e31c0bd0899a86cd1fb836c303b48529cc7074b0e18c7c509b8"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\prepare.py",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/prepare.py",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 2173,
+      "sha256": "00f8d934fcf40eda25a6526d2997a096de3e5b0638ac8bf41ee0272865a64257"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\probe-compile.json",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/probe-compile.json",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 3069,
+      "sha256": "805e66c373ae52ce816a4957dd096fd843231b74b42283ab8c50a7682d925a12"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\probe-compile.log",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/probe-compile.log",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 11,
+      "sha256": "25d4f66c7c01d5b35c220cb97ffdd1608405f4ab45160497e6cc7ea3079676cf"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\probe.cpp",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/probe.cpp",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 5160,
+      "sha256": "6e2c346a2a83bacb796d1d73b7bb609bd204f15d1f5b715d3dab5124f35e3292"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\process-1.json",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/process-1.json",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 6707,
+      "sha256": "eead67641ae3646b648892bb19f7d5acc2b39338e60868e3f6219b74ae754bfe"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\process-1.log",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/process-1.log",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 5980,
+      "sha256": "19437ab71007d51c6097eda94b2072575ca224396a9fbfc9697ad9720d366cb2"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\process-2.json",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/process-2.json",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 6706,
+      "sha256": "42017a0ed4f1071c7809b66a5c67ba257d1e7d4e908c540b886db3de08572ffd"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\process-2.log",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/process-2.log",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 5959,
+      "sha256": "271d87fa5a18245f62c9a12391a0b82ec4ecd226769390e54f8de15d2becc94d"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\process-3.json",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/process-3.json",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 6711,
+      "sha256": "5c249855d5ae2f380f3723ac4cd16e1700957bb76eaf45c7724119c7b98300fd"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\process-3.log",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/process-3.log",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 5988,
+      "sha256": "f32a79dad9f3e54f4d73e88e87fb5217042f572880f665cb637ad84f08f02ff4"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\reduce_objects.py",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/reduce_objects.py",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 2051,
+      "sha256": "c2ae35f16fa1d4c74e48da7f132c5fa2849bd258708f8f03f63072be1291ebd2"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\registration.json",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/registration.json",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 12579,
+      "sha256": "b32f859dad11da432d2178a516ff9dc22efd96b715273a582620f391d5f393fa"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\results.json",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/results.json",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 23630,
+      "sha256": "5dabb1cbc62bd8215f8f1a6c21a4c9e63f5823e1792351c15cebaf6d047a99b3"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\verification.json",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/verification.json",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 6173,
+      "sha256": "081fa11432e462e9b1c0a051879026f523f6e165f01836b969fc9089d4bfac6f"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-n1-public-ablation-v2-20261026\\verify.py",
+      "archive_path": "main/out/r2-n1-public-ablation-v2-20261026/verify.py",
+      "category": "r2-n1-public-ablation-v2-20261026",
+      "bytes": 5081,
+      "sha256": "9d8907298eb3e0ccae7ad28f90c404e7df0faac24513a04f585fb7985c0e211d"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-20261026\\baseline.log",
+      "archive_path": "main/out/r2-noise-20261026/baseline.log",
+      "category": "r2-noise-20261026",
+      "bytes": 17984,
+      "sha256": "124a36dced190b22d7d56148acdefab14e71813bbaceecd88fcea710345eb89b"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-20261026\\claim.json",
+      "archive_path": "main/out/r2-noise-20261026/claim.json",
+      "category": "r2-noise-20261026",
+      "bytes": 143,
+      "sha256": "c8acd4442dd5673cc89973f519b96916ba58fde775397138c3374bffe77aed9d"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-20261026\\existing-raw-analysis.json",
+      "archive_path": "main/out/r2-noise-20261026/existing-raw-analysis.json",
+      "category": "r2-noise-20261026",
+      "bytes": 221688,
+      "sha256": "68ef02144d8a1dd2be8ac0aca22587a829ba06e5aee8b570982157945edd7b71"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-20261026\\registration.json",
+      "archive_path": "main/out/r2-noise-20261026/registration.json",
+      "category": "r2-noise-20261026",
+      "bytes": 413160,
+      "sha256": "422f8eecaeb89d9ab1dc4b66c8b925d1a09056be888466a4b5c20499ee7138d4"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-20261026\\results.json",
+      "archive_path": "main/out/r2-noise-20261026/results.json",
+      "category": "r2-noise-20261026",
+      "bytes": 3017,
+      "sha256": "6e56df5f309f1606eae0665a3c3234f8f091053ac69ed216bab8a3a1383aee66"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-20261026\\run_noise.py",
+      "archive_path": "main/out/r2-noise-20261026/run_noise.py",
+      "category": "r2-noise-20261026",
+      "bytes": 6432,
+      "sha256": "6e0d89532e2d8152c13a503b6b7f6e8dbd42c73a097d410248fe2758318e9cc8"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-20261026\\telemetry-close.json",
+      "archive_path": "main/out/r2-noise-20261026/telemetry-close.json",
+      "category": "r2-noise-20261026",
+      "bytes": 103,
+      "sha256": "e92c2d2304b4aa8b18aed0ca71b979607e04772b064f0dd73c74108e87f02ab6"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-20261026\\telemetry-preflight.json",
+      "archive_path": "main/out/r2-noise-20261026/telemetry-preflight.json",
+      "category": "r2-noise-20261026",
+      "bytes": 8036,
+      "sha256": "faccb1b1dd80f55a41f5ce9d59410e9329f8ee56869ccba39fe406b465ecf225"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-20261026\\telemetry.jsonl",
+      "archive_path": "main/out/r2-noise-20261026/telemetry.jsonl",
+      "category": "r2-noise-20261026",
+      "bytes": 106468,
+      "sha256": "63bf982fd28b20061dcf075a8b53c50f6e727151693633e0f3aa5209e1bdce68"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-20261026\\telemetry.py",
+      "archive_path": "main/out/r2-noise-20261026/telemetry.py",
+      "category": "r2-noise-20261026",
+      "bytes": 3258,
+      "sha256": "8a6d4894b2f2e83f6a435c6ffebc186932d6478bdb4d3878fbf5205ab393c006"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-20261026\\warmup.log",
+      "archive_path": "main/out/r2-noise-20261026/warmup.log",
+      "category": "r2-noise-20261026",
+      "bytes": 283,
+      "sha256": "937e393f326c7e662aa180a64b481701fcd9d7ef4aaacd3baf5ef3117da0ef20"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-confirm-20261026T065945Z\\README.md",
+      "archive_path": "main/out/r2-noise-confirm-20261026T065945Z/README.md",
+      "category": "r2-noise-confirm-20261026T065945Z",
+      "bytes": 1678,
+      "sha256": "fd9e028e90e5a0bf6cf1da1196f48c6d1f33dfff182a43f367ad22cb7d736446"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-confirm-20261026T065945Z\\baseline.log",
+      "archive_path": "main/out/r2-noise-confirm-20261026T065945Z/baseline.log",
+      "category": "r2-noise-confirm-20261026T065945Z",
+      "bytes": 17968,
+      "sha256": "5ea2ea8ee4c8c2b2e43c1bee8bbc8e29fbf6c0284e37610d0d43f78ab9d8567f"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-confirm-20261026T065945Z\\claim.json",
+      "archive_path": "main/out/r2-noise-confirm-20261026T065945Z/claim.json",
+      "category": "r2-noise-confirm-20261026T065945Z",
+      "bytes": 143,
+      "sha256": "72dc60f4b61397721f4cb749b5747a08db59f7193e95e2197c8a541e287e075d"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-confirm-20261026T065945Z\\existing-raw-analysis.json",
+      "archive_path": "main/out/r2-noise-confirm-20261026T065945Z/existing-raw-analysis.json",
+      "category": "r2-noise-confirm-20261026T065945Z",
+      "bytes": 221688,
+      "sha256": "68ef02144d8a1dd2be8ac0aca22587a829ba06e5aee8b570982157945edd7b71"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-confirm-20261026T065945Z\\power-max-before.txt",
+      "archive_path": "main/out/r2-noise-confirm-20261026T065945Z/power-max-before.txt",
+      "category": "r2-noise-confirm-20261026T065945Z",
+      "bytes": 584,
+      "sha256": "dea985a382d57e1b4d454e5ec61f942b15d395a7a32027708cdc063504f36750"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-confirm-20261026T065945Z\\power-min-before.txt",
+      "archive_path": "main/out/r2-noise-confirm-20261026T065945Z/power-min-before.txt",
+      "category": "r2-noise-confirm-20261026T065945Z",
+      "bytes": 584,
+      "sha256": "ea4334e9367b7144d61e98691d84377fff63db41d8b13fde437d040fe6cac985"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-confirm-20261026T065945Z\\power-scheme-before.txt",
+      "archive_path": "main/out/r2-noise-confirm-20261026T065945Z/power-scheme-before.txt",
+      "category": "r2-noise-confirm-20261026T065945Z",
+      "bytes": 67,
+      "sha256": "3005b071c6539e5b5523deadb25a39311b4a78b0ac55c3e05806fba9bd2f1fbc"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-confirm-20261026T065945Z\\registration.json",
+      "archive_path": "main/out/r2-noise-confirm-20261026T065945Z/registration.json",
+      "category": "r2-noise-confirm-20261026T065945Z",
+      "bytes": 413192,
+      "sha256": "6a84c91774add9e6e52432408fa9ddd49864bf8e987b59cb821d1d410af94538"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-confirm-20261026T065945Z\\rerun-request.json",
+      "archive_path": "main/out/r2-noise-confirm-20261026T065945Z/rerun-request.json",
+      "category": "r2-noise-confirm-20261026T065945Z",
+      "bytes": 705,
+      "sha256": "ae599348c70b7ccf631db0eed17de2a718243a7d11b5b98df578f7c706dafe55"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-confirm-20261026T065945Z\\results.json",
+      "archive_path": "main/out/r2-noise-confirm-20261026T065945Z/results.json",
+      "category": "r2-noise-confirm-20261026T065945Z",
+      "bytes": 3063,
+      "sha256": "52c45702437ed2787e36883d3941ca32f2f9d57ec0352998127a3b8e5cc9743a"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-confirm-20261026T065945Z\\run_noise.py",
+      "archive_path": "main/out/r2-noise-confirm-20261026T065945Z/run_noise.py",
+      "category": "r2-noise-confirm-20261026T065945Z",
+      "bytes": 6432,
+      "sha256": "6e0d89532e2d8152c13a503b6b7f6e8dbd42c73a097d410248fe2758318e9cc8"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-confirm-20261026T065945Z\\telemetry-close.json",
+      "archive_path": "main/out/r2-noise-confirm-20261026T065945Z/telemetry-close.json",
+      "category": "r2-noise-confirm-20261026T065945Z",
+      "bytes": 103,
+      "sha256": "26879123fe39a1d8341b950109dceef4f67caef91709bf2b3a86f76fefc9650e"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-confirm-20261026T065945Z\\telemetry-preflight.json",
+      "archive_path": "main/out/r2-noise-confirm-20261026T065945Z/telemetry-preflight.json",
+      "category": "r2-noise-confirm-20261026T065945Z",
+      "bytes": 8020,
+      "sha256": "d14c2bce1ee72d67ced7cda1558a98704f91a36db35d9a852731d33353764f06"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-confirm-20261026T065945Z\\telemetry.jsonl",
+      "archive_path": "main/out/r2-noise-confirm-20261026T065945Z/telemetry.jsonl",
+      "category": "r2-noise-confirm-20261026T065945Z",
+      "bytes": 104697,
+      "sha256": "49938d4301b01722bbb563378b2d0188432dd068cc00d9118be70db0e1cad967"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-confirm-20261026T065945Z\\telemetry.py",
+      "archive_path": "main/out/r2-noise-confirm-20261026T065945Z/telemetry.py",
+      "category": "r2-noise-confirm-20261026T065945Z",
+      "bytes": 3258,
+      "sha256": "8a6d4894b2f2e83f6a435c6ffebc186932d6478bdb4d3878fbf5205ab393c006"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-confirm-20261026T065945Z\\verification.json",
+      "archive_path": "main/out/r2-noise-confirm-20261026T065945Z/verification.json",
+      "category": "r2-noise-confirm-20261026T065945Z",
+      "bytes": 12086,
+      "sha256": "beb6025e3a8df51613b0d305b5c9ffd6d08a68ccd7207773fde6488f256bd6f5"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-confirm-20261026T065945Z\\verify_rerun.py",
+      "archive_path": "main/out/r2-noise-confirm-20261026T065945Z/verify_rerun.py",
+      "category": "r2-noise-confirm-20261026T065945Z",
+      "bytes": 6639,
+      "sha256": "646287a67684ca37a7f52af35cdf87b2397d0390c27e5da587725d69fe78a72c"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-confirm-20261026T065945Z\\warmup.log",
+      "archive_path": "main/out/r2-noise-confirm-20261026T065945Z/warmup.log",
+      "category": "r2-noise-confirm-20261026T065945Z",
+      "bytes": 284,
+      "sha256": "96acc5b9c474511d6417c60ae88764263e200d937411a61337e5fe193bda3fa6"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-rerun-20261026T064152Z\\README.md",
+      "archive_path": "main/out/r2-noise-rerun-20261026T064152Z/README.md",
+      "category": "r2-noise-rerun-20261026T064152Z",
+      "bytes": 1663,
+      "sha256": "6bd95a9b15fad2657a7e52d5ec6500369e27e8ece697e6d9c544bdb6cca47bd6"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-rerun-20261026T064152Z\\aligned-blocks.json",
+      "archive_path": "main/out/r2-noise-rerun-20261026T064152Z/aligned-blocks.json",
+      "category": "r2-noise-rerun-20261026T064152Z",
+      "bytes": 6109,
+      "sha256": "4784627cf06bc94e750156644afc9e5ecabf28cee89c8eb637c6a38687cb341f"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-rerun-20261026T064152Z\\baseline.log",
+      "archive_path": "main/out/r2-noise-rerun-20261026T064152Z/baseline.log",
+      "category": "r2-noise-rerun-20261026T064152Z",
+      "bytes": 17892,
+      "sha256": "32f4e972b63f89aa2d22e7e68cd343d11d1a6d779c2080539cba7a636e3c748e"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-rerun-20261026T064152Z\\claim.json",
+      "archive_path": "main/out/r2-noise-rerun-20261026T064152Z/claim.json",
+      "category": "r2-noise-rerun-20261026T064152Z",
+      "bytes": 143,
+      "sha256": "97b4074fbb634a3fbbe49b9eba47c7012ea2f6dfecef799d831ee039d5459328"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-rerun-20261026T064152Z\\diff-check.log",
+      "archive_path": "main/out/r2-noise-rerun-20261026T064152Z/diff-check.log",
+      "category": "r2-noise-rerun-20261026T064152Z",
+      "bytes": 4566,
+      "sha256": "028e15a11b562df1e1b94fd1b97dee68484f277a6746e0350d1ab0786ca2b5d0"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-rerun-20261026T064152Z\\docs-check.log",
+      "archive_path": "main/out/r2-noise-rerun-20261026T064152Z/docs-check.log",
+      "category": "r2-noise-rerun-20261026T064152Z",
+      "bytes": 92,
+      "sha256": "8b55eb9b62432873f352de9e18621bf60d37c8559824ec0114aa657a4af6bead"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-rerun-20261026T064152Z\\existing-raw-analysis.json",
+      "archive_path": "main/out/r2-noise-rerun-20261026T064152Z/existing-raw-analysis.json",
+      "category": "r2-noise-rerun-20261026T064152Z",
+      "bytes": 221688,
+      "sha256": "68ef02144d8a1dd2be8ac0aca22587a829ba06e5aee8b570982157945edd7b71"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-rerun-20261026T064152Z\\power-max-before.txt",
+      "archive_path": "main/out/r2-noise-rerun-20261026T064152Z/power-max-before.txt",
+      "category": "r2-noise-rerun-20261026T064152Z",
+      "bytes": 584,
+      "sha256": "dea985a382d57e1b4d454e5ec61f942b15d395a7a32027708cdc063504f36750"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-rerun-20261026T064152Z\\power-min-before.txt",
+      "archive_path": "main/out/r2-noise-rerun-20261026T064152Z/power-min-before.txt",
+      "category": "r2-noise-rerun-20261026T064152Z",
+      "bytes": 584,
+      "sha256": "ea4334e9367b7144d61e98691d84377fff63db41d8b13fde437d040fe6cac985"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-rerun-20261026T064152Z\\power-scheme-before.txt",
+      "archive_path": "main/out/r2-noise-rerun-20261026T064152Z/power-scheme-before.txt",
+      "category": "r2-noise-rerun-20261026T064152Z",
+      "bytes": 67,
+      "sha256": "3005b071c6539e5b5523deadb25a39311b4a78b0ac55c3e05806fba9bd2f1fbc"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-rerun-20261026T064152Z\\registration.json",
+      "archive_path": "main/out/r2-noise-rerun-20261026T064152Z/registration.json",
+      "category": "r2-noise-rerun-20261026T064152Z",
+      "bytes": 413188,
+      "sha256": "7546f1820221707c6bb78dadb4e4a1897b8d233656cfbd7f11a0ed015c610daf"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-rerun-20261026T064152Z\\rerun-request.json",
+      "archive_path": "main/out/r2-noise-rerun-20261026T064152Z/rerun-request.json",
+      "category": "r2-noise-rerun-20261026T064152Z",
+      "bytes": 648,
+      "sha256": "dc3b7ec8b62ce324fa20995f45f9a331fda441b52303e28cfa20bf24c146d721"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-rerun-20261026T064152Z\\results.json",
+      "archive_path": "main/out/r2-noise-rerun-20261026T064152Z/results.json",
+      "category": "r2-noise-rerun-20261026T064152Z",
+      "bytes": 3063,
+      "sha256": "d4e539aacea04b3ce03dabaf867fd68502a96163894771249b9a9b2a2858ecdc"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-rerun-20261026T064152Z\\run_noise.py",
+      "archive_path": "main/out/r2-noise-rerun-20261026T064152Z/run_noise.py",
+      "category": "r2-noise-rerun-20261026T064152Z",
+      "bytes": 6432,
+      "sha256": "6e0d89532e2d8152c13a503b6b7f6e8dbd42c73a097d410248fe2758318e9cc8"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-rerun-20261026T064152Z\\telemetry-close.json",
+      "archive_path": "main/out/r2-noise-rerun-20261026T064152Z/telemetry-close.json",
+      "category": "r2-noise-rerun-20261026T064152Z",
+      "bytes": 103,
+      "sha256": "01b0678cdae7f81e16fb6163e25332afcb9f6274560a98c540b48e0b5c965d88"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-rerun-20261026T064152Z\\telemetry-preflight.json",
+      "archive_path": "main/out/r2-noise-rerun-20261026T064152Z/telemetry-preflight.json",
+      "category": "r2-noise-rerun-20261026T064152Z",
+      "bytes": 8022,
+      "sha256": "93f53aa8a3d1198f06d6449891546c571db69d5ef4234ab3105a428c12eae352"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-rerun-20261026T064152Z\\telemetry.jsonl",
+      "archive_path": "main/out/r2-noise-rerun-20261026T064152Z/telemetry.jsonl",
+      "category": "r2-noise-rerun-20261026T064152Z",
+      "bytes": 102416,
+      "sha256": "3d32129b4a3e0ccb5954f4ab4eabdf7db8af037ff748dbf0daa6150fef7e8b0c"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-rerun-20261026T064152Z\\telemetry.py",
+      "archive_path": "main/out/r2-noise-rerun-20261026T064152Z/telemetry.py",
+      "category": "r2-noise-rerun-20261026T064152Z",
+      "bytes": 3258,
+      "sha256": "8a6d4894b2f2e83f6a435c6ffebc186932d6478bdb4d3878fbf5205ab393c006"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-rerun-20261026T064152Z\\verification.json",
+      "archive_path": "main/out/r2-noise-rerun-20261026T064152Z/verification.json",
+      "category": "r2-noise-rerun-20261026T064152Z",
+      "bytes": 12097,
+      "sha256": "6992d54c94ffa9b2e478445c2df07cf05cb5e3a0168f5938be0855598a3031b7"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-rerun-20261026T064152Z\\verify_rerun.py",
+      "archive_path": "main/out/r2-noise-rerun-20261026T064152Z/verify_rerun.py",
+      "category": "r2-noise-rerun-20261026T064152Z",
+      "bytes": 6524,
+      "sha256": "bf88f1319d29b6de15d9481fa7e2b174d5ee496192a00ea58f3cf2b87204968d"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-noise-rerun-20261026T064152Z\\warmup.log",
+      "archive_path": "main/out/r2-noise-rerun-20261026T064152Z/warmup.log",
+      "category": "r2-noise-rerun-20261026T064152Z",
+      "bytes": 284,
+      "sha256": "ff45cd0700ac72ab5e62aec97efc06d0b607cdd4b94644a67c9be527b3be4bb2"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-20261026\\baseline.log",
+      "archive_path": "main/out/r2-qos-20261026/baseline.log",
+      "category": "r2-qos-20261026",
+      "bytes": 18236,
+      "sha256": "ce02685f7c088d98e496bf272a0af3ceabb2e46a10909eb8f619c1bde6de5cd1"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-20261026\\claim.json",
+      "archive_path": "main/out/r2-qos-20261026/claim.json",
+      "category": "r2-qos-20261026",
+      "bytes": 143,
+      "sha256": "a8edbe64926dcd24520f57754754522e6d5ec4c0edead9986a699fb2bcc38394"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-20261026\\existing-raw-analysis.json",
+      "archive_path": "main/out/r2-qos-20261026/existing-raw-analysis.json",
+      "category": "r2-qos-20261026",
+      "bytes": 221688,
+      "sha256": "68ef02144d8a1dd2be8ac0aca22587a829ba06e5aee8b570982157945edd7b71"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-20261026\\qos_process_control.py",
+      "archive_path": "main/out/r2-qos-20261026/qos_process_control.py",
+      "category": "r2-qos-20261026",
+      "bytes": 7245,
+      "sha256": "5beabdae0f8dae53a1d5fd1fb89f49838dfc5e979be635e515ec85b3bda1dd0e"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-20261026\\registration.json",
+      "archive_path": "main/out/r2-qos-20261026/registration.json",
+      "category": "r2-qos-20261026",
+      "bytes": 413168,
+      "sha256": "c11909662cf8f3b4d99b40a01df12cc85ceb3765c73121ce37e5e5d1c1b7fbca"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-20261026\\results.json",
+      "archive_path": "main/out/r2-qos-20261026/results.json",
+      "category": "r2-qos-20261026",
+      "bytes": 3020,
+      "sha256": "7d7456b63724bc3a6d001d9aa5548e233eeb289c9215219a405e46c311f23e42"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-20261026\\run_noise.py",
+      "archive_path": "main/out/r2-qos-20261026/run_noise.py",
+      "category": "r2-qos-20261026",
+      "bytes": 7004,
+      "sha256": "74cdfc5bfb7444f0aec2d95281602638997d1db5b76126f32f1e34464bab0b9e"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-20261026\\telemetry-close.json",
+      "archive_path": "main/out/r2-qos-20261026/telemetry-close.json",
+      "category": "r2-qos-20261026",
+      "bytes": 103,
+      "sha256": "7a7327c35fb7e5b56371183b05f633ae5565a24817efc742da7dd875fc8ec149"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-20261026\\telemetry-preflight.json",
+      "archive_path": "main/out/r2-qos-20261026/telemetry-preflight.json",
+      "category": "r2-qos-20261026",
+      "bytes": 8022,
+      "sha256": "db5c63a1445eafabf26767c6124fa7ac2ae8e508ef3d021568a1c3b8525abb02"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-20261026\\telemetry.jsonl",
+      "archive_path": "main/out/r2-qos-20261026/telemetry.jsonl",
+      "category": "r2-qos-20261026",
+      "bytes": 98347,
+      "sha256": "fe0a7ea4b9444997d82044d59725cbf8416c85913afe0b3f094caba0e9dcda72"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-20261026\\telemetry.py",
+      "archive_path": "main/out/r2-qos-20261026/telemetry.py",
+      "category": "r2-qos-20261026",
+      "bytes": 3258,
+      "sha256": "8a6d4894b2f2e83f6a435c6ffebc186932d6478bdb4d3878fbf5205ab393c006"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-20261026\\verification.json",
+      "archive_path": "main/out/r2-qos-20261026/verification.json",
+      "category": "r2-qos-20261026",
+      "bytes": 6186,
+      "sha256": "bccd37eac9dde2a71dc55bfa202e305dfa299cd6cc361e53e98204b7b8990660"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-20261026\\warmup.log",
+      "archive_path": "main/out/r2-qos-20261026/warmup.log",
+      "category": "r2-qos-20261026",
+      "bytes": 506,
+      "sha256": "297150773545bf6da76d4401037549a2991b68e4c7bf99202606a890880ecedc"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\audit_results.py",
+      "archive_path": "main/out/r2-qos-window-20261026/audit_results.py",
+      "category": "r2-qos-window-20261026",
+      "bytes": 4688,
+      "sha256": "075781eb1625d17f12e1169c3dc34afdeba1966e28223e3ec02cb8afa2b3679a"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\claim.json",
+      "archive_path": "main/out/r2-qos-window-20261026/claim.json",
+      "category": "r2-qos-window-20261026",
+      "bytes": 169,
+      "sha256": "6c91049c25e447462ece7f1bb326f2d30847f74224b6a22e706deb2cb9b49f0c"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\completion.json",
+      "archive_path": "main/out/r2-qos-window-20261026/completion.json",
+      "category": "r2-qos-window-20261026",
+      "bytes": 1253,
+      "sha256": "384f1397b8ee1b0e887e12e0a1f4c5db338d04d140406d5b784129d0dae81765"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\diff-check.log",
+      "archive_path": "main/out/r2-qos-window-20261026/diff-check.log",
+      "category": "r2-qos-window-20261026",
+      "bytes": 4566,
+      "sha256": "028e15a11b562df1e1b94fd1b97dee68484f277a6746e0350d1ab0786ca2b5d0"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\docs-check.log",
+      "archive_path": "main/out/r2-qos-window-20261026/docs-check.log",
+      "category": "r2-qos-window-20261026",
+      "bytes": 92,
+      "sha256": "161ce0c18b2718e435e2865ed7e82fa3f88c0aa831e158f7eafe046f140b710b"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\final-evidence-verification.json",
+      "archive_path": "main/out/r2-qos-window-20261026/final-evidence-verification.json",
+      "category": "r2-qos-window-20261026",
+      "bytes": 606,
+      "sha256": "a55650e4754558ae12f172b436720c5d1b38c2c698c6e4f30e720e53ce6824f2"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\independent-results-audit.json",
+      "archive_path": "main/out/r2-qos-window-20261026/independent-results-audit.json",
+      "category": "r2-qos-window-20261026",
+      "bytes": 3381,
+      "sha256": "848578fdb328f3d60637e5a2c93f09cbaf6f3df486a0baff4cd3253a82c6ca20"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\power-max-after.txt",
+      "archive_path": "main/out/r2-qos-window-20261026/power-max-after.txt",
+      "category": "r2-qos-window-20261026",
+      "bytes": 584,
+      "sha256": "dea985a382d57e1b4d454e5ec61f942b15d395a7a32027708cdc063504f36750"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\power-min-after.txt",
+      "archive_path": "main/out/r2-qos-window-20261026/power-min-after.txt",
+      "category": "r2-qos-window-20261026",
+      "bytes": 584,
+      "sha256": "ea4334e9367b7144d61e98691d84377fff63db41d8b13fde437d040fe6cac985"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\power-scheme-after.txt",
+      "archive_path": "main/out/r2-qos-window-20261026/power-scheme-after.txt",
+      "category": "r2-qos-window-20261026",
+      "bytes": 67,
+      "sha256": "3005b071c6539e5b5523deadb25a39311b4a78b0ac55c3e05806fba9bd2f1fbc"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\processes\\r1-B.json",
+      "archive_path": "main/out/r2-qos-window-20261026/processes/r1-B.json",
+      "category": "r2-qos-window-20261026",
+      "bytes": 4778,
+      "sha256": "6ffaaa908ef8702b715c688dc21e054370936904747cfc9935c0faf693f949fe"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\processes\\r1-E.json",
+      "archive_path": "main/out/r2-qos-window-20261026/processes/r1-E.json",
+      "category": "r2-qos-window-20261026",
+      "bytes": 4782,
+      "sha256": "e5ce4def0bbbfc4bc39b3538f404beb3cd409cd0d2a0452e9c0715613a3d06a7"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\processes\\r2-B.json",
+      "archive_path": "main/out/r2-qos-window-20261026/processes/r2-B.json",
+      "category": "r2-qos-window-20261026",
+      "bytes": 4780,
+      "sha256": "371a40f04585ce2cb1a4a148fbc8efb9a64095904818b8a7fa16922945c84024"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\processes\\r2-E.json",
+      "archive_path": "main/out/r2-qos-window-20261026/processes/r2-E.json",
+      "category": "r2-qos-window-20261026",
+      "bytes": 4780,
+      "sha256": "4444d8c456ba96d186291e676ba087bb9265f9a7fe4ffa1af85e67e7a1556a67"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\processes\\r3-B.json",
+      "archive_path": "main/out/r2-qos-window-20261026/processes/r3-B.json",
+      "category": "r2-qos-window-20261026",
+      "bytes": 4786,
+      "sha256": "ebb78e1862367648ef698d8680e24796fce122ad4464f19388fd4d41ba695d5b"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\processes\\r3-E.json",
+      "archive_path": "main/out/r2-qos-window-20261026/processes/r3-E.json",
+      "category": "r2-qos-window-20261026",
+      "bytes": 4786,
+      "sha256": "7df60a0e62e74091907c383c1dcdb5e0645b6a58b47b6c3ac60f8f6761db4535"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\qos_process_control.py",
+      "archive_path": "main/out/r2-qos-window-20261026/qos_process_control.py",
+      "category": "r2-qos-window-20261026",
+      "bytes": 7245,
+      "sha256": "5beabdae0f8dae53a1d5fd1fb89f49838dfc5e979be635e515ec85b3bda1dd0e"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\raw\\r1-B-read.log",
+      "archive_path": "main/out/r2-qos-window-20261026/raw/r1-B-read.log",
+      "category": "r2-qos-window-20261026",
+      "bytes": 36018,
+      "sha256": "043bc9f0638dd24ac4b0df09f3373ceaff6b8317a3c58cb666b828eeda7f32dd"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\raw\\r1-B-warmup.log",
+      "archive_path": "main/out/r2-qos-window-20261026/raw/r1-B-warmup.log",
+      "category": "r2-qos-window-20261026",
+      "bytes": 507,
+      "sha256": "892b90bbbdca638a9d6a5e7d2137993db3ca40052ea82f11c60773f80062d249"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\raw\\r1-E-read.log",
+      "archive_path": "main/out/r2-qos-window-20261026/raw/r1-E-read.log",
+      "category": "r2-qos-window-20261026",
+      "bytes": 36019,
+      "sha256": "d4ae8b1fbc462d26b0ed8e89805b777f2ae4ecfbc1430fe96e544534c88aa74b"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\raw\\r1-E-warmup.log",
+      "archive_path": "main/out/r2-qos-window-20261026/raw/r1-E-warmup.log",
+      "category": "r2-qos-window-20261026",
+      "bytes": 505,
+      "sha256": "ac2a2610cd1d86a969b57a43d2030722bd44463810c044054083b2c0b31aaba8"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\raw\\r2-B-read.log",
+      "archive_path": "main/out/r2-qos-window-20261026/raw/r2-B-read.log",
+      "category": "r2-qos-window-20261026",
+      "bytes": 35951,
+      "sha256": "74815d9debc3fd7e9c223ce74628074c34d2b25e72a6d1560991a1bc72ff1144"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\raw\\r2-B-warmup.log",
+      "archive_path": "main/out/r2-qos-window-20261026/raw/r2-B-warmup.log",
+      "category": "r2-qos-window-20261026",
+      "bytes": 502,
+      "sha256": "87f493d7f04c27105832f8c9dba64a3322f6138f38e443caf6cfb7e4704976c4"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\raw\\r2-E-read.log",
+      "archive_path": "main/out/r2-qos-window-20261026/raw/r2-E-read.log",
+      "category": "r2-qos-window-20261026",
+      "bytes": 36071,
+      "sha256": "deabb90d5123f4d1eaa34a617a4dc84c2ecabf2aadba4dc86b01264d38a9612a"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\raw\\r2-E-warmup.log",
+      "archive_path": "main/out/r2-qos-window-20261026/raw/r2-E-warmup.log",
+      "category": "r2-qos-window-20261026",
+      "bytes": 504,
+      "sha256": "10b56730aca7c22bff0f6be35d3b91d11acebc0c00cf6ec731ed33ad438f4e8a"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\raw\\r3-B-read.log",
+      "archive_path": "main/out/r2-qos-window-20261026/raw/r3-B-read.log",
+      "category": "r2-qos-window-20261026",
+      "bytes": 36112,
+      "sha256": "72125f26b6d8aeb0221c49e8ece5109d5c5ad2c01b46c20e446368067f422462"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\raw\\r3-B-warmup.log",
+      "archive_path": "main/out/r2-qos-window-20261026/raw/r3-B-warmup.log",
+      "category": "r2-qos-window-20261026",
+      "bytes": 507,
+      "sha256": "2462c46ad7fe2a562f38e7a21cfe0ca9c65a786a4d402d3fd09bf76b332adc3d"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\raw\\r3-E-read.log",
+      "archive_path": "main/out/r2-qos-window-20261026/raw/r3-E-read.log",
+      "category": "r2-qos-window-20261026",
+      "bytes": 36174,
+      "sha256": "549b9698d8b563827d44d15d6913e5da6dabc2d88b752983657c07711efabe47"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\raw\\r3-E-warmup.log",
+      "archive_path": "main/out/r2-qos-window-20261026/raw/r3-E-warmup.log",
+      "category": "r2-qos-window-20261026",
+      "bytes": 507,
+      "sha256": "67bb73b14afc18ad98810e48fdde8b264f2557a00560fb9b599c24694de1c0fc"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\registration.json",
+      "archive_path": "main/out/r2-qos-window-20261026/registration.json",
+      "category": "r2-qos-window-20261026",
+      "bytes": 838944,
+      "sha256": "7325178efa1ab09d4397f7109b758fb329951a4f510c9b70dabcdff6a95dc97e"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\results.json",
+      "archive_path": "main/out/r2-qos-window-20261026/results.json",
+      "category": "r2-qos-window-20261026",
+      "bytes": 37251,
+      "sha256": "4b1b56a10a00d881f1bbf536b26330115070951efcc9026006e0438495bfee09"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2-qos-window-20261026\\window.py",
+      "archive_path": "main/out/r2-qos-window-20261026/window.py",
+      "category": "r2-qos-window-20261026",
+      "bytes": 8341,
+      "sha256": "adee42d5e39b83293b8bae063fdb2a14b542adadec2f3dd555d2afce385fbe2d"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\B\\engine\\playback\\src\\presentation_materializer.cpp",
+      "archive_path": "main/out/r2e-20261026/B/engine/playback/src/presentation_materializer.cpp",
+      "category": "frozen-product-source",
+      "bytes": 8438,
+      "sha256": "939a23c2745a153c93c581117e9f22036f50423f1f77b2f5cfb8be3527877e24"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\B\\engine\\playback\\src\\presentation_materializer.hpp",
+      "archive_path": "main/out/r2e-20261026/B/engine/playback/src/presentation_materializer.hpp",
+      "category": "frozen-product-source",
+      "bytes": 1117,
+      "sha256": "88294c858540366e6a723173122847330dfcf57891f43b3f5b8b4c700c6235a1"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\B\\engine\\runtime\\internal\\cuexis\\runtime\\presentation_read.hpp",
+      "archive_path": "main/out/r2e-20261026/B/engine/runtime/internal/cuexis/runtime/presentation_read.hpp",
+      "category": "frozen-product-source",
+      "bytes": 3612,
+      "sha256": "fe63c22c7243394a810341a652a045a782ae320482df773add89f6960cfeb68a"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\B\\engine\\runtime\\src\\presentation_read.cpp",
+      "archive_path": "main/out/r2e-20261026/B/engine/runtime/src/presentation_read.cpp",
+      "category": "frozen-product-source",
+      "bytes": 6923,
+      "sha256": "a9b4f317de399fb3485292e80a9def7b0affd253717c5707d8c24171339b4b60"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\E\\engine\\playback\\src\\presentation_materializer.cpp",
+      "archive_path": "main/out/r2e-20261026/E/engine/playback/src/presentation_materializer.cpp",
+      "category": "frozen-product-source",
+      "bytes": 8658,
+      "sha256": "b310863c9f804060f3883f39749a898c78334b09cb22ec74d4676dbdddd4d607"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\E\\engine\\playback\\src\\presentation_materializer.hpp",
+      "archive_path": "main/out/r2e-20261026/E/engine/playback/src/presentation_materializer.hpp",
+      "category": "frozen-product-source",
+      "bytes": 2763,
+      "sha256": "24563a07595c85ab7588c1ce0632b2bfca62984197606102db366729ab4048fb"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\E\\engine\\runtime\\internal\\cuexis\\runtime\\presentation_read.hpp",
+      "archive_path": "main/out/r2e-20261026/E/engine/runtime/internal/cuexis/runtime/presentation_read.hpp",
+      "category": "frozen-product-source",
+      "bytes": 4336,
+      "sha256": "15aeb4ae8d85308e1d6a968281d5cde4330380cadf3fba55ea4aaaf7d7ec2e8f"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\E\\engine\\runtime\\src\\presentation_read.cpp",
+      "archive_path": "main/out/r2e-20261026/E/engine/runtime/src/presentation_read.cpp",
+      "category": "frozen-product-source",
+      "bytes": 8288,
+      "sha256": "80d89e92ddcd801a119d2aa430a3b976bb66e9ccab41d1af98a0a1a3a1df11dd"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\actual-layout.cpp",
+      "archive_path": "main/out/r2e-20261026/actual-layout.cpp",
+      "category": "third-candidate-preparation",
+      "bytes": 707,
+      "sha256": "2d78b9585c1fd09d47443c5a18b921a266ab649183a90cf812631ca2c692700f"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\audit_results.py",
+      "archive_path": "main/out/r2e-20261026/audit_results.py",
+      "category": "third-candidate-preparation",
+      "bytes": 4658,
+      "sha256": "d786037b60277523a96fadbb3cbc9702528254ada6c843d18c2fb97f4e389747"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\build.py",
+      "archive_path": "main/out/r2e-20261026/build.py",
+      "category": "third-candidate-preparation",
+      "bytes": 2703,
+      "sha256": "4ee64b9d665c65a5fafd9e96e80a25d33805098c4c734d317cc1c0ea4356cbc8"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\commands.jsonl",
+      "archive_path": "main/out/r2e-20261026/commands.jsonl",
+      "category": "third-candidate-preparation",
+      "bytes": 16784,
+      "sha256": "c2d36544d0f3b6068c194511a444b4dd343e3322836ec4443043bf2fe4596f8e"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic.py",
+      "archive_path": "main/out/r2e-20261026/diagnostic.py",
+      "category": "third-candidate-preparation",
+      "bytes": 15363,
+      "sha256": "3a6f7471c44bdf94c0ffd82a2f4b8a8502f4a7fafef46d5712c6773ac25a06cf"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\B-all-header-dependencies.txt",
+      "archive_path": "main/out/r2e-20261026/diagnostic/B-all-header-dependencies.txt",
+      "category": "original-third-candidate-window",
+      "bytes": 522659,
+      "sha256": "30cf20e94d27cfa403f0661deae4044bd955e435d8e016b557a0af64fc50d379"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\B-build-binding-check.txt",
+      "archive_path": "main/out/r2e-20261026/diagnostic/B-build-binding-check.txt",
+      "category": "original-third-candidate-window",
+      "bytes": 65,
+      "sha256": "7716162f3cd3b99cf3b8a8dd6decf324e08c7e941aae7e730baba5e4fc8c075b"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\B-header-dependencies.txt",
+      "archive_path": "main/out/r2e-20261026/diagnostic/B-header-dependencies.txt",
+      "category": "original-third-candidate-window",
+      "bytes": 15536,
+      "sha256": "b3d5178f944dbe75d3c546284fa587695462a971f827da77b230bf1cd5387816"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\E-all-header-dependencies.txt",
+      "archive_path": "main/out/r2e-20261026/diagnostic/E-all-header-dependencies.txt",
+      "category": "original-third-candidate-window",
+      "bytes": 522659,
+      "sha256": "2fade148b9c67507aa7f0e8679252feb70c51858d29414e520cdb63e6a183513"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\E-build-binding-check.txt",
+      "archive_path": "main/out/r2e-20261026/diagnostic/E-build-binding-check.txt",
+      "category": "original-third-candidate-window",
+      "bytes": 65,
+      "sha256": "7716162f3cd3b99cf3b8a8dd6decf324e08c7e941aae7e730baba5e4fc8c075b"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\E-header-dependencies.txt",
+      "archive_path": "main/out/r2e-20261026/diagnostic/E-header-dependencies.txt",
+      "category": "original-third-candidate-window",
+      "bytes": 15536,
+      "sha256": "c1748788d8ef7debc76e8536dc1aec101f35bf871bb7043c064ab3a27a1568bc"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\claim.json",
+      "archive_path": "main/out/r2e-20261026/diagnostic/claim.json",
+      "category": "original-third-candidate-window",
+      "bytes": 167,
+      "sha256": "ecce8cbbf40f2f3e8cf8bcb165e7601b43146518602057d90cce60025d9fbe4d"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\fixture-B.log",
+      "archive_path": "main/out/r2e-20261026/diagnostic/fixture-B.log",
+      "category": "original-third-candidate-window",
+      "bytes": 1907,
+      "sha256": "9dd0f62dced917568e9eaafb41d8132fda3b048be24f204b367165a4d0171b69"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\fixture-E.log",
+      "archive_path": "main/out/r2e-20261026/diagnostic/fixture-E.log",
+      "category": "original-third-candidate-window",
+      "bytes": 1906,
+      "sha256": "a346f9e004109c4ebca7cb4f7d30023508995ec1f102c01dea00954ce58367d6"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\fixture-validation.json",
+      "archive_path": "main/out/r2e-20261026/diagnostic/fixture-validation.json",
+      "category": "original-third-candidate-window",
+      "bytes": 3552,
+      "sha256": "3026f5f17dfbcfccecdb8b062489738664693329ab3726d8ef0e8cd1f3947a15"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\processes\\r1-B.json",
+      "archive_path": "main/out/r2e-20261026/diagnostic/processes/r1-B.json",
+      "category": "original-third-candidate-window",
+      "bytes": 3908,
+      "sha256": "ab85f1837c0bf4255675c21e2f457c5421c7e1643e5a2f17cc5e79702dbf4b83"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\processes\\r1-E.json",
+      "archive_path": "main/out/r2e-20261026/diagnostic/processes/r1-E.json",
+      "category": "original-third-candidate-window",
+      "bytes": 3908,
+      "sha256": "b5419c72def2c2766e80e78cf89d62086cb9fcfebe8f8779e50c1604f701cf5c"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\processes\\r2-B.json",
+      "archive_path": "main/out/r2e-20261026/diagnostic/processes/r2-B.json",
+      "category": "original-third-candidate-window",
+      "bytes": 3912,
+      "sha256": "2dc0a45825ace6a3e072935239284980e5ccdabc1a96b140756e54440dac005d"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\processes\\r2-E.json",
+      "archive_path": "main/out/r2e-20261026/diagnostic/processes/r2-E.json",
+      "category": "original-third-candidate-window",
+      "bytes": 3918,
+      "sha256": "dfccdc653d8974af430f3f6ae3c9d1a0467f9b4e3baf2c6d9828173e5596bc14"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\processes\\r3-B.json",
+      "archive_path": "main/out/r2e-20261026/diagnostic/processes/r3-B.json",
+      "category": "original-third-candidate-window",
+      "bytes": 3914,
+      "sha256": "ffeed7ba03393a17da4381d5a92e0fd8484c5ee9e2a2252f4028a124c04b34d0"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\processes\\r3-E.json",
+      "archive_path": "main/out/r2e-20261026/diagnostic/processes/r3-E.json",
+      "category": "original-third-candidate-window",
+      "bytes": 3918,
+      "sha256": "90bbc0f90882ce6709107e36f219420bc9fe8f0b0300f48e85b1a1b3a38c36bc"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\raw\\r1-B-warmup.log",
+      "archive_path": "main/out/r2e-20261026/diagnostic/raw/r1-B-warmup.log",
+      "category": "original-third-candidate-window",
+      "bytes": 286,
+      "sha256": "85976a0a526bb7c4a4b2d188696815f63206680ce7a4b6d88ec9e5fffd52e372"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\raw\\r1-B.log",
+      "archive_path": "main/out/r2e-20261026/diagnostic/raw/r1-B.log",
+      "category": "original-third-candidate-window",
+      "bytes": 36009,
+      "sha256": "aa300ad2e6664bd8b9b531f4284786d21a87b12e433a8b99892b955685d749d2"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\raw\\r1-E-warmup.log",
+      "archive_path": "main/out/r2e-20261026/diagnostic/raw/r1-E-warmup.log",
+      "category": "original-third-candidate-window",
+      "bytes": 285,
+      "sha256": "ac95e7ef8246bb15dc53dab98af1826059d5d6468c03201a3a9d8483f512c81a"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\raw\\r1-E.log",
+      "archive_path": "main/out/r2e-20261026/diagnostic/raw/r1-E.log",
+      "category": "original-third-candidate-window",
+      "bytes": 36020,
+      "sha256": "b226b7a9737a0b0af5e3e0f617cf5144cb88265bc8426055f9c697cb25a91418"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\raw\\r2-B-warmup.log",
+      "archive_path": "main/out/r2e-20261026/diagnostic/raw/r2-B-warmup.log",
+      "category": "original-third-candidate-window",
+      "bytes": 284,
+      "sha256": "099185c4797305b09413d9676ed6f7870e23e6b59dc62be53ddd7da2ae8a868f"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\raw\\r2-B.log",
+      "archive_path": "main/out/r2e-20261026/diagnostic/raw/r2-B.log",
+      "category": "original-third-candidate-window",
+      "bytes": 36020,
+      "sha256": "0c49c90341367cfa17751fbfe41de290b7042b39dd99d032d6a6d44c38868b3e"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\raw\\r2-E-warmup.log",
+      "archive_path": "main/out/r2e-20261026/diagnostic/raw/r2-E-warmup.log",
+      "category": "original-third-candidate-window",
+      "bytes": 285,
+      "sha256": "68db5a7a6dae2ed94dfaa38c080a306af02c46afe5ce8db4bae5becb083c6847"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\raw\\r2-E.log",
+      "archive_path": "main/out/r2e-20261026/diagnostic/raw/r2-E.log",
+      "category": "original-third-candidate-window",
+      "bytes": 35941,
+      "sha256": "2a10c9f8bcbbdf6e418dc146bf684473889e501b6dd13767c8e1ba8998e318ff"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\raw\\r3-B-warmup.log",
+      "archive_path": "main/out/r2e-20261026/diagnostic/raw/r3-B-warmup.log",
+      "category": "original-third-candidate-window",
+      "bytes": 286,
+      "sha256": "6b1e18d1686cdc82bf356fe94b279e3e34c3bd10794120af38824e4e6ab8c877"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\raw\\r3-B.log",
+      "archive_path": "main/out/r2e-20261026/diagnostic/raw/r3-B.log",
+      "category": "original-third-candidate-window",
+      "bytes": 35981,
+      "sha256": "876c31a71f7e7d9d3d4f354ff4118047edebfa754fc3225754058260a73be5a0"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\raw\\r3-E-warmup.log",
+      "archive_path": "main/out/r2e-20261026/diagnostic/raw/r3-E-warmup.log",
+      "category": "original-third-candidate-window",
+      "bytes": 286,
+      "sha256": "172c7e62e6111208804444f6a314ea91d2d0411849aaa092141575bdcdfa1e13"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\raw\\r3-E.log",
+      "archive_path": "main/out/r2e-20261026/diagnostic/raw/r3-E.log",
+      "category": "original-third-candidate-window",
+      "bytes": 36066,
+      "sha256": "51cab1ef99c3123bd6717973b7f980600a3b5b30120240d4498930f67710749b"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\registration.json",
+      "archive_path": "main/out/r2e-20261026/diagnostic/registration.json",
+      "category": "original-third-candidate-window",
+      "bytes": 836530,
+      "sha256": "56a55792f8f4c270cd40a7476cbdd3d1ee67b48c581bca425760d53168aa9e47"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\diagnostic\\results.json",
+      "archive_path": "main/out/r2e-20261026/diagnostic/results.json",
+      "category": "original-third-candidate-window",
+      "bytes": 31452,
+      "sha256": "72ac5e88db423099041b0eb16604bdf480332d015219b78e72d2aead6d5dfc3d"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\documentation-changes.json",
+      "archive_path": "main/out/r2e-20261026/documentation-changes.json",
+      "category": "third-candidate-preparation",
+      "bytes": 821,
+      "sha256": "dd8c01aa22f408fd1293947d97b39688c5548ff231ffcabb239025aac1c29700"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\final-verification.json",
+      "archive_path": "main/out/r2e-20261026/final-verification.json",
+      "category": "third-candidate-preparation",
+      "bytes": 3845,
+      "sha256": "60e93a6ca3b10a80c27745c6de14288187ba41452f4815144261dfb94306cbe0"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\final_verify.py",
+      "archive_path": "main/out/r2e-20261026/final_verify.py",
+      "category": "third-candidate-preparation",
+      "bytes": 2824,
+      "sha256": "aef3f897596b25dd3f969b7ecd054c0ca052f1c13ce7ee671dd7850b2c0693bc"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\finish_docs.py",
+      "archive_path": "main/out/r2e-20261026/finish_docs.py",
+      "category": "third-candidate-preparation",
+      "bytes": 16746,
+      "sha256": "37ef7f714993b6064ef50bee3335ce597018daad235fb63fecca57ef0ba8e5b7"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\independent-results-audit.json",
+      "archive_path": "main/out/r2e-20261026/independent-results-audit.json",
+      "category": "third-candidate-preparation",
+      "bytes": 3365,
+      "sha256": "6dd3e796357769557d3b7377acc47fffd7cf0800ea110772befbd07c41f9a384"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\layout.json",
+      "archive_path": "main/out/r2e-20261026/layout.json",
+      "category": "third-candidate-preparation",
+      "bytes": 1726,
+      "sha256": "97310acb49b0313ae2c794b515bdff1fc31c4983a91793038df1a8fddb508ecb"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\logs\\B-build.log",
+      "archive_path": "main/out/r2e-20261026/logs/B-build.log",
+      "category": "correctness-layout-object-code",
+      "bytes": 13316,
+      "sha256": "69d7ad4d05b2eccba2233222f80723066fdf454b18f8687b3adc0c316a68a285"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\logs\\B-configure.log",
+      "archive_path": "main/out/r2e-20261026/logs/B-configure.log",
+      "category": "correctness-layout-object-code",
+      "bytes": 985,
+      "sha256": "a822cb44bda6c0c4e05cb7fa37c4042c52e652ec849b1ba8cf3b9f18c373b8ce"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\logs\\B-materializer-assembly.log",
+      "archive_path": "main/out/r2e-20261026/logs/B-materializer-assembly.log",
+      "category": "correctness-layout-object-code",
+      "bytes": 967907,
+      "sha256": "ad101c49209ff3e2b4c9c8ef36a84edfaba1c34328440cfb8855ae2b321556cf"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\logs\\B-materializer-symbols.log",
+      "archive_path": "main/out/r2e-20261026/logs/B-materializer-symbols.log",
+      "category": "correctness-layout-object-code",
+      "bytes": 413047,
+      "sha256": "75ab04399613de1c3bfc82c613207a32972419f8191db8e74f1bdf9b7ad44f7c"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\logs\\B-runtime-assembly.log",
+      "archive_path": "main/out/r2e-20261026/logs/B-runtime-assembly.log",
+      "category": "correctness-layout-object-code",
+      "bytes": 931825,
+      "sha256": "8cd8d9037e447e57d4af6e8b58ab6013c931f728f04ca1d8e0217a7e6fbd192d"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\logs\\B-runtime-symbols.log",
+      "archive_path": "main/out/r2e-20261026/logs/B-runtime-symbols.log",
+      "category": "correctness-layout-object-code",
+      "bytes": 421819,
+      "sha256": "af5d8c6d9f49997b5a2feae957e349269e6c6d04cc7e3d830253c01b9da6b9bf"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\logs\\E-build.log",
+      "archive_path": "main/out/r2e-20261026/logs/E-build.log",
+      "category": "correctness-layout-object-code",
+      "bytes": 13316,
+      "sha256": "1e192a396a30aca600b6b411e41836ea221ab7dd4ad290294d0c351e2d541557"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\logs\\E-configure.log",
+      "archive_path": "main/out/r2e-20261026/logs/E-configure.log",
+      "category": "correctness-layout-object-code",
+      "bytes": 985,
+      "sha256": "0f04bf736b42faa7e964d76182e36c5b563a393815b75fd5cc05e5da95890c61"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\logs\\E-materializer-assembly.log",
+      "archive_path": "main/out/r2e-20261026/logs/E-materializer-assembly.log",
+      "category": "correctness-layout-object-code",
+      "bytes": 992414,
+      "sha256": "9cc2d78ca977461f390beb7525e54e9b0961a32208b421766395879f0b813936"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\logs\\E-materializer-symbols.log",
+      "archive_path": "main/out/r2e-20261026/logs/E-materializer-symbols.log",
+      "category": "correctness-layout-object-code",
+      "bytes": 415355,
+      "sha256": "b996724ea92aea3de8bde5379eb2a2f3d15c9c5c8f9be6e3e94e9002a9ce817b"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\logs\\E-runtime-assembly.log",
+      "archive_path": "main/out/r2e-20261026/logs/E-runtime-assembly.log",
+      "category": "correctness-layout-object-code",
+      "bytes": 1012448,
+      "sha256": "251766ac3b2e707dd25bec0bd64124f6581566d3d3ed8f2002af9f5f1900e77e"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\logs\\E-runtime-symbols.log",
+      "archive_path": "main/out/r2e-20261026/logs/E-runtime-symbols.log",
+      "category": "correctness-layout-object-code",
+      "bytes": 449394,
+      "sha256": "65c5049bb80254a9a4b4f1a079fb5bd7e253a1a066513e9ec061e03e92e9a2f7"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\logs\\debug-r2-regression.log",
+      "archive_path": "main/out/r2e-20261026/logs/debug-r2-regression.log",
+      "category": "correctness-layout-object-code",
+      "bytes": 2340,
+      "sha256": "8b13f863c48b64e6e53aab108a37792cdd45dfae6bcd06f4d6483390f26eddaa"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\logs\\final-diff-check.log",
+      "archive_path": "main/out/r2e-20261026/logs/final-diff-check.log",
+      "category": "correctness-layout-object-code",
+      "bytes": 4533,
+      "sha256": "b75125f49f67786acad3bd3179a7d6abe0a675255bab76c0cfa9a50f9f790962"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\logs\\final-docs-check.log",
+      "archive_path": "main/out/r2e-20261026/logs/final-docs-check.log",
+      "category": "correctness-layout-object-code",
+      "bytes": 92,
+      "sha256": "273c38bdb5bb9666ee9e055b9546d61cb73639fb53383a71cf7d41bedd492ef1"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\logs\\final-docs-contract-check.log",
+      "archive_path": "main/out/r2e-20261026/logs/final-docs-contract-check.log",
+      "category": "correctness-layout-object-code",
+      "bytes": 110,
+      "sha256": "b48d9cc847ab5bb762dc6f806caddea70c3e7917f2cbd225553bbd2aef8287cd"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\logs\\final-version-check.log",
+      "archive_path": "main/out/r2e-20261026/logs/final-version-check.log",
+      "category": "correctness-layout-object-code",
+      "bytes": 42,
+      "sha256": "9079cba489b22edea776a39fcf70bb9ceeb83c104844d75f1a8222cdff11e5a6"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\logs\\layout-debug-compile.log",
+      "archive_path": "main/out/r2e-20261026/logs/layout-debug-compile.log",
+      "category": "correctness-layout-object-code",
+      "bytes": 19,
+      "sha256": "764a325072756ba981cf50ba7d3aa9f29f263e677cb32c7eb10b165354c0d80c"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\logs\\layout-debug-run.log",
+      "archive_path": "main/out/r2e-20261026/logs/layout-debug-run.log",
+      "category": "correctness-layout-object-code",
+      "bytes": 354,
+      "sha256": "a44f0cbcc7354ec45a8991f9580de92033f8f7b0d51b4cedd1db4e2425e83fbb"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\logs\\layout-release-compile.log",
+      "archive_path": "main/out/r2e-20261026/logs/layout-release-compile.log",
+      "category": "correctness-layout-object-code",
+      "bytes": 19,
+      "sha256": "764a325072756ba981cf50ba7d3aa9f29f263e677cb32c7eb10b165354c0d80c"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\logs\\layout-release-run.log",
+      "archive_path": "main/out/r2e-20261026/logs/layout-release-run.log",
+      "category": "correctness-layout-object-code",
+      "bytes": 354,
+      "sha256": "e9415d6e8ea398cb83b69f53be8f6f8dab915609466ec3814bf3ae5ea141f5e5"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\logs\\observation-debug-r2-regression.log",
+      "archive_path": "main/out/r2e-20261026/logs/observation-debug-r2-regression.log",
+      "category": "correctness-layout-object-code",
+      "bytes": 2374,
+      "sha256": "bf583729206713eb996c966d2229053ebd8cea92de810cd6094a9530ac903074"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\logs\\observation-release-r2-regression.log",
+      "archive_path": "main/out/r2e-20261026/logs/observation-release-r2-regression.log",
+      "category": "correctness-layout-object-code",
+      "bytes": 2376,
+      "sha256": "89e2ad9b151f1f748dfc74a683364a3c9f3ccbaf056167905b3ef0ecc3557fd8"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\logs\\release-r2-regression.log",
+      "archive_path": "main/out/r2e-20261026/logs/release-r2-regression.log",
+      "category": "correctness-layout-object-code",
+      "bytes": 2342,
+      "sha256": "f32be5b2be2c33d633d8a35a527d64c5c1d361a85f2e44056fcfbafb701774b1"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\logs\\shared-release-r2-regression.log",
+      "archive_path": "main/out/r2e-20261026/logs/shared-release-r2-regression.log",
+      "category": "correctness-layout-object-code",
+      "bytes": 1389,
+      "sha256": "eb40a7ae1837cfc260520e2a42caa4f37ca66c4ec2da808ccb9929973798730d"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\object-code-verification.json",
+      "archive_path": "main/out/r2e-20261026/object-code-verification.json",
+      "category": "third-candidate-preparation",
+      "bytes": 585,
+      "sha256": "6a79cf6f372765146e216105eacf02cbf9863a0378d7b96ed9b1401e8947fa28"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\preparation.json",
+      "archive_path": "main/out/r2e-20261026/preparation.json",
+      "category": "third-candidate-preparation",
+      "bytes": 614567,
+      "sha256": "7d2f823284ffdf57b2519ab1319eda5c3e51317c90aff7af60c52cca2da39e7d"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\prepare.py",
+      "archive_path": "main/out/r2e-20261026/prepare.py",
+      "category": "third-candidate-preparation",
+      "bytes": 6911,
+      "sha256": "45fbfca67b6e34da6593d25dc343b243575648ca2c06cbc20bebd350ed7ccc14"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\regression.json",
+      "archive_path": "main/out/r2e-20261026/regression.json",
+      "category": "third-candidate-preparation",
+      "bytes": 36264,
+      "sha256": "5269e8f83c962c388a0160a6dfc5cb26e18f744411a86ee17cc520698de32da2"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\rollback\\cumulative-r2-code-only\\mechanism.patch",
+      "archive_path": "main/out/r2e-20261026/rollback/cumulative-r2-code-only/mechanism.patch",
+      "category": "exact-rollback",
+      "bytes": 43281,
+      "sha256": "6b0d52a0468f0784771ded314217c6964b37ec03af5977cbd408f53e9c843f71"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\rollback\\cumulative-r2-code-only\\verification.json",
+      "archive_path": "main/out/r2e-20261026/rollback/cumulative-r2-code-only/verification.json",
+      "category": "exact-rollback",
+      "bytes": 3077,
+      "sha256": "adeb43e38730b40b2180a97f340864ee7d57dcf7d3950928beee83177cc0e51b"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\rollback\\third-incremental\\mechanism.patch",
+      "archive_path": "main/out/r2e-20261026/rollback/third-incremental/mechanism.patch",
+      "category": "exact-rollback",
+      "bytes": 27713,
+      "sha256": "04f50a25a71e1007879a15318e68f4fbf2b31355808d7d732c5353d7070a68b3"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\rollback\\third-incremental\\verification.json",
+      "archive_path": "main/out/r2e-20261026/rollback/third-incremental/verification.json",
+      "category": "exact-rollback",
+      "bytes": 1997,
+      "sha256": "e0bd466a08e39bc10c0082ee0a76d3a6942089fb2d80c5340bd39807c0295c00"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\out\\r2e-20261026\\verify.py",
+      "archive_path": "main/out/r2e-20261026/verify.py",
+      "category": "third-candidate-preparation",
+      "bytes": 5310,
+      "sha256": "f16708512b1f620ac4b435c17c5d890819f171e30b5a8c8bd2a359de73296392"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\tests\\pd\\presentation_read_tests.hpp",
+      "archive_path": "main/tests/pd/presentation_read_tests.hpp",
+      "category": "current-R2-input",
+      "bytes": 17394,
+      "sha256": "2bcbe0903879f017f95a9de68a9fca9e09e8dee6a263c22a756e3ff3f4eb06ef"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\tests\\pd\\presentation_state_tests.cpp",
+      "archive_path": "main/tests/pd/presentation_state_tests.cpp",
+      "category": "current-R2-input",
+      "bytes": 18039,
+      "sha256": "7109416c0410c8a549e3de77f5108e64f03566e11641f7870190edc3d6f81d4e"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\tests\\pd\\r2_legacy_materializer.hpp",
+      "archive_path": "main/tests/pd/r2_legacy_materializer.hpp",
+      "category": "current-R2-input",
+      "bytes": 8570,
+      "sha256": "c00107b53f4db8ddf059f8a35a8cf0845fc343b08f92bc80452646e5dc91a4a0"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\tests\\pd\\r2_snapshot_tests.hpp",
+      "archive_path": "main/tests/pd/r2_snapshot_tests.hpp",
+      "category": "current-R2-input",
+      "bytes": 15726,
+      "sha256": "477272d845696a0225ea6fae87f862d766d4cc35e93a7866e67fdfe9ba587e8f"
+    },
+    {
+      "source_path": "D:\\Cuexis-worktree\\tests\\playback\\CMakeLists.txt",
+      "archive_path": "main/tests/playback/CMakeLists.txt",
+      "category": "current-R2-input",
+      "bytes": 5370,
+      "sha256": "6901f10eb196b3aa4fb36610dd158e52f4183138710130a8eb170f2ffd832f3b"
+    }
+  ],
+  "archive": {
+    "file": "2026-10-26-r2-exit-evidence.zip",
+    "bytes": 8122478,
+    "sha256": "2f0a38c9f3998ef20d5a27ac78cb096f4af54ece66155d3565776182a8aa63d4",
+    "payload_manifest_sha256": "d3c491ec7aca8fc97e2384a43c75334229e202f453b16ed27c2d6cddb642b405",
+    "entries": 502
+  }
+}

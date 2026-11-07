@@ -1,0 +1,21 @@
+w1 p1 B median=180384.4 us valid=True
+w1 p1 A median=178087.4 us valid=True
+w1 p2 A median=172355.9 us valid=True
+w1 p2 B median=186154.6 us valid=True
+w1 p3 B median=181585 us valid=True
+w1 p3 A median=172683.9 us valid=True
+waiting 600.0 s before window 2
+w2 p1 A median=179656.2 us valid=True
+w2 p1 B median=181569.3 us valid=True
+w2 p2 B median=182346.6 us valid=True
+w2 p2 A median=181345.1 us valid=True
+w2 p3 A median=174680.4 us valid=True
+w2 p3 B median=184934.4 us valid=True
+waiting 600.0 s before window 3
+w3 p1 B median=185961.7 us valid=True
+w3 p1 A median=172590.8 us valid=True
+w3 p2 A median=175017.8 us valid=True
+w3 p2 B median=180483.4 us valid=True
+w3 p3 B median=180596.8 us valid=True
+w3 p3 A median=173699.1 us valid=True
+{"n": 9, "ratio": 1.0405, "lower": 1.0191, "upper": 1.0624, "ratios": [1.0129, 1.0801, 1.0515, 1.0106, 1.0055, 1.0587, 1.0775, 1.0312, 1.0397], "decision": "pass"}

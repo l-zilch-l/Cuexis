@@ -53,11 +53,16 @@ struct DrawSummary final {
     std::vector<DrawCommand> opaque;
     std::vector<DrawCommand> transparent;
     std::size_t debugCommandCount{};
-    std::uint64_t digest{};
 };
 
+// Portable summary v1 identity. It covers this summary and every command in pass order, and equals
+// the Validation Sink digest of the same submission. It is a derived value rather than a stored
+// field because the render path never reads it: computing it per frame costs one serial hash chain
+// over every command, so only callers that record or compare summaries ask for it.
+[[nodiscard]] auto summaryDigest(const DrawSummary& summary) noexcept -> std::uint64_t;
+
 // Builds one submission from portable resources. manifestEmpty skips draw expansion but still
-// validates the debug pass. The digest covers the same fields as the OpenGL summary v1 digest.
+// validates the debug pass. The result carries no digest; call summaryDigest to derive it.
 [[nodiscard]] auto
 buildPresentationCommands(const playback::FrameSnapshot& snapshot,
                           std::span<const playback::PortableResourcePtr> resources,

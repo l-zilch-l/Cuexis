@@ -1,0 +1,975 @@
+{
+ "stamp": "serializer-direct-v1",
+ "count": 3,
+ "samples": [
+  {
+   "label": "player-40k-traced-00",
+   "return_code": 0,
+   "killed": false,
+   "primary_visible_t_s": 2.1289
+  },
+  {
+   "label": "player-40k-traced-01",
+   "return_code": 0,
+   "killed": false,
+   "primary_visible_t_s": 2.1173
+  },
+  {
+   "label": "player-40k-traced-02",
+   "return_code": 0,
+   "killed": false,
+   "primary_visible_t_s": 2.1198
+  }
+ ],
+ "environment": {
+  "player": "out\\build\\rpa-candidate-release\\bin\\cuexis_player.exe",
+  "player_sha256": "cb575e15cb0d93559a131c547fff15ae4b0a9b720cca7a8b18d38d193be3e94e",
+  "player_bytes": 5674496,
+  "project": "out\\verification-20261101\\r3-startup-observability-v1\\player-40k-project",
+  "project_chart_sha256": "247cb8ef1ae66eb829fff5f58cdb466cb819396afdbac418a5b9814db408a0ae",
+  "close_after_s": 8.0,
+  "timeout_s": 40.0,
+  "samples": 3,
+  "repeatability_limit_pct": 15.0,
+  "trace_gate": "CUEXIS_PREPARE_TRACE=1",
+  "watch_window_poll_ms": 2.0,
+  "probe_interval_ms": 25.0
+ },
+ "summary": {
+  "n": 3,
+  "content_prepared_us": {
+   "median_us": 1748435,
+   "per_process_us": [
+    1757375,
+    1748435,
+    1745335
+   ],
+   "spread_pct": 0.69
+  },
+  "outside_us": {
+   "median_us": 5611,
+   "per_process_us": [
+    5599,
+    5743,
+    5611
+   ],
+   "spread_pct": 2.57
+  },
+  "stages": {
+   "json_dom_parse": {
+    "median_us": 730610,
+    "min_us": 721041,
+    "max_us": 731744,
+    "spread_pct": 1.46,
+    "self_median_us": 730610,
+    "per_process_us": [
+     731744,
+     721041,
+     730610
+    ]
+   },
+   "chart_typed_read": {
+    "median_us": 334906,
+    "min_us": 333714,
+    "max_us": 335894,
+    "spread_pct": 0.65,
+    "self_median_us": 334906,
+    "per_process_us": [
+     335894,
+     333714,
+     334906
+    ]
+   },
+   "chart_canonical_normalize": {
+    "median_us": 172823,
+    "min_us": 171933,
+    "max_us": 177598,
+    "spread_pct": 3.28,
+    "self_median_us": 172823,
+    "per_process_us": [
+     171933,
+     177598,
+     172823
+    ]
+   },
+   "chart_canonical_dump": {
+    "median_us": 91237,
+    "min_us": 90737,
+    "max_us": 91735,
+    "spread_pct": 1.09,
+    "self_median_us": 91237,
+    "per_process_us": [
+     91237,
+     91735,
+     90737
+    ]
+   },
+   "chart_canonical_write": {
+    "median_us": 343941,
+    "min_us": 342597,
+    "max_us": 350284,
+    "spread_pct": 2.23,
+    "self_median_us": 80771,
+    "per_process_us": [
+     343941,
+     350284,
+     342597
+    ]
+   },
+   "load_chart": {
+    "median_us": 1408323,
+    "min_us": 1405233,
+    "max_us": 1411768,
+    "spread_pct": 0.46,
+    "self_median_us": 194,
+    "per_process_us": [
+     1411768,
+     1405233,
+     1408323
+    ]
+   },
+   "load_canonical": {
+    "median_us": 17128,
+    "min_us": 16958,
+    "max_us": 17266,
+    "spread_pct": 1.8,
+    "self_median_us": 17128,
+    "per_process_us": [
+     17266,
+     17128,
+     16958
+    ]
+   },
+   "load_document": {
+    "median_us": 1425483,
+    "min_us": 1422560,
+    "max_us": 1429257,
+    "spread_pct": 0.47,
+    "self_median_us": 202,
+    "per_process_us": [
+     1429257,
+     1422560,
+     1425483
+    ]
+   },
+   "resolve_parameters": {
+    "median_us": 20,
+    "min_us": 17,
+    "max_us": 26,
+    "spread_pct": 45.0,
+    "self_median_us": 20,
+    "per_process_us": [
+     26,
+     17,
+     20
+    ]
+   },
+   "preflight": {
+    "median_us": 13,
+    "min_us": 12,
+    "max_us": 14,
+    "spread_pct": 15.38,
+    "self_median_us": 13,
+    "per_process_us": [
+     14,
+     12,
+     13
+    ]
+   },
+   "animation_compile": {
+    "median_us": 12,
+    "min_us": 11,
+    "max_us": 12,
+    "spread_pct": 8.33,
+    "self_median_us": 12,
+    "per_process_us": [
+     11,
+     12,
+     12
+    ]
+   },
+   "chart_compile": {
+    "median_us": 88435,
+    "min_us": 86760,
+    "max_us": 89232,
+    "spread_pct": 2.8,
+    "self_median_us": 88435,
+    "per_process_us": [
+     89232,
+     88435,
+     86760
+    ]
+   },
+   "resources": {
+    "median_us": 44,
+    "min_us": 29,
+    "max_us": 45,
+    "spread_pct": 36.36,
+    "self_median_us": 44,
+    "per_process_us": [
+     45,
+     44,
+     29
+    ]
+   },
+   "audio": {
+    "median_us": 5,
+    "min_us": 5,
+    "max_us": 6,
+    "spread_pct": 20.0,
+    "self_median_us": 5,
+    "per_process_us": [
+     6,
+     5,
+     5
+    ]
+   },
+   "runtime": {
+    "median_us": 208222,
+    "min_us": 205041,
+    "max_us": 209706,
+    "spread_pct": 2.24,
+    "self_median_us": 208222,
+    "per_process_us": [
+     209706,
+     208222,
+     205041
+    ]
+   },
+   "presentation": {
+    "median_us": 1994,
+    "min_us": 1993,
+    "max_us": 2033,
+    "spread_pct": 2.01,
+    "self_median_us": 1994,
+    "per_process_us": [
+     2033,
+     1994,
+     1993
+    ]
+   },
+   "commit_runtime": {
+    "median_us": 7,
+    "min_us": 7,
+    "max_us": 8,
+    "spread_pct": 14.29,
+    "self_median_us": 7,
+    "per_process_us": [
+     8,
+     7,
+     7
+    ]
+   },
+   "commit_frame": {
+    "median_us": 5,
+    "min_us": 4,
+    "max_us": 6,
+    "spread_pct": 40.0,
+    "self_median_us": 5,
+    "per_process_us": [
+     6,
+     5,
+     4
+    ]
+   },
+   "snapshot_layout": {
+    "median_us": 19676,
+    "min_us": 18730,
+    "max_us": 19756,
+    "spread_pct": 5.21,
+    "self_median_us": 19676,
+    "per_process_us": [
+     19756,
+     19676,
+     18730
+    ]
+   },
+   "identity": {
+    "median_us": 15,
+    "min_us": 15,
+    "max_us": 21,
+    "spread_pct": 40.0,
+    "self_median_us": 15,
+    "per_process_us": [
+     21,
+     15,
+     15
+    ]
+   },
+   "assemble": {
+    "median_us": 1655,
+    "min_us": 1612,
+    "max_us": 1688,
+    "spread_pct": 4.59,
+    "self_median_us": 1655,
+    "per_process_us": [
+     1655,
+     1688,
+     1612
+    ]
+   }
+  }
+ },
+ "processes": [
+  {
+   "stages_us": {
+    "json_dom_parse": 731744,
+    "chart_typed_read": 335894,
+    "chart_canonical_normalize": 171933,
+    "chart_canonical_dump": 91237,
+    "chart_canonical_write": 343941,
+    "load_chart": 1411768,
+    "load_canonical": 17266,
+    "load_document": 1429257,
+    "resolve_parameters": 26,
+    "preflight": 14,
+    "animation_compile": 11,
+    "chart_compile": 89232,
+    "resources": 45,
+    "audio": 6,
+    "runtime": 209706,
+    "presentation": 2033,
+    "commit_runtime": 8,
+    "commit_frame": 6,
+    "snapshot_layout": 19756,
+    "identity": 21,
+    "assemble": 1655
+   },
+   "self_us": {
+    "json_dom_parse": 731744,
+    "chart_typed_read": 335894,
+    "chart_canonical_normalize": 171933,
+    "chart_canonical_dump": 91237,
+    "chart_canonical_write": 80771,
+    "load_chart": 189,
+    "load_canonical": 17266,
+    "load_document": 223,
+    "resolve_parameters": 26,
+    "preflight": 14,
+    "animation_compile": 11,
+    "chart_compile": 89232,
+    "resources": 45,
+    "audio": 6,
+    "runtime": 209706,
+    "presentation": 2033,
+    "commit_runtime": 8,
+    "commit_frame": 6,
+    "snapshot_layout": 19756,
+    "identity": 21,
+    "assemble": 1655
+   },
+   "traced_us": 1751776,
+   "content_prepared_us": 1757375,
+   "outside_us": 5599,
+   "frames": [
+    {
+     "name": "json_dom_parse",
+     "elapsed_us": 731744,
+     "depth": 2,
+     "parent": "load_chart",
+     "self_us": 731744
+    },
+    {
+     "name": "chart_typed_read",
+     "elapsed_us": 335894,
+     "depth": 2,
+     "parent": "load_chart",
+     "self_us": 335894
+    },
+    {
+     "name": "chart_canonical_normalize",
+     "elapsed_us": 171933,
+     "depth": 3,
+     "parent": "chart_canonical_write",
+     "self_us": 171933
+    },
+    {
+     "name": "chart_canonical_dump",
+     "elapsed_us": 91237,
+     "depth": 3,
+     "parent": "chart_canonical_write",
+     "self_us": 91237
+    },
+    {
+     "name": "chart_canonical_write",
+     "elapsed_us": 343941,
+     "depth": 2,
+     "parent": "load_chart",
+     "self_us": 80771
+    },
+    {
+     "name": "load_chart",
+     "elapsed_us": 1411768,
+     "depth": 1,
+     "parent": "load_document",
+     "self_us": 189
+    },
+    {
+     "name": "load_canonical",
+     "elapsed_us": 17266,
+     "depth": 1,
+     "parent": "load_document",
+     "self_us": 17266
+    },
+    {
+     "name": "load_document",
+     "elapsed_us": 1429257,
+     "depth": 0,
+     "parent": null,
+     "self_us": 223
+    },
+    {
+     "name": "resolve_parameters",
+     "elapsed_us": 26,
+     "depth": 0,
+     "parent": null,
+     "self_us": 26
+    },
+    {
+     "name": "preflight",
+     "elapsed_us": 14,
+     "depth": 0,
+     "parent": null,
+     "self_us": 14
+    },
+    {
+     "name": "animation_compile",
+     "elapsed_us": 11,
+     "depth": 0,
+     "parent": null,
+     "self_us": 11
+    },
+    {
+     "name": "chart_compile",
+     "elapsed_us": 89232,
+     "depth": 0,
+     "parent": null,
+     "self_us": 89232
+    },
+    {
+     "name": "resources",
+     "elapsed_us": 45,
+     "depth": 0,
+     "parent": null,
+     "self_us": 45
+    },
+    {
+     "name": "audio",
+     "elapsed_us": 6,
+     "depth": 0,
+     "parent": null,
+     "self_us": 6
+    },
+    {
+     "name": "runtime",
+     "elapsed_us": 209706,
+     "depth": 0,
+     "parent": null,
+     "self_us": 209706
+    },
+    {
+     "name": "presentation",
+     "elapsed_us": 2033,
+     "depth": 0,
+     "parent": null,
+     "self_us": 2033
+    },
+    {
+     "name": "commit_runtime",
+     "elapsed_us": 8,
+     "depth": 0,
+     "parent": null,
+     "self_us": 8
+    },
+    {
+     "name": "commit_frame",
+     "elapsed_us": 6,
+     "depth": 0,
+     "parent": null,
+     "self_us": 6
+    },
+    {
+     "name": "snapshot_layout",
+     "elapsed_us": 19756,
+     "depth": 0,
+     "parent": null,
+     "self_us": 19756
+    },
+    {
+     "name": "identity",
+     "elapsed_us": 21,
+     "depth": 0,
+     "parent": null,
+     "self_us": 21
+    },
+    {
+     "name": "assemble",
+     "elapsed_us": 1655,
+     "depth": 0,
+     "parent": null,
+     "self_us": 1655
+    }
+   ],
+   "label": "player-40k-traced-00",
+   "err_sha256": "a92fed0f5a85cf85b8c89f4a004aec0629127967c15a996bd15f2276e22c00ec",
+   "err_bytes": 2052,
+   "phase_lines": {
+    "content_prepared": {
+     "elapsed_us": 1757375,
+     "total_us": 1773290
+    },
+    "content_committed": {
+     "elapsed_us": 533,
+     "total_us": 2087746
+    },
+    "first_frame_presented": {
+     "elapsed_us": 61176,
+     "total_us": 2148938,
+     "opaque": 40000,
+     "transparent": 0,
+     "render_us": 0
+    }
+   }
+  },
+  {
+   "stages_us": {
+    "json_dom_parse": 721041,
+    "chart_typed_read": 333714,
+    "chart_canonical_normalize": 177598,
+    "chart_canonical_dump": 91735,
+    "chart_canonical_write": 350284,
+    "load_chart": 1405233,
+    "load_canonical": 17128,
+    "load_document": 1422560,
+    "resolve_parameters": 17,
+    "preflight": 12,
+    "animation_compile": 12,
+    "chart_compile": 88435,
+    "resources": 44,
+    "audio": 5,
+    "runtime": 208222,
+    "presentation": 1994,
+    "commit_runtime": 7,
+    "commit_frame": 5,
+    "snapshot_layout": 19676,
+    "identity": 15,
+    "assemble": 1688
+   },
+   "self_us": {
+    "json_dom_parse": 721041,
+    "chart_typed_read": 333714,
+    "chart_canonical_normalize": 177598,
+    "chart_canonical_dump": 91735,
+    "chart_canonical_write": 80951,
+    "load_chart": 194,
+    "load_canonical": 17128,
+    "load_document": 199,
+    "resolve_parameters": 17,
+    "preflight": 12,
+    "animation_compile": 12,
+    "chart_compile": 88435,
+    "resources": 44,
+    "audio": 5,
+    "runtime": 208222,
+    "presentation": 1994,
+    "commit_runtime": 7,
+    "commit_frame": 5,
+    "snapshot_layout": 19676,
+    "identity": 15,
+    "assemble": 1688
+   },
+   "traced_us": 1742692,
+   "content_prepared_us": 1748435,
+   "outside_us": 5743,
+   "frames": [
+    {
+     "name": "json_dom_parse",
+     "elapsed_us": 721041,
+     "depth": 2,
+     "parent": "load_chart",
+     "self_us": 721041
+    },
+    {
+     "name": "chart_typed_read",
+     "elapsed_us": 333714,
+     "depth": 2,
+     "parent": "load_chart",
+     "self_us": 333714
+    },
+    {
+     "name": "chart_canonical_normalize",
+     "elapsed_us": 177598,
+     "depth": 3,
+     "parent": "chart_canonical_write",
+     "self_us": 177598
+    },
+    {
+     "name": "chart_canonical_dump",
+     "elapsed_us": 91735,
+     "depth": 3,
+     "parent": "chart_canonical_write",
+     "self_us": 91735
+    },
+    {
+     "name": "chart_canonical_write",
+     "elapsed_us": 350284,
+     "depth": 2,
+     "parent": "load_chart",
+     "self_us": 80951
+    },
+    {
+     "name": "load_chart",
+     "elapsed_us": 1405233,
+     "depth": 1,
+     "parent": "load_document",
+     "self_us": 194
+    },
+    {
+     "name": "load_canonical",
+     "elapsed_us": 17128,
+     "depth": 1,
+     "parent": "load_document",
+     "self_us": 17128
+    },
+    {
+     "name": "load_document",
+     "elapsed_us": 1422560,
+     "depth": 0,
+     "parent": null,
+     "self_us": 199
+    },
+    {
+     "name": "resolve_parameters",
+     "elapsed_us": 17,
+     "depth": 0,
+     "parent": null,
+     "self_us": 17
+    },
+    {
+     "name": "preflight",
+     "elapsed_us": 12,
+     "depth": 0,
+     "parent": null,
+     "self_us": 12
+    },
+    {
+     "name": "animation_compile",
+     "elapsed_us": 12,
+     "depth": 0,
+     "parent": null,
+     "self_us": 12
+    },
+    {
+     "name": "chart_compile",
+     "elapsed_us": 88435,
+     "depth": 0,
+     "parent": null,
+     "self_us": 88435
+    },
+    {
+     "name": "resources",
+     "elapsed_us": 44,
+     "depth": 0,
+     "parent": null,
+     "self_us": 44
+    },
+    {
+     "name": "audio",
+     "elapsed_us": 5,
+     "depth": 0,
+     "parent": null,
+     "self_us": 5
+    },
+    {
+     "name": "runtime",
+     "elapsed_us": 208222,
+     "depth": 0,
+     "parent": null,
+     "self_us": 208222
+    },
+    {
+     "name": "presentation",
+     "elapsed_us": 1994,
+     "depth": 0,
+     "parent": null,
+     "self_us": 1994
+    },
+    {
+     "name": "commit_runtime",
+     "elapsed_us": 7,
+     "depth": 0,
+     "parent": null,
+     "self_us": 7
+    },
+    {
+     "name": "commit_frame",
+     "elapsed_us": 5,
+     "depth": 0,
+     "parent": null,
+     "self_us": 5
+    },
+    {
+     "name": "snapshot_layout",
+     "elapsed_us": 19676,
+     "depth": 0,
+     "parent": null,
+     "self_us": 19676
+    },
+    {
+     "name": "identity",
+     "elapsed_us": 15,
+     "depth": 0,
+     "parent": null,
+     "self_us": 15
+    },
+    {
+     "name": "assemble",
+     "elapsed_us": 1688,
+     "depth": 0,
+     "parent": null,
+     "self_us": 1688
+    }
+   ],
+   "label": "player-40k-traced-01",
+   "err_sha256": "29f8763a334af07f97a0e510834d1fcb7b34fe2c9ecbda0aa0a29a69b9a2d8eb",
+   "err_bytes": 2052,
+   "phase_lines": {
+    "content_prepared": {
+     "elapsed_us": 1748435,
+     "total_us": 1764322
+    },
+    "content_committed": {
+     "elapsed_us": 392,
+     "total_us": 2084114
+    },
+    "first_frame_presented": {
+     "elapsed_us": 60863,
+     "total_us": 2144992,
+     "opaque": 40000,
+     "transparent": 0,
+     "render_us": 0
+    }
+   }
+  },
+  {
+   "stages_us": {
+    "json_dom_parse": 730610,
+    "chart_typed_read": 334906,
+    "chart_canonical_normalize": 172823,
+    "chart_canonical_dump": 90737,
+    "chart_canonical_write": 342597,
+    "load_chart": 1408323,
+    "load_canonical": 16958,
+    "load_document": 1425483,
+    "resolve_parameters": 20,
+    "preflight": 13,
+    "animation_compile": 12,
+    "chart_compile": 86760,
+    "resources": 29,
+    "audio": 5,
+    "runtime": 205041,
+    "presentation": 1993,
+    "commit_runtime": 7,
+    "commit_frame": 4,
+    "snapshot_layout": 18730,
+    "identity": 15,
+    "assemble": 1612
+   },
+   "self_us": {
+    "json_dom_parse": 730610,
+    "chart_typed_read": 334906,
+    "chart_canonical_normalize": 172823,
+    "chart_canonical_dump": 90737,
+    "chart_canonical_write": 79037,
+    "load_chart": 210,
+    "load_canonical": 16958,
+    "load_document": 202,
+    "resolve_parameters": 20,
+    "preflight": 13,
+    "animation_compile": 12,
+    "chart_compile": 86760,
+    "resources": 29,
+    "audio": 5,
+    "runtime": 205041,
+    "presentation": 1993,
+    "commit_runtime": 7,
+    "commit_frame": 4,
+    "snapshot_layout": 18730,
+    "identity": 15,
+    "assemble": 1612
+   },
+   "traced_us": 1739724,
+   "content_prepared_us": 1745335,
+   "outside_us": 5611,
+   "frames": [
+    {
+     "name": "json_dom_parse",
+     "elapsed_us": 730610,
+     "depth": 2,
+     "parent": "load_chart",
+     "self_us": 730610
+    },
+    {
+     "name": "chart_typed_read",
+     "elapsed_us": 334906,
+     "depth": 2,
+     "parent": "load_chart",
+     "self_us": 334906
+    },
+    {
+     "name": "chart_canonical_normalize",
+     "elapsed_us": 172823,
+     "depth": 3,
+     "parent": "chart_canonical_write",
+     "self_us": 172823
+    },
+    {
+     "name": "chart_canonical_dump",
+     "elapsed_us": 90737,
+     "depth": 3,
+     "parent": "chart_canonical_write",
+     "self_us": 90737
+    },
+    {
+     "name": "chart_canonical_write",
+     "elapsed_us": 342597,
+     "depth": 2,
+     "parent": "load_chart",
+     "self_us": 79037
+    },
+    {
+     "name": "load_chart",
+     "elapsed_us": 1408323,
+     "depth": 1,
+     "parent": "load_document",
+     "self_us": 210
+    },
+    {
+     "name": "load_canonical",
+     "elapsed_us": 16958,
+     "depth": 1,
+     "parent": "load_document",
+     "self_us": 16958
+    },
+    {
+     "name": "load_document",
+     "elapsed_us": 1425483,
+     "depth": 0,
+     "parent": null,
+     "self_us": 202
+    },
+    {
+     "name": "resolve_parameters",
+     "elapsed_us": 20,
+     "depth": 0,
+     "parent": null,
+     "self_us": 20
+    },
+    {
+     "name": "preflight",
+     "elapsed_us": 13,
+     "depth": 0,
+     "parent": null,
+     "self_us": 13
+    },
+    {
+     "name": "animation_compile",
+     "elapsed_us": 12,
+     "depth": 0,
+     "parent": null,
+     "self_us": 12
+    },
+    {
+     "name": "chart_compile",
+     "elapsed_us": 86760,
+     "depth": 0,
+     "parent": null,
+     "self_us": 86760
+    },
+    {
+     "name": "resources",
+     "elapsed_us": 29,
+     "depth": 0,
+     "parent": null,
+     "self_us": 29
+    },
+    {
+     "name": "audio",
+     "elapsed_us": 5,
+     "depth": 0,
+     "parent": null,
+     "self_us": 5
+    },
+    {
+     "name": "runtime",
+     "elapsed_us": 205041,
+     "depth": 0,
+     "parent": null,
+     "self_us": 205041
+    },
+    {
+     "name": "presentation",
+     "elapsed_us": 1993,
+     "depth": 0,
+     "parent": null,
+     "self_us": 1993
+    },
+    {
+     "name": "commit_runtime",
+     "elapsed_us": 7,
+     "depth": 0,
+     "parent": null,
+     "self_us": 7
+    },
+    {
+     "name": "commit_frame",
+     "elapsed_us": 4,
+     "depth": 0,
+     "parent": null,
+     "self_us": 4
+    },
+    {
+     "name": "snapshot_layout",
+     "elapsed_us": 18730,
+     "depth": 0,
+     "parent": null,
+     "self_us": 18730
+    },
+    {
+     "name": "identity",
+     "elapsed_us": 15,
+     "depth": 0,
+     "parent": null,
+     "self_us": 15
+    },
+    {
+     "name": "assemble",
+     "elapsed_us": 1612,
+     "depth": 0,
+     "parent": null,
+     "self_us": 1612
+    }
+   ],
+   "label": "player-40k-traced-02",
+   "err_sha256": "fd9b5711786cebb3643c5fb172686001df92c79b47fe212007533cc3a6ec9919",
+   "err_bytes": 2052,
+   "phase_lines": {
+    "content_prepared": {
+     "elapsed_us": 1745335,
+     "total_us": 1761077
+    },
+    "content_committed": {
+     "elapsed_us": 418,
+     "total_us": 2089433
+    },
+    "first_frame_presented": {
+     "elapsed_us": 60651,
+     "total_us": 2150103,
+     "opaque": 40000,
+     "transparent": 0,
+     "render_us": 0
+    }
+   }
+  }
+ ]
+}

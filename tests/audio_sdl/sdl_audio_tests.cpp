@@ -5,6 +5,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include <array>
 #include <atomic>
 #include <cmath>
 #include <cstddef>
@@ -63,22 +64,38 @@ void checkEffectiveSettingsEqual(const cuexis::audio::EffectiveAudioSettings& ac
 }
 
 [[nodiscard]] auto audioImplementationSource() -> std::string {
-    const auto path =
-        std::filesystem::path{CUEXIS_SOURCE_DIR} / "engine" / "audio_sdl" / "src" / "sdl_audio.cpp";
-    std::ifstream input{path, std::ios::binary};
-    REQUIRE(input.good());
+    // The implementation is split across translation units; the characterization
+    // assertions look for functions wherever they live, not in one fixed file.
+    const std::filesystem::path root =
+        std::filesystem::path{CUEXIS_SOURCE_DIR} / "engine" / "audio_sdl" / "src";
+    const std::array<std::filesystem::path, 3> files{"sdl_audio.cpp", "sdl_audio_transport.cpp",
+                                                     "sdl_audio_impl.hpp"};
     std::ostringstream contents;
-    contents << input.rdbuf();
+    for (const auto& name : files) {
+        std::ifstream input{root / name, std::ios::binary};
+        REQUIRE(input.good());
+        contents << input.rdbuf() << '\n';
+    }
     return contents.str();
 }
 
 [[nodiscard]] auto functionRegion(const std::string& source, std::string_view functionName)
     -> std::optional<std::string_view> {
-    const auto functionStart = source.find(functionName);
-    if (functionStart == std::string::npos) {
-        return std::nullopt;
+    // The implementation is split across units, so the name may first appear at a call site
+    // or in a declaration. Walk the occurrences and keep the first one that starts a body.
+    std::size_t functionStart = source.find(functionName);
+    std::size_t openBrace = std::string::npos;
+    while (functionStart != std::string::npos) {
+        const auto terminator = source.find_first_of("{;", functionStart);
+        if (terminator == std::string::npos) {
+            return std::nullopt;
+        }
+        if (source[terminator] == '{') {
+            openBrace = terminator;
+            break;
+        }
+        functionStart = source.find(functionName, terminator);
     }
-    const auto openBrace = source.find('{', functionStart);
     if (openBrace == std::string::npos) {
         return std::nullopt;
     }
@@ -122,6 +139,54 @@ TEST_CASE("SDL dummy transport implements the owner-thread state machine", "[aud
     REQUIRE(transport->stop().has_value());
     REQUIRE(transport->unload().has_value());
     CHECK(transport->snapshot().source.state == cuexis::audio::PlaybackState::Empty);
+}
+
+TEST_CASE("SDL callback observations are cached coherent and never future dated",
+          "[audio][sdl][clock]") {
+    for (const auto rate : {44100U, 48000U}) {
+        const auto config = cuexis::audio::validateAudioConfig(
+            {.targetQueueMs = 40, .refillLowWaterMs = 10, .gain = 0.5F});
+        REQUIRE(config);
+        cuexis::audio::AudioClipStore store;
+        auto clip = cuexis::audio::AudioClip::create(rate, 1, std::vector<float>(rate, 0.1F));
+        REQUIRE(clip);
+        auto handle = store.registerClip(std::move(*clip));
+        REQUIRE(handle);
+        auto subsystem = cuexis::audio_sdl::SdlAudioSubsystem::create();
+        REQUIRE(subsystem);
+        auto transport = cuexis::audio_sdl::SdlAudioTransport::create(*subsystem, store, *config);
+        REQUIRE(transport);
+        REQUIRE(transport->load(*handle));
+        // Exercise a half-microsecond boundary rather than only whole callback-sized frames.
+        REQUIRE(transport->seekMs(3.0 * 1000.0 / rate));
+        REQUIRE(transport->play());
+        std::optional<std::int64_t> previous;
+        unsigned ready{};
+        for (unsigned index = 0; index != 80; ++index) {
+            REQUIRE(transport->service());
+            const auto sample = transport->presentedClockObservation();
+            const auto cached = transport->presentedClockObservation();
+            CHECK(cached.sampleMonotonicUs == sample.sampleMonotonicUs);
+            CHECK(sample.maximumPresentedFrame == rate);
+            if (sample.sampleMonotonicUs) {
+                const auto now = std::chrono::duration_cast<std::chrono::microseconds>(
+                                     std::chrono::steady_clock::now().time_since_epoch())
+                                     .count();
+                CHECK(*sample.sampleMonotonicUs <= now);
+                const auto position = static_cast<std::int64_t>(std::nearbyint(
+                    static_cast<double>(sample.clock.presentedFrame) * 1000000.0 / rate));
+                const auto horizon = position + now - *sample.sampleMonotonicUs;
+                if (previous)
+                    CHECK(horizon >= *previous);
+                previous = horizon;
+                CHECK(sample.errorBoundUs >= 0);
+                ++ready;
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds{1});
+        }
+        CHECK(ready > 3);
+        REQUIRE(transport->pause());
+    }
 }
 
 TEST_CASE("SDL dummy transport preserves idempotence and seek endpoints", "[audio][sdl][state]") {

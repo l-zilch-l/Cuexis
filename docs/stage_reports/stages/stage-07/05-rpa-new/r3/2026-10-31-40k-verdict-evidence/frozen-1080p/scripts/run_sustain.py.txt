@@ -1,0 +1,11 @@
+from run_refine import *
+rows=json.loads((base/'fine/results.json').read_text())
+if (base/'gap/results.json').exists():rows+=json.loads((base/'gap/results.json').read_text())
+candidates={}
+for mode in MODES:
+ counts=sorted({r['entities'] for r in rows if r['mode']==mode})
+ passing=[n for n in counts if all(r['budget_pass'] for r in rows if r['mode']==mode and r['entities']==n)]
+ if not passing:raise SystemExit('no all-repeat passing candidate')
+ candidates[mode]=passing[-1]
+write(base/'sustain-candidates.json',candidates)
+run_group('sustain',[item(candidates[mode],mode,rep,frames=600,seconds=20) for rep in range(3) for mode in MODES])

@@ -1,0 +1,238 @@
+"""Independently re-read the refresh logs and print the tables the verdict cites.
+
+Nothing here trusts `results.json`: every FPS, mean and p99 is recomputed from the
+`GPU_THROUGHPUT_SAMPLE` lines in the archived log, then compared against what the runner
+recorded. A mismatch is printed as a failure line and the exit code becomes 1, so a run that
+cannot be re-verified never reaches a document.
+
+Usage:
+    python -B summarize_verdict.py --run1080 <dir> [--run720 <dir>]
+"""
+
+import argparse
+import json
+import math
+import os
+import statistics
+
+
+BUDGET_US = 1000000.0 / 240.0
+
+
+def load(run_dir):
+    with open(os.path.join(run_dir, "results.json"), encoding="utf-8") as stream:
+        return json.load(stream)
+
+
+def parse_log(path):
+    identity = None
+    samples = []
+    with open(path, encoding="utf-8", errors="replace") as stream:
+        for line in stream:
+            if line.startswith("GPU_THROUGHPUT_ID "):
+                identity = json.loads(line.split(" ", 1)[1])
+            elif line.startswith("GPU_THROUGHPUT_SAMPLE "):
+                samples.append(json.loads(line.split(" ", 1)[1]))
+    return identity, samples
+
+
+def recompute(identity, samples):
+    ordered = sorted(sample["cycle_us"] for sample in samples)
+    count = len(ordered)
+    return {
+        "frames": count,
+        "wall_fps": count * 1000000.0 / identity["measured_wall_us"],
+        "mean_us": statistics.mean(ordered),
+        "p99_us": ordered[math.ceil(0.99 * count) - 1],
+        "max_us": ordered[-1],
+        "over_budget": sum(1 for value in ordered if value > BUDGET_US),
+        "measured_wall_us": identity["measured_wall_us"],
+    }
+
+
+def verify(run_dir, payload, problems):
+    rows = {}
+    for record in payload["runs"]:
+        log_path = os.path.join(run_dir, record["log"])
+        identity, samples = parse_log(log_path)
+        if identity is None:
+            problems.append("no identity line in {}".format(record["log"]))
+            continue
+        values = recompute(identity, samples)
+        if values["frames"] != record["statistics"]["cycle_us"]["n"]:
+            problems.append("frame count {} in {}".format(record["log"], values["frames"]))
+        for key, recorded in (
+            ("wall_fps", record["wall_fps"]),
+            ("mean_us", record["statistics"]["cycle_us"]["mean_us"]),
+            ("p99_us", record["statistics"]["cycle_us"]["p99_us"]),
+            ("max_us", record["statistics"]["cycle_us"]["max_us"]),
+        ):
+            if abs(values[key] - recorded) > 1e-6 * max(1.0, abs(recorded)):
+                problems.append("{} {} recomputed {} != {}".format(
+                    record["log"], key, values[key], recorded))
+        if values["over_budget"] != record["statistics"]["cycle_us"]["over_budget"]:
+            problems.append("{} over_budget differs".format(record["log"]))
+        rows[(record["mode"], record["index"])] = (record, values, identity)
+    return rows
+
+
+def table(rows, label):
+    print("| 组 | 进程 | FPS | 均值 | p99 | 最大 | p99 / 预算 | 超预算帧 |")
+    print("| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |")
+    for (mode, index), (record, values, _identity) in sorted(rows.items()):
+        print("| {} {} | {} | {:.2f} | {:.3f} ms | {:.3f} ms | {:.3f} ms | {:.2f}× | {} |".format(
+            label, mode, index, values["wall_fps"], values["mean_us"] / 1000.0,
+            values["p99_us"] / 1000.0, values["max_us"] / 1000.0,
+            values["p99_us"] / BUDGET_US, values["over_budget"]))
+    durations = [record for record, _values, _id in rows.values() if record.get("seconds")]
+    if durations:
+        print()
+        print("| 组 | 进程 | 测量秒数 | FPS | 每秒完成帧 | 最慢一秒 |")
+        print("| --- | ---: | ---: | ---: | --- | ---: |")
+        for (mode, index), (record, values, _identity) in sorted(rows.items()):
+            if not record.get("seconds"):
+                continue
+            windows = record["second_windows"]
+            print("| {} {} | {} | {} | {:.2f} | {} | {} |".format(
+                label, mode, index, record["seconds"], values["wall_fps"],
+                " / ".join(str(value) for value in windows), min(windows)))
+
+
+def groups(rows, entities):
+    print()
+    print("| 组 | 进程数 | FPS 中位 | FPS 相对极差 | p99 中位 | p99 相对极差 | 均值 µs / 实体 | p99 µs / 实体 | 预算 µs / 实体 |")
+    print("| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |")
+    summary = {}
+    for mode in sorted({key[0] for key in rows}):
+        records = [(values, record) for (name, _index), (record, values, _id)
+                   in sorted(rows.items()) if name == mode]
+        fps = [values["wall_fps"] for values, _ in records]
+        p99 = [values["p99_us"] for values, _ in records]
+        entry = {
+            "processes": len(records),
+            "fps": fps,
+            "p99_us": p99,
+            "fps_median": statistics.median(fps),
+            "p99_median": statistics.median(p99),
+            "fps_range": (max(fps) - min(fps)) / statistics.median(fps),
+            "p99_range": (max(p99) - min(p99)) / statistics.median(p99),
+            "per_entity_mean": statistics.median(
+                [values["mean_us"] for values, _ in records]) / entities,
+            "per_entity_p99": statistics.median(p99) / entities,
+            "p99_vs_budget": statistics.median(p99) / BUDGET_US,
+            "required_speedup": 240.0 / statistics.median(fps),
+        }
+        summary[mode] = entry
+        print("| {} | {} | {:.2f} | {:.2%} | {:.3f} ms | {:.2%} | {:.3f} | {:.3f} | {:.4f} |".format(
+            mode, entry["processes"], entry["fps_median"], entry["fps_range"],
+            entry["p99_median"] / 1000.0, entry["p99_range"], entry["per_entity_mean"],
+            entry["per_entity_p99"], BUDGET_US / entities))
+    return summary
+
+
+def sustained(run_dir, name, problems):
+    payload = load(run_dir)
+    rows = verify(run_dir, payload, problems)
+    registration = payload["registration"]
+    entities = registration["plan"]["entities"]
+    print()
+    print("## {}（1920×1080，{} 实体，每进程 {} 秒）".format(
+        name, entities, registration["plan"]["seconds_per_process"]))
+    print()
+    print("- commit `{}`".format(registration["head"]))
+    print("- 探针二进制 sha256 `{}`".format(registration["binary_sha256"]))
+    table(rows, name)
+    print()
+    print("| 组 | 进程数 | FPS 中位 | FPS 相对极差 | p99 中位 | p99 相对极差 | 最慢整秒 | 每秒 240 帧 | p99 ≤ 4.167 ms | 240 FPS 稳定 |")
+    print("| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |")
+    for mode in sorted({key[0] for key in rows}):
+        records = [(values, record) for (group, _index), (record, values, _id)
+                   in sorted(rows.items()) if group == mode]
+        fps = [values["wall_fps"] for values, _ in records]
+        p99 = [values["p99_us"] for values, _ in records]
+        slowest = min(min(record["second_windows"]) for _values, record in records)
+        windows_ok = all(min(record["second_windows"]) >= 240 for _values, record in records)
+        p99_ok = max(p99) <= BUDGET_US
+        fps_ok = min(fps) >= 240.0
+        print("| {} | {} | {:.2f} | {:.2%} | {:.3f} ms | {:.2%} | {} | {} | {} | {} |".format(
+            mode, len(records), statistics.median(fps), (max(fps) - min(fps)) / statistics.median(fps),
+            statistics.median(p99) / 1000.0, (max(p99) - min(p99)) / statistics.median(p99),
+            slowest, windows_ok, p99_ok, fps_ok and p99_ok and windows_ok))
+    if not all(record.get("seconds") for record, _values, _id in rows.values()):
+        problems.append("{} is not a duration run".format(name))
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--run1080", required=True)
+    parser.add_argument("--run720")
+    parser.add_argument("--sustain", nargs="*", default=[], metavar="NAME:DIR",
+                        help="duration runs, e.g. 1800-run-only:out/.../run-3-1800-sustain")
+    args = parser.parse_args()
+    problems = []
+
+    payload = load(args.run1080)
+    rows1080 = verify(args.run1080, payload, problems)
+    registration = payload["registration"]
+    entities = registration["plan"]["entities"]
+    print("## 2026-10-31 刷新点（HEAD 源码，1920×1080）")
+    print()
+    print("- commit `{}`".format(registration["head"]))
+    print("- 探针二进制 sha256 `{}`".format(registration["binary_sha256"]))
+    print("- 探针源码 sha256 `{}`".format(registration["probe_source_sha256"]))
+    print("- 每组进程 {}，每进程 {}，warmup {}，affinity {}，timer {}，readback {}".format(
+        registration["plan"]["processes_per_group"],
+        ("{} 帧".format(registration["plan"]["frames_per_process"])
+         if registration["plan"]["frames_per_process"]
+         else "{} 秒".format(registration["plan"]["seconds_per_process"])),
+        registration["plan"]["warmup"], registration["plan"]["affinity"],
+        registration["plan"]["timer"], registration["plan"]["pixel_readback"]))
+    print()
+    table(rows1080, "1080P")
+    summary1080 = groups(rows1080, entities)
+
+    if args.run720:
+        payload720 = load(args.run720)
+        rows720 = verify(args.run720, payload720, problems)
+        registration720 = payload720["registration"]
+        print()
+        print("## 2026-10-31 同源分辨率对照（1280×720）")
+        print()
+        print("- commit `{}`".format(registration720["head"]))
+        print("- 探针二进制 sha256 `{}`".format(registration720["binary_sha256"]))
+        print()
+        table(rows720, "720P")
+        summary720 = groups(rows720, entities)
+        print()
+        print("| 组 | 1080P FPS 中位 | 720P FPS 中位 | 差值 | 1080P p99 中位 | 720P p99 中位 | 差值 |")
+        print("| --- | ---: | ---: | ---: | ---: | ---: | ---: |")
+        for mode in ("render-only", "static"):
+            if mode not in summary720 or mode not in summary1080:
+                continue
+            high = summary1080[mode]
+            low = summary720[mode]
+            print("| {} | {:.2f} | {:.2f} | {:+.2%} | {:.3f} ms | {:.3f} ms | {:+.2%} |".format(
+                mode, high["fps_median"], low["fps_median"],
+                (high["fps_median"] - low["fps_median"]) / low["fps_median"],
+                high["p99_median"] / 1000.0, low["p99_median"] / 1000.0,
+                (high["p99_median"] - low["p99_median"]) / low["p99_median"]))
+        same_binary = registration["binary_sha256"] == registration720["binary_sha256"]
+        print()
+        print("- 两次运行使用同一二进制：`{}`".format(same_binary))
+        print("- 像素数比 1920×1080 / 1280×720 = 2.25")
+
+    for spec in args.sustain:
+        name, _, run_dir = spec.partition(":")
+        if not run_dir:
+            raise SystemExit("--sustain expects NAME:DIR, got {!r}".format(spec))
+        sustained(run_dir, name, problems)
+
+    print()
+    print("独立复核：{}".format("全部一致" if not problems else "发现问题"))
+    for problem in problems:
+        print("- 不一致：{}".format(problem))
+    return 1 if problems else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

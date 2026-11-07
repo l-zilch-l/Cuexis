@@ -1,0 +1,25 @@
+{
+  "format": "cuexis.chart",
+  "version": 4,
+  "chartId": "019f0000-0000-7abc-8def-000000000460",
+  "metadata": {},
+  "timing": {
+    "offsetMs": 0.0,
+    "defaultBpm": 120.0,
+    "tempoEvents": [],
+    "stops": []
+  },
+  "parameters": [],
+  "templates": [],
+  "behaviors": [],
+  "animationTemplateImports": [
+    {
+      "id": "motion.move-y",
+      "source": "templates/not-present.cxt"
+    }
+  ],
+  "animationClips": [],
+  "objects": [],
+  "requiredExtensions": [],
+  "extensions": {}
+}

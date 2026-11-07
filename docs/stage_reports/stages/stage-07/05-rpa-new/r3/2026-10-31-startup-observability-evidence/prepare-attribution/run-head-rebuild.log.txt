@@ -1,0 +1,61 @@
+chart bytes 13171906 repeats 3 prepare 1
+-- repeat 0
+nlohmann raw                  231.57 ms  peak_ws   142.5 MiB  private   143.1 MiB
+                           nodes 11
+nlohmann + observer          8742.54 ms  peak_ws   143.8 MiB  private   143.5 MiB
+                           nodes 11 duplicate ''
+nlohmann + trivial obs       8560.66 ms  peak_ws   143.8 MiB  private   143.7 MiB
+                           nodes 11
+json.parse                    759.15 ms  peak_ws   192.3 MiB  private   150.0 MiB
+json.parseBounded             742.39 ms  peak_ws   192.5 MiB  private   151.0 MiB
+writeCanonicalJson           1457.49 ms  peak_ws   310.4 MiB  private    44.8 MiB
+                           canonical bytes 29652435
+ChartLoader.load             1179.25 ms  peak_ws   310.4 MiB  private    42.7 MiB
+                           objects 40001
+scanTopLevelInteger             0.04 ms  peak_ws   310.4 MiB  private    16.3 MiB
+                           version 3
+fromFilesystemProject          22.07 ms  peak_ws   310.4 MiB  private    28.9 MiB
+prepareLoad                  2202.27 ms  peak_ws   343.8 MiB  private   254.7 MiB
+                           chart 019f0000-0000-7abc-8def-000000000301 format v3
+                           identity 936c32eede42abfbd136e217591c623b3ba3dc7093694fe60a356e070f656869
+startup path total           2224.42 ms  peak_ws   343.8 MiB  private   254.7 MiB
+-- repeat 1
+nlohmann raw                  229.67 ms  peak_ws   343.8 MiB  private   148.7 MiB
+                           nodes 11
+nlohmann + observer          8932.86 ms  peak_ws   343.8 MiB  private   149.1 MiB
+                           nodes 11 duplicate ''
+nlohmann + trivial obs       8682.27 ms  peak_ws   343.8 MiB  private   149.4 MiB
+                           nodes 11
+json.parse                    743.65 ms  peak_ws   343.8 MiB  private   151.2 MiB
+json.parseBounded             739.66 ms  peak_ws   343.8 MiB  private   150.2 MiB
+writeCanonicalJson           1452.92 ms  peak_ws   343.8 MiB  private    45.6 MiB
+                           canonical bytes 29652435
+ChartLoader.load             1178.89 ms  peak_ws   343.8 MiB  private    41.4 MiB
+                           objects 40001
+scanTopLevelInteger             0.02 ms  peak_ws   343.8 MiB  private    16.6 MiB
+                           version 3
+fromFilesystemProject          22.27 ms  peak_ws   343.8 MiB  private    29.2 MiB
+prepareLoad                  2171.37 ms  peak_ws   344.5 MiB  private   256.4 MiB
+                           chart 019f0000-0000-7abc-8def-000000000301 format v3
+                           identity 936c32eede42abfbd136e217591c623b3ba3dc7093694fe60a356e070f656869
+startup path total           2193.72 ms  peak_ws   344.5 MiB  private   256.4 MiB
+-- repeat 2
+nlohmann raw                  228.82 ms  peak_ws   344.5 MiB  private   151.0 MiB
+                           nodes 11
+nlohmann + observer          9102.91 ms  peak_ws   344.5 MiB  private   151.1 MiB
+                           nodes 11 duplicate ''
+nlohmann + trivial obs       8556.90 ms  peak_ws   344.5 MiB  private   151.6 MiB
+                           nodes 11
+json.parse                    706.71 ms  peak_ws   344.5 MiB  private   177.2 MiB
+json.parseBounded             714.47 ms  peak_ws   344.5 MiB  private   179.5 MiB
+writeCanonicalJson           1407.72 ms  peak_ws   344.5 MiB  private    45.8 MiB
+                           canonical bytes 29652435
+ChartLoader.load             1126.32 ms  peak_ws   344.5 MiB  private   144.5 MiB
+                           objects 40001
+scanTopLevelInteger             0.03 ms  peak_ws   344.5 MiB  private   123.1 MiB
+                           version 3
+fromFilesystemProject          21.99 ms  peak_ws   344.5 MiB  private   135.7 MiB
+prepareLoad                  2087.55 ms  peak_ws   359.5 MiB  private   315.3 MiB
+                           chart 019f0000-0000-7abc-8def-000000000301 format v3
+                           identity 936c32eede42abfbd136e217591c623b3ba3dc7093694fe60a356e070f656869
+startup path total           2109.61 ms  peak_ws   359.5 MiB  private   315.3 MiB

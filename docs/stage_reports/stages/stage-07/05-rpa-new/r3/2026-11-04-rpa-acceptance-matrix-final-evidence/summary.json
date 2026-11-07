@@ -1,0 +1,1348 @@
+{
+  "schema": "cuexis.rpa-acceptance-summary.v1",
+  "run_directory": "D:\\Cuexis-redesign\\out\\rpa-acceptance\\20261104-050730-f7d80b3f",
+  "manifest_path": null,
+  "manifest_bytes": 21617076,
+  "manifest_sha256": "0a43856cc0c48f5b4a483c8f6d3ae0bb03ca0f115964c39a407b2cd6b7815fd2",
+  "source": {
+    "head": "d70df15a463cb1fe4329bffb8f0c99bcac676c15",
+    "worktree_sha256": "a3914f7a647d4d3bc19d93d46abe57d35c4761c6afe48fdccce75a7e0513723e",
+    "implementation_sha256": "0785ea0442e8c4ba4bdffcf4bbbccded12da9d232a9ab2c213a4f6569703da9d"
+  },
+  "environment": {
+    "os": "Windows-11-10.0.26300-SP0",
+    "machine": "AMD64",
+    "logical_processors": 16,
+    "free_space_floor_bytes": 12884901888,
+    "free_bytes_at_start": 109741973504
+  },
+  "policy": {
+    "test_only": true,
+    "final_acceptance": false,
+    "production_thresholds_accepted": false
+  },
+  "rows": [
+    {
+      "name": "msvc-on-debug",
+      "status": "local_pass",
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\candidate-debug",
+      "test_counts": [
+        100,
+        0,
+        1418
+      ],
+      "skipped_tests": [
+        "1408/1418 Test   #79: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.03 sec"
+      ],
+      "source_unchanged": true,
+      "phases": [
+        {
+          "phase": "configure",
+          "exit_code": 0,
+          "elapsed_seconds": 20.045129199999792,
+          "log": "msvc-on-debug-configure.log",
+          "log_sha256": "4c491043e9542af5c62a96d5156d206a84b79bd1a9908c32ce482f0776507ac4"
+        },
+        {
+          "phase": "build",
+          "exit_code": 0,
+          "elapsed_seconds": 328.47133870000016,
+          "log": "msvc-on-debug-build.log",
+          "log_sha256": "086ad09b2db3906a501745698a1b3113a70515f79554e4e452a249ad33344c17"
+        },
+        {
+          "phase": "ctest",
+          "exit_code": 0,
+          "elapsed_seconds": 475.29032219999954,
+          "log": "msvc-on-debug-ctest.log",
+          "log_sha256": "812f40bc8204df5f4c30d01bf84d2d0a7a292d3b55625bd1d6abe630b204496d"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-1",
+          "exit_code": 0,
+          "elapsed_seconds": 3.5840863000003083,
+          "log": "msvc-on-debug-cuexis_execution_host_tests-budget-1.log",
+          "log_sha256": "314ba3471df8590db0fa2628521169bc58c89ffbe35965a90976b22e32072c1d"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-2",
+          "exit_code": 0,
+          "elapsed_seconds": 3.3557894000005035,
+          "log": "msvc-on-debug-cuexis_execution_host_tests-budget-2.log",
+          "log_sha256": "1b57c63b951dac90ee257557ef8a275a98b45acd466ada56f7a5ae64a7220050"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-3",
+          "exit_code": 0,
+          "elapsed_seconds": 3.353888700000425,
+          "log": "msvc-on-debug-cuexis_execution_host_tests-budget-3.log",
+          "log_sha256": "e7bc85ac183c14e34fad9ad377a886b353a2251b7857ea9f62e2ba9dde970160"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-4",
+          "exit_code": 0,
+          "elapsed_seconds": 3.358350000000428,
+          "log": "msvc-on-debug-cuexis_execution_host_tests-budget-4.log",
+          "log_sha256": "41b2e99eca8ec1a446ce172385a083ba35109d668768cf4d0ffe08726e739e88"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-5",
+          "exit_code": 0,
+          "elapsed_seconds": 3.3698590000003605,
+          "log": "msvc-on-debug-cuexis_execution_host_tests-budget-5.log",
+          "log_sha256": "382fe6eb4747e247173cb4f8a23a359ed62cad58c6c13d60d40219fed4a43116"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-1",
+          "exit_code": 0,
+          "elapsed_seconds": 6.699333199999273,
+          "log": "msvc-on-debug-cuexis_rpa_tests-budget-1.log",
+          "log_sha256": "b59b7d5dc2ff57ecbf96bdc84ee2eb98b036d209ecfe4a5e266625cc685ae7f6"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-2",
+          "exit_code": 0,
+          "elapsed_seconds": 6.681628600000295,
+          "log": "msvc-on-debug-cuexis_rpa_tests-budget-2.log",
+          "log_sha256": "df0a19ce6a2e12a0001fab12060ec847d18b4077dc86138c1873ce56a3c3cb09"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-3",
+          "exit_code": 0,
+          "elapsed_seconds": 6.6809001000001444,
+          "log": "msvc-on-debug-cuexis_rpa_tests-budget-3.log",
+          "log_sha256": "865aacb817c15a323a48f404ef2cf11b94da49dfece5f1e2d0d19e13eda417bb"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-4",
+          "exit_code": 0,
+          "elapsed_seconds": 6.71906510000008,
+          "log": "msvc-on-debug-cuexis_rpa_tests-budget-4.log",
+          "log_sha256": "ef129bba8777d3d3bb6ed74c26da0e5ee243362221d32e5f18b44a536beec33e"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-5",
+          "exit_code": 0,
+          "elapsed_seconds": 6.7089679999999134,
+          "log": "msvc-on-debug-cuexis_rpa_tests-budget-5.log",
+          "log_sha256": "b0978dd33a43ea0d994791e2114c1fc5866b99459c347281088d49cb8512ecbc"
+        }
+      ],
+      "measurements_count": 20,
+      "cache_sha256": "cdf0c2bb0260426a691799e8133604572a7df8afc649d217c959d3f7c598ef63",
+      "binary_sha256": {
+        "cuexis_animation_tests.exe": "f2b6f952bb9077eda929d2a03d1b0e523d99fd2b39a6d32f0581418bb8d3d350",
+        "cuexis_assets_tests.exe": "9f5170d033b5f3221658f3e2b6db10a77a9958f531eabee9b96ef2881628b94a",
+        "cuexis_asset_publish_tests.exe": "3310b1c25e3011dbb2d7ac01b849108a5926f2db30f086811e35e96216dd594d",
+        "cuexis_audio_sdl_tests.exe": "263366f5499c9f6b430c2dc6210c80b49a5c4f0f957e31b919bcceb61a2eedee",
+        "cuexis_audio_tests.exe": "18b0e973dda4016d669ea02be91b6b47f8f4ea5b6949aba7d1fbfa0ab04c91ed",
+        "cuexis_behavior_tests.exe": "15870aaa7be8cdcdd4d74381f309cfd53806489d440129ea4d1817e5c97c94ae",
+        "cuexis_cfu_f4_performance_probe.exe": "0bedb08e71a4b27f753b09cd551d317907025062636dac771a0e51645aab4394",
+        "cuexis_cfu_f_headless_consumer.exe": "76f074e07d666ae9b72e97b3ae6753459f7e1e5129f0373d4cbc7707d1ae40b5",
+        "cuexis_chart_candidate.exe": "cd1f499be032eb886464a3e1cac87adccee9bda8eaa1286e3282e2f7e8cd07ca",
+        "cuexis_chart_capacity_probe.exe": "08e173000bb60656bd551951758825b2c13caf55578f42aa3b1de90c2636a46d",
+        "cuexis_chart_migrator.exe": "005f0d1fa22d345bc129cdd25453594101ae4c3031b2342b829cb976571f1568",
+        "cuexis_chart_tests.exe": "1c9c1bb041c390ab92dba72a6f16cc562196dd52f3c6174e89927ca6eee3899e",
+        "cuexis_chart_validator.exe": "08033987e7e3e0e519796b58cfb8a6a562ba4406dfdbab1c13194fc5c2ea3639",
+        "cuexis_content_tests.exe": "98a14d56cf748095523e2f633b617d775975154c6098f9ea39d3051caf7be6e4",
+        "cuexis_core_tests.exe": "13d319644bf67df3168504aa7ff3140840946cf2488f8573fa7e5ab5638e27a9",
+        "cuexis_cxc_pack.exe": "1df5a357e71f79fda61b59917edd432e2b9c46d7e77b8cb4af92e250df948064",
+        "cuexis_cxc_tests.exe": "78d5c572c81eb8ba86a89abf7b608a1684c4d23fb21f4b36383e8d26250c4c5b",
+        "cuexis_cxc_unpack.exe": "da6e785a8bc8598ad4d855854dd5015085b22b66c43fbe7ea678aed521ebf67c",
+        "cuexis_cxc_validate.exe": "00a11c8646863287709107d7b1a6ed7908fa70cb719e5982c66774011de3d941",
+        "cuexis_debug_tests.exe": "a41529dc1a982d8615637e2d45b71e8c2bd696b80b0b468d21ed2fc8256826e0",
+        "cuexis_execution_device_probe.exe": "a2334f2911bf909772a1ce3aa0f4f35f8ab30bd7e4c73c94dab7b819c32ccac5",
+        "cuexis_execution_host_tests.exe": "b396cdce2bd793cfca87931e06cad4d140af7c129fd8774a38a396699d1d8e1e",
+        "cuexis_filesystem_tests.exe": "77f60994e3c6cbe4479d6680b032b8ae22882e291731e06909df70d16865d51b",
+        "cuexis_gameplay_assemble.exe": "24e97c0295e6e4a9c08ab7bc375d1402d8a3d25397f474b8b1a2c5df5d604040",
+        "cuexis_gameplay_author_tests.exe": "38ca7a62e905b10f9d6c63d720786fd8507f94216529afcb54383867e94ad5f3",
+        "cuexis_gameplay_packed_tests.exe": "4de6c452b646ef4fa08be042317dbf09561a407949b86c3b5869513e9586f1e9",
+        "cuexis_gameplay_tests.exe": "b6e8ed06802c8c17420325e2898a482547f43211f6b174faec1880bb43a23786",
+        "cuexis_host_protocol_tests.exe": "8678c1c5558155c61cec944445685f38db97c8fbc2e4a3432280514bb3087643",
+        "cuexis_json_support_tests.exe": "aefc9763e41498f78df49f407ffac68120a468e8b63a99d78e97678b38974910",
+        "cuexis_judgement_tests.exe": "44293679c35cc6e0817b913c76612d6c9001d1ffe12c41309c1e6b24c055caeb",
+        "cuexis_pd_allocation_probe.exe": "7ddb06ba37675dbac9b1c47734aaa14bcb2fc712c854a89795c33e5da3158357",
+        "cuexis_pd_baseline_probe.exe": "2a8db08d3f639fba8a41b78e088506d9787b33be89c7ef3324aa6ff5dc531b05",
+        "cuexis_pd_host_probe.exe": "ceffe827d384f6d456a8698d89ba2725d630b6d2482308769907298e456bc98a",
+        "cuexis_platform_sdl_tests.exe": "cff892cf75bfbf4c8721e6170e11ee89f63195e7c51d073aa3b35bd897d8217d",
+        "cuexis_playback_allocation_tests.exe": "8426d0e5d4d16d83d604f36ed73313643ca641a34c5504d26417b38c9d46cf00",
+        "cuexis_playback_tests.exe": "26e15e80582a2fbc01ffccbd6f9f10fa4772a11096b46c35c1595c7d539c14e0",
+        "cuexis_player.exe": "6323d3d2306d34a955d39419396307b53bb651c13c33a97877d1b1d4efcf25ed",
+        "cuexis_player_control_tests.exe": "28cd37a8fee766788e083c380b97ed371bfd0fc73ad46c401b369f31488162b1",
+        "cuexis_player_diagnostics_tests.exe": "7af3ac3dee0a2e1f6071337581c86140a15bdd7de825ffb1a1a90ebd0c7ad694",
+        "cuexis_player_support_tests.exe": "8e5b0d0c95de15c3a966c13161e1a5ef99dfb42fb6e85f626d061cfecf751329",
+        "cuexis_presentation_renderer_tests.exe": "cf127b798ffb1a0f89c8ca19f669dd57dbf1669f5ec5159db3cd8b867ccc5341",
+        "cuexis_presentation_validation_tests.exe": "96293ab5b2346c3ad23e315e6ecc62520160f285e92a3ee52bac6599a90cc02b",
+        "cuexis_project_tests.exe": "9f42ea16e3074720451b37302c719f00c5361f0634e5ec851c583e229a638ecd",
+        "cuexis_render_opengl_tests.exe": "4da07a3e7ab687149bcc8692be1f1ce944caab85e072221129b311ec63f45558",
+        "cuexis_render_tests.exe": "2ac3306b651f21b52489e1db870d8353126f859f3269b32872ad3f7cc48600f5",
+        "cuexis_rpa_tests.exe": "2655cd2e4f33919dda7814c98952f6f55ffec2115be7e4cd287dc55a264c82b0",
+        "cuexis_runtime_tests.exe": "e8efdfa20bbccccf3b944a2aabb76139f7faea4b47365631dcca55e99a16d1ca",
+        "cuexis_s4g_performance_probe.exe": "91df833028fb59ddf778c579bc08b42cf547de18abf0e29a11ed5aeee13e9932",
+        "cuexis_s5h_performance_probe.exe": "cf3ad34d6ff33778e6a695ad0957e9e0f1436af01f5943f68afdd3a3e6f653e5",
+        "cuexis_world_tests.exe": "eaaf7c6a635b6a60c80fed2c0050af4ea09fd5a5d0ce2dbf8dea304dbe9db396"
+      }
+    },
+    {
+      "name": "msvc-on-release",
+      "status": "local_pass",
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release",
+      "test_counts": [
+        100,
+        0,
+        1418
+      ],
+      "skipped_tests": [
+        "1406/1418 Test   #77: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.02 sec"
+      ],
+      "source_unchanged": true,
+      "phases": [
+        {
+          "phase": "configure",
+          "exit_code": 0,
+          "elapsed_seconds": 18.093950500000574,
+          "log": "msvc-on-release-configure.log",
+          "log_sha256": "f043f50cec2e2c8a9ec9031173dc81d34b281c3c648c9a950f4e31b41bbbf9fb"
+        },
+        {
+          "phase": "build",
+          "exit_code": 0,
+          "elapsed_seconds": 435.17363509999996,
+          "log": "msvc-on-release-build.log",
+          "log_sha256": "038be0be68f89efed279af2107297b72d40d2cbe20c7ca32b6a12bbdb111e54f"
+        },
+        {
+          "phase": "ctest",
+          "exit_code": 0,
+          "elapsed_seconds": 676.5809395999995,
+          "log": "msvc-on-release-ctest.log",
+          "log_sha256": "16dc592ed15d86c5117ae80ce41f642d87da443fa90c12c1fe2338f6581974cd"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-1",
+          "exit_code": 0,
+          "elapsed_seconds": 2.889200200000232,
+          "log": "msvc-on-release-cuexis_execution_host_tests-budget-1.log",
+          "log_sha256": "b8deb2594c3d50edcf4aacec27a6d3c10490aeaab14b7ebe5502bce63f630808"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-2",
+          "exit_code": 0,
+          "elapsed_seconds": 2.712137399999847,
+          "log": "msvc-on-release-cuexis_execution_host_tests-budget-2.log",
+          "log_sha256": "bdbebb6373a945fb50c0ee580f93a770aaa31d72e4ce46f6e0beef0ab574c654"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-3",
+          "exit_code": 0,
+          "elapsed_seconds": 2.662141600000723,
+          "log": "msvc-on-release-cuexis_execution_host_tests-budget-3.log",
+          "log_sha256": "551184b92ce2c473ec4390738afa463515c1a94f7eb3dc2a357dea6e1a04262b"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-4",
+          "exit_code": 0,
+          "elapsed_seconds": 2.6460762999995495,
+          "log": "msvc-on-release-cuexis_execution_host_tests-budget-4.log",
+          "log_sha256": "064073f7c1e2f3305b4b2b49b342f3a8b60e9eb5b4c468374b73cbc6198c48b7"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-5",
+          "exit_code": 0,
+          "elapsed_seconds": 2.615273000000343,
+          "log": "msvc-on-release-cuexis_execution_host_tests-budget-5.log",
+          "log_sha256": "26a73dfbc642dddb931299f23521f25fa45c75fa39153e8313f86a8558f66700"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-1",
+          "exit_code": 0,
+          "elapsed_seconds": 3.1206709999996747,
+          "log": "msvc-on-release-cuexis_rpa_tests-budget-1.log",
+          "log_sha256": "e53d5cb5690127e67141655ce09ec034c83eb97cdfc06b81737297e5422fb3d6"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-2",
+          "exit_code": 0,
+          "elapsed_seconds": 3.1158469000001787,
+          "log": "msvc-on-release-cuexis_rpa_tests-budget-2.log",
+          "log_sha256": "37bf3659b18ea2043b0f25efd91468c3b4a9c29130d9fef6bff5cd9fa954c037"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-3",
+          "exit_code": 0,
+          "elapsed_seconds": 3.195497599999726,
+          "log": "msvc-on-release-cuexis_rpa_tests-budget-3.log",
+          "log_sha256": "6f3e48f41467ed7d3016848415e28b1bd02ed4828b6c507169114a36f2e83dc8"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-4",
+          "exit_code": 0,
+          "elapsed_seconds": 3.114741200000026,
+          "log": "msvc-on-release-cuexis_rpa_tests-budget-4.log",
+          "log_sha256": "55c2572a8dee2e3369ce6b489a14473b98706c4cdff315053fde82dc58adb26c"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-5",
+          "exit_code": 0,
+          "elapsed_seconds": 3.1195211000003837,
+          "log": "msvc-on-release-cuexis_rpa_tests-budget-5.log",
+          "log_sha256": "0993153e39e51df358b890348c410ea74eecb83feb4bee84576bdcc39281fab3"
+        }
+      ],
+      "measurements_count": 20,
+      "cache_sha256": "0dbe461e8f566e776ba908c57b24566083aff2945299d213ef81db7efda09b1b",
+      "binary_sha256": {
+        "cuexis_animation_tests.exe": "b39f4786bbd263f0dce914e172213280b10db8e490a9f6b340745c2835de0029",
+        "cuexis_assets_tests.exe": "ce5c63381c4cf4d5e521e05f0ed1e78f1f4467f7e6eb5304156d93bcfd214bd9",
+        "cuexis_asset_publish_tests.exe": "a340a4fa0560545984530d48c113dfe82eb3892f9bb05950eb4f111b3518b786",
+        "cuexis_audio_sdl_tests.exe": "a455c307521b6c1ff2b1e97ba5c7c78de2a5e6fce824ae532f661313e4f26e5c",
+        "cuexis_audio_tests.exe": "025d3660a8440d4b27625127282965af1da6677efd12bd9e44e1ecf691829d96",
+        "cuexis_behavior_tests.exe": "9de987c5ccd6ac10c2fe589ddf804965b0bb135ed72e2b3245c0f55b24a8276a",
+        "cuexis_cfu_f4_performance_probe.exe": "043e06d141c689cbaa550c6afbb1fec6b5925531095e334c0ccf206bad26e2b9",
+        "cuexis_cfu_f_headless_consumer.exe": "43e8ff31fe1f5966e3bf8dd46c5a8f3b9eef650b32dd0c11252be1589341d76c",
+        "cuexis_chart_candidate.exe": "0d77fe424ff06cd706846c02725479b1810b7d0e1c5691ea6fdb97ba6ed39674",
+        "cuexis_chart_capacity_probe.exe": "645f7cbc80d2c97150900be6e11ebc52aeece5189a659a841df4e466389f0777",
+        "cuexis_chart_migrator.exe": "22224240c4f4b15c960ee1b1b1148d92fbbe957911f369b0f2aec50f230f19df",
+        "cuexis_chart_tests.exe": "ca0f9eea957d1e62af06e7d427ce537f0e497895e7cd6f7441d7a4bdef3698c5",
+        "cuexis_chart_validator.exe": "92d0b51d30d14583008ab664327635621d702e2c3e6f21a37b17751cfc7d66ba",
+        "cuexis_content_tests.exe": "45198f46543a367549bc389dcf398cc6050344072d968c2f09cb6fc7f72e2413",
+        "cuexis_core_tests.exe": "1b41f4e8266f7aa965b5b41c9b78ce0873c16821e04fd3cd3f70aa456847d90b",
+        "cuexis_cxc_pack.exe": "63e12da1fd97da500f13d242370053ab85f5d2ba4bafb282e8fcb4c01ac24cef",
+        "cuexis_cxc_tests.exe": "344d17f8a14305dad8fa90fd62d7da5c69b243300a65be8e805b9e84f39c8e2b",
+        "cuexis_cxc_unpack.exe": "2294d8bfa748e73773a80f887890cf5bba83e035cc5ffa28ae310ad43723fb55",
+        "cuexis_cxc_validate.exe": "f654d2fcdca29a9b2b40e6208185c9aef7926950ff757c27e160069a3c8e85e9",
+        "cuexis_debug_tests.exe": "37f27e63e4afc156b8615ae847a26492f56f48b22be271c99f9474f6b3e0b464",
+        "cuexis_execution_device_probe.exe": "590a53108368d0c21e9f90894da3c2ed54714676e843777d411187e2eae5c93f",
+        "cuexis_execution_host_tests.exe": "09d82de6490d4e83524c423212b2d5d5f73fe35bc32d5696dea8c39cd52f3595",
+        "cuexis_filesystem_tests.exe": "708654fd6b1b85e7e542625d83c719428a3f3057df134f7d11c831387a7302c8",
+        "cuexis_gameplay_assemble.exe": "a3f3111c54d0f535e0eba0a5dfc28ee29d5461428d91387cebc9335efe839c9d",
+        "cuexis_gameplay_author_tests.exe": "294cdab24f239a1bbce1c24e0df26ee25d2bf75b3e8c525a5244ba0f567e157c",
+        "cuexis_gameplay_packed_tests.exe": "5b0f5622e4eb578676ca75279dcf9ed3dbab154e492ea4b6e48af9a6ac5defac",
+        "cuexis_gameplay_tests.exe": "dcee48e740003328545676963f26975fb6001f85efbbf9b969676d4a18d4d906",
+        "cuexis_host_protocol_tests.exe": "2f17226ad58935298832196d55453da43d1a6312c79230629514d14e302896fd",
+        "cuexis_json_support_tests.exe": "37a224513bf3a25c1d9edf63f5a1bf09a934f5a791e8a93efb600bb79d548dec",
+        "cuexis_judgement_tests.exe": "c6a46b37b9e0d951a54cacdb3918dca2c37c1c720e59cb2ca17ca6beb804ad3a",
+        "cuexis_pd_allocation_probe.exe": "53072d91fb14e3c884c4a1eee4b87c631855e1a6001aadfe27511b461a0c9b13",
+        "cuexis_pd_baseline_probe.exe": "68fe26bc29866e680ff12212b7b64fd339403346e6f54c1b0e3b17a16bf21e09",
+        "cuexis_pd_host_probe.exe": "f166af4166c3038df6e20e519f968d84d62fd2ed99abb4c75cc3de0ddea0ca62",
+        "cuexis_platform_sdl_tests.exe": "3618d3d55cab03c164d8de104df04d00a2465d9ecfcd624a581084d151250674",
+        "cuexis_playback_allocation_tests.exe": "c85418d3a2ff036136561269cbccbd4ea4f52a31aab5a2d6df6d45f9b4a931cd",
+        "cuexis_playback_tests.exe": "74bd8e46941bbbd7b504b10f8c80005d39f148284c51709b711bf08f7588a56c",
+        "cuexis_player.exe": "28c65097394dff7a6ed5c4f60e480516c60d5b59cf11b5d8bcfb7cf6e8e60092",
+        "cuexis_player_control_tests.exe": "a804d7ffd13648fe7541f7ce8efb67f4ba3b8b44f94bf3757b4cd29c3494101d",
+        "cuexis_player_diagnostics_tests.exe": "18a430b7b6ca0e2bbc4fde8e7bf671b861663f3664c3b927d1d4392cf94b5f2d",
+        "cuexis_player_support_tests.exe": "346b02219e78afc4786731c4fa60754ea0a03fdb963639e761c10681a2f5a872",
+        "cuexis_presentation_renderer_tests.exe": "b75d1707b8ec9466917bff951d1a4a711e839f07e84c3d9fb15053c2fc101f92",
+        "cuexis_presentation_validation_tests.exe": "fde210e752bb925f277ff7f1e14b644499929e5e38baeb48a4a21593b2e44565",
+        "cuexis_project_tests.exe": "bc383ff5a17f67511da9353710e7d25add73e66b647618421c962718ad58715c",
+        "cuexis_render_opengl_tests.exe": "6511c4d7b2c17854309d2be12b35d62608947535336e83b508eb5047a9813338",
+        "cuexis_render_tests.exe": "56de784e301377e3bbba137c4fec4aa97e32ab2a4fe73ca6cd07321b55d6a8f5",
+        "cuexis_rpa_tests.exe": "42edf9ce6b6e0a4e86d177860280e3c7c8024d829ee164957f08440d2b1f4239",
+        "cuexis_runtime_tests.exe": "ffcba5696b5acfe775766b69acbe467d93e22f183e6bd7b1d3a403718e554a21",
+        "cuexis_s4g_performance_probe.exe": "c14e26570e66daa0a468f6c10b8536de019eadb0c90b54c59345e48d44c980df",
+        "cuexis_s5h_performance_probe.exe": "072a26680ad3b208f3c0dc5e67af82d040b7b0b46b3b4527fe1402d98d9c735d",
+        "cuexis_world_tests.exe": "c002cde3595f33d9ebcc3a462403341f5d7fd7ed884363709988b18deaab2852"
+      }
+    },
+    {
+      "name": "msvc-on-shared-debug",
+      "status": "local_pass",
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-shared-debug",
+      "test_counts": [
+        100,
+        0,
+        1401
+      ],
+      "skipped_tests": [
+        "1384/1401 Test   #81: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.05 sec",
+        "1385/1401 Test #1135: Playback legacy prepare reuses the initial Chart parse ..............................................***Skipped   0.05 sec",
+        "1386/1401 Test #1146: Playback v4 prepare reuses the initial Chart parse ..................................................***Skipped   0.06 sec",
+        "1387/1401 Test #1298: PD3a extraction failure after install preserves committed state and override lifetime ...............***Skipped   0.06 sec",
+        "1388/1401 Test #1301: PD3b materializer allocation failure retains the public extraction error boundary ...................***Skipped   0.04 sec",
+        "1389/1401 Test #1304: PB-08 owning-copy queries contain allocation failures at the Playback boundary ......................***Skipped   0.14 sec"
+      ],
+      "source_unchanged": true,
+      "phases": [
+        {
+          "phase": "configure",
+          "exit_code": 0,
+          "elapsed_seconds": 18.595678699999553,
+          "log": "msvc-on-shared-debug-configure.log",
+          "log_sha256": "ff60b3f16cc9b089c0e67e901dc9b29a0e2a65ab4a531c95aca0b790c1bcabd9"
+        },
+        {
+          "phase": "build",
+          "exit_code": 0,
+          "elapsed_seconds": 310.3235626000005,
+          "log": "msvc-on-shared-debug-build.log",
+          "log_sha256": "e145ca699c7fdfe238785bc1740909a09e6956dd8f400b056ddd9a613004d467"
+        },
+        {
+          "phase": "ctest",
+          "exit_code": 0,
+          "elapsed_seconds": 491.5994032000017,
+          "log": "msvc-on-shared-debug-ctest.log",
+          "log_sha256": "8043193e55e56e881547271239ce1d8dc640917f91cd996daaebd52d10784a8e"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-1",
+          "exit_code": 0,
+          "elapsed_seconds": 3.6009500000000116,
+          "log": "msvc-on-shared-debug-cuexis_execution_host_tests-budget-1.log",
+          "log_sha256": "fba09afcfc802054648811ff3907cd33bde22bfcd232ff4c7cea2d4d42e5b39e"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-2",
+          "exit_code": 0,
+          "elapsed_seconds": 3.449922100000549,
+          "log": "msvc-on-shared-debug-cuexis_execution_host_tests-budget-2.log",
+          "log_sha256": "1cf630d3f918fb6a576acdc3c828eb25b3b53637438a1ec4c4477ecf6a167be1"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-3",
+          "exit_code": 0,
+          "elapsed_seconds": 3.4533865000012156,
+          "log": "msvc-on-shared-debug-cuexis_execution_host_tests-budget-3.log",
+          "log_sha256": "50a8d175091ca0123d2ae564bec213ddaebfaf5c35a134cbed96846a4cbf3ede"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-4",
+          "exit_code": 0,
+          "elapsed_seconds": 3.369674899999154,
+          "log": "msvc-on-shared-debug-cuexis_execution_host_tests-budget-4.log",
+          "log_sha256": "24b75475e53334ae93bf3f9a5b133bf43e543d6add24d28ae83619b1d37dd581"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-5",
+          "exit_code": 0,
+          "elapsed_seconds": 3.478868899999725,
+          "log": "msvc-on-shared-debug-cuexis_execution_host_tests-budget-5.log",
+          "log_sha256": "4ab9b11ebd9f9f0a53a925830105a27dfd4c1b8edb3480c018151cf31426f27b"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-1",
+          "exit_code": 0,
+          "elapsed_seconds": 6.67431249999936,
+          "log": "msvc-on-shared-debug-cuexis_rpa_tests-budget-1.log",
+          "log_sha256": "0856628882c9abb7f515768dd75206772f0f2070d2b8a6d6b261431df36eb62f"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-2",
+          "exit_code": 0,
+          "elapsed_seconds": 6.817627200000061,
+          "log": "msvc-on-shared-debug-cuexis_rpa_tests-budget-2.log",
+          "log_sha256": "033c6efde0dff7a6b90910f04cbb4ef3f0a573687d36129b25c9c397d7c7f489"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-3",
+          "exit_code": 0,
+          "elapsed_seconds": 6.714804100000038,
+          "log": "msvc-on-shared-debug-cuexis_rpa_tests-budget-3.log",
+          "log_sha256": "ebb31c3a6f01b24f84dcce0cd85fc914ee7f3b624ba7bd9f67756fa216c044a2"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-4",
+          "exit_code": 0,
+          "elapsed_seconds": 6.707229100000404,
+          "log": "msvc-on-shared-debug-cuexis_rpa_tests-budget-4.log",
+          "log_sha256": "39cfa10f0589c8e44f46268e6edea89517b23b63d09b4ca60a6cea9aeccb628b"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-5",
+          "exit_code": 0,
+          "elapsed_seconds": 6.723960699999225,
+          "log": "msvc-on-shared-debug-cuexis_rpa_tests-budget-5.log",
+          "log_sha256": "0bc9f886bf2593d6c15cfce82231456a1d820b914bf3379dbe8fd9627b76122f"
+        }
+      ],
+      "measurements_count": 20,
+      "cache_sha256": "a8020bfc1576fb2513b40d6082ea6b541cbadb07f82408fa379e37a67a32f1df",
+      "binary_sha256": {
+        "cuexis_animation_tests.exe": "f9ca939229a525f95f73b85c5a4b6da0f7f925eefdd010e8dcb3ed3c9a8c1456",
+        "cuexis_assets_tests.exe": "4a47825c54f9d67d02b128cc9d7dbd6ca1e83d936da556272bb8c8ff3632a8be",
+        "cuexis_asset_publish_tests.exe": "facbe8792245b1ad5b3c3d6298d79be914f3a0eb6f6391c21087d51a38c139af",
+        "cuexis_audio_sdl_tests.exe": "42ec2095fc4d0b08dca2f5f43e976c5f1e6adf261a9884fe223f95a4123b4dc2",
+        "cuexis_audio_tests.exe": "4fa2d8b10cc31173be731156b7835f8c0c38bfe75b85a7463dfb6368a74a253d",
+        "cuexis_behavior_tests.exe": "f568edc781d832cd70a340d9ab7973dfa5567f0878238c79ad908d5a7d600ccd",
+        "cuexis_cfu_f4_performance_probe.exe": "86a84885feba4b180f4603b8418f0c4bd220262d35c14f5db3c230b864b6484c",
+        "cuexis_cfu_f_headless_consumer.exe": "c93616a1d2a636ee0df6395f6f1a80b58369c6622db0c307b9e981ffe059a732",
+        "cuexis_chart_candidate.exe": "858f5f2a1534a41f5b31ab2b4241051c712271a75af4a17ea4a50886a099352f",
+        "cuexis_chart_capacity_probe.exe": "942a85dea50c44d02176f8f3518e5d9d813a25c89481bb478603fe4944a5b4b9",
+        "cuexis_chart_migrator.exe": "0a29cd8e2d3258b5c7faad599e50c001af1971cecd31a709bff8472f913ae977",
+        "cuexis_chart_tests.exe": "c61ce2018c1d87f34c3f4a5e352b3a7a9e18addc5d5539ea99256a13623ad61e",
+        "cuexis_chart_validator.exe": "9be15bad96cd783dd71614ebffd3a3b52dd92cae1f62b002a0526d15240decf6",
+        "cuexis_content_tests.exe": "91610b14f78206b3841a6a2ba9cc1d6c736ace90859329640bbce7456a19fbad",
+        "cuexis_core_tests.exe": "56bbdbb3dfdb7d56894210e964450b92c15864246771e359f049a7da3f2a2e9f",
+        "cuexis_cxc_pack.exe": "5d17a792036e3518fbb7366ab54b0ed234b83156d89d2b33c73f3fb85b761c01",
+        "cuexis_cxc_tests.exe": "b4d15d33b48ad4d6488fb46aaeee1a537b66383c56ecf4f0628b433f2a931a37",
+        "cuexis_cxc_unpack.exe": "78b03ca582b52aec8c98f37be94d9bcff3d1e4557f407bca11481f2a67dab702",
+        "cuexis_cxc_validate.exe": "313019d2b7df9e65dccff557d459a8a6261e4820704d77ee7cac6c5f00ce8818",
+        "cuexis_debug_tests.exe": "006186783019355d8d83549df934c3c96b3d6043796207bde7b96c0b337aa7e1",
+        "cuexis_execution_device_probe.exe": "8573ac2669d53aeb9b92cfda242c4114894e5d315826127943c2ac3ae4d0d698",
+        "cuexis_execution_host_tests.exe": "04133937ca9f927d735a49e06969a131f66abb3453917d27ab6cc229eca594b9",
+        "cuexis_filesystem_tests.exe": "f905df36370f8a6e45eaf9681a39e961b1fc1dd7c25a3715e945a005fdcfe973",
+        "cuexis_gameplay_assemble.exe": "a294eda51a3432b3cd4bd3877618afe4873562d423664d01eefb0dcbeac3b25e",
+        "cuexis_gameplay_author_tests.exe": "8e86831a02bafd0b93199efc22ab86fb53c625e24d27dd3dd9281f9b94713556",
+        "cuexis_gameplay_packed_tests.exe": "1c8420fff96bf2d244d18d804cde53bc62b55b9a4bb84110c0dc79f2b7d2822e",
+        "cuexis_gameplay_tests.exe": "fb7b85814c99a503cd7e6373a86f20b78c71d05f3c6f93adfebb7ee9a747b2ca",
+        "cuexis_host_protocol_tests.exe": "dafa5b3806b07982cd689966e2d51955b1b5bac181f230eaccb7fa6db793a32a",
+        "cuexis_json_support_tests.exe": "04723ff7169d780d65ffa2eecb65e391db6b93de75d7645d5acc4ca2c403fd39",
+        "cuexis_judgement_tests.exe": "3cebf855dba8f151834667adada3e432c0303dfa8b9fa0654831813b034fde19",
+        "cuexis_platform_sdl_tests.exe": "a0bca92977ad40f3898fd4426ac16075366d063d92191f656872219995e88941",
+        "cuexis_playback_allocation_tests.exe": "ea36017f0af451f85fc6f3f9f9d5c7ec54ae374114691ab8f7c30e7b0a64c510",
+        "cuexis_playback_tests.exe": "ce2fb9bd0f2d990a5576b2f9cb2321addf37ad3db8ca2937e9ab85021e445f26",
+        "cuexis_player.exe": "3c3b432633afd485f421bb7e3eff34d1bfd3f0d87b82ae23d67e75a74ebc7939",
+        "cuexis_player_control_tests.exe": "6c3cc16ce5505a171ff02e234bc701caf1897ebd70e26da9aa3666e2bab32c4b",
+        "cuexis_player_diagnostics_tests.exe": "9177d954edb37875a35bd8695463025194c3a87036170099f64e820902442f6b",
+        "cuexis_player_support_tests.exe": "257b5147a34bba038d438571f0b6e7c5a974186f0899528a2d527d4fee23778b",
+        "cuexis_presentation_renderer_tests.exe": "31b37d01c875b7def374e4d028551311f5abfb67c4a93554341c2410b3add570",
+        "cuexis_presentation_validation_tests.exe": "cc1846b65049c3d3154b99105ac6ef1b58e6ff0d34220d113947ad4d259265f8",
+        "cuexis_project_tests.exe": "ed3faeb02f88d20af18307d28321d679ba046f7930f2a302f9bac9b29e4149ba",
+        "cuexis_render_opengl_tests.exe": "5c0ec3f76a62046d5adf2c2a50166110ebb81391cd3705a7a381d64fc94fa0e8",
+        "cuexis_render_tests.exe": "fee6f3b08f97016f7f2c1cd4c456b23c05f9baffcefcad85e84d716541e97478",
+        "cuexis_rpa_tests.exe": "88cee295f5e2f1026b422f7260f0982af6b3dff831eff3adca6f78be93e6c9e5",
+        "cuexis_runtime_tests.exe": "460085aff6d81d7a71eff9d049a46c54eb2a39785f4b9441ccf3168734943d15",
+        "cuexis_s4g_performance_probe.exe": "7a9ff7698bb0f26535d3d1ca1cb634879df478b996e61a0eabead3b215ea2464",
+        "cuexis_s5h_performance_probe.exe": "ba44a9a6de7159992bfae05ebc022cd7ad4414659cf8d50df1d2a3e4947e28a9",
+        "cuexis_world_tests.exe": "4884fe3f89d98f16417b25bccd86cdc127cc659c52abd557cbf9e89feb1ba887"
+      }
+    },
+    {
+      "name": "msvc-off-debug",
+      "status": "local_pass",
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\debug",
+      "test_counts": [
+        100,
+        0,
+        1211
+      ],
+      "skipped_tests": [
+        "1203/1211 Test   #73: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.47 sec"
+      ],
+      "source_unchanged": true,
+      "phases": [
+        {
+          "phase": "configure",
+          "exit_code": 0,
+          "elapsed_seconds": 18.17631749999964,
+          "log": "msvc-off-debug-configure.log",
+          "log_sha256": "d235bb9d9ce456700a14b4edb5f5746c745fa695c11949b451fcec11d33a9f5c"
+        },
+        {
+          "phase": "build",
+          "exit_code": 0,
+          "elapsed_seconds": 234.83139760000086,
+          "log": "msvc-off-debug-build.log",
+          "log_sha256": "d42a6045756d19fa0053cf8e36f8ef9882116bc4049f3eaf88822d99cf06615c"
+        },
+        {
+          "phase": "ctest",
+          "exit_code": 0,
+          "elapsed_seconds": 400.51355980000153,
+          "log": "msvc-off-debug-ctest.log",
+          "log_sha256": "f3a653c77d51379ecd504b7beb25adb478a08e70b4a463259450fcfbb4c8a497"
+        }
+      ],
+      "measurements_count": 0,
+      "cache_sha256": "8506ad0b6acb9e6bbe696a55a703ad634ba35ae6530724db64552e0fe2532a03",
+      "binary_sha256": {
+        "cuexis_animation_tests.exe": "47ac9a4b952191d540d2338c43268659d6748e2d59deca72ab94186e7bebd46c",
+        "cuexis_assets_tests.exe": "16b845b326356bb05be3a4e7df08251bd1db2db04fd8098b278a466558c5f84b",
+        "cuexis_asset_publish_tests.exe": "84539ac99aa2c7f4fc955522fd68a666a3a69fddbcd9527c034e2f0f78d6d4ee",
+        "cuexis_audio_sdl_tests.exe": "fd2db8b5a18702ed2c923dc8f7f69d56fd5c76f053a7b39ac9c42523b636a1b2",
+        "cuexis_audio_tests.exe": "b6c61fb4c5dccad39003d8cb8f53704d6a65c3cc716acd16dfeba3a1aeeab575",
+        "cuexis_behavior_tests.exe": "dcf4068629e1c45b5e1805ea0432965c7c952d9e7515f30f0aa517e7fbdeb6d1",
+        "cuexis_cfu_f4_performance_probe.exe": "e1026d3e2a0df807363105ee0439f048c38f84f96291c85a973241e0c029b1d5",
+        "cuexis_cfu_f_headless_consumer.exe": "f27d97f6dbcabf464e1c1f4979d7ea84e2a3529dd313f051d189029afef7420f",
+        "cuexis_chart_candidate.exe": "ee5ea946b9bb6a789bdaf47a0c2667689664e7dee36af7fbf70bc3c518239fd0",
+        "cuexis_chart_capacity_probe.exe": "66817dfd26a17ed754781013773e1c079e18a85dffd58d8b96712b826cfd9fcf",
+        "cuexis_chart_migrator.exe": "16966892a682a62cd47cc4af4bf3e07e3141970e1aa97a42b63d115209d2b6dc",
+        "cuexis_chart_tests.exe": "c9f821503bbf61ac11756f0f8f696a9e63010f492736de79538bdb3cb6608512",
+        "cuexis_chart_validator.exe": "5d3ff413463de75ca2e563756fba1342638bf39f6f684bdc268859c41dedb592",
+        "cuexis_content_tests.exe": "ac683e146a36075600f7c53508a99e489ea50f632fab6de452f040a0b36abcb9",
+        "cuexis_core_tests.exe": "56daa79561408bf615b771cf22970fe1dea3c5f34f036811f92da9d72d8d78f1",
+        "cuexis_cxc_pack.exe": "3e0507641b18d15c0827f7eb29b0cdc28c7b320bdc6a1dfb2492bfdee9571588",
+        "cuexis_cxc_tests.exe": "c0d5184cd2e54a6ab67eb55278fc65232574bcc047b6255097649731bbefd28f",
+        "cuexis_cxc_unpack.exe": "449264ba1731436dbe8108700de2efe148928565e3c69e5b13fa23ff24029d8e",
+        "cuexis_cxc_validate.exe": "57b27fc932f1cb5805245d7a46c52b6e4a93041ed8fc0e718994c8267e057d22",
+        "cuexis_debug_tests.exe": "0361ae4d38e8abf416dc6cc2de41dea3472e8fc594deba1de16980ea59df5fcd",
+        "cuexis_filesystem_tests.exe": "c401e013ef439c96fe1509622939ae2a1f97eefcd26bcac7ad05f228854c7926",
+        "cuexis_gameplay_author_tests.exe": "df6c14fcc2502e71935b5bf0e5cf959ab9fd133b8a61a6058c967c685206bc65",
+        "cuexis_gameplay_packed_tests.exe": "7b61ba43f5f84e32d515a2e1506efd50fa1a158614fcece1f504d3a78bb34516",
+        "cuexis_gameplay_tests.exe": "f9f61a5cf10f8f132ce1aef3197587a1c6f518177e5f21dac4bd94e2d53d2813",
+        "cuexis_json_support_tests.exe": "7850db94e50d0adb579021715656935133c9bbf7a381a000ab75ffe991c41591",
+        "cuexis_judgement_tests.exe": "99a873590c3cb8c0c1a7359298511e96e88ded593f232e5558a76fa4c68f0b35",
+        "cuexis_platform_sdl_tests.exe": "545c12c088c022697f312ca79b6157fb64a719a433a7459955a9a1cac8582c1d",
+        "cuexis_playback_allocation_tests.exe": "503961508d4ab89b08d3116c8b78bc3409520026e377fe63f81e4580bfbbc139",
+        "cuexis_playback_tests.exe": "877172b57a8de4a4487aace573ff02e2fb11706acd864262c9f8076ad3c656b3",
+        "cuexis_player.exe": "ce9d4bd0f37cf1bec63a09d759e4893a52f7969b9f0908311ca249eff07f21e2",
+        "cuexis_player_control_tests.exe": "e060383ef2d27c820ad97457e433f1980a2b40bcd88ac7952d2c7805fe4b0532",
+        "cuexis_player_diagnostics_tests.exe": "a596d70583f1c3a56de807fb3d18991265187a2ca90061a87186f102c4556d5a",
+        "cuexis_player_support_tests.exe": "8bd958964dc296d632dc6fa37d6db8af42e9b147bfaad8b7a5b4156b33b886e6",
+        "cuexis_presentation_renderer_tests.exe": "b81ff8a2d7193cd18217bdf6fe5a97004ad0deac62f48465a064fc05bee95715",
+        "cuexis_presentation_validation_tests.exe": "de0c391b23ca9abd4db0f3d9fc37ff267fc8e7adc84d09795ee173fd09794085",
+        "cuexis_project_tests.exe": "b43a454f728dd33b003549170be2cfc9909c031500441bab731ab987132474bc",
+        "cuexis_render_opengl_tests.exe": "41456b55d1c29795a9b1c58085a3a79f9031edf4a27245411b997f783742c13f",
+        "cuexis_render_tests.exe": "a7698b84d6223338ff671635155247f4a31b62d551da50b16191d24f17b92711",
+        "cuexis_rpa_tests.exe": "db98241503dba60a7ee708a2b8c44f52ed45a7829ea78ffaa9e4ef986b1a9fe9",
+        "cuexis_runtime_tests.exe": "8d60adbcb8dbe6eab3da7ba1b656c6915ba6919c83b10323b9d8888dcbdc958b",
+        "cuexis_s4g_performance_probe.exe": "5bc1ad3dfd165dc6b6f77b28e88f36bcf62d3a6e54d9580618992126e7328568",
+        "cuexis_s5h_performance_probe.exe": "7a0cb9cda0dbca2ed9410279f24ca0cff1e7c8104169b7443b5e0f18ede8bfdb",
+        "cuexis_world_tests.exe": "bbd2b005631c2ca95f047409f9eee805e3bdf0b54bd1686f5226b71d4cb9503e"
+      }
+    },
+    {
+      "name": "msvc-off-headless-debug",
+      "status": "local_pass",
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\b3-default-off",
+      "test_counts": [
+        100,
+        0,
+        1066
+      ],
+      "skipped_tests": [
+        "54/1066 Test   #64: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.03 sec"
+      ],
+      "source_unchanged": true,
+      "phases": [
+        {
+          "phase": "configure",
+          "exit_code": 0,
+          "elapsed_seconds": 18.253417900001295,
+          "log": "msvc-off-headless-debug-configure.log",
+          "log_sha256": "1010adcc65e701362db0b33732bfdb890496e51ef6f71b4a00c1972cfa07dc8d"
+        },
+        {
+          "phase": "build",
+          "exit_code": 0,
+          "elapsed_seconds": 202.61891690000084,
+          "log": "msvc-off-headless-debug-build.log",
+          "log_sha256": "667f03876958ad1f79624a655c0edcae4be60c22bff106fa248da8b1c0b557a9"
+        },
+        {
+          "phase": "ctest",
+          "exit_code": 0,
+          "elapsed_seconds": 395.16379570000026,
+          "log": "msvc-off-headless-debug-ctest.log",
+          "log_sha256": "eb60b0908196e13f9fe632a9eed18fffe9fd75f88420c16c9c1ebf9fdf95b77b"
+        }
+      ],
+      "measurements_count": 0,
+      "cache_sha256": "d04874cdd12ef3f86fe912bffa76ae21e156227c5b394003fc338ecb88027a71",
+      "binary_sha256": {
+        "cuexis_animation_tests.exe": "798124974e1837243c58c226266ee7a391e883468f30c52163646eb533f6826f",
+        "cuexis_assets_tests.exe": "ecd17d1c426af2e2758a00ce675b50b17b0d56f4fff63a8ce43bd030a2156924",
+        "cuexis_audio_tests.exe": "d05cf9bd76d1f33fedf32bb8381f7daf904e01155628680d54a6904409a66942",
+        "cuexis_behavior_tests.exe": "0fc30c33166a941e0384fb4786dd08db36bc31b443d4b44884fa13b18a6568ea",
+        "cuexis_cfu_f4_performance_probe.exe": "f5188837454b42f7110e23df41116b742e6f29c03d9280d75513215509092341",
+        "cuexis_cfu_f_headless_consumer.exe": "bc67d21ba2cb616529d4aa5783db9338bccec9f6f37266b66251419cc4369c00",
+        "cuexis_chart_capacity_probe.exe": "6b5d2c830bb36b585e16a044a372bdbfa034f9788a4e381e7f82dd3480b596a6",
+        "cuexis_chart_tests.exe": "d6b14d7e97a511c5f5ffdf5675e6ab95b7187f08b06c4ef5c120572eca835f79",
+        "cuexis_content_tests.exe": "da72996d4fe5d87202220137962c7b109dd131973fa1a5faf47077614ed4c554",
+        "cuexis_core_tests.exe": "5a31378f9eddc386786eefcc314351c51185981c48d85c2a73c421f0f41a33f5",
+        "cuexis_cxc_tests.exe": "70fa8103cc6b81aa17bf502248f924042c026299a2a1c7a7c8465c9904c18dea",
+        "cuexis_debug_tests.exe": "f645a5c82864cc5c4efdf2ef2389aa80452c0cecb18648d50843e6ee43786d04",
+        "cuexis_filesystem_tests.exe": "ef0bee439d3f9b38c463869550c94463fe2519813a240887dd637b91cebe9d4f",
+        "cuexis_gameplay_packed_tests.exe": "28bb0fe4028d30fe4d7e38436670fd423c5098c4abd3d4f3a0afa6369dc0d741",
+        "cuexis_gameplay_tests.exe": "14b12faee675b0710705e8fe4a0b2a8f7781b3e7f0080aa44ca0cff4fbac5ff5",
+        "cuexis_json_support_tests.exe": "6240200f3eb3dbe79eaf347ed8098d184280e6afa06420faf2304507929f0253",
+        "cuexis_judgement_tests.exe": "9a6f098e03cebeac88914da77a19980ba9db56a7dfd48debc04d3dd9b1b35c65",
+        "cuexis_playback_allocation_tests.exe": "0a414414e8984987c51e6d54b8397b66007026fadcb8fc0b17b537bb23d879fa",
+        "cuexis_playback_tests.exe": "544934ad9e9a9c00ae109c3b0428bd79e80c60ed3c8ce14195ab0ba8359f311a",
+        "cuexis_player_support_tests.exe": "208f497cbd289f9a8ec1b962277ea90de7165cb5fafa4cf109871b652a7e2889",
+        "cuexis_presentation_renderer_tests.exe": "f4b8227963e9157a15300bf513ba00fb498215679d0cfddc44bf36fb22701fe0",
+        "cuexis_presentation_validation_tests.exe": "03008472124d12272f62524c7c992cd58b016368f1b8c26444235ee83bb15aee",
+        "cuexis_project_tests.exe": "3a1e97d13496db0a2693a31dd9d0c65bb5c4310aa2abf31107b14e3cde29cdd3",
+        "cuexis_render_tests.exe": "086d540d23ae335d19f89fb3dd88961a11c76252272749d74a97b08aa7c9c2ba",
+        "cuexis_rpa_tests.exe": "bd4c33a4f8b331b9e475486177985f8e1352457c2e77dc512aaf5d6344c2b750",
+        "cuexis_runtime_tests.exe": "a54bbacc0dc4120f5da5bbdc4aaa49dffb71c55986146ce3d55ebbba55be665d",
+        "cuexis_s4g_performance_probe.exe": "6377e1186927f15f22c8ce8f1fc2e0467da03cef032bc7417af50214f7542645",
+        "cuexis_s5h_performance_probe.exe": "afd1077949cd03e2bd3fa8f481163585f65722e1745ebe3b1f12c3738e9808e7",
+        "cuexis_world_tests.exe": "eb3196a82efa74d502c335c75518f9a26d8dfbd31b3011f68f39ff2f665c0639"
+      }
+    },
+    {
+      "name": "msvc-off-release",
+      "status": "local_pass",
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\release",
+      "test_counts": [
+        100,
+        0,
+        1211
+      ],
+      "skipped_tests": [
+        "1201/1211 Test   #77: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.02 sec"
+      ],
+      "source_unchanged": true,
+      "phases": [
+        {
+          "phase": "configure",
+          "exit_code": 0,
+          "elapsed_seconds": 18.7862169,
+          "log": "msvc-off-release-configure.log",
+          "log_sha256": "98016bc1e3c2a66df25c7eb3201467fa50ebb18c3e3e13f704ff5cfff632912a"
+        },
+        {
+          "phase": "build",
+          "exit_code": 0,
+          "elapsed_seconds": 306.2042232999993,
+          "log": "msvc-off-release-build.log",
+          "log_sha256": "737faee1e646dbced167a8ec1f5a1cfdd5eea4c24bb4c9ed64032bfe0bff8c2d"
+        },
+        {
+          "phase": "ctest",
+          "exit_code": 0,
+          "elapsed_seconds": 564.3340427999992,
+          "log": "msvc-off-release-ctest.log",
+          "log_sha256": "93935ba9e7c74117f4acbe500af2a29bd3814240016bf7777b99793f59cad7f6"
+        }
+      ],
+      "measurements_count": 0,
+      "cache_sha256": "a4c083e97eb255b3e7d042f625c7a85c30287c2a23d2582908da2b4965d51627",
+      "binary_sha256": {
+        "cuexis_animation_tests.exe": "8df91de86db0bbdde81ac910250e8f923b8c5e76d3142f5874b0b738a14ffa06",
+        "cuexis_assets_tests.exe": "13f29f87c24aa09700c3a36a61753aada41ff256790bc9a2d31afe1e6980095b",
+        "cuexis_asset_publish_tests.exe": "5ee9086e2af04f5f4bab03820a2e3883d978329f8ffc2b81419f9daa19a91f54",
+        "cuexis_audio_sdl_tests.exe": "e10bcc1271b70298aaea2d1fedd478e5f3ed4d06af1c6942aa0e3b1a1476d07e",
+        "cuexis_audio_tests.exe": "0cb58d1051433bb00204ee632b88c2d98842861dbe04ff6f172a683806b97822",
+        "cuexis_behavior_tests.exe": "4d91d7f1516042c5cd05db375f9a98cc0eb4f6ba904caa5b4d6c62e1ed03dc62",
+        "cuexis_cfu_f4_performance_probe.exe": "cb91cb57c9e911dce773fa4ed7409005e498e95975eb893f85e7a21782b372fd",
+        "cuexis_cfu_f_headless_consumer.exe": "389c0cbd4860916b5ecc1760dec4d68373d77b45f8552c148e2d9bc411d25958",
+        "cuexis_chart_candidate.exe": "c0f99c3c8a3351c32a9787397337ef88680ba1b5b6da18e47d507cf84c572af2",
+        "cuexis_chart_capacity_probe.exe": "2bf345a450f20c15085fc3b6d1305483294bef39123fa1b374fa8dc4bb269922",
+        "cuexis_chart_migrator.exe": "2552e78b2c3b194185d458c07772957ff241a940223d80a82fd298fe2b116b18",
+        "cuexis_chart_tests.exe": "0f1ed37ac7d6113d6afc5daab776861bd39b9064fcc9be427f9ebc8797f6ec94",
+        "cuexis_chart_validator.exe": "0526bb350c1003ead603fbe7f97324806240905dc70ef164f1e68aa499ae5f7c",
+        "cuexis_content_tests.exe": "4c526cd7240520553a7b4e211f77aacb7f4c709bbc6e9778dfbcc4775c4dfe33",
+        "cuexis_core_tests.exe": "6862eff08640afe75492ad7d4d55e78087aa648fdee90549a85b72d56d68eb01",
+        "cuexis_cxc_pack.exe": "d682ed81b3a65fd6b63d81b58f2c268228238cb33418af44b52b77f2fae83587",
+        "cuexis_cxc_tests.exe": "c94390d39f0de27e184e4a0b8dcd950735bded9ff14ba1b4478710c226a21560",
+        "cuexis_cxc_unpack.exe": "8a09d632e5515610b2858966426e21b39f66ce85ea67aef8e06eb17827a67dc5",
+        "cuexis_cxc_validate.exe": "a5ea75c0e2d01780c02cbb820c0dd0e79f78d1df9e3716e99b6739b419665109",
+        "cuexis_debug_tests.exe": "a724b40f646c4c7b116efaea98c656d36fd8d6ae9190a76850e3a0a2561932c8",
+        "cuexis_filesystem_tests.exe": "ddbea6c7f255ff86f2e471e8b204c064c2c604d8a79f38cf2b60c5f56b456dab",
+        "cuexis_gameplay_author_tests.exe": "458b636cd66ce11e6a7dfe3f2516ff13830b631e3727b1d5f918c1b9ed0a4ecd",
+        "cuexis_gameplay_packed_tests.exe": "bf588637c411e7609c8d8376a892d0b550b88930e45bb3a31237dd04f6af1d86",
+        "cuexis_gameplay_tests.exe": "df86633b19d8cb23ee8ff207a369b9634c20f2ab6acbd7a894627ccfedb155e4",
+        "cuexis_json_support_tests.exe": "7824c1abbf4f547dd0c8dbe0c8723b8cb109cffe6bedaca2e2adda14a6a31e32",
+        "cuexis_judgement_tests.exe": "8db552cb4a159518b465b738cafbe743de6410913715f4e70221210646ab9fa3",
+        "cuexis_platform_sdl_tests.exe": "c451197170f5824d89e8dbdf0d8706999e6c223d08b8df44b55f225d118bb0a6",
+        "cuexis_playback_allocation_tests.exe": "a35aed1c3e38bda5541be481face2233441735c2549f44e980522f63ea1cc363",
+        "cuexis_playback_tests.exe": "c62e41dc20e797d2509e2ea54cf05d187782838cc709cd86337f476991eb6744",
+        "cuexis_player.exe": "ecf2a4491721d0f062cd16a39c2e41657237fc188932c2890581ad0c2dbd2ecf",
+        "cuexis_player_control_tests.exe": "7a98ff0b27f9a67161f4199b58bf9d25386de132eee2056ec2442a8f14dfddca",
+        "cuexis_player_diagnostics_tests.exe": "50f37804254c9e78ee052c29f3efe7c5f79626d28b67cd8c0ee9312f6233df47",
+        "cuexis_player_support_tests.exe": "ada7a7f357f7cc61810bb20c247428800e2b586cbafaf5408db7b99273d73200",
+        "cuexis_presentation_renderer_tests.exe": "381cf3ce568091b7478d38e7844afea9aeab0951a10041dee7a19e78e01e03e1",
+        "cuexis_presentation_validation_tests.exe": "6ec75f8b0049988f1ec3b94cbe4fe4c2fd9a299e9066522981a9d518798290ca",
+        "cuexis_project_tests.exe": "56aad54d6156c36a5e8d5bb144afd31ed8a925975466867505b2abfd9ecdf1eb",
+        "cuexis_render_opengl_tests.exe": "8c2a2c44ee2df23fc00210222ea1eb945b0e53c7f688c298db912176c41ede64",
+        "cuexis_render_tests.exe": "f0fa1280fdc5472f3ed544cf30e7f42c87fe984011d4d4fd31282830494990e0",
+        "cuexis_rpa_tests.exe": "88e219b2eab710e547a1ab4ce69159c898bffa04b81d249ed72b8d1eb70fcc7b",
+        "cuexis_runtime_tests.exe": "9985e6bf688d534288b2e2b4e3aae7d4f73a5d67e4990c0b5f5e4220f86ff42b",
+        "cuexis_s4g_performance_probe.exe": "7c6edf2cba9470d89da2b59b5b3e147b2eb3546e7c475bd3839a38db499c9ac5",
+        "cuexis_s5h_performance_probe.exe": "e8661ea69e53c66f5aa7b7f28c65828347d66452c642826aed350f34d058450d",
+        "cuexis_world_tests.exe": "a17233b457edc9aabfaa6d2b8206098c05b66ae2665f151d9fcd3ae4a860530b"
+      }
+    },
+    {
+      "name": "msvc-off-headless-release",
+      "status": "local_pass",
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\headless-release",
+      "test_counts": [
+        100,
+        0,
+        1066
+      ],
+      "skipped_tests": [
+        "52/1066 Test   #62: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.02 sec"
+      ],
+      "source_unchanged": true,
+      "phases": [
+        {
+          "phase": "configure",
+          "exit_code": 0,
+          "elapsed_seconds": 18.04925000000003,
+          "log": "msvc-off-headless-release-configure.log",
+          "log_sha256": "c6ce169c425d75af90578daa13dfb5b02a1395f1702a8e0d571863869ef01995"
+        },
+        {
+          "phase": "build",
+          "exit_code": 0,
+          "elapsed_seconds": 259.35925250000037,
+          "log": "msvc-off-headless-release-build.log",
+          "log_sha256": "97e290ff15efe0dea8f21802eb2bcacd2e73b809aa880890ff6af9799b7d9327"
+        },
+        {
+          "phase": "ctest",
+          "exit_code": 0,
+          "elapsed_seconds": 556.6212933000006,
+          "log": "msvc-off-headless-release-ctest.log",
+          "log_sha256": "bd46232711898e95d24b22cf2cfa6680463f1ce0aed4fd2a79d057ede4fc3918"
+        }
+      ],
+      "measurements_count": 0,
+      "cache_sha256": "43bb7a61f458cd433b53b9f57dfd543a7c94b560627a24f1518def2791e0e8fa",
+      "binary_sha256": {
+        "cuexis_animation_tests.exe": "a5fd10585ea639f995596f7e7612dc44dca04ae5093fed1a416d7d86ab85a19a",
+        "cuexis_assets_tests.exe": "3dbd13171c605bd38c68aa2ad61b4901f4bcf1b5f286d19e85993008654b1abb",
+        "cuexis_audio_tests.exe": "fd106f7093290e20cb50bdf5b125e16e44335ded5ffdc1498e1dad1d9a37a112",
+        "cuexis_behavior_tests.exe": "383714748fb0d6fe5e80b7213018115d78a60d68ac5405336ffe89e75a65d1e4",
+        "cuexis_cfu_f4_performance_probe.exe": "ab5a84556a208cabf51244c3f7d0c4ac0795a689d3019ad1e6cfa33933637c9b",
+        "cuexis_cfu_f_headless_consumer.exe": "8ab617d5a734c2b94fbe35d1bedf4a2d9b261e81be47157246a63587118ab200",
+        "cuexis_chart_capacity_probe.exe": "335f17ac526fef2598e748ed081614aa75fb01919afacb864b6e016d758b5dc4",
+        "cuexis_chart_tests.exe": "f44c371f6090cf8b04f44ad48f3abc4108112483179f99e248de928ea5b74f4a",
+        "cuexis_content_tests.exe": "d36edf712c8c9fe40aeea6e9f1f6c7e757832675ec0f0418658b3f78df8fc42f",
+        "cuexis_core_tests.exe": "b47ec7373a1278f20d1c37fc37b5c5912668d00213b511882d275619c0b80311",
+        "cuexis_cxc_tests.exe": "6499b43a421b29523bd373719467d02feed41af92b85d5192e31df125c21084e",
+        "cuexis_debug_tests.exe": "5634583fd0ea4278a3fca6ff2421e6cbe0e07c8394491b509da725824fd17212",
+        "cuexis_filesystem_tests.exe": "e67f298947b2a87e22188c41ee72a750dca4ef7c810914619f752a6a6311fb87",
+        "cuexis_gameplay_packed_tests.exe": "b8d255526925ecf48c75e3b227b1a0a63881625066c2d23b8733d8cce0015756",
+        "cuexis_gameplay_tests.exe": "4ff116927dd9b2a36a0d2bb3491d29473105ea25d2c9ef53de20e03fe0eaeb95",
+        "cuexis_json_support_tests.exe": "072807a37ac86e8860b027084a9576fcb296b788e5f9baec147766017ca17e90",
+        "cuexis_judgement_tests.exe": "adba199a6080fcd52734f99b70a1d207681077122788a3d642b59c83f49d8dfc",
+        "cuexis_playback_allocation_tests.exe": "c9a6d65133e5c34db64243cd55cb1d750c419a5b1213ff17febb67b21d2c22c2",
+        "cuexis_playback_tests.exe": "3a7edd7b3629fe4267e715d96710cd78d42a1a367ee75d445c2487480093f50b",
+        "cuexis_player_support_tests.exe": "57d1d041a7c118fb50fb06acf4d9c1828ba0f6ffc39df162144eb383468bfaf2",
+        "cuexis_presentation_renderer_tests.exe": "48dbacb5005d124774f29b9b337fe9e5da007a652d930acbe8171123eba4ab28",
+        "cuexis_presentation_validation_tests.exe": "4bb0910e232caa38f8f551efc64ed2970dc9031bb85c5f54486357e69f84d36a",
+        "cuexis_project_tests.exe": "df4cdeb6de21e48556e76a47abe584d0484ee6e28321b07fbdb73fa1a0f8c6b8",
+        "cuexis_render_tests.exe": "6b1a9d9014909ac40f1aaee4d2cf48927ec9a07628f1bc02fe4d428e124c4bbe",
+        "cuexis_rpa_tests.exe": "061999a70597f76458045ab8bc17facf3011e52e88973afeded1ba6a082c6c81",
+        "cuexis_runtime_tests.exe": "5329c2a304c61f3ede9943231e88f90b7eb95162fcca712fc86cae8078eb7341",
+        "cuexis_s4g_performance_probe.exe": "82957f0eb02d90017a65455ad39670ffaa44ae33622a2b71744f1c677afb9d01",
+        "cuexis_s5h_performance_probe.exe": "e3ff0c903003226f7f4a038418383ca495be1f70ae9e631fcc4ec1b3decd60a3",
+        "cuexis_world_tests.exe": "71b439b6f6634e76aac2867645e2ca83b4aa730a7b4b86409798f89b7a4a81d0"
+      }
+    },
+    {
+      "name": "msvc-off-shared-debug",
+      "status": "local_pass",
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\headless-shared-debug",
+      "test_counts": [
+        100,
+        0,
+        1064
+      ],
+      "skipped_tests": [
+        "55/1064 Test   #67: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.03 sec",
+        "982/1064 Test  #993: Playback legacy prepare reuses the initial Chart parse ..............................................***Skipped   0.57 sec",
+        "1011/1064 Test #1021: Playback v4 prepare reuses the initial Chart parse ..................................................***Skipped   0.19 sec",
+        "1014/1064 Test #1024: PD3b materializer allocation failure retains the public extraction error boundary ...................***Skipped   0.14 sec",
+        "1018/1064 Test #1028: PB-08 owning-copy queries contain allocation failures at the Playback boundary ......................***Skipped   0.07 sec",
+        "1019/1064 Test #1029: PD3a extraction failure after install preserves committed state and override lifetime ...............***Skipped   0.08 sec"
+      ],
+      "source_unchanged": true,
+      "phases": [
+        {
+          "phase": "configure",
+          "exit_code": 0,
+          "elapsed_seconds": 17.728035100000852,
+          "log": "msvc-off-shared-debug-configure.log",
+          "log_sha256": "4f5b58741439820b70139c3246caccca6e76cda1e30d78e5c189ab2c9df9318d"
+        },
+        {
+          "phase": "build",
+          "exit_code": 0,
+          "elapsed_seconds": 202.1028338999986,
+          "log": "msvc-off-shared-debug-build.log",
+          "log_sha256": "3ab495d7e81c66ac7997922bf7e16ce15cae3ad929cef8bbfe997266e59f2481"
+        },
+        {
+          "phase": "ctest",
+          "exit_code": 0,
+          "elapsed_seconds": 418.72685249999995,
+          "log": "msvc-off-shared-debug-ctest.log",
+          "log_sha256": "47498379c1179f16babe1d748db108f476096d22432428b24e57824d6a8c8b57"
+        }
+      ],
+      "measurements_count": 0,
+      "cache_sha256": "11715ef63f4499ada089b3c4f3b9d2454998ec4f935c80c8366aa95901af9832",
+      "binary_sha256": {
+        "cuexis_animation_tests.exe": "159a702e69a6cf6a897ba196a12c831f0bf925b5f60b38d231f54ebcb7d46956",
+        "cuexis_assets_tests.exe": "c7e57b07decb1282fce14dc8c9333ee551b71608de725250d73bd21d1e2dbc45",
+        "cuexis_audio_tests.exe": "b426eb91c7d1ca5f15798a52157750e0a204dc4f55e3d7a11007ea39fae68bc9",
+        "cuexis_behavior_tests.exe": "386f356ec5a3149d074b40d083f90858780fe0884d759f4cc819d0533bc5701e",
+        "cuexis_cfu_f4_performance_probe.exe": "a5aca2ff336e4c2352f2885f03743d3cf6eaf349c2c50f88c40ced31c450087d",
+        "cuexis_cfu_f_headless_consumer.exe": "685da9788053868d8d5a3ad80b581765b5b12adfb4418e15c02d4aac3053624b",
+        "cuexis_chart_capacity_probe.exe": "c373373daf77daada9609b323b3ab84db1ccbd02264a254394900070d54bc472",
+        "cuexis_chart_tests.exe": "2b1c63353ae6282cb5e06b825ad39057b16dc06e767b355bf38206f12ce9b82c",
+        "cuexis_content_tests.exe": "f01c0999f03cac8ccf23f9022d9592373e287bb043b10ad6c2673448a11ecca9",
+        "cuexis_core_tests.exe": "076a3877249bf5015f47b99e24104923635104f905d4fc33f83b9571bf1738d3",
+        "cuexis_cxc_tests.exe": "32f7ff6c92295e91145fb75e60142effa63ca275cdc6fe6b7be3ada7214a9cc5",
+        "cuexis_debug_tests.exe": "682903b009167b638580bdc317d2bde822c71bfb5773952409b666218ce616bf",
+        "cuexis_filesystem_tests.exe": "2484b2cc5ae98b6decf986d18434868f04ad397135a40a22149cc8719894dba1",
+        "cuexis_gameplay_packed_tests.exe": "3b9fb7afd425eb4e4befb378b1125ec08a11c02cb207274006c76a97e381591c",
+        "cuexis_gameplay_tests.exe": "b53113fe8ff391aaabcd04497f642491e5ea8d92d084efc8ca5d5f8951295308",
+        "cuexis_json_support_tests.exe": "c6c6373278a3b99c148a8c0c9eb04562593bb10df77fe0b816bcc10709183374",
+        "cuexis_judgement_tests.exe": "7a71d884df2d39f43507137877c320de236d3c1a28865ad99c0bf3b42829d35b",
+        "cuexis_playback_allocation_tests.exe": "3e5f9819ae834b38b96a491c6fa765157c3dccc1660eee97e484eb3b8ee579bc",
+        "cuexis_playback_tests.exe": "a9e4e18febb3fb600f64a6bc2664e13395e785d6eb591845eab5d92b94867c1c",
+        "cuexis_player_support_tests.exe": "a7800d1d4604df89ec4c5ef004d2d3da53bd6076b174b30c7a074facad363264",
+        "cuexis_presentation_renderer_tests.exe": "848bc2dfae33cef2748f490436ea02a3a9221a54d727b0be98f7f702682638b4",
+        "cuexis_presentation_validation_tests.exe": "89052a452f61f6372cbf6a76de51c4a462cc22d13222090a322e063c028b21d0",
+        "cuexis_project_tests.exe": "6a087490db7dca4116574073c80ee3a2195ad80df3596550d7ede1186a2d1813",
+        "cuexis_render_tests.exe": "fd9750d57c0498c373ae71605ed2bd26794bbda97b0d3ea6ada33862d21a2c13",
+        "cuexis_rpa_tests.exe": "1b48b86fd39fcac25d4a992e969b286263f3b2f312ad03d898aafdbdac3c46bb",
+        "cuexis_runtime_tests.exe": "32727d9ac1006546a66c82e2c4895ec9da83f280687a7aedc565606d4ecdb575",
+        "cuexis_s4g_performance_probe.exe": "0c2248427500cb748f82bbe7166091e0d79a52a06b4237178b8b21f3e98c7be0",
+        "cuexis_s5h_performance_probe.exe": "cefcc115a8e8a8c8e3353fe9d3929ff7c3e591ccca6a96576c88115a0f445807",
+        "cuexis_world_tests.exe": "f92505054743e31ac73954163d5946c8dcfbc303f285e30d58abd81eea05f1ad"
+      }
+    },
+    {
+      "name": "mingw-on-debug",
+      "status": "local_pass",
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\mingw-headless-debug",
+      "test_counts": [
+        100,
+        0,
+        1266
+      ],
+      "skipped_tests": [
+        "56/1266 Test   #66: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.02 sec"
+      ],
+      "source_unchanged": true,
+      "phases": [
+        {
+          "phase": "configure",
+          "exit_code": 0,
+          "elapsed_seconds": 128.92535099999986,
+          "log": "mingw-on-debug-configure.log",
+          "log_sha256": "ffb9c531d6db6e3cbed698f5075c014681388212de9182188c54e4ba7721ebf0"
+        },
+        {
+          "phase": "build",
+          "exit_code": 0,
+          "elapsed_seconds": 429.4516979,
+          "log": "mingw-on-debug-build.log",
+          "log_sha256": "d313a454da638aefb87a00a0382785ca42f83dae97a7327b1c78e331454443ae"
+        },
+        {
+          "phase": "ctest",
+          "exit_code": 0,
+          "elapsed_seconds": 792.4172297999994,
+          "log": "mingw-on-debug-ctest.log",
+          "log_sha256": "378e761a6901b29fd863053a8c3325a5853504a8ea696d31c903e8405272701d"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-1",
+          "exit_code": 0,
+          "elapsed_seconds": 0.6979580000006536,
+          "log": "mingw-on-debug-cuexis_execution_host_tests-budget-1.log",
+          "log_sha256": "bc283f1dae0e4818b207821450e31a74cba4d8ea6b6f6c74233272c615a3954c"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-2",
+          "exit_code": 0,
+          "elapsed_seconds": 0.7353384000016376,
+          "log": "mingw-on-debug-cuexis_execution_host_tests-budget-2.log",
+          "log_sha256": "47a8b425227a9e6cfbe8405d744d4e6c40e6c50f8781ce52a512890850d5aa04"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-3",
+          "exit_code": 0,
+          "elapsed_seconds": 0.6982174999993731,
+          "log": "mingw-on-debug-cuexis_execution_host_tests-budget-3.log",
+          "log_sha256": "551a709910d9929aa81a7fccbcd8c2a694f633764524ff07dbe11eefcd15a3c1"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-4",
+          "exit_code": 0,
+          "elapsed_seconds": 0.6938190000000759,
+          "log": "mingw-on-debug-cuexis_execution_host_tests-budget-4.log",
+          "log_sha256": "9ac3a65001eb4896555c3097fefb52a620f9500c9078b79db680e45d93c439d7"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-5",
+          "exit_code": 0,
+          "elapsed_seconds": 0.7029492000001483,
+          "log": "mingw-on-debug-cuexis_execution_host_tests-budget-5.log",
+          "log_sha256": "d1b2a10e011263c416233aa2187a8ec043e96cdbd0904124b7130d8b7621e811"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-1",
+          "exit_code": 0,
+          "elapsed_seconds": 2.5035544999991544,
+          "log": "mingw-on-debug-cuexis_rpa_tests-budget-1.log",
+          "log_sha256": "eb1c9806806103c95a34af42b6b5717bc817af5abb381475a03c91a31bd1510b"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-2",
+          "exit_code": 0,
+          "elapsed_seconds": 2.466441399999894,
+          "log": "mingw-on-debug-cuexis_rpa_tests-budget-2.log",
+          "log_sha256": "935d2ed2605f457d5e58b148d43e7f90ad84da961713eb7b63bebc5b53c82545"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-3",
+          "exit_code": 0,
+          "elapsed_seconds": 2.513808000001518,
+          "log": "mingw-on-debug-cuexis_rpa_tests-budget-3.log",
+          "log_sha256": "e57b1952ba35bdc6c3fa0397cd5481f73c07818f90f6361c8b8ee84787ef5e4f"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-4",
+          "exit_code": 0,
+          "elapsed_seconds": 2.472820299999512,
+          "log": "mingw-on-debug-cuexis_rpa_tests-budget-4.log",
+          "log_sha256": "394d4caa3d75e8e195aa7c190bd4edc53d54b6bb2524adb8d8ddd1d4df27af29"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-5",
+          "exit_code": 0,
+          "elapsed_seconds": 2.456092600001284,
+          "log": "mingw-on-debug-cuexis_rpa_tests-budget-5.log",
+          "log_sha256": "3b7938c62de9fc04b98a8c954a567714fa0084dcb2d0b4fdc64b9e28c88c180e"
+        }
+      ],
+      "measurements_count": 20,
+      "cache_sha256": "43887ee77dc71a3c7ecb9edb914e145b48ea2df3496d22bef456a509a36a6138",
+      "binary_sha256": {
+        "cuexis_animation_tests.exe": "b883659aee174840f50c77d11d0b122e9126270fd9a56e5f72397cd722ddb1b6",
+        "cuexis_assets_tests.exe": "8d1c6ad9962ae6391ebc8be3a71a2bd3be9db403141e022f9aa7258477ed0472",
+        "cuexis_audio_tests.exe": "5f6b8543a41d4896629d0ab7859b4195419545dca42c8044308c8c6679df3007",
+        "cuexis_behavior_tests.exe": "9be8391a4409d91e6bc0c09797fd6386dc45a25dd86f34595df7d2e1d66e84dc",
+        "cuexis_cfu_f4_performance_probe.exe": "556336ec57c1eca0408f4568503b226c2fb7b135d2c5e079c2400e20cfd6b42e",
+        "cuexis_cfu_f_headless_consumer.exe": "c6bafa94afa938b13628d60584780d37ca1038be1939e322b1409f64ae0076ff",
+        "cuexis_chart_capacity_probe.exe": "f4b6071b739e2d753447a8b0edb0ce366173eb368eb0a29875b40b0a5bd625c7",
+        "cuexis_chart_tests.exe": "c7fb2d9da63af89b713964808576e79089dfef8e8a875cc37ffb5c925f14de05",
+        "cuexis_content_tests.exe": "eaa25ddefba3e1b267445fd1ffe480d786630ff1f5362c7b1c029692c71d6e90",
+        "cuexis_core_tests.exe": "4224e547c2b10f299bba75157c168e2d47cbb964999b01368e322a7cf65a5401",
+        "cuexis_cxc_tests.exe": "a1d50f589834184adadd9302da3c6a2cd991bce080911c53f7f95694373dada7",
+        "cuexis_debug_tests.exe": "38e104d464e84c60ccdf14b90de68623bb052438fc343bb26949e24b19ae775a",
+        "cuexis_execution_host_tests.exe": "74221416161a61bcf4ba24a44005254c5db79f721bff6c7eb0d8796618d6c464",
+        "cuexis_filesystem_tests.exe": "1dcffa882b8506d3e27df3df69bcfb7e5fb8b32e242f79c5143a2bf854e1d006",
+        "cuexis_gameplay_packed_tests.exe": "df5d9eec3e9277f3c571d822ed6a011922cc8b15451077deac208bd54d2e44dd",
+        "cuexis_gameplay_tests.exe": "85cee0802990d2a46f06e63476b4676731806af32c3030157251c123267775e1",
+        "cuexis_host_protocol_tests.exe": "7c6bb4c309a5c3a57480ecc62d60ec38f40cf111a02fd3fd4869a906efe9e9d1",
+        "cuexis_json_support_tests.exe": "3439b449304bc25ce90eb59341440993fc94ef3642292b8fb0cf77dd1203f13a",
+        "cuexis_judgement_tests.exe": "97d0ae78cffc8cca0dc749b1ac732f518e743658b6a4c233a7fd51936ee9570d",
+        "cuexis_pd_allocation_probe.exe": "32ca6f3676eb3ae24b1f942727eb032ca1b951977934f304e958e33a87bd95b3",
+        "cuexis_pd_baseline_probe.exe": "41f2f82881c77e9afe2a270b8d5fd513363f53ef87b29afe74c6ebc6b300d927",
+        "cuexis_pd_host_probe.exe": "c41ea44eb78f3c4a60c40c22af1290747ccab7545e3726c93671ba4fb47477cf",
+        "cuexis_playback_allocation_tests.exe": "f38380d37130d5c19ec9cc4873fcc8566e1fee6e9e66c5d093d47d88e34b0d30",
+        "cuexis_playback_tests.exe": "2f811420bfa73f7c81e4d7a73b92613c030a2cbf8d8a104cb964d47216121cb7",
+        "cuexis_player_support_tests.exe": "eed422c3e6e3874073d1a5b7fb71b03383b6c187da87e9d982acc1ee5f069188",
+        "cuexis_presentation_renderer_tests.exe": "a31ea3415a51f6642e0cde78ee5b1231c7f49571bbd715fff176712819323e9d",
+        "cuexis_presentation_validation_tests.exe": "ecadd22463c17cc90b49bdc7401b90eaa9fcb4747b7a03c54a1b0723b0935ecf",
+        "cuexis_project_tests.exe": "65fc22d447840640486b0be47ffd35990dd164cbec49999ddd840d4a5960b066",
+        "cuexis_render_tests.exe": "b5205cc49b78106f3c8496c59c1b487013adcb7aa609fd6dff5f618b3490b52d",
+        "cuexis_rpa_tests.exe": "130fa1ac9946cce10acc20bb7d90b317d0a38e8928d2af59192c583e1144ca32",
+        "cuexis_runtime_tests.exe": "f60b05767da250feca262bb01a1ac069c1151c3bbf422a323a00f4464d271ac7",
+        "cuexis_s4g_performance_probe.exe": "20498a5360edde61ec7c8070077a830965912e2e151ea824341500ac9a0c1d74",
+        "cuexis_s5h_performance_probe.exe": "f8eb96d8a4a27be4a59c68a2a9859c41b55e9336cdb05acae7f9544c5ec05360",
+        "cuexis_world_tests.exe": "978fdbc43e848ef558ac414387abc278142b6607dad8e073b0a581280805585b"
+      }
+    },
+    {
+      "name": "mingw-on-shared-debug",
+      "status": "local_pass",
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\rpa-boundary-mingw-shared",
+      "test_counts": [
+        100,
+        0,
+        1248
+      ],
+      "skipped_tests": [
+        "56/1248 Test   #67: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.03 sec",
+        "1089/1248 Test #1097: Playback legacy prepare reuses the initial Chart parse ..............................................***Skipped   0.09 sec",
+        "1184/1248 Test #1192: Playback v4 prepare reuses the initial Chart parse ..................................................***Skipped   0.08 sec",
+        "1202/1248 Test #1210: PD3b materializer allocation failure retains the public extraction error boundary ...................***Skipped   0.04 sec",
+        "1203/1248 Test #1212: PD3a extraction failure after install preserves committed state and override lifetime ...............***Skipped   0.03 sec",
+        "1207/1248 Test #1215: PB-08 owning-copy queries contain allocation failures at the Playback boundary ......................***Skipped   0.08 sec"
+      ],
+      "source_unchanged": true,
+      "phases": [
+        {
+          "phase": "configure",
+          "exit_code": 0,
+          "elapsed_seconds": 19.86315789999935,
+          "log": "mingw-on-shared-debug-configure.log",
+          "log_sha256": "a00cb1bbe82be751f18ff56e96bf8765ccba3597f759ea0f774f6106bdcd5de9"
+        },
+        {
+          "phase": "build",
+          "exit_code": 0,
+          "elapsed_seconds": 383.726037299999,
+          "log": "mingw-on-shared-debug-build.log",
+          "log_sha256": "13db5461ff7423eb549765f77e467af1c301ba0093350fb2afd831e1b4c72b2e"
+        },
+        {
+          "phase": "ctest",
+          "exit_code": 0,
+          "elapsed_seconds": 652.1999219000008,
+          "log": "mingw-on-shared-debug-ctest.log",
+          "log_sha256": "602c3b2286f15b89a504bc4116349f79441165a823456fe1ed8dfe95e48b5f43"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-1",
+          "exit_code": 0,
+          "elapsed_seconds": 0.7440611999991233,
+          "log": "mingw-on-shared-debug-cuexis_execution_host_tests-budget-1.log",
+          "log_sha256": "70b276d7c5b816fc87430474fa67e76399ccc104f97f65d672b7c2086a3ed47f"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-2",
+          "exit_code": 0,
+          "elapsed_seconds": 0.7285670000001119,
+          "log": "mingw-on-shared-debug-cuexis_execution_host_tests-budget-2.log",
+          "log_sha256": "d9a4ac543b9d0be359c6f09bf7e7d250950c32daf2cb947c30afc919938a569c"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-3",
+          "exit_code": 0,
+          "elapsed_seconds": 0.7230440999992425,
+          "log": "mingw-on-shared-debug-cuexis_execution_host_tests-budget-3.log",
+          "log_sha256": "03a223d2b5f43913c2403e59ca446cd8281022f57a4310febbdb314952ce0419"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-4",
+          "exit_code": 0,
+          "elapsed_seconds": 0.7203448000000208,
+          "log": "mingw-on-shared-debug-cuexis_execution_host_tests-budget-4.log",
+          "log_sha256": "a4032cc564dd7232b22d5d8976a66232483f9a93e28e7a227569289c1e39f6b7"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-5",
+          "exit_code": 0,
+          "elapsed_seconds": 0.7206392000007327,
+          "log": "mingw-on-shared-debug-cuexis_execution_host_tests-budget-5.log",
+          "log_sha256": "b41b77f38c0c7ec23572774acbe58e6c873b03af51fe6fcf7ef6133c2f89d355"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-1",
+          "exit_code": 0,
+          "elapsed_seconds": 2.8689215000013064,
+          "log": "mingw-on-shared-debug-cuexis_rpa_tests-budget-1.log",
+          "log_sha256": "1c189f2b513a1851a5d72e7cf099b839dc0c7fd15aac675dd74d94065c6477c7"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-2",
+          "exit_code": 0,
+          "elapsed_seconds": 2.831341400000383,
+          "log": "mingw-on-shared-debug-cuexis_rpa_tests-budget-2.log",
+          "log_sha256": "f6138eeff5c9840c01c65d8218695f3e014c3797aca4fb42df1adf0668a5d0b8"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-3",
+          "exit_code": 0,
+          "elapsed_seconds": 2.8201411999998527,
+          "log": "mingw-on-shared-debug-cuexis_rpa_tests-budget-3.log",
+          "log_sha256": "8a5aac2f437c54266a9a5f3308939e04e099c5d2ae3f3ba0c25f62d3a07eaf5b"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-4",
+          "exit_code": 0,
+          "elapsed_seconds": 2.8206372000004194,
+          "log": "mingw-on-shared-debug-cuexis_rpa_tests-budget-4.log",
+          "log_sha256": "c67ee63ea03f32ab6997a191545c2410f6b2e20febc6e0287cdd0fa16fbec8f8"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-5",
+          "exit_code": 0,
+          "elapsed_seconds": 2.825811099999555,
+          "log": "mingw-on-shared-debug-cuexis_rpa_tests-budget-5.log",
+          "log_sha256": "b99f17a8a8e0b4e03e330b266021452c3e6f44237834459df3e28c449ca06a5e"
+        }
+      ],
+      "measurements_count": 20,
+      "cache_sha256": "bbf25f15372838cd7f18beb7b2a373616dd50ef322fe33c555159b767a2ffecc",
+      "binary_sha256": {
+        "cuexis_animation_tests.exe": "63295b1328578f4659631da4210c14d862d6870018804f88d49f30e18594fbf5",
+        "cuexis_assets_tests.exe": "ea5093ec1111d291aed083559ae28a76a339733b8281575f6417366087d8f95c",
+        "cuexis_audio_tests.exe": "8ffdbe118e371886d7fac4cc2bbf46f625dbc7468333c69516a1ad5a59519e35",
+        "cuexis_behavior_tests.exe": "c89807dee116b233ce33043aef8552903f854cbde9d94e57c3c2dfeb26147090",
+        "cuexis_cfu_f4_performance_probe.exe": "dffc529fc4477f3790893d68f5eca158cc444d320db976c896a48023f0135809",
+        "cuexis_cfu_f_headless_consumer.exe": "dadee405c227ceab3cbb1b932655427bf1b471d28a8b2ed81b0dad9e37eb6e9f",
+        "cuexis_chart_capacity_probe.exe": "6ce2336dad02536053ce2d4500e11049841845832bac57e100a95b45facd6bf5",
+        "cuexis_chart_tests.exe": "0cd5e8fbae36d3f67a3a95a0a97db81fff5245857205440536deefd37291261c",
+        "cuexis_content_tests.exe": "a56e5a1a41f6b9799ffa3ecc16bbc1173d969c002d2bb8affc8324d127d12aa1",
+        "cuexis_core_tests.exe": "4712bd11d169583ec9e7680232225afeeedb4a5c3fea88ff9dac86a04e9eaa63",
+        "cuexis_cxc_tests.exe": "24da01b5ccdd324b70f542a8eb6db5bf0bcf5af2aabad0cf3748c26e65eaa5a9",
+        "cuexis_debug_tests.exe": "2c0231d68e1e339880f325fb07e5b03b7dc9b96f7a03099f73970588ff2beab3",
+        "cuexis_execution_host_tests.exe": "803ce11dd7ed97b6a4df083f67671d6347e66f313a55c3f3808eec1aa94cc912",
+        "cuexis_filesystem_tests.exe": "91302f3c7d97e4b5d25679162f43f403009cdbc10081715927b7d16ef1195032",
+        "cuexis_gameplay_packed_tests.exe": "6e73adc239e9962f3599f4168ea2c6565f06f931a90c441df76729e35fc61886",
+        "cuexis_gameplay_tests.exe": "5e0d5db0a7e60253bad90c73af5c89f714f5cd8aa62aab1730e1b5e5e6444556",
+        "cuexis_host_protocol_tests.exe": "175d97ceedea04908e3ff1ee4af262322a4a1e132610c51c1f95e89c8a8a22ac",
+        "cuexis_json_support_tests.exe": "b9b151042b93d4ff3d39ae22c51275cf3252f606db85781a8ef47d2c8abfbbf0",
+        "cuexis_judgement_tests.exe": "547353ed8269b4a5b36c0aa71283c3ef7cd281632299f75b22f37793e2cb10bc",
+        "cuexis_playback_allocation_tests.exe": "25be7c38182d78690dd5786404e3761532a02a6d38c6a401e77dfc20bc56941f",
+        "cuexis_playback_tests.exe": "9d38935a4fb5f2a8cc79bb98ed761cafffef24353a3ec1a51fdd07ec45b826e6",
+        "cuexis_player_support_tests.exe": "fb34f69c2e6b876a61c3c32d973cf2b2955c912cdf96ad3170a5de11f50e5a87",
+        "cuexis_presentation_renderer_tests.exe": "e74dd829bc3b35c8ad1194c3d7277ba10cec5b5aaefc7a18db44c35db7f98fd3",
+        "cuexis_presentation_validation_tests.exe": "f0601291ee52d330fa01a88b5ff459986fbf073fe4369d8e72d135e44eefedfd",
+        "cuexis_project_tests.exe": "f733b05f03b5ab92ae760b4fa24abeb01cafc3c0cfd271354d46923a5d8b37ff",
+        "cuexis_render_tests.exe": "059cf3a2f294c30d1e465bde3312e5927da7cf1b88f43fb78df6e7e85568941d",
+        "cuexis_rpa_tests.exe": "8cd3877e4e8f098076e7594c4f01796be4921b176634875e6505eae684d04c44",
+        "cuexis_runtime_tests.exe": "7b4d6efeb37925b269d83bc300a03518c8962019190e2632fd9e27256753e9d1",
+        "cuexis_s4g_performance_probe.exe": "1ad3826d719d8df44207c76e010395604e620b843b366d21e434b4e6d6138dff",
+        "cuexis_s5h_performance_probe.exe": "2d563b4d61cf45ef95de0cc74efff39b2f394619e4116aaf5fdbe0ea217807aa",
+        "cuexis_world_tests.exe": "a1c6ab0ca08945372e4fd51fd50da16a23a3936608f3be12ea73b4395ae01a5e"
+      }
+    },
+    {
+      "name": "mingw-on-release",
+      "status": "local_pass",
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\rpa-mingw-release",
+      "test_counts": [
+        100,
+        0,
+        1266
+      ],
+      "skipped_tests": [
+        "53/1266 Test   #63: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.02 sec"
+      ],
+      "source_unchanged": true,
+      "phases": [
+        {
+          "phase": "configure",
+          "exit_code": 0,
+          "elapsed_seconds": 19.25198889999956,
+          "log": "mingw-on-release-configure.log",
+          "log_sha256": "061a040145ce157b922ffca1f3333e14b10594cbc87e4e48af2053dcae6cf287"
+        },
+        {
+          "phase": "build",
+          "exit_code": 0,
+          "elapsed_seconds": 449.4811728000004,
+          "log": "mingw-on-release-build.log",
+          "log_sha256": "be7713d035ede0bd3cd5345dd68a223e72b38d9bc7eb6301af55b48c197c9a30"
+        },
+        {
+          "phase": "ctest",
+          "exit_code": 0,
+          "elapsed_seconds": 627.7981127999992,
+          "log": "mingw-on-release-ctest.log",
+          "log_sha256": "435cdf0725d03a85e915c8ca7921c6a67bd30699c7eeb9c593b67a1b06a006c7"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-1",
+          "exit_code": 0,
+          "elapsed_seconds": 0.3229896999982884,
+          "log": "mingw-on-release-cuexis_execution_host_tests-budget-1.log",
+          "log_sha256": "f15fa723e8c93fdb2d1d1e78397431cb2d8a26da8fc6b34648ac936cac4f043c"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-2",
+          "exit_code": 0,
+          "elapsed_seconds": 0.3209082000012131,
+          "log": "mingw-on-release-cuexis_execution_host_tests-budget-2.log",
+          "log_sha256": "01ba033bce28c918a17daaf2c0469c7c779e49bc5b8e3bd0a0a9591d042a37b6"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-3",
+          "exit_code": 0,
+          "elapsed_seconds": 0.32749929999954475,
+          "log": "mingw-on-release-cuexis_execution_host_tests-budget-3.log",
+          "log_sha256": "5ec23d31a6e27f4aad3bbe8b0a9f2997e81669b5e759f418dc23c2a3a5f17631"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-4",
+          "exit_code": 0,
+          "elapsed_seconds": 0.32975230000010924,
+          "log": "mingw-on-release-cuexis_execution_host_tests-budget-4.log",
+          "log_sha256": "6aabdf1d9ab96f007763d9e2ad36de05115e22b9a0cb86692fa590fb9b761eb4"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-5",
+          "exit_code": 0,
+          "elapsed_seconds": 0.32196289999956207,
+          "log": "mingw-on-release-cuexis_execution_host_tests-budget-5.log",
+          "log_sha256": "18baf163cd2be2184765632c6ad5864067cfc4dde739b61f33e1192bb06ae521"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-1",
+          "exit_code": 0,
+          "elapsed_seconds": 0.8520110000008572,
+          "log": "mingw-on-release-cuexis_rpa_tests-budget-1.log",
+          "log_sha256": "474163ca79c48c0e6613842113c978eabf1e48047eebf00bcba22359f0a9971f"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-2",
+          "exit_code": 0,
+          "elapsed_seconds": 0.8543938000002527,
+          "log": "mingw-on-release-cuexis_rpa_tests-budget-2.log",
+          "log_sha256": "bd2691bf6cd6659a247e3a42d5726777e7c4836d2c778dfa0b0b65c55e91f2df"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-3",
+          "exit_code": 0,
+          "elapsed_seconds": 0.851402500000404,
+          "log": "mingw-on-release-cuexis_rpa_tests-budget-3.log",
+          "log_sha256": "41955f551bc4845002b3ecb568d8bc43473ba5c3e1338f32c8379f647c456a7e"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-4",
+          "exit_code": 0,
+          "elapsed_seconds": 0.8440796000013506,
+          "log": "mingw-on-release-cuexis_rpa_tests-budget-4.log",
+          "log_sha256": "a2861a21fef34e6ee87a4b78a7766fe1330f97dd6e0d14915571d045699172fd"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-5",
+          "exit_code": 0,
+          "elapsed_seconds": 0.8582665999983874,
+          "log": "mingw-on-release-cuexis_rpa_tests-budget-5.log",
+          "log_sha256": "d41af5fcfaff4259d04b512c2025479ad61cfbd1723d674aa9d9b5568f383c0a"
+        }
+      ],
+      "measurements_count": 20,
+      "cache_sha256": "f54d43314a925f3a81f01e0d7b8b85aa207de3adb406db7b6393e26afb1d4f0a",
+      "binary_sha256": {
+        "cuexis_animation_tests.exe": "e42e6d73d7ee2f7f606de128fd782c104f931db3feb0ab74713a5a0d9b73c942",
+        "cuexis_assets_tests.exe": "81f6f7de79ee4dae21b2c7767e927c2c9d6d070576ed266a7daf1e7682c212af",
+        "cuexis_audio_tests.exe": "ff7db60d18cb616b6a700ff5f0da6d470dde11ada22c2ef1f7903f3d8dd4d721",
+        "cuexis_behavior_tests.exe": "6025c4a389ce55b63ba0e9cf1251ffe000e1e3018342f8cb37680afc4426c7d4",
+        "cuexis_cfu_f4_performance_probe.exe": "da2bbf1ec2a07ca49d6ea8fcc449401910863bb034e6bfe831594faa506ad0ab",
+        "cuexis_cfu_f_headless_consumer.exe": "7f4376c694d3b7bd795aa82a168231ec960a2b5c8b1beca0b76132d304a9c77a",
+        "cuexis_chart_capacity_probe.exe": "a6ccdb76a36825a3bd6f2b18bd56c7c7cfb7c998611acf0dfc298372019d1c22",
+        "cuexis_chart_tests.exe": "4745eac0443aa28b65d187d65759df4b589252b4291e566a61814c48cf90c60b",
+        "cuexis_content_tests.exe": "c0e155dd0de2e553b081eede9e5f327d295bc9a96633488dacccbcb56b25fe12",
+        "cuexis_core_tests.exe": "fcdc77d64b2934c0c01f23ed257945d064b90be2d81c46245e119743658f6485",
+        "cuexis_cxc_tests.exe": "96cc0dff68bb5ec97055e0bd63e2b3b18202d77969b7739cb09c8e7c9cc6066e",
+        "cuexis_debug_tests.exe": "5b183c8a695690adb9cea6677e891ed6fc4b0ca5d545bc28c5c56f9e53646ac3",
+        "cuexis_execution_host_tests.exe": "d5c6756ee7072bdd8beeeb5ccc3d26d222213f36478ce2cf16a9e15be0bb9720",
+        "cuexis_filesystem_tests.exe": "8c1b7a0cf4a03995136ce02eb8c5f11cabfb067b38ccd4587095fce79d1f497a",
+        "cuexis_gameplay_packed_tests.exe": "7ad57a92c7bb7b7f6f1d0451f66da9f32d4fe35bcc529714f9c9142ac15e0a4a",
+        "cuexis_gameplay_tests.exe": "f4a6acabe9354951f7b725d7f2a1e6c661d51f032cfe583b55c7c8b53f297135",
+        "cuexis_host_protocol_tests.exe": "f205bed044c6f70d635b8174eb5b52bd1e65e2ef2a0e67a3361213feb3a9d2a7",
+        "cuexis_json_support_tests.exe": "baaac1852954a843bb30cca38e57969139add37baffa1801d1391a3bd7eede14",
+        "cuexis_judgement_tests.exe": "d96cc53b0113919420d626779f666c51e65f1d413635b1d90f2b0dc359043231",
+        "cuexis_pd_allocation_probe.exe": "6b32a08ff113b092f1a1405e0a0c246aaf33ca1fa0aae3686375fdb27f210915",
+        "cuexis_pd_baseline_probe.exe": "aec6f5af851750b4aeaecc60ee7430d4cdac742487b2714c5bccad7ff294feac",
+        "cuexis_pd_host_probe.exe": "4ab1219e19ce11c76a01959c27f952647ad14b9db69660bea51d357ab3863d4e",
+        "cuexis_playback_allocation_tests.exe": "fbc2e0cec7920c03f98e0e0854db5f4f348218578c5223dcf9bdb92c1486ec01",
+        "cuexis_playback_tests.exe": "3f78833015392d5f4702421ad5647f927b152592d45608b644af277ed4730407",
+        "cuexis_player_support_tests.exe": "0b3bdf9a744e8725c4de086e5e2392458c55dfa254151a757b894afc33979aec",
+        "cuexis_presentation_renderer_tests.exe": "2b66305d15ebbd7bd06f1cf9413961ddc8037ac493cbc9b6b718f808018eb92c",
+        "cuexis_presentation_validation_tests.exe": "293403dacef6cdc8bfcdaeeec2d53a0be0a1d90ab7f4781a22e64dbd34b9167d",
+        "cuexis_project_tests.exe": "bb17825aadc999d0a503c39c2f3928a346271f8f7c0f73024eb8b9501376ff9c",
+        "cuexis_render_tests.exe": "ed5c526c2abdad3cfd39bec2a80ee4689243fc8ffb1aee9d549a2212549c37ea",
+        "cuexis_rpa_tests.exe": "7320c3c2271176deb6d29063c2ea6b8060b9a279d0288c37a6f853aad1394962",
+        "cuexis_runtime_tests.exe": "647b88e31f6f9a26f463aa2d667272609f604b4f96eff7e62ae28f21bb992556",
+        "cuexis_s4g_performance_probe.exe": "e029c8c445a774c8d02061308e0fc2408de80f46282dfeb8cc0da00afd4722be",
+        "cuexis_s5h_performance_probe.exe": "d0aaa6980c83fe5cacdb5e0b368c9ecb9125a52608c3549c7ed3d01c815e3cd5",
+        "cuexis_world_tests.exe": "9f55db303983fc02cfebdbf1861fbee8ca6c52576383a5491d92c71ccd7641f6"
+      }
+    }
+  ],
+  "totals": {
+    "rows": 11,
+    "tests": 13635.0,
+    "failures": 0.0,
+    "measurements": 120.0,
+    "phase_seconds": 10079.079520000008
+  },
+  "unexecuted": [
+    "physical_keyboard",
+    "listening",
+    "device_loss_recovery",
+    "production_calibration",
+    "hosted_same_sha",
+    "owner_acceptance"
+  ],
+  "source_unchanged": true,
+  "verdict": "local_pass"
+}

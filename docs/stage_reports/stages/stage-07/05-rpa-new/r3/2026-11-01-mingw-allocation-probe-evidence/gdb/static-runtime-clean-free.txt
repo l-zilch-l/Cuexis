@@ -1,0 +1,34 @@
+Breakpoint 1 at 0x140001ba3: file src/catch2/internal/catch_main.cpp, line 36.
+[New Thread 26460.0x38b4]
+[New Thread 26460.0x200c]
+[New Thread 26460.0x5fdc]
+
+Thread 1 hit Breakpoint 1, main (argc=1, argv=0x811d80) at src/catch2/internal/catch_main.cpp:36
+From                To                  Syms Read   Shared Object Library
+0x00007fffefba1000  0x00007fffefe067f8  Yes (*)     C:\WINDOWS\SYSTEM32\ntdll.dll
+0x00007fffee7e1000  0x00007fffee8aa6bc  Yes (*)     C:\WINDOWS\System32\kernel32.dll
+0x00007fffed3f1000  0x00007fffed7f1c24  Yes (*)     C:\WINDOWS\System32\KernelBase.dll
+0x00007fffe9ba1000  0x00007fffe9c3e7b4  Yes (*)     C:\WINDOWS\SYSTEM32\apphelp.dll
+0x00007fffecda1000  0x00007fffeceebec0  Yes (*)     C:\WINDOWS\System32\ucrtbase.dll
+0x00007fffe4871000  0x00007fffe4885058  Yes (*)     C:\msys64\ucrt64\bin\libwinpthread-1.dll
+0x00007fffeece1000  0x00007fffeed9bad8  Yes (*)     C:\WINDOWS\System32\advapi32.dll
+0x00007fffef161000  0x00007fffef2085f4  Yes (*)     C:\WINDOWS\System32\msvcrt.dll
+0x00007fffee091000  0x00007fffee1385e0  Yes (*)     C:\WINDOWS\System32\sechost.dll
+0x00007fffede11000  0x00007fffedf27858  Yes (*)     C:\WINDOWS\System32\rpcrt4.dll
+0x00007fffec321000  0x00007fffec32b044  Yes (*)     C:\WINDOWS\SYSTEM32\cryptbase.dll
+0x00007fffed801000  0x00007fffed8ab860  Yes (*)     C:\WINDOWS\System32\bcryptprimitives.dll
+(*): Shared library is missing debugging information.
+Breakpoint 2 at 0x7ff70c798b05 (3 locations)
+Breakpoint 3 at 0x7ff70c798b05 (3 locations)
+FREE_BREAKPOINT_COVERAGE 1
+Randomness seeded to: 227539348
+PROBE_BLOCK ptr=0000000000832140 w_minus_16=0x0000000000832130 w_minus_8=0x0000000000000041
+===============================================================================
+All tests passed (1 assertion in 1 test case)
+
+[Thread 26460.0x200c exited with code 0]
+[Thread 26460.0x5fdc exited with code 0]
+[Thread 26460.0x38b4 exited with code 0]
+[Inferior 1 (process 26460) exited normally]
+PAYLOAD_FREE_HITS 0
+warning: 36	src/catch2/internal/catch_main.cpp: No such file or directory

@@ -1,0 +1,69 @@
+{
+  "format": "cuexis.chart",
+  "version": 4,
+  "chartId": "019f0000-0000-7abc-8def-000000000490",
+  "metadata": {},
+  "timing": {
+    "offsetMs": 0.0,
+    "defaultBpm": 120.0,
+    "tempoEvents": [],
+    "stops": []
+  },
+  "parameters": [],
+  "templates": [
+    {
+      "id": "019f0000-0000-7abc-8def-000000000491",
+      "extends": null,
+      "prototype": {
+        "components": {
+          "cuexis.transform": {
+            "version": 1,
+            "position": [0.0, 0.0, 0.0],
+            "rotation": [0.0, 0.0, 0.0, 1.0],
+            "scale": [1.0, 1.0, 1.0]
+          },
+          "cuexis.animator": {
+            "version": 1,
+            "templateBindings": [],
+            "layers": [
+              {
+                "layerId": "layer.base",
+                "priority": 0,
+                "weight": 1.0,
+                "propertyMask": {
+                  "properties": ["transform.scale"],
+                  "prefixes": []
+                },
+                "blendGroups": []
+              }
+            ]
+          }
+        }
+      },
+      "extensions": {}
+    }
+  ],
+  "behaviors": [],
+  "animationTemplateImports": [],
+  "animationClips": [],
+  "objects": [
+    {
+      "id": "019f0000-0000-7abc-8def-000000000492",
+      "parent": null,
+      "template": {
+        "domain": "template",
+        "id": "019f0000-0000-7abc-8def-000000000491"
+      },
+      "overrides": [
+        {
+          "op": "replace",
+          "path": "/components/cuexis.animator/layers/0/weight",
+          "value": 0.5
+        }
+      ],
+      "extensions": {}
+    }
+  ],
+  "requiredExtensions": [],
+  "extensions": {}
+}

@@ -106,7 +106,8 @@ TEST_CASE("Neutral commands sort opaque ids and transparent depth",
         snapshot, resources, false, false, nullptr);
     REQUIRE(first.has_value());
     REQUIRE(second.has_value());
-    CHECK(first->digest == second->digest);
+    CHECK(cuexis::presentation_renderer::summaryDigest(*first) ==
+          cuexis::presentation_renderer::summaryDigest(*second));
     REQUIRE(first->opaque.size() == 2);
     CHECK(first->opaque[0].objectId == "a");
     CHECK(first->opaque[1].objectId == "b");
@@ -121,7 +122,8 @@ TEST_CASE("Neutral commands sort opaque ids and transparent depth",
     const auto changed = cuexis::presentation_renderer::buildPresentationCommands(
         snapshot, resources, false, false, nullptr);
     REQUIRE(changed.has_value());
-    CHECK(changed->digest != first->digest);
+    CHECK(cuexis::presentation_renderer::summaryDigest(*changed) !=
+          cuexis::presentation_renderer::summaryDigest(*first));
 }
 
 TEST_CASE("Test renderer transactions reject failure and stale tokens",
@@ -197,7 +199,7 @@ TEST_CASE("Test renderer transactions reject failure and stale tokens",
     REQUIRE(summary.has_value());
     CHECK(summary->debugPassEnabled);
     CHECK(summary->debugCommandCount == 1);
-    CHECK(summary->digest != 0);
+    CHECK(cuexis::presentation_renderer::summaryDigest(*summary) != 0);
     const auto duplicate = renderer.submit(*frame, nullptr);
     REQUIRE_FALSE(duplicate.has_value());
     CHECK(duplicate.error().code() == "presentation.renderer.frame.already_submitted");

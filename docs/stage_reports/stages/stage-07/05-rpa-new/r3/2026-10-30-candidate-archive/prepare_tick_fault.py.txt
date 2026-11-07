@@ -1,0 +1,242 @@
+from pathlib import Path
+import hashlib,json,shutil,subprocess
+base=Path(__file__).resolve().parent; draft=base/'tick-prototype-v1'; source=draft/'fault-source-v1'
+shutil.copytree(draft/'source-v3',source)
+cpp=source/'engine/judgement/src/execution_kernel.cpp'
+s=cpp.read_text(encoding='utf-8')
+def edit(old,new,count=1):
+ global s
+ assert s.count(old)==count,(old[:100],s.count(old))
+ s=s.replace(old,new)
+edit('namespace cuexis::judgement::detail {','extern "C" void r3c_cache_event(unsigned, std::int64_t, std::uint64_t) noexcept;\n\nnamespace cuexis::judgement::detail {')
+edit('            impl_->tickPoints.remember(std::move(capture.points[i]));','''            impl_->tickPoints.remember(std::move(capture.points[i]));
+    if (outcome && collecting)
+        r3c_cache_event(7, horizon.value(), capture.count);''')
+edit('                    auto point = std::make_shared<const NativeTickPoint>(','''                    r3c_cache_event(0, tick->value(), capture->count);
+                    auto point = std::make_shared<const NativeTickPoint>(''')
+edit('                    writable.reset();','''                    writable.reset();
+                    r3c_cache_event(1, tick->value(), capture->count);''')
+edit('                    // Optional cache admission never faults an already sealed Tick.','''                    r3c_cache_event(9, tick->value(), capture->count);
+                    // Optional cache admission never faults an already sealed Tick.''')
+edit('        auto final = std::make_shared<RuntimeState>(*impl_->active);','''        if (capture)
+            r3c_cache_event(2, horizon.value(), capture->count);
+        auto final = std::make_shared<RuntimeState>(*impl_->active);''')
+edit('                auto copy = std::make_shared<RuntimeState>(*impl_->active);\n#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)\n                rpaObservation::seekAdd(SeekPhase::s4InternalExecution, &SeekWork::foldCopies);','''                if (capture)
+                    r3c_cache_event(3, tick->value(), capture->count);
+                auto copy = std::make_shared<RuntimeState>(*impl_->active);
+#if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+                rpaObservation::seekAdd(SeekPhase::s4InternalExecution, &SeekWork::foldCopies);''')
+edit('                return impl_->reserveFault(*draft);','''                if (capture)
+                    r3c_cache_event(4, tick->value(), capture->count);
+                return impl_->reserveFault(*draft);''')
+edit('                auto state = std::make_shared<RuntimeState>(*selected->state);','''                r3c_cache_event(5, selected->state->projection.processedFrontier->value(), 0);
+                auto state = std::make_shared<RuntimeState>(*selected->state);''')
+edit('                state->projection.runScope = run.active->projection.runScope;\n                auto reserve = run.reserveFault(*state);\n                run.active = std::move(state);\n                run.faultReserve = std::move(reserve);\n                run.logTail = selected->prefix;','''                state->projection.runScope = run.active->projection.runScope;
+                r3c_cache_event(10, selected->state->projection.processedFrontier->value(), 0);
+                auto reserve = run.reserveFault(*state);
+                run.active = std::move(state);
+                run.faultReserve = std::move(reserve);
+                run.logTail = selected->prefix;''')
+edit('                ++run.tickRestores;','''                ++run.tickRestores;
+                r3c_cache_event(6, selected->state->projection.processedFrontier->value(), 0);''')
+edit('                // Restoration is transactional; original record/origin fallback remains.','''                r3c_cache_event(8, selected->state->projection.processedFrontier->value(), 0);
+                // Restoration is transactional; original record/origin fallback remains.''')
+cpp.write_text(s,encoding='utf-8')
+probe=(Path.cwd()/'tests/pd/pd_allocation_probe.hpp').read_text()
+probe=probe.replace('namespace pd_allocation {','''namespace tick_probe {
+struct Plan {
+    int failureStage{-1};
+    std::int64_t failureTick{1000};
+    bool armed{}, triggered{};
+    std::uint64_t events[11]{};
+    std::int64_t restoredFrontier{};
+};
+inline constinit thread_local Plan plan{};''').replace('pd_allocation::','tick_probe::').replace('} // namespace pd_allocation','} // namespace tick_probe')
+probe=probe.replace('    alignment = alignment < alignof(Header)', '''    if (plan.armed) {
+        plan.armed = false;
+        plan.triggered = true;
+        throw std::bad_alloc{};
+    }
+    alignment = alignment < alignof(Header)''')
+(source/'tests/rpa/tick_fault_probe.hpp').write_text(probe)
+test=source/'tests/rpa/rpa_b3_tests.cpp'
+t=test.read_text(encoding='utf-8')
+t='#include "tick_fault_probe.hpp"\n'+t
+t+='''
+extern "C" void r3c_cache_event(unsigned stage, std::int64_t tick, std::uint64_t count) noexcept {
+    auto& p = tick_probe::plan;
+    ++p.events[stage];
+    if (stage == 6) p.restoredFrontier = tick;
+    if (p.failureStage == static_cast<int>(stage) &&
+        (stage == 5 || stage == 10 || tick == p.failureTick)) {
+        if (stage == 0 || stage == 5 || stage == 10 || count > 0)
+            p.armed = true;
+    }
+}
+
+TEST_CASE("R3c real allocation failures preserve fault prefix and discard staged owners",
+          "[r3c-fault]") {
+    const auto stage = GENERATE(2, 3, 4);
+    Fixture3 f;
+    expandTickFixture(f, 256);
+    auto actual = f.session();
+    auto reference = f.session();
+    detail::KernelTestControls controls{};
+    controls.failAdvanceFinalization = stage == 2;
+    if (stage != 2) {
+        controls.failedTick = Tick{1000};
+        controls.failurePoint = stage == 3 ? detail::KernelFailurePoint::beforeFold
+                                          : detail::KernelFailurePoint::beforeSeal;
+    }
+    REQUIRE(detail::KernelTestAccess::inject(reference, controls));
+    const auto h = stage == 2 ? 904 : 1003;
+    tick_probe::plan = {};
+    tick_probe::plan.failureStage = stage;
+    tick_probe::plan.failureTick = stage == 2 ? h : 1000;
+    auto result = actual.advance(Tick{h});
+    const auto observed = tick_probe::plan;
+    tick_probe::plan = {};
+    REQUIRE_FALSE(result);
+    REQUIRE(observed.triggered);
+    REQUIRE(observed.events[1] == 1);
+    CHECK(observed.events[7] == 0);
+    REQUIRE_FALSE(reference.advance(Tick{h}));
+    auto a = detail::KernelTestAccess::captureDTO(actual);
+    auto b = detail::KernelTestAccess::captureDTO(reference);
+    REQUIRE(a);
+    REQUIRE(b);
+    CHECK(sameSnapshot(*a, *b));
+    auto archive = actual.archive();
+    REQUIRE(archive);
+    CHECK(detail::ExecutionKernel::tickPointCount(*archive) == 0);
+    CHECK(archive->data().records.size() == 1);
+    CHECK(a->kernel.state == KernelSessionState::Faulted);
+    auto aw = encodeSnapshot(detail::KernelTestAccess::snapshotValue(*a, archive->dependencies()));
+    auto bw = encodeSnapshot(detail::KernelTestAccess::snapshotValue(*b, archive->dependencies()));
+    REQUIRE(aw);
+    REQUIRE(bw);
+    CHECK(*aw == *bw);
+}
+
+TEST_CASE("R3c optional allocation misses use exact original replay", "[r3c-fault]") {
+    const auto stage = GENERATE(0, 5, 10);
+    Fixture3 f;
+    expandTickFixture(f, 256);
+    auto made = detail::ExecutionKernel::prepare(f.configuration(), f.prepared());
+    REQUIRE(made);
+    auto writer = std::move(*made);
+    if (stage == 0) {
+        tick_probe::plan = {};
+        tick_probe::plan.failureStage = 0;
+        tick_probe::plan.failureTick = 901;
+    }
+    auto advanced = writer->advance(Tick{1203});
+    auto capture = tick_probe::plan;
+    tick_probe::plan = {};
+    REQUIRE(advanced);
+    auto archive = writer->archive();
+    if (stage == 0) {
+        CHECK(capture.triggered);
+        CHECK(capture.events[9] == 1);
+        CHECK(capture.events[1] == 0);
+        CHECK(detail::ExecutionKernel::tickPointCount(archive) == 0);
+    } else REQUIRE(detail::ExecutionKernel::tickPointCount(archive) > 0);
+    const ReplayArchive external{archive.anchor(),
+                                 std::make_shared<const RecoveryInputs>(archive.dependencies())};
+    const auto cut = replayCutAt(archive, Tick{1003});
+    tick_probe::plan = {};
+    if (stage != 0) tick_probe::plan.failureStage = stage;
+    auto actual = detail::ExecutionKernel::seekCandidate(archive, Tick{1003}, nullptr, &cut);
+    const auto observed = tick_probe::plan;
+    tick_probe::plan = {};
+    REQUIRE(actual);
+    if (stage != 0) {
+        CHECK(observed.triggered);
+        CHECK(observed.events[8] == 1);
+        CHECK(observed.events[6] == 0);
+    }
+    CHECK((*actual)->tickRestoreCount() == 0);
+    auto expected = detail::ExecutionKernel::seekCandidate(external, Tick{1003}, nullptr, &cut);
+    REQUIRE(expected);
+    auto a = (*actual)->snapshot();
+    auto b = (*expected)->snapshot();
+    REQUIRE(a);
+    REQUIRE(b);
+    CHECK(sameSnapshot((*a)->dto, (*b)->dto));
+    auto aw = encodeSnapshot(detail::KernelTestAccess::snapshotValue((*a)->dto, archive.dependencies()));
+    auto bw = encodeSnapshot(detail::KernelTestAccess::snapshotValue((*b)->dto, archive.dependencies()));
+    REQUIRE(aw);
+    REQUIRE(bw);
+    CHECK(*aw == *bw);
+}
+
+TEST_CASE("R3c observed eviction selects earliest and latest retained frontiers", "[r3c-fault]") {
+    Fixture3 f;
+    expandTickFixture(f, 1536, 256);
+    auto made = detail::ExecutionKernel::prepare(f.configuration(), f.prepared());
+    REQUIRE(made);
+    REQUIRE((*made)->advance(Tick{2503}));
+    auto archive = (*made)->archive();
+    constexpr std::array<std::pair<int,int>,6> targets{{{904,901},{1104,901},{1304,901},
+                                                      {1504,1501},{1704,1701},{1904,1901}}};
+    for (const auto& [h, frontier] : targets) {
+        const auto cut = replayCutAt(archive, Tick{h});
+        tick_probe::plan = {};
+        auto result = detail::ExecutionKernel::seekCandidate(archive, Tick{h}, nullptr, &cut);
+        const auto observed = tick_probe::plan;
+        tick_probe::plan = {};
+        REQUIRE(result);
+        CHECK(observed.events[6] == 1);
+        CHECK(observed.restoredFrontier == frontier);
+    }
+}
+
+TEST_CASE("R3c observed source owners release requested heap", "[r3c-memory]") {
+    const auto n = GENERATE(1000U, 40000U);
+    Fixture3 f;
+    expandTickFixture(f, n);
+    const auto config = f.configuration();
+    const auto prepared = f.prepared();
+    // Warm shared preparation/static paths before either measured owner scope.
+    { auto warm = detail::ExecutionKernel::prepare(config, prepared); REQUIRE(warm); }
+    struct Usage { std::size_t peak{}, retained{}, released{}, points{}; bool success{}; };
+    const auto measure = [&](bool capture) {
+        Usage u;
+        const auto before = tick_probe::live.load();
+        tick_probe::peak.store(before);
+        {
+            auto result = detail::ExecutionKernel::prepare(config, prepared);
+            if (!result) return u;
+            auto advanced = capture ? (*result)->advance(Tick{1203})
+                                    : (*result)->advanceForReplay(Tick{1203});
+            u.success = static_cast<bool>(advanced);
+            auto archive = (*result)->archive();
+            u.points = detail::ExecutionKernel::tickPointCount(archive);
+            result->reset();
+            u.retained = tick_probe::live.load() - before;
+            u.peak = tick_probe::peak.load() - before;
+        }
+        u.released = tick_probe::live.load() - before;
+        return u;
+    };
+    const auto baseline = measure(false);
+    const auto candidate = measure(true);
+    REQUIRE(baseline.success);
+    REQUIRE(candidate.success);
+    CHECK(baseline.points == 0);
+    CHECK(candidate.points > 0);
+    CHECK(baseline.released == 0);
+    CHECK(candidate.released == 0);
+    std::cout << "{\\"event\\":\\"r3c.requested_heap\\",\\"n\\":" << n
+              << ",\\"baseline_peak\\":" << baseline.peak
+              << ",\\"candidate_peak\\":" << candidate.peak
+              << ",\\"baseline_retained\\":" << baseline.retained
+              << ",\\"candidate_retained\\":" << candidate.retained
+              << ",\\"candidate_points\\":" << candidate.points
+              << ",\\"released_delta\\":" << candidate.released << "}\\n";
+}
+'''
+test.write_text(t,encoding='utf-8')
+subprocess.run(['clang-format','-i',str(cpp),str(test),str(source/'tests/rpa/tick_fault_probe.hpp')],check=True)
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+(draft/'fault-source-v1.json').write_text(json.dumps(dict(scope='Instrumented shadow only. Production cache logic unchanged; event probes and static global allocation observer excluded from normal timing.',sources={str(p.relative_to(source)):sha(p) for p in (cpp,test,source/'tests/rpa/tick_fault_probe.hpp')},parent_binding_sha256=sha(draft/'build-v3/binding.json')),indent=2))

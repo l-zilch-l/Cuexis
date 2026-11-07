@@ -1,0 +1,7 @@
+Filters: "PD machine CPU warmup"
+Randomness seeded to: 1
+PD_MACHINE_WARMUP {"seconds":30,"checksum":14031481186487861249}
+===============================================================================
+test cases: 1 | 1 passed
+assertions: - none -
+

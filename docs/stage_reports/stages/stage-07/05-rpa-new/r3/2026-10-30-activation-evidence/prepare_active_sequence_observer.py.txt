@@ -1,0 +1,6 @@
+from pathlib import Path
+base=Path(__file__).resolve().parent
+s=(base/'prepare_activation_observer_v4.py').read_text()
+s=s.replace("out=base/'activation-observer-v4'", "out=base/'active-sequence-observer-v1'")
+s=s.replace("s=s.replace('judgement::testing::sameSnapshot'", "s=s.replace('activation-source-v1/execution_kernel.cpp','active-sequence-source-v1/execution_kernel.cpp')\ns=s.replace('judgement::testing::sameSnapshot'")
+exec(compile(s,str(base/'prepare_activation_observer_v4.py'),'exec'))

@@ -6,7 +6,11 @@ add_library(
     STATIC
         src/open_gl_backend.cpp
         src/open_gl_presentation.cpp
+        src/open_gl_presentation_draws.cpp
+        src/open_gl_presentation_frame.cpp
+        src/open_gl_presentation_gl_objects.cpp
         src/open_gl_presentation_internal.hpp
+        src/open_gl_presentation_units_internal.hpp
 )
 add_library(cuexis::render_opengl ALIAS cuexis_render_opengl)
 

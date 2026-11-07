@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <optional>
+#include <string>
 #include <string_view>
 
 namespace cuexis::chart::detail {
@@ -18,6 +19,9 @@ struct ChartDispatchResult final {
     std::optional<ChartDocument> legacyDocument;
     std::optional<ChartV4SourceDocument> v4Document;
     std::shared_ptr<const ParsedChartInput> v4Input;
+    // Legacy canonical identity bytes, produced from the same parse that fed the typed reader.
+    // Empty when the writer rejected the value, which leaves the text entry point to report it.
+    std::optional<std::string> legacyCanonicalText;
     core::Diagnostics diagnostics;
 
     [[nodiscard]] auto hasValue() const noexcept -> bool {

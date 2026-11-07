@@ -1,0 +1,42 @@
+Prepare the startup bundle before any device exists
+
+The startup Load ran inside the control transaction, after the window, the GL
+context, and the audio device existed. Preparing a 40K chart takes seconds, so
+the desktop spent those seconds reporting a window that never answered a
+message: the same work, in the worst place for it.
+
+Content preparation is CPU-only. The Player now resolves the configured source,
+prepares the Load bundle with preparePlayerLoadBundle, and only then creates the
+runtime, the window, and the backend; PlayerController::adoptStartupLoad commits
+the finished bundle through the device part of the fixed transaction and
+publishes Loaded itself, because the startup Load is not a user command. The
+previously discarded resolved source is reused instead of being resolved a
+second time by the transaction.
+
+Every phase that already owned work now reports elapsed and total microseconds
+under player.startup_phase, and the first presented frame closes startup with
+its draw summary and render time, so a slow startup is attributable from the
+product log alone.
+
+Localised 40K startup diagnostic, same fixture and machine, Release build,
+--project out/verification-20261031/r3-product-startup-v1/fixture-40k:
+- before: window at 8410 ms, first responsive sample at 35141 ms, 225 hung
+  samples, log span 34.792 s.
+- this commit alone: window and first responsive sample at 26270 ms, 1 hung
+  sample, log span 26.283 s; the window is created after content is ready, so a
+  message-free window no longer exists, but startup is still 26 s.
+- this commit with a5f0723 (which removed the duplicate whole-document parse
+  that content_resolved used to pay for): 17.899 s, repeats 20.778 s, 18.126 s
+  and 18.608 s, about 16 percent apart on one laptop.
+- phase log at that point: content_resolved 0.018 s, content_prepared 17.409 s,
+  window_created 0.377 s, backend_created 0.014 s, content_committed 0.002 s,
+  transport_playing 0.000 s, first_frame_presented 0.066 s with 40000 opaque
+  and 0 transparent draws.
+
+This moves preparation off the desktop and stops resolving the source twice; it
+does not make 40K start quickly. 18 seconds to the first frame is far from any
+stage gate, the remaining cost is preparation itself, and none of this is a
+Stage 7 acceptance.
+
+Tests: cuexis_player_control_tests 29 cases, cuexis_playback_tests 130 cases,
+cuexis_chart_tests 227 cases, cuexis_json_support_tests 26 cases.

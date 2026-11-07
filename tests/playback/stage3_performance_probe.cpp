@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <array>
 #include <chrono>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
@@ -19,6 +20,7 @@
 #include <iostream>
 #include <iterator>
 #include <memory>
+#include <numeric>
 #include <span>
 #include <stdexcept>
 #include <string>
@@ -43,6 +45,16 @@ constexpr std::uint32_t maxTextureWidth = 2'799;
 constexpr std::uint32_t maxTextureHeight = 5'994;
 constexpr std::uint64_t maxResourceBytes = 64ULL * 1024ULL * 1024ULL;
 constexpr std::size_t warmIterationCount = 4'096;
+
+[[nodiscard]] auto percentile(std::vector<double> values, double fraction) -> double {
+    if (values.empty()) {
+        return 0.0;
+    }
+    std::sort(values.begin(), values.end());
+    const auto rank =
+        static_cast<std::size_t>(std::ceil(fraction * static_cast<double>(values.size())));
+    return values[std::min(values.size() - 1, rank == 0 ? 0 : rank - 1)];
+}
 
 struct MemorySnapshot final {
     std::uint64_t residentBytes{};
@@ -280,9 +292,11 @@ int main() {
             fail("warm validate", validated.error());
         }
 
-        const auto frameStarted = Clock::now();
+        std::vector<double> frameSamples;
+        frameSamples.reserve(warmIterationCount);
         for (std::size_t index = 0; index < warmIterationCount; ++index) {
             const double chartTimeMs = index % 2 == 0 ? 0.0 : 625.0;
+            const auto sampleStarted = Clock::now();
             updated = session.update({.chartTimeMs = chartTimeMs,
                                       .simulationDeltaTimeMs = 0.0,
                                       .timeDiscontinuityId = index + 1});
@@ -293,17 +307,19 @@ int main() {
             if (!extracted) {
                 fail("warmed extract", extracted.error());
             }
+            frameSamples.push_back(elapsed(sampleStarted));
         }
-        const double frameMicroseconds = elapsed(frameStarted);
 
-        const auto validationStarted = Clock::now();
+        std::vector<double> validationSamples;
+        validationSamples.reserve(warmIterationCount);
         for (std::size_t index = 0; index < warmIterationCount; ++index) {
+            const auto sampleStarted = Clock::now();
             validated = sink.validateFrame(snapshot, summary);
             if (!validated) {
                 fail("warmed validation", validated.error());
             }
+            validationSamples.push_back(elapsed(sampleStarted));
         }
-        const double validationMicroseconds = elapsed(validationStarted);
 
         auto replacementSource = makeSource(std::byte{0xAA});
         if (!replacementSource) {
@@ -338,9 +354,23 @@ int main() {
                   << "manifest_acquire_us=" << acquireMicroseconds << '\n'
                   << "validation_candidate_us=" << validationPrepareMicroseconds << '\n'
                   << "warmed_update_extract_avg_us="
-                  << frameMicroseconds / static_cast<double>(warmIterationCount) << '\n'
+                  << std::accumulate(frameSamples.begin(), frameSamples.end(), 0.0) /
+                         static_cast<double>(warmIterationCount)
+                  << '\n'
+                  << "warmed_update_extract_p50_us=" << percentile(frameSamples, 0.50) << '\n'
+                  << "warmed_update_extract_p95_us=" << percentile(frameSamples, 0.95) << '\n'
+                  << "warmed_update_extract_p99_us=" << percentile(frameSamples, 0.99) << '\n'
+                  << "warmed_update_extract_max_us="
+                  << *std::max_element(frameSamples.begin(), frameSamples.end()) << '\n'
                   << "warmed_validate_avg_us="
-                  << validationMicroseconds / static_cast<double>(warmIterationCount) << '\n'
+                  << std::accumulate(validationSamples.begin(), validationSamples.end(), 0.0) /
+                         static_cast<double>(warmIterationCount)
+                  << '\n'
+                  << "warmed_validate_p50_us=" << percentile(validationSamples, 0.50) << '\n'
+                  << "warmed_validate_p95_us=" << percentile(validationSamples, 0.95) << '\n'
+                  << "warmed_validate_p99_us=" << percentile(validationSamples, 0.99) << '\n'
+                  << "warmed_validate_max_us="
+                  << *std::max_element(validationSamples.begin(), validationSamples.end()) << '\n'
                   << "reload_prepare_us=" << reloadPrepareMicroseconds << '\n'
                   << "resident_after_prepare_bytes=" << afterPrepareMemory.residentBytes << '\n'
                   << "peak_after_prepare_bytes=" << afterPrepareMemory.peakResidentBytes << '\n'

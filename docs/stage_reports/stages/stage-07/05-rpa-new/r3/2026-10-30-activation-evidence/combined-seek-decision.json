@@ -1,0 +1,228 @@
+{
+  "local_numeric_gate": true,
+  "repeatability_screen": false,
+  "local_screen_pass": false,
+  "summary": [
+    {
+      "n": 1000,
+      "case": "5",
+      "median_us": {
+        "baseline": 544,
+        "candidate": 227
+      },
+      "process_samples": {
+        "baseline": [
+          553,
+          544,
+          541
+        ],
+        "candidate": [
+          223,
+          230,
+          227
+        ]
+      },
+      "change_percent": -58.27205882352941,
+      "relative_range_percent": {
+        "baseline": 2.2058823529411766,
+        "candidate": 3.0837004405286343
+      },
+      "first_us": {
+        "baseline": [
+          722,
+          712,
+          687
+        ],
+        "candidate": [
+          428,
+          377,
+          405
+        ]
+      },
+      "repeat_us": {
+        "baseline": [
+          553,
+          474,
+          544,
+          435,
+          541,
+          486
+        ],
+        "candidate": [
+          221,
+          223,
+          230,
+          230,
+          227,
+          215
+        ]
+      }
+    },
+    {
+      "n": 40000,
+      "case": "5",
+      "median_us": {
+        "baseline": 16272,
+        "candidate": 445
+      },
+      "process_samples": {
+        "baseline": [
+          16071,
+          16272,
+          16399
+        ],
+        "candidate": [
+          445,
+          442,
+          543
+        ]
+      },
+      "change_percent": -97.26524090462144,
+      "relative_range_percent": {
+        "baseline": 2.015732546705998,
+        "candidate": 22.696629213483146
+      },
+      "first_us": {
+        "baseline": [
+          12289,
+          12785,
+          13255
+        ],
+        "candidate": [
+          566,
+          567,
+          630
+        ]
+      },
+      "repeat_us": {
+        "baseline": [
+          16223,
+          16071,
+          16461,
+          16272,
+          16589,
+          16399
+        ],
+        "candidate": [
+          432,
+          445,
+          442,
+          363,
+          543,
+          431
+        ]
+      }
+    },
+    {
+      "n": 40000,
+      "case": "902",
+      "median_us": {
+        "baseline": 2125,
+        "candidate": 1559
+      },
+      "process_samples": {
+        "baseline": [
+          2060,
+          2176,
+          2125
+        ],
+        "candidate": [
+          1654,
+          1559,
+          1538
+        ]
+      },
+      "change_percent": -26.635294117647057,
+      "relative_range_percent": {
+        "baseline": 5.458823529411765,
+        "candidate": 7.440667094291212
+      },
+      "first_us": {
+        "baseline": [
+          2060,
+          2443,
+          2125
+        ],
+        "candidate": [
+          1675,
+          1633,
+          1602
+        ]
+      },
+      "repeat_us": {
+        "baseline": [
+          2116,
+          2032,
+          2120,
+          2176,
+          2289,
+          2022
+        ],
+        "candidate": [
+          1654,
+          1547,
+          1559,
+          1519,
+          1538,
+          1527
+        ]
+      }
+    },
+    {
+      "n": 1000,
+      "case": "final",
+      "median_us": {
+        "baseline": 315,
+        "candidate": 313
+      },
+      "process_samples": {
+        "baseline": [
+          369,
+          304,
+          315
+        ],
+        "candidate": [
+          318,
+          310,
+          313
+        ]
+      },
+      "change_percent": -0.6349206349206327,
+      "relative_range_percent": {
+        "baseline": 20.634920634920633,
+        "candidate": 2.5559105431309903
+      },
+      "first_us": {
+        "baseline": [
+          478,
+          448,
+          418
+        ],
+        "candidate": [
+          426,
+          422,
+          428
+        ]
+      },
+      "repeat_us": {
+        "baseline": [
+          369,
+          358,
+          304,
+          297,
+          315,
+          313
+        ],
+        "candidate": [
+          318,
+          316,
+          310,
+          310,
+          313,
+          312
+        ]
+      }
+    }
+  ],
+  "scope": "Fixed diagnostic only; no formal CI, physical GPU, load, product memory quota or stage acceptance. Raw output/logs remain immutable."
+}

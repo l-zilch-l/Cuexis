@@ -1,0 +1,36 @@
+from pathlib import Path
+import json,hashlib
+
+root=Path.cwd();base=Path(__file__).resolve().parent;out=base/'draw-transfer-source-v1';out.mkdir(exist_ok=False)
+p=root/'engine/presentation_renderer/src/draw_command.cpp';s=p.read_text(encoding='utf-8')
+a=s.index('    std::sort(opaque.begin(), opaque.end(),');b=s.index('    summary.digest = summaryDigest(summary);',a)
+replacement='''    const auto opaqueLess = [](const auto& left, const auto& right) {
+        return std::tie(left.command.objectId, left.objectIndex) <
+               std::tie(right.command.objectId, right.objectIndex);
+    };
+    const auto transparentLess = [](const auto& left, const auto& right) {
+        if (left.command.transparentDepthKey != right.command.transparentDepthKey) {
+            return left.command.transparentDepthKey > right.command.transparentDepthKey;
+        }
+        return std::tie(left.command.objectId, left.objectIndex) <
+               std::tie(right.command.objectId, right.objectIndex);
+    };
+    if (!std::is_sorted(opaque.begin(), opaque.end(), opaqueLess)) {
+        std::sort(opaque.begin(), opaque.end(), opaqueLess);
+    }
+    if (!std::is_sorted(transparent.begin(), transparent.end(), transparentLess)) {
+        std::sort(transparent.begin(), transparent.end(), transparentLess);
+    }
+    summary.opaque.reserve(opaque.size());
+    summary.transparent.reserve(transparent.size());
+    // The temporary ordered arrays are dead after transfer. Preserve all command fields,
+    // including owning IDs and references, without allocating another copy of each string.
+    for (auto& draw : opaque) {
+        summary.opaque.push_back(std::move(draw.command));
+    }
+    for (auto& draw : transparent) {
+        summary.transparent.push_back(std::move(draw.command));
+    }
+'''
+s=s[:a]+replacement+s[b:];(out/'draw_command.cpp').write_text(s,encoding='utf-8')
+(out/'binding.json').write_text(json.dumps(dict(scope='Unselected neutral draw-only optimization: skip already sorted input under exact same total comparator and move temporary owning commands to final summary. Same digest/order/error/public types; no cache.',baseline_sha256=hashlib.sha256(p.read_bytes()).hexdigest(),candidate_sha256=hashlib.sha256((out/'draw_command.cpp').read_bytes()).hexdigest()),indent=2),encoding='utf-8')

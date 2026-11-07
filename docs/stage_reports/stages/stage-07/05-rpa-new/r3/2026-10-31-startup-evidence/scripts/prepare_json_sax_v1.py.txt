@@ -1,0 +1,126 @@
+from pathlib import Path
+import json, hashlib
+
+root = Path.cwd()
+base = Path(__file__).resolve().parent
+out = base / 'json-sax-source-v1'
+out.mkdir(exist_ok=False)
+path = root / 'engine/json_support/src/parse.cpp'
+source = path.read_text(encoding='utf-8')
+start = source.index('class ParseObserver final {')
+end = source.index('\n} // namespace', start)
+replacement = r'''// Build only Cuexis-owned values. In the DOM callback parser, completing each
+// object scans its parent for discarded children, even when the callback keeps
+// every item. Large arrays of objects therefore incur quadratic scans.
+class ValueSax final : public nlohmann::json_sax<nlohmann::json> {
+  public:
+    ValueSax(std::size_t maxDepth, std::size_t maxStringBytes)
+        : maxDepth_(maxDepth), maxStringBytes_(maxStringBytes) {}
+
+    bool null() override { return append(Value{}); }
+    bool boolean(bool value) override { return append(Value{value}); }
+    bool number_integer(number_integer_t value) override {
+        return append(Value{static_cast<std::int64_t>(value)});
+    }
+    bool number_unsigned(number_unsigned_t value) override {
+        return append(Value{static_cast<std::uint64_t>(value)});
+    }
+    bool number_float(number_float_t value, const string_t&) override {
+        return append(Value{static_cast<double>(value)});
+    }
+    bool string(string_t& value) override {
+        enforceStringLimit(value, JsonStringKind::StringValue);
+        return append(Value{std::move(value)});
+    }
+    bool binary(binary_t&) override { return false; }
+    bool start_object(std::size_t) override { return beginContainer(true); }
+    bool start_array(std::size_t) override { return beginContainer(false); }
+    bool key(string_t& value) override {
+        enforceStringLimit(value, JsonStringKind::ObjectKey);
+        stack_.back().key = std::move(value);
+        return true;
+    }
+    bool end_object() override { return endContainer(); }
+    bool end_array() override { return endContainer(); }
+    bool parse_error(std::size_t position, const std::string&,
+                     const nlohmann::detail::exception& exception) override {
+        if (exception.id >= 100 && exception.id < 200) {
+            error_.emplace(core::Error{"json.parse.syntax_error", "JSON syntax is invalid"}
+                               .withContext("byte_offset", std::to_string(position)));
+        } else {
+            error_.emplace(core::Error{"json.parse.failed", "JSON parsing failed"}
+                               .withContext("exception", exception.what()));
+        }
+        return false;
+    }
+    [[nodiscard]] auto duplicateKey() const noexcept -> std::string_view {
+        return duplicateKey_;
+    }
+    [[nodiscard]] auto error() const -> const std::optional<core::Error>& { return error_; }
+    [[nodiscard]] auto take() -> Value { return std::move(root_); }
+
+  private:
+    struct Container final {
+        Value value;
+        std::string key;
+    };
+    bool beginContainer(bool object) {
+        if (stack_.size() >= maxDepth_) {
+            throw ParseLimitExceeded{"JSON nesting depth exceeds the configured limit"};
+        }
+        stack_.push_back({object ? Value{Value::Object{}} : Value{Value::Array{}}, {}});
+        return true;
+    }
+    bool endContainer() {
+        Value value = std::move(stack_.back().value);
+        stack_.pop_back();
+        return append(std::move(value));
+    }
+    bool append(Value value) {
+        if (stack_.empty()) {
+            root_ = std::move(value);
+        } else if (auto* array = stack_.back().value.array()) {
+            array->push_back(std::move(value));
+        } else {
+            auto& parent = stack_.back();
+            auto* object = parent.value.object();
+            const auto found = object->find(parent.key);
+            if (found != object->end()) {
+                if (duplicateKey_.empty()) duplicateKey_ = parent.key;
+                found->second = std::move(value);
+            } else {
+                object->emplace(std::move(parent.key), std::move(value));
+            }
+        }
+        return true;
+    }
+    void enforceStringLimit(std::string_view value, JsonStringKind kind) const {
+        if (value.size() > maxStringBytes_) throw StringLimitExceeded{kind, value.size()};
+    }
+    std::size_t maxDepth_;
+    std::size_t maxStringBytes_;
+    std::vector<Container> stack_;
+    Value root_;
+    std::string duplicateKey_;
+    std::optional<core::Error> error_;
+};
+'''
+source = source[:start] + replacement + source[end:]
+source = source.replace('#include <set>', '#include <optional>')
+old = '''        ParseObserver observer{limits.maxDepth, limits.maxStringBytes};
+        const auto parsed =
+            nlohmann::json::parse(text.begin(), text.end(), std::ref(observer), true, false);
+        if (!observer.duplicateKey().empty()) {'''
+new = '''        ValueSax parser{limits.maxDepth, limits.maxStringBytes};
+        if (!nlohmann::json::sax_parse(text.begin(), text.end(), &parser)) {
+            if (parser.error()) return core::unexpected(*parser.error());
+            return core::unexpected(core::Error{"json.parse.failed", "JSON parsing failed"});
+        }
+        if (!parser.duplicateKey().empty()) {'''
+assert source.count(old) == 1
+source = source.replace(old, new).replace('observer.duplicateKey()', 'parser.duplicateKey()')
+source = source.replace('        return detail::fromNlohmann(parsed);', '        return parser.take();')
+target = out / 'parse.cpp'
+target.write_text(source, encoding='utf-8')
+(out / 'binding.json').write_text(json.dumps(dict(scope='Unselected direct SAX into Cuexis Value; no public/API/codec changes. Duplicate/depth/string/syntax compatibility requires differential checks.',
+    baseline_sha256=hashlib.sha256(path.read_bytes()).hexdigest(), source_sha256=hashlib.sha256(target.read_bytes()).hexdigest(), selected=False), indent=2), encoding='utf-8')
