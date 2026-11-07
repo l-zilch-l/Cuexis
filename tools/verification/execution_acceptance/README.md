@@ -9,7 +9,7 @@ Run from the repository root:
 
 ~~~powershell
 python -B -m unittest discover -s tools/verification/execution_acceptance -t . -p "test_*.py" -v
-python -B tools/verification/execution_acceptance/audit_layout.py --build out/build/r4/pre-o1/msvc-on-debug --output out/evidence/r4/layout-new
+python -B tools/verification/execution_acceptance/audit_layout.py --build <explicit-configured-build> --output out/evidence/r4/layout-new
 python -B -m tools.verification.execution_acceptance.budgets --layout tools/verification/execution_acceptance/element-sizes-msvc-release.v1.json --output out/evidence/r4/budget-new.json
 ~~~
 
@@ -24,9 +24,9 @@ fixture/observer memory, requested bytes, usable storage, and process commit/wor
 separate meanings.
 
 The acceptance matrix runner now supports --build-root. For example, add
---build-root out/build/r4/preflight to keep each invocation in a fresh directory. --output alone
-still selects only the evidence directory. Existing build trees and paths outside out/build are
-rejected in isolated mode.
+--build-root out/build/r4/fresh-invocation to keep each invocation in a fresh directory. --output
+alone still selects only the evidence directory. Existing build trees and paths outside out/build
+are rejected in isolated mode.
 
 `binding.py` binds clean Git sources and file bytes. `admission.py` validates evidence and writes
 one-time claims/seals. Attempt limits use canonical workload keys in the execution authorization's
@@ -42,6 +42,13 @@ verifies the pre-declared counters, identity, environment and runtime policy, an
 and proofs only. The probe units are B-only: the pre-PD tree has no matching harness, so A stays
 N/A instead of being filled with zero. P3, P7 and the device capture variants belong to the GPU and
 audio adapters and are not registered here.
+
+`environment_stability.py` holds `SetThreadExecutionState` display/system requests for a bounded
+interval and samples foreground, AC, power scheme and conflicting processes once per second. It is
+remedy evidence, not a workload: it does not simulate input, so a secure screen saver or a manual
+lock still fails the record. `prepare_probe.py --retry-remedy <artifact>` then writes one
+`rpa.execution.retry-disposition.v1` per unit that binds the previous claim and the verified remedy;
+without a verified remedy a second registration is refused.
 
 `build.py` creates fresh explicit clean-source MSVC builds with English compiler output and binds
 the whole target's Ninja object/header dependency inventory. `prepare_cpu.py` predeclares a single

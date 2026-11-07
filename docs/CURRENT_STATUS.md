@@ -11,14 +11,21 @@
 - **RPA 当前承接为 R4 集成取证**：R1、R2、R3 已退出，O1 方案 B 的 reference 设计预算保持。
   完整本地矩阵及正式 CPU 取证候选为 `24f0a914`，日期版本为 `26.11.07-1`。
   已推送 PR #32 的后继提交为 `2ec3480e` / `26.11.07-3`，同 SHA 三平台 hosted 已通过；
-  本地交接留档版本为 `26.11.07-4`，按 owner 最新要求不推送，尚无该版本的本地完整矩阵或 hosted 证据。
+  owner 要求不推送后，本地候选推进到 `00af7f90` / `26.11.07-5`，尚无该候选的完整矩阵或 hosted。
   原 128-slot 优化的同子集 71.04% 降幅保留；扩大拥有覆盖后，64/high 与 low 的 active World
   唯一下界均为 119,534 B，完整图仍为 unrated、正式 memory/P8 未准入，未改预算或运行40K。
   首个正式 CPU 三窗九对组已完整结束：RPA validated_trace/playback_only 通过；legacy 对应两项
   因重复性为 inconclusive；两种 read_long 均超出原 1.10 相对门，失败及重开额度分别保留。
   隔离读取原型首轮诊断反而变慢（legacy +1.7%、RPA +5.6%），依预注册停止、不采用。
   11行本地矩阵全部通过（13,652项测试注册、0失败、26项显式skip）；同SHA的六个push和三个PR检查通过。
+  2026-11-08 新增展示矩阵探针适配：P1-no-consumer、P2-low-delivery、P4-capture-1、P6-sparse
+  已登记并完成四份 pilot 与 attempt-1 第一窗口；第二窗口因交互会话被系统锁定、前台进程变为 0
+  而按环境规则停止，**没有任何正式裁定**。其余 P4-capture-2/capture-4/P6-topology 已注册并通过
+  全规模身份预检但未运行。恢复正式采样需要解锁并保持前台、验证不锁屏处置后重登记。见
+  [探针批报告](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-08-probe-matrix-admission-and-environment-stop.md)。
   其他 P0–P7、Seek、完整内存、设备和生产接受未完成；O2 实体清单及 F4/PD 移交门账已准备。
+  本轮按 owner 指示清理了可再生成的旧构建树（磁盘 22.8 GB → 226.7 GB），
+  `out/evidence`、来源树、A 基线二进制与 attempt 台账保持；清理不追改历史判定。
   本地最终矩阵和同 SHA hosted 状态见[本轮报告](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-07-owning-and-cpu.md)。
   Version Gate 仍缺 owner 针对所选候选的有效 SDK 批准，按 owner 要求暂不修、不代签或豁免。
   [实施方案](stage_plans/active/stage-07/05-rpa-new/r4/plan.md)及
@@ -62,7 +69,7 @@ owner 在本次交接最后明确要求“不要推送”；本轮只本地提�
 | 阶段 | 当前状态 | 入口 |
 | --- | --- | --- |
 | Stage 7A | S7A-3/4、5/6、7/8 的受限功能验收完成；整体关闭仍待 RPA 收尾 | [Stage 7A 计划](stage_plans/active/stage-07/01-a/plan.md) |
-| Stage 7-RPA | R1、R2、R3 已退出；R4 O1 有效；扩大 World 下界为119,534 B且仍unrated；首CPU组读取超界，其他正式/设备/生产门及最终接受未完成 | [整改计划](stage_plans/active/stage-07/05-rpa-new/plan.md)、[缩页效果](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-06-world-storage-effect.md)、[R3 退出裁定](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3-hosted-delta-and-exit-ruling.md) |
+| Stage 7-RPA | R1、R2、R3 已退出；R4 O1 有效；扩大 World 下界为119,534 B且仍unrated；首CPU组读取超界；探针四单元 attempt-1 因会话锁定停止、无裁定；其他正式/设备/生产门及最终接受未完成 | [整改计划](stage_plans/active/stage-07/05-rpa-new/plan.md)、[缩页效果](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-06-world-storage-effect.md)、[R3 退出裁定](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3-hosted-delta-and-exit-ruling.md)、[探针批](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-08-probe-matrix-admission-and-environment-stop.md) |
 | Stage 7-PD | PD-0–4 内部实施及适用门禁完成；PD-5“未通过但定案”，退出清单待 owner 接受；分域内存及正式性能缺口由 RPA/PD 后续取证承接 | [PD 计划](stage_plans/active/stage-07/04-pd/plan.md)、[PD-5 判定报告](stage_reports/stages/stage-07/04-pd/pd-5/exit/2026-10-24-pd5-verdict-and-stage-7-pd-exit.md) |
 | Stage 7B+ | 未开始，等待 RPA 完整退出 | [Stage 7B+ 计划](stage_plans/active/stage-07/06-b/plan.md) |
 
@@ -85,6 +92,10 @@ Stage 0–6 已完成；Stage 8–14 尚未开始。整体 Stage 7 未关闭。
   压力验证、生产参数与预算仍待验收；Reset/暂停恢复附近的帧率波动持续时间及模块成本尚未量化。
   R3 初次 load 的已通过读数不代表极端 40K 启动达标；40K 启动与 prepare 的有限证据见
   [启动可观测性与成本](stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-01-r3-40k-startup-observability-and-cost.md)。
+- **正式采样需要解锁的交互会话**：冻结的 `sampled-windows-environment-v1` 策略要求前台进程
+  全程不变；交互会话被系统锁定时 `GetForegroundWindow()` 返回 0，R4 attempt-1 因此在第二窗口停止。
+  恢复需先解除锁定、保持本窗口前台，并验证不锁屏处置（`SetThreadExecutionState` 或临时关闭
+  显示器/待机超时与屏保）后才能生成新的 retry disposition 与登记；本轮未把未验证的处置写成补救。
 - **历史限制与偶发故障保留**：PD-0 历史慢态及尾延迟未归因；R0 的 partial 和旧 Q4 `inconclusive`
   不因 R1/R2/R3 退出而回填。B5 Pause 的 `capture_gap` 仍未定位；R3c 正式采用尝试另保留重复 Pause
   失败记录。CXC unpack 已加入有限原子重试和确定性测试，原现场具体句柄持有者仍未知。见
@@ -101,9 +112,10 @@ Cuexis 由可嵌入的 Playback SDK、独立 Cuexis Player 和 Cuexis Studio 构
 
 ## 当前格式与 SDK 合同
 
-- 当前工作树 SDK API 为 **`0.9.1` preview**，本地日期构建为 **`26.11.07-4`**，未推送或发行。
+- 当前工作树 SDK API 为 **`0.9.1` preview**，本地日期构建为 **`26.11.07-5`**，未推送或发行。
   完整本地11行矩阵绑定 `24f0a914` / `26.11.07-1`；远端 `2ec3480e` / `26.11.07-3`
-  具有独立的同SHA hosted通过证据，但未重跑完整本地矩阵。本地交接提交不继承它们的同SHA验证。
+  具有独立的同SHA hosted通过证据，但未重跑完整本地矩阵。本地 `00af7f90` 只带有探针准入、
+  pilot 与被停止的 attempt-1，不继承上述矩阵或 hosted 结论。
   SDK批准仍由Version Gate独立处理。
   R3 来源绑定新增 candidate 类型和 `StepTarget` 字段，消费者须整体重建，不能混用旧二进制。
   PD-4 历史基线仍为 0.9.0。版本决定见[版本政策](guides/VERSIONING.md#091-r3-candidate-来源绑定)，

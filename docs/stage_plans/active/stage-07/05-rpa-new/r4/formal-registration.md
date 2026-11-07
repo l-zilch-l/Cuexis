@@ -1,6 +1,6 @@
 # R4 固定取证登记与剩余预注册
 
-状态：active；O1 已接受；P0 legacy/RPA 首固定 CPU 组已登记并结束，其余单元未登记
+状态：active；O1 已接受；P0 legacy/RPA 首固定 CPU 组已结束；探针四单元已登记但 attempt-1 因会话锁定停止，其余探针单元未运行
 
 更新日期：2026-11-07
 
@@ -100,3 +100,12 @@ P3、P7 与设备 capture 变体需要真实 renderer/音频端点，本表不�
 计数可执行，不进入正式样本，也不消费正式额度。绝对预算只按已有接受值登记；
 展示矩阵的 `materialize` 归因边界尚未通过 observer 准入，故其读数保持未判定，
 不用相对门代签。
+
+2026-11-08 实际登记与结果：P1-no-consumer、P2-low-delivery、P4-capture-1、P6-sparse
+按上表登记（候选 `00af7f90` / `26.11.07-5`），四份 pilot 与 attempt-1 第一窗口
+12 个测量进程完成；第二窗口在 `p1-no-consumer` 第 2 对热身阶段因前台进程变为 0
+（交互会话被系统锁定）按冻结环境策略停止，整组无正式裁定，四个稳定单元键的
+attempt-1 已消耗且保留。P4-capture-2、P4-capture-4、P6-topology 已完成一次非正式
+全规模身份预检（逐字段一致），未 claim、未运行。恢复顺序与补救验证要求见
+[探针批报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-08-probe-matrix-admission-and-environment-stop.md)；
+未验证不锁屏处置前不生成 `rpa.execution.retry-disposition.v1`，也不启动 attempt-2。

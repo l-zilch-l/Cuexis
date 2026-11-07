@@ -1,6 +1,6 @@
 # Cuexis Stage 7-RPA R4 实施与验证方案
 
-状态：active；O1方案B已接受；P0首组完成且read_long超界，11行F1及同SHA hosted已完成，其余证据/接受未完成
+状态：active；O1方案B已接受；P0首组完成且read_long超界，11行F1及同SHA hosted已完成；展示矩阵探针四单元已登记但 attempt-1 因会话锁定停止，其余证据/接受未完成
 
 更新日期：2026-11-07
 
@@ -325,3 +325,12 @@ python -B tools/check_docs.py、git diff --check 通过为完成条件；不要�
 [F4/PD移交门账](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-07-f4-gate-and-handoff.md)。
 正式P0读取失败保留；本地/hosted平台范围仅认证候选24f0a914。memory/P8、其他单元、实体操作、生产目标、
 最终退出以及精确SDK owner批准仍未完成。版本批准不是自动豁免项。
+
+2026-11-08 完成 R4-4 的一个协议适配批次：展示矩阵探针的 P1/P2/P4-capture-1/P6-sparse
+按 `probe_units.py` 的采样前声明登记，四份 pilot 与 attempt-1 第一窗口 12 个测量进程完成；
+第二窗口因交互会话被系统锁定、前台进程变为 0 而按冻结环境策略停止，该 attempt 已消耗且
+没有正式裁定。P4-capture-2/capture-4 与 P6-topology 已注册并通过全规模身份预检，未运行。
+恢复正式采样需要先解锁、保持前台并验证不锁屏处置；未验证前不生成 retry disposition。
+证据与阻断条件见
+[探针批报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-08-probe-matrix-admission-and-environment-stop.md)。
+该批不含新预算、新阈值、新性能机制或公共语义变化。

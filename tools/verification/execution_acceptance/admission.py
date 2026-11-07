@@ -130,6 +130,22 @@ def validate_preparation(document, *, source_verifier=verify_source):
     return document
 
 
+def retry_disposition(ledger, stable_protocol_id, remedy):
+    """Build the one disposition a second registration needs; the failed attempt stays visible."""
+    unit_id(stable_protocol_id)
+    directory = Path(ledger) / stable_protocol_id
+    attempts = sorted(path for path in directory.glob("attempt-*.json")
+                      if re.fullmatch(r"attempt-[12]\.json", path.name))
+    if not attempts:
+        raise ValueError("no previous attempt to recover from: " + stable_protocol_id)
+    return {"schema": "rpa.execution.retry-disposition.v1",
+            "stable_protocol_id": stable_protocol_id,
+            "previous_claim_sha256": sha256(attempts[-1]),
+            "verified_remedy_binding": remedy,
+            "scope": "Remedy verified before this registration; no sample replacement and no "
+                     "merging with the failed attempt's readings."}
+
+
 def claim(preparation, ledger):
     """A failed partial claim stays visible; it never restores an attempt allowance."""
     validate_preparation(preparation)

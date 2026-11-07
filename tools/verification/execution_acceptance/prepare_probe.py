@@ -90,6 +90,18 @@ def unit_record(unit, probe, warmup, root, affinity, proofs):
             **proofs}
 
 
+def retry_bindings(units, ledger, remedy, output):
+    """One disposition per unit when a verified remedy exists; never invent one."""
+    bindings = {}
+    for unit in units:
+        stable = unit["gate"] + "-release"
+        record = admission.retry_disposition(ledger, stable, remedy)
+        path = output / (unit["id"] + "-retry-disposition.json")
+        write_once(path, record)
+        bindings[unit["id"]] = artifact(path)
+    return bindings
+
+
 def run(args):
     root, output = args.source.resolve(), args.output.resolve()
     acceptance = args.acceptance if args.acceptance.is_absolute() else root / args.acceptance
@@ -144,6 +156,12 @@ def run(args):
                              "absolute observer gate is admitted by this proof"})
                 proofs[kind + "_binding"] = artifact(path)
             records.append(unit_record(unit, probe, warmup, root, affinity, proofs))
+        if args.retry_remedy:
+            remedy = artifact(args.retry_remedy)
+            ledger = read(authorization)["attempt_ledger"]
+            bindings = retry_bindings(units, ledger, remedy, output)
+            for record in records:
+                record["retry_disposition_binding"] = bindings[record["id"]]
         if clean_source(root) != source:
             raise ValueError("source changed during the probe pilot")
         preparation = {
@@ -191,6 +209,8 @@ def main():
     parser.add_argument("--authorization", type=Path,
                         default=r4 / "2026-11-05-execution-authorization.json")
     parser.add_argument("--units", nargs="+", default=["all"])
+    parser.add_argument("--retry-remedy", type=Path,
+                        help="verified remedy artifact; enables one second registration per unit")
     run(parser.parse_args())
 
 

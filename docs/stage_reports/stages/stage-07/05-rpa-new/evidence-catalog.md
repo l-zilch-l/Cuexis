@@ -2,7 +2,7 @@
 
 状态：current index
 
-更新日期：2026-11-05
+更新日期：2026-11-08
 
 当前状态只以 [CURRENT_STATUS](../../../../CURRENT_STATUS.md) 为准；本页只负责定位，不新增实施、测量或阶段接受结论。
 
@@ -119,3 +119,12 @@
 | [最终矩阵证据](r3/2026-11-04-rpa-acceptance-matrix-final-evidence/index.md) | `D:/Cuexis-redesign/out/rpa-acceptance/20261104-050730-f7d80b3f/`（11 行 configure/build/CTest/measurement 日志与 21 MB 原始 manifest）；`summary.json`、`verification.json`（阶段日志 SHA-256 与 5,052 文件内容闭合）、`source-content-sha256.json`、`identity-closure.json`（CRLF/LF 两个 checkout）、只读复算器与证据 manifest |
 | [R3c 正式采用单元](r3/2026-11-04-r3c-formal-adoption-v4/registration.json) | 补丁已入库 `r3/2026-11-04-r3c-formal-adoption-v4/inputs/`（`common-source.patch` 52,533 B、`seek-harness.patch` 4,875 B，附 `manifest.json`）；原始工作目录 `out/_r3c-formal/` |
 | [Seek 证据独立复核](r3/2026-11-04-r3-seek-recheck/index.md) | 工作目录 `out/_verify-seek-classes/`（`bin/` 探针与依赖、`seek-probe.patch`、`original-20261104/` 43 个文件、`replay/` 39 个文件）；入库的复算输入见该证据目录 `tools/` |
+
+## r4
+
+| 来源报告 | 原始证据引用 |
+| --- | --- |
+| [展示矩阵探针准入与停止](r4/2026-11-08-probe-matrix-admission-and-environment-stop.md) | `out/evidence/r4/probe-20261107/build-release-b1`（候选 `00af7f90` 的 configure/build、CMakeCache、compile_commands、命令文本、目标依赖清单与两个 build binding）；`out/evidence/r4/probe-20261107/build-release`（首次构建在 binding 阶段被拒的日志，未生成 binding） |
+| [展示矩阵探针准入与停止](r4/2026-11-08-probe-matrix-admission-and-environment-stop.md) | `out/evidence/r4/probe-20261107/probe-pilot-v1`（四单元 pilot 的 warmup/sample 日志、原生环境、parsed、semantic/pilot/environment proof、`preparation.json`、`formal.seal.json`） |
+| [展示矩阵探针准入与停止](r4/2026-11-08-probe-matrix-admission-and-environment-stop.md) | `out/evidence/r4/probe-20261107/formal-run1`（attempt-1 第一窗口 12 个完整进程、第二窗口 1 个完整进程与 1 个中止热身、逐进程 before/after 与 runtime 环境采样、`stopped.json`） |
+| [展示矩阵探针准入与停止](r4/2026-11-08-probe-matrix-admission-and-environment-stop.md) | `out/evidence/r4/probe-20261107/precheck-identity-20261108`（`p4-capture-2`/`p4-capture-4`/`p6-topology` 的全规模非正式身份预检与 `precheck.json`）；`out/evidence/r4/probe-20261107/evidence-manifest.json`（193 文件 / 261,491,981 B 逐文件哈希）；`out/evidence/r4/attempt-ledger`（四个探针单元的 attempt-1 claim 与 seal marker） |
