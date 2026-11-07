@@ -30,6 +30,11 @@ auto matrixNow() -> std::int64_t {
     return std::chrono::duration_cast<std::chrono::microseconds>(Clock::now().time_since_epoch())
         .count();
 }
+// Sampling uses a nanosecond clock so a sub-microsecond session update is not recorded as zero.
+auto matrixNowNs() -> std::int64_t {
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(Clock::now().time_since_epoch())
+        .count();
+}
 auto matrixCount(const char* key, unsigned fallback) -> unsigned {
     const auto text = test_support::environmentVariable(key);
     if (text.empty())
@@ -187,7 +192,8 @@ TEST_CASE("PD5 presentation workload matrix", "[.][pd][pd5][matrix]") {
     std::map<std::string, unsigned> counts;
     auto sample = [&](const char* metric, std::int64_t start, std::int64_t end) {
         std::cout << "PD5_SAMPLE {\"metric\":\"" << metric << "\",\"ordinal\":" << counts[metric]++
-                  << ",\"elapsed_us\":" << end - start << ",\"complete\":true}\n";
+                  << ",\"elapsed_us\":" << static_cast<double>(end - start) / 1000.
+                  << ",\"complete\":true}\n";
     };
     std::cout << std::setprecision(17);
     pd_measure::environmentJson("begin");
@@ -205,11 +211,11 @@ TEST_CASE("PD5 presentation workload matrix", "[.][pd][pd5][matrix]") {
         if (mode == "topology" && i && i % (smoke ? 4U : 256U) == 0) {
             auto replacement = sparseSource(200 + (++reloads % 2));
             retireDelivery();
-            const auto start = matrixNow();
+            const auto start = matrixNowNs();
             auto prepared = matrixTake(session->prepareReload(
                 std::move(replacement), {0, 0, ++segment}, ReloadPolicy::RestartAtZero));
             matrixTake(session->commit(std::move(prepared)));
-            const auto end = matrixNow();
+            const auto end = matrixNowNs();
             tick = 0;
             ordinal = matrixTake(session->presentationSource()).updateOrdinal;
             ++context.resourceGeneration;
@@ -224,11 +230,11 @@ TEST_CASE("PD5 presentation workload matrix", "[.][pd][pd5][matrix]") {
         for (unsigned u = 0; u < ratio; ++u) {
             tick += 7000;
             runtime = {static_cast<double>(tick) / 1000., 7., segment};
-            const auto start = matrixNow();
+            const auto start = matrixNowNs();
             internal::pd::setRecording(measured);
             matrixTake(session->update(runtime));
             internal::pd::setRecording(false);
-            const auto end = matrixNow();
+            const auto end = matrixNowNs();
             REQUIRE(matrixTake(session->presentationSource()).updateOrdinal == ++ordinal);
             if (measured) {
                 sample("sdk_update", start, end);
@@ -248,16 +254,16 @@ TEST_CASE("PD5 presentation workload matrix", "[.][pd][pd5][matrix]") {
             request.viewport = {1280, 720};
             request.exactVersion = version;
             request.deadlineMonotonicUs = matrixNow() + 5000000;
-            const auto start = matrixNow();
+            const auto start = matrixNowNs();
             auto admission = matrixTake(delivery->admit(request, version, matrixNow(), false));
             REQUIRE(admission.materialize);
             auto payload = std::make_shared<FramePayload>();
             payload->storage = std::move(admission.reservation);
-            const auto readStart = matrixNow();
+            const auto readStart = matrixNowNs();
             internal::pd::setRecording(measured);
             matrixTake(session->extractFrame(request.viewport, payload->snapshot));
             internal::pd::setRecording(false);
-            const auto readEnd = matrixNow();
+            const auto readEnd = matrixNowNs();
             REQUIRE(payloadBytes(*payload) <= payload->storage.bytes());
             FrameEnvelope envelope;
             envelope.context = context;
@@ -273,7 +279,7 @@ TEST_CASE("PD5 presentation workload matrix", "[.][pd][pd5][matrix]") {
                 DeliveryStatus::ready);
             auto taken =
                 matrixTake(delivery->take(request.consumerId, request.requestId, matrixNow()));
-            const auto end = matrixNow();
+            const auto end = matrixNowNs();
             REQUIRE(taken);
             REQUIRE(taken->source->resultVersion == version);
             const auto frameDigest =

@@ -69,3 +69,34 @@ owning覆盖后high/low下界均119,534 B且仍unrated，memory/P8保持未准�
 新预算未接受、observer 标签不全、比较边界不一致、语义不等价或缺少 immutable binding
 时停止对应单元准入。对未知设备归属/首次认证/未控制缓存等如实记录；
 未具备普通计时边界的预算保持未判定，不用归因读数跨门代验。
+
+## 4. 展示矩阵探针单元预注册
+
+原 PD-5 展示矩阵探针已携带 P1/P2/P4/P6 的真实工作负载；本轮把它的工作内容固化为
+可准入单元，而不是另造夹具。`tools/verification/execution_acceptance/probe_units.py`
+在采样前声明全部计数：每进程 14,400 帧（240 Hz 实际时间 60 秒）、2,400 帧预热（10 秒）、
+200 实体稀疏内容、200/201 拓扑代次、以及拓扑每 256 帧重载。单元计数由该表推导，
+不从观察到的读数回填。
+
+| 单元 | mode | 消费者 | 更新:画面 | 每进程样本 |
+| --- | --- | ---: | ---: | --- |
+| P1-no-consumer | no-consumer | 0 | 1:0 | sdk_update 14,400 |
+| P2-low-delivery | low-delivery | 1 | 8:1 | sdk_update 115,200；capture_delivery/materialize 各 14,400 |
+| P4-capture-1 | capture-1 | 1 | 1:1 | capture_delivery/materialize 各 14,400 |
+| P4-capture-2 | capture-2 | 2 | 1:1 | capture_delivery/materialize 各 28,800 |
+| P4-capture-4 | capture-4 | 4 | 1:1 | capture_delivery/materialize 各 57,600 |
+| P6-sparse | sparse | 1 | 1:1 | 同 capture-1，200 实体 |
+| P6-topology | topology | 1 | 1:1 | capture-1 加 topology_reload 56 |
+
+以上全部为 **B-only**：pre-PD tree 没有对应 harness，A 记 N/A，不填 0、不伪造比值。
+P3、P7 与设备 capture 变体需要真实 renderer/音频端点，本表不含它们。每个单元仍是
+三窗口×每窗三进程、窗间 600 秒、每进程 30 秒机器热身；失败保留，不替样。
+本轮同时把探针的采样时钟改为纳秒并输出小数微秒，使 no-consumer 的亚微秒更新不再被记成 0；
+帧数、消费者数、比例和重载间隔均未改变，因此负载身份不变，但该修订之前的整数微秒读数
+不能与本轮小数读数混用。
+
+准入顺序固定为：`prepare_probe.py` 单进程 pilot 与三份 proof → `admission` 校验 →
+`formalize.py` 一次性 claim/seal → `runner.py` 固定组。pilot 只证明已声明身份、环境与
+计数可执行，不进入正式样本，也不消费正式额度。绝对预算只按已有接受值登记；
+展示矩阵的 `materialize` 归因边界尚未通过 observer 准入，故其读数保持未判定，
+不用相对门代签。
