@@ -4,7 +4,7 @@ from pathlib import Path
 
 from .binding import accepted_budget, read, sha256, verify_artifact, verify_source, write_once
 from .registration import validate_draft
-from . import build_binding
+from . import build_binding, probe_units
 
 
 PRE_PD = "d344088236ae589c0b49a4994ef0fbddd6567ce2"
@@ -105,6 +105,9 @@ def validate_preparation(document, *, source_verifier=verify_source):
         mode = unit.get("measurement_mode")
         if mode not in ("normal", "stage-timing", "memory", "device"):
             raise ValueError("explicit measurement mode required")
+        if unit.get("adapter") == "probe":
+            # The presentation-matrix harness has no pre-PD counterpart and no device endpoint.
+            probe_units.validate_registration(unit)
         builds = [(unit["candidate_binary"], document["source_binding"])]
         if unit["comparison"] == "A/B":
             builds.append((unit["baseline_binary"], document["baseline_source_binding"]))

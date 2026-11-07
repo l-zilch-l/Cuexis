@@ -31,9 +31,17 @@ rejected in isolated mode.
 `binding.py` binds clean Git sources and file bytes. `admission.py` validates evidence and writes
 one-time claims/seals. Attempt limits use canonical workload keys in the execution authorization's
 fixed ledger, including the one-invocation P8 limit. A partial failed claim stays visible.
-`runner.py` currently implements normal owner/common-host fixed groups only. It refuses other
-adapters before claiming a run, preserves complete process statistics and absolute gates, and never
-replaces failed samples. `results.py` reuses the frozen statistical functions.
+`runner.py` implements normal owner, common-host and presentation-matrix probe fixed groups. It
+refuses other adapters before claiming a run, preserves complete process statistics and absolute
+gates, and never replaces failed samples. `results.py` reuses the frozen statistical functions.
+
+`probe_units.py` states the original PD-5 presentation matrix once: 14400 real-time frames at
+240 Hz after a 2400-frame warmup, the per-mode consumer count, the 8:1 update ratio and the 256-frame
+topology reload interval. `prepare_probe.py` runs one bounded pilot process per selected unit,
+verifies the pre-declared counters, identity, environment and runtime policy, and emits preparation
+and proofs only. The probe units are B-only: the pre-PD tree has no matching harness, so A stays
+N/A instead of being filled with zero. P3, P7 and the device capture variants belong to the GPU and
+audio adapters and are not registered here.
 
 `build.py` creates fresh explicit clean-source MSVC builds with English compiler output and binds
 the whole target's Ninja object/header dependency inventory. `prepare_cpu.py` predeclares a single
@@ -43,8 +51,7 @@ It never claims a formal attempt or adapts read counts after observing results.
 each child runs; it records gaps and parent CPU overhead. It may miss sub-interval activity and
 does not certify GPU/audio conditions.
 
-`memory_domains.py` validates extended observer rows and simultaneous allocation aggregates.
-Its domain mapping comes from the same internal `.def` table as the C++ observer. Current allocation
+`memory_domains.py` validates extended observer rows and simultaneous allocation aggregates.Its domain mapping comes from the same internal `.def` table as the C++ observer. Current allocation
 origin tags do not yet close semantic ownership/lifetime, native/GPU and reference overhead gates;
 its result remains partial/unrated and cannot admit formal memory or P8 runs.
 

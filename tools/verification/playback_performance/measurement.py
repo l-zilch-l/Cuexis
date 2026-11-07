@@ -13,6 +13,11 @@ HOST_FIELDS = {
                             'request_to_present_return_us', 'present_call_to_return_us'),
 }
 T95 = {3: 4.302653, 9: 2.306004}
+# Identity a repeatable presentation-matrix probe process must reproduce; peaks and digest are
+# observations, not registered inputs, so they are deliberately absent.
+PROBE_IDENTITY = ('mode', 'harness', 'frames', 'warmup_frames', 'updates', 'materializations',
+                  'capture_consumers', 'renderer_consumers', 'base_entities', 'max_entities',
+                  'payload_charge_per_frame', 'gameplay', 'audio', 'gpu', 'closed', 'counts')
 LIMITS_US = {'d2': 1000, 'd3': 2000, 'materialize': 2000, 'queue': 1000,
              'request_to_ready': 1000000 / 240, 'gpu_render': 1000000 / 240,
              'pause': 50000, 'resume': 50000, 'resize': 50000,
@@ -138,9 +143,11 @@ def require_comparable(a, b, metric):
     if metric not in a['statistics'] or metric not in b['statistics']:
         raise ValueError('Metric endpoint not available on both implementations')
     owner = a['schema'] == b['schema'] == 'pd5.owner-fixed.v1'
+    probe = a['schema'] == b['schema'] == 'pd5.probe.v1'
     keys = ('digest', 'replay_sha256', 'snapshot_sha256', 'packed_sha256', 'profile') if owner else (
-        'digest', 'source', 'viewport', 'objects', 'warmup', 'measured', 'audio', 'gpu')
-    if not owner and a['schema'] != b['schema'] and metric != 'request_to_ready_us':
+        PROBE_IDENTITY if probe else
+        ('digest', 'source', 'viewport', 'objects', 'warmup', 'measured', 'audio', 'gpu'))
+    if not owner and not probe and a['schema'] != b['schema'] and metric != 'request_to_ready_us':
         raise ValueError('Different host completion endpoints')
     if any(k not in a['identity'] or k not in b['identity'] for k in keys):
         raise ValueError('Missing exact workload/output identity')

@@ -7,11 +7,17 @@ import time
 
 from tools.verification.playback_performance import measurement, process_control
 
+from . import probe_units
 from .admission import read_sealed
 from .binding import read, sha256, verify_artifact, write_once
 from .results import verdict
 from .environment import verify_cpu, verify_native, verify_warmup
 from .runtime_monitor import POLICY, RuntimeMonitor
+
+PROBE_GATES = probe_units.GATES
+PROBE_IDENTITY = ("mode", "harness", "frames", "warmup_frames", "updates", "materializations",
+                  "capture_consumers", "renderer_consumers", "base_entities", "max_entities",
+                  "payload_charge_per_frame", "gameplay", "audio", "gpu", "closed")
 
 
 def utc():
@@ -34,11 +40,16 @@ def parse_result(unit, text, exit_code):
         parsed = measurement.parse_owner(text, exit_code=exit_code, phase="formal")
     elif unit["adapter"] == "host-common":
         parsed = measurement.parse_host(text, exit_code=exit_code)
+    elif unit["adapter"] == "probe":
+        if unit.get("gate") not in PROBE_GATES:
+            raise ValueError("probe adapter requires its canonical presentation-matrix gate")
+        parsed = measurement.parse_probe(text, exit_code=exit_code)
     else:
         raise ValueError("unimplemented result adapter cannot launch a formal process")
     expected = unit["expected_identity"]
     required = ({"digest", "replay_sha256", "snapshot_sha256", "packed_sha256", "profile"}
                 if unit["adapter"] == "owner" else
+                set(PROBE_IDENTITY) if unit["adapter"] == "probe" else
                 {"digest", "source", "viewport", "objects", "warmup", "measured", "audio", "gpu"})
     if not required.issubset(expected):
         raise ValueError("incomplete preregistered semantic identity")
@@ -47,6 +58,7 @@ def parse_result(unit, text, exit_code):
     if any(parsed["identity"].get(key) != value for key, value in expected.items()):
         raise ValueError("native result differs from preregistered workload semantics")
     count = (parsed["statistics"]["validated_trace"]["n"] if unit["adapter"] == "owner"
+             else parsed["identity"]["frames"] if unit["adapter"] == "probe"
              else len(parsed["samples"]))
     if count != unit["requests_per_process"]:
         raise ValueError("native request/block count differs from registration")
@@ -59,13 +71,20 @@ def parse_result(unit, text, exit_code):
         samples = [row["request_to_ready_us"] for row in parsed["samples"]]
         absolute["request_to_ready"] = measurement.budget("request_to_ready", samples,
                                                          config=unit["config"])
+    if unit["adapter"] == "probe":
+        # Only a metric with an accepted absolute budget may carry one; a missing budget stays
+        # unjudged instead of borrowing the relative threshold.
+        for metric in unit.get("absolute_gate_metrics", []):
+            samples = [row["elapsed_us"] for row in parsed["samples"] if row["metric"] == metric]
+            absolute[metric] = measurement.budget(metric, samples, config=unit["config"])
     return {"medians": values, "parsed": parsed, "absolute_gates": absolute}
 
 
 def run(seal_path, output):
     seal_path, output = Path(seal_path).resolve(), Path(output).resolve()
     preparation = read_sealed(seal_path)
-    if any(unit.get("adapter") not in ("owner", "host-common") for unit in preparation["units"]):
+    if any(unit.get("adapter") not in ("owner", "host-common", "probe")
+           for unit in preparation["units"]):
         raise ValueError("result adapter not admitted; no process started")
     for unit in preparation["units"]:
         if unit.get("runtime_monitor_policy") != POLICY:
@@ -74,10 +93,14 @@ def run(seal_path, output):
             raise ValueError("P8 cannot use the timing group runner")
         if (unit["workload"] != "steady" or
                 (unit["adapter"] == "host-common" and unit.get("gate") != "p0-host-common") or
-                (unit["adapter"] == "owner" and unit.get("gate") not in ("p0-legacy", "p0-rpa"))):
+                (unit["adapter"] == "owner" and
+                 unit.get("gate") not in ("p0-legacy", "p0-rpa")) or
+                (unit["adapter"] == "probe" and unit.get("gate") not in PROBE_GATES)):
             raise ValueError("adapter does not implement the registered workload/gate")
         if unit["measurement_mode"] != "normal":
             raise ValueError("instrumented runs require their dedicated adapter")
+        if unit["adapter"] == "probe" and unit.get("comparison") != "B-only":
+            raise ValueError("presentation-matrix probes are a B-only structural/timing group")
         for side in (("A", "B") if unit["comparison"] == "A/B" else ("B",)):
             launch = unit["launch"][side]
             key = unit["baseline_binary"] if side == "A" else unit["candidate_binary"]
