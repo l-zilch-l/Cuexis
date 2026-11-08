@@ -23,9 +23,13 @@
   已两次登记并各完成 pilot；attempt-1 因会话锁定、attempt-2 因人工切换前台窗口停止，
   两次都没有形成三窗口，因此**没有任何正式裁定**，每单元两次额度已用尽。
   P4-capture-2/capture-4/P6-topology 已注册并通过全规模身份预检但未运行。
+  同批另登记 `p0-host-common`（B-only、1024 帧）：两个窗口 6 个进程的 request→ready p99
+  为 87.4–98.2 µs、逐进程低于 4.167 ms 预算，第三窗口因前台在多个进程间变化停止，
+  整组无裁定，该单元 attempt-2 仍可用。
   继续该批不再由代理决定：需 owner 在“带限制退出 / 豁免第三次登记 / 只改 CPU-only 环境判据 /
   缩短稳态窗口 / 换隔离环境”中选择；未验证的处置不会被写成补救。见
-  [探针批报告](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-08-probe-matrix-admission-and-environment-stop.md)。
+  [探针批报告](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-08-probe-matrix-admission-and-environment-stop.md)
+  与[普通 host 报告](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-08-common-host-unit.md)。
   其他 P0–P7、Seek、完整内存、设备和生产接受未完成；O2 实体清单及 F4/PD 移交门账已准备。
   本轮按 owner 指示清理了可再生成的旧构建树（磁盘 22.8 GB → 226.7 GB），
   `out/evidence`、来源树、A 基线二进制与 attempt 台账保持；清理不追改历史判定。

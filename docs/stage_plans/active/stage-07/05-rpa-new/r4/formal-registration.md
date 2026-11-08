@@ -109,3 +109,10 @@ P3、P7 与设备 capture 变体需要真实 renderer/音频端点，本表不�
 均已消耗且保留，第三次登记需 owner 裁定。P4-capture-2、P4-capture-4、P6-topology 已完成
 一次非正式全规模身份预检（逐字段一致），未 claim、未运行。待裁决方向见
 [探针批报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-08-probe-matrix-admission-and-environment-stop.md)。
+
+同批另新增 `p0-host-common-release`：`prepare_host.py` 以 1,024 帧、32 帧原生预热、
+无 GPU/audio 的普通 host 路径登记，B-only（pre-PD A 是 receipt-ACK 边界且 digest 不同），
+唯一已接受预算为 request→ready p99 ≤4.167 ms。attempt-1（候选 `f1c4d22e`）完成两个窗口
+6 个进程，逐进程 p99 87.4–98.2 µs 均低于预算；第三窗口因前台持续变化停止，整组无裁定，
+attempt-2 仍可用。见
+[普通 host 报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-08-common-host-unit.md)。

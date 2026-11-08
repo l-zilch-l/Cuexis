@@ -211,8 +211,11 @@ def run(seal_path, output):
         write_once(output / "result.json", result)
         return result
     except Exception as error:
+        # A stopped group must keep the absolute gates it already computed; otherwise a failed
+        # window silently discards judged per-process evidence that the raw logs still support.
         write_once(output / "stopped.json", {"utc": utc(), "error": str(error),
                                             "partial_results": data,
+                                            "partial_absolute_gates": absolute_results,
                                             "status": "execution_or_semantic_failure"})
         raise
 
