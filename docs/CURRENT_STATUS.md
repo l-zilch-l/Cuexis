@@ -11,7 +11,8 @@
 - **RPA 当前承接为 R4 集成取证**：R1、R2、R3 已退出，O1 方案 B 的 reference 设计预算保持。
   完整本地矩阵及正式 CPU 取证候选为 `24f0a914`，日期版本为 `26.11.07-1`。
   已推送 PR #32 的后继提交为 `2ec3480e` / `26.11.07-3`，同 SHA 三平台 hosted 已通过；
-  owner 要求不推送后，本地候选推进到 `00af7f90` / `26.11.07-5`，尚无该候选的完整矩阵或 hosted。
+  owner 要求不推送后，本地候选推进到 `b7edc959` / `26.11.07-5`（含探针准入与补救工具），
+  尚无完整矩阵或 hosted。
   原 128-slot 优化的同子集 71.04% 降幅保留；扩大拥有覆盖后，64/high 与 low 的 active World
   唯一下界均为 119,534 B，完整图仍为 unrated、正式 memory/P8 未准入，未改预算或运行40K。
   首个正式 CPU 三窗九对组已完整结束：RPA validated_trace/playback_only 通过；legacy 对应两项
@@ -19,9 +20,11 @@
   隔离读取原型首轮诊断反而变慢（legacy +1.7%、RPA +5.6%），依预注册停止、不采用。
   11行本地矩阵全部通过（13,652项测试注册、0失败、26项显式skip）；同SHA的六个push和三个PR检查通过。
   2026-11-08 新增展示矩阵探针适配：P1-no-consumer、P2-low-delivery、P4-capture-1、P6-sparse
-  已登记并完成四份 pilot 与 attempt-1 第一窗口；第二窗口因交互会话被系统锁定、前台进程变为 0
-  而按环境规则停止，**没有任何正式裁定**。其余 P4-capture-2/capture-4/P6-topology 已注册并通过
-  全规模身份预检但未运行。恢复正式采样需要解锁并保持前台、验证不锁屏处置后重登记。见
+  已两次登记并各完成 pilot；attempt-1 因会话锁定、attempt-2 因人工切换前台窗口停止，
+  两次都没有形成三窗口，因此**没有任何正式裁定**，每单元两次额度已用尽。
+  P4-capture-2/capture-4/P6-topology 已注册并通过全规模身份预检但未运行。
+  继续该批不再由代理决定：需 owner 在“带限制退出 / 豁免第三次登记 / 只改 CPU-only 环境判据 /
+  缩短稳态窗口 / 换隔离环境”中选择；未验证的处置不会被写成补救。见
   [探针批报告](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-08-probe-matrix-admission-and-environment-stop.md)。
   其他 P0–P7、Seek、完整内存、设备和生产接受未完成；O2 实体清单及 F4/PD 移交门账已准备。
   本轮按 owner 指示清理了可再生成的旧构建树（磁盘 22.8 GB → 226.7 GB），
@@ -114,8 +117,8 @@ Cuexis 由可嵌入的 Playback SDK、独立 Cuexis Player 和 Cuexis Studio 构
 
 - 当前工作树 SDK API 为 **`0.9.1` preview**，本地日期构建为 **`26.11.07-5`**，未推送或发行。
   完整本地11行矩阵绑定 `24f0a914` / `26.11.07-1`；远端 `2ec3480e` / `26.11.07-3`
-  具有独立的同SHA hosted通过证据，但未重跑完整本地矩阵。本地 `00af7f90` 只带有探针准入、
-  pilot 与被停止的 attempt-1，不继承上述矩阵或 hosted 结论。
+  具有独立的同SHA hosted通过证据，但未重跑完整本地矩阵。本地 `00af7f90` 与 `b7edc959`
+  只带有探针准入、pilot 与两次被停止的固定组，不继承上述矩阵或 hosted 结论。
   SDK批准仍由Version Gate独立处理。
   R3 来源绑定新增 candidate 类型和 `StepTarget` 字段，消费者须整体重建，不能混用旧二进制。
   PD-4 历史基线仍为 0.9.0。版本决定见[版本政策](guides/VERSIONING.md#091-r3-candidate-来源绑定)，

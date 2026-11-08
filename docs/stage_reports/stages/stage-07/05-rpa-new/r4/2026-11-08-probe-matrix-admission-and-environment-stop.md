@@ -1,12 +1,12 @@
 # R4 展示矩阵探针准入、pilot 与环境阻断的固定组
 
-状态：candidate；四单元已登记，attempt-1 在第二窗口因会话锁定停止，无正式裁定
+状态：candidate；四单元两次登记均因环境条件停止（锁屏、人工切窗），两次额度用尽，无正式裁定
 
 日期：2026-11-08
 
 返回 [New RPA 报告索引](../README.md)。当前结论只以
 [CURRENT_STATUS](../../../../../CURRENT_STATUS.md) 为准；本文保存本轮的实施、pilot、
-固定组现场与阻断条件。原始字节与复核入口见
+两次固定组现场、阻断条件与待 owner 裁定的处置方向。原始字节与复核入口见
 [本轮证据](2026-11-08-probe-matrix-evidence/index.md)。
 
 ## 1. 授权、候选与边界
@@ -14,22 +14,25 @@
 owner 的最新有效指示仍是继续 R4 技术工作且**不推送**；本轮没有 push、merge 或 release，
 也没有向 PR #32 同步任何提交。技术授权依据
 [执行授权](2026-11-05-execution-authorization.json)；数值仍只消费 2026-11-05 已接受的
-O1 方案 B，本轮没有新预算、新阈值或新公共语义。
+O1 方案 B，本轮没有新预算、新阈值或新公共语义。owner 在 2026-11-08 明确选择
+“现在解锁并继续”，该指示只覆盖继续执行，不构成第三次登记或策略变更的授权。
 
 | 项 | 值 |
 | --- | --- |
 | 工作树 | `D:/Cuexis-worktree`，分支 `codex/r4-integration` |
-| 候选源码 | `00af7f90`（本地，未推送） |
-| 日期版本 | `26.11.07-5` |
+| attempt-1 候选 | `00af7f90`（本地，未推送） |
+| attempt-2 候选 | `b7edc959`（本地，未推送；含补救工具与文档） |
+| 日期版本 | `26.11.07-5`（两次登记相同） |
 | SDK API | `0.9.1` preview |
-| 本轮产品差异 | 无；只新增准入/准备工具，并把展示矩阵探针的采样时钟改为纳秒分辨率 |
+| 本轮产品差异 | 无；只新增准入/准备/补救工具，并把展示矩阵探针的采样时钟改为纳秒分辨率 |
 
 候选源码包含工具、登记文本与 fixture 修订，不含未跟踪或 dirty 文件；`clean_source`
 在构建、pilot 与每次正式进程前都会整树校验。F1/F2 平台证据仍只属于较早候选
-`24f0a914`，本轮没有重跑矩阵或 hosted，因此**不得**把本候选写成已通过 F1/F2。
+`24f0a914`，本轮没有重跑矩阵或 hosted，因此**不得**把任一候选写成已通过 F1/F2。
 
-本报告与后续文档提交位于候选之后；`preparation`/`seal`/`build binding` 只绑定
-`00af7f90`，复核这些字节必须检出该 SHA。报告提交本身不重新冻结证据，也不继承其结论。
+本报告与后续文档提交位于两个候选之后；两次 `preparation`/`seal`/`build binding` 分别绑定
+`00af7f90` 与 `b7edc959`，复核这些字节必须检出对应 SHA。报告提交本身不重新冻结证据，
+也不继承其结论。
 
 ## 2. 工作区清理（用户本轮显式要求）
 
@@ -83,17 +86,17 @@ P3、P7 与设备 capture 变体需要真实 renderer/音频端点，本轮不�
 
 ## 4. 构建与绑定
 
-候选 `00af7f90` 的全新 Release STATIC 构建按既有规则完成：`--fresh` 配置、
-`--clean-first` 构建、`CUEXIS_LIBRARY_TYPE=STATIC`、`CUEXIS_ENABLE_CHART_V5_CANDIDATE=ON`、
-全部插桩选项 OFF、普通 allocator、英文编译器输出。
+两次登记各用一次全新 Release STATIC 构建，规则相同：`--fresh` 配置、`--clean-first` 构建、
+`CUEXIS_LIBRARY_TYPE=STATIC`、`CUEXIS_ENABLE_CHART_V5_CANDIDATE=ON`、全部插桩选项 OFF、
+普通 allocator、英文编译器输出。
 
-| 项 | 值 |
-| --- | --- |
-| 构建根 | `out/build/r4/probe-20261107/release-b1` |
-| 绑定证据 | `out/evidence/r4/probe-20261107/build-release-b1` |
-| 目标 | `cuexis_pd_host_probe`、`cuexis_pd_baseline_probe` |
-| 工具链 | MSVC 19.51.36256.0 / x64，与 pre-PD A 同签名 |
-| 探针二进制 | `cuexis_pd_host_probe.exe` 5,718,016 B；基线/热身 `cuexis_pd_baseline_probe.exe` 4,864,000 B |
+| 项 | attempt-1（`00af7f90`） | attempt-2（`b7edc959`） |
+| --- | --- | --- |
+| 构建根 | `out/build/r4/probe-20261107/release-b1` | `out/build/r4/probe-20261108/release-b2` |
+| 绑定证据 | `out/evidence/r4/probe-20261107/build-release-b1` | `out/evidence/r4/probe-20261108/build-release-b2` |
+| 目标 | `cuexis_pd_host_probe`、`cuexis_pd_baseline_probe` | 同左 |
+| 工具链 | MSVC 19.51.36256.0 / x64，与 pre-PD A 同签名 | 同左 |
+| 探针二进制 | `cuexis_pd_host_probe.exe` 5,718,016 B；`cuexis_pd_baseline_probe.exe` 4,864,000 B | 与左列逐字节相同（无产品源码差异） |
 
 build binding 覆盖目标级 Ninja 对象/头文件依赖清单、CMakeCache、compile_commands、
 compiler、vcpkg manifest 与 configuration、命令文本与全部输入字节，并拒绝任何
@@ -113,9 +116,13 @@ compiler、vcpkg manifest 与 configuration、命令文本与全部输入字节�
 | P6-sparse | capture_delivery 16.5；materialize 14.7 | 80.7 / 69.3 | 200 实体 |
 
 pilot 只证明**已声明的身份、计数、环境与固定轨迹可执行**；它不是性能裁定，不构成
-绝对预算通过，也不证明端点 p99 或设备条件。
+绝对预算通过，也不证明端点 p99 或设备条件。attempt-2 换用新候选后重跑同一四单元 pilot，
+证据在 `out/evidence/r4/probe-20261108/probe-pilot-v2`；两次 pilot 的中位一致到
+0.1 µs 量级，说明构建与计时口径没有漂移，但 pilot 本身仍不是正式样本。
 
-## 6. 固定组 attempt-1
+## 6. 固定组：两次登记与两次环境停止
+
+### 6.1 attempt-1
 
 登记与封存按既定顺序完成：`prepare_probe` → `admission` 校验 → `formalize` 一次性
 claim/seal → `runner` 固定三窗口，每窗三进程，窗间 600 秒。四个稳定单元键
@@ -143,6 +150,57 @@ claim/seal → `runner` 固定三窗口，每窗三进程，窗间 600 秒。四
 处置按 R4 §4：保留慢值与失败现场，不替换样本、不补成三窗、不把窗口 1 改写成通过；
 该 attempt 已消耗，撤销记录不能被“重跑一次”抹掉。`stopped.json`、每个进程的
 `*-runtime-environment.json`、原始日志与已完成的 13 个测量进程全部保留。
+
+### 6.2 attempt-2：补救验证后重登记
+
+owner 于 2026-11-08 明确选择“现在解锁并继续”。会话解锁后按 §9 的顺序执行：
+
+1. **补救证据**：`environment_stability.py` 在 900 秒窗口内保持
+   `SetThreadExecutionState(ES_CONTINUOUS|ES_SYSTEM_REQUIRED|ES_DISPLAY_REQUIRED)`，并按
+   240 秒发送一次 1 px 往返相对鼠标事件以重置输入空闲计时。893 个采样中前台恒为 24,212、
+   交流供电恒为 1、电源方案与进程集不变，`passed=true`（`remedy-verify-v2.json`）。
+   第一次尝试用 2 秒采样间隔时因间隔本身超过冻结策略的 2 秒上限而被判不完整，该 v1 记录保留，
+   v2 改用 1 秒间隔。两次尝试之间还有一次失败记录：前台在验证窗口内切到 `explorer` 与
+   `ShellHost`，说明该补救只对抗系统空闲，不对抗人工切换窗口。
+2. **处置绑定**：`prepare_probe --retry-remedy` 为四个单元各写一份
+   `rpa.execution.retry-disposition.v1`，绑定 attempt-1 的 claim sha 与上述补救证据。
+3. **新候选与构建**：报告与工具提交后的新候选 `b7edc959`，全新构建
+   `out/build/r4/probe-20261108/release-b2`（同一 Release STATIC/普通 allocator/插桩全关配置）。
+4. **重登记**：四单元 pilot 重跑（`probe-pilot-v2`）→ `formalize` 一次性 claim attempt-2 →
+   `runner` 固定三窗口；同时后台运行同一补救工具（`remedy-run-hold-v1.json`）持有显示并
+   逐秒记录环境。
+
+attempt-2 完成了**前两个窗口的全部 24 个测量进程**，第三窗口在 `p1-no-consumer` 第 1 对完成、
+第 2 对的采样阶段停止（09:45:33 UTC）。停止原因仍是环境条件：该进程的
+`sample-runtime-environment.json` 记录前台在 24,212 与 9,456（`explorer`）之间变化。
+同一时刻 owner 报告网络中断并回到本窗口；也就是说这一次是**人工切换窗口**，不是锁屏。
+
+运行期补救记录（`remedy-run-hold-v1.json`，5,556 个采样、23 次 nudge）显示：前 3,641 秒
+前台恒为 24,212，说明“不锁屏 + 输入计时重置”确实延长了可用窗口（attempt-1 的锁屏出现在
+约 56 分钟空闲处，本次在 60 分钟内没有锁定）；随后在 3,641–3,669 秒出现一串窗口切换，
+与 owner 的网络中断处理吻合，之后又在 4,159 秒与 5,510 秒各切换一次。该记录另在
+第 165 秒的一个采样点看到 `wpr.exe`（1 秒内消失）：登记用的 `RuntimeMonitor` 未记录该事件，
+按冻结规则以登记监控为判据，但这一偶发事件保留披露，不据此改判。
+
+### 6.3 两次尝试的合并披露
+
+两次尝试分别完成 13 与 25 个测量进程：attempt-1 为窗口 1 的 12 个加窗口 2 的 1 个；
+attempt-2 为窗口 1 的 12 个、窗口 2 的 12 个加窗口 3 的 1 个。按冻结规则，重复性函数要求
+恰好三窗口×三进程，因此**两次尝试都没有正式裁定**；下表只披露 attempt-2 的两个完整窗口，
+不与新登记合并，也不构成通过：
+
+| 单元/指标 | attempt-2 窗口 1 | attempt-2 窗口 2 | 窗内极差/中位 |
+| --- | --- | --- | --- |
+| P1-no-consumer / sdk_update | 1.7, 1.6, 1.6 | 1.6, 1.7, 1.6 | ≤6.3% |
+| P2-low-delivery / sdk_update | 0.8, 0.8, 0.8 | 0.8, 0.8, 0.9 | ≤12.5% |
+| P2-low-delivery / capture_delivery | 2.2, 2.2, 2.1 | 2.3, 2.3, 2.3 | ≤4.5% |
+| P4-capture-1 / capture_delivery | 2.5, 2.5, 2.5 | 2.5, 2.5, 2.5 | 0.0% |
+| P6-sparse / capture_delivery | 16.6, 17.9, 16.6 | 17.4, 16.7, 16.7 | ≤7.8% |
+
+两次尝试的窗内重复性都低于 15%，但这只是**两个窗口的披露**：第三窗口缺失，冻结的
+“逐窗 + 前六 + 全九”三门没有被评估，也没有任何单元获得正式结论。每单元的两个
+attempt 额度至此已用尽（`admission.claim` 对非 P8 单元上限为 2），第三次登记必须由
+owner 裁定，不能由代理自行重开。
 
 ## 7. 未运行单元的预检
 
@@ -182,40 +240,42 @@ claim/seal → `runner` 固定三窗口，每窗三进程，窗间 600 秒。四
 | 方向 | 利 | 弊 | 结论 |
 | --- | --- | --- | --- |
 | 保留现场、记录原因、预检其余单元、准备补救设计 | 不伪造通过、不消耗更多额度；下一批风险最低 | 本轮没有正式裁定 | **采用** |
-| 立即用同一 preparation 重跑 | 省时间 | 额度和“不得替样”规则不允许；且会话仍锁定必然再失败 | 否决 |
-| 修改冻结的监控策略（放宽前台检查） | 可继续采样 | 属于冻结策略的合同变更，代理无权改 | 否决 |
+| 立即用同一 preparation 重跑 | 省时间 | 额度已用尽且“不得替样”；停止原因未消除会再失败 | 否决 |
+| 修改冻结的监控策略（放宽前台检查） | 可继续采样 | 属于冻结策略的合同变更，代理无权改；已按 9.C 交 owner 裁定 | 否决（代理不自行改） |
 | 改登记一个前台为 0 的“环境” | 形式上可跑 | 在锁定会话中采样等于用不可核对的环境冒充正式证据 | 否决 |
 | 切换到不需要前台的批次（如内存诊断） | 可继续工作 | 内存诊断额度已用尽且需先提交方案 | 否决 |
 
-## 9. 阻断条件与恢复前置
-当前阻断是环境性的，需要 owner 的物理配合，不是新的授权问题：
+## 9. 当前阻断与待 owner 裁定的方向
 
-1. 交互会话必须保持解锁。被锁定时 `GetForegroundWindow()` 返回 0，冻结的
-   `sampled-windows-environment-v1` 策略必然判定环境改变。
-2. 采样期间必须让系统不进入屏幕关闭/锁屏。可选处置（按侵入性排序）：
-   - 运行前用 `SetThreadExecutionState(ES_CONTINUOUS|ES_SYSTEM_REQUIRED|ES_DISPLAY_REQUIRED)`
-     保持显示与系统唤醒，并在采样期低频发送一次极小相对鼠标事件以重置输入空闲计时；
-   - 或临时把当前电源方案的显示器/待机超时设为 0、停用屏保，结束后恢复原值。
-   两种处置都必须登记实际取值/命令、起止时间与恢复证据，并在**新登记前**用一个等长空闲
-   观察窗验证前台 pid 全程不变。
-3. 每单元最多一次完整新登记，且必须有可验证处置：`admission.claim` 对 attempt-2 要求
-   `rpa.execution.retry-disposition.v1` 与 `verified_remedy_binding`，其中
-   `previous_claim_sha256` 必须指向 attempt-1。本轮补齐了这条工具路径
-   （`environment_stability.py` 产出补救证据，`prepare_probe.py --retry-remedy` 为每个单元写
-   disposition 并绑定上次 claim），但**没有**创建任何 disposition：会话仍锁定、补救无法验证，
-   不能把计划写成已完成的验证。
-4. 恢复顺序：解锁并保持前台 → 用 `environment_stability.py --seconds 900`（或等长空闲窗）验证
-   补救 → 生成四个新 disposition 与 remedy 证据 → 新 preparation/claim/seal → 新固定组。
-   旧 attempt-1 与窗口 1 原始字节独立保留，不与新结果合并。
+两个 attempt 都已消耗，四个单元的额度用尽。继续推进不再是一个工程动作，而是需要 owner
+在下列方向中选一个；代理不会自行重开第三次登记，也不会放宽冻结的环境策略。
 
+| 方向 | 内容 | 利 | 弊 |
+| --- | --- | --- | --- |
+| A. 带限制退出 | 记录 P1/P2/P4-capture-1/P6-sparse 为“当前环境下不可认证”，把缺口写进 O3 移交 | 诚实、立刻可闭合台账 | R4 留下四个未证门；O3 必须接受带限制 |
+| B. owner 裁定第三次登记 + 无人值守窗口 | 保留现有策略与协议，仅放宽每单元两次的尝试上限，组在真正无人使用的时段跑 | 不改判据、不改策略；90 分钟即可 | 需要 owner 明确豁免；仍需桌面全程不被触碰 |
+| C. 只改 CPU-only 单元的环境判据 | 把“前台 pid 恒定”换成“未锁定、AC/电源方案稳定、无冲突进程”；锁定、休眠、构建干扰仍然失败 | 与 CPU 探针的实际敏感性一致；消除“人工切窗造成 invalid”的假失败 | 冻结准入策略的合同变更，需 owner/ADR 接受；两次已消耗仍需豁免 |
+| D. 缩短稳态窗口 | 把 60 秒稳态降到约 10 秒，整组缩到约 30 分钟 | 暴露时间短、易完成 | 违反已登记“≥60 秒 / 10,000 updates / 10× retention”，属协议变更，测量强度下降 |
+| E. 换隔离环境 | 专用本地账号或虚拟机跑固定组 | 干扰最小 | 不是登记的 reference 环境；断开/无前台的会话使 `GetForegroundWindow()` 为 0，同样需要改策略 |
+| F. 事后放宽已记录的 invalid | 把两次停止改判为可通过 | 省事 | §4 明令禁止事后改类，等于用不可核对的样本冒充正式证据 |
+
+代理建议：**B + C 组合**。理由：探针是无窗口、无 GPU、无音频的 CPU 负载，实测窗口内的
+窗内极差 ≤12.5%，前台窗口属于监控启发式而非测量输入；把“人工切窗”当成 invalid 会
+让每次普通桌面使用都作废一次正式组，而锁定/休眠/构建冲突这些真实风险仍可保留在判据里。
+若 owner 不愿改策略，则退到 B（仅豁免一次），并在真正的无人时段重跑；若两者都不接受，
+则以 A 带限制退出，不伪造结论。
+
+无论选哪个方向，旧的两个 attempt、两个 stopped.json、25 个完成进程的原始字节都保持不改。
 ## 10. 不得误写的结论
 
-- 窗口 1 只是披露，不是正式裁定；没有第二、第三窗口就没有重复性门，也没有任何门通过。
-- attempt-1 停止的原因是会话锁定，不是产品失败、性能超界或语义不等价。
-- 探针单元是 B-only，A 为 N/A；不得把 A 填 0 或据窗口 1 造相对比值。
+- 两个窗口的披露不是正式裁定：第三窗口缺失，`repeatability()` 的“逐窗 + 前六 + 全九”三门
+  一条都没有评估，没有任何单元通过或超界。
+- 两次停止的原因分别是会话锁定与人工切换前台窗口，都不是产品失败、性能超界或语义不等价。
+- 探针单元是 B-only，A 为 N/A；不得把 A 填 0 或据披露窗口造相对比值。
 - `materialize` 的 2 ms 预算仍缺 observer 准入，本轮没有把它记成通过；
   其余探针指标本来就没有已接受的无插桩绝对预算。
-- 本轮没有重跑 F1/F2，候选 `00af7f90` 不继承 `24f0a914` 的矩阵或 hosted 结论。
+- 本轮没有重跑 F1/F2，候选 `00af7f90`/`b7edc959` 都不继承 `24f0a914` 的矩阵或 hosted 结论。
+- 每单元两次正式额度已用尽；第三次登记属 owner 决定，代理不自行重开。
 - memory/P8、五类 Seek、P3/P7 与设备、O2 实体操作、生产参数、O3 与 PD 退出、
   Version Gate 的 SDK owner 批准均未完成。
 
@@ -223,9 +283,15 @@ claim/seal → `runner` 固定三窗口，每窗三进程，窗间 600 秒。四
 
 | 内容 | 位置 |
 | --- | --- |
-| 候选构建与两个目标的 build binding | `out/evidence/r4/probe-20261107/build-release-b1` |
-| pilot、四份 proof 与 preparation | `out/evidence/r4/probe-20261107/probe-pilot-v1` |
+| attempt-1 构建与两个目标的 build binding（`00af7f90`） | `out/evidence/r4/probe-20261107/build-release-b1` |
+| attempt-1 pilot、四份 proof 与 preparation | `out/evidence/r4/probe-20261107/probe-pilot-v1` |
 | attempt-1 固定组现场与停止记录 | `out/evidence/r4/probe-20261107/formal-run1` |
 | 三单元身份预检 | `out/evidence/r4/probe-20261107/precheck-identity-20261108` |
-| 正式额度台账 | `out/evidence/r4/attempt-ledger` |
+| attempt-1 的证据清单（193 文件） | `out/evidence/r4/probe-20261107/evidence-manifest.json` |
+| attempt-2 构建与绑定（`b7edc959`） | `out/evidence/r4/probe-20261108/build-release-b2` |
+| 补救验证 v1（2 秒间隔，判不完整，保留）与 v2（1 秒间隔，通过） | `out/evidence/r4/probe-20261108/remedy-verify-v1.json`、`remedy-verify-v2.json` |
+| attempt-2 pilot、四份 proof、四份 retry disposition 与 preparation | `out/evidence/r4/probe-20261108/probe-pilot-v2` |
+| attempt-2 固定组现场与停止记录 | `out/evidence/r4/probe-20261108/formal-run2` |
+| 运行期补救持有记录（整组期间逐秒环境） | `out/evidence/r4/probe-20261108/remedy-run-hold-v1.json` |
+| 正式额度台账（四个单元各 attempt-1/2） | `out/evidence/r4/attempt-ledger` |
 | 本轮附件索引与只读复核 | [本轮证据](2026-11-08-probe-matrix-evidence/index.md) |
