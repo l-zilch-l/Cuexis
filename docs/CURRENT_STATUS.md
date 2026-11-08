@@ -23,9 +23,10 @@
   已两次登记并各完成 pilot；attempt-1 因会话锁定、attempt-2 因人工切换前台窗口停止，
   两次都没有形成三窗口，因此**没有任何正式裁定**，每单元两次额度已用尽。
   P4-capture-2/capture-4/P6-topology 已注册并通过全规模身份预检但未运行。
-  同批另登记 `p0-host-common`（B-only、1024 帧）：两个窗口 6 个进程的 request→ready p99
-  为 87.4–98.2 µs、逐进程低于 4.167 ms 预算，第三窗口因前台在多个进程间变化停止，
-  整组无裁定，该单元 attempt-2 仍可用。
+  同批另登记 `p0-host-common`（B-only、1024 帧）：attempt-1 因前台持续变化停止；
+  attempt-2 在绑定已验证补救后完成三窗口九进程，request→ready p99 为 87.9–99.1 µs，
+  **九个进程全部通过已接受的 4.167 ms 预算**，两条披露腿重复性通过，
+  ready→present-return（约 4 µs）按 15% 门为 inconclusive；该单元额度已用尽。
   继续该批不再由代理决定：需 owner 在“带限制退出 / 豁免第三次登记 / 只改 CPU-only 环境判据 /
   缩短稳态窗口 / 换隔离环境”中选择；未验证的处置不会被写成补救。见
   [探针批报告](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-08-probe-matrix-admission-and-environment-stop.md)

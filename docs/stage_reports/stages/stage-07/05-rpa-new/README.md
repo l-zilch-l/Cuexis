@@ -59,9 +59,10 @@ owner 选择先完成存储设计；[World component page size 设计](r4/2026-1
 的停止现场、三单元身份预检，以及每单元两次额度用尽后需 owner 选择的五个方向；
 [证据包](r4/2026-11-08-probe-matrix-evidence/index.md)登记两批原始成员与只读复核方式。
 同一批次另有[普通 host 固定组](r4/2026-11-08-common-host-unit.md)：`p0-host-common` 以
-1024 帧 B-only 登记，两个窗口 6 个进程的 `request→ready` p99 逐进程低于 4.167 ms 预算，
-第三窗口因前台持续变化停止，整组无裁定；[host 证据包](r4/2026-11-08-host-unit-evidence/index.md)
-只登记该单元的原始字节与只读复算。
+1024 帧 B-only 登记，attempt-1 因前台变化停止，attempt-2 完成三窗口九进程，
+`request→ready` p99（87.9–99.1 µs）九条全部通过 4.167 ms 预算，两条披露腿重复性通过，
+`ready→present-return` 为 inconclusive；[host 证据包](r4/2026-11-08-host-unit-evidence/index.md)
+登记原始字节与只读复算。
 后续 R4 附件和阶段结论由本入口继续导航，R3 原始证据保持。
 
 - [按批次列出的原始证据路径](evidence-catalog.md)

@@ -333,9 +333,11 @@ retry disposition 后重登记，完成两个完整窗口 24 个进程，第三�
 停止。两次都没有三窗口，因此没有正式裁定，每单元两次额度已用尽；第三次登记与
 “是否只改 CPU-only 单元的环境判据”属 owner 决定，代理不自行重开或改冻结策略。
 P4-capture-2/capture-4 与 P6-topology 已注册并通过全规模身份预检，未运行。
-同批另登记并执行 `p0-host-common`（B-only、1,024 帧、`prepare_host.py`）：两个窗口
-6 个进程的 request→ready p99 为 87.4–98.2 µs，逐进程低于已接受的 4.167 ms 预算；
-第三窗口因前台在多个进程间持续变化停止，整组无裁定，该单元 attempt-2 仍可用。
+同批另登记并执行 `p0-host-common`（B-only、1,024 帧、`prepare_host.py`）：attempt-1 因前台
+持续变化停止；attempt-2 绑定已验证补救后完成三窗口九进程，request→ready 逐进程 p99
+为 87.9–99.1 µs，**九条全部通过已接受的 4.167 ms 预算**；request→ready 与
+request→present-return 的重复性通过（全九 7.0%/9.4%），ready→present-return（约 4 µs）
+按 15% 门为 inconclusive。该单元两次额度已用尽，不再重开。
 另外修复了停止记录丢弃 `absolute_gates` 的工具缺口。
 证据、两个 stopped.json 与待裁决方向见
 [探针批报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-08-probe-matrix-admission-and-environment-stop.md)
