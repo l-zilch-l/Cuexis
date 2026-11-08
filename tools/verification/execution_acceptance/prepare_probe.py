@@ -34,11 +34,12 @@ def child(unit, phase, spec, environment, output):
            if not key.startswith(("CUEXIS_PD_", "CUEXIS_PD5_", "CUEXIS_REDESIGN_"))}
     env.update(spec["environment"])
     log = output / (unit["id"] + "-" + phase + ".log")
-    monitor = RuntimeMonitor(environment["foreground_pid"], timeout=TIMEOUT + 5)
+    timeout = spec.get("timeout_seconds", TIMEOUT)
+    monitor = RuntimeMonitor(environment["foreground_pid"], timeout=timeout + 5)
     started = time.monotonic()
     with log.open("xb") as stream, monitor:
         result = process_control.run(command, spec["affinity"], cwd=spec["cwd"], env=env,
-                                     output=stream, timeout=TIMEOUT)
+                                     output=stream, timeout=timeout)
     monitored = monitor.result()
     environment_path = output / (unit["id"] + "-" + phase + "-environment.json")
     write_once(environment_path, monitored)
