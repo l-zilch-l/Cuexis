@@ -38,6 +38,20 @@ class EnvironmentStabilityTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             environment_stability.summary([])
 
+    def test_nudge_cadence_resets_the_idle_timer_on_schedule(self):
+        self.assertFalse(environment_stability.nudge_due(0, 240, 0))
+        self.assertTrue(environment_stability.nudge_due(240, 240, 0))
+        self.assertFalse(environment_stability.nudge_due(479, 240, 1))
+        self.assertTrue(environment_stability.nudge_due(480, 240, 1))
+        self.assertFalse(environment_stability.nudge_due(9999, 0, 0))
+
+
+class NudgeInputTests(unittest.TestCase):
+    def test_a_nudge_sends_exactly_two_relative_moves(self):
+        if __import__("os").name != "nt":
+            self.skipTest("SendInput is Windows-only")
+        self.assertEqual(environment_stability.nudge(), 2)
+
 
 class RetryDispositionTests(unittest.TestCase):
     def setUp(self):
