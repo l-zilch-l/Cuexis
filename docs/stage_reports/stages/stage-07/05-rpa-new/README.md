@@ -62,7 +62,8 @@ owner 选择先完成存储设计；[World component page size 设计](r4/2026-1
 1024 帧 B-only 登记，attempt-1 因前台变化停止，attempt-2 完成三窗口九进程，
 `request→ready` p99（87.9–99.1 µs）九条全部通过 4.167 ms 预算，两条披露腿重复性通过，
 `ready→present-return` 为 inconclusive；[host 证据包](r4/2026-11-08-host-unit-evidence/index.md)
-登记原始字节与只读复算。
+登记原始字节与只读复算。批后全门汇总与两项待裁事项见
+[R4 门账更新](r4/2026-11-08-r4-gate-status.md)。
 后续 R4 附件和阶段结论由本入口继续导航，R3 原始证据保持。
 
 - [按批次列出的原始证据路径](evidence-catalog.md)
