@@ -130,12 +130,21 @@ def validate_preparation(document, *, source_verifier=verify_source):
     return document
 
 
+ATTEMPT = re.compile(r"attempt-(\d+)\.json")
+
+
+def attempts_of(directory):
+    """Every sealed attempt in numeric order; a widened allowance can pass two attempts."""
+    return sorted((path for path in Path(directory).glob("attempt-*.json")
+                   if ATTEMPT.fullmatch(path.name)),
+                  key=lambda path: int(ATTEMPT.fullmatch(path.name).group(1)))
+
+
 def retry_disposition(ledger, stable_protocol_id, remedy):
-    """Build the one disposition a second registration needs; the failed attempt stays visible."""
+    """Build the one disposition a further registration needs; the failed attempt stays visible."""
     unit_id(stable_protocol_id)
     directory = Path(ledger) / stable_protocol_id
-    attempts = sorted(path for path in directory.glob("attempt-*.json")
-                      if re.fullmatch(r"attempt-[12]\.json", path.name))
+    attempts = attempts_of(directory)
     if not attempts:
         raise ValueError("no previous attempt to recover from: " + stable_protocol_id)
     return {"schema": "rpa.execution.retry-disposition.v1",
@@ -146,7 +155,25 @@ def retry_disposition(ledger, stable_protocol_id, remedy):
                      "merging with the failed attempt's readings."}
 
 
-def claim(preparation, ledger):
+def allowance(unit, waiver=None):
+    """Default allowance is one p8 attempt and two for every other unit.
+
+    An owner waiver may widen it for named stable protocol ids. The waiver artifact is bound into
+    the claim, so a third attempt is never silent: it always carries the owner's scope.
+    """
+    maximum = 1 if unit["workload"] == "p8" else 2
+    if waiver is None:
+        return maximum
+    if (waiver.get("schema") != "rpa.execution.attempt-waiver.v1" or
+            waiver.get("granted_by") != "owner" or
+            stable_id(unit) not in waiver.get("stable_protocol_ids", []) or
+            not isinstance(waiver.get("maximum_attempts"), int) or
+            waiver["maximum_attempts"] <= maximum):
+        raise ValueError("owner waiver does not authorize this unit")
+    return waiver["maximum_attempts"]
+
+
+def claim(preparation, ledger, waiver=None, waiver_binding=None):
     """A failed partial claim stays visible; it never restores an attempt allowance."""
     validate_preparation(preparation)
     ledger = Path(ledger).resolve()
@@ -160,10 +187,8 @@ def claim(preparation, ledger):
     for unit in preparation["units"]:
         directory = ledger / stable_id(unit)
         directory.mkdir(exist_ok=True)
-        attempts = sorted(path for path in directory.glob("attempt-*.json")
-                          if re.fullmatch(r"attempt-[12]\.json", path.name))
-        maximum = 1 if unit["workload"] == "p8" else 2
-        if len(attempts) >= maximum:
+        attempts = attempts_of(directory)
+        if len(attempts) >= allowance(unit, waiver):
             raise ValueError("fixed attempt allowance exhausted: " + unit["id"])
         if attempts:
             disposition = read(verify_artifact(unit["retry_disposition_binding"]))
@@ -174,10 +199,13 @@ def claim(preparation, ledger):
                 raise ValueError("new registration requires a bound, verified remedy")
             verify_artifact(disposition["verified_remedy_binding"])
         path = directory / f"attempt-{len(attempts) + 1}.json"
-        write_once(path, {"schema": "rpa.execution.claim.v1", "unit": unit["id"],
-                          "source_sha": preparation["source_binding"]["sha"],
-                          "comparison": unit["comparison"], "attempt": len(attempts) + 1,
-                          "stable_protocol_id": stable_id(unit)})
+        record = {"schema": "rpa.execution.claim.v1", "unit": unit["id"],
+                  "source_sha": preparation["source_binding"]["sha"],
+                  "comparison": unit["comparison"], "attempt": len(attempts) + 1,
+                  "stable_protocol_id": stable_id(unit)}
+        if waiver_binding is not None:
+            record["waiver_binding"] = waiver_binding
+        write_once(path, record)
         claims.append(path)
     return claims
 
