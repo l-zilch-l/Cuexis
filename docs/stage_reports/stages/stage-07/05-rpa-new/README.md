@@ -65,7 +65,8 @@ owner 选择先完成存储设计；[World component page size 设计](r4/2026-1
 登记原始字节与只读复算。同日另有[内存逐域归因](r4/2026-11-08-memory-attribution.md)：精确分区下 n64/n2048 的
 `state.current` 分别超出 proposed 上限 2.17×/3.11×，n2048 的 `command.session` 超出 1.24×，
 P8/40K 因打包字符串上限未取得数据；[证据包](r4/2026-11-08-memory-attribution-evidence/index.md)
-登记原始字节。批后全门汇总与待裁事项见[R4 门账更新](r4/2026-11-08-r4-gate-status.md)。
+登记原始字节。内存上限的修订路径（不把观测反填为上限）见[修订提案 v2](r4/2026-11-08-memory-budget-revision.md)。
+批后全门汇总、已记录处置与待裁事项见[R4 门账更新](r4/2026-11-08-r4-gate-status.md)。
 后续 R4 附件和阶段结论由本入口继续导航，R3 原始证据保持。
 
 - [按批次列出的原始证据路径](evidence-catalog.md)
