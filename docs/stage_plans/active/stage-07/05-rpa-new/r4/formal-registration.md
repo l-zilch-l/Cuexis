@@ -1,6 +1,6 @@
 # R4 固定取证登记与剩余预注册
 
-状态：active；O1 已接受；P0 legacy/RPA 首固定 CPU 组已结束；探针四单元两次登记均因环境停止、额度用尽待裁决，其余探针单元未运行
+状态：active；O1 已接受；P0 legacy/RPA 首固定 CPU 组已结束；七个探针单元三窗口完成，内存归因完成，接受未完成
 
 更新日期：2026-11-07
 
@@ -109,6 +109,12 @@ P3、P7 与设备 capture 变体需要真实 renderer/音频端点，本表不�
 均已消耗且保留，第三次登记需 owner 裁定。P4-capture-2、P4-capture-4、P6-topology 已完成
 一次非正式全规模身份预检（逐字段一致），未 claim、未运行。待裁决方向见
 [探针批报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-08-probe-matrix-admission-and-environment-stop.md)。
+
+owner 于 2026-11-08 豁免额度后（`2026-11-08-owner-attempt-waiver.json`，`admission.claim`
+只在具名 waiver 下放宽并把 waiver 写入 claim）：四单元 attempt-3 于 20:19–21:52 完成 36 个
+进程，六个计时组重复性通过、`p4-capture-1` 全九 16.7% 为 inconclusive；
+`p4-capture-2`/`p4-capture-4`/`p6-topology` 的 attempt-1 于 21:56–23:11 完成 27 个进程，
+三个计时组全部通过。七个已注册探针单元至此都有三窗口正式结果。
 
 同批另新增 `p0-host-common-release`：`prepare_host.py` 以 1,024 帧、32 帧原生预热、
 无 GPU/audio 的普通 host 路径登记，B-only（pre-PD A 是 receipt-ACK 边界且 digest 不同），

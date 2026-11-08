@@ -16,10 +16,8 @@ def original_support():
 
 def capture_cpu():
     support = original_support()
-    value = support.environment()
-    value["topology"] = support.topology(value["machine"])
-    value["no_trace"] = support.no_trace()
-    # Builds and tests cannot share a formal sampling interval.
+    # Builds and tests cannot share a formal sampling interval. Scan before asking for the tracing
+    # state: `no_trace()` starts `wpr -status`, and a still-exiting child would flag itself.
     command = ["powershell", "-NoProfile", "-Command",
                "Get-Process -ErrorAction SilentlyContinue | "
                "Where-Object { $_.ProcessName -in @('cl','ninja','ctest','clang','clang-tidy','wpr') } | "
@@ -27,6 +25,9 @@ def capture_cpu():
     found = subprocess.check_output(command, timeout=30).decode("utf-8", errors="replace").strip()
     if found:
         raise ValueError("conflicting build, test or tracing process: " + found)
+    value = support.environment()
+    value["topology"] = support.topology(value["machine"])
+    value["no_trace"] = support.no_trace()
     return value
 
 

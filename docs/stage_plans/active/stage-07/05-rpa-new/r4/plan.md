@@ -1,6 +1,6 @@
 # Cuexis Stage 7-RPA R4 实施与验证方案
 
-状态：active；O1方案B已接受；P0首组完成且read_long超界，11行F1及同SHA hosted已完成；展示矩阵探针四单元两次登记均因环境停止、额度用尽，待裁决，其余证据/接受未完成
+状态：active；O1方案B已接受；P0首组完成且read_long超界，11行F1及同SHA hosted已完成；P0 host 绝对预算通过；七个探针单元三窗口完成；内存逐域归因完成，其余接受未完成
 
 更新日期：2026-11-07
 
@@ -327,18 +327,27 @@ python -B tools/check_docs.py、git diff --check 通过为完成条件；不要�
 最终退出以及精确SDK owner批准仍未完成。版本批准不是自动豁免项。
 
 2026-11-08 完成 R4-4 的一个协议适配批次：展示矩阵探针的 P1/P2/P4-capture-1/P6-sparse
-按 `probe_units.py` 的采样前声明登记。attempt-1 在第一窗口 12 个进程后因交互会话被系统锁定
-停止；attempt-2 在验证不锁屏补救（`environment_stability.py`，900 秒前台不变）并绑定
-retry disposition 后重登记，完成两个完整窗口 24 个进程，第三窗口因前台切到 `explorer`
-停止。两次都没有三窗口，因此没有正式裁定，每单元两次额度已用尽；第三次登记与
-“是否只改 CPU-only 单元的环境判据”属 owner 决定，代理不自行重开或改冻结策略。
-P4-capture-2/capture-4 与 P6-topology 已注册并通过全规模身份预检，未运行。
+按 `probe_units.py` 的采样前声明登记。attempt-1 因交互会话被系统锁定停止；attempt-2 在
+验证不锁屏补救并绑定 retry disposition 后完成两个完整窗口，第三窗口因前台切到
+`explorer` 停止；两次都没有三窗口。owner 随后豁免额度（`2026-11-08-owner-attempt-waiver.json`），
+`admission` 只在具名 waiver 下放宽上限并把 waiver 写入 claim。attempt-3 于 20:19–21:52
+完成全部 36 个进程：六个计时组重复性通过（全九 ≤11.1%），`p4-capture-1` 全九 16.7% 为
+inconclusive。P4-capture-2/capture-4 与 P6-topology 在同候选的 attempt-1 于 21:56–23:11
+完成 27 个进程，三个计时组全部通过。七个单元至此都有三窗口结果。
 同批另登记并执行 `p0-host-common`（B-only、1,024 帧、`prepare_host.py`）：attempt-1 因前台
 持续变化停止；attempt-2 绑定已验证补救后完成三窗口九进程，request→ready 逐进程 p99
 为 87.9–99.1 µs，**九条全部通过已接受的 4.167 ms 预算**；request→ready 与
 request→present-return 的重复性通过（全九 7.0%/9.4%），ready→present-return（约 4 µs）
 按 15% 门为 inconclusive。该单元两次额度已用尽，不再重开。
-另外修复了停止记录丢弃 `absolute_gates` 的工具缺口。
+另外修复了停止记录丢弃 `absolute_gates`、以及补救工具把自身 `wpr -status` 记成冲突的
+两个工具缺口。
+
+2026-11-08 另按 owner 豁免完成内存有限批次（`authorization.json` 限定用例与停止规则）：
+observer 构建 `51b0ebd5`、四个 observer 合同通过、n64 high/low 与 n2048 high 各一进程。
+精确分区下 `state.current` 在 n64 超 proposed 上限 2.17 倍、n2048 超 3.11 倍，n2048 的
+`command.session` 超 1.24 倍；n64 总 C++ 请求字节 32.85 MB、n2048 为 96.86 MB。
+P8/40K 因 fixture 触发产品打包字符串上限（`maxPackedStrings=100000`）未取得数据，
+按停止规则不重试。上限仍是 proposed，超出属“对提案的超出”，接受或修正由 owner 裁定。
 证据、两个 stopped.json 与待裁决方向见
 [探针批报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-08-probe-matrix-admission-and-environment-stop.md)
 和[普通 host 报告](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-08-common-host-unit.md)。

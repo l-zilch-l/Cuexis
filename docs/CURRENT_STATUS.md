@@ -27,6 +27,11 @@
   attempt-2 在绑定已验证补救后完成三窗口九进程，request→ready p99 为 87.9–99.1 µs，
   **九个进程全部通过已接受的 4.167 ms 预算**，两条披露腿重复性通过，
   ready→present-return（约 4 µs）按 15% 门为 inconclusive；该单元额度已用尽。
+  owner 随后豁免额度（`2026-11-08-owner-attempt-waiver.json`）：四个已耗尽单元与三个
+  未运行单元在同一候选上全部取得三窗口结果——六个计时组重复性通过（全九 ≤11.1%），
+  `p4-capture-1` 全九 16.7% 为 inconclusive。内存逐域归因亦完成：精确分区下
+  `state.current` 在 n64/n2048 超出 proposed 上限 2.17×/3.11×，n2048 的
+  `command.session` 超出 1.24×；P8/40K 因 fixture 打包字符串上限（100,000）未取得数据。
   继续该批不再由代理决定：需 owner 在“带限制退出 / 豁免第三次登记 / 只改 CPU-only 环境判据 /
   缩短稳态窗口 / 换隔离环境”中选择；未验证的处置不会被写成补救。见
   [探针批报告](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-08-probe-matrix-admission-and-environment-stop.md)
