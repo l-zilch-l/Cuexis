@@ -84,9 +84,15 @@ tests/rpa/execution_fixture.hpp(135)
 字符串，去重后超过 10 万条。这是**内容设计**与产品上限的冲突，不是内存观测器的问题；
 按登记的停止规则，本批不重试 40K，原样保留失败现场。
 
+更关键的是这条上限的性质：`limits.hpp` 明确写着每个入口都把有效预算解析为
+`min(requested, frozen default)`，“调用方可以收紧、永远不能放宽冻结的 Foundation 门
+（16 MiB 打包文件、40,000 实体）”。`maxPackedStrings=100000` 正是这组冻结门之一，所以
+**不能靠 fixture 或 caps 参数把它调大**——那属于 Foundation 级上限的修订，与 16 MiB/40k
+同一级别，需要 owner/ADR 接受。
+
 因此 P8 的 40K low/high 还没有测量结果；要取得结果，需要下列之一并由 owner 裁定：
-把 fixture 的字符串改为可复用的池（不改产品上限），或经 caps 接受提高
-`maxPackedStrings`（改变产品上限）。
+把 40K 内容设计改成更少的唯一字符串（例如需求 id 复用池、只保留实体 id 唯一），或修订
+Foundation 级的 `maxPackedStrings` 上限，或接受 40K 不可认证。
 
 ## 5. 这些数字证明了什么、没证明什么
 
