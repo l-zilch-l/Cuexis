@@ -11,7 +11,8 @@ TEST_CASE("PD5 full content Snapshot Seek Replay boundary", "[.][pd][pd5][capaci
     // The P8 profile measures entity-scaled state at 40k entries. The packed writer is bounded by
     // the frozen Foundation string budget, so the content rows may be a smaller explicit subset;
     // entity count keeps coming from the source chart below.
-    const auto requirements = std::min<unsigned>(scale, matrixCount("CUEXIS_PD5_REQUIREMENTS", scale));
+    const auto requirements =
+        std::min<unsigned>(scale, matrixCount("CUEXIS_PD5_REQUIREMENTS", scale));
     const auto reuse = test_support::environmentVariable("CUEXIS_PD5_REUSE");
     REQUIRE((reuse == "low" || reuse == "high"));
     const auto revision = test_support::environmentVariable("CUEXIS_PD5_CAPSULE_REVISION");
