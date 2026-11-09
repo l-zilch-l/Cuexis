@@ -81,7 +81,7 @@ TEST_CASE("PD5 full content Snapshot Seek Replay boundary", "[.][pd][pd5][capaci
         return trace.take(GameplayContent::fromPacked(packed, fixture->config));
     });
     presentation_renderer::TestPresentationRenderer renderer;
-    // This profile has exactly scale objects and at most one feedback member per requirement.
+    // This profile has exactly scale objects and at most one feedback member per content row.
     // Derive its finite storage declaration from that workload, including two portable resources.
     // A reduced plumbing check must not reserve the 40k profile's membership capacity.
     const auto frameBound = trace.run("frame-budget", [&] {
@@ -145,7 +145,7 @@ TEST_CASE("PD5 full content Snapshot Seek Replay boundary", "[.][pd][pd5][capaci
     auto expected = trace.run("host-query", [&] {
         const memory::TagScope tag{memory::ownerProbe, memory::domainSnapshot};
         auto result = trace.take(host->queryGameplay());
-        REQUIRE(trace.take(result.score()).misses == scale);
+        REQUIRE(trace.take(result.score()).misses == requirements);
         return result;
     });
     auto snapshot = trace.run("snapshot", [&] {
