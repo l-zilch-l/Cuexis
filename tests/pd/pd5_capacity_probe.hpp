@@ -8,6 +8,10 @@ TEST_CASE("PD5 full content Snapshot Seek Replay boundary", "[.][pd][pd5][capaci
     namespace memory = internal::pd::memory;
     const auto scale = matrixCount("CUEXIS_PD5_ENTITIES", 40000);
     REQUIRE(scale <= 40000);
+    // The P8 profile measures entity-scaled state at 40k entries. The packed writer is bounded by
+    // the frozen Foundation string budget, so the content rows may be a smaller explicit subset;
+    // entity count keeps coming from the source chart below.
+    const auto requirements = std::min<unsigned>(scale, matrixCount("CUEXIS_PD5_REQUIREMENTS", scale));
     const auto reuse = test_support::environmentVariable("CUEXIS_PD5_REUSE");
     REQUIRE((reuse == "low" || reuse == "high"));
     const auto revision = test_support::environmentVariable("CUEXIS_PD5_CAPSULE_REVISION");
@@ -24,7 +28,7 @@ TEST_CASE("PD5 full content Snapshot Seek Replay boundary", "[.][pd][pd5][capaci
     }
     pd5_capacity::Trace trace{r4};
     if (r4)
-        trace.run("identity", [&] { pd5_capacity::identity(scale, reuse); });
+        trace.run("identity", [&] { pd5_capacity::identity(scale, requirements, reuse); });
     trace.begin("fixture-construction");
     std::unique_ptr<test_support::SessionTestContent> fixture;
     const ClockMappingConfiguration mapping{{0, 1}, {0, 1}, {0, 1}, {1, 1}};
@@ -43,8 +47,8 @@ TEST_CASE("PD5 full content Snapshot Seek Replay boundary", "[.][pd][pd5][capaci
         });
         document.relations[0].members.clear();
         fixture->request.assembly.contentProfileLimits.maxRequirements =
-            judgement::MeasuredParameter<std::uint64_t>::measured(scale);
-        for (unsigned i = 0; i < scale; ++i) {
+            judgement::MeasuredParameter<std::uint64_t>::measured(requirements);
+        for (unsigned i = 0; i < requirements; ++i) {
             auto requirement = prototype;
             requirement.stableId.declarationOrdinal = 100 + i;
             requirement.identity.requirementLocalId = "capacity." + std::to_string(i);
@@ -223,7 +227,7 @@ TEST_CASE("PD5 full content Snapshot Seek Replay boundary", "[.][pd][pd5][capaci
     });
     trace.run("after-close-memory", [&] { memory::checkpoint("after-close"); });
     std::cout << "PD5_CAPACITY {\"schema\":\"pd5.capacity.v1\",\"reuse\":\"" << reuse
-              << "\",\"entities\":" << scale << ",\"requirements\":" << scale
+              << "\",\"entities\":" << scale << ",\"requirements\":" << requirements
               << ",\"packed_bytes\":" << packed.size() << ",\"snapshot_bytes\":" << bytes.size()
               << ",\"snapshot_valid\":" << (snapshot.valid() ? "true" : "false")
               << ",\"decoded_snapshot_valid\":" << (decodedSnapshot.valid() ? "true" : "false")

@@ -108,7 +108,7 @@ class Trace final {
     bool enabled_;
 };
 
-inline void identity(unsigned scale, std::string_view reuse) {
+inline void identity(unsigned scale, unsigned requirements, std::string_view reuse) {
     const auto expected =
         cuexis::test_support::environmentVariable("CUEXIS_PD5_EXPECTED_SOURCE_SHA");
     const std::string_view compiled = CUEXIS_PD5_CAPACITY_SOURCE_SHA;
@@ -116,7 +116,7 @@ inline void identity(unsigned scale, std::string_view reuse) {
     REQUIRE(expected == compiled);
     std::cout << "PD5_C_ID {\"schema\":\"pd5.stage-c.v1\",\"source_sha\":";
     jsonString(std::cout, compiled);
-    std::cout << ",\"entities\":" << scale << ",\"requirements\":" << scale
+    std::cout << ",\"entities\":" << scale << ",\"requirements\":" << requirements
               << ",\"revision\":4,\"reuse\":";
     jsonString(std::cout, reuse);
     std::cout << ",\"pid\":" << GetCurrentProcessId() << ",\"lifetime_observer\":"
