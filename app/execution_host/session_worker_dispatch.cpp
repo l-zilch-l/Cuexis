@@ -513,6 +513,10 @@ using namespace worker_detail;
                         session, *software, job.request, job.reconciliation, job.context, job.clock,
                         now(), &job.routeReceipt));
                 } else if constexpr (std::is_same_v<T, SessionSeek>) {
+                    // Seek re-materialises execution state; bill it to the execution
+                    // domain instead of the command envelope.
+                    const internal::pd::memory::ExecutionDomainScope seekDomain{
+                        internal::pd::memory::domainAdvance};
 #if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
                     rpa::SeekSinkScope seekSinkScope{&rpaSeek};
                     rpa::SeekScope seekPhase{&rpaSeek, rpa::SeekPhase::s4InternalExecution};
