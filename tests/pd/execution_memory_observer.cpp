@@ -612,6 +612,24 @@ void checkpoint(const char* label) {
     };
     std::array<SemanticAllocation, 4096> allocations{};
     std::size_t allocationCount{};
+    // Optional: every live allocation charged to one named budget domain. The
+    // domain is chosen by an environment variable so the default log is unchanged;
+    // the lookup is allocation-free and the row count is bounded.
+    const char* traceName = std::getenv("CUEXIS_RPA_MEMORY_TRACE_DOMAIN");
+    std::size_t traceSlot = budgetCount;
+    if (traceName && *traceName)
+        for (std::size_t index = 0; index < budgetCount; ++index)
+            if (std::string_view{budgetNames[index]} == traceName) {
+                traceSlot = index;
+                break;
+            }
+    struct TracedAllocation final {
+        std::uint64_t allocationId{}, requested{}, storage{}, age{};
+        std::uint16_t origin{};
+    };
+    std::array<TracedAllocation, 1024> traced{};
+    std::size_t tracedCount{}, tracedTotalCount{};
+    std::uint64_t tracedTotalBytes{};
     {
         Guard guard;
         budgetCopy = aggregate;
@@ -637,6 +655,13 @@ void checkpoint(const char* label) {
                     totals.exceeded = true;
             }
             const auto tag = unpackCell(block->packed);
+            if (traceSlot < budgetCount && tag < cellCount && budgetIndex(tag) == traceSlot) {
+                ++tracedTotalCount;
+                tracedTotalBytes += block->requested;
+                if (tracedCount < traced.size())
+                    traced[tracedCount++] = {block->allocationId, block->requested, block->charge,
+                                             stamp - block->born, tag};
+            }
             auto& cell = parts.cells[tag];
             cell.oldestAgeUs = std::max(cell.oldestAgeUs, stamp - block->born);
             value.oldestAgeUs = std::max(value.oldestAgeUs, stamp - block->born);
@@ -729,6 +754,28 @@ void checkpoint(const char* label) {
                   << ",\"requested_cpp_bytes\":" << block.requested
                   << ",\"crt_usable_storage_bytes\":" << block.storage
                   << ",\"age_us\":" << block.age << ",\"origin_cell\":" << block.origin << "}\n";
+    }
+    if (traceSlot < budgetCount) {
+        for (std::size_t index = 0; index < tracedCount; ++index) {
+            const auto& block = traced[index];
+            std::cout << "RPA_MEMORY_DOMAIN_ALLOCATION {"
+                         "\"schema\":\"rpa.execution.memory.domain-allocation.v1\",\"label\":\""
+                      << label << "\",\"domain\":\"" << budgetNames[traceSlot]
+                      << "\",\"allocation_id\":" << block.allocationId
+                      << ",\"requested_cpp_bytes\":" << block.requested
+                      << ",\"crt_usable_storage_bytes\":" << block.storage
+                      << ",\"age_us\":" << block.age << ",\"origin_cell\":" << block.origin
+                      << "}\n";
+        }
+        std::cout << "RPA_MEMORY_DOMAIN_ALLOCATION_SUMMARY {"
+                     "\"schema\":\"rpa.execution.memory.domain-allocation-summary.v1\","
+                     "\"label\":\""
+                  << label << "\",\"domain\":\"" << budgetNames[traceSlot]
+                  << "\",\"live_count\":" << tracedTotalCount
+                  << ",\"requested_cpp_bytes\":" << tracedTotalBytes
+                  << ",\"emitted\":" << tracedCount
+                  << ",\"truncated\":" << (tracedTotalCount > tracedCount ? "true" : "false")
+                  << "}\n";
     }
     for (std::size_t index = 0; index < budgetCount; ++index) {
         const auto& total = budgetCopy[index];

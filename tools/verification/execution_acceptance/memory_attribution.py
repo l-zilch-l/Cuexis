@@ -16,6 +16,41 @@ SCOPE = ("Linked C++ new/delete only; direct malloc, SDL, driver, GPU and OS hea
          "so a domain comparison never impersonates a process working-set or commit measurement.")
 
 
+def domain_allocations(text, label, domain):
+    """Read the optional per-allocation trace of one budget domain at one checkpoint.
+
+    The trace is emitted only when ``CUEXIS_RPA_MEMORY_TRACE_DOMAIN`` names the domain, so a
+    missing trace is an error rather than an empty result: silence must not look like "no
+    allocations". The summary binds the parsed rows to the live count and byte total.
+    """
+    rows = [row for row in memory_domains.records(text, "RPA_MEMORY_DOMAIN_ALLOCATION ")
+            if row.get("label") == label and row.get("domain") == domain]
+    summaries = [row for row in memory_domains.records(
+        text, "RPA_MEMORY_DOMAIN_ALLOCATION_SUMMARY ")
+        if row.get("label") == label and row.get("domain") == domain]
+    if len(summaries) != 1:
+        raise ValueError(f"expected one domain allocation summary for {label}/{domain}")
+    summary = summaries[0]
+    emitted = memory_domains.unsigned(summary, "emitted")
+    live = memory_domains.unsigned(summary, "live_count")
+    total = memory_domains.unsigned(summary, "requested_cpp_bytes")
+    if emitted != len(rows):
+        raise ValueError("emitted count disagrees with the parsed allocation rows")
+    if summary.get("truncated") is True:
+        if live <= emitted:
+            raise ValueError("truncated summary must report more live allocations than emitted")
+    elif live != emitted:
+        raise ValueError("untruncated summary must carry every live allocation")
+    sizes = {}
+    for row in rows:
+        sizes[memory_domains.unsigned(row, "requested_cpp_bytes")] = \
+            sizes.get(memory_domains.unsigned(row, "requested_cpp_bytes"), 0) + 1
+    return {"schema": "rpa.execution.memory.domain-allocations.v1", "label": label,
+            "domain": domain, "live_count": live, "requested_cpp_bytes": total,
+            "emitted": emitted, "truncated": summary.get("truncated") is True,
+            "sizes": dict(sorted(sizes.items()))}
+
+
 def attribute(text, label):
     """Aggregate one exact checkpoint's domain cells by canonical budget domain."""
     partitions = [row for row in memory_domains.records(text, "RPA_MEMORY_PARTITION ")

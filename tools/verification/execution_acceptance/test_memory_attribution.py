@@ -102,6 +102,33 @@ class AttributionTests(unittest.TestCase):
             document = json.loads(output.read_text(encoding="utf-8"))
             self.assertEqual(document["over_declared"][0]["id"], "state.world")
 
+    def test_domain_allocations_bind_rows_to_the_summary(self):
+        text = log(
+            "RPA_MEMORY_DOMAIN_ALLOCATION " + json.dumps({
+                "label": "active", "domain": "command.session", "allocation_id": 7,
+                "requested_cpp_bytes": 39664, "crt_usable_storage_bytes": 39712,
+                "age_us": 5, "origin_cell": 41}),
+            "RPA_MEMORY_DOMAIN_ALLOCATION " + json.dumps({
+                "label": "active", "domain": "command.session", "allocation_id": 8,
+                "requested_cpp_bytes": 39664, "crt_usable_storage_bytes": 39712,
+                "age_us": 6, "origin_cell": 41}),
+            "RPA_MEMORY_DOMAIN_ALLOCATION_SUMMARY " + json.dumps({
+                "label": "active", "domain": "command.session", "live_count": 2,
+                "requested_cpp_bytes": 79328, "emitted": 2, "truncated": False}))
+        value = memory_attribution.domain_allocations(text, "active", "command.session")
+        self.assertEqual(value["live_count"], 2)
+        self.assertEqual(value["requested_cpp_bytes"], 79328)
+        self.assertEqual(value["sizes"], {39664: 2})
+
+    def test_domain_allocations_reject_silence_and_truncation_mismatch(self):
+        with self.assertRaises(ValueError):
+            memory_attribution.domain_allocations(log(partition()), "active", "command.session")
+        truncated = log("RPA_MEMORY_DOMAIN_ALLOCATION_SUMMARY " + json.dumps({
+            "label": "active", "domain": "command.session", "live_count": 5,
+            "requested_cpp_bytes": 100, "emitted": 5, "truncated": True}))
+        with self.assertRaises(ValueError):
+            memory_attribution.domain_allocations(truncated, "active", "command.session")
+
 
 if __name__ == "__main__":
     unittest.main()
