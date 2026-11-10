@@ -9,10 +9,12 @@
 ## 当前任务
 
 - **RPA 当前承接为 R4 集成取证**：R1、R2、R3 已退出，O1 方案 B 的 reference 设计预算保持。
-  当前候选为 `2c4e1274` / `26.11.09-1`：F1 本地 11 行矩阵全部 `local_pass`，
+  取证候选为 `2c4e1274` / `26.11.09-1`：F1 本地 11 行矩阵全部 `local_pass`，
   同 SHA 的 Linux Quality、Windows MSVC、Windows MinGW hosted 全部通过，
   Version Gate 也已 success（当天日期 + build 1 + owner 批准记录）。
   早前 `24f0a914` / `26.11.07-1` 的矩阵与 `2ec3480e` / `26.11.07-3` 的 hosted 作为历史证据保留。
+  日期版本随后推进到 `26.11.10-1` 以满足 Version Gate 的当天日期要求；该提交只改版本标识，
+  产品源（`engine/`、`app/`、`tests/`）与 `2c4e1274` 逐字节相同。
   见[最终候选验证](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-10-f1-f2-final-candidate.md)。
   原 128-slot 优化的同子集 71.04% 降幅保留；扩大拥有覆盖后，64/high 与 low 的 active World
   唯一下界均为 119,534 B，完整图仍为 unrated、正式 memory/P8 未准入，未改预算或运行40K。
