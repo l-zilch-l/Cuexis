@@ -1,0 +1,17 @@
+{
+  "head": "d70df15a463cb1fe4329bffb8f0c99bcac676c15",
+  "recorded_worktree_sha256": "a3914f7a647d4d3bc19d93d46abe57d35c4761c6afe48fdccce75a7e0513723e",
+  "recorded_implementation_sha256": "0785ea0442e8c4ba4bdffcf4bbbccded12da9d232a9ab2c213a4f6569703da9d",
+  "source_before_equals_after": true,
+  "all_rows_source_unchanged": true,
+  "frozen_worktree_raw_hashes_verified_at_run_time": true,
+  "crlf_checkout": "D:/Cuexis-r3matrix-identity",
+  "crlf_checkout_head": "d70df15a463cb1fe4329bffb8f0c99bcac676c15",
+  "lf_checkout": "D:/Cuexis-r3matrix-identity-lf",
+  "lf_checkout_head": "d70df15a463cb1fe4329bffb8f0c99bcac676c15",
+  "source_files_checked": 5052,
+  "crlf_checkout_raw_hash_matches": 4470,
+  "cross_checkout_content_matches": 5052,
+  "source_content_manifest_sha256": "f8ac9c2af42ca2c54ccee5f29386b70c267c70920f44c0983f92484626c42bcc",
+  "verification_status": "pass"
+}

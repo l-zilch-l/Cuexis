@@ -1,0 +1,57 @@
+from pathlib import Path
+import sys
+
+root = Path.cwd()
+sys.path.insert(0, str(root / 'out/verification-20261029/r3-completion'))
+from native import *
+
+base = Path(__file__).resolve().parent
+build = base / 'gl-state-build-v3'
+out = base / 'gl-state-function-v1'
+out.mkdir(exist_ok=False)
+write(out / 'registration.json', dict(
+    scope='Four-frame overlapping RGB characterization, ordinary physical GPU; baseline and state-cache candidate.',
+    binaries={v: sha(build / ('gpu-' + v + '.exe')) for v in ('baseline', 'candidate')},
+    test_source_sha256=sha(base / 'gl-state-source-v2/state_test.cpp'),
+    controls='BelowNormal, all originally allowed logical CPUs, throttling OFF',
+))
+rows = []
+for variant in ('baseline', 'candidate'):
+    exe = build / ('gpu-' + variant + '.exe')
+    log = out / (variant + '.log')
+    with log.open('x', encoding='utf-8') as stream:
+        child = subprocess.Popen([str(exe), 'Unlit local state follows per-object colors and resets every frame', '--rng-seed', '1'],
+            cwd=root, stdout=stream, stderr=subprocess.STDOUT,
+            creationflags=subprocess.CREATE_NO_WINDOW | subprocess.BELOW_NORMAL_PRIORITY_CLASS)
+        handle = k.OpenProcess(0x0200 | 0x1000, False, child.pid)
+        try:
+            power = Power(1, 1, 0)
+            assert handle and k.SetProcessAffinityMask(handle, measurement_mask)
+            assert k.SetProcessInformation(handle, 4, ct.byref(power), ct.sizeof(power))
+            code = child.wait(timeout=90)
+        finally:
+            if handle: k.CloseHandle(handle)
+            if child.poll() is None: child.kill(); child.wait()
+    content = log.read_text(encoding='utf-8', errors='replace')
+    pixels = [line for line in content.splitlines() if line.startswith('GL_STATE_PIXEL ')]
+    valid = code == 0 and 'All tests passed' in content and len(pixels) == 4
+    rows.append(dict(variant=variant, exit=code, valid=valid, pixels=pixels, log_sha256=sha(log)))
+    write(out / 'results.json', rows)
+    print(json.dumps(rows[-1]), flush=True)
+    if not valid: raise SystemExit('GPU characterization failed; throughput group not started')
+assert rows[0]['pixels'] == rows[1]['pixels'], 'Pixel/digest evidence differs'
+
+# Start the already specified finite plan only after physical correctness passes.
+source = (base / 'run_gl_state.py').read_text()
+source = source.replace("build=base/'gl-state-build-v2'", "build=base/'gl-state-build-v3'")
+source = source.replace("out=base/'gl-state-measure-v1'", "out=base/'gl-state-measure-v3'")
+source = source.replace('Ordinary physical GPU local unlit state cache only.',
+    'Ordinary physical GPU local unlit state cache only. Both libraries include the independent paged active sequence; this group isolates only GL state changes.')
+source = source.replace("namespace['base']=out", """namespace['base']=out
+namespace['__file__']=str(root/'out/verification-20261029/r3-completion/gpu_runner.py')""")
+source = source.replace("registration=dict(scope='P3 validated resolver index final physical GPU diagnostic; no formal acceptance'",
+    "registration=dict(scope='Local state-cache only physical GPU diagnostic; no formal acceptance'")
+# Correct the frozen runner's historic scope before compiling its source.
+source = source.replace("original=original.replace(\"env.update(CUEXIS_GPU_BARRIER=\"",
+    "original=original.replace('P3 validated resolver index final physical GPU diagnostic; no formal acceptance', 'Local GL state cache; same paged-sequence Runtime in both, no formal acceptance')\noriginal=original.replace(\"env.update(CUEXIS_GPU_BARRIER=\"")
+exec(compile(source, str(base / 'run_gl_state.py'), 'exec'))

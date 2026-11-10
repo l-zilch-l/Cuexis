@@ -1,0 +1,4 @@
+from pathlib import Path
+base=Path(__file__).resolve().parent
+s=(base/'build_combined.py').read_text().replace("out=base/'combined-source-v1'", "out=base/'combined-source-v2'")
+exec(compile(s,str(base/'build_combined.py'),'exec'))

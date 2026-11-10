@@ -151,6 +151,11 @@ WindowEvents SdlWindow::pollEvents() {
             result.quitRequested = true;
             continue;
         }
+        if (event.type == SDL_EVENT_WINDOW_FOCUS_LOST &&
+            event.window.windowID == state_->windowId) {
+            result.focusLost = true;
+            continue;
+        }
         if (event.type != SDL_EVENT_KEY_DOWN && event.type != SDL_EVENT_KEY_UP) {
             continue;
         }
@@ -161,10 +166,11 @@ WindowEvents SdlWindow::pollEvents() {
             continue;
         }
         const auto key = namedKey(event.key.key);
-        if (key != WindowKey::Unknown) {
-            result.keys.push_back(
-                WindowKeyEvent{.key = key, .pressed = event.type == SDL_EVENT_KEY_DOWN});
-        }
+        result.keys.push_back(
+            WindowKeyEvent{.key = key,
+                           .pressed = event.type == SDL_EVENT_KEY_DOWN,
+                           .scanCode = static_cast<std::uint32_t>(event.key.scancode),
+                           .timestampNs = event.key.timestamp});
     }
     return result;
 }

@@ -1,0 +1,582 @@
+{
+  "scope": "shape of the p99 crossing, read from the recorded per-frame samples of a run that was already judged; descriptive only, never a verdict",
+  "created_utc": "2026-11-01T00:21:23.904237+00:00",
+  "run": "entities-2300",
+  "budget_us": 4166.666666666667,
+  "threshold_us": 6000.0,
+  "sample_tag": "GPU_THROUGHPUT_SAMPLE",
+  "script_sha256": "279c9e0ac300319b21e19e3fac82023ea8beb13526b95b0b6c67dde116383344",
+  "processes": [
+    {
+      "log": "01-render-only-2300.log.txt",
+      "log_sha256": "f5cf98c050e8b567420c0bb259cf336f558c78bb1ff846c4fd0e094839d87798",
+      "mode": "render-only",
+      "ordinal_continuous": true,
+      "detail": {
+        "frames": 6534,
+        "start_utc_s": 0.0053783,
+        "end_s": 20.0006739,
+        "cycle_us": {
+          "min": 2529.3,
+          "p50": 3032.2,
+          "p90": 3290.7,
+          "p95": 3385.7,
+          "p99": 3593.7,
+          "max": 5765.6
+        },
+        "over_budget": {
+          "count": 10,
+          "share": 0.0015304560759106215,
+          "bursts": 7,
+          "burst_length_median": 1,
+          "burst_length_max": 4,
+          "gap_frames_median": 433.0,
+          "first_ordinal": 0,
+          "first_utc_s": 0.0053783
+        },
+        "slow": {
+          "threshold_us": 6000.0,
+          "count": 0,
+          "share": 0.0,
+          "bursts": 0,
+          "burst_length_median": null,
+          "burst_length_max": 0,
+          "gap_frames_median": null,
+          "gap_frames_p90": null,
+          "first_ordinal": null,
+          "first_utc_s": null
+        },
+        "phases_us": {
+          "update": 0.0,
+          "extract": 0.0,
+          "submit": 2706.5,
+          "present": 298.6,
+          "total": 3022.1,
+          "cycle": 3032.2
+        },
+        "fast_phases_us": {
+          "update": 0.0,
+          "extract": 0.0,
+          "submit": 2706.5,
+          "present": 298.6,
+          "total": 3022.1,
+          "cycle": 3032.2
+        },
+        "slow_phases_us": null,
+        "gpu_interval_us": {
+          "p50": 392.192,
+          "p99": 625.664,
+          "fast_p50": 392.192,
+          "slow_p50": null,
+          "max": 1277.952
+        }
+      }
+    },
+    {
+      "log": "01-static-2300.log.txt",
+      "log_sha256": "8d52a3ae8a19655028ff092ba9196250d923ea7741beb5c6798ac4eb50caea3e",
+      "mode": "static",
+      "ordinal_continuous": true,
+      "detail": {
+        "frames": 5652,
+        "start_utc_s": 0.0029989,
+        "end_s": 20.000103600000003,
+        "cycle_us": {
+          "min": 2723.8,
+          "p50": 3473.7,
+          "p90": 3918.5,
+          "p95": 4108.3,
+          "p99": 6939.2,
+          "max": 7868.4
+        },
+        "over_budget": {
+          "count": 229,
+          "share": 0.040516631280962494,
+          "bursts": 153,
+          "burst_length_median": 1,
+          "burst_length_max": 10,
+          "gap_frames_median": 6.0,
+          "first_ordinal": 1643,
+          "first_utc_s": 5.335898
+        },
+        "slow": {
+          "threshold_us": 6000.0,
+          "count": 64,
+          "share": 0.01132342533616419,
+          "bursts": 64,
+          "burst_length_median": 1.0,
+          "burst_length_max": 1,
+          "gap_frames_median": 10,
+          "gap_frames_p90": 31,
+          "first_ordinal": 4700,
+          "first_utc_s": 16.104058
+        },
+        "phases_us": {
+          "update": 172.7,
+          "extract": 216.2,
+          "submit": 2735.7,
+          "present": 313.4,
+          "total": 3465.6,
+          "cycle": 3473.75
+        },
+        "fast_phases_us": {
+          "update": 172.6,
+          "extract": 216.0,
+          "submit": 2733.2,
+          "present": 313.3,
+          "total": 3461.0,
+          "cycle": 3469.55
+        },
+        "slow_phases_us": {
+          "update": 190.2,
+          "extract": 237.25,
+          "submit": 6321.9,
+          "present": 343.45,
+          "total": 7080.9,
+          "cycle": 7086.75
+        },
+        "gpu_interval_us": {
+          "p50": 405.504,
+          "p99": 645.12,
+          "fast_p50": 404.48,
+          "slow_p50": 436.736,
+          "max": 1763.328
+        }
+      }
+    },
+    {
+      "log": "02-render-only-2300.log.txt",
+      "log_sha256": "5bb87c70ebcf08fb27efbed098c930b4ac07d9247d516ebb5ee937768572cd6f",
+      "mode": "render-only",
+      "ordinal_continuous": true,
+      "detail": {
+        "frames": 6594,
+        "start_utc_s": 0.0029463000000000002,
+        "end_s": 20.0003275,
+        "cycle_us": {
+          "min": 2407.3,
+          "p50": 3006,
+          "p90": 3296.4,
+          "p95": 3379.4,
+          "p99": 3566.4,
+          "max": 4256.2
+        },
+        "over_budget": {
+          "count": 4,
+          "share": 0.0006066120715802245,
+          "bursts": 4,
+          "burst_length_median": 1.0,
+          "burst_length_max": 1,
+          "gap_frames_median": 1296,
+          "first_ordinal": 2822,
+          "first_utc_s": 8.214778599999999
+        },
+        "slow": {
+          "threshold_us": 6000.0,
+          "count": 0,
+          "share": 0.0,
+          "bursts": 0,
+          "burst_length_median": null,
+          "burst_length_max": 0,
+          "gap_frames_median": null,
+          "gap_frames_p90": null,
+          "first_ordinal": null,
+          "first_utc_s": null
+        },
+        "phases_us": {
+          "update": 0.0,
+          "extract": 0.0,
+          "submit": 2693.95,
+          "present": 298.4,
+          "total": 2998.3,
+          "cycle": 3006.05
+        },
+        "fast_phases_us": {
+          "update": 0.0,
+          "extract": 0.0,
+          "submit": 2693.95,
+          "present": 298.4,
+          "total": 2998.3,
+          "cycle": 3006.05
+        },
+        "slow_phases_us": null,
+        "gpu_interval_us": {
+          "p50": 395.264,
+          "p99": 569.344,
+          "fast_p50": 395.264,
+          "slow_p50": null,
+          "max": 989.184
+        }
+      }
+    },
+    {
+      "log": "02-static-2300.log.txt",
+      "log_sha256": "04785834fb67e6be8322af0f4c5d45139e5f910a2c31e822dd07d4c166fdabba",
+      "mode": "static",
+      "ordinal_continuous": true,
+      "detail": {
+        "frames": 4712,
+        "start_utc_s": 0.003497,
+        "end_s": 20.0038771,
+        "cycle_us": {
+          "min": 2913.5,
+          "p50": 4073,
+          "p90": 4899.4,
+          "p95": 7150.6,
+          "p99": 7377.7,
+          "max": 8230.1
+        },
+        "over_budget": {
+          "count": 2022,
+          "share": 0.42911714770797965,
+          "bursts": 534,
+          "burst_length_median": 2.5,
+          "burst_length_max": 20,
+          "gap_frames_median": 5,
+          "first_ordinal": 544,
+          "first_utc_s": 1.8546751000000001
+        },
+        "slow": {
+          "threshold_us": 6000.0,
+          "count": 431,
+          "share": 0.09146859083191851,
+          "bursts": 431,
+          "burst_length_median": 1,
+          "burst_length_max": 1,
+          "gap_frames_median": 4.0,
+          "gap_frames_p90": 14,
+          "first_ordinal": 1620,
+          "first_utc_s": 5.667571400000001
+        },
+        "phases_us": {
+          "update": 191.5,
+          "extract": 267.75,
+          "submit": 3236.85,
+          "present": 331.05,
+          "total": 4068.3,
+          "cycle": 4073.75
+        },
+        "fast_phases_us": {
+          "update": 191.4,
+          "extract": 267.3,
+          "submit": 3148.4,
+          "present": 328.9,
+          "total": 3974,
+          "cycle": 3980.2
+        },
+        "slow_phases_us": {
+          "update": 193,
+          "extract": 271.9,
+          "submit": 6328.7,
+          "present": 353.3,
+          "total": 7156.5,
+          "cycle": 7163.4
+        },
+        "gpu_interval_us": {
+          "p50": 470.016,
+          "p99": 852.992,
+          "fast_p50": 465.92,
+          "slow_p50": 496.64,
+          "max": 1730.56
+        }
+      }
+    },
+    {
+      "log": "03-render-only-2300.log.txt",
+      "log_sha256": "5d5b395344d3d2291cd6b25618924c778a58bf9329e1cec3376ba63510be231c",
+      "mode": "render-only",
+      "ordinal_continuous": true,
+      "detail": {
+        "frames": 6523,
+        "start_utc_s": 0.0027809,
+        "end_s": 20.0022033,
+        "cycle_us": {
+          "min": 2455.1,
+          "p50": 3039.1,
+          "p90": 3326.4,
+          "p95": 3408.8,
+          "p99": 3619.2,
+          "max": 4330.2
+        },
+        "over_budget": {
+          "count": 3,
+          "share": 0.000459911083857121,
+          "bursts": 3,
+          "burst_length_median": 1,
+          "burst_length_max": 1,
+          "gap_frames_median": 1624.5,
+          "first_ordinal": 2071,
+          "first_utc_s": 5.995654
+        },
+        "slow": {
+          "threshold_us": 6000.0,
+          "count": 0,
+          "share": 0.0,
+          "bursts": 0,
+          "burst_length_median": null,
+          "burst_length_max": 0,
+          "gap_frames_median": null,
+          "gap_frames_p90": null,
+          "first_ordinal": null,
+          "first_utc_s": null
+        },
+        "phases_us": {
+          "update": 0,
+          "extract": 0,
+          "submit": 2724.5,
+          "present": 299.3,
+          "total": 3031.6,
+          "cycle": 3039.1
+        },
+        "fast_phases_us": {
+          "update": 0,
+          "extract": 0,
+          "submit": 2724.5,
+          "present": 299.3,
+          "total": 3031.6,
+          "cycle": 3039.1
+        },
+        "slow_phases_us": null,
+        "gpu_interval_us": {
+          "p50": 397.312,
+          "p99": 570.368,
+          "fast_p50": 397.312,
+          "slow_p50": null,
+          "max": 1182.72
+        }
+      }
+    },
+    {
+      "log": "03-static-2300.log.txt",
+      "log_sha256": "d04e3c4a3a4c6052a40f963b3cf4c8190b47b1725cd136360359e5d0b4fa6c1f",
+      "mode": "static",
+      "ordinal_continuous": true,
+      "detail": {
+        "frames": 5507,
+        "start_utc_s": 0.0034441,
+        "end_s": 20.0006853,
+        "cycle_us": {
+          "min": 2699.1,
+          "p50": 3515.3,
+          "p90": 4110.3,
+          "p95": 4310.1,
+          "p99": 7111.8,
+          "max": 7577.9
+        },
+        "over_budget": {
+          "count": 467,
+          "share": 0.0848011621572544,
+          "bursts": 285,
+          "burst_length_median": 1,
+          "burst_length_max": 9,
+          "gap_frames_median": 6.0,
+          "first_ordinal": 736,
+          "first_utc_s": 2.3690162000000003
+        },
+        "slow": {
+          "threshold_us": 6000.0,
+          "count": 120,
+          "share": 0.02179044852006537,
+          "bursts": 120,
+          "burst_length_median": 1.0,
+          "burst_length_max": 1,
+          "gap_frames_median": 10,
+          "gap_frames_p90": 31,
+          "first_ordinal": 3756,
+          "first_utc_s": 12.79125
+        },
+        "phases_us": {
+          "update": 172,
+          "extract": 215.8,
+          "submit": 2759.8,
+          "present": 316.9,
+          "total": 3505.5,
+          "cycle": 3515.3
+        },
+        "fast_phases_us": {
+          "update": 171.4,
+          "extract": 215.5,
+          "submit": 2752.9,
+          "present": 316.5,
+          "total": 3497.2,
+          "cycle": 3506.7
+        },
+        "slow_phases_us": {
+          "update": 184.3,
+          "extract": 235.95,
+          "submit": 6333.299999999999,
+          "present": 337.15,
+          "total": 7095.25,
+          "cycle": 7102.549999999999
+        },
+        "gpu_interval_us": {
+          "p50": 408.576,
+          "p99": 654.336,
+          "fast_p50": 407.552,
+          "slow_p50": 436.224,
+          "max": 2040.832
+        }
+      }
+    }
+  ],
+  "groups": {
+    "render-only": {
+      "processes": 3,
+      "frames": [
+        6534,
+        6594,
+        6523
+      ],
+      "cycle_p50_us": [
+        3032.2,
+        3006,
+        3039.1
+      ],
+      "cycle_p99_us": [
+        3593.7,
+        3566.4,
+        3619.2
+      ],
+      "over_budget_share": [
+        0.0015304560759106215,
+        0.0006066120715802245,
+        0.000459911083857121
+      ],
+      "slow_share": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "slow_frames": [
+        0,
+        0,
+        0
+      ],
+      "slow_bursts": [
+        0,
+        0,
+        0
+      ],
+      "slow_gap_frames_median": [
+        null,
+        null,
+        null
+      ],
+      "first_slow_utc_s": [
+        null,
+        null,
+        null
+      ],
+      "submit_us_median": [
+        2706.5,
+        2693.95,
+        2724.5
+      ],
+      "slow_submit_us_median": [
+        null,
+        null,
+        null
+      ],
+      "fast_submit_us_median": [
+        2706.5,
+        2693.95,
+        2724.5
+      ],
+      "all_processes_continuous": true,
+      "gpu_interval_p50_us": [
+        392.192,
+        395.264,
+        397.312
+      ],
+      "gpu_interval_slow_p50_us": [
+        null,
+        null,
+        null
+      ],
+      "gpu_interval_fast_p50_us": [
+        392.192,
+        395.264,
+        397.312
+      ]
+    },
+    "static": {
+      "processes": 3,
+      "frames": [
+        5652,
+        4712,
+        5507
+      ],
+      "cycle_p50_us": [
+        3473.7,
+        4073,
+        3515.3
+      ],
+      "cycle_p99_us": [
+        6939.2,
+        7377.7,
+        7111.8
+      ],
+      "over_budget_share": [
+        0.040516631280962494,
+        0.42911714770797965,
+        0.0848011621572544
+      ],
+      "slow_share": [
+        0.01132342533616419,
+        0.09146859083191851,
+        0.02179044852006537
+      ],
+      "slow_frames": [
+        64,
+        431,
+        120
+      ],
+      "slow_bursts": [
+        64,
+        431,
+        120
+      ],
+      "slow_gap_frames_median": [
+        10,
+        4.0,
+        10
+      ],
+      "first_slow_utc_s": [
+        16.104058,
+        5.667571400000001,
+        12.79125
+      ],
+      "submit_us_median": [
+        2735.7,
+        3236.85,
+        2759.8
+      ],
+      "slow_submit_us_median": [
+        6321.9,
+        6328.7,
+        6333.299999999999
+      ],
+      "fast_submit_us_median": [
+        2733.2,
+        3148.4,
+        2752.9
+      ],
+      "all_processes_continuous": true,
+      "gpu_interval_p50_us": [
+        405.504,
+        470.016,
+        408.576
+      ],
+      "gpu_interval_slow_p50_us": [
+        436.736,
+        496.64,
+        436.224
+      ],
+      "gpu_interval_fast_p50_us": [
+        404.48,
+        465.92,
+        407.552
+      ]
+    }
+  }
+}

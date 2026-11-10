@@ -1,0 +1,3661 @@
+{
+ "stamp": "20261101-w2",
+ "plan": {
+  "player-40k-untraced": 3,
+  "player-40k-window-first": 3,
+  "player-40k-window-first-close1": 1,
+  "player-40k-untraced-close1": 1
+ },
+ "order": [
+  "player-40k-untraced",
+  "player-40k-window-first",
+  "player-40k-window-first-close1",
+  "player-40k-untraced-close1",
+  "player-40k-untraced",
+  "player-40k-window-first",
+  "player-40k-untraced",
+  "player-40k-window-first"
+ ],
+ "summary": {
+  "player-40k-untraced": {
+   "arm": "player-40k-untraced",
+   "n": 3,
+   "return_codes": [
+    0,
+    0,
+    0
+   ],
+   "killed": [
+    false,
+    false,
+    false
+   ],
+   "medians": {
+    "window_appeared_t_s": null,
+    "primary_appeared_t_s": null,
+    "primary_visible_t_s": 2.4468,
+    "exit_t_s": 8.2356,
+    "wm_close_to_exit_s": 0.2353,
+    "probes_after_primary": 96,
+    "probes_timed_out": 0,
+    "probe_latency_over_100ms": 1
+   },
+   "spread_pct": {
+    "primary_visible_t_s": 0.82,
+    "exit_t_s": 0.3,
+    "wm_close_to_exit_s": 10.67,
+    "probes_after_primary": 14.58,
+    "probe_latency_over_100ms": 0.0
+   },
+   "probe_latency_ms": {
+    "p50": 32.596,
+    "p90": 34.255,
+    "p99": 43.957,
+    "max": 161.143
+   },
+   "cpu_core_ratio": {
+    "0.5s": 0.9539,
+    "1s": 0.9678,
+    "2s": 0.983,
+    "2.4s": 0.9806,
+    "3s": 0.9988
+   },
+   "player_phases_us": {
+    "content_resolved": {
+     "elapsed_us": 18976.0,
+     "total_us": 18976.0
+    },
+    "content_prepared": {
+     "elapsed_us": 2063363.0,
+     "total_us": 2082340.0
+    },
+    "window_created": {
+     "elapsed_us": 305192.0,
+     "total_us": 2387740.0
+    },
+    "backend_created": {
+     "elapsed_us": 10579.0,
+     "total_us": 2398319.0
+    },
+    "content_committed": {
+     "elapsed_us": 370.0,
+     "total_us": 2398680.0
+    },
+    "transport_playing": {
+     "elapsed_us": 14.0,
+     "total_us": 2398693.0
+    },
+    "first_frame_presented": {
+     "elapsed_us": 62081.0,
+     "total_us": 2460775.0
+    }
+   },
+   "probe_stages_us": {
+    "fixture_source": null,
+    "playback_prepare": null,
+    "sdl_runtime": null,
+    "gl_context": null,
+    "window_create": null,
+    "backend_create": null,
+    "pixel_readback": null,
+    "renderer_prepare": null,
+    "session_commit": null,
+    "backend_activate": null,
+    "first_update": null,
+    "first_extract": null,
+    "first_submit": null,
+    "first_present": null
+   },
+   "probe_frames": [],
+   "windows": [
+    [
+     {
+      "hwnd": 2295838,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 2.2175,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 2361374,
+      "title": "",
+      "class": "SDL_app",
+      "first_seen_t_s": 2.4171,
+      "first_visible_t_s": 2.4515,
+      "first_client": [
+       1280,
+       720
+      ],
+      "last_client": [
+       1280,
+       720
+      ]
+     },
+     {
+      "hwnd": 7342812,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 2.4227,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 7408434,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.3734,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 13699756,
+      "title": "NVOGLDC invisible",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 2.3734,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 16842958,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.4116,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 25495650,
+      "title": "__wglDummyWindowFodder",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 2.4116,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 29231610,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.2175,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 29297146,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.4171,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     }
+    ],
+    [
+     {
+      "hwnd": 2623518,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.3859,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 7736114,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.3538,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 14092972,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 2.202,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 14158508,
+      "title": "",
+      "class": "SDL_app",
+      "first_seen_t_s": 2.3914,
+      "first_visible_t_s": 2.4315,
+      "first_client": [
+       1280,
+       720
+      ],
+      "last_client": [
+       1280,
+       720
+      ]
+     },
+     {
+      "hwnd": 25757794,
+      "title": "__wglDummyWindowFodder",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 2.3859,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 29624826,
+      "title": "NVOGLDC invisible",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 2.3538,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 31065846,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 2.403,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 41879834,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.1965,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 41945370,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.3914,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     }
+    ],
+    [
+     {
+      "hwnd": 2820126,
+      "title": "__wglDummyWindowFodder",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 2.4024,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 11929504,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 2.215,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 11995040,
+      "title": "",
+      "class": "SDL_app",
+      "first_seen_t_s": 2.4133,
+      "first_visible_t_s": 2.4468,
+      "first_client": [
+       1280,
+       720
+      ],
+      "last_client": [
+       1280,
+       720
+      ]
+     },
+     {
+      "hwnd": 14289580,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.215,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 14355116,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.4078,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 25888866,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.3747,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 29821434,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.4024,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 31196918,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 2.4189,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 42076442,
+      "title": "NVOGLDC invisible",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 2.3747,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     }
+    ]
+   ],
+   "per_process": [
+    {
+     "index": 0,
+     "summary": {
+      "window_appeared_t_s": null,
+      "primary_appeared_t_s": null,
+      "primary_visible_t_s": 2.4515,
+      "primary_final_client": [
+       1280,
+       720
+      ],
+      "probe_latency_ms": {
+       "p50": 32.596,
+       "p90": 34.255,
+       "p99": 43.957,
+       "max": 160.004
+      },
+      "cpu_core_ratio": {
+       "0.5s": 0.9049,
+       "1s": 0.9592,
+       "2s": 0.9734,
+       "2.4s": 0.9781,
+       "3s": 0.9828
+      },
+      "exit_t_s": 8.2159,
+      "wm_close_to_exit_s": 0.2148,
+      "probes_after_primary": 96
+     }
+    },
+    {
+     "index": 1,
+     "summary": {
+      "window_appeared_t_s": null,
+      "primary_appeared_t_s": null,
+      "primary_visible_t_s": 2.4315,
+      "primary_final_client": [
+       1280,
+       720
+      ],
+      "probe_latency_ms": {
+       "p50": 32.164,
+       "p90": 33.594,
+       "p99": 42.205,
+       "max": 161.143
+      },
+      "cpu_core_ratio": {
+       "0.5s": 0.9666,
+       "1s": 0.9789,
+       "2s": 0.983,
+       "2.4s": 0.9988,
+       "3s": 1.0044
+      },
+      "exit_t_s": 8.2356,
+      "wm_close_to_exit_s": 0.2353,
+      "probes_after_primary": 97
+     }
+    },
+    {
+     "index": 2,
+     "summary": {
+      "window_appeared_t_s": null,
+      "primary_appeared_t_s": null,
+      "primary_visible_t_s": 2.4468,
+      "primary_final_client": [
+       1280,
+       720
+      ],
+      "probe_latency_ms": {
+       "p50": 42.198,
+       "p90": 49.497,
+       "p99": 52.956,
+       "max": 168.247
+      },
+      "cpu_core_ratio": {
+       "0.5s": 0.9539,
+       "1s": 0.9678,
+       "2s": 0.983,
+       "2.4s": 0.9806,
+       "3s": 0.9988
+      },
+      "exit_t_s": 8.2409,
+      "wm_close_to_exit_s": 0.2399,
+      "probes_after_primary": 83
+     }
+    }
+   ]
+  },
+  "player-40k-window-first": {
+   "arm": "player-40k-window-first",
+   "n": 3,
+   "return_codes": [
+    0,
+    0,
+    0
+   ],
+   "killed": [
+    false,
+    false,
+    false
+   ],
+   "medians": {
+    "window_appeared_t_s": null,
+    "primary_appeared_t_s": null,
+    "primary_visible_t_s": 0.3631,
+    "exit_t_s": 8.2283,
+    "wm_close_to_exit_s": 0.226,
+    "probes_after_primary": 92,
+    "probes_timed_out": 4,
+    "probe_latency_over_100ms": 5
+   },
+   "spread_pct": {
+    "primary_visible_t_s": 2.89,
+    "exit_t_s": 0.26,
+    "wm_close_to_exit_s": 8.89,
+    "probes_after_primary": 3.26,
+    "probes_timed_out": 0.0,
+    "probe_latency_over_100ms": 0.0
+   },
+   "probe_latency_ms": {
+    "p50": 36.148,
+    "p90": 52.359,
+    "p99": 413.002,
+    "max": 413.575
+   },
+   "cpu_core_ratio": {
+    "0.5s": 1.2562,
+    "1s": 1.144,
+    "2s": 1.0711,
+    "2.4s": 1.0591,
+    "3s": 1.0525
+   },
+   "player_phases_us": {
+    "content_resolved": {
+     "elapsed_us": 20524.0,
+     "total_us": 20524.0
+    },
+    "window_created": {
+     "elapsed_us": 304417.0,
+     "total_us": 324942.0
+    },
+    "backend_created": {
+     "elapsed_us": 13078.0,
+     "total_us": 338020.0
+    },
+    "content_prepared": {
+     "elapsed_us": 2100846.0,
+     "total_us": 2437898.0
+    },
+    "content_committed": {
+     "elapsed_us": 703.0,
+     "total_us": 2438579.0
+    },
+    "transport_playing": {
+     "elapsed_us": 17.0,
+     "total_us": 2438593.0
+    },
+    "first_frame_presented": {
+     "elapsed_us": 64617.0,
+     "total_us": 2499013.0
+    }
+   },
+   "probe_stages_us": {
+    "fixture_source": null,
+    "playback_prepare": null,
+    "sdl_runtime": null,
+    "gl_context": null,
+    "window_create": null,
+    "backend_create": null,
+    "pixel_readback": null,
+    "renderer_prepare": null,
+    "session_commit": null,
+    "backend_activate": null,
+    "first_update": null,
+    "first_extract": null,
+    "first_submit": null,
+    "first_present": null
+   },
+   "probe_frames": [],
+   "windows": [
+    [
+     {
+      "hwnd": 2426910,
+      "title": "__wglDummyWindowFodder",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 0.3165,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 7473970,
+      "title": "NVOGLDC invisible",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 0.285,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 13765292,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.1311,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 13830828,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.3216,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 16908494,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 0.1311,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 16974030,
+      "title": "",
+      "class": "SDL_app",
+      "first_seen_t_s": 0.3272,
+      "first_visible_t_s": 0.3605,
+      "first_client": [
+       1280,
+       720
+      ],
+      "last_client": [
+       1280,
+       720
+      ]
+     },
+     {
+      "hwnd": 29362682,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.3165,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 30869238,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 0.3327,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 41617690,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.285,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     }
+    ],
+    [
+     {
+      "hwnd": 2689054,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 0.1353,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 2754590,
+      "title": "",
+      "class": "SDL_app",
+      "first_seen_t_s": 0.3308,
+      "first_visible_t_s": 0.3631,
+      "first_client": [
+       1280,
+       720
+      ],
+      "last_client": [
+       1280,
+       720
+      ]
+     },
+     {
+      "hwnd": 7801650,
+      "title": "NVOGLDC invisible",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 0.2922,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 11863968,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.2922,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 14224044,
+      "title": "__wglDummyWindowFodder",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 0.3253,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 29690362,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.1353,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 29755898,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.3308,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 31131382,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 0.3363,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 42010906,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.3197,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     }
+    ],
+    [
+     {
+      "hwnd": 7932722,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.2941,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 12060576,
+      "title": "__wglDummyWindowFodder",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 0.3324,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 14420652,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.3324,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 25954402,
+      "title": "NVOGLDC invisible",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 0.2941,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 29886970,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 0.1347,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 29952506,
+      "title": "",
+      "class": "SDL_app",
+      "first_seen_t_s": 0.3378,
+      "first_visible_t_s": 0.371,
+      "first_client": [
+       1280,
+       720
+      ],
+      "last_client": [
+       1280,
+       720
+      ]
+     },
+     {
+      "hwnd": 31262454,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 0.3493,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 42141978,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.1347,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 42207514,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.3378,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     }
+    ]
+   ],
+   "per_process": [
+    {
+     "index": 0,
+     "summary": {
+      "window_appeared_t_s": null,
+      "primary_appeared_t_s": null,
+      "primary_visible_t_s": 0.3605,
+      "primary_final_client": [
+       1280,
+       720
+      ],
+      "probe_latency_ms": {
+       "p50": 36.148,
+       "p90": 52.359,
+       "p99": 414.43,
+       "max": 414.844
+      },
+      "cpu_core_ratio": {
+       "0.5s": 1.2562,
+       "1s": 1.144,
+       "2s": 1.0711,
+       "2.4s": 1.0591,
+       "3s": 1.0525
+      },
+      "exit_t_s": 8.2444,
+      "wm_close_to_exit_s": 0.2422,
+      "probes_after_primary": 94
+     }
+    },
+    {
+     "index": 1,
+     "summary": {
+      "window_appeared_t_s": null,
+      "primary_appeared_t_s": null,
+      "primary_visible_t_s": 0.3631,
+      "primary_final_client": [
+       1280,
+       720
+      ],
+      "probe_latency_ms": {
+       "p50": 35.781,
+       "p90": 53.487,
+       "p99": 413.002,
+       "max": 413.575
+      },
+      "cpu_core_ratio": {
+       "0.5s": 1.3722,
+       "1s": 1.2024,
+       "2s": 1.1042,
+       "2.4s": 1.0868,
+       "3s": 1.0691
+      },
+      "exit_t_s": 8.2231,
+      "wm_close_to_exit_s": 0.2221,
+      "probes_after_primary": 92
+     }
+    },
+    {
+     "index": 2,
+     "summary": {
+      "window_appeared_t_s": null,
+      "primary_appeared_t_s": null,
+      "primary_visible_t_s": 0.371,
+      "primary_final_client": [
+       1280,
+       720
+      ],
+      "probe_latency_ms": {
+       "p50": 41.596,
+       "p90": 51.706,
+       "p99": 408.695,
+       "max": 412.001
+      },
+      "cpu_core_ratio": {
+       "0.5s": 1.2156,
+       "1s": 1.1042,
+       "2s": 1.0526,
+       "2.4s": 1.0447,
+       "3s": 1.0356
+      },
+      "exit_t_s": 8.2283,
+      "wm_close_to_exit_s": 0.226,
+      "probes_after_primary": 91
+     }
+    }
+   ]
+  },
+  "player-40k-window-first-close1": {
+   "arm": "player-40k-window-first-close1",
+   "n": 1,
+   "return_codes": [
+    0
+   ],
+   "killed": [
+    false
+   ],
+   "medians": {
+    "window_appeared_t_s": null,
+    "primary_appeared_t_s": null,
+    "primary_visible_t_s": 0.3771,
+    "exit_t_s": 2.6918,
+    "wm_close_to_exit_s": 1.6893,
+    "probes_after_primary": 7,
+    "probes_timed_out": 4,
+    "probe_latency_over_100ms": 5
+   },
+   "spread_pct": {},
+   "probe_latency_ms": {
+    "p50": 401.133,
+    "p90": 413.474,
+    "p99": 413.474,
+    "max": 415.016
+   },
+   "cpu_core_ratio": {
+    "0.5s": 1.3881,
+    "1s": 1.2083,
+    "2s": 1.1042,
+    "2.4s": 1.0807
+   },
+   "player_phases_us": {
+    "content_resolved": {
+     "elapsed_us": 19643.0,
+     "total_us": 19643.0
+    },
+    "window_created": {
+     "elapsed_us": 309867.0,
+     "total_us": 329511.0
+    },
+    "backend_created": {
+     "elapsed_us": 12045.0,
+     "total_us": 341556.0
+    },
+    "content_prepared": {
+     "elapsed_us": 2117546.0,
+     "total_us": 2459103.0
+    }
+   },
+   "probe_stages_us": {
+    "fixture_source": null,
+    "playback_prepare": null,
+    "sdl_runtime": null,
+    "gl_context": null,
+    "window_create": null,
+    "backend_create": null,
+    "pixel_readback": null,
+    "renderer_prepare": null,
+    "session_commit": null,
+    "backend_activate": null,
+    "first_update": null,
+    "first_extract": null,
+    "first_submit": null,
+    "first_present": null
+   },
+   "probe_frames": [],
+   "windows": [
+    [
+     {
+      "hwnd": 7539506,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.1402,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 7605042,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.344,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 13896364,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.3381,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 17039566,
+      "title": "__wglDummyWindowFodder",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 0.3381,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 25626722,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.2994,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 29428218,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 0.1402,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 29493754,
+      "title": "",
+      "class": "SDL_app",
+      "first_seen_t_s": 0.344,
+      "first_visible_t_s": 0.3771,
+      "first_client": [
+       1280,
+       720
+      ],
+      "last_client": [
+       1280,
+       720
+      ]
+     },
+     {
+      "hwnd": 30934774,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 0.3495,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 41683226,
+      "title": "NVOGLDC invisible",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 0.2994,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     }
+    ]
+   ],
+   "per_process": [
+    {
+     "index": 0,
+     "summary": {
+      "window_appeared_t_s": null,
+      "primary_appeared_t_s": null,
+      "primary_visible_t_s": 0.3771,
+      "primary_final_client": [
+       1280,
+       720
+      ],
+      "probe_latency_ms": {
+       "p50": 401.133,
+       "p90": 413.474,
+       "p99": 413.474,
+       "max": 415.016
+      },
+      "cpu_core_ratio": {
+       "0.5s": 1.3881,
+       "1s": 1.2083,
+       "2s": 1.1042,
+       "2.4s": 1.0807
+      },
+      "exit_t_s": 2.6918,
+      "wm_close_to_exit_s": 1.6893,
+      "probes_after_primary": 7
+     }
+    }
+   ]
+  },
+  "player-40k-untraced-close1": {
+   "arm": "player-40k-untraced-close1",
+   "n": 1,
+   "return_codes": [
+    1
+   ],
+   "killed": [
+    true
+   ],
+   "medians": {
+    "window_appeared_t_s": null,
+    "primary_appeared_t_s": null,
+    "primary_visible_t_s": 2.4747,
+    "exit_t_s": 40.0021,
+    "wm_close_to_exit_s": 39.0001,
+    "probes_after_primary": 623,
+    "probes_timed_out": 0,
+    "probe_latency_over_100ms": 1
+   },
+   "spread_pct": {},
+   "probe_latency_ms": {
+    "p50": 32.568,
+    "p90": 42.259,
+    "p99": 52.264,
+    "max": 165.153
+   },
+   "cpu_core_ratio": {
+    "0.5s": 0.8826,
+    "1s": 0.9345,
+    "2s": 0.9656,
+    "2.4s": 0.966,
+    "3s": 0.9889
+   },
+   "player_phases_us": {
+    "content_resolved": {
+     "elapsed_us": 19383.0,
+     "total_us": 19383.0
+    },
+    "content_prepared": {
+     "elapsed_us": 2063510.0,
+     "total_us": 2082894.0
+    },
+    "window_created": {
+     "elapsed_us": 316684.0,
+     "total_us": 2399578.0
+    },
+    "backend_created": {
+     "elapsed_us": 12883.0,
+     "total_us": 2412461.0
+    },
+    "content_committed": {
+     "elapsed_us": 444.0,
+     "total_us": 2412905.0
+    },
+    "transport_playing": {
+     "elapsed_us": 14.0,
+     "total_us": 2412920.0
+    },
+    "first_frame_presented": {
+     "elapsed_us": 67782.0,
+     "total_us": 2480702.0
+    }
+   },
+   "probe_stages_us": {
+    "fixture_source": null,
+    "playback_prepare": null,
+    "sdl_runtime": null,
+    "gl_context": null,
+    "window_create": null,
+    "backend_create": null,
+    "pixel_readback": null,
+    "renderer_prepare": null,
+    "session_commit": null,
+    "backend_activate": null,
+    "first_update": null,
+    "first_extract": null,
+    "first_submit": null,
+    "first_present": null
+   },
+   "probe_frames": [],
+   "windows": [
+    [
+     {
+      "hwnd": 2557982,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.3964,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 7670578,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.4287,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 13961900,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 2.2327,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 14027436,
+      "title": "",
+      "class": "SDL_app",
+      "first_seen_t_s": 2.4403,
+      "first_visible_t_s": 2.4747,
+      "first_client": [
+       1280,
+       720
+      ],
+      "last_client": [
+       1280,
+       720
+      ]
+     },
+     {
+      "hwnd": 25692258,
+      "title": "NVOGLDC invisible",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 2.3964,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 29559290,
+      "title": "__wglDummyWindowFodder",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 2.4343,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 31000310,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 2.4464,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 41748762,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.2327,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 41814298,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.4403,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     }
+    ]
+   ],
+   "per_process": [
+    {
+     "index": 0,
+     "summary": {
+      "window_appeared_t_s": null,
+      "primary_appeared_t_s": null,
+      "primary_visible_t_s": 2.4747,
+      "primary_final_client": [
+       1280,
+       720
+      ],
+      "probe_latency_ms": {
+       "p50": 32.568,
+       "p90": 42.259,
+       "p99": 52.264,
+       "max": 165.153
+      },
+      "cpu_core_ratio": {
+       "0.5s": 0.8826,
+       "1s": 0.9345,
+       "2s": 0.9656,
+       "2.4s": 0.966,
+       "3s": 0.9889
+      },
+      "exit_t_s": 40.0021,
+      "wm_close_to_exit_s": 39.0001,
+      "probes_after_primary": 623
+     }
+    }
+   ]
+  }
+ },
+ "samples": [
+  {
+   "arm": "player-40k-untraced",
+   "index": 0,
+   "position": 0,
+   "summary": {
+    "label": "player-40k-untraced-00",
+    "return_code": 0,
+    "killed": false,
+    "exit_t_s": 8.2159,
+    "windows_seen": [
+     2295838,
+     2361374,
+     7342812,
+     7408434,
+     13699756,
+     16842958,
+     25495650,
+     29231610,
+     29297146
+    ],
+    "windows": [
+     {
+      "hwnd": 2295838,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 2.2175,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 2361374,
+      "title": "",
+      "class": "SDL_app",
+      "first_seen_t_s": 2.4171,
+      "first_visible_t_s": 2.4515,
+      "first_client": [
+       1280,
+       720
+      ],
+      "last_client": [
+       1280,
+       720
+      ]
+     },
+     {
+      "hwnd": 7342812,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 2.4227,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 7408434,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.3734,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 13699756,
+      "title": "NVOGLDC invisible",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 2.3734,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 16842958,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.4116,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 25495650,
+      "title": "__wglDummyWindowFodder",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 2.4116,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 29231610,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.2175,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 29297146,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.4171,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     }
+    ],
+    "first_any_window_t_s": 2.2175,
+    "primary_hwnd": 2361374,
+    "primary_set_t_s": 2.4515,
+    "primary_title": "Cuexis Player 26.10.19-1",
+    "primary_class": "SDL_app",
+    "primary_first_appeared_t_s": 2.4171,
+    "primary_visible_t_s": 2.4515,
+    "primary_final_client": [
+     1280,
+     720
+    ],
+    "primary_client_timeline": [],
+    "primary_cloaked": 0,
+    "hung_events": [],
+    "probes_total": 96,
+    "probes_after_primary": 96,
+    "probes_timed_out": 0,
+    "probe_timeout_budget_ms": 400.0,
+    "probe_latency_ms": {
+     "p50": 32.596,
+     "p90": 34.255,
+     "p99": 43.957,
+     "max": 160.004
+    },
+    "probe_latency_over_100ms": 1,
+    "probe_latency_over_100ms_times": [
+     2.713
+    ],
+    "probe_latency_window": [
+     2.464,
+     8.104
+    ],
+    "cpu_core_ratio": {
+     "0.5s": 0.9049,
+     "1s": 0.9592,
+     "2s": 0.9734,
+     "2.4s": 0.9781,
+     "3s": 0.9828
+    },
+    "wm_close_posted_t_s": 8.0011,
+    "wm_close_to_exit_s": 0.2148,
+    "command": [
+     "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_player.exe",
+     "--project",
+     "out\\verification-20261101\\r3-startup-observability-v1\\player-40k-project"
+    ],
+    "exe_sha256": "9da8939cd8d2066d67f883e16c67d7d76199c93a994ed1ffa075aaefa11abdb4",
+    "exe_bytes": 5677056,
+    "started_wall": 1793503044.9717069,
+    "cwd": "D:\\Cuexis-redesign",
+    "env_overrides": [],
+    "stdout_bytes": 2192,
+    "stderr_bytes": 0
+   },
+   "phases": {
+    "content_resolved": {
+     "elapsed_us": 18797.0,
+     "total_us": 18797.0
+    },
+    "content_prepared": {
+     "elapsed_us": 2056176.0,
+     "total_us": 2074974.0
+    },
+    "window_created": {
+     "elapsed_us": 312765.0,
+     "total_us": 2387740.0
+    },
+    "backend_created": {
+     "elapsed_us": 10579.0,
+     "total_us": 2398319.0
+    },
+    "content_committed": {
+     "elapsed_us": 361.0,
+     "total_us": 2398680.0
+    },
+    "transport_playing": {
+     "elapsed_us": 13.0,
+     "total_us": 2398693.0
+    },
+    "first_frame_presented": {
+     "elapsed_us": 62081.0,
+     "total_us": 2460775.0
+    }
+   },
+   "stages": {},
+   "frames": {},
+   "trace_events": []
+  },
+  {
+   "arm": "player-40k-window-first",
+   "index": 0,
+   "position": 1,
+   "summary": {
+    "label": "player-40k-window-first-00",
+    "return_code": 0,
+    "killed": false,
+    "exit_t_s": 8.2444,
+    "windows_seen": [
+     2426910,
+     7473970,
+     13765292,
+     13830828,
+     16908494,
+     16974030,
+     29362682,
+     30869238,
+     41617690
+    ],
+    "windows": [
+     {
+      "hwnd": 2426910,
+      "title": "__wglDummyWindowFodder",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 0.3165,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 7473970,
+      "title": "NVOGLDC invisible",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 0.285,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 13765292,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.1311,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 13830828,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.3216,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 16908494,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 0.1311,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 16974030,
+      "title": "",
+      "class": "SDL_app",
+      "first_seen_t_s": 0.3272,
+      "first_visible_t_s": 0.3605,
+      "first_client": [
+       1280,
+       720
+      ],
+      "last_client": [
+       1280,
+       720
+      ]
+     },
+     {
+      "hwnd": 29362682,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.3165,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 30869238,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 0.3327,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 41617690,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.285,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     }
+    ],
+    "first_any_window_t_s": 0.1311,
+    "primary_hwnd": 16974030,
+    "primary_set_t_s": 0.3605,
+    "primary_title": "Cuexis Player 26.10.19-1",
+    "primary_class": "SDL_app",
+    "primary_first_appeared_t_s": 0.3272,
+    "primary_visible_t_s": 0.3605,
+    "primary_final_client": [
+     1280,
+     720
+    ],
+    "primary_client_timeline": [],
+    "primary_cloaked": 0,
+    "hung_events": [],
+    "probes_total": 94,
+    "probes_after_primary": 94,
+    "probes_timed_out": 4,
+    "probe_timeout_budget_ms": 400.0,
+    "probe_latency_ms": {
+     "p50": 36.148,
+     "p90": 52.359,
+     "p99": 414.43,
+     "max": 414.844
+    },
+    "probe_latency_over_100ms": 5,
+    "probe_latency_over_100ms_times": [
+     0.809,
+     1.249,
+     1.689,
+     2.115,
+     2.472
+    ],
+    "probe_latency_window": [
+     0.38,
+     8.107
+    ],
+    "cpu_core_ratio": {
+     "0.5s": 1.2562,
+     "1s": 1.144,
+     "2s": 1.0711,
+     "2.4s": 1.0591,
+     "3s": 1.0525
+    },
+    "wm_close_posted_t_s": 8.0022,
+    "wm_close_to_exit_s": 0.2422,
+    "command": [
+     "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_player.exe",
+     "--project",
+     "out\\verification-20261101\\r3-startup-observability-v1\\player-40k-project"
+    ],
+    "exe_sha256": "9da8939cd8d2066d67f883e16c67d7d76199c93a994ed1ffa075aaefa11abdb4",
+    "exe_bytes": 5677056,
+    "started_wall": 1793503053.1991825,
+    "cwd": "D:\\Cuexis-redesign",
+    "env_overrides": [
+     "CUEXIS_PLAYER_WINDOW_FIRST=1"
+    ],
+    "stdout_bytes": 2190,
+    "stderr_bytes": 0
+   },
+   "phases": {
+    "content_resolved": {
+     "elapsed_us": 20953.0,
+     "total_us": 20953.0
+    },
+    "window_created": {
+     "elapsed_us": 299130.0,
+     "total_us": 320083.0
+    },
+    "backend_created": {
+     "elapsed_us": 18628.0,
+     "total_us": 338712.0
+    },
+    "content_prepared": {
+     "elapsed_us": 2091609.0,
+     "total_us": 2430322.0
+    },
+    "content_committed": {
+     "elapsed_us": 703.0,
+     "total_us": 2431025.0
+    },
+    "transport_playing": {
+     "elapsed_us": 17.0,
+     "total_us": 2431042.0
+    },
+    "first_frame_presented": {
+     "elapsed_us": 64936.0,
+     "total_us": 2495978.0
+    }
+   },
+   "stages": {},
+   "frames": {},
+   "trace_events": []
+  },
+  {
+   "arm": "player-40k-window-first-close1",
+   "index": 0,
+   "position": 2,
+   "summary": {
+    "label": "player-40k-window-first-close1-00",
+    "return_code": 0,
+    "killed": false,
+    "exit_t_s": 2.6918,
+    "windows_seen": [
+     7539506,
+     7605042,
+     13896364,
+     17039566,
+     25626722,
+     29428218,
+     29493754,
+     30934774,
+     41683226
+    ],
+    "windows": [
+     {
+      "hwnd": 7539506,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.1402,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 7605042,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.344,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 13896364,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.3381,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 17039566,
+      "title": "__wglDummyWindowFodder",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 0.3381,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 25626722,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.2994,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 29428218,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 0.1402,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 29493754,
+      "title": "",
+      "class": "SDL_app",
+      "first_seen_t_s": 0.344,
+      "first_visible_t_s": 0.3771,
+      "first_client": [
+       1280,
+       720
+      ],
+      "last_client": [
+       1280,
+       720
+      ]
+     },
+     {
+      "hwnd": 30934774,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 0.3495,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 41683226,
+      "title": "NVOGLDC invisible",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 0.2994,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     }
+    ],
+    "first_any_window_t_s": 0.1402,
+    "primary_hwnd": 29493754,
+    "primary_set_t_s": 0.3771,
+    "primary_title": "Cuexis Player 26.10.19-1",
+    "primary_class": "SDL_app",
+    "primary_first_appeared_t_s": 0.344,
+    "primary_visible_t_s": 0.3771,
+    "primary_final_client": [
+     1280,
+     720
+    ],
+    "primary_client_timeline": [],
+    "primary_cloaked": 0,
+    "hung_events": [],
+    "probes_total": 7,
+    "probes_after_primary": 7,
+    "probes_timed_out": 4,
+    "probe_timeout_budget_ms": 400.0,
+    "probe_latency_ms": {
+     "p50": 401.133,
+     "p90": 413.474,
+     "p99": 413.474,
+     "max": 415.016
+    },
+    "probe_latency_over_100ms": 5,
+    "probe_latency_over_100ms_times": [
+     0.829,
+     1.255,
+     1.695,
+     2.134,
+     2.509
+    ],
+    "probe_latency_window": [
+     0.392,
+     2.574
+    ],
+    "cpu_core_ratio": {
+     "0.5s": 1.3881,
+     "1s": 1.2083,
+     "2s": 1.1042,
+     "2.4s": 1.0807
+    },
+    "wm_close_posted_t_s": 1.0025,
+    "wm_close_to_exit_s": 1.6893,
+    "command": [
+     "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_player.exe",
+     "--project",
+     "out\\verification-20261101\\r3-startup-observability-v1\\player-40k-project"
+    ],
+    "exe_sha256": "9da8939cd8d2066d67f883e16c67d7d76199c93a994ed1ffa075aaefa11abdb4",
+    "exe_bytes": 5677056,
+    "started_wall": 1793503061.4534922,
+    "cwd": "D:\\Cuexis-redesign",
+    "env_overrides": [
+     "CUEXIS_PLAYER_WINDOW_FIRST=1"
+    ],
+    "stdout_bytes": 1357,
+    "stderr_bytes": 0
+   },
+   "phases": {
+    "content_resolved": {
+     "elapsed_us": 19643.0,
+     "total_us": 19643.0
+    },
+    "window_created": {
+     "elapsed_us": 309867.0,
+     "total_us": 329511.0
+    },
+    "backend_created": {
+     "elapsed_us": 12045.0,
+     "total_us": 341556.0
+    },
+    "content_prepared": {
+     "elapsed_us": 2117546.0,
+     "total_us": 2459103.0
+    }
+   },
+   "stages": {},
+   "frames": {},
+   "trace_events": []
+  },
+  {
+   "arm": "player-40k-untraced-close1",
+   "index": 0,
+   "position": 3,
+   "summary": {
+    "label": "player-40k-untraced-close1-00",
+    "return_code": 1,
+    "killed": true,
+    "exit_t_s": 40.0021,
+    "windows_seen": [
+     2557982,
+     7670578,
+     13961900,
+     14027436,
+     25692258,
+     29559290,
+     31000310,
+     41748762,
+     41814298
+    ],
+    "windows": [
+     {
+      "hwnd": 2557982,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.3964,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 7670578,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.4287,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 13961900,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 2.2327,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 14027436,
+      "title": "",
+      "class": "SDL_app",
+      "first_seen_t_s": 2.4403,
+      "first_visible_t_s": 2.4747,
+      "first_client": [
+       1280,
+       720
+      ],
+      "last_client": [
+       1280,
+       720
+      ]
+     },
+     {
+      "hwnd": 25692258,
+      "title": "NVOGLDC invisible",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 2.3964,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 29559290,
+      "title": "__wglDummyWindowFodder",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 2.4343,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 31000310,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 2.4464,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 41748762,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.2327,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 41814298,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.4403,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     }
+    ],
+    "first_any_window_t_s": 2.2327,
+    "primary_hwnd": 14027436,
+    "primary_set_t_s": 2.4747,
+    "primary_title": "Cuexis Player 26.10.19-1",
+    "primary_class": "SDL_app",
+    "primary_first_appeared_t_s": 2.4403,
+    "primary_visible_t_s": 2.4747,
+    "primary_final_client": [
+     1280,
+     720
+    ],
+    "primary_client_timeline": [],
+    "primary_cloaked": 0,
+    "hung_events": [],
+    "probes_total": 623,
+    "probes_after_primary": 623,
+    "probes_timed_out": 0,
+    "probe_timeout_budget_ms": 400.0,
+    "probe_latency_ms": {
+     "p50": 32.568,
+     "p90": 42.259,
+     "p99": 52.264,
+     "max": 165.153
+    },
+    "probe_latency_over_100ms": 1,
+    "probe_latency_over_100ms_times": [
+     2.751
+    ],
+    "probe_latency_window": [
+     2.491,
+     39.997
+    ],
+    "cpu_core_ratio": {
+     "0.5s": 0.8826,
+     "1s": 0.9345,
+     "2s": 0.9656,
+     "2.4s": 0.966,
+     "3s": 0.9889
+    },
+    "wm_close_posted_t_s": 1.002,
+    "wm_close_to_exit_s": 39.0001,
+    "command": [
+     "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_player.exe",
+     "--project",
+     "out\\verification-20261101\\r3-startup-observability-v1\\player-40k-project"
+    ],
+    "exe_sha256": "9da8939cd8d2066d67f883e16c67d7d76199c93a994ed1ffa075aaefa11abdb4",
+    "exe_bytes": 5677056,
+    "started_wall": 1793503064.1547914,
+    "cwd": "D:\\Cuexis-redesign",
+    "env_overrides": [],
+    "stdout_bytes": 2192,
+    "stderr_bytes": 0
+   },
+   "phases": {
+    "content_resolved": {
+     "elapsed_us": 19383.0,
+     "total_us": 19383.0
+    },
+    "content_prepared": {
+     "elapsed_us": 2063510.0,
+     "total_us": 2082894.0
+    },
+    "window_created": {
+     "elapsed_us": 316684.0,
+     "total_us": 2399578.0
+    },
+    "backend_created": {
+     "elapsed_us": 12883.0,
+     "total_us": 2412461.0
+    },
+    "content_committed": {
+     "elapsed_us": 444.0,
+     "total_us": 2412905.0
+    },
+    "transport_playing": {
+     "elapsed_us": 14.0,
+     "total_us": 2412920.0
+    },
+    "first_frame_presented": {
+     "elapsed_us": 67782.0,
+     "total_us": 2480702.0
+    }
+   },
+   "stages": {},
+   "frames": {},
+   "trace_events": []
+  },
+  {
+   "arm": "player-40k-untraced",
+   "index": 1,
+   "position": 4,
+   "summary": {
+    "label": "player-40k-untraced-01",
+    "return_code": 0,
+    "killed": false,
+    "exit_t_s": 8.2356,
+    "windows_seen": [
+     2623518,
+     7736114,
+     14092972,
+     14158508,
+     25757794,
+     29624826,
+     31065846,
+     41879834,
+     41945370
+    ],
+    "windows": [
+     {
+      "hwnd": 2623518,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.3859,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 7736114,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.3538,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 14092972,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 2.202,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 14158508,
+      "title": "",
+      "class": "SDL_app",
+      "first_seen_t_s": 2.3914,
+      "first_visible_t_s": 2.4315,
+      "first_client": [
+       1280,
+       720
+      ],
+      "last_client": [
+       1280,
+       720
+      ]
+     },
+     {
+      "hwnd": 25757794,
+      "title": "__wglDummyWindowFodder",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 2.3859,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 29624826,
+      "title": "NVOGLDC invisible",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 2.3538,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 31065846,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 2.403,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 41879834,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.1965,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 41945370,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.3914,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     }
+    ],
+    "first_any_window_t_s": 2.1965,
+    "primary_hwnd": 14158508,
+    "primary_set_t_s": 2.4315,
+    "primary_title": "Cuexis Player 26.10.19-1",
+    "primary_class": "SDL_app",
+    "primary_first_appeared_t_s": 2.3914,
+    "primary_visible_t_s": 2.4315,
+    "primary_final_client": [
+     1280,
+     720
+    ],
+    "primary_client_timeline": [],
+    "primary_cloaked": 0,
+    "hung_events": [],
+    "probes_total": 97,
+    "probes_after_primary": 97,
+    "probes_timed_out": 0,
+    "probe_timeout_budget_ms": 400.0,
+    "probe_latency_ms": {
+     "p50": 32.164,
+     "p90": 33.594,
+     "p99": 42.205,
+     "max": 161.143
+    },
+    "probe_latency_over_100ms": 1,
+    "probe_latency_over_100ms_times": [
+     2.691
+    ],
+    "probe_latency_window": [
+     2.44,
+     8.102
+    ],
+    "cpu_core_ratio": {
+     "0.5s": 0.9666,
+     "1s": 0.9789,
+     "2s": 0.983,
+     "2.4s": 0.9988,
+     "3s": 1.0044
+    },
+    "wm_close_posted_t_s": 8.0003,
+    "wm_close_to_exit_s": 0.2353,
+    "command": [
+     "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_player.exe",
+     "--project",
+     "out\\verification-20261101\\r3-startup-observability-v1\\player-40k-project"
+    ],
+    "exe_sha256": "9da8939cd8d2066d67f883e16c67d7d76199c93a994ed1ffa075aaefa11abdb4",
+    "exe_bytes": 5677056,
+    "started_wall": 1793503104.213616,
+    "cwd": "D:\\Cuexis-redesign",
+    "env_overrides": [],
+    "stdout_bytes": 2192,
+    "stderr_bytes": 0
+   },
+   "phases": {
+    "content_resolved": {
+     "elapsed_us": 18976.0,
+     "total_us": 18976.0
+    },
+    "content_prepared": {
+     "elapsed_us": 2063363.0,
+     "total_us": 2082340.0
+    },
+    "window_created": {
+     "elapsed_us": 305192.0,
+     "total_us": 2387533.0
+    },
+    "backend_created": {
+     "elapsed_us": 10475.0,
+     "total_us": 2398008.0
+    },
+    "content_committed": {
+     "elapsed_us": 370.0,
+     "total_us": 2398378.0
+    },
+    "transport_playing": {
+     "elapsed_us": 14.0,
+     "total_us": 2398393.0
+    },
+    "first_frame_presented": {
+     "elapsed_us": 61916.0,
+     "total_us": 2460310.0
+    }
+   },
+   "stages": {},
+   "frames": {},
+   "trace_events": []
+  },
+  {
+   "arm": "player-40k-window-first",
+   "index": 1,
+   "position": 5,
+   "summary": {
+    "label": "player-40k-window-first-01",
+    "return_code": 0,
+    "killed": false,
+    "exit_t_s": 8.2231,
+    "windows_seen": [
+     2689054,
+     2754590,
+     7801650,
+     11863968,
+     14224044,
+     29690362,
+     29755898,
+     31131382,
+     42010906
+    ],
+    "windows": [
+     {
+      "hwnd": 2689054,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 0.1353,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 2754590,
+      "title": "",
+      "class": "SDL_app",
+      "first_seen_t_s": 0.3308,
+      "first_visible_t_s": 0.3631,
+      "first_client": [
+       1280,
+       720
+      ],
+      "last_client": [
+       1280,
+       720
+      ]
+     },
+     {
+      "hwnd": 7801650,
+      "title": "NVOGLDC invisible",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 0.2922,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 11863968,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.2922,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 14224044,
+      "title": "__wglDummyWindowFodder",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 0.3253,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 29690362,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.1353,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 29755898,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.3308,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 31131382,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 0.3363,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 42010906,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.3197,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     }
+    ],
+    "first_any_window_t_s": 0.1353,
+    "primary_hwnd": 2754590,
+    "primary_set_t_s": 0.3631,
+    "primary_title": "Cuexis Player 26.10.19-1",
+    "primary_class": "SDL_app",
+    "primary_first_appeared_t_s": 0.3308,
+    "primary_visible_t_s": 0.3631,
+    "primary_final_client": [
+     1280,
+     720
+    ],
+    "primary_client_timeline": [],
+    "primary_cloaked": 0,
+    "hung_events": [],
+    "probes_total": 92,
+    "probes_after_primary": 92,
+    "probes_timed_out": 4,
+    "probe_timeout_budget_ms": 400.0,
+    "probe_latency_ms": {
+     "p50": 35.781,
+     "p90": 53.487,
+     "p99": 413.002,
+     "max": 413.575
+    },
+    "probe_latency_over_100ms": 5,
+    "probe_latency_over_100ms_times": [
+     0.817,
+     1.255,
+     1.693,
+     2.12,
+     2.519
+    ],
+    "probe_latency_window": [
+     0.379,
+     8.093
+    ],
+    "cpu_core_ratio": {
+     "0.5s": 1.3722,
+     "1s": 1.2024,
+     "2s": 1.1042,
+     "2.4s": 1.0868,
+     "3s": 1.0691
+    },
+    "wm_close_posted_t_s": 8.0011,
+    "wm_close_to_exit_s": 0.2221,
+    "command": [
+     "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_player.exe",
+     "--project",
+     "out\\verification-20261101\\r3-startup-observability-v1\\player-40k-project"
+    ],
+    "exe_sha256": "9da8939cd8d2066d67f883e16c67d7d76199c93a994ed1ffa075aaefa11abdb4",
+    "exe_bytes": 5677056,
+    "started_wall": 1793503112.458232,
+    "cwd": "D:\\Cuexis-redesign",
+    "env_overrides": [
+     "CUEXIS_PLAYER_WINDOW_FIRST=1"
+    ],
+    "stdout_bytes": 2190,
+    "stderr_bytes": 0
+   },
+   "phases": {
+    "content_resolved": {
+     "elapsed_us": 20524.0,
+     "total_us": 20524.0
+    },
+    "window_created": {
+     "elapsed_us": 304417.0,
+     "total_us": 324942.0
+    },
+    "backend_created": {
+     "elapsed_us": 13078.0,
+     "total_us": 338020.0
+    },
+    "content_prepared": {
+     "elapsed_us": 2139373.0,
+     "total_us": 2477394.0
+    },
+    "content_committed": {
+     "elapsed_us": 914.0,
+     "total_us": 2478308.0
+    },
+    "transport_playing": {
+     "elapsed_us": 17.0,
+     "total_us": 2478326.0
+    },
+    "first_frame_presented": {
+     "elapsed_us": 64617.0,
+     "total_us": 2542943.0
+    }
+   },
+   "stages": {},
+   "frames": {},
+   "trace_events": []
+  },
+  {
+   "arm": "player-40k-untraced",
+   "index": 2,
+   "position": 6,
+   "summary": {
+    "label": "player-40k-untraced-02",
+    "return_code": 0,
+    "killed": false,
+    "exit_t_s": 8.2409,
+    "windows_seen": [
+     2820126,
+     11929504,
+     11995040,
+     14289580,
+     14355116,
+     25888866,
+     29821434,
+     31196918,
+     42076442
+    ],
+    "windows": [
+     {
+      "hwnd": 2820126,
+      "title": "__wglDummyWindowFodder",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 2.4024,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 11929504,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 2.215,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 11995040,
+      "title": "",
+      "class": "SDL_app",
+      "first_seen_t_s": 2.4133,
+      "first_visible_t_s": 2.4468,
+      "first_client": [
+       1280,
+       720
+      ],
+      "last_client": [
+       1280,
+       720
+      ]
+     },
+     {
+      "hwnd": 14289580,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.215,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 14355116,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.4078,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 25888866,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.3747,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 29821434,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 2.4024,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 31196918,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 2.4189,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 42076442,
+      "title": "NVOGLDC invisible",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 2.3747,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     }
+    ],
+    "first_any_window_t_s": 2.215,
+    "primary_hwnd": 11995040,
+    "primary_set_t_s": 2.4468,
+    "primary_title": "Cuexis Player 26.10.19-1",
+    "primary_class": "SDL_app",
+    "primary_first_appeared_t_s": 2.4133,
+    "primary_visible_t_s": 2.4468,
+    "primary_final_client": [
+     1280,
+     720
+    ],
+    "primary_client_timeline": [],
+    "primary_cloaked": 0,
+    "hung_events": [],
+    "probes_total": 83,
+    "probes_after_primary": 83,
+    "probes_timed_out": 0,
+    "probe_timeout_budget_ms": 400.0,
+    "probe_latency_ms": {
+     "p50": 42.198,
+     "p90": 49.497,
+     "p99": 52.956,
+     "max": 168.247
+    },
+    "probe_latency_over_100ms": 1,
+    "probe_latency_over_100ms_times": [
+     2.717
+    ],
+    "probe_latency_window": [
+     2.458,
+     8.12
+    ],
+    "cpu_core_ratio": {
+     "0.5s": 0.9539,
+     "1s": 0.9678,
+     "2s": 0.983,
+     "2.4s": 0.9806,
+     "3s": 0.9988
+    },
+    "wm_close_posted_t_s": 8.0009,
+    "wm_close_to_exit_s": 0.2399,
+    "command": [
+     "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_player.exe",
+     "--project",
+     "out\\verification-20261101\\r3-startup-observability-v1\\player-40k-project"
+    ],
+    "exe_sha256": "9da8939cd8d2066d67f883e16c67d7d76199c93a994ed1ffa075aaefa11abdb4",
+    "exe_bytes": 5677056,
+    "started_wall": 1793503120.6905317,
+    "cwd": "D:\\Cuexis-redesign",
+    "env_overrides": [],
+    "stdout_bytes": 2192,
+    "stderr_bytes": 0
+   },
+   "phases": {
+    "content_resolved": {
+     "elapsed_us": 21779.0,
+     "total_us": 21779.0
+    },
+    "content_prepared": {
+     "elapsed_us": 2073629.0,
+     "total_us": 2095408.0
+    },
+    "window_created": {
+     "elapsed_us": 299719.0,
+     "total_us": 2395128.0
+    },
+    "backend_created": {
+     "elapsed_us": 11320.0,
+     "total_us": 2406448.0
+    },
+    "content_committed": {
+     "elapsed_us": 392.0,
+     "total_us": 2406840.0
+    },
+    "transport_playing": {
+     "elapsed_us": 14.0,
+     "total_us": 2406854.0
+    },
+    "first_frame_presented": {
+     "elapsed_us": 63332.0,
+     "total_us": 2470186.0
+    }
+   },
+   "stages": {},
+   "frames": {},
+   "trace_events": []
+  },
+  {
+   "arm": "player-40k-window-first",
+   "index": 2,
+   "position": 7,
+   "summary": {
+    "label": "player-40k-window-first-02",
+    "return_code": 0,
+    "killed": false,
+    "exit_t_s": 8.2283,
+    "windows_seen": [
+     7932722,
+     12060576,
+     14420652,
+     25954402,
+     29886970,
+     29952506,
+     31262454,
+     42141978,
+     42207514
+    ],
+    "windows": [
+     {
+      "hwnd": 7932722,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.2941,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 12060576,
+      "title": "__wglDummyWindowFodder",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 0.3324,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 14420652,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.3324,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 25954402,
+      "title": "NVOGLDC invisible",
+      "class": "NVOpenGLPbuffer",
+      "first_seen_t_s": 0.2941,
+      "first_visible_t_s": null,
+      "first_client": [
+       1902,
+       1083
+      ],
+      "last_client": [
+       1902,
+       1083
+      ]
+     },
+     {
+      "hwnd": 29886970,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 0.1347,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 29952506,
+      "title": "",
+      "class": "SDL_app",
+      "first_seen_t_s": 0.3378,
+      "first_visible_t_s": 0.371,
+      "first_client": [
+       1280,
+       720
+      ],
+      "last_client": [
+       1280,
+       720
+      ]
+     },
+     {
+      "hwnd": 31262454,
+      "title": "SDL_app",
+      "class": "SDL_app",
+      "first_seen_t_s": 0.3493,
+      "first_visible_t_s": null,
+      "first_client": [
+       10,
+       10
+      ],
+      "last_client": [
+       10,
+       10
+      ]
+     },
+     {
+      "hwnd": 42141978,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.1347,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     },
+     {
+      "hwnd": 42207514,
+      "title": "Default IME",
+      "class": "IME",
+      "first_seen_t_s": 0.3378,
+      "first_visible_t_s": null,
+      "first_client": [
+       0,
+       0
+      ],
+      "last_client": [
+       0,
+       0
+      ]
+     }
+    ],
+    "first_any_window_t_s": 0.1347,
+    "primary_hwnd": 29952506,
+    "primary_set_t_s": 0.371,
+    "primary_title": "Cuexis Player 26.10.19-1",
+    "primary_class": "SDL_app",
+    "primary_first_appeared_t_s": 0.3378,
+    "primary_visible_t_s": 0.371,
+    "primary_final_client": [
+     1280,
+     720
+    ],
+    "primary_client_timeline": [],
+    "primary_cloaked": 0,
+    "hung_events": [],
+    "probes_total": 91,
+    "probes_after_primary": 91,
+    "probes_timed_out": 4,
+    "probe_timeout_budget_ms": 400.0,
+    "probe_latency_ms": {
+     "p50": 41.596,
+     "p90": 51.706,
+     "p99": 408.695,
+     "max": 412.001
+    },
+    "probe_latency_over_100ms": 5,
+    "probe_latency_over_100ms_times": [
+     0.816,
+     1.242,
+     1.679,
+     2.113,
+     2.485
+    ],
+    "probe_latency_window": [
+     0.385,
+     8.092
+    ],
+    "cpu_core_ratio": {
+     "0.5s": 1.2156,
+     "1s": 1.1042,
+     "2s": 1.0526,
+     "2.4s": 1.0447,
+     "3s": 1.0356
+    },
+    "wm_close_posted_t_s": 8.0023,
+    "wm_close_to_exit_s": 0.226,
+    "command": [
+     "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_player.exe",
+     "--project",
+     "out\\verification-20261101\\r3-startup-observability-v1\\player-40k-project"
+    ],
+    "exe_sha256": "9da8939cd8d2066d67f883e16c67d7d76199c93a994ed1ffa075aaefa11abdb4",
+    "exe_bytes": 5677056,
+    "started_wall": 1793503128.9414198,
+    "cwd": "D:\\Cuexis-redesign",
+    "env_overrides": [
+     "CUEXIS_PLAYER_WINDOW_FIRST=1"
+    ],
+    "stdout_bytes": 2190,
+    "stderr_bytes": 0
+   },
+   "phases": {
+    "content_resolved": {
+     "elapsed_us": 19262.0,
+     "total_us": 19262.0
+    },
+    "window_created": {
+     "elapsed_us": 307296.0,
+     "total_us": 326559.0
+    },
+    "backend_created": {
+     "elapsed_us": 10492.0,
+     "total_us": 337052.0
+    },
+    "content_prepared": {
+     "elapsed_us": 2100846.0,
+     "total_us": 2437898.0
+    },
+    "content_committed": {
+     "elapsed_us": 681.0,
+     "total_us": 2438579.0
+    },
+    "transport_playing": {
+     "elapsed_us": 14.0,
+     "total_us": 2438593.0
+    },
+    "first_frame_presented": {
+     "elapsed_us": 60419.0,
+     "total_us": 2499013.0
+    }
+   },
+   "stages": {},
+   "frames": {},
+   "trace_events": []
+  }
+ ]
+}

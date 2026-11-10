@@ -1,0 +1,6 @@
+{
+  "scope": "Unselected direct SAX into Cuexis Value; no public/API/codec changes. Duplicate/depth/string/syntax compatibility requires differential checks.",
+  "baseline_sha256": "4351616e3fb67eac1bd389092b3d375778c65c2371155bb56dfed279f1f0a53d",
+  "source_sha256": "f9275db42ccf210ff6dc9182e6509ad9b86d29008ea22c885ac52d2c4763f85d",
+  "selected": false
+}

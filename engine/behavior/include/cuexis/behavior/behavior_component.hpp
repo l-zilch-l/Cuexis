@@ -5,6 +5,7 @@
 //  RuntimeBehaviorIndex: compact handle referencing compiled behavior data
 
 #include <compare>
+#include <cstddef>
 #include <cstdint>
 #include <limits>
 
@@ -23,6 +24,8 @@ struct RuntimeBehaviorIndex final {
 };
 
 struct BehaviorComponent final {
+    static constexpr std::size_t page_size = 128;
+
     RuntimeBehaviorIndex behavior;
 };
 

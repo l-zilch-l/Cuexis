@@ -10,6 +10,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <span>
 #include <string_view>
 #include <vector>
 
@@ -42,5 +43,14 @@ struct ByteKeyLess final {
 // Spec 10.1 semantic preimage.
 [[nodiscard]] auto canonicalIdentityBytes(const CanonicalEntityIdentity& identity)
     -> core::Result<std::vector<std::byte>>;
+
+struct IdentityByteSink final {
+    void* context;
+    void (*write)(void*, std::span<const std::byte>);
+};
+[[nodiscard]] auto canonicalIdentitySize(const CanonicalEntityIdentity& identity)
+    -> core::Result<std::uint32_t>;
+[[nodiscard]] auto streamCanonicalIdentity(const CanonicalEntityIdentity& identity,
+                                           IdentityByteSink sink) -> core::Result<void>;
 
 } // namespace cuexis::chart::packed::identity_detail

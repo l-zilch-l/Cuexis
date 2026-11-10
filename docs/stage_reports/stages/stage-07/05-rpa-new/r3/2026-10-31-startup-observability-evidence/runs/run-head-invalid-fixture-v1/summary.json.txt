@@ -1,0 +1,18 @@
+{
+  "executable": "D:\\Cuexis-redesign\\out\\build\\release\\bin\\cuexis_player.exe",
+  "project": "D:\\Cuexis-redesign\\out\\verification-20261031\\r3-product-startup-v1\\fixture-40k",
+  "started_utc": "2026-10-31T13:20:53.3433949Z",
+  "sampled_ms": 27941,
+  "window_first_ms": 8480,
+  "first_responsive_ms": null,
+  "unresponsive_probe_ms": 1791,
+  "hung_samples": 161,
+  "waiting_samples": 76,
+  "answering_samples": 0,
+  "closed_by_wm_close": false,
+  "exit_code": null,
+  "log_first_timestamp": null,
+  "log_last_timestamp": null,
+  "log_span_seconds": "",
+  "log_line_count": 8
+}

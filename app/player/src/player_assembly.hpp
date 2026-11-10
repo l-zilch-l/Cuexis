@@ -56,7 +56,8 @@ createPlayerBackend(platform_sdl::SdlRuntime& runtime, platform_sdl::SdlWindow& 
                                       std::string_view profileId, PlayerLogger& logger)
     -> core::Result<void>;
 
-[[nodiscard]] auto makePlayerSurface(platform_sdl::SdlWindow& window)
+[[nodiscard]] auto makePlayerSurface(platform_sdl::SdlWindow& window,
+                                     std::vector<std::uint32_t> gameplayKeys = {})
     -> std::unique_ptr<PlayerSurface>;
 
 } // namespace cuexis::player

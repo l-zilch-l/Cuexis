@@ -1,0 +1,82 @@
+{
+  "scope": "Archive self-check: every payload is present and hashes to its manifest entry, every source still hashes to its recorded source hash, the CRLF reconstruction rule recovers each source from its archived form, every gzip stream recompresses byte-identically, the archived rows reproduce both decision.json and selection.json, and no file exists that the manifest does not list.",
+  "checked_utc": "2026-11-01T07:50:23.411913+00:00",
+  "result": "pass",
+  "archive": {
+    "payload_files": 62,
+    "generated_files": 3,
+    "stray": [],
+    "missing": []
+  },
+  "checks_run": 677,
+  "checks_failed": [],
+  "modes": {
+    "text": 47,
+    "gzip": 15
+  },
+  "reconstruction": {
+    "exact": 53,
+    "normalised": 9
+  },
+  "raw_bytes": 21564608,
+  "archived_bytes": 2822491,
+  "derivation": {
+    "rows": 14,
+    "cells": 6,
+    "agreement": "decision.json, selection.json and the archived process rows agree at 1e-9"
+  },
+  "release_suite": {
+    "tests_started": 1418,
+    "tests_passed": 1418,
+    "tests_failed": 0,
+    "skipped": 1,
+    "wall_seconds": 783.54,
+    "exit_code": 0,
+    "format_file_list_entries": 651,
+    "agreement": "the archived CTest journal, the archived console tail and selection.json agree on the tally, the wall time and the exit code; the console stream is truncated at test 335 by the job buffer, and nothing was reconstructed to hide that"
+  },
+  "docs": {
+    "args": [
+      "python",
+      "-B",
+      "tools/check_docs.py"
+    ],
+    "exit": 0,
+    "output": "Documentation checks passed: 633 Markdown files and 20 candidate JSON/CXT files validated.\n"
+  },
+  "architecture": {
+    "args": [
+      "cmake",
+      "-DCUEXIS_SOURCE_DIR=D:/Cuexis-redesign",
+      "-P",
+      "cmake/VerifyArchitecture.cmake"
+    ],
+    "exit": 0,
+    "output": ""
+  },
+  "format": {
+    "args": [
+      "clang-format",
+      "--dry-run",
+      "--Werror",
+      "app/player/src/player_smoke.cpp",
+      "engine/presentation_renderer/include/cuexis/presentation_renderer/draw_command.hpp",
+      "engine/presentation_renderer/src/draw_command.cpp",
+      "engine/render_opengl/src/open_gl_presentation.cpp",
+      "engine/render_opengl/src/open_gl_presentation_internal.hpp",
+      "tests/presentation_renderer/presentation_renderer_tests.cpp",
+      "tests/render/open_gl_presentation_tests.cpp"
+    ],
+    "exit": 0,
+    "output": ""
+  },
+  "diff": {
+    "args": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit": 0,
+    "output": ""
+  }
+}

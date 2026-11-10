@@ -1,0 +1,153 @@
+#include "D:/Cuexis-redesign/tests/rpa/execution_fixture.hpp"
+#include "D:/Cuexis-redesign/engine/playback/src/gameplay_internal.hpp"
+#include "D:/Cuexis-redesign/tests/support/environment.hpp"
+#include <cuexis/judgement/recovery_codec.hpp>
+#include <cuexis_internal/allocation_observer.hpp>
+#include <cuexis_internal/sha256.hpp>
+#include <catch2/catch_session.hpp>
+#include <Windows.h>
+#include <Psapi.h>
+#include <cstdlib>
+#include <chrono>
+#include <cstdio>
+#include <iostream>
+#include <optional>
+#include <fstream>
+
+using namespace cuexis;
+namespace mem = internal::pd::memory;
+namespace {
+void checkpoint(const char* label) {
+#if defined(CUEXIS_ALLOCATION_LIFETIME_OBSERVER)
+    mem::checkpoint(label);
+#else
+    PROCESS_MEMORY_COUNTERS_EX value{};
+    if (!GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&value), sizeof(value)))
+        throw std::runtime_error("GetProcessMemoryInfo failed");
+    std::printf("R3_PROCESS_MEMORY {\"label\":\"%s\",\"private_commit_bytes\":%llu,\"peak_pagefile_bytes\":%llu,\"working_set_bytes\":%llu,\"peak_working_set_bytes\":%llu}\n",
+                label, static_cast<unsigned long long>(value.PrivateUsage),
+                static_cast<unsigned long long>(value.PeakPagefileUsage),
+                static_cast<unsigned long long>(value.WorkingSetSize),
+                static_cast<unsigned long long>(value.PeakWorkingSetSize));
+#endif
+}
+auto hexDigest(const std::vector<std::byte>& bytes) -> std::string {
+    const auto hash = core::detail::sha256(bytes);
+    std::string result;
+    for (const auto b : hash) {
+        constexpr char digits[] = "0123456789abcdef";
+        const auto value = static_cast<unsigned>(b);
+        result.push_back(digits[value >> 4]);result.push_back(digits[value & 15]);
+    }
+    return result;
+}
+}
+TEST_CASE("R3 actual recovery codec time and lifetime memory", "[.][r3][recovery-memory]") {
+    if (test_support::environmentVariable("R3_PROBE_BARRIER")=="1") {
+        std::string go; REQUIRE(static_cast<bool>(std::getline(std::cin,go))); REQUIRE(go=="go");
+    }
+    const auto setting = test_support::environmentVariable("R3_MEMORY_REQUIREMENTS");
+    REQUIRE(!setting.empty());
+    const auto count = static_cast<std::size_t>(std::strtoull(setting.c_str(), nullptr, 10));
+    REQUIRE((count==64 || count==1000 || count==10000 || count==40000));
+    const bool uniquePatterns = test_support::environmentVariable("R3_PATTERN_PROFILE") == "unique";
+    std::cout<<"R3_MEMORY_BEGIN "<<count<<std::endl;
+    checkpoint("before-fixture");
+    {
+        const mem::TagScope tag{mem::ownerProbe,mem::domainFixture};
+        auto fixture=std::make_unique<test_support::SessionTestContent>();
+        const playback::ClockMappingConfiguration mapping{{0,1},{0,1},{0,1},{1,1}};
+        test_support::rpa(*fixture,mapping);
+        auto& document=fixture->request.assembly.sources[0].document;
+        const auto prototype=document.requirements[0];
+        const bool separateResources = test_support::environmentVariable("R3_UNIQUE_RESOURCES") == "1";
+        const auto resourcePrototype = document.resources.front();
+        const auto relationPrototype = document.relations.front();
+        document.requirements.clear();fixture->owners.clear();document.relations[0].members.clear();
+        if (separateResources) {
+            document.resources.clear();
+            document.relations.clear();
+            std::erase_if(document.declarations, [](const auto& declaration) {
+                return declaration.kind == judgement::DeclarationKind::resourceRecord;
+            });
+        }
+        std::erase_if(document.declarations,[](const auto& d){return d.kind==judgement::DeclarationKind::requirement;});
+        fixture->request.assembly.contentProfileLimits.maxRequirements=judgement::MeasuredParameter<std::uint64_t>::measured(count);
+        for(std::size_t i=0;i<count;++i){
+            auto r=prototype;r.stableId.declarationOrdinal=static_cast<std::uint32_t>(100+i);
+            r.identity.requirementLocalId="memory."+std::to_string(i);
+            if (uniquePatterns) {
+                r.pattern.patternId="pattern.unique."+std::to_string(i);
+                document.declarations.push_back(judgement::testing::testDeclaration(judgement::DeclarationKind::patternDefinition,r.pattern.patternId,static_cast<std::uint32_t>(50000+i)));
+            }
+            r.resourceClaims[0].claimPolicy.competition=judgement::ClaimPolicyDeclaration::CompetitionKey{-1,i};
+            if (separateResources) {
+                auto resource = resourcePrototype;
+                resource.ref.resourceId = "resource.unique." + std::to_string(i);
+                r.resourceClaims[0].resourceRef = resource.ref;
+                auto relation = relationPrototype;
+                relation.resourceRef = resource.ref;
+                relation.members = {r.stableId};
+                document.relations.push_back(std::move(relation));
+                document.declarations.push_back(judgement::testing::testDeclaration(
+                    judgement::DeclarationKind::resourceRecord, resource.ref.resourceId,
+                    static_cast<std::uint32_t>(100000 + i)));
+                document.resources.push_back(std::move(resource));
+            }
+            document.declarations.push_back(judgement::testing::testDeclaration(judgement::DeclarationKind::requirement,r.identity.requirementLocalId,r.stableId.declarationOrdinal));
+            if (!separateResources) document.relations[0].members.push_back(r.stableId);fixture->owners.push_back({r.identity,fixture->chart.entities[0].identity});document.requirements.push_back(std::move(r));
+        }
+        checkpoint("after-fixture");
+        std::optional<playback::GameplayContent> content;
+        {
+            const auto sourceBegin=std::chrono::steady_clock::now();
+            auto prepared=judgement::prepareResolvedGameplay(fixture->request);
+            const auto sourceEnd=std::chrono::steady_clock::now();REQUIRE(prepared);checkpoint("after-source-prepare");
+            const auto packedBegin=std::chrono::steady_clock::now();
+            auto packed=gameplay_packed::encode({fixture->chart,*prepared,fixture->owners,{"normalization.one","coordinator.policy.greedy_v1"},{},{},4});
+            const auto packedEnd=std::chrono::steady_clock::now();REQUIRE(packed);checkpoint("after-packed-encode");
+            const auto decodeBegin=std::chrono::steady_clock::now();
+            auto decoded=playback::GameplayContent::fromPacked(*packed,fixture->config);
+            const auto decodeEnd=std::chrono::steady_clock::now();REQUIRE(decoded);content=std::move(*decoded);checkpoint("after-packed-decode");
+            const auto& before=prepared->assembled();
+            const auto& after=playback::detail::GameplayAccess::content(*content)->capsule.gameplay.assembled();
+            CHECK(before.chart==after.chart);CHECK(before.content==after.content);CHECK(before.prepared==after.prepared);
+            std::cout<<"R3_PREPARE {\"requirements\":"<<count<<",\"unique_patterns\":"<<uniquePatterns<<",\"source_prepare_us\":"<<std::chrono::duration_cast<std::chrono::microseconds>(sourceEnd-sourceBegin).count()<<",\"packed_encode_us\":"<<std::chrono::duration_cast<std::chrono::microseconds>(packedEnd-packedBegin).count()<<",\"packed_decode_us\":"<<std::chrono::duration_cast<std::chrono::microseconds>(decodeEnd-decodeBegin).count()<<",\"packed_bytes\":"<<packed->size()<<",\"packed_sha256\":\""<<hexDigest(*packed)<<"\",\"chart_sha256\":\""<<hexDigest(before.chart.canonicalBytes().bytes())<<"\",\"content_sha256\":\""<<hexDigest(before.content.canonicalBytes().bytes())<<"\",\"prepared_sha256\":\""<<hexDigest(before.prepared.canonicalBytes().bytes())<<"\"}"<<std::endl;
+            if (const auto dump=test_support::environmentVariable("R3_PREPARE_DUMP");!dump.empty()) {
+                const auto write=[&](const char* suffix,const std::vector<std::byte>& bytes){std::ofstream file{std::string{dump}+suffix,std::ios::binary};REQUIRE(file);file.write(reinterpret_cast<const char*>(bytes.data()),static_cast<std::streamsize>(bytes.size()));REQUIRE(file);};
+                write("-packed.bin",*packed);write("-chart.bin",before.chart.canonicalBytes().bytes());write("-content.bin",before.content.canonicalBytes().bytes());write("-prepared.bin",before.prepared.canonicalBytes().bytes());
+            }
+        }
+        checkpoint("after-source-temporaries-release");
+        if (test_support::environmentVariable("R3_PREPARE_ONLY")=="1") return;
+        const auto* basis=playback::detail::GameplayAccess::content(*content);REQUIRE(basis);
+        auto created=judgement::JudgementSession::create();REQUIRE(created);
+        std::optional<judgement::JudgementSession> session{std::move(*created)};
+        REQUIRE(session->configure(basis->configuration));REQUIRE(session->prepare(basis->capsule.gameplay));checkpoint("after-session-prepare");
+        for(int i=0;i<33;++i)REQUIRE(session->advance(judgement::Tick{1103+i}));
+        checkpoint("after-history");
+        auto a=session->archive();REQUIRE(a);std::optional<judgement::ReplayArchive> archive{std::move(*a)};
+        auto s=session->snapshot();REQUIRE(s);std::optional<judgement::SnapshotPayload> snapshot{std::move(*s)};checkpoint("after-owning-recovery");
+        const auto begin=std::chrono::steady_clock::now();
+        auto sb=[&]{const mem::TagScope encoded{mem::ownerMain,mem::domainSnapshot};return judgement::encodeSnapshot(*snapshot);}();
+        const auto middle=std::chrono::steady_clock::now();REQUIRE(sb);checkpoint("after-snapshot-encode");
+        const auto replayBegin=std::chrono::steady_clock::now();
+        auto rb=[&]{const mem::TagScope encoded{mem::ownerMain,mem::domainReplay};return judgement::encodeReplay(*archive);}();
+        const auto end=std::chrono::steady_clock::now();REQUIRE(rb);checkpoint("after-replay-encode");
+        std::cout<<"R3_CODEC {\"requirements\":"<<count<<",\"snapshot_us\":"<<std::chrono::duration_cast<std::chrono::microseconds>(middle-begin).count()<<",\"replay_us\":"<<std::chrono::duration_cast<std::chrono::microseconds>(end-replayBegin).count()<<",\"snapshot_bytes\":"<<sb->size()<<",\"replay_bytes\":"<<rb->size()<<",\"snapshot_sha256\":\""<<hexDigest(*sb)<<"\",\"replay_sha256\":\""<<hexDigest(*rb)<<"\"}"<<std::endl;
+        if (const auto dump=test_support::environmentVariable("R3_RECOVERY_DUMP");!dump.empty()) {
+            const auto write=[&](const char* suffix,const std::vector<std::byte>& bytes){std::ofstream file{std::string{dump}+suffix,std::ios::binary};REQUIRE(file);file.write(reinterpret_cast<const char*>(bytes.data()),static_cast<std::streamsize>(bytes.size()));REQUIRE(file);};
+            write("-snapshot.bin",*sb);write("-replay.bin",*rb);
+        }
+        sb->clear();sb->shrink_to_fit();rb->clear();rb->shrink_to_fit();checkpoint("after-output-release");
+        snapshot.reset();archive.reset();checkpoint("after-recovery-release");session.reset();checkpoint("after-session-release");content.reset();checkpoint("after-content-release");fixture.reset();
+    }
+    checkpoint("after-fixture-release");
+#if defined(CUEXIS_ALLOCATION_LIFETIME_OBSERVER)
+    const auto parts=mem::partition();std::uint64_t taggedCount{},taggedBytes{};
+    for(const auto& cell:parts.cells)if(cell.used && (cell.owner==mem::ownerProbe || cell.owner==mem::ownerMain)){taggedCount+=cell.liveCount;taggedBytes+=cell.requestedBytes;}
+    std::cout<<"R3_MEMORY_FINAL {\"tagged_live_count\":"<<taggedCount<<",\"tagged_requested_bytes\":"<<taggedBytes<<",\"exact\":"<<parts.exact<<"}"<<std::endl;
+    CHECK(taggedCount==0);CHECK(taggedBytes==0);CHECK(parts.exact);
+#endif
+}
+int main(int argc,char** argv){int code;{Catch::Session session;code=session.run(argc,argv);}checkpoint("after-test-session");return code;}

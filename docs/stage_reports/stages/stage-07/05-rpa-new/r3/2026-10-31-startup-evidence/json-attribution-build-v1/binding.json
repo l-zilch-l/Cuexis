@@ -1,0 +1,8 @@
+{
+  "scope": "Diagnostic prepare stage timers; both private source files explicitly recompiled; matching old definitions and remaining immutable libraries.",
+  "old_binding_sha256": "c4724012a87b1fdc5bd4d1893c803ba94603a7df10a5fa6a3acb7d4c7f30c308",
+  "source_binding_sha256": "a72d429c0f355de123d51d6fd0fad799d224b8fd4e94754428588f9dd2a34d39",
+  "json_binding_sha256": "4e467151aa23e8975b77eede383e68934c747674fcad11749788e340a88eaa98",
+  "commands_sha256": "83af5ab4b1d5a46d08da2b7cce517946e1c3cff1499c2c96d910c7d614da29fd",
+  "binary_sha256": "0ca310a01b66f3db2aaee356e36c0b7b5606114069a8811f1bfcb6e74b55d20b"
+}

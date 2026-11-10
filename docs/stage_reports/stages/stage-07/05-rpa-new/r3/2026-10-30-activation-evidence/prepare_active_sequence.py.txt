@@ -1,0 +1,26 @@
+from pathlib import Path
+import hashlib,json,shutil,subprocess
+base=Path(__file__).resolve().parent;out=base/'active-sequence-source-v1';out.mkdir(exist_ok=False)
+s=(base/'activation-source-v1/execution_kernel.cpp').read_text(encoding='utf-8')
+needle='    std::vector<std::size_t> activeRequirements;';assert s.count(needle)==1
+s=s.replace(needle,'''    // Append/sort only on activation; ordinary immutable recovery copies share pages.
+    SharedSequence<std::size_t> activeRequirements;''')
+needle='''            if (draft->activeRequirements.size() != activeCount)
+                std::sort(draft->activeRequirements.begin(), draft->activeRequirements.end());'''
+assert s.count(needle)==1
+s=s.replace(needle,'''            if (activationsThisTick != 0 &&
+                !std::is_sorted(draft->activeRequirements.begin(), draft->activeRequirements.end())) {
+                auto ordered = draft->activeRequirements.materialize();
+                std::sort(ordered.begin(), ordered.end());
+                SharedSequence<std::size_t> sorted;
+                sorted.reserve(ordered.size());
+                for (const auto index : ordered)
+                    sorted.push_back(index);
+                draft->activeRequirements = std::move(sorted);
+            }''')
+(out/'execution_kernel.cpp').write_text(s,encoding='utf-8')
+shutil.copyfile(base/'activation-source-v1/rpa_b3_tests.cpp',out/'rpa_b3_tests.cpp')
+subprocess.run(['clang-format','-i',str(out/'execution_kernel.cpp')],check=True)
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+(out/'binding.json').write_text(json.dumps(dict(selected=False,scope='Private RuntimeState activeRequirements vector -> existing SharedSequence<size_t>. Exact sort retained when needed; no installed/public/header/template changes or wire/DTO changes. All active pages conservatively charged, no new floor exemption.',sources={p.name:sha(p) for p in out.glob('*.cpp')},parent=str(base/'activation-source-v1')),indent=2),encoding='utf-8')
+print(out)

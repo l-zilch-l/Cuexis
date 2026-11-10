@@ -1,0 +1,20 @@
+{
+  "scope": "Final v4 candidate identity supplement; earlier v2/v3 scope strings in reused builder binding templates are historical labels. All common/template/public class definitions are fresh-v3; private kernel source-floor and test changes are v4. Instrumented variants are excluded from timing.",
+  "files": {
+    "execution_kernel.cpp": "523f034f227c6d671bc50611d4468d631e4f5858baa82f3667958fd7e7ea7285",
+    "execution_kernel_floor-mutant.cpp": "120ead70a0ca8bf67bcf7da98a042c96a354ee60e7ae10b615463090e9779390",
+    "floor-negative-result.json": "8052ac451350ab99c9b2e6229063a539412ff6dce992058cee7fca5ddafad058",
+    "observer-final-source-binding.json": "b8cdb6658d6a4cf42f48b689de6337bab6564fe9a5d8ceec9b7cc8435a8dbc87",
+    "rpa-floor-mutant-binding.json": "e546f05604e91efea17c53d8006346ec4db85ece0dc95a077bf69f5d11c6bd17",
+    "rpa-floor-mutant-commands.json": "d9685b2d242fd02c0f592ef266c7cc386922f6d0a159d4b657c175fa6f54fef5",
+    "rpa-floor-mutant.exe": "02a0a2806183feb8dcf04d5b80d7d99649918a307c06eb5373c3a45de1e5f12b",
+    "rpa-normal-binding.json": "b25302c2a5c1bcc4b48e4f10045ec441b8e2a9ed2bd32511db727420c5f23d50",
+    "rpa-normal-commands.json": "8aef3fc35f58f9a97ac108347680f8eeddbbde9062779179ad09bc3473d95c69",
+    "rpa-normal.exe": "7ab8efa15a73aced788b526ccf6b383878993b22070169199eeaa776f95b0629",
+    "rpa_b3_tests.cpp": "07148cfac01faeb40730796837a1ea11afd992fdea99254abcc7dda61978c41a",
+    "source-binding.json": "f2f2dc993b3169d8034ea165cf33d1b622cff2994c3c182b76482a36786572fd",
+    "test-results.json": "4aa0dc1a173d23236cc501eff2db0193391d687dd5740121256525241ec5da18",
+    "tick_fault_probe.hpp": "b347643ce263b979b10cf415c02d9441f6c1749a283aa2cbdbeac0645bf7d21c"
+  },
+  "v4_complete_sha256": "e1ea502e4c104fda22f336d1a419172ff61d187f222d2aad5bfd5a335a9c3a7b"
+}

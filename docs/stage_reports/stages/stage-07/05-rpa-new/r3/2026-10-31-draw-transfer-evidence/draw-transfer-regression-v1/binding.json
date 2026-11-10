@@ -1,0 +1,12 @@
+{
+  "scope": "Original root OpenGL configuration/CPU builder characterization tests with only neutral draw candidate CPP. Original parser and GL algorithms; adapter objects from matching source reused. Actual immutable common paged-active library definitions, no observers.",
+  "commands_sha256": "6c1852a471f689cf84767b03170e7807502176208b4abf27455e15e7c8b007d3",
+  "parent_sha256": "4c8db5bd0fe3f176ea8edeb385ad0c593eeb3f47740138e0d39447d74575484a",
+  "files": {
+    "fmt.dll": "8219387a1b0de304630a67564a0ec30271e061c1e92cc77ae7cf9753a5f75214",
+    "nlohmann_json_schema_validator.dll": "1c0a7cdcd718802c79052f323f52e63afcedac969dd7eb5a44d12c521502f248",
+    "opengl-tests.exe": "86fb84cda2f74df33c6bea8ef49b0aa25be138663448c5e86320f986ab8e7820",
+    "SDL3.dll": "cedddd9456105f8b2df78c33a0282c170b86b0d16146a8ccbb0c6e01571ee783",
+    "spdlog.dll": "a7c410914f4aff0cb84f642ff91da8a6b1a85d21cb0de11e88a3a37dc7575214"
+  }
+}

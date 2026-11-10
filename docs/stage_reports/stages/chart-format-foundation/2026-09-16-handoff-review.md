@@ -22,8 +22,8 @@
 | H03 | P1 | 40k 测试主要执行 size；已有报告未提供完整最终 SHA hosted/往返/回滚证据链 | 技术退出证据不足，不代表 CI 已失败；R4/R5 |
 | H04 | P2 | 原计划对峰值/耗时预算有冲突表述，maxPackedSectionBytes 已声明但未落实检查 | 预算承诺与执行不一致；R3 |
 
-实现入口：[Packed tables](../../../../engine/chart/src/packed_chart_tables.cpp)、
-[CXC validator](../../../../tools/cxc_common/src/cxc_candidate.cpp)、
+实现入口：Packed tables（`engine/chart/src/packed_chart_tables_*.cpp`）、
+[CXC validator](../../../../tools/cxc/cxc_common/src/cxc_candidate.cpp)、
 [容量测试](../../../../tests/chart/chart_foundation_capacity_tests.cpp)、
 [Packed limits](../../../../engine/chart/include/cuexis/chart/limits.hpp)。
 

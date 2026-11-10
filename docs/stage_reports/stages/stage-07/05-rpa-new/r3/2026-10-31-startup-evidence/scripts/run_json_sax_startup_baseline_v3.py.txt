@@ -1,0 +1,90 @@
+from pathlib import Path
+import sys
+
+root = Path.cwd()
+sys.path.insert(0, str(root / 'out/verification-20261029/r3-completion'))
+from native import *
+
+base = Path(__file__).resolve().parent
+out = base / 'json-sax-startup-baseline-v3'
+out.mkdir(exist_ok=False)
+exe = base / 'gl-startup-runtime-v2/gpu-baseline.exe'
+user = ct.WinDLL('user32', use_last_error=True)
+callback_type = ct.WINFUNCTYPE(w.BOOL, w.HWND, w.LPARAM)
+user.EnumWindows.argtypes = [callback_type, w.LPARAM]
+user.GetWindowThreadProcessId.argtypes = [w.HWND, ct.POINTER(w.DWORD)]
+user.IsWindowVisible.argtypes = [w.HWND]
+user.PostMessageW.argtypes = [w.HWND, w.UINT, w.WPARAM, w.LPARAM]
+user.SendMessageTimeoutW.argtypes = [w.HWND, w.UINT, w.WPARAM, w.LPARAM, w.UINT, w.UINT, ct.POINTER(ct.c_size_t)]
+user.SendMessageTimeoutW.restype = ct.c_ssize_t
+
+plan = [dict(name='40k-static', n=40000, cancel=False)]
+write(out / 'registration.json', dict(
+    scope='Finite one-process startup comparison with verified app-local Release DLLs. No ordinary throughput acceptance. Window message acknowledgements observed; no performance acceptance from these samples.',
+    plan=plan, binary_sha256=sha(exe), poll_ms=50, message_timeout_ms=100,
+    process_timeout_seconds=180, frames=8, warmup_ms=2000,
+    probe_sha256=sha(root / 'tests/player/gpu_throughput_probe.cpp')))
+rows = []
+for item in plan:
+    log = out / (item['name'] + '.log')
+    env = {key: value for key, value in os.environ.items() if not key.startswith(('CUEXIS_PD', 'CUEXIS_GPU_'))}
+    env.update(CUEXIS_GPU_BARRIER='1', CUEXIS_GPU_MODE='static', CUEXIS_GPU_ENTITIES=str(item['n']),
+               CUEXIS_GPU_WIDTH='1920', CUEXIS_GPU_HEIGHT='1080', CUEXIS_GPU_FRAMES='8',
+               CUEXIS_GPU_WARMUP='8', CUEXIS_GPU_WARMUP_MS='2000', CUEXIS_GPU_TIMER='0', CUEXIS_GPU_PIXEL_READBACK='0')
+    observations = []
+    sent_close = False
+    start = time.monotonic()
+    with log.open('x', encoding='utf-8') as stream:
+        child = subprocess.Popen([str(exe), 'GPU visible entity throughput probe', '--rng-seed', '1'],
+            cwd=root, env=env, stdin=subprocess.PIPE, stdout=stream, stderr=subprocess.STDOUT,
+            creationflags=subprocess.CREATE_NO_WINDOW | subprocess.BELOW_NORMAL_PRIORITY_CLASS)
+        handle = k.OpenProcess(0x0200 | 0x1000, False, child.pid)
+        try:
+            power = Power(1, 1, 0)
+            assert handle and k.SetProcessAffinityMask(handle, measurement_mask)
+            assert k.SetProcessInformation(handle, 4, ct.byref(power), ct.sizeof(power))
+            child.stdin.write(b'go\n'); child.stdin.flush(); child.stdin.close()
+            while child.poll() is None:
+                if time.monotonic() - start > 180:
+                    child.kill(); child.wait()
+                    raise RuntimeError('Startup diagnostic timed out; preserved without retry')
+                windows = []
+                @callback_type
+                def collect(hwnd, unused):
+                    pid = w.DWORD()
+                    user.GetWindowThreadProcessId(hwnd, ct.byref(pid))
+                    if pid.value == child.pid and user.IsWindowVisible(hwnd): windows.append(hwnd)
+                    return True
+                user.EnumWindows(collect, 0)
+                content = log.read_text(encoding='utf-8', errors='replace')
+                stage_lines = [line for line in content.splitlines() if line.startswith('GPU_STARTUP_')]
+                stage = stage_lines[-1] if stage_lines else 'before-startup'
+                for hwnd in windows:
+                    result = ct.c_size_t()
+                    before = time.monotonic()
+                    ack = bool(user.SendMessageTimeoutW(hwnd, 0, 0, 0, 2, 100, ct.byref(result)))
+                    observations.append(dict(elapsed_seconds=before-start, stage=stage,
+                        acknowledged=ack, latency_ms=(time.monotonic()-before)*1000))
+                    if item['cancel'] and not sent_close and 'GPU_STARTUP_END first_submit ' in content:
+                        assert user.PostMessageW(hwnd, 0x10, 0, 0)
+                        sent_close = True
+                time.sleep(.05)
+            code = child.wait()
+        finally:
+            if handle: k.CloseHandle(handle)
+            if child.poll() is None: child.kill(); child.wait()
+    content = log.read_text(encoding='utf-8', errors='replace')
+    stages = [line for line in content.splitlines() if line.startswith('GPU_STARTUP_')]
+    if item['cancel']:
+        valid = sent_close and code != 0 and 'GPU throughput cancelled by window close or Escape' in content
+    else:
+        valid = code == 0 and 'All tests passed' in content and 'GPU_THROUGHPUT_ID ' in content
+    preparing_window = any(o['stage'] in ('GPU_STARTUP_BEGIN fixture_source', 'GPU_STARTUP_BEGIN playback_prepare') for o in observations)
+    valid = valid and bool(observations) and not preparing_window
+    row = dict(item, valid=valid, exit=code, elapsed_seconds=time.monotonic()-start,
+        startup_stages=stages, window_observations=observations,
+        unacknowledged_messages=sum(not o['acknowledged'] for o in observations),
+        window_during_cpu_prepare=preparing_window, sent_close=sent_close, log_sha256=sha(log))
+    rows.append(row); write(out / 'results.json', rows)
+    print(json.dumps({key: value for key, value in row.items() if key != 'window_observations'}), flush=True)
+    if not valid: raise SystemExit('Startup diagnostic failed; no further process or retry')

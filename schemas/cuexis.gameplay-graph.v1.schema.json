@@ -1,0 +1,582 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cuexis.dev/schemas/cuexis.gameplay-graph.v1.schema.json",
+  "title": "Compiled Gameplay Graph candidate v1",
+  "$comment": "First-use shape only. Typed SAX Reader must additionally enforce header-before-payload order, physical integer token categories, Capsule revision 3 row field types/counts, finite floats, canonical identity/closure and explicit caller test-only budgets. No production budget or implementation acceptance is declared.",
+  "type": "object",
+  "properties": {
+    "format": {
+      "const": "cuexis.gameplay-graph"
+    },
+    "graphFormatRevision": {
+      "const": 1
+    },
+    "capsuleRevision": {
+      "const": 3
+    },
+    "semanticIdentity": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "staticChart": {
+      "$ref": "#/$defs/staticChart"
+    },
+    "GPH0": {
+      "$ref": "#/$defs/row"
+    },
+    "GPR0": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/row"
+      }
+    },
+    "GPD0": {
+      "type": "object",
+      "properties": {
+        "patterns": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "measures": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "judgementDomains": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "mergedDeclarations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        }
+      },
+      "required": [
+        "patterns",
+        "measures",
+        "judgementDomains",
+        "mergedDeclarations"
+      ],
+      "additionalProperties": false
+    },
+    "GRC0": {
+      "type": "object",
+      "properties": {
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "relations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "solverProfiles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "factBindings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/row"
+          }
+        }
+      },
+      "required": [
+        "resources",
+        "relations",
+        "solverProfiles",
+        "factBindings",
+        "claims"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "format",
+    "graphFormatRevision",
+    "capsuleRevision",
+    "semanticIdentity",
+    "staticChart",
+    "GPH0",
+    "GPR0",
+    "GPD0",
+    "GRC0"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "atom": {
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 18446744073709551615
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
+            "token": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "token"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "row": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/atom"
+      }
+    },
+    "rational": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        }
+      ],
+      "minItems": 2,
+      "maxItems": 2,
+      "items": false
+    },
+    "transform": {
+      "type": "object",
+      "properties": {
+        "position": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "rotation": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "scale": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        }
+      },
+      "required": [
+        "position",
+        "rotation",
+        "scale"
+      ],
+      "additionalProperties": false
+    },
+    "entityIdentity": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": 0
+            },
+            "objectId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "objectId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": 1
+            },
+            "chartId": {
+              "type": "string"
+            },
+            "bindingId": {
+              "type": "string"
+            },
+            "moduleId": {
+              "type": "string"
+            },
+            "exportId": {
+              "type": "string"
+            },
+            "path": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "nodeId": {
+                    "type": "string"
+                  },
+                  "iterationIndexPlusOne": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295
+                  }
+                },
+                "required": [
+                  "nodeId",
+                  "iterationIndexPlusOne"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "kind",
+            "chartId",
+            "bindingId",
+            "moduleId",
+            "exportId",
+            "path"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "staticChart": {
+      "type": "object",
+      "properties": {
+        "chartId": {
+          "type": "string"
+        },
+        "mainMusic": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4294967295
+              }
+            },
+            "required": [
+              "id",
+              "version"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "timing": {
+          "type": "object",
+          "properties": {
+            "offsetMs": {
+              "type": "number"
+            },
+            "defaultBpm": {
+              "type": "number"
+            },
+            "tempoEvents": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "startBeat": {
+                    "$ref": "#/$defs/rational"
+                  },
+                  "durationBeats": {
+                    "$ref": "#/$defs/rational"
+                  },
+                  "startBpm": {
+                    "type": "number"
+                  },
+                  "endBpm": {
+                    "type": "number"
+                  },
+                  "startSlope": {
+                    "type": "number"
+                  },
+                  "endSlope": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "startBeat",
+                  "durationBeats",
+                  "startBpm",
+                  "endBpm",
+                  "startSlope",
+                  "endSlope"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "stops": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "beat": {
+                    "$ref": "#/$defs/rational"
+                  },
+                  "durationMs": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "beat",
+                  "durationMs"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "offsetMs",
+            "defaultBpm",
+            "tempoEvents",
+            "stops"
+          ],
+          "additionalProperties": false
+        },
+        "defaultCamera": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "fovY": {
+              "type": "number"
+            },
+            "nearPlane": {
+              "type": "number"
+            },
+            "farPlane": {
+              "type": "number"
+            },
+            "pitch": {
+              "type": "number"
+            },
+            "yaw": {
+              "type": "number"
+            },
+            "roll": {
+              "type": "number"
+            },
+            "defaultTransform": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/transform"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "fovY",
+            "nearPlane",
+            "farPlane",
+            "pitch",
+            "yaw",
+            "roll",
+            "defaultTransform"
+          ],
+          "additionalProperties": false
+        },
+        "resourceClosure": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "assetId": {
+                "type": "string"
+              },
+              "use": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2
+              }
+            },
+            "required": [
+              "assetId",
+              "use"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "entities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "identity": {
+                "$ref": "#/$defs/entityIdentity"
+              },
+              "parent": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/entityIdentity"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "components": {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "const": 0
+                        },
+                        "value": {
+                          "$ref": "#/$defs/transform"
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "value"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "const": 1
+                        },
+                        "mesh": {
+                          "type": "string"
+                        },
+                        "material": {
+                          "type": "string"
+                        },
+                        "alpha": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 255
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "mesh",
+                        "material",
+                        "alpha"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "const": 2
+                        },
+                        "type": {
+                          "type": "string"
+                        },
+                        "fovY": {
+                          "type": "number"
+                        },
+                        "nearPlane": {
+                          "type": "number"
+                        },
+                        "farPlane": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "type",
+                        "fovY",
+                        "nearPlane",
+                        "farPlane"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "identity",
+              "parent",
+              "components"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "chartId",
+        "mainMusic",
+        "features",
+        "timing",
+        "defaultCamera",
+        "resourceClosure",
+        "entities"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

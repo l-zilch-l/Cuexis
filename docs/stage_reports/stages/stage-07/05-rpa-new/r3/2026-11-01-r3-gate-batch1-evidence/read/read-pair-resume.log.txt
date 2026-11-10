@@ -1,0 +1,15 @@
+waiting 600.0 s before window 2
+w2 p1 A median=173538.4 us valid=True
+w2 p1 B median=205820.8 us valid=True
+w2 p2 B median=205484.7 us valid=True
+w2 p2 A median=176476.6 us valid=True
+w2 p3 A median=178051.1 us valid=True
+w2 p3 B median=206112.4 us valid=True
+waiting 600.0 s before window 3
+w3 p1 B median=205941.8 us valid=True
+w3 p1 A median=178130.8 us valid=True
+w3 p2 A median=174368.1 us valid=True
+w3 p2 B median=206112.6 us valid=True
+w3 p3 B median=210340.9 us valid=True
+w3 p3 A median=173198.9 us valid=True
+{"n": 9, "ratio": 1.1732, "lower": 1.1574, "upper": 1.1893, "ratios": [1.1816, 1.174, 1.1441, 1.186, 1.1644, 1.1576, 1.1561, 1.1821, 1.2144], "decision": "over"}

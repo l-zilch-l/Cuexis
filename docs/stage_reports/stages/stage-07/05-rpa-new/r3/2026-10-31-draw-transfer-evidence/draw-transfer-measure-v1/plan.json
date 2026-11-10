@@ -1,0 +1,119 @@
+{
+  "scope": "Only neutral move/order change compared; same SAX for startup, no instancing/state cache. Exact app-local Release DLLs. Ordinary physical GPU, no timer or pixel readback in timed frames. Not formal capacity acceptance.",
+  "plan": [
+    {
+      "entities": 1000,
+      "mode": "render-only",
+      "repeat": 0,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "render-only",
+      "repeat": 0,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "render-only",
+      "repeat": 1,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "render-only",
+      "repeat": 1,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "static",
+      "repeat": 0,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "static",
+      "repeat": 0,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "static",
+      "repeat": 1,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "static",
+      "repeat": 1,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "render-only",
+      "repeat": 0,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "render-only",
+      "repeat": 0,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "render-only",
+      "repeat": 1,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "render-only",
+      "repeat": 1,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "static",
+      "repeat": 0,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "static",
+      "repeat": 0,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "static",
+      "repeat": 1,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "static",
+      "repeat": 1,
+      "variant": "baseline",
+      "frames": 60
+    }
+  ],
+  "binding_sha256": "4c8db5bd0fe3f176ea8edeb385ad0c593eeb3f47740138e0d39447d74575484a",
+  "gate": "40K render-only submit median improves>=10%; others cycle regression<=5%; process relative range<=15%, no extension or replacement."
+}

@@ -1,0 +1,9 @@
+Filters: [activation-memory]
+Randomness seeded to: 1
+ACTIVATION_MEMORY {"n":1000,"capture":0,"retained_requested":3001373,"retained_storage":3360381,"peak_requested":4188300,"peak_storage":4742092,"charge":0,"points":0,"requested_final_delta":0,"storage_final_delta":0}
+ACTIVATION_MEMORY {"n":1000,"capture":1,"retained_requested":3277109,"retained_storage":3701621,"peak_requested":4188404,"peak_storage":4742228,"charge":897200,"points":2,"requested_final_delta":0,"storage_final_delta":0}
+ACTIVATION_MEMORY {"n":40000,"capture":0,"retained_requested":122568917,"retained_storage":141650805,"peak_requested":171009218,"peak_storage":200692866,"charge":0,"points":0,"requested_final_delta":0,"storage_final_delta":0}
+ACTIVATION_MEMORY {"n":40000,"capture":1,"retained_requested":134153939,"retained_storage":156796307,"peak_requested":171009322,"peak_storage":200693002,"charge":32492616,"points":2,"requested_final_delta":0,"storage_final_delta":0}
+===============================================================================
+All tests passed (50 assertions in 1 test case)
+

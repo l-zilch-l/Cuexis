@@ -1,0 +1,7 @@
+{
+  "scope": "Instanced diagnostic with explicit CPU substage timing. Not normal allocator performance acceptance.",
+  "files": {
+    "draw_command.cpp": "0b4a37dcf28c08f40ec36db2285be565350a2c6c6db988c96ab27fc5067714b6",
+    "open_gl_presentation.cpp": "11b19466915cb49290873d5bec5c0a9f4c53a339e09769849f5226f734ae458a"
+  }
+}

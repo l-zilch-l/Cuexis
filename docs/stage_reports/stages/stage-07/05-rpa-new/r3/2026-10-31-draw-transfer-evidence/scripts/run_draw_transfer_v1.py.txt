@@ -1,0 +1,42 @@
+from pathlib import Path
+import sys
+
+root=Path.cwd();sys.path.insert(0,str(root/'out/verification-20261029/r3-completion'))
+from native import *
+base=Path(__file__).resolve().parent
+tests=base/'draw-transfer-tests-v2';test_out=base/'draw-transfer-check-v1';test_out.mkdir(exist_ok=False)
+corpus={}
+for variant in ('baseline','candidate'):
+    log=test_out/(variant+'.log')
+    with log.open('x',encoding='utf-8') as stream:
+        result=subprocess.run([str(tests/('neutral-'+variant+'.exe')),'--rng-seed','1'],cwd=root,stdout=stream,stderr=subprocess.STDOUT)
+    content=log.read_text(encoding='utf-8',errors='replace')
+    assert result.returncode==0 and 'All tests passed' in content
+    corpus[variant]=[line for line in content.splitlines() if line.startswith('DRAW_TRANSFER ')]
+    print(variant,content.splitlines()[-2:],flush=True)
+assert len(corpus['baseline'])==24 and corpus['baseline']==corpus['candidate']
+write(test_out/'decision.json',dict(complete_permutation_digest_and_output_equal=True,permutations=24,logs={p.name:sha(p) for p in test_out.glob('*.log')}))
+
+build=base/'draw-transfer-build-v1';out=base/'draw-transfer-measure-v1';out.mkdir(exist_ok=False)
+plan=[dict(entities=n,mode=mode,repeat=pair,variant=v,frames=60) for n in (1000,40000)
+      for mode in ('render-only','static') for pair in range(2)
+      for v in (('baseline','candidate') if pair==0 else ('candidate','baseline'))]
+write(out/'plan.json',dict(scope='Only neutral move/order change compared; same SAX for startup, no instancing/state cache. Exact app-local Release DLLs. Ordinary physical GPU, no timer or pixel readback in timed frames. Not formal capacity acceptance.',plan=plan,binding_sha256=sha(build/'binding.json'),gate='40K render-only submit median improves>=10%; others cycle regression<=5%; process relative range<=15%, no extension or replacement.'))
+original=(root/'out/verification-20261029/r3-completion/gpu_runner.py').read_text()
+original=original.replace('P3 validated resolver index final physical GPU diagnostic; no formal acceptance','Neutral command transfer/order screen only; exact Release DLLs, no formal acceptance')
+original=original.replace('env.update(CUEXIS_GPU_BARRIER=',"env['CUEXIS_GPU_PIXEL_READBACK']='0'\n  env.update(CUEXIS_GPU_BARRIER=")
+namespace=dict(__name__='draw_transfer_runner',__file__=str(root/'out/verification-20261029/r3-completion/gpu_runner.py'))
+exec(compile(original,namespace['__file__'],'exec'),namespace);namespace['base']=out
+rows=[]
+for ordinal,item in enumerate(plan):
+    namespace['exe']=build/('gpu-'+item['variant']+'.exe')
+    rows+=namespace['run_group'](f'{ordinal:02}-{item["variant"]}',[item]);write(out/'results.json',rows)
+summary=[]
+for n in (1000,40000):
+    for mode in ('render-only','static'):
+        values={v:{metric:dict(samples_us=(points:=[r['statistics'][metric]['mean_us'] for r in rows if r['entities']==n and r['mode']==mode and r['variant']==v]),median_us=statistics.median(points),relative_range_percent=(max(points)-min(points))/statistics.median(points)*100) for metric in ('submit_us','cycle_us')} for v in ('baseline','candidate')}
+        summary.append(dict(n=n,mode=mode,values=values,submit_change=(values['candidate']['submit_us']['median_us']/values['baseline']['submit_us']['median_us']-1)*100,cycle_change=(values['candidate']['cycle_us']['median_us']/values['baseline']['cycle_us']['median_us']-1)*100))
+numeric=all(s['cycle_change']<=5 for s in summary) and next(s for s in summary if s['n']==40000 and s['mode']=='render-only')['submit_change']<=-10
+repeatability=all(s['values'][v]['cycle_us']['relative_range_percent']<=15 for s in summary for v in ('baseline','candidate'))
+write(out/'decision.json',dict(numeric_gate=numeric,repeatability_screen=repeatability,selected=False,summary=summary,formal_acceptance=False))
+print(json.dumps(dict(numeric=numeric,repeatability=repeatability,summary=summary)),flush=True)

@@ -1,0 +1,56 @@
+from pathlib import Path
+import json, statistics, sys
+
+root = Path.cwd()
+sys.path.insert(0, str(root / 'out/verification-20261029/r3-completion'))
+base = Path(__file__).resolve().parent
+build = base / 'wip-build-v1'
+out = base / 'wip-group-v1'
+
+plan = [dict(entities=n, mode=mode, repeat=pair, variant=v, frames=60) for n in (1000, 40000)
+        for mode in ('render-only', 'static') for pair in range(2)
+        for v in (('baseline', 'candidate') if pair == 0 else ('candidate', 'baseline'))]
+out.mkdir(exist_ok=False)
+(out / 'plan.json').write_text(json.dumps(dict(
+    scope='Non-inferiority screen between the committed selected neutral draw builder (baseline) and the uncommitted worktree refinement (candidate). Same product-sequence Release libraries, same app-local Release DLLs, ordinary physical GPU, no timer or pixel readback in timed frames. Not a selection gate and not a capacity acceptance.',
+    plan=plan,
+    binding_sha256=json.loads((build / 'binding.json').read_text())['commands_sha256'],
+    gate='Non-inferiority only: every one of the four points must keep cycle median change <= +5%; process relative range <= 15%; no re-sampling, no replacement.',
+    resolves='Whether the worktree refinement may be committed without a performance regression.'
+), indent=2), encoding='utf-8')
+
+original = (root / 'out/verification-20261029/r3-completion/gpu_runner.py').read_text()
+original = original.replace('P3 validated resolver index final physical GPU diagnostic; no formal acceptance',
+                            'Neutral draw worktree refinement non-inferiority screen; exact Release DLLs, no formal acceptance')
+original = original.replace("env.update(CUEXIS_GPU_BARRIER=", "env['CUEXIS_GPU_PIXEL_READBACK']='0'\n  env.update(CUEXIS_GPU_BARRIER=")
+namespace = dict(__name__='wip_group_runner', __file__=str(root / 'out/verification-20261029/r3-completion/gpu_runner.py'))
+exec(compile(original, namespace['__file__'], 'exec'), namespace)
+namespace['base'] = out
+
+rows = []
+for ordinal, item in enumerate(plan):
+    namespace['exe'] = build / ('gpu-' + item['variant'] + '.exe')
+    rows += namespace['run_group'](f'{ordinal:02}-{item["variant"]}', [item])
+    (out / 'results.json').write_text(json.dumps(rows, indent=2), encoding='utf-8')
+
+summary = []
+for n in (1000, 40000):
+    for mode in ('render-only', 'static'):
+        values = {v: {metric: dict(samples_us=(points := [r['statistics'][metric]['mean_us'] for r in rows
+                                                           if r['entities'] == n and r['mode'] == mode and r['variant'] == v]),
+                                 median_us=statistics.median(points),
+                                 relative_range_percent=(max(points) - min(points)) / statistics.median(points) * 100)
+                       for metric in ('submit_us', 'cycle_us')} for v in ('baseline', 'candidate')}
+        summary.append(dict(n=n, mode=mode, values=values,
+                            submit_change=(values['candidate']['submit_us']['median_us'] / values['baseline']['submit_us']['median_us'] - 1) * 100,
+                            cycle_change=(values['candidate']['cycle_us']['median_us'] / values['baseline']['cycle_us']['median_us'] - 1) * 100))
+non_inferior = all(s['cycle_change'] <= 5 for s in summary)
+repeatability = all(s['values'][v]['cycle_us']['relative_range_percent'] <= 15 for s in summary for v in ('baseline', 'candidate'))
+(out / 'decision.json').write_text(json.dumps(dict(
+    non_inferiority_gate=non_inferior, repeatability_screen=repeatability,
+    resolution_note='Expected effect is far below the 15% process-to-process repeatability band, so this group can only exclude a regression, never establish an improvement.',
+    selected=None, formal_acceptance=False, summary=summary
+), indent=2), encoding='utf-8')
+print(json.dumps(dict(non_inferior=non_inferior, repeatability=repeatability,
+                      cycles={f'{s["n"]}-{s["mode"]}': round(s['cycle_change'], 2) for s in summary},
+                      submits={f'{s["n"]}-{s["mode"]}': round(s['submit_change'], 2) for s in summary})), flush=True)

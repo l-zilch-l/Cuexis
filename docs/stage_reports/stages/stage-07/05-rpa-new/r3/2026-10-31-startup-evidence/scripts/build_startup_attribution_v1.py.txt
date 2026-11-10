@@ -1,0 +1,24 @@
+from pathlib import Path
+import json, shutil
+
+root = Path.cwd()
+base = Path(__file__).resolve().parent
+old = base / 'gl-state-build-v3'
+out = base / 'startup-attribution-build-v1'
+script = (base / 'build_gl_state_v3_generated.py').read_text()
+script = script[:script.index('adapter_objects=[]')]
+script = script.replace("out=base/'gl-state-build-v3'", "out=base/'startup-attribution-build-v1'")
+exec(compile(script, str(base / 'build_gl_state_v3_generated.py'), 'exec'))
+objects = [compile(name, base / 'startup-attribution-source-v1' / name, Path(name).stem)
+           for name in ('playback_session.cpp', 'runtime_session.cpp')]
+args = next(c['args'] for c in json.loads((old / 'commands.json').read_text()) if c['label'] == 'link-baseline')
+args = [('/OUT:' + str(out / 'gpu-startup.exe')) if a.startswith('/OUT:') else
+        str(base / 'gl-startup-build-v1/gpu-probe.obj') if a == str(old / 'gpu-probe.obj') else a for a in args]
+run([args[0], *objects, *args[1:]], 'link-startup-attribution')
+for dll in old.glob('*.dll'): shutil.copyfile(dll, out / dll.name)
+(out / 'binding.json').write_text(json.dumps(dict(
+    scope='Diagnostic prepare stage timers; both private source files explicitly recompiled; matching old definitions and remaining immutable libraries.',
+    old_binding_sha256=sha(old / 'binding.json'),
+    source_binding_sha256=sha(base / 'startup-attribution-source-v1/binding.json'),
+    commands_sha256=sha(out / 'commands.json'),
+    binary_sha256=sha(out / 'gpu-startup.exe')), indent=2), encoding='utf-8')

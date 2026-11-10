@@ -307,7 +307,7 @@ The shared reference host does not import cuexis_playback: libcuexis_playback-0.
 3. **原计划允许本批次补实现，不只限 Stage 8**。
 
 R9 据此实现，见
-[R9 报告](../../stages/stage-06/2026-09-28-r9-reference-host-command-loop.md)。
+[R9 报告](2026-09-28-r9-reference-host-command-loop.md)。
 
 ### 7.2 §6 登记了一个从未存在的文件
 
@@ -346,4 +346,4 @@ R9 状态：实现完成、本地验证完成，并在最后行为 SHA `71de8b1`
 
 最终 SHA 的证据：`71de8b1` 之后的文档提交把 tip 推到 `cc14fcd`，该 tip 在 push 与 pull_request 两个
 事件上共 7 个运行全部通过。**上句原文保留不改**，以本行为准。逐条对照与"本次接受不做什么"见
-[交付报告 §11](2026-09-28-delivery-report.md) 与 [R9 报告 §10](../../stages/stage-06/2026-09-28-r9-reference-host-command-loop.md)。
+[交付报告 §11](2026-09-28-delivery-report.md) 与 [R9 报告 §10](2026-09-28-r9-reference-host-command-loop.md)。

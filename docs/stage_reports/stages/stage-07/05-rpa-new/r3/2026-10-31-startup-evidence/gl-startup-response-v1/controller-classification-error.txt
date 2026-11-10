@@ -1,0 +1,1 @@
+The diagnostic controller incorrectly classified GPU_STARTUP_END playback_prepare as still preparing. Actual 1K process exited 0 with all 21 assertions passed. v2 fixes only BEGIN/END classification; old samples and one 100ms timeout retained. No 40K process was launched by v1.

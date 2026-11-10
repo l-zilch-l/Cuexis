@@ -1,0 +1,48 @@
+{
+  "scope": "Seek-matrix cost readings (request->ready, request->present). Cost evidence, not the applicable-Seek gate.",
+  "exe": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_rpa_tests.exe",
+  "exe_sha256": "3f89f5265b9ed82b822b20fabea28904b9ed68100fba44f7aab4cbe05bcf2a08",
+  "filter": "[seek-matrix]",
+  "head": "c31f4f14e4a288d5147a42b754121b89e8bbf7ad",
+  "runs": [
+    {
+      "run": 0,
+      "exit_code": 2,
+      "wall_seconds": 0.05,
+      "events": 0,
+      "distinct_cases": [],
+      "ready": null,
+      "present": null,
+      "present_us": [],
+      "ready_us": [],
+      "log": "out\\verification-20261101\\r3-gate-batch1\\seek\\run-00.log",
+      "valid": false
+    },
+    {
+      "run": 1,
+      "exit_code": 2,
+      "wall_seconds": 0.042,
+      "events": 0,
+      "distinct_cases": [],
+      "ready": null,
+      "present": null,
+      "present_us": [],
+      "ready_us": [],
+      "log": "out\\verification-20261101\\r3-gate-batch1\\seek\\run-01.log",
+      "valid": false
+    },
+    {
+      "run": 2,
+      "exit_code": 2,
+      "wall_seconds": 0.029,
+      "events": 0,
+      "distinct_cases": [],
+      "ready": null,
+      "present": null,
+      "present_us": [],
+      "ready_us": [],
+      "log": "out\\verification-20261101\\r3-gate-batch1\\seek\\run-02.log",
+      "valid": false
+    }
+  ]
+}

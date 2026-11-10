@@ -1,0 +1,50 @@
+[
+  {
+    "timestamp": "",
+    "level": "",
+    "category": "",
+    "message": "2026-10-31T21:20:53.427+08:00 [info] [Cuexis Player] [player.startup] Starting Cuexis Player 26.10.19-1"
+  },
+  {
+    "timestamp": "",
+    "level": "",
+    "category": "",
+    "message": "2026-10-31T21:20:53.431+08:00 [info] [Cuexis Player] [player.build_flavor] production"
+  },
+  {
+    "timestamp": "",
+    "level": "",
+    "category": "",
+    "message": "2026-10-31T21:20:53.435+08:00 [info] [Cuexis Player] [player.config] Profile system-default, gain 1.000000"
+  },
+  {
+    "timestamp": "",
+    "level": "",
+    "category": "",
+    "message": "2026-10-31T21:21:01.479+08:00 [info] [Cuexis Player] [player.sdl] Video driver: windows"
+  },
+  {
+    "timestamp": "",
+    "level": "",
+    "category": "",
+    "message": "2026-10-31T21:21:01.790+08:00 [info] [Cuexis Player] [player.opengl] Version: 3.3.0 NVIDIA 616.64"
+  },
+  {
+    "timestamp": "",
+    "level": "",
+    "category": "",
+    "message": "2026-10-31T21:21:01.792+08:00 [info] [Cuexis Player] [player.opengl] Vendor: NVIDIA Corporation"
+  },
+  {
+    "timestamp": "",
+    "level": "",
+    "category": "",
+    "message": "2026-10-31T21:21:01.795+08:00 [info] [Cuexis Player] [player.opengl] Renderer: NVIDIA GeForce RTX 4060 Laptop GPU/PCIe/SSE2"
+  },
+  {
+    "timestamp": "",
+    "level": "",
+    "category": "",
+    "message": "2026-10-31T21:21:21.272+08:00 [error] [Cuexis Player] [player.failure] playback.chart.load_failed: Chart loading produced errors [diagnostic_code=chart.object.id_duplicate] [field_path=$/objects/40000/id] [command=load]"
+  }
+]

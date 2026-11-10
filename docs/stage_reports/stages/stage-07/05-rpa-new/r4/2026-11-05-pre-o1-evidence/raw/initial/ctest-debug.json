@@ -1,0 +1,19 @@
+{
+  "command": [
+    "ctest",
+    "--test-dir",
+    "D:\\Cuexis-worktree\\out\\build\\r4\\pre-o1\\msvc-on-debug",
+    "--no-tests=error",
+    "--output-on-failure",
+    "-j",
+    "4"
+  ],
+  "exit_code": 8,
+  "elapsed_seconds": 304.8499242999999,
+  "test_counts": [
+    99,
+    11,
+    1418
+  ],
+  "log_sha256": "c595e5596369c7d2ef2ffb4eb800b9ee551575eb1b370fcd81156e5fbb00512c"
+}

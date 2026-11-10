@@ -1,0 +1,7 @@
+{
+  "scope": "Diagnostic render substage timers with instancing v2; SAX v2 speeds CPU startup only. Both changed CPPs explicitly compiled; exact app-local Release DLLs, matching unchanged definitions and immutable libraries.",
+  "old_binding_sha256": "c4724012a87b1fdc5bd4d1893c803ba94603a7df10a5fa6a3acb7d4c7f30c308",
+  "source_binding_sha256": "9a1163783f154c1a76f759dd8a345f2ffd4ccce656834f5453f6e60dcd41ff2d",
+  "commands_sha256": "c55c84779ad3551638236bc79be0597f4effaca005f32dec530eb967cfe11fc2",
+  "binary_sha256": "e136f8c93ee8e69f98d0f443d09f9af756923bb5ba411ae6748eebc5af24f662"
+}

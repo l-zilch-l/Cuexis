@@ -1,0 +1,40 @@
+{
+  "docs": {
+    "args": [
+      "python",
+      "-B",
+      "tools/check_docs.py"
+    ],
+    "exit": 0,
+    "output": "Documentation checks passed: 611 Markdown files and 20 candidate JSON/CXT files validated.\n"
+  },
+  "architecture": {
+    "args": [
+      "cmake",
+      "-DCUEXIS_SOURCE_DIR=D:/Cuexis-redesign",
+      "-P",
+      "cmake/VerifyArchitecture.cmake"
+    ],
+    "exit": 0,
+    "output": ""
+  },
+  "format": {
+    "args": [
+      "clang-format",
+      "--dry-run",
+      "--Werror",
+      "engine/presentation_renderer/src/draw_command.cpp"
+    ],
+    "exit": 0,
+    "output": ""
+  },
+  "diff": {
+    "args": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit": 0,
+    "output": ""
+  }
+}

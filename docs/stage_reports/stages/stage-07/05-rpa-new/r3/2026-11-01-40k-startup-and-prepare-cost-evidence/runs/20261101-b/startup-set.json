@@ -1,0 +1,3565 @@
+{
+ "stamp": "20261101-b",
+ "exe": "out\\build\\rpa-candidate-release\\bin\\cuexis_execution_device_probe.exe",
+ "exe_sha256": "c5e1c317dc0836950078220d56b599f11cf1d5606dfdb7185fa34ccf40329168",
+ "arms": {
+  "A-untraced-40000": [
+   40000,
+   false,
+   "static",
+   3,
+   2
+  ],
+  "B-traced-40000": [
+   40000,
+   true,
+   "static",
+   3,
+   2
+  ],
+  "C-traced-1800": [
+   1800,
+   true,
+   "static",
+   3,
+   2
+  ],
+  "D-traced-2400": [
+   2400,
+   true,
+   "static",
+   3,
+   2
+  ],
+  "E-traced-2800": [
+   2800,
+   true,
+   "static",
+   3,
+   2
+  ],
+  "F-traced-10000": [
+   10000,
+   true,
+   "static",
+   3,
+   2
+  ]
+ },
+ "plan": {
+  "C-traced-1800": 3,
+  "D-traced-2400": 3,
+  "E-traced-2800": 3,
+  "F-traced-10000": 3
+ },
+ "summary": {
+  "C-traced-1800": {
+   "samples": [
+    {
+     "index": 0,
+     "returncode": 0,
+     "wall_s": 0.784,
+     "first_present_us": 403574.2,
+     "shown_us": 403568.9
+    },
+    {
+     "index": 1,
+     "returncode": 0,
+     "wall_s": 0.752,
+     "first_present_us": 382731,
+     "shown_us": 382725.2
+    },
+    {
+     "index": 2,
+     "returncode": 0,
+     "wall_s": 0.736,
+     "first_present_us": 382469.8,
+     "shown_us": 382465.1
+    }
+   ],
+   "stages": {
+    "fixture_source": {
+     "median": 3561.1,
+     "min": 3538.0,
+     "max": 3682.5,
+     "spread_pct": 4.06,
+     "n": 3
+    },
+    "playback_prepare": {
+     "median": 78258.5,
+     "min": 77935.3,
+     "max": 78894.1,
+     "spread_pct": 1.23,
+     "n": 3
+    },
+    "sdl_runtime": {
+     "median": 58166.1,
+     "min": 57794.3,
+     "max": 59568.6,
+     "spread_pct": 3.05,
+     "n": 3
+    },
+    "gl_context": {
+     "median": 15.2,
+     "min": 15.1,
+     "max": 16.2,
+     "spread_pct": 7.24,
+     "n": 3
+    },
+    "window_create": {
+     "median": 226565.4,
+     "min": 225566.9,
+     "max": 244742.3,
+     "spread_pct": 8.46,
+     "n": 3
+    },
+    "backend_create": {
+     "median": 11261.8,
+     "min": 10832.5,
+     "max": 12125.8,
+     "spread_pct": 11.48,
+     "n": 3
+    },
+    "pixel_readback": {
+     "median": 5.2,
+     "min": 4.9,
+     "max": 5.6,
+     "spread_pct": 13.46,
+     "n": 3
+    },
+    "renderer_prepare": {
+     "median": 348.1,
+     "min": 340.8,
+     "max": 382.1,
+     "spread_pct": 11.86,
+     "n": 3
+    },
+    "session_commit": {
+     "median": 10.8,
+     "min": 9.9,
+     "max": 10.9,
+     "spread_pct": 9.26,
+     "n": 3
+    },
+    "backend_activate": {
+     "median": 2.2,
+     "min": 2.0,
+     "max": 2.5,
+     "spread_pct": 22.73,
+     "n": 3
+    },
+    "first_update": {
+     "median": 358.8,
+     "min": 332.6,
+     "max": 402.5,
+     "spread_pct": 19.48,
+     "n": 3
+    },
+    "first_extract": {
+     "median": 552.3,
+     "min": 533.3,
+     "max": 568.7,
+     "spread_pct": 6.41,
+     "n": 3
+    },
+    "first_submit": {
+     "median": 3315.1,
+     "min": 3271.0,
+     "max": 3385.2,
+     "spread_pct": 3.44,
+     "n": 3
+    },
+    "first_present": {
+     "median": 80.5,
+     "min": 75.3,
+     "max": 99.8,
+     "spread_pct": 30.43,
+     "n": 3
+    }
+   },
+   "trace_stages": {
+    "json_dom_parse": {
+     "median": 29760.0,
+     "min": 29556.0,
+     "max": 30268.0,
+     "spread_pct": 2.39,
+     "n": 3
+    },
+    "chart_typed_read": {
+     "median": 14286.0,
+     "min": 14260.0,
+     "max": 14692.0,
+     "spread_pct": 3.02,
+     "n": 3
+    },
+    "chart_canonical_write": {
+     "median": 20444.0,
+     "min": 20210.0,
+     "max": 20720.0,
+     "spread_pct": 2.49,
+     "n": 3
+    },
+    "load_chart": {
+     "median": 64812.0,
+     "min": 64763.0,
+     "max": 64835.0,
+     "spread_pct": 0.11,
+     "n": 3
+    },
+    "load_canonical": {
+     "median": 785.0,
+     "min": 773.0,
+     "max": 788.0,
+     "spread_pct": 1.91,
+     "n": 3
+    },
+    "load_document": {
+     "median": 65628.0,
+     "min": 65564.0,
+     "max": 65648.0,
+     "spread_pct": 0.13,
+     "n": 3
+    },
+    "resolve_parameters": {
+     "median": 5.0,
+     "min": 4.0,
+     "max": 5.0,
+     "spread_pct": 20.0,
+     "n": 3
+    },
+    "preflight": {
+     "median": 10.0,
+     "min": 9.0,
+     "max": 10.0,
+     "spread_pct": 10.0,
+     "n": 3
+    },
+    "animation_compile": {
+     "median": 9.0,
+     "min": 8.0,
+     "max": 12.0,
+     "spread_pct": 44.44,
+     "n": 3
+    },
+    "chart_compile": {
+     "median": 2756.0,
+     "min": 2731.0,
+     "max": 2763.0,
+     "spread_pct": 1.16,
+     "n": 3
+    },
+    "resources": {
+     "median": 23.0,
+     "min": 23.0,
+     "max": 23.0,
+     "spread_pct": 0.0,
+     "n": 3
+    },
+    "audio": {
+     "median": 3.0,
+     "min": 2.0,
+     "max": 3.0,
+     "spread_pct": 33.33,
+     "n": 3
+    },
+    "runtime": {
+     "median": 8498.0,
+     "min": 8287.0,
+     "max": 9084.0,
+     "spread_pct": 9.38,
+     "n": 3
+    },
+    "presentation": {
+     "median": 147.0,
+     "min": 145.0,
+     "max": 148.0,
+     "spread_pct": 2.04,
+     "n": 3
+    },
+    "commit_runtime": {
+     "median": 5.0,
+     "min": 4.0,
+     "max": 5.0,
+     "spread_pct": 20.0,
+     "n": 3
+    },
+    "commit_frame": {
+     "median": 2.0,
+     "min": 1.0,
+     "max": 2.0,
+     "spread_pct": 50.0,
+     "n": 3
+    },
+    "snapshot_layout": {
+     "median": 821.0,
+     "min": 683.0,
+     "max": 909.0,
+     "spread_pct": 27.53,
+     "n": 3
+    },
+    "identity": {
+     "median": 12.0,
+     "min": 12.0,
+     "max": 13.0,
+     "spread_pct": 8.33,
+     "n": 3
+    },
+    "assemble": {
+     "median": 98.0,
+     "min": 92.0,
+     "max": 113.0,
+     "spread_pct": 21.43,
+     "n": 3
+    }
+   }
+  },
+  "D-traced-2400": {
+   "samples": [
+    {
+     "index": 0,
+     "returncode": 0,
+     "wall_s": 0.799,
+     "first_present_us": 420536.8,
+     "shown_us": 420531.5
+    },
+    {
+     "index": 1,
+     "returncode": 0,
+     "wall_s": 0.818,
+     "first_present_us": 438730.5,
+     "shown_us": 438721.8
+    },
+    {
+     "index": 2,
+     "returncode": 0,
+     "wall_s": 0.797,
+     "first_present_us": 438279.9,
+     "shown_us": 438275.3
+    }
+   ],
+   "stages": {
+    "fixture_source": {
+     "median": 4443.4,
+     "min": 4386.4,
+     "max": 4462.4,
+     "spread_pct": 1.71,
+     "n": 3
+    },
+    "playback_prepare": {
+     "median": 120143.2,
+     "min": 113571.7,
+     "max": 125448.8,
+     "spread_pct": 9.89,
+     "n": 3
+    },
+    "sdl_runtime": {
+     "median": 57874.0,
+     "min": 57802.9,
+     "max": 58029.0,
+     "spread_pct": 0.39,
+     "n": 3
+    },
+    "gl_context": {
+     "median": 12.6,
+     "min": 12.2,
+     "max": 14.0,
+     "spread_pct": 14.29,
+     "n": 3
+    },
+    "window_create": {
+     "median": 232692.4,
+     "min": 226907.8,
+     "max": 236458.6,
+     "spread_pct": 4.1,
+     "n": 3
+    },
+    "backend_create": {
+     "median": 11750.1,
+     "min": 11696.8,
+     "max": 13271.3,
+     "spread_pct": 13.4,
+     "n": 3
+    },
+    "pixel_readback": {
+     "median": 5.5,
+     "min": 5.1,
+     "max": 5.6,
+     "spread_pct": 9.09,
+     "n": 3
+    },
+    "renderer_prepare": {
+     "median": 356.1,
+     "min": 338.4,
+     "max": 382.4,
+     "spread_pct": 12.36,
+     "n": 3
+    },
+    "session_commit": {
+     "median": 11.1,
+     "min": 10.9,
+     "max": 11.9,
+     "spread_pct": 9.01,
+     "n": 3
+    },
+    "backend_activate": {
+     "median": 2.2,
+     "min": 2.1,
+     "max": 2.4,
+     "spread_pct": 13.64,
+     "n": 3
+    },
+    "first_update": {
+     "median": 498.1,
+     "min": 477.4,
+     "max": 660.9,
+     "spread_pct": 36.84,
+     "n": 3
+    },
+    "first_extract": {
+     "median": 748.2,
+     "min": 737.0,
+     "max": 772.9,
+     "spread_pct": 4.8,
+     "n": 3
+    },
+    "first_submit": {
+     "median": 3752.2,
+     "min": 3730.0,
+     "max": 3796.5,
+     "spread_pct": 1.77,
+     "n": 3
+    },
+    "first_present": {
+     "median": 89.5,
+     "min": 85.0,
+     "max": 92.3,
+     "spread_pct": 8.16,
+     "n": 3
+    }
+   },
+   "trace_stages": {
+    "json_dom_parse": {
+     "median": 47309.0,
+     "min": 43321.0,
+     "max": 50499.0,
+     "spread_pct": 15.17,
+     "n": 3
+    },
+    "chart_typed_read": {
+     "median": 20204.0,
+     "min": 19953.0,
+     "max": 20476.0,
+     "spread_pct": 2.59,
+     "n": 3
+    },
+    "chart_canonical_write": {
+     "median": 33661.0,
+     "min": 30969.0,
+     "max": 35040.0,
+     "spread_pct": 12.09,
+     "n": 3
+    },
+    "load_chart": {
+     "median": 101006.0,
+     "min": 94572.0,
+     "max": 106091.0,
+     "spread_pct": 11.4,
+     "n": 3
+    },
+    "load_canonical": {
+     "median": 1028.0,
+     "min": 1027.0,
+     "max": 1040.0,
+     "spread_pct": 1.26,
+     "n": 3
+    },
+    "load_document": {
+     "median": 102064.0,
+     "min": 95629.0,
+     "max": 107165.0,
+     "spread_pct": 11.3,
+     "n": 3
+    },
+    "resolve_parameters": {
+     "median": 5.0,
+     "min": 4.0,
+     "max": 6.0,
+     "spread_pct": 40.0,
+     "n": 3
+    },
+    "preflight": {
+     "median": 12.0,
+     "min": 10.0,
+     "max": 21.0,
+     "spread_pct": 91.67,
+     "n": 3
+    },
+    "animation_compile": {
+     "median": 12.0,
+     "min": 9.0,
+     "max": 13.0,
+     "spread_pct": 33.33,
+     "n": 3
+    },
+    "chart_compile": {
+     "median": 3871.0,
+     "min": 3750.0,
+     "max": 4017.0,
+     "spread_pct": 6.9,
+     "n": 3
+    },
+    "resources": {
+     "median": 23.0,
+     "min": 23.0,
+     "max": 26.0,
+     "spread_pct": 13.04,
+     "n": 3
+    },
+    "audio": {
+     "median": 3.0,
+     "min": 3.0,
+     "max": 3.0,
+     "spread_pct": 0.0,
+     "n": 3
+    },
+    "runtime": {
+     "median": 12446.0,
+     "min": 12390.0,
+     "max": 12548.0,
+     "spread_pct": 1.27,
+     "n": 3
+    },
+    "presentation": {
+     "median": 180.0,
+     "min": 176.0,
+     "max": 185.0,
+     "spread_pct": 5.0,
+     "n": 3
+    },
+    "commit_runtime": {
+     "median": 5.0,
+     "min": 5.0,
+     "max": 5.0,
+     "spread_pct": 0.0,
+     "n": 3
+    },
+    "commit_frame": {
+     "median": 2.0,
+     "min": 2.0,
+     "max": 2.0,
+     "spread_pct": 0.0,
+     "n": 3
+    },
+    "snapshot_layout": {
+     "median": 1036.0,
+     "min": 957.0,
+     "max": 1098.0,
+     "spread_pct": 13.61,
+     "n": 3
+    },
+    "identity": {
+     "median": 13.0,
+     "min": 12.0,
+     "max": 13.0,
+     "spread_pct": 7.69,
+     "n": 3
+    },
+    "assemble": {
+     "median": 128.0,
+     "min": 124.0,
+     "max": 141.0,
+     "spread_pct": 13.28,
+     "n": 3
+    }
+   }
+  },
+  "E-traced-2800": {
+   "samples": [
+    {
+     "index": 0,
+     "returncode": 0,
+     "wall_s": 0.817,
+     "first_present_us": 443595.3,
+     "shown_us": 443590.2
+    },
+    {
+     "index": 1,
+     "returncode": 0,
+     "wall_s": 0.818,
+     "first_present_us": 443420.1,
+     "shown_us": 443414.5
+    },
+    {
+     "index": 2,
+     "returncode": 0,
+     "wall_s": 0.832,
+     "first_present_us": 459157.8,
+     "shown_us": 459149.7
+    }
+   ],
+   "stages": {
+    "fixture_source": {
+     "median": 5085.8,
+     "min": 5083.7,
+     "max": 5186.3,
+     "spread_pct": 2.02,
+     "n": 3
+    },
+    "playback_prepare": {
+     "median": 137279.3,
+     "min": 136084.5,
+     "max": 142765.2,
+     "spread_pct": 4.87,
+     "n": 3
+    },
+    "sdl_runtime": {
+     "median": 59079.4,
+     "min": 58602.6,
+     "max": 59557.2,
+     "spread_pct": 1.62,
+     "n": 3
+    },
+    "gl_context": {
+     "median": 18.0,
+     "min": 12.3,
+     "max": 22.0,
+     "spread_pct": 53.89,
+     "n": 3
+    },
+    "window_create": {
+     "median": 225032.4,
+     "min": 224051.6,
+     "max": 232889.5,
+     "spread_pct": 3.93,
+     "n": 3
+    },
+    "backend_create": {
+     "median": 11586.3,
+     "min": 11237.6,
+     "max": 11592.6,
+     "spread_pct": 3.06,
+     "n": 3
+    },
+    "pixel_readback": {
+     "median": 5.5,
+     "min": 5.0,
+     "max": 5.7,
+     "spread_pct": 12.73,
+     "n": 3
+    },
+    "renderer_prepare": {
+     "median": 354.1,
+     "min": 331.4,
+     "max": 428.3,
+     "spread_pct": 27.37,
+     "n": 3
+    },
+    "session_commit": {
+     "median": 11.6,
+     "min": 10.2,
+     "max": 17.8,
+     "spread_pct": 65.52,
+     "n": 3
+    },
+    "backend_activate": {
+     "median": 2.0,
+     "min": 1.7,
+     "max": 3.3,
+     "spread_pct": 80.0,
+     "n": 3
+    },
+    "first_update": {
+     "median": 531.3,
+     "min": 514.0,
+     "max": 593.1,
+     "spread_pct": 14.89,
+     "n": 3
+    },
+    "first_extract": {
+     "median": 832.6,
+     "min": 784.7,
+     "max": 933.2,
+     "spread_pct": 17.84,
+     "n": 3
+    },
+    "first_submit": {
+     "median": 4327.7,
+     "min": 4214.5,
+     "max": 4382.5,
+     "spread_pct": 3.88,
+     "n": 3
+    },
+    "first_present": {
+     "median": 86.5,
+     "min": 85.0,
+     "max": 87.1,
+     "spread_pct": 2.43,
+     "n": 3
+    }
+   },
+   "trace_stages": {
+    "json_dom_parse": {
+     "median": 52391.0,
+     "min": 51253.0,
+     "max": 54162.0,
+     "spread_pct": 5.55,
+     "n": 3
+    },
+    "chart_typed_read": {
+     "median": 23182.0,
+     "min": 23093.0,
+     "max": 24196.0,
+     "spread_pct": 4.76,
+     "n": 3
+    },
+    "chart_canonical_write": {
+     "median": 40314.0,
+     "min": 40188.0,
+     "max": 41930.0,
+     "spread_pct": 4.32,
+     "n": 3
+    },
+    "load_chart": {
+     "median": 115870.0,
+     "min": 114703.0,
+     "max": 120359.0,
+     "spread_pct": 4.88,
+     "n": 3
+    },
+    "load_canonical": {
+     "median": 1211.0,
+     "min": 1210.0,
+     "max": 1212.0,
+     "spread_pct": 0.17,
+     "n": 3
+    },
+    "load_document": {
+     "median": 117116.0,
+     "min": 115950.0,
+     "max": 121601.0,
+     "spread_pct": 4.83,
+     "n": 3
+    },
+    "resolve_parameters": {
+     "median": 5.0,
+     "min": 4.0,
+     "max": 5.0,
+     "spread_pct": 20.0,
+     "n": 3
+    },
+    "preflight": {
+     "median": 10.0,
+     "min": 9.0,
+     "max": 11.0,
+     "spread_pct": 20.0,
+     "n": 3
+    },
+    "animation_compile": {
+     "median": 10.0,
+     "min": 8.0,
+     "max": 13.0,
+     "spread_pct": 50.0,
+     "n": 3
+    },
+    "chart_compile": {
+     "median": 4604.0,
+     "min": 4563.0,
+     "max": 4793.0,
+     "spread_pct": 5.0,
+     "n": 3
+    },
+    "resources": {
+     "median": 24.0,
+     "min": 24.0,
+     "max": 24.0,
+     "spread_pct": 0.0,
+     "n": 3
+    },
+    "audio": {
+     "median": 3.0,
+     "min": 2.0,
+     "max": 4.0,
+     "spread_pct": 66.67,
+     "n": 3
+    },
+    "runtime": {
+     "median": 13400.0,
+     "min": 13360.0,
+     "max": 14159.0,
+     "spread_pct": 5.96,
+     "n": 3
+    },
+    "presentation": {
+     "median": 199.0,
+     "min": 198.0,
+     "max": 200.0,
+     "spread_pct": 1.01,
+     "n": 3
+    },
+    "commit_runtime": {
+     "median": 6.0,
+     "min": 5.0,
+     "max": 6.0,
+     "spread_pct": 16.67,
+     "n": 3
+    },
+    "commit_frame": {
+     "median": 2.0,
+     "min": 2.0,
+     "max": 2.0,
+     "spread_pct": 0.0,
+     "n": 3
+    },
+    "snapshot_layout": {
+     "median": 1355.0,
+     "min": 1343.0,
+     "max": 1392.0,
+     "spread_pct": 3.62,
+     "n": 3
+    },
+    "identity": {
+     "median": 13.0,
+     "min": 13.0,
+     "max": 13.0,
+     "spread_pct": 0.0,
+     "n": 3
+    },
+    "assemble": {
+     "median": 147.0,
+     "min": 146.0,
+     "max": 151.0,
+     "spread_pct": 3.4,
+     "n": 3
+    }
+   }
+  },
+  "F-traced-10000": {
+   "samples": [
+    {
+     "index": 0,
+     "returncode": 0,
+     "wall_s": 1.291,
+     "first_present_us": 851190.7,
+     "shown_us": 851180.6
+    },
+    {
+     "index": 1,
+     "returncode": 0,
+     "wall_s": 1.273,
+     "first_present_us": 849520.6,
+     "shown_us": 849513.4
+    },
+    {
+     "index": 2,
+     "returncode": 0,
+     "wall_s": 1.284,
+     "first_present_us": 842510.7,
+     "shown_us": 842493.8
+    }
+   ],
+   "stages": {
+    "fixture_source": {
+     "median": 16229.5,
+     "min": 16106.0,
+     "max": 16471.9,
+     "spread_pct": 2.25,
+     "n": 3
+    },
+    "playback_prepare": {
+     "median": 514186.1,
+     "min": 510731.8,
+     "max": 520094.1,
+     "spread_pct": 1.82,
+     "n": 3
+    },
+    "sdl_runtime": {
+     "median": 59244.3,
+     "min": 58292.6,
+     "max": 59510.0,
+     "spread_pct": 2.05,
+     "n": 3
+    },
+    "gl_context": {
+     "median": 13.3,
+     "min": 13.3,
+     "max": 13.4,
+     "spread_pct": 0.75,
+     "n": 3
+    },
+    "window_create": {
+     "median": 226457.8,
+     "min": 224059.7,
+     "max": 232158.1,
+     "spread_pct": 3.58,
+     "n": 3
+    },
+    "backend_create": {
+     "median": 11661.6,
+     "min": 11383.9,
+     "max": 11795.8,
+     "spread_pct": 3.53,
+     "n": 3
+    },
+    "pixel_readback": {
+     "median": 4.6,
+     "min": 4.5,
+     "max": 5.8,
+     "spread_pct": 28.26,
+     "n": 3
+    },
+    "renderer_prepare": {
+     "median": 360.3,
+     "min": 321.8,
+     "max": 373.1,
+     "spread_pct": 14.24,
+     "n": 3
+    },
+    "session_commit": {
+     "median": 10.6,
+     "min": 10.5,
+     "max": 12.0,
+     "spread_pct": 14.15,
+     "n": 3
+    },
+    "backend_activate": {
+     "median": 2.1,
+     "min": 1.8,
+     "max": 11.7,
+     "spread_pct": 471.43,
+     "n": 3
+    },
+    "first_update": {
+     "median": 1732.8,
+     "min": 1619.9,
+     "max": 1733.2,
+     "spread_pct": 6.54,
+     "n": 3
+    },
+    "first_extract": {
+     "median": 2832.4,
+     "min": 2783.5,
+     "max": 2921.5,
+     "spread_pct": 4.87,
+     "n": 3
+    },
+    "first_submit": {
+     "median": 11863.3,
+     "min": 11825.8,
+     "max": 12276.6,
+     "spread_pct": 3.8,
+     "n": 3
+    },
+    "first_present": {
+     "median": 108.3,
+     "min": 97.3,
+     "max": 119.0,
+     "spread_pct": 20.04,
+     "n": 3
+    }
+   },
+   "trace_stages": {
+    "json_dom_parse": {
+     "median": 194244.0,
+     "min": 191043.0,
+     "max": 195881.0,
+     "spread_pct": 2.49,
+     "n": 3
+    },
+    "chart_typed_read": {
+     "median": 85971.0,
+     "min": 83265.0,
+     "max": 88073.0,
+     "spread_pct": 5.59,
+     "n": 3
+    },
+    "chart_canonical_write": {
+     "median": 154564.0,
+     "min": 152945.0,
+     "max": 154599.0,
+     "spread_pct": 1.07,
+     "n": 3
+    },
+    "load_chart": {
+     "median": 432190.0,
+     "min": 430036.0,
+     "max": 438604.0,
+     "spread_pct": 1.98,
+     "n": 3
+    },
+    "load_canonical": {
+     "median": 4235.0,
+     "min": 4223.0,
+     "max": 4253.0,
+     "spread_pct": 0.71,
+     "n": 3
+    },
+    "load_document": {
+     "median": 436453.0,
+     "min": 434324.0,
+     "max": 442877.0,
+     "spread_pct": 1.96,
+     "n": 3
+    },
+    "resolve_parameters": {
+     "median": 5.0,
+     "min": 4.0,
+     "max": 6.0,
+     "spread_pct": 40.0,
+     "n": 3
+    },
+    "preflight": {
+     "median": 11.0,
+     "min": 10.0,
+     "max": 14.0,
+     "spread_pct": 36.36,
+     "n": 3
+    },
+    "animation_compile": {
+     "median": 9.0,
+     "min": 9.0,
+     "max": 38.0,
+     "spread_pct": 322.22,
+     "n": 3
+    },
+    "chart_compile": {
+     "median": 19105.0,
+     "min": 18370.0,
+     "max": 19262.0,
+     "spread_pct": 4.67,
+     "n": 3
+    },
+    "resources": {
+     "median": 28.0,
+     "min": 27.0,
+     "max": 29.0,
+     "spread_pct": 7.14,
+     "n": 3
+    },
+    "audio": {
+     "median": 3.0,
+     "min": 3.0,
+     "max": 6.0,
+     "spread_pct": 100.0,
+     "n": 3
+    },
+    "runtime": {
+     "median": 51171.0,
+     "min": 50933.0,
+     "max": 51399.0,
+     "spread_pct": 0.91,
+     "n": 3
+    },
+    "presentation": {
+     "median": 556.0,
+     "min": 527.0,
+     "max": 564.0,
+     "spread_pct": 6.65,
+     "n": 3
+    },
+    "commit_runtime": {
+     "median": 6.0,
+     "min": 5.0,
+     "max": 6.0,
+     "spread_pct": 16.67,
+     "n": 3
+    },
+    "commit_frame": {
+     "median": 2.0,
+     "min": 1.0,
+     "max": 2.0,
+     "spread_pct": 50.0,
+     "n": 3
+    },
+    "snapshot_layout": {
+     "median": 4603.0,
+     "min": 4528.0,
+     "max": 4697.0,
+     "spread_pct": 3.67,
+     "n": 3
+    },
+    "identity": {
+     "median": 15.0,
+     "min": 14.0,
+     "max": 15.0,
+     "spread_pct": 6.67,
+     "n": 3
+    },
+    "assemble": {
+     "median": 417.0,
+     "min": 395.0,
+     "max": 473.0,
+     "spread_pct": 18.71,
+     "n": 3
+    }
+   }
+  }
+ },
+ "samples": [
+  {
+   "arm": "C-traced-1800",
+   "index": 0,
+   "entities": 1800,
+   "mode": "static",
+   "traced": true,
+   "returncode": 0,
+   "wall_s": 0.784,
+   "stages_us": {
+    "fixture_source": 3561.1,
+    "playback_prepare": 78258.5,
+    "sdl_runtime": 59568.6,
+    "gl_context": 15.2,
+    "window_create": 244742.3,
+    "backend_create": 12125.8,
+    "pixel_readback": 5.2,
+    "renderer_prepare": 382.1,
+    "session_commit": 10.9,
+    "backend_activate": 2.2,
+    "first_update": 402.5,
+    "first_extract": 533.3,
+    "first_submit": 3271.0,
+    "first_present": 99.8
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 109422.4,
+      "abs_us": 250977.4
+     }
+    ],
+    "window": {
+     "at_us": 386382.3,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 403568.9,
+    "total": {
+     "first_present_us": 403574.2
+    }
+   },
+   "trace_events": [
+    {
+     "event": "end",
+     "stage": "json_dom_parse",
+     "elapsed_us": 30268.0,
+     "abs_us": 87460403522.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_typed_read",
+     "elapsed_us": 14260.0,
+     "abs_us": 87460417808.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_canonical_write",
+     "elapsed_us": 20210.0,
+     "abs_us": 87460438032.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_chart",
+     "elapsed_us": 64812.0,
+     "abs_us": 87460438057.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_canonical",
+     "elapsed_us": 788.0,
+     "abs_us": 87460438849.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_document",
+     "elapsed_us": 65628.0,
+     "abs_us": 87460438856.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resolve_parameters",
+     "elapsed_us": 4.0,
+     "abs_us": 87460438863.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "preflight",
+     "elapsed_us": 10.0,
+     "abs_us": 87460438876.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "animation_compile",
+     "elapsed_us": 12.0,
+     "abs_us": 87460438890.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_compile",
+     "elapsed_us": 2731.0,
+     "abs_us": 87460441626.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resources",
+     "elapsed_us": 23.0,
+     "abs_us": 87460441657.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "audio",
+     "elapsed_us": 3.0,
+     "abs_us": 87460441661.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "runtime",
+     "elapsed_us": 8498.0,
+     "abs_us": 87460450162.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "presentation",
+     "elapsed_us": 147.0,
+     "abs_us": 87460450324.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_runtime",
+     "elapsed_us": 5.0,
+     "abs_us": 87460450334.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_frame",
+     "elapsed_us": 2.0,
+     "abs_us": 87460450338.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "snapshot_layout",
+     "elapsed_us": 821.0,
+     "abs_us": 87460451160.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "identity",
+     "elapsed_us": 13.0,
+     "abs_us": 87460451180.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "assemble",
+     "elapsed_us": 113.0,
+     "abs_us": 87460451294.0,
+     "begin_us": null
+    }
+   ],
+   "trace_stages_us": {
+    "json_dom_parse": 30268.0,
+    "chart_typed_read": 14260.0,
+    "chart_canonical_write": 20210.0,
+    "load_chart": 64812.0,
+    "load_canonical": 788.0,
+    "load_document": 65628.0,
+    "resolve_parameters": 4.0,
+    "preflight": 10.0,
+    "animation_compile": 12.0,
+    "chart_compile": 2731.0,
+    "resources": 23.0,
+    "audio": 3.0,
+    "runtime": 8498.0,
+    "presentation": 147.0,
+    "commit_runtime": 5.0,
+    "commit_frame": 2.0,
+    "snapshot_layout": 821.0,
+    "identity": 13.0,
+    "assemble": 113.0
+   },
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "C-traced-1800",
+   "index": 1,
+   "entities": 1800,
+   "mode": "static",
+   "traced": true,
+   "returncode": 0,
+   "wall_s": 0.752,
+   "stages_us": {
+    "fixture_source": 3538.0,
+    "playback_prepare": 77935.3,
+    "sdl_runtime": 58166.1,
+    "gl_context": 15.1,
+    "window_create": 226565.4,
+    "backend_create": 11261.8,
+    "pixel_readback": 5.6,
+    "renderer_prepare": 340.8,
+    "session_commit": 10.8,
+    "backend_activate": 2.0,
+    "first_update": 358.8,
+    "first_extract": 552.3,
+    "first_submit": 3385.2,
+    "first_present": 80.5
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 111383.29999999999,
+      "abs_us": 251180.3
+     }
+    ],
+    "window": {
+     "at_us": 366440.3,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 382725.2,
+    "total": {
+     "first_present_us": 382731
+    }
+   },
+   "trace_events": [
+    {
+     "event": "end",
+     "stage": "json_dom_parse",
+     "elapsed_us": 29760.0,
+     "abs_us": 87461182756.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_typed_read",
+     "elapsed_us": 14286.0,
+     "abs_us": 87461197066.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_canonical_write",
+     "elapsed_us": 20720.0,
+     "abs_us": 87461217798.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_chart",
+     "elapsed_us": 64835.0,
+     "abs_us": 87461217823.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_canonical",
+     "elapsed_us": 785.0,
+     "abs_us": 87461218612.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_document",
+     "elapsed_us": 65648.0,
+     "abs_us": 87461218619.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resolve_parameters",
+     "elapsed_us": 5.0,
+     "abs_us": 87461218626.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "preflight",
+     "elapsed_us": 10.0,
+     "abs_us": 87461218641.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "animation_compile",
+     "elapsed_us": 9.0,
+     "abs_us": 87461218652.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_compile",
+     "elapsed_us": 2763.0,
+     "abs_us": 87461221422.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resources",
+     "elapsed_us": 23.0,
+     "abs_us": 87461221453.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "audio",
+     "elapsed_us": 3.0,
+     "abs_us": 87461221460.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "runtime",
+     "elapsed_us": 8287.0,
+     "abs_us": 87461229750.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "presentation",
+     "elapsed_us": 148.0,
+     "abs_us": 87461229910.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_runtime",
+     "elapsed_us": 5.0,
+     "abs_us": 87461229919.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_frame",
+     "elapsed_us": 2.0,
+     "abs_us": 87461229923.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "snapshot_layout",
+     "elapsed_us": 683.0,
+     "abs_us": 87461230607.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "identity",
+     "elapsed_us": 12.0,
+     "abs_us": 87461230626.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "assemble",
+     "elapsed_us": 92.0,
+     "abs_us": 87461230722.0,
+     "begin_us": null
+    }
+   ],
+   "trace_stages_us": {
+    "json_dom_parse": 29760.0,
+    "chart_typed_read": 14286.0,
+    "chart_canonical_write": 20720.0,
+    "load_chart": 64835.0,
+    "load_canonical": 785.0,
+    "load_document": 65648.0,
+    "resolve_parameters": 5.0,
+    "preflight": 10.0,
+    "animation_compile": 9.0,
+    "chart_compile": 2763.0,
+    "resources": 23.0,
+    "audio": 3.0,
+    "runtime": 8287.0,
+    "presentation": 148.0,
+    "commit_runtime": 5.0,
+    "commit_frame": 2.0,
+    "snapshot_layout": 683.0,
+    "identity": 12.0,
+    "assemble": 92.0
+   },
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "C-traced-1800",
+   "index": 2,
+   "entities": 1800,
+   "mode": "static",
+   "traced": true,
+   "returncode": 0,
+   "wall_s": 0.736,
+   "stages_us": {
+    "fixture_source": 3682.5,
+    "playback_prepare": 78894.1,
+    "sdl_runtime": 57794.3,
+    "gl_context": 16.2,
+    "window_create": 225566.9,
+    "backend_create": 10832.5,
+    "pixel_readback": 4.9,
+    "renderer_prepare": 348.1,
+    "session_commit": 9.9,
+    "backend_activate": 2.5,
+    "first_update": 332.6,
+    "first_extract": 568.7,
+    "first_submit": 3315.1,
+    "first_present": 75.3
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 110119.79999999999,
+      "abs_us": 250656.8
+     }
+    ],
+    "window": {
+     "at_us": 366629.4,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 382465.1,
+    "total": {
+     "first_present_us": 382469.8
+    }
+   },
+   "trace_events": [
+    {
+     "event": "end",
+     "stage": "json_dom_parse",
+     "elapsed_us": 29556.0,
+     "abs_us": 87461938362.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_typed_read",
+     "elapsed_us": 14692.0,
+     "abs_us": 87461953078.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_canonical_write",
+     "elapsed_us": 20444.0,
+     "abs_us": 87461973536.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_chart",
+     "elapsed_us": 64763.0,
+     "abs_us": 87461973560.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_canonical",
+     "elapsed_us": 773.0,
+     "abs_us": 87461974336.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_document",
+     "elapsed_us": 65564.0,
+     "abs_us": 87461974344.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resolve_parameters",
+     "elapsed_us": 5.0,
+     "abs_us": 87461974351.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "preflight",
+     "elapsed_us": 9.0,
+     "abs_us": 87461974363.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "animation_compile",
+     "elapsed_us": 8.0,
+     "abs_us": 87461974373.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_compile",
+     "elapsed_us": 2756.0,
+     "abs_us": 87461977134.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resources",
+     "elapsed_us": 23.0,
+     "abs_us": 87461977166.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "audio",
+     "elapsed_us": 2.0,
+     "abs_us": 87461977170.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "runtime",
+     "elapsed_us": 9084.0,
+     "abs_us": 87461986257.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "presentation",
+     "elapsed_us": 145.0,
+     "abs_us": 87461986421.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_runtime",
+     "elapsed_us": 4.0,
+     "abs_us": 87461986429.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_frame",
+     "elapsed_us": 1.0,
+     "abs_us": 87461986433.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "snapshot_layout",
+     "elapsed_us": 909.0,
+     "abs_us": 87461987344.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "identity",
+     "elapsed_us": 12.0,
+     "abs_us": 87461987366.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "assemble",
+     "elapsed_us": 98.0,
+     "abs_us": 87461987468.0,
+     "begin_us": null
+    }
+   ],
+   "trace_stages_us": {
+    "json_dom_parse": 29556.0,
+    "chart_typed_read": 14692.0,
+    "chart_canonical_write": 20444.0,
+    "load_chart": 64763.0,
+    "load_canonical": 773.0,
+    "load_document": 65564.0,
+    "resolve_parameters": 5.0,
+    "preflight": 9.0,
+    "animation_compile": 8.0,
+    "chart_compile": 2756.0,
+    "resources": 23.0,
+    "audio": 2.0,
+    "runtime": 9084.0,
+    "presentation": 145.0,
+    "commit_runtime": 4.0,
+    "commit_frame": 1.0,
+    "snapshot_layout": 909.0,
+    "identity": 12.0,
+    "assemble": 98.0
+   },
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "D-traced-2400",
+   "index": 0,
+   "entities": 2400,
+   "mode": "static",
+   "traced": true,
+   "returncode": 0,
+   "wall_s": 0.799,
+   "stages_us": {
+    "fixture_source": 4443.4,
+    "playback_prepare": 113571.7,
+    "sdl_runtime": 57802.9,
+    "gl_context": 14.0,
+    "window_create": 226907.8,
+    "backend_create": 11750.1,
+    "pixel_readback": 5.5,
+    "renderer_prepare": 338.4,
+    "session_commit": 11.9,
+    "backend_activate": 2.1,
+    "first_update": 477.4,
+    "first_extract": 737.0,
+    "first_submit": 3796.5,
+    "first_present": 89.5
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 74877.5,
+      "abs_us": 250844.5
+     }
+    ],
+    "window": {
+     "at_us": 402965.9,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 420531.5,
+    "total": {
+     "first_present_us": 420536.8
+    }
+   },
+   "trace_events": [
+    {
+     "event": "end",
+     "stage": "json_dom_parse",
+     "elapsed_us": 43321.0,
+     "abs_us": 87462690956.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_typed_read",
+     "elapsed_us": 20204.0,
+     "abs_us": 87462711186.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_canonical_write",
+     "elapsed_us": 30969.0,
+     "abs_us": 87462742173.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_chart",
+     "elapsed_us": 94572.0,
+     "abs_us": 87462742198.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_canonical",
+     "elapsed_us": 1027.0,
+     "abs_us": 87462743229.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_document",
+     "elapsed_us": 95629.0,
+     "abs_us": 87462743236.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resolve_parameters",
+     "elapsed_us": 5.0,
+     "abs_us": 87462743243.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "preflight",
+     "elapsed_us": 12.0,
+     "abs_us": 87462743258.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "animation_compile",
+     "elapsed_us": 9.0,
+     "abs_us": 87462743271.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_compile",
+     "elapsed_us": 3750.0,
+     "abs_us": 87462747026.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resources",
+     "elapsed_us": 23.0,
+     "abs_us": 87462747057.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "audio",
+     "elapsed_us": 3.0,
+     "abs_us": 87462747064.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "runtime",
+     "elapsed_us": 12446.0,
+     "abs_us": 87462759512.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "presentation",
+     "elapsed_us": 176.0,
+     "abs_us": 87462759703.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_runtime",
+     "elapsed_us": 5.0,
+     "abs_us": 87462759713.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_frame",
+     "elapsed_us": 2.0,
+     "abs_us": 87462759717.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "snapshot_layout",
+     "elapsed_us": 1036.0,
+     "abs_us": 87462760756.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "identity",
+     "elapsed_us": 12.0,
+     "abs_us": 87462760775.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "assemble",
+     "elapsed_us": 141.0,
+     "abs_us": 87462760920.0,
+     "begin_us": null
+    }
+   ],
+   "trace_stages_us": {
+    "json_dom_parse": 43321.0,
+    "chart_typed_read": 20204.0,
+    "chart_canonical_write": 30969.0,
+    "load_chart": 94572.0,
+    "load_canonical": 1027.0,
+    "load_document": 95629.0,
+    "resolve_parameters": 5.0,
+    "preflight": 12.0,
+    "animation_compile": 9.0,
+    "chart_compile": 3750.0,
+    "resources": 23.0,
+    "audio": 3.0,
+    "runtime": 12446.0,
+    "presentation": 176.0,
+    "commit_runtime": 5.0,
+    "commit_frame": 2.0,
+    "snapshot_layout": 1036.0,
+    "identity": 12.0,
+    "assemble": 141.0
+   },
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "D-traced-2400",
+   "index": 1,
+   "entities": 2400,
+   "mode": "static",
+   "traced": true,
+   "returncode": 0,
+   "wall_s": 0.818,
+   "stages_us": {
+    "fixture_source": 4386.4,
+    "playback_prepare": 120143.2,
+    "sdl_runtime": 58029.0,
+    "gl_context": 12.6,
+    "window_create": 236458.6,
+    "backend_create": 13271.3,
+    "pixel_readback": 5.1,
+    "renderer_prepare": 356.1,
+    "session_commit": 11.1,
+    "backend_activate": 2.4,
+    "first_update": 660.9,
+    "first_extract": 772.9,
+    "first_submit": 3752.2,
+    "first_present": 92.3
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 68433.5,
+      "abs_us": 251150.5
+     }
+    ],
+    "window": {
+     "at_us": 419371.4,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 438721.8,
+    "total": {
+     "first_present_us": 438730.5
+    }
+   },
+   "trace_events": [
+    {
+     "event": "end",
+     "stage": "json_dom_parse",
+     "elapsed_us": 47309.0,
+     "abs_us": 87463501773.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_typed_read",
+     "elapsed_us": 19953.0,
+     "abs_us": 87463521748.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_canonical_write",
+     "elapsed_us": 33661.0,
+     "abs_us": 87463555428.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_chart",
+     "elapsed_us": 101006.0,
+     "abs_us": 87463555461.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_canonical",
+     "elapsed_us": 1028.0,
+     "abs_us": 87463556493.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_document",
+     "elapsed_us": 102064.0,
+     "abs_us": 87463556502.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resolve_parameters",
+     "elapsed_us": 4.0,
+     "abs_us": 87463556508.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "preflight",
+     "elapsed_us": 10.0,
+     "abs_us": 87463556521.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "animation_compile",
+     "elapsed_us": 12.0,
+     "abs_us": 87463556534.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_compile",
+     "elapsed_us": 3871.0,
+     "abs_us": 87463560413.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resources",
+     "elapsed_us": 23.0,
+     "abs_us": 87463560446.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "audio",
+     "elapsed_us": 3.0,
+     "abs_us": 87463560453.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "runtime",
+     "elapsed_us": 12548.0,
+     "abs_us": 87463573004.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "presentation",
+     "elapsed_us": 180.0,
+     "abs_us": 87463573201.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_runtime",
+     "elapsed_us": 5.0,
+     "abs_us": 87463573210.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_frame",
+     "elapsed_us": 2.0,
+     "abs_us": 87463573215.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "snapshot_layout",
+     "elapsed_us": 957.0,
+     "abs_us": 87463574173.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "identity",
+     "elapsed_us": 13.0,
+     "abs_us": 87463574193.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "assemble",
+     "elapsed_us": 124.0,
+     "abs_us": 87463574318.0,
+     "begin_us": null
+    }
+   ],
+   "trace_stages_us": {
+    "json_dom_parse": 47309.0,
+    "chart_typed_read": 19953.0,
+    "chart_canonical_write": 33661.0,
+    "load_chart": 101006.0,
+    "load_canonical": 1028.0,
+    "load_document": 102064.0,
+    "resolve_parameters": 4.0,
+    "preflight": 10.0,
+    "animation_compile": 12.0,
+    "chart_compile": 3871.0,
+    "resources": 23.0,
+    "audio": 3.0,
+    "runtime": 12548.0,
+    "presentation": 180.0,
+    "commit_runtime": 5.0,
+    "commit_frame": 2.0,
+    "snapshot_layout": 957.0,
+    "identity": 13.0,
+    "assemble": 124.0
+   },
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "D-traced-2400",
+   "index": 2,
+   "entities": 2400,
+   "mode": "static",
+   "traced": true,
+   "returncode": 0,
+   "wall_s": 0.797,
+   "stages_us": {
+    "fixture_source": 4462.4,
+    "playback_prepare": 125448.8,
+    "sdl_runtime": 57874.0,
+    "gl_context": 12.2,
+    "window_create": 232692.4,
+    "backend_create": 11696.8,
+    "pixel_readback": 5.6,
+    "renderer_prepare": 382.4,
+    "session_commit": 10.9,
+    "backend_activate": 2.2,
+    "first_update": 498.1,
+    "first_extract": 748.2,
+    "first_submit": 3730.0,
+    "first_present": 85.0
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 62911.100000000006,
+      "abs_us": 250844.1
+     }
+    ],
+    "window": {
+     "at_us": 420716.3,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 438275.3,
+    "total": {
+     "first_present_us": 438279.9
+    }
+   },
+   "trace_events": [
+    {
+     "event": "end",
+     "stage": "json_dom_parse",
+     "elapsed_us": 50499.0,
+     "abs_us": 87464320927.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_typed_read",
+     "elapsed_us": 20476.0,
+     "abs_us": 87464341425.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_canonical_write",
+     "elapsed_us": 35040.0,
+     "abs_us": 87464376482.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_chart",
+     "elapsed_us": 106091.0,
+     "abs_us": 87464376509.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_canonical",
+     "elapsed_us": 1040.0,
+     "abs_us": 87464377554.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_document",
+     "elapsed_us": 107165.0,
+     "abs_us": 87464377565.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resolve_parameters",
+     "elapsed_us": 6.0,
+     "abs_us": 87464377574.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "preflight",
+     "elapsed_us": 21.0,
+     "abs_us": 87464377601.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "animation_compile",
+     "elapsed_us": 13.0,
+     "abs_us": 87464377621.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_compile",
+     "elapsed_us": 4017.0,
+     "abs_us": 87464381645.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resources",
+     "elapsed_us": 26.0,
+     "abs_us": 87464381684.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "audio",
+     "elapsed_us": 3.0,
+     "abs_us": 87464381691.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "runtime",
+     "elapsed_us": 12390.0,
+     "abs_us": 87464394084.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "presentation",
+     "elapsed_us": 185.0,
+     "abs_us": 87464394288.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_runtime",
+     "elapsed_us": 5.0,
+     "abs_us": 87464394297.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_frame",
+     "elapsed_us": 2.0,
+     "abs_us": 87464394302.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "snapshot_layout",
+     "elapsed_us": 1098.0,
+     "abs_us": 87464395401.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "identity",
+     "elapsed_us": 13.0,
+     "abs_us": 87464395423.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "assemble",
+     "elapsed_us": 128.0,
+     "abs_us": 87464395555.0,
+     "begin_us": null
+    }
+   ],
+   "trace_stages_us": {
+    "json_dom_parse": 50499.0,
+    "chart_typed_read": 20476.0,
+    "chart_canonical_write": 35040.0,
+    "load_chart": 106091.0,
+    "load_canonical": 1040.0,
+    "load_document": 107165.0,
+    "resolve_parameters": 6.0,
+    "preflight": 21.0,
+    "animation_compile": 13.0,
+    "chart_compile": 4017.0,
+    "resources": 26.0,
+    "audio": 3.0,
+    "runtime": 12390.0,
+    "presentation": 185.0,
+    "commit_runtime": 5.0,
+    "commit_frame": 2.0,
+    "snapshot_layout": 1098.0,
+    "identity": 13.0,
+    "assemble": 128.0
+   },
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "E-traced-2800",
+   "index": 0,
+   "entities": 2800,
+   "mode": "static",
+   "traced": true,
+   "returncode": 0,
+   "wall_s": 0.817,
+   "stages_us": {
+    "fixture_source": 5085.8,
+    "playback_prepare": 136084.5,
+    "sdl_runtime": 59079.4,
+    "gl_context": 18.0,
+    "window_create": 225032.4,
+    "backend_create": 11592.6,
+    "pixel_readback": 5.5,
+    "renderer_prepare": 354.1,
+    "session_commit": 17.8,
+    "backend_activate": 1.7,
+    "first_update": 531.3,
+    "first_extract": 832.6,
+    "first_submit": 4214.5,
+    "first_present": 86.5
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 50982.600000000006,
+      "abs_us": 251400.6
+     }
+    ],
+    "window": {
+     "at_us": 425555.3,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 443590.2,
+    "total": {
+     "first_present_us": 443595.3
+    }
+   },
+   "trace_events": [
+    {
+     "event": "end",
+     "stage": "json_dom_parse",
+     "elapsed_us": 51253.0,
+     "abs_us": 87465130613.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_typed_read",
+     "elapsed_us": 23182.0,
+     "abs_us": 87465153822.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_canonical_write",
+     "elapsed_us": 40188.0,
+     "abs_us": 87465194027.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_chart",
+     "elapsed_us": 114703.0,
+     "abs_us": 87465194054.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_canonical",
+     "elapsed_us": 1211.0,
+     "abs_us": 87465195269.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_document",
+     "elapsed_us": 115950.0,
+     "abs_us": 87465195277.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resolve_parameters",
+     "elapsed_us": 4.0,
+     "abs_us": 87465195283.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "preflight",
+     "elapsed_us": 10.0,
+     "abs_us": 87465195297.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "animation_compile",
+     "elapsed_us": 10.0,
+     "abs_us": 87465195310.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_compile",
+     "elapsed_us": 4563.0,
+     "abs_us": 87465199880.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resources",
+     "elapsed_us": 24.0,
+     "abs_us": 87465199913.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "audio",
+     "elapsed_us": 3.0,
+     "abs_us": 87465199920.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "runtime",
+     "elapsed_us": 13360.0,
+     "abs_us": 87465213283.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "presentation",
+     "elapsed_us": 199.0,
+     "abs_us": 87465213501.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_runtime",
+     "elapsed_us": 5.0,
+     "abs_us": 87465213511.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_frame",
+     "elapsed_us": 2.0,
+     "abs_us": 87465213515.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "snapshot_layout",
+     "elapsed_us": 1355.0,
+     "abs_us": 87465214871.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "identity",
+     "elapsed_us": 13.0,
+     "abs_us": 87465214893.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "assemble",
+     "elapsed_us": 146.0,
+     "abs_us": 87465215041.0,
+     "begin_us": null
+    }
+   ],
+   "trace_stages_us": {
+    "json_dom_parse": 51253.0,
+    "chart_typed_read": 23182.0,
+    "chart_canonical_write": 40188.0,
+    "load_chart": 114703.0,
+    "load_canonical": 1211.0,
+    "load_document": 115950.0,
+    "resolve_parameters": 4.0,
+    "preflight": 10.0,
+    "animation_compile": 10.0,
+    "chart_compile": 4563.0,
+    "resources": 24.0,
+    "audio": 3.0,
+    "runtime": 13360.0,
+    "presentation": 199.0,
+    "commit_runtime": 5.0,
+    "commit_frame": 2.0,
+    "snapshot_layout": 1355.0,
+    "identity": 13.0,
+    "assemble": 146.0
+   },
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "E-traced-2800",
+   "index": 1,
+   "entities": 2800,
+   "mode": "static",
+   "traced": true,
+   "returncode": 0,
+   "wall_s": 0.818,
+   "stages_us": {
+    "fixture_source": 5083.7,
+    "playback_prepare": 137279.3,
+    "sdl_runtime": 58602.6,
+    "gl_context": 12.3,
+    "window_create": 224051.6,
+    "backend_create": 11586.3,
+    "pixel_readback": 5.7,
+    "renderer_prepare": 331.4,
+    "session_commit": 10.2,
+    "backend_activate": 3.3,
+    "first_update": 514.0,
+    "first_extract": 784.7,
+    "first_submit": 4327.7,
+    "first_present": 87.1
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 49945.79999999999,
+      "abs_us": 251065.8
+     }
+    ],
+    "window": {
+     "at_us": 425325.6,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 443414.5,
+    "total": {
+     "first_present_us": 443420.1
+    }
+   },
+   "trace_events": [
+    {
+     "event": "end",
+     "stage": "json_dom_parse",
+     "elapsed_us": 52391.0,
+     "abs_us": 87465946939.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_typed_read",
+     "elapsed_us": 23093.0,
+     "abs_us": 87465970051.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_canonical_write",
+     "elapsed_us": 40314.0,
+     "abs_us": 87466010382.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_chart",
+     "elapsed_us": 115870.0,
+     "abs_us": 87466010407.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_canonical",
+     "elapsed_us": 1212.0,
+     "abs_us": 87466011623.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_document",
+     "elapsed_us": 117116.0,
+     "abs_us": 87466011633.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resolve_parameters",
+     "elapsed_us": 5.0,
+     "abs_us": 87466011640.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "preflight",
+     "elapsed_us": 11.0,
+     "abs_us": 87466011654.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "animation_compile",
+     "elapsed_us": 8.0,
+     "abs_us": 87466011664.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_compile",
+     "elapsed_us": 4604.0,
+     "abs_us": 87466016276.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resources",
+     "elapsed_us": 24.0,
+     "abs_us": 87466016313.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "audio",
+     "elapsed_us": 2.0,
+     "abs_us": 87466016317.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "runtime",
+     "elapsed_us": 13400.0,
+     "abs_us": 87466029720.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "presentation",
+     "elapsed_us": 200.0,
+     "abs_us": 87466029939.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_runtime",
+     "elapsed_us": 6.0,
+     "abs_us": 87466029950.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_frame",
+     "elapsed_us": 2.0,
+     "abs_us": 87466029954.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "snapshot_layout",
+     "elapsed_us": 1343.0,
+     "abs_us": 87466031298.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "identity",
+     "elapsed_us": 13.0,
+     "abs_us": 87466031319.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "assemble",
+     "elapsed_us": 151.0,
+     "abs_us": 87466031472.0,
+     "begin_us": null
+    }
+   ],
+   "trace_stages_us": {
+    "json_dom_parse": 52391.0,
+    "chart_typed_read": 23093.0,
+    "chart_canonical_write": 40314.0,
+    "load_chart": 115870.0,
+    "load_canonical": 1212.0,
+    "load_document": 117116.0,
+    "resolve_parameters": 5.0,
+    "preflight": 11.0,
+    "animation_compile": 8.0,
+    "chart_compile": 4604.0,
+    "resources": 24.0,
+    "audio": 2.0,
+    "runtime": 13400.0,
+    "presentation": 200.0,
+    "commit_runtime": 6.0,
+    "commit_frame": 2.0,
+    "snapshot_layout": 1343.0,
+    "identity": 13.0,
+    "assemble": 151.0
+   },
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "E-traced-2800",
+   "index": 2,
+   "entities": 2800,
+   "mode": "static",
+   "traced": true,
+   "returncode": 0,
+   "wall_s": 0.832,
+   "stages_us": {
+    "fixture_source": 5186.3,
+    "playback_prepare": 142765.2,
+    "sdl_runtime": 59557.2,
+    "gl_context": 22.0,
+    "window_create": 232889.5,
+    "backend_create": 11237.6,
+    "pixel_readback": 5.0,
+    "renderer_prepare": 428.3,
+    "session_commit": 11.6,
+    "backend_activate": 2.0,
+    "first_update": 593.1,
+    "first_extract": 933.2,
+    "first_submit": 4382.5,
+    "first_present": 85.0
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 43762.399999999994,
+      "abs_us": 251433.4
+     }
+    ],
+    "window": {
+     "at_us": 440711.2,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 459149.7,
+    "total": {
+     "first_present_us": 459157.8
+    }
+   },
+   "trace_events": [
+    {
+     "event": "end",
+     "stage": "json_dom_parse",
+     "elapsed_us": 54162.0,
+     "abs_us": 87466772139.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_typed_read",
+     "elapsed_us": 24196.0,
+     "abs_us": 87466796357.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_canonical_write",
+     "elapsed_us": 41930.0,
+     "abs_us": 87466838303.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_chart",
+     "elapsed_us": 120359.0,
+     "abs_us": 87466838327.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_canonical",
+     "elapsed_us": 1210.0,
+     "abs_us": 87466839541.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_document",
+     "elapsed_us": 121601.0,
+     "abs_us": 87466839548.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resolve_parameters",
+     "elapsed_us": 5.0,
+     "abs_us": 87466839555.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "preflight",
+     "elapsed_us": 9.0,
+     "abs_us": 87466839567.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "animation_compile",
+     "elapsed_us": 13.0,
+     "abs_us": 87466839582.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_compile",
+     "elapsed_us": 4793.0,
+     "abs_us": 87466844383.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resources",
+     "elapsed_us": 24.0,
+     "abs_us": 87466844417.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "audio",
+     "elapsed_us": 4.0,
+     "abs_us": 87466844423.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "runtime",
+     "elapsed_us": 14159.0,
+     "abs_us": 87466858585.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "presentation",
+     "elapsed_us": 198.0,
+     "abs_us": 87466858802.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_runtime",
+     "elapsed_us": 6.0,
+     "abs_us": 87466858812.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_frame",
+     "elapsed_us": 2.0,
+     "abs_us": 87466858816.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "snapshot_layout",
+     "elapsed_us": 1392.0,
+     "abs_us": 87466860209.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "identity",
+     "elapsed_us": 13.0,
+     "abs_us": 87466860230.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "assemble",
+     "elapsed_us": 147.0,
+     "abs_us": 87466860379.0,
+     "begin_us": null
+    }
+   ],
+   "trace_stages_us": {
+    "json_dom_parse": 54162.0,
+    "chart_typed_read": 24196.0,
+    "chart_canonical_write": 41930.0,
+    "load_chart": 120359.0,
+    "load_canonical": 1210.0,
+    "load_document": 121601.0,
+    "resolve_parameters": 5.0,
+    "preflight": 9.0,
+    "animation_compile": 13.0,
+    "chart_compile": 4793.0,
+    "resources": 24.0,
+    "audio": 4.0,
+    "runtime": 14159.0,
+    "presentation": 198.0,
+    "commit_runtime": 6.0,
+    "commit_frame": 2.0,
+    "snapshot_layout": 1392.0,
+    "identity": 13.0,
+    "assemble": 147.0
+   },
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "F-traced-10000",
+   "index": 0,
+   "entities": 10000,
+   "mode": "static",
+   "traced": true,
+   "returncode": 0,
+   "wall_s": 1.291,
+   "stages_us": {
+    "fixture_source": 16471.9,
+    "playback_prepare": 514186.1,
+    "sdl_runtime": 58292.6,
+    "gl_context": 13.3,
+    "window_create": 232158.1,
+    "backend_create": 11795.8,
+    "pixel_readback": 4.5,
+    "renderer_prepare": 373.1,
+    "session_commit": 10.5,
+    "backend_activate": 1.8,
+    "first_update": 1732.8,
+    "first_extract": 2921.5,
+    "first_submit": 11825.8,
+    "first_present": 108.3
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 247317.3,
+      "abs_us": 263882.3
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 500727.2,
+      "abs_us": 517292.2
+     },
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 178901.59999999998,
+      "abs_us": 768040.6
+     }
+    ],
+    "window": {
+     "at_us": 821387.5,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 851180.6,
+    "total": {
+     "first_present_us": 851190.7
+    }
+   },
+   "trace_events": [
+    {
+     "event": "end",
+     "stage": "json_dom_parse",
+     "elapsed_us": 194244.0,
+     "abs_us": 87467758016.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_typed_read",
+     "elapsed_us": 83265.0,
+     "abs_us": 87467841305.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_canonical_write",
+     "elapsed_us": 154599.0,
+     "abs_us": 87467995927.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_chart",
+     "elapsed_us": 432190.0,
+     "abs_us": 87467995951.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_canonical",
+     "elapsed_us": 4223.0,
+     "abs_us": 87468000179.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_document",
+     "elapsed_us": 436453.0,
+     "abs_us": 87468000190.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resolve_parameters",
+     "elapsed_us": 4.0,
+     "abs_us": 87468000196.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "preflight",
+     "elapsed_us": 10.0,
+     "abs_us": 87468000210.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "animation_compile",
+     "elapsed_us": 9.0,
+     "abs_us": 87468000220.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_compile",
+     "elapsed_us": 19262.0,
+     "abs_us": 87468019486.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resources",
+     "elapsed_us": 27.0,
+     "abs_us": 87468019539.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "audio",
+     "elapsed_us": 3.0,
+     "abs_us": 87468019544.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "runtime",
+     "elapsed_us": 51399.0,
+     "abs_us": 87468070946.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "presentation",
+     "elapsed_us": 527.0,
+     "abs_us": 87468071494.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_runtime",
+     "elapsed_us": 5.0,
+     "abs_us": 87468071506.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_frame",
+     "elapsed_us": 2.0,
+     "abs_us": 87468071511.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "snapshot_layout",
+     "elapsed_us": 4697.0,
+     "abs_us": 87468076209.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "identity",
+     "elapsed_us": 15.0,
+     "abs_us": 87468076235.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "assemble",
+     "elapsed_us": 395.0,
+     "abs_us": 87468076632.0,
+     "begin_us": null
+    }
+   ],
+   "trace_stages_us": {
+    "json_dom_parse": 194244.0,
+    "chart_typed_read": 83265.0,
+    "chart_canonical_write": 154599.0,
+    "load_chart": 432190.0,
+    "load_canonical": 4223.0,
+    "load_document": 436453.0,
+    "resolve_parameters": 4.0,
+    "preflight": 10.0,
+    "animation_compile": 9.0,
+    "chart_compile": 19262.0,
+    "resources": 27.0,
+    "audio": 3.0,
+    "runtime": 51399.0,
+    "presentation": 527.0,
+    "commit_runtime": 5.0,
+    "commit_frame": 2.0,
+    "snapshot_layout": 4697.0,
+    "identity": 15.0,
+    "assemble": 395.0
+   },
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "F-traced-10000",
+   "index": 1,
+   "entities": 10000,
+   "mode": "static",
+   "traced": true,
+   "returncode": 0,
+   "wall_s": 1.273,
+   "stages_us": {
+    "fixture_source": 16106.0,
+    "playback_prepare": 520094.1,
+    "sdl_runtime": 59510.0,
+    "gl_context": 13.3,
+    "window_create": 224059.7,
+    "backend_create": 11661.6,
+    "pixel_readback": 5.8,
+    "renderer_prepare": 360.3,
+    "session_commit": 12.0,
+    "backend_activate": 2.1,
+    "first_update": 1619.9,
+    "first_extract": 2832.4,
+    "first_submit": 11863.3,
+    "first_present": 119.0
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 241731.6,
+      "abs_us": 257923.6
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 496086.2,
+      "abs_us": 512278.2
+     },
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 166981.69999999995,
+      "abs_us": 762873.7
+     }
+    ],
+    "window": {
+     "at_us": 820071.1,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 849513.4,
+    "total": {
+     "first_present_us": 849520.6
+    }
+   },
+   "trace_events": [
+    {
+     "event": "end",
+     "stage": "json_dom_parse",
+     "elapsed_us": 195881.0,
+     "abs_us": 87469045315.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_typed_read",
+     "elapsed_us": 88073.0,
+     "abs_us": 87469133412.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_canonical_write",
+     "elapsed_us": 154564.0,
+     "abs_us": 87469288001.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_chart",
+     "elapsed_us": 438604.0,
+     "abs_us": 87469288028.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_canonical",
+     "elapsed_us": 4235.0,
+     "abs_us": 87469292268.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_document",
+     "elapsed_us": 442877.0,
+     "abs_us": 87469292281.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resolve_parameters",
+     "elapsed_us": 5.0,
+     "abs_us": 87469292288.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "preflight",
+     "elapsed_us": 11.0,
+     "abs_us": 87469292302.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "animation_compile",
+     "elapsed_us": 9.0,
+     "abs_us": 87469292314.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_compile",
+     "elapsed_us": 19105.0,
+     "abs_us": 87469311427.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resources",
+     "elapsed_us": 29.0,
+     "abs_us": 87469311481.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "audio",
+     "elapsed_us": 3.0,
+     "abs_us": 87469311489.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "runtime",
+     "elapsed_us": 51171.0,
+     "abs_us": 87469362664.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "presentation",
+     "elapsed_us": 564.0,
+     "abs_us": 87469363248.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_runtime",
+     "elapsed_us": 6.0,
+     "abs_us": 87469363260.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_frame",
+     "elapsed_us": 1.0,
+     "abs_us": 87469363264.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "snapshot_layout",
+     "elapsed_us": 4528.0,
+     "abs_us": 87469367794.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "identity",
+     "elapsed_us": 14.0,
+     "abs_us": 87469367820.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "assemble",
+     "elapsed_us": 417.0,
+     "abs_us": 87469368239.0,
+     "begin_us": null
+    }
+   ],
+   "trace_stages_us": {
+    "json_dom_parse": 195881.0,
+    "chart_typed_read": 88073.0,
+    "chart_canonical_write": 154564.0,
+    "load_chart": 438604.0,
+    "load_canonical": 4235.0,
+    "load_document": 442877.0,
+    "resolve_parameters": 5.0,
+    "preflight": 11.0,
+    "animation_compile": 9.0,
+    "chart_compile": 19105.0,
+    "resources": 29.0,
+    "audio": 3.0,
+    "runtime": 51171.0,
+    "presentation": 564.0,
+    "commit_runtime": 6.0,
+    "commit_frame": 1.0,
+    "snapshot_layout": 4528.0,
+    "identity": 14.0,
+    "assemble": 417.0
+   },
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "F-traced-10000",
+   "index": 2,
+   "entities": 10000,
+   "mode": "static",
+   "traced": true,
+   "returncode": 0,
+   "wall_s": 1.284,
+   "stages_us": {
+    "fixture_source": 16229.5,
+    "playback_prepare": 510731.8,
+    "sdl_runtime": 59244.3,
+    "gl_context": 13.4,
+    "window_create": 226457.8,
+    "backend_create": 11383.9,
+    "pixel_readback": 4.6,
+    "renderer_prepare": 321.8,
+    "session_commit": 10.6,
+    "backend_activate": 11.7,
+    "first_update": 1733.2,
+    "first_extract": 2783.5,
+    "first_submit": 12276.6,
+    "first_present": 97.3
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 242149.5,
+      "abs_us": 258457.5
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 493197.4,
+      "abs_us": 509505.4
+     },
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 173295.5,
+      "abs_us": 759661.5
+     }
+    ],
+    "window": {
+     "at_us": 812901.5,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 842493.8,
+    "total": {
+     "first_present_us": 842510.7
+    }
+   },
+   "trace_events": [
+    {
+     "event": "end",
+     "stage": "json_dom_parse",
+     "elapsed_us": 191043.0,
+     "abs_us": 87470325427.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_typed_read",
+     "elapsed_us": 85971.0,
+     "abs_us": 87470411421.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_canonical_write",
+     "elapsed_us": 152945.0,
+     "abs_us": 87470564383.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_chart",
+     "elapsed_us": 430036.0,
+     "abs_us": 87470564411.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_canonical",
+     "elapsed_us": 4253.0,
+     "abs_us": 87470568668.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_document",
+     "elapsed_us": 434324.0,
+     "abs_us": 87470568679.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resolve_parameters",
+     "elapsed_us": 6.0,
+     "abs_us": 87470568687.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "preflight",
+     "elapsed_us": 14.0,
+     "abs_us": 87470568705.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "animation_compile",
+     "elapsed_us": 38.0,
+     "abs_us": 87470568745.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_compile",
+     "elapsed_us": 18370.0,
+     "abs_us": 87470587121.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resources",
+     "elapsed_us": 28.0,
+     "abs_us": 87470587174.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "audio",
+     "elapsed_us": 6.0,
+     "abs_us": 87470587182.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "runtime",
+     "elapsed_us": 50933.0,
+     "abs_us": 87470638118.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "presentation",
+     "elapsed_us": 556.0,
+     "abs_us": 87470638692.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_runtime",
+     "elapsed_us": 6.0,
+     "abs_us": 87470638705.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_frame",
+     "elapsed_us": 2.0,
+     "abs_us": 87470638709.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "snapshot_layout",
+     "elapsed_us": 4603.0,
+     "abs_us": 87470643313.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "identity",
+     "elapsed_us": 15.0,
+     "abs_us": 87470643341.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "assemble",
+     "elapsed_us": 473.0,
+     "abs_us": 87470643815.0,
+     "begin_us": null
+    }
+   ],
+   "trace_stages_us": {
+    "json_dom_parse": 191043.0,
+    "chart_typed_read": 85971.0,
+    "chart_canonical_write": 152945.0,
+    "load_chart": 430036.0,
+    "load_canonical": 4253.0,
+    "load_document": 434324.0,
+    "resolve_parameters": 6.0,
+    "preflight": 14.0,
+    "animation_compile": 38.0,
+    "chart_compile": 18370.0,
+    "resources": 28.0,
+    "audio": 6.0,
+    "runtime": 50933.0,
+    "presentation": 556.0,
+    "commit_runtime": 6.0,
+    "commit_frame": 2.0,
+    "snapshot_layout": 4603.0,
+    "identity": 15.0,
+    "assemble": 473.0
+   },
+   "trace_span_us": 0.0
+  }
+ ]
+}

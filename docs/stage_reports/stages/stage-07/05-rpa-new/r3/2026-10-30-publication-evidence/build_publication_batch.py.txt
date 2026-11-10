@@ -1,0 +1,20 @@
+from pathlib import Path
+import hashlib,json,os,subprocess
+root=Path.cwd();base=Path(__file__).resolve().parent
+source=base/'publication-source-v1';out=base/'publication-build-v1';out.mkdir(exist_ok=False)
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+commands=[]
+def run(args,label):
+ commands.append(dict(label=label,args=args));(out/'commands.json').write_text(json.dumps(commands,indent=2))
+ with (out/(label+'.log')).open('x',encoding='utf-8') as stream:
+  r=subprocess.run(args,stdout=stream,stderr=subprocess.STDOUT)
+ print(label,r.returncode,flush=True)
+ if r.returncode:raise SystemExit(r.returncode)
+run(['cmake','-S',str(source),'-B',str(out),'-G','Ninja','-DCMAKE_BUILD_TYPE=Release','-DCUEXIS_LIBRARY_TYPE=STATIC','-DCUEXIS_VERSION_SUFFIX=exp.candidate','-DCUEXIS_WARNINGS_AS_ERRORS=ON','-DCMAKE_EXPORT_COMPILE_COMMANDS=ON','-DCMAKE_TOOLCHAIN_FILE=D:/vcpkg/scripts/buildsystems/vcpkg.cmake','-DVCPKG_TARGET_TRIPLET=x64-windows','-DVCPKG_MANIFEST_MODE=OFF','-DVCPKG_INSTALLED_DIR='+str(root/'out/verification-20261030/r3-resume-v1/budget-build-v3/vcpkg_installed')],'configure')
+targets=['cuexis_rpa_tests','cuexis_judgement_tests','cuexis_execution_host_tests','cuexis_gameplay_packed_tests']
+run(['cmake','--build',str(out),'--parallel','1','--target',*targets],'build')
+for target in targets:
+ run([str(out/'bin'/(target+'.exe')),'~[r3c-writer]','--rng-seed','1'],'test-'+target)
+ assert 'All tests passed' in (out/('test-'+target+'.log')).read_text(encoding='utf-8')
+run(['ctest','--test-dir',str(out),'-R','^(cuexis_msvc_dependency_tracking|cuexis_architecture_tests)$','--output-on-failure','--no-tests=error'],'ctest')
+(out/'complete.json').write_text(json.dumps(dict(scope='Fresh Release STATIC bounded publication batch + R3c v4. Full definitions consistent; four related suites, architecture and dependency gate. No ordinary performance acceptance.',source_manifest_sha256=sha(base/'publication-source-v1.json'),commands_sha256=sha(out/'commands.json'),binaries={p.name:sha(p) for p in (out/'bin').glob('*.exe')}),indent=2),encoding='utf-8')

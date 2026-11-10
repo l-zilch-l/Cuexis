@@ -1,0 +1,62 @@
+from pathlib import Path
+import json,shutil,subprocess,hashlib
+root=Path.cwd();base=Path(__file__).resolve().parent;out=base/'quota-frontier-v1';out.mkdir(exist_ok=False)
+parent=base/'budget-v4-observer-v1'
+for n in ('execution_kernel.cpp','rpa_b3_tests.cpp','tick_fault_probe.hpp'):shutil.copyfile(parent/n,out/n)
+p=out/'rpa_b3_tests.cpp';s=p.read_text(encoding='utf-8')+'''
+TEST_CASE("R3c quota frontier reports cost without choosing a product cap", "[r3c-quota-frontier]") {
+    Fixture3 f;expandTickFixture(f,40000,6667);
+    const auto config=f.configuration();const auto prepared=f.prepared();
+    auto expectedWriter=detail::ExecutionKernel::prepare(config,prepared);REQUIRE(expectedWriter);
+    REQUIRE((*expectedWriter)->advanceForReplay(Tick{1904}));
+    auto expected=(*expectedWriter)->snapshot();REQUIRE(expected);
+    expectedWriter->reset();
+    struct Row {int h{};BudgetHeapSample memory;std::size_t points{};};
+    for(const unsigned mib:{0,32,64,128,256,512}) {
+        const auto before=tick_probe::live.load(),storageBefore=tick_probe::storage.load();
+        tick_probe::peak.store(before);tick_probe::storagePeak.store(storageBefore);
+        std::array<Row,8> rows{};std::size_t count=0;bool success=true,equal=false;
+        {
+            auto made=detail::ExecutionKernel::prepare(config,prepared);REQUIRE(made);
+            REQUIRE((*made)->setTickPayloadLimitForProbe(std::size_t{mib}*1024*1024));
+            auto empty=(*made)->archive();
+            {
+                std::vector<ReplayArchive> generations;generations.reserve(6);
+                for(const int h:{904,1104,1304,1504,1704,1904}) {
+                    const auto ok=(*made)->advance(Tick{h});success=success&&static_cast<bool>(ok);
+                    generations.push_back((*made)->archive());
+                    rows[count++]={h,budgetHeapSample(empty),detail::ExecutionKernel::tickPointCount(generations.back())};
+                }
+                made->reset();rows[count++]={-1,budgetHeapSample(empty),0};
+                // Validation allocation is intentionally after the retention samples.
+                const auto cut=replayCutAt(generations.back(),Tick{1904});
+                auto candidate=detail::ExecutionKernel::seekCandidate(generations.back(),Tick{1904},nullptr,&cut);
+                if(candidate) {
+                    auto actual=(*candidate)->snapshot();
+                    equal=actual&&sameSnapshot((*actual)->dto,(*expected)->dto);
+                }
+            }
+            rows[count++]={-2,budgetHeapSample(empty),0};
+        }
+        const auto released=tick_probe::live.load()-before,storageReleased=tick_probe::storage.load()-storageBefore;
+        CHECK(success);CHECK(equal);CHECK(released==0);CHECK(storageReleased==0);
+        for(std::size_t i=0;i<count;++i) {
+            const auto& row=rows[i];
+            std::cout<<"{\\"event\\":\\"r3c.quota_frontier\\",\\"mib\\":"<<mib<<",\\"h\\":"<<row.h
+                     <<",\\"points\\":"<<row.points<<",\\"charge\\":"<<row.memory.charge
+                     <<",\\"requested_delta\\":"<<row.memory.requested-before
+                     <<",\\"storage_delta\\":"<<row.memory.storage-storageBefore
+                     <<",\\"private_bytes\\":"<<row.memory.privateBytes
+                     <<",\\"working_set\\":"<<row.memory.workingSet<<"}\\n";
+        }
+        std::cout<<"{\\"event\\":\\"r3c.quota_frontier_release\\",\\"mib\\":"<<mib
+                 <<",\\"requested_release_delta\\":"<<released<<",\\"storage_release_delta\\":"<<storageReleased<<"}\\n";
+    }
+}
+''';p.write_text(s,encoding='utf-8');subprocess.run(['clang-format','-i',str(p)],check=True)
+s=(base/'build_v4_observer.py').read_text(encoding='utf-8').replace("out=base/'budget-v4-observer-v1'","out=base/'quota-frontier-v1'")
+s=s.replace("production=compile('execution_kernel.cpp',kernel,'kernel-'+mode)","production=str(base/'budget-v4-observer-v1/kernel-normal.obj');assert mode=='normal'")
+(base/'build_quota_frontier.py').write_text(s,encoding='utf-8')
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+(out/'registration.json').write_text(json.dumps(dict(formal=False,product_cap_selected=False,scope='40K six-wave/six-archive quota/cost curve only, values fixed before execution. No repeatability or memory acceptance. Limits chosen as binary-scale diagnostic points, not to pass a cap. Existing v4 header/kernel definitions; observed allocator and no timing claims.',mib=[0,32,64,128,256,512],h=[904,1104,1304,1704,1904],samples='Each point sampled after original record + exact archive publish. Writer then released while six archives remain, followed by last archive release; final Snapshot compared to no-capture oracle.',stop='Functional invalidity or nonzero final allocation deltas stop; no replacement.',sources={n:sha(out/n) for n in ('execution_kernel.cpp','rpa_b3_tests.cpp','tick_fault_probe.hpp')}),indent=2),encoding='utf-8')
+print(out)

@@ -1,0 +1,10 @@
+{
+  "binaries": {
+    "cuexis_execution_host_tests.exe": "ba50deb7ae2dff0e6e78f821f5b1edf00b337e35eb9d17d53c507ff539fcf6b8",
+    "cuexis_gameplay_packed_tests.exe": "6ce94f9ca931a5330030fd37b2e719dc8d4386f031aeabbe900ae2dfe4d40033",
+    "cuexis_judgement_tests.exe": "6a4771f47ac220dbfa63c70f7c153eb9229965d264ece1451a59974e4033737b",
+    "cuexis_rpa_tests.exe": "f3868cf9dad557dc6caf64c7f723d55f7583bc1944b0be2e647dec485dbad0df"
+  },
+  "source_binding_sha256": "06e65cb8c05a9ba213cc30143fb19c7109c4d86c75c12a7edb56497deda0b95c",
+  "results_sha256": "c6932216517dbaf3149dc623647a4683adc17c47cbc7dc935b982f3037d03e1e"
+}

@@ -1,0 +1,30 @@
+Randomness seeded to: 1
+JSON_CORPUS null => 0 null
+JSON_CORPUS true => 1 true
+JSON_CORPUS false => 1 false
+JSON_CORPUS -0 => 2 0
+JSON_CORPUS -0.0 => 4 -0.0
+JSON_CORPUS 0 => 3 0
+JSON_CORPUS 1.25 => 4 1.25
+JSON_CORPUS 1e-300 => 4 1e-300
+JSON_CORPUS 1e300 => 4 1e+300
+JSON_CORPUS 9223372036854775807 => 3 9223372036854775807
+JSON_CORPUS -9223372036854775808 => 2 -9223372036854775808
+JSON_CORPUS 18446744073709551615 => 3 18446744073709551615
+JSON_CORPUS 18446744073709551616 => 4 1.8446744073709552e+19
+JSON_CORPUS -9223372036854775809 => 4 -9.223372036854776e+18
+JSON_CORPUS 1e999 => json.parse.failed JSON parsing failed exception=[json.exception.out_of_range.406] number overflow parsing '1e999'
+JSON_CORPUS  => json.parse.syntax_error JSON syntax is invalid byte_offset=1
+JSON_CORPUS [ => json.parse.syntax_error JSON syntax is invalid byte_offset=2
+JSON_CORPUS [1,] => json.parse.syntax_error JSON syntax is invalid byte_offset=4
+JSON_CORPUS {} true => json.parse.syntax_error JSON syntax is invalid byte_offset=7
+JSON_CORPUS "\ud800" => json.parse.syntax_error JSON syntax is invalid byte_offset=8
+JSON_CORPUS "\u4f60" => 5 "你"
+JSON_CORPUS "a\u0000b" => 5 "a\u0000b"
+JSON_CORPUS {"a":1,"a":2} => json.parse.duplicate_key JSON object keys must be unique key=a
+JSON_CORPUS {"a":1,"a":[invalid] => json.parse.syntax_error JSON syntax is invalid byte_offset=13
+JSON_CORPUS [[[[[]]]]] => json.parse.depth_limit JSON nesting depth exceeds the configured limit max_depth=4
+JSON_CORPUS {"x":[{"v":1},{"v":2}],"y":{"a":true}} => 7 {"x":[{"v":1},{"v":2}],"y":{"a":true}}
+===============================================================================
+All tests passed (6454 assertions in 29 test cases)
+

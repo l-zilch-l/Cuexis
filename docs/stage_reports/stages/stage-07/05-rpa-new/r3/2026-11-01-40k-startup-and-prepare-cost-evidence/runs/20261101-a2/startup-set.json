@@ -1,0 +1,3174 @@
+{
+ "stamp": "20261101-a2",
+ "exe": "out\\build\\rpa-candidate-release\\bin\\cuexis_execution_device_probe.exe",
+ "exe_sha256": "c5e1c317dc0836950078220d56b599f11cf1d5606dfdb7185fa34ccf40329168",
+ "arms": {
+  "A-untraced-40000": [
+   40000,
+   false,
+   "static",
+   3,
+   2
+  ],
+  "B-traced-40000": [
+   40000,
+   true,
+   "static",
+   3,
+   2
+  ],
+  "C-traced-1800": [
+   1800,
+   true,
+   "static",
+   3,
+   2
+  ],
+  "D-traced-2400": [
+   2400,
+   true,
+   "static",
+   3,
+   2
+  ],
+  "E-traced-2800": [
+   2800,
+   true,
+   "static",
+   3,
+   2
+  ],
+  "F-traced-10000": [
+   10000,
+   true,
+   "static",
+   3,
+   2
+  ]
+ },
+ "plan": {
+  "A-untraced-40000": 8,
+  "B-traced-40000": 8
+ },
+ "summary": {
+  "A-untraced-40000": {
+   "samples": [
+    {
+     "index": 0,
+     "returncode": 0,
+     "wall_s": 3.212,
+     "first_present_us": 2522292.1,
+     "shown_us": 2522283.1
+    },
+    {
+     "index": 1,
+     "returncode": 0,
+     "wall_s": 3.199,
+     "first_present_us": 2526463.3,
+     "shown_us": 2526456.3
+    },
+    {
+     "index": 2,
+     "returncode": 0,
+     "wall_s": 3.182,
+     "first_present_us": 2515275,
+     "shown_us": 2515269.5
+    },
+    {
+     "index": 3,
+     "returncode": 0,
+     "wall_s": 3.257,
+     "first_present_us": 2486892.6,
+     "shown_us": 2486887.0
+    },
+    {
+     "index": 4,
+     "returncode": 0,
+     "wall_s": 3.296,
+     "first_present_us": 2458497.8,
+     "shown_us": 2458492.0
+    },
+    {
+     "index": 5,
+     "returncode": 0,
+     "wall_s": 3.421,
+     "first_present_us": 2485368.5,
+     "shown_us": 2485359.3
+    },
+    {
+     "index": 6,
+     "returncode": 0,
+     "wall_s": 3.153,
+     "first_present_us": 2480843.1,
+     "shown_us": 2480832.4
+    },
+    {
+     "index": 7,
+     "returncode": 0,
+     "wall_s": 3.146,
+     "first_present_us": 2485974.4,
+     "shown_us": 2485968.3
+    }
+   ],
+   "stages": {
+    "fixture_source": {
+     "median": 62884.3,
+     "min": 62382.9,
+     "max": 68191.3,
+     "spread_pct": 9.24,
+     "n": 8
+    },
+    "playback_prepare": {
+     "median": 2052995.2,
+     "min": 2032210.2,
+     "max": 2092581.9,
+     "spread_pct": 2.94,
+     "n": 8
+    },
+    "sdl_runtime": {
+     "median": 59660.6,
+     "min": 57456.5,
+     "max": 60871.8,
+     "spread_pct": 5.72,
+     "n": 8
+    },
+    "gl_context": {
+     "median": 13.0,
+     "min": 12.2,
+     "max": 17.5,
+     "spread_pct": 40.77,
+     "n": 8
+    },
+    "window_create": {
+     "median": 235478.1,
+     "min": 226445.2,
+     "max": 247828.1,
+     "spread_pct": 9.08,
+     "n": 8
+    },
+    "backend_create": {
+     "median": 11507.5,
+     "min": 10934.4,
+     "max": 12936.8,
+     "spread_pct": 17.4,
+     "n": 8
+    },
+    "pixel_readback": {
+     "median": 5.3,
+     "min": 4.8,
+     "max": 6.2,
+     "spread_pct": 26.17,
+     "n": 8
+    },
+    "renderer_prepare": {
+     "median": 349.4,
+     "min": 326.0,
+     "max": 372.1,
+     "spread_pct": 13.19,
+     "n": 8
+    },
+    "session_commit": {
+     "median": 11.0,
+     "min": 10.2,
+     "max": 12.4,
+     "spread_pct": 20.0,
+     "n": 8
+    },
+    "backend_activate": {
+     "median": 2.1,
+     "min": 1.7,
+     "max": 4.7,
+     "spread_pct": 142.86,
+     "n": 8
+    },
+    "first_update": {
+     "median": 6007.4,
+     "min": 5870.3,
+     "max": 6165.2,
+     "spread_pct": 4.91,
+     "n": 8
+    },
+    "first_extract": {
+     "median": 12007.2,
+     "min": 11580.1,
+     "max": 14764.6,
+     "spread_pct": 26.52,
+     "n": 8
+    },
+    "first_submit": {
+     "median": 42647.4,
+     "min": 42229.7,
+     "max": 43832.4,
+     "spread_pct": 3.76,
+     "n": 8
+    },
+    "first_present": {
+     "median": 134.6,
+     "min": 113.1,
+     "max": 281.8,
+     "spread_pct": 125.38,
+     "n": 8
+    }
+   },
+   "trace_stages": {}
+  },
+  "B-traced-40000": {
+   "samples": [
+    {
+     "index": 0,
+     "returncode": 0,
+     "wall_s": 3.184,
+     "first_present_us": 2504076.5,
+     "shown_us": 2504070.3
+    },
+    {
+     "index": 1,
+     "returncode": 0,
+     "wall_s": 3.209,
+     "first_present_us": 2510104.4,
+     "shown_us": 2510098.9
+    },
+    {
+     "index": 2,
+     "returncode": 0,
+     "wall_s": 3.377,
+     "first_present_us": 2643811.3,
+     "shown_us": 2643803.8
+    },
+    {
+     "index": 3,
+     "returncode": 0,
+     "wall_s": 3.246,
+     "first_present_us": 2456668.3,
+     "shown_us": 2456662.4
+    },
+    {
+     "index": 4,
+     "returncode": 0,
+     "wall_s": 3.158,
+     "first_present_us": 2493159.9,
+     "shown_us": 2493152.1
+    },
+    {
+     "index": 5,
+     "returncode": 0,
+     "wall_s": 3.51,
+     "first_present_us": 2482845.6,
+     "shown_us": 2482839.6
+    },
+    {
+     "index": 6,
+     "returncode": 0,
+     "wall_s": 3.154,
+     "first_present_us": 2495700.3,
+     "shown_us": 2495693.9
+    },
+    {
+     "index": 7,
+     "returncode": 0,
+     "wall_s": 3.137,
+     "first_present_us": 2473386.1,
+     "shown_us": 2473378.6
+    }
+   ],
+   "stages": {
+    "fixture_source": {
+     "median": 62603.4,
+     "min": 62284.5,
+     "max": 63162.0,
+     "spread_pct": 1.4,
+     "n": 8
+    },
+    "playback_prepare": {
+     "median": 2059251.1,
+     "min": 2033853.5,
+     "max": 2199060.1,
+     "spread_pct": 8.02,
+     "n": 8
+    },
+    "sdl_runtime": {
+     "median": 58948.4,
+     "min": 57966.7,
+     "max": 61626.2,
+     "spread_pct": 6.21,
+     "n": 8
+    },
+    "gl_context": {
+     "median": 16.4,
+     "min": 12.4,
+     "max": 30.9,
+     "spread_pct": 112.8,
+     "n": 8
+    },
+    "window_create": {
+     "median": 232201.0,
+     "min": 226182.1,
+     "max": 245528.5,
+     "spread_pct": 8.33,
+     "n": 8
+    },
+    "backend_create": {
+     "median": 11525.5,
+     "min": 11044.5,
+     "max": 11818.1,
+     "spread_pct": 6.71,
+     "n": 8
+    },
+    "pixel_readback": {
+     "median": 5.0,
+     "min": 4.5,
+     "max": 5.6,
+     "spread_pct": 22.22,
+     "n": 8
+    },
+    "renderer_prepare": {
+     "median": 364.8,
+     "min": 329.7,
+     "max": 453.5,
+     "spread_pct": 33.94,
+     "n": 8
+    },
+    "session_commit": {
+     "median": 10.2,
+     "min": 9.7,
+     "max": 14.8,
+     "spread_pct": 49.76,
+     "n": 8
+    },
+    "backend_activate": {
+     "median": 1.8,
+     "min": 1.4,
+     "max": 3.6,
+     "spread_pct": 122.22,
+     "n": 8
+    },
+    "first_update": {
+     "median": 6006.6,
+     "min": 5865.4,
+     "max": 6177.0,
+     "spread_pct": 5.19,
+     "n": 8
+    },
+    "first_extract": {
+     "median": 11738.4,
+     "min": 11541.8,
+     "max": 12254.0,
+     "spread_pct": 6.07,
+     "n": 8
+    },
+    "first_submit": {
+     "median": 42801.1,
+     "min": 42342.5,
+     "max": 44968.4,
+     "spread_pct": 6.14,
+     "n": 8
+    },
+    "first_present": {
+     "median": 121.6,
+     "min": 106.0,
+     "max": 182.8,
+     "spread_pct": 63.18,
+     "n": 8
+    }
+   },
+   "trace_stages": {
+    "json_dom_parse": {
+     "median": 723407.0,
+     "min": 709513.0,
+     "max": 738976.0,
+     "spread_pct": 4.07,
+     "n": 8
+    },
+    "chart_typed_read": {
+     "median": 346304.5,
+     "min": 341820.0,
+     "max": 414003.0,
+     "spread_pct": 20.84,
+     "n": 8
+    },
+    "chart_canonical_write": {
+     "median": 654303.0,
+     "min": 649729.0,
+     "max": 719742.0,
+     "spread_pct": 10.7,
+     "n": 8
+    },
+    "load_chart": {
+     "median": 1726512.5,
+     "min": 1701557.0,
+     "max": 1861995.0,
+     "spread_pct": 9.29,
+     "n": 8
+    },
+    "load_canonical": {
+     "median": 17010.5,
+     "min": 16940.0,
+     "max": 17041.0,
+     "spread_pct": 0.59,
+     "n": 8
+    },
+    "load_document": {
+     "median": 1743598.5,
+     "min": 1718619.0,
+     "max": 1879089.0,
+     "spread_pct": 9.2,
+     "n": 8
+    },
+    "resolve_parameters": {
+     "median": 6.0,
+     "min": 5.0,
+     "max": 7.0,
+     "spread_pct": 33.33,
+     "n": 8
+    },
+    "preflight": {
+     "median": 13.5,
+     "min": 13.0,
+     "max": 15.0,
+     "spread_pct": 14.81,
+     "n": 8
+    },
+    "animation_compile": {
+     "median": 11.0,
+     "min": 8.0,
+     "max": 16.0,
+     "spread_pct": 72.73,
+     "n": 8
+    },
+    "chart_compile": {
+     "median": 88409.0,
+     "min": 86696.0,
+     "max": 90586.0,
+     "spread_pct": 4.4,
+     "n": 8
+    },
+    "resources": {
+     "median": 30.0,
+     "min": 29.0,
+     "max": 32.0,
+     "spread_pct": 10.0,
+     "n": 8
+    },
+    "audio": {
+     "median": 2.0,
+     "min": 2.0,
+     "max": 3.0,
+     "spread_pct": 50.0,
+     "n": 8
+    },
+    "runtime": {
+     "median": 199543.5,
+     "min": 198523.0,
+     "max": 201427.0,
+     "spread_pct": 1.46,
+     "n": 8
+    },
+    "presentation": {
+     "median": 1976.5,
+     "min": 1952.0,
+     "max": 2098.0,
+     "spread_pct": 7.39,
+     "n": 8
+    },
+    "commit_runtime": {
+     "median": 6.0,
+     "min": 5.0,
+     "max": 6.0,
+     "spread_pct": 16.67,
+     "n": 8
+    },
+    "commit_frame": {
+     "median": 2.0,
+     "min": 1.0,
+     "max": 2.0,
+     "spread_pct": 50.0,
+     "n": 8
+    },
+    "snapshot_layout": {
+     "median": 19011.5,
+     "min": 18642.0,
+     "max": 19244.0,
+     "spread_pct": 3.17,
+     "n": 8
+    },
+    "identity": {
+     "median": 16.0,
+     "min": 15.0,
+     "max": 16.0,
+     "spread_pct": 6.25,
+     "n": 8
+    },
+    "assemble": {
+     "median": 1696.0,
+     "min": 1615.0,
+     "max": 1897.0,
+     "spread_pct": 16.63,
+     "n": 8
+    }
+   }
+  }
+ },
+ "samples": [
+  {
+   "arm": "A-untraced-40000",
+   "index": 0,
+   "entities": 40000,
+   "mode": "static",
+   "traced": false,
+   "returncode": 0,
+   "wall_s": 3.212,
+   "stages_us": {
+    "fixture_source": 63052.3,
+    "playback_prepare": 2079151.2,
+    "sdl_runtime": 60871.8,
+    "gl_context": 12.4,
+    "window_create": 242682.1,
+    "backend_create": 11500.8,
+    "pixel_readback": 5.3,
+    "renderer_prepare": 355.7,
+    "session_commit": 10.3,
+    "backend_activate": 1.8,
+    "first_update": 6037.2,
+    "first_extract": 11954.4,
+    "first_submit": 43007.9,
+    "first_present": 158.9
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 201945.5,
+      "abs_us": 265108.5
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 454804.5,
+      "abs_us": 517967.5
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 708295.3,
+      "abs_us": 771458.3
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 961198.7,
+      "abs_us": 1024361.7
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1212997.8,
+      "abs_us": 1276160.8
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1465227.2,
+      "abs_us": 1528390.2
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1718610.5,
+      "abs_us": 1781773.5
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1971610.4,
+      "abs_us": 2034773.4
+     },
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 81690.70000000019,
+      "abs_us": 2284990.7
+     }
+    ],
+    "window": {
+     "at_us": 2446071.4,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 2522283.1,
+    "total": {
+     "first_present_us": 2522292.1
+    }
+   },
+   "trace_events": [],
+   "trace_stages_us": {},
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "B-traced-40000",
+   "index": 0,
+   "entities": 40000,
+   "mode": "static",
+   "traced": true,
+   "returncode": 0,
+   "wall_s": 3.184,
+   "stages_us": {
+    "fixture_source": 62590.7,
+    "playback_prepare": 2070164.7,
+    "sdl_runtime": 59087.9,
+    "gl_context": 30.9,
+    "window_create": 232998.4,
+    "backend_create": 11644.6,
+    "pixel_readback": 5.4,
+    "renderer_prepare": 329.7,
+    "session_commit": 11.6,
+    "backend_activate": 1.9,
+    "first_update": 6177.0,
+    "first_extract": 12254.0,
+    "first_submit": 44968.4,
+    "first_present": 125.2
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 195117.0,
+      "abs_us": 257807.0
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 447990.7,
+      "abs_us": 510680.7
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 701281.6,
+      "abs_us": 763971.6
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 953304.2,
+      "abs_us": 1015994.2
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1205999.2,
+      "abs_us": 1268689.2
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1460746.5,
+      "abs_us": 1523436.5
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1714154.4,
+      "abs_us": 1776844.4
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1967524.6,
+      "abs_us": 2030214.6
+     },
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 89205.3999999999,
+      "abs_us": 2281272.4
+     }
+    ],
+    "window": {
+     "at_us": 2425230.3,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 2504070.3,
+    "total": {
+     "first_present_us": 2504076.5
+    }
+   },
+   "trace_events": [
+    {
+     "event": "end",
+     "stage": "json_dom_parse",
+     "elapsed_us": 725560.0,
+     "abs_us": 87407782502.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_typed_read",
+     "elapsed_us": 355407.0,
+     "abs_us": 87408137933.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_canonical_write",
+     "elapsed_us": 655030.0,
+     "abs_us": 87408792986.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_chart",
+     "elapsed_us": 1736083.0,
+     "abs_us": 87408793014.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_canonical",
+     "elapsed_us": 17008.0,
+     "abs_us": 87408810027.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_document",
+     "elapsed_us": 1753161.0,
+     "abs_us": 87408810060.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resolve_parameters",
+     "elapsed_us": 6.0,
+     "abs_us": 87408810069.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "preflight",
+     "elapsed_us": 14.0,
+     "abs_us": 87408810086.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "animation_compile",
+     "elapsed_us": 11.0,
+     "abs_us": 87408810099.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_compile",
+     "elapsed_us": 89844.0,
+     "abs_us": 87408899948.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resources",
+     "elapsed_us": 30.0,
+     "abs_us": 87408900005.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "audio",
+     "elapsed_us": 2.0,
+     "abs_us": 87408900011.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "runtime",
+     "elapsed_us": 199169.0,
+     "abs_us": 87409099183.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "presentation",
+     "elapsed_us": 2006.0,
+     "abs_us": 87409101220.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_runtime",
+     "elapsed_us": 6.0,
+     "abs_us": 87409101233.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_frame",
+     "elapsed_us": 1.0,
+     "abs_us": 87409101237.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "snapshot_layout",
+     "elapsed_us": 19244.0,
+     "abs_us": 87409120483.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "identity",
+     "elapsed_us": 15.0,
+     "abs_us": 87409120520.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "assemble",
+     "elapsed_us": 1634.0,
+     "abs_us": 87409122156.0,
+     "begin_us": null
+    }
+   ],
+   "trace_stages_us": {
+    "json_dom_parse": 725560.0,
+    "chart_typed_read": 355407.0,
+    "chart_canonical_write": 655030.0,
+    "load_chart": 1736083.0,
+    "load_canonical": 17008.0,
+    "load_document": 1753161.0,
+    "resolve_parameters": 6.0,
+    "preflight": 14.0,
+    "animation_compile": 11.0,
+    "chart_compile": 89844.0,
+    "resources": 30.0,
+    "audio": 2.0,
+    "runtime": 199169.0,
+    "presentation": 2006.0,
+    "commit_runtime": 6.0,
+    "commit_frame": 1.0,
+    "snapshot_layout": 19244.0,
+    "identity": 15.0,
+    "assemble": 1634.0
+   },
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "A-untraced-40000",
+   "index": 1,
+   "entities": 40000,
+   "mode": "static",
+   "traced": false,
+   "returncode": 0,
+   "wall_s": 3.199,
+   "stages_us": {
+    "fixture_source": 62897.9,
+    "playback_prepare": 2092581.9,
+    "sdl_runtime": 59311.1,
+    "gl_context": 17.5,
+    "window_create": 234751.8,
+    "backend_create": 11087.4,
+    "pixel_readback": 5.4,
+    "renderer_prepare": 348.7,
+    "session_commit": 11.7,
+    "backend_activate": 2.2,
+    "first_update": 6090.6,
+    "first_extract": 12095.7,
+    "first_submit": 43769.6,
+    "first_present": 198.0
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 200035.2,
+      "abs_us": 263030.2
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 451560.4,
+      "abs_us": 514555.4
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 705145.8,
+      "abs_us": 768140.8
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 956159.7,
+      "abs_us": 1019154.7
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1209085.1,
+      "abs_us": 1272080.1
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1463651.8,
+      "abs_us": 1526646.8
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1716821.3,
+      "abs_us": 1779816.3
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1968638.9,
+      "abs_us": 2031633.9
+     },
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 67490.8999999999,
+      "abs_us": 2282483.9
+     }
+    ],
+    "window": {
+     "at_us": 2449833.7,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 2526456.3,
+    "total": {
+     "first_present_us": 2526463.3
+    }
+   },
+   "trace_events": [],
+   "trace_stages_us": {},
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "B-traced-40000",
+   "index": 1,
+   "entities": 40000,
+   "mode": "static",
+   "traced": true,
+   "returncode": 0,
+   "wall_s": 3.209,
+   "stages_us": {
+    "fixture_source": 62996.0,
+    "playback_prepare": 2081324.9,
+    "sdl_runtime": 60791.0,
+    "gl_context": 17.1,
+    "window_create": 227614.7,
+    "backend_create": 11779.3,
+    "pixel_readback": 5.6,
+    "renderer_prepare": 453.5,
+    "session_commit": 14.8,
+    "backend_activate": 2.0,
+    "first_update": 6114.3,
+    "first_extract": 11710.5,
+    "first_submit": 43851.9,
+    "first_present": 113.3
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 188677.3,
+      "abs_us": 251781.3
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 440473.6,
+      "abs_us": 503577.6
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 691417.3,
+      "abs_us": 754521.3
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 943509.1,
+      "abs_us": 1006613.1
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1194930.8,
+      "abs_us": 1258034.8
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1447401.8,
+      "abs_us": 1510505.8
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1698700.9,
+      "abs_us": 1761804.9
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1950532.0,
+      "abs_us": 2013636.0
+     },
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 59349.39999999991,
+      "abs_us": 2264671.4
+     }
+    ],
+    "window": {
+     "at_us": 2433138.1,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 2510098.9,
+    "total": {
+     "first_present_us": 2510104.4
+    }
+   },
+   "trace_events": [
+    {
+     "event": "end",
+     "stage": "json_dom_parse",
+     "elapsed_us": 738976.0,
+     "abs_us": 87414193354.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_typed_read",
+     "elapsed_us": 348354.0,
+     "abs_us": 87414541739.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_canonical_write",
+     "elapsed_us": 658376.0,
+     "abs_us": 87415200139.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_chart",
+     "elapsed_us": 1745795.0,
+     "abs_us": 87415200162.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_canonical",
+     "elapsed_us": 17013.0,
+     "abs_us": 87415217179.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_document",
+     "elapsed_us": 1762871.0,
+     "abs_us": 87415217209.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resolve_parameters",
+     "elapsed_us": 7.0,
+     "abs_us": 87415217219.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "preflight",
+     "elapsed_us": 13.0,
+     "abs_us": 87415217236.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "animation_compile",
+     "elapsed_us": 9.0,
+     "abs_us": 87415217247.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_compile",
+     "elapsed_us": 89202.0,
+     "abs_us": 87415306457.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resources",
+     "elapsed_us": 32.0,
+     "abs_us": 87415306516.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "audio",
+     "elapsed_us": 2.0,
+     "abs_us": 87415306523.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "runtime",
+     "elapsed_us": 201427.0,
+     "abs_us": 87415507953.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "presentation",
+     "elapsed_us": 1997.0,
+     "abs_us": 87415509977.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_runtime",
+     "elapsed_us": 6.0,
+     "abs_us": 87415509990.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_frame",
+     "elapsed_us": 2.0,
+     "abs_us": 87415509995.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "snapshot_layout",
+     "elapsed_us": 19040.0,
+     "abs_us": 87415529036.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "identity",
+     "elapsed_us": 16.0,
+     "abs_us": 87415529076.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "assemble",
+     "elapsed_us": 1768.0,
+     "abs_us": 87415530846.0,
+     "begin_us": null
+    }
+   ],
+   "trace_stages_us": {
+    "json_dom_parse": 738976.0,
+    "chart_typed_read": 348354.0,
+    "chart_canonical_write": 658376.0,
+    "load_chart": 1745795.0,
+    "load_canonical": 17013.0,
+    "load_document": 1762871.0,
+    "resolve_parameters": 7.0,
+    "preflight": 13.0,
+    "animation_compile": 9.0,
+    "chart_compile": 89202.0,
+    "resources": 32.0,
+    "audio": 2.0,
+    "runtime": 201427.0,
+    "presentation": 1997.0,
+    "commit_runtime": 6.0,
+    "commit_frame": 2.0,
+    "snapshot_layout": 19040.0,
+    "identity": 16.0,
+    "assemble": 1768.0
+   },
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "A-untraced-40000",
+   "index": 2,
+   "entities": 40000,
+   "mode": "static",
+   "traced": false,
+   "returncode": 0,
+   "wall_s": 3.182,
+   "stages_us": {
+    "fixture_source": 63137.8,
+    "playback_prepare": 2080403.7,
+    "sdl_runtime": 59094.4,
+    "gl_context": 12.6,
+    "window_create": 234137.2,
+    "backend_create": 11514.3,
+    "pixel_readback": 4.8,
+    "renderer_prepare": 326.0,
+    "session_commit": 10.3,
+    "backend_activate": 1.8,
+    "first_update": 5957.8,
+    "first_extract": 14764.6,
+    "first_submit": 42609.8,
+    "first_present": 144.5
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 197299.3,
+      "abs_us": 260537.3
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 449533.5,
+      "abs_us": 512771.5
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 701853.4,
+      "abs_us": 765091.4
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 954699.5,
+      "abs_us": 1017937.5
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1209244.1,
+      "abs_us": 1272482.1
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1462419.0,
+      "abs_us": 1525657.0
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1715843.1,
+      "abs_us": 1779081.1
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1969600.8,
+      "abs_us": 2032838.8
+     },
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 80549.70000000019,
+      "abs_us": 2283395.7
+     }
+    ],
+    "window": {
+     "at_us": 2437077.1,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 2515269.5,
+    "total": {
+     "first_present_us": 2515275
+    }
+   },
+   "trace_events": [],
+   "trace_stages_us": {},
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "B-traced-40000",
+   "index": 2,
+   "entities": 40000,
+   "mode": "static",
+   "traced": true,
+   "returncode": 0,
+   "wall_s": 3.377,
+   "stages_us": {
+    "fixture_source": 62304.0,
+    "playback_prepare": 2199060.1,
+    "sdl_runtime": 61626.2,
+    "gl_context": 16.2,
+    "window_create": 244598.6,
+    "backend_create": 11818.1,
+    "pixel_readback": 4.5,
+    "renderer_prepare": 366.7,
+    "session_commit": 9.7,
+    "backend_activate": 1.6,
+    "first_update": 6012.0,
+    "first_extract": 11601.3,
+    "first_submit": 43143.7,
+    "first_present": 119.2
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 196410.0,
+      "abs_us": 258821.0
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 448136.7,
+      "abs_us": 510547.7
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 699327.1,
+      "abs_us": 761738.1
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 950048.2,
+      "abs_us": 1012459.2
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1201751.6,
+      "abs_us": 1264162.6
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1467418.3,
+      "abs_us": 1529829.3
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1720989.2,
+      "abs_us": 1783400.2
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1973710.8,
+      "abs_us": 2036121.8
+     },
+     {
+      "stage": "sdl_runtime",
+      "stage_elapsed_us": 28023.299999999814,
+      "abs_us": 2289549.3
+     },
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 216645.8999999999,
+      "abs_us": 2539847.9
+     }
+    ],
+    "window": {
+     "at_us": 2567901,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 2643803.8,
+    "total": {
+     "first_present_us": 2643811.3
+    }
+   },
+   "trace_events": [
+    {
+     "event": "end",
+     "stage": "json_dom_parse",
+     "elapsed_us": 728164.0,
+     "abs_us": 87420577871.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_typed_read",
+     "elapsed_us": 414003.0,
+     "abs_us": 87420991896.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_canonical_write",
+     "elapsed_us": 719742.0,
+     "abs_us": 87421711662.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_chart",
+     "elapsed_us": 1861995.0,
+     "abs_us": 87421711691.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_canonical",
+     "elapsed_us": 17041.0,
+     "abs_us": 87421728737.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_document",
+     "elapsed_us": 1879089.0,
+     "abs_us": 87421728760.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resolve_parameters",
+     "elapsed_us": 5.0,
+     "abs_us": 87421728768.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "preflight",
+     "elapsed_us": 13.0,
+     "abs_us": 87421728785.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "animation_compile",
+     "elapsed_us": 11.0,
+     "abs_us": 87421728800.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_compile",
+     "elapsed_us": 90586.0,
+     "abs_us": 87421819391.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resources",
+     "elapsed_us": 29.0,
+     "abs_us": 87421819448.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "audio",
+     "elapsed_us": 3.0,
+     "abs_us": 87421819456.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "runtime",
+     "elapsed_us": 201244.0,
+     "abs_us": 87422020703.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "presentation",
+     "elapsed_us": 1971.0,
+     "abs_us": 87422022693.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_runtime",
+     "elapsed_us": 5.0,
+     "abs_us": 87422022706.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_frame",
+     "elapsed_us": 2.0,
+     "abs_us": 87422022711.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "snapshot_layout",
+     "elapsed_us": 19084.0,
+     "abs_us": 87422041796.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "identity",
+     "elapsed_us": 16.0,
+     "abs_us": 87422041832.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "assemble",
+     "elapsed_us": 1700.0,
+     "abs_us": 87422043534.0,
+     "begin_us": null
+    }
+   ],
+   "trace_stages_us": {
+    "json_dom_parse": 728164.0,
+    "chart_typed_read": 414003.0,
+    "chart_canonical_write": 719742.0,
+    "load_chart": 1861995.0,
+    "load_canonical": 17041.0,
+    "load_document": 1879089.0,
+    "resolve_parameters": 5.0,
+    "preflight": 13.0,
+    "animation_compile": 11.0,
+    "chart_compile": 90586.0,
+    "resources": 29.0,
+    "audio": 3.0,
+    "runtime": 201244.0,
+    "presentation": 1971.0,
+    "commit_runtime": 5.0,
+    "commit_frame": 2.0,
+    "snapshot_layout": 19084.0,
+    "identity": 16.0,
+    "assemble": 1700.0
+   },
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "A-untraced-40000",
+   "index": 3,
+   "entities": 40000,
+   "mode": "static",
+   "traced": false,
+   "returncode": 0,
+   "wall_s": 3.257,
+   "stages_us": {
+    "fixture_source": 62533.8,
+    "playback_prepare": 2035130.3,
+    "sdl_runtime": 60737.7,
+    "gl_context": 12.7,
+    "window_create": 247828.1,
+    "backend_create": 12573.4,
+    "pixel_readback": 4.9,
+    "renderer_prepare": 358.7,
+    "session_commit": 12.4,
+    "backend_activate": 4.7,
+    "first_update": 6165.2,
+    "first_extract": 14401.9,
+    "first_submit": 43832.4,
+    "first_present": 117.3
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 192483.5,
+      "abs_us": 255114.5
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 443533.8,
+      "abs_us": 506164.8
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 696349.4,
+      "abs_us": 758980.4
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 949690.7,
+      "abs_us": 1012321.7
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1203825.1,
+      "abs_us": 1266456.1
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1458109.5,
+      "abs_us": 1520740.5
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1711568.5,
+      "abs_us": 1774199.5
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1963757.7,
+      "abs_us": 2026388.7
+     },
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 118820.5,
+      "abs_us": 2277427.5
+     }
+    ],
+    "window": {
+     "at_us": 2406530.6,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 2486887.0,
+    "total": {
+     "first_present_us": 2486892.6
+    }
+   },
+   "trace_events": [],
+   "trace_stages_us": {},
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "B-traced-40000",
+   "index": 3,
+   "entities": 40000,
+   "mode": "static",
+   "traced": true,
+   "returncode": 0,
+   "wall_s": 3.246,
+   "stages_us": {
+    "fixture_source": 62616.2,
+    "playback_prepare": 2033853.5,
+    "sdl_runtime": 58808.8,
+    "gl_context": 16.6,
+    "window_create": 226182.1,
+    "backend_create": 11499.3,
+    "pixel_readback": 4.6,
+    "renderer_prepare": 362.9,
+    "session_commit": 9.9,
+    "backend_activate": 1.8,
+    "first_update": 5871.7,
+    "first_extract": 11564.0,
+    "first_submit": 42520.4,
+    "first_present": 182.8
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 193343.6,
+      "abs_us": 256047.6
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 446583.4,
+      "abs_us": 509287.4
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 699018.5,
+      "abs_us": 761722.5
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 952528.1,
+      "abs_us": 1015232.1
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1206133.9,
+      "abs_us": 1268837.9
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1459326.5,
+      "abs_us": 1522030.5
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1712499.8,
+      "abs_us": 1775203.8
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1965402.8,
+      "abs_us": 2028106.8
+     },
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 123408.6000000001,
+      "abs_us": 2278871.6
+     }
+    ],
+    "window": {
+     "at_us": 2381732,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 2456662.4,
+    "total": {
+     "first_present_us": 2456668.3
+    }
+   },
+   "trace_events": [
+    {
+     "event": "end",
+     "stage": "json_dom_parse",
+     "elapsed_us": 709513.0,
+     "abs_us": 87427190434.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_typed_read",
+     "elapsed_us": 341820.0,
+     "abs_us": 87427532273.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_canonical_write",
+     "elapsed_us": 650143.0,
+     "abs_us": 87428182441.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_chart",
+     "elapsed_us": 1701557.0,
+     "abs_us": 87428182467.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_canonical",
+     "elapsed_us": 17000.0,
+     "abs_us": 87428199471.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_document",
+     "elapsed_us": 1718619.0,
+     "abs_us": 87428199500.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resolve_parameters",
+     "elapsed_us": 7.0,
+     "abs_us": 87428199509.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "preflight",
+     "elapsed_us": 14.0,
+     "abs_us": 87428199527.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "animation_compile",
+     "elapsed_us": 10.0,
+     "abs_us": 87428199548.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_compile",
+     "elapsed_us": 88398.0,
+     "abs_us": 87428287952.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resources",
+     "elapsed_us": 29.0,
+     "abs_us": 87428288016.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "audio",
+     "elapsed_us": 2.0,
+     "abs_us": 87428288020.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "runtime",
+     "elapsed_us": 199279.0,
+     "abs_us": 87428487302.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "presentation",
+     "elapsed_us": 1958.0,
+     "abs_us": 87428489305.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_runtime",
+     "elapsed_us": 6.0,
+     "abs_us": 87428489318.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_frame",
+     "elapsed_us": 2.0,
+     "abs_us": 87428489322.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "snapshot_layout",
+     "elapsed_us": 18707.0,
+     "abs_us": 87428508030.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "identity",
+     "elapsed_us": 16.0,
+     "abs_us": 87428508071.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "assemble",
+     "elapsed_us": 1897.0,
+     "abs_us": 87428509970.0,
+     "begin_us": null
+    }
+   ],
+   "trace_stages_us": {
+    "json_dom_parse": 709513.0,
+    "chart_typed_read": 341820.0,
+    "chart_canonical_write": 650143.0,
+    "load_chart": 1701557.0,
+    "load_canonical": 17000.0,
+    "load_document": 1718619.0,
+    "resolve_parameters": 7.0,
+    "preflight": 14.0,
+    "animation_compile": 10.0,
+    "chart_compile": 88398.0,
+    "resources": 29.0,
+    "audio": 2.0,
+    "runtime": 199279.0,
+    "presentation": 1958.0,
+    "commit_runtime": 6.0,
+    "commit_frame": 2.0,
+    "snapshot_layout": 18707.0,
+    "identity": 16.0,
+    "assemble": 1897.0
+   },
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "A-untraced-40000",
+   "index": 4,
+   "entities": 40000,
+   "mode": "static",
+   "traced": false,
+   "returncode": 0,
+   "wall_s": 3.296,
+   "stages_us": {
+    "fixture_source": 62809.0,
+    "playback_prepare": 2032210.2,
+    "sdl_runtime": 57456.5,
+    "gl_context": 14.9,
+    "window_create": 230233.9,
+    "backend_create": 11741.4,
+    "pixel_readback": 6.2,
+    "renderer_prepare": 326.5,
+    "session_commit": 11.0,
+    "backend_activate": 1.7,
+    "first_update": 5955.0,
+    "first_extract": 11646.4,
+    "first_submit": 42685.1,
+    "first_present": 124.6
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 193397.6,
+      "abs_us": 256299.6
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 446679.6,
+      "abs_us": 509581.6
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 698457.2,
+      "abs_us": 761359.2
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 952328.1,
+      "abs_us": 1015230.1
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1206479.4,
+      "abs_us": 1269381.4
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1459628.6,
+      "abs_us": 1522530.6
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1713140.6,
+      "abs_us": 1776042.6
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1966550.2,
+      "abs_us": 2029452.2
+     },
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 127844.1000000001,
+      "abs_us": 2280519.1
+     }
+    ],
+    "window": {
+     "at_us": 2382999.8,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 2458492.0,
+    "total": {
+     "first_present_us": 2458497.8
+    }
+   },
+   "trace_events": [],
+   "trace_stages_us": {},
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "B-traced-40000",
+   "index": 4,
+   "entities": 40000,
+   "mode": "static",
+   "traced": true,
+   "returncode": 0,
+   "wall_s": 3.158,
+   "stages_us": {
+    "fixture_source": 63162.0,
+    "playback_prepare": 2064002.6,
+    "sdl_runtime": 58677.5,
+    "gl_context": 12.4,
+    "window_create": 231403.5,
+    "backend_create": 11551.6,
+    "pixel_readback": 4.6,
+    "renderer_prepare": 379.0,
+    "session_commit": 10.4,
+    "backend_activate": 1.8,
+    "first_update": 5937.7,
+    "first_extract": 11814.0,
+    "first_submit": 42711.6,
+    "first_present": 119.0
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 187803.6,
+      "abs_us": 251050.6
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 441957.5,
+      "abs_us": 505204.5
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 694099.4,
+      "abs_us": 757346.4
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 947306.8,
+      "abs_us": 1010553.8
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1199188.2,
+      "abs_us": 1262435.2
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1453061.4,
+      "abs_us": 1516308.4
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1704229.6,
+      "abs_us": 1767476.6
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1955296.7,
+      "abs_us": 2018543.7
+     },
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 83224.8999999999,
+      "abs_us": 2269252.9
+     }
+    ],
+    "window": {
+     "at_us": 2417601.7,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 2493152.1,
+    "total": {
+     "first_present_us": 2493159.9
+    }
+   },
+   "trace_events": [
+    {
+     "event": "end",
+     "stage": "json_dom_parse",
+     "elapsed_us": 724717.0,
+     "abs_us": 87433753270.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_typed_read",
+     "elapsed_us": 346574.0,
+     "abs_us": 87434099866.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_canonical_write",
+     "elapsed_us": 659847.0,
+     "abs_us": 87434759738.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_chart",
+     "elapsed_us": 1731223.0,
+     "abs_us": 87434759765.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_canonical",
+     "elapsed_us": 17013.0,
+     "abs_us": 87434776783.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_document",
+     "elapsed_us": 1748297.0,
+     "abs_us": 87434776811.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resolve_parameters",
+     "elapsed_us": 6.0,
+     "abs_us": 87434776820.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "preflight",
+     "elapsed_us": 14.0,
+     "abs_us": 87434776838.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "animation_compile",
+     "elapsed_us": 12.0,
+     "abs_us": 87434776852.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_compile",
+     "elapsed_us": 88420.0,
+     "abs_us": 87434865280.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resources",
+     "elapsed_us": 29.0,
+     "abs_us": 87434865340.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "audio",
+     "elapsed_us": 3.0,
+     "abs_us": 87434865345.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "runtime",
+     "elapsed_us": 200065.0,
+     "abs_us": 87435065413.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "presentation",
+     "elapsed_us": 1982.0,
+     "abs_us": 87435067421.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_runtime",
+     "elapsed_us": 6.0,
+     "abs_us": 87435067434.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_frame",
+     "elapsed_us": 2.0,
+     "abs_us": 87435067438.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "snapshot_layout",
+     "elapsed_us": 18642.0,
+     "abs_us": 87435086081.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "identity",
+     "elapsed_us": 16.0,
+     "abs_us": 87435086121.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "assemble",
+     "elapsed_us": 1615.0,
+     "abs_us": 87435087737.0,
+     "begin_us": null
+    }
+   ],
+   "trace_stages_us": {
+    "json_dom_parse": 724717.0,
+    "chart_typed_read": 346574.0,
+    "chart_canonical_write": 659847.0,
+    "load_chart": 1731223.0,
+    "load_canonical": 17013.0,
+    "load_document": 1748297.0,
+    "resolve_parameters": 6.0,
+    "preflight": 14.0,
+    "animation_compile": 12.0,
+    "chart_compile": 88420.0,
+    "resources": 29.0,
+    "audio": 3.0,
+    "runtime": 200065.0,
+    "presentation": 1982.0,
+    "commit_runtime": 6.0,
+    "commit_frame": 2.0,
+    "snapshot_layout": 18642.0,
+    "identity": 16.0,
+    "assemble": 1615.0
+   },
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "A-untraced-40000",
+   "index": 5,
+   "entities": 40000,
+   "mode": "static",
+   "traced": false,
+   "returncode": 0,
+   "wall_s": 3.421,
+   "stages_us": {
+    "fixture_source": 62870.7,
+    "playback_prepare": 2048681.8,
+    "sdl_runtime": 60500.3,
+    "gl_context": 13.3,
+    "window_create": 238191.6,
+    "backend_create": 11033.9,
+    "pixel_readback": 4.8,
+    "renderer_prepare": 372.1,
+    "session_commit": 10.2,
+    "backend_activate": 2.0,
+    "first_update": 5977.5,
+    "first_extract": 11936.5,
+    "first_submit": 42457.7,
+    "first_present": 119.7
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 198257.5,
+      "abs_us": 261223.5
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 450078.9,
+      "abs_us": 513044.9
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 702180.3,
+      "abs_us": 765146.3
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 955272.5,
+      "abs_us": 1018238.5
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1209864.0,
+      "abs_us": 1272830.0
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1463157.5,
+      "abs_us": 1526123.5
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1715072.4,
+      "abs_us": 1778038.4
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1966703.0,
+      "abs_us": 2029669.0
+     },
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 108180.6000000001,
+      "abs_us": 2280438.6
+     }
+    ],
+    "window": {
+     "at_us": 2410543.8,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 2485359.3,
+    "total": {
+     "first_present_us": 2485368.5
+    }
+   },
+   "trace_events": [],
+   "trace_stages_us": {},
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "B-traced-40000",
+   "index": 5,
+   "entities": 40000,
+   "mode": "static",
+   "traced": true,
+   "returncode": 0,
+   "wall_s": 3.51,
+   "stages_us": {
+    "fixture_source": 62284.5,
+    "playback_prepare": 2040530.6,
+    "sdl_runtime": 59750.1,
+    "gl_context": 13.2,
+    "window_create": 245528.5,
+    "backend_create": 11044.5,
+    "pixel_readback": 5.4,
+    "renderer_prepare": 339.1,
+    "session_commit": 10.7,
+    "backend_activate": 1.4,
+    "first_update": 5865.4,
+    "first_extract": 11847.1,
+    "first_submit": 42342.5,
+    "first_present": 106.0
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 193048.8,
+      "abs_us": 255423.8
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 444895.7,
+      "abs_us": 507270.7
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 696155.7,
+      "abs_us": 758530.7
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 948360.6,
+      "abs_us": 1010735.6
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1202052.7,
+      "abs_us": 1264427.7
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1453657.7,
+      "abs_us": 1516032.7
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1704280.9,
+      "abs_us": 1766655.9
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1956021.4,
+      "abs_us": 2018396.4
+     },
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 106031.1000000001,
+      "abs_us": 2268787.1
+     }
+    ],
+    "window": {
+     "at_us": 2408366.8,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 2482839.6,
+    "total": {
+     "first_present_us": 2482845.6
+    }
+   },
+   "trace_events": [
+    {
+     "event": "end",
+     "stage": "json_dom_parse",
+     "elapsed_us": 715833.0,
+     "abs_us": 87440327268.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_typed_read",
+     "elapsed_us": 343014.0,
+     "abs_us": 87440670302.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_canonical_write",
+     "elapsed_us": 650022.0,
+     "abs_us": 87441320352.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_chart",
+     "elapsed_us": 1708960.0,
+     "abs_us": 87441320384.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_canonical",
+     "elapsed_us": 16940.0,
+     "abs_us": 87441337329.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_document",
+     "elapsed_us": 1725961.0,
+     "abs_us": 87441337353.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resolve_parameters",
+     "elapsed_us": 6.0,
+     "abs_us": 87441337362.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "preflight",
+     "elapsed_us": 13.0,
+     "abs_us": 87441337379.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "animation_compile",
+     "elapsed_us": 8.0,
+     "abs_us": 87441337393.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_compile",
+     "elapsed_us": 87772.0,
+     "abs_us": 87441425172.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resources",
+     "elapsed_us": 30.0,
+     "abs_us": 87441425233.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "audio",
+     "elapsed_us": 2.0,
+     "abs_us": 87441425237.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "runtime",
+     "elapsed_us": 198962.0,
+     "abs_us": 87441624203.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "presentation",
+     "elapsed_us": 1952.0,
+     "abs_us": 87441626189.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_runtime",
+     "elapsed_us": 5.0,
+     "abs_us": 87441626201.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_frame",
+     "elapsed_us": 1.0,
+     "abs_us": 87441626205.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "snapshot_layout",
+     "elapsed_us": 19104.0,
+     "abs_us": 87441645311.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "identity",
+     "elapsed_us": 16.0,
+     "abs_us": 87441645346.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "assemble",
+     "elapsed_us": 1692.0,
+     "abs_us": 87441647040.0,
+     "begin_us": null
+    }
+   ],
+   "trace_stages_us": {
+    "json_dom_parse": 715833.0,
+    "chart_typed_read": 343014.0,
+    "chart_canonical_write": 650022.0,
+    "load_chart": 1708960.0,
+    "load_canonical": 16940.0,
+    "load_document": 1725961.0,
+    "resolve_parameters": 6.0,
+    "preflight": 13.0,
+    "animation_compile": 8.0,
+    "chart_compile": 87772.0,
+    "resources": 30.0,
+    "audio": 2.0,
+    "runtime": 198962.0,
+    "presentation": 1952.0,
+    "commit_runtime": 5.0,
+    "commit_frame": 1.0,
+    "snapshot_layout": 19104.0,
+    "identity": 16.0,
+    "assemble": 1692.0
+   },
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "A-untraced-40000",
+   "index": 6,
+   "entities": 40000,
+   "mode": "static",
+   "traced": false,
+   "returncode": 0,
+   "wall_s": 3.153,
+   "stages_us": {
+    "fixture_source": 62382.9,
+    "playback_prepare": 2045567.0,
+    "sdl_runtime": 59553.6,
+    "gl_context": 12.2,
+    "window_create": 236204.5,
+    "backend_create": 12936.8,
+    "pixel_readback": 5.7,
+    "renderer_prepare": 350.1,
+    "session_commit": 11.3,
+    "backend_activate": 2.2,
+    "first_update": 6122.9,
+    "first_extract": 12060.1,
+    "first_submit": 42229.7,
+    "first_present": 281.8
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 193706.3,
+      "abs_us": 256184.3
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 446266.2,
+      "abs_us": 508744.2
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 699690.7,
+      "abs_us": 762168.7
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 953973.2,
+      "abs_us": 1016451.2
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1205642.8,
+      "abs_us": 1268120.8
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1456680.2,
+      "abs_us": 1519158.2
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1710052.0,
+      "abs_us": 1772530.0
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1964078.9,
+      "abs_us": 2026556.9
+     },
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 109302.6000000001,
+      "abs_us": 2277015.6
+     }
+    ],
+    "window": {
+     "at_us": 2404012.4,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 2480832.4,
+    "total": {
+     "first_present_us": 2480843.1
+    }
+   },
+   "trace_events": [],
+   "trace_stages_us": {},
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "B-traced-40000",
+   "index": 6,
+   "entities": 40000,
+   "mode": "static",
+   "traced": true,
+   "returncode": 0,
+   "wall_s": 3.154,
+   "stages_us": {
+    "fixture_source": 62830.2,
+    "playback_prepare": 2054499.7,
+    "sdl_runtime": 57966.7,
+    "gl_context": 12.5,
+    "window_create": 245168.7,
+    "backend_create": 11048.0,
+    "pixel_readback": 5.2,
+    "renderer_prepare": 380.4,
+    "session_commit": 9.9,
+    "backend_activate": 3.6,
+    "first_update": 6083.8,
+    "first_extract": 11541.8,
+    "first_submit": 42342.6,
+    "first_present": 123.9
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 195088.3,
+      "abs_us": 258016.3
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 460186.6,
+      "abs_us": 523114.6
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 714609.1,
+      "abs_us": 777537.1
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 967110.9,
+      "abs_us": 1030038.9
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1219088.8,
+      "abs_us": 1282016.8
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1470444.6,
+      "abs_us": 1533372.6
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1724685.4,
+      "abs_us": 1787613.4
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1978086.7,
+      "abs_us": 2041014.7
+     },
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 116553.79999999981,
+      "abs_us": 2292041.8
+     }
+    ],
+    "window": {
+     "at_us": 2420845.5,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 2495693.9,
+    "total": {
+     "first_present_us": 2495700.3
+    }
+   },
+   "trace_events": [
+    {
+     "event": "end",
+     "stage": "json_dom_parse",
+     "elapsed_us": 722097.0,
+     "abs_us": 87447000559.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_typed_read",
+     "elapsed_us": 346035.0,
+     "abs_us": 87447346616.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_canonical_write",
+     "elapsed_us": 653576.0,
+     "abs_us": 87448000220.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_chart",
+     "elapsed_us": 1721802.0,
+     "abs_us": 87448000253.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_canonical",
+     "elapsed_us": 17034.0,
+     "abs_us": 87448017292.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_document",
+     "elapsed_us": 1738900.0,
+     "abs_us": 87448017320.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resolve_parameters",
+     "elapsed_us": 6.0,
+     "abs_us": 87448017329.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "preflight",
+     "elapsed_us": 13.0,
+     "abs_us": 87448017346.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "animation_compile",
+     "elapsed_us": 11.0,
+     "abs_us": 87448017359.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_compile",
+     "elapsed_us": 88054.0,
+     "abs_us": 87448105421.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resources",
+     "elapsed_us": 30.0,
+     "abs_us": 87448105480.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "audio",
+     "elapsed_us": 3.0,
+     "abs_us": 87448105484.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "runtime",
+     "elapsed_us": 199808.0,
+     "abs_us": 87448305295.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "presentation",
+     "elapsed_us": 2098.0,
+     "abs_us": 87448307419.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_runtime",
+     "elapsed_us": 6.0,
+     "abs_us": 87448307432.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_frame",
+     "elapsed_us": 1.0,
+     "abs_us": 87448307436.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "snapshot_layout",
+     "elapsed_us": 18983.0,
+     "abs_us": 87448326420.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "identity",
+     "elapsed_us": 15.0,
+     "abs_us": 87448326458.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "assemble",
+     "elapsed_us": 1643.0,
+     "abs_us": 87448328103.0,
+     "begin_us": null
+    }
+   ],
+   "trace_stages_us": {
+    "json_dom_parse": 722097.0,
+    "chart_typed_read": 346035.0,
+    "chart_canonical_write": 653576.0,
+    "load_chart": 1721802.0,
+    "load_canonical": 17034.0,
+    "load_document": 1738900.0,
+    "resolve_parameters": 6.0,
+    "preflight": 13.0,
+    "animation_compile": 11.0,
+    "chart_compile": 88054.0,
+    "resources": 30.0,
+    "audio": 3.0,
+    "runtime": 199808.0,
+    "presentation": 2098.0,
+    "commit_runtime": 6.0,
+    "commit_frame": 1.0,
+    "snapshot_layout": 18983.0,
+    "identity": 15.0,
+    "assemble": 1643.0
+   },
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "A-untraced-40000",
+   "index": 7,
+   "entities": 40000,
+   "mode": "static",
+   "traced": false,
+   "returncode": 0,
+   "wall_s": 3.146,
+   "stages_us": {
+    "fixture_source": 68191.3,
+    "playback_prepare": 2057308.6,
+    "sdl_runtime": 59767.6,
+    "gl_context": 16.2,
+    "window_create": 226445.2,
+    "backend_create": 10934.4,
+    "pixel_readback": 5.5,
+    "renderer_prepare": 341.5,
+    "session_commit": 11.0,
+    "backend_activate": 2.4,
+    "first_update": 5870.3,
+    "first_extract": 11580.1,
+    "first_submit": 42306.9,
+    "first_present": 113.1
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 185766.1,
+      "abs_us": 254070.1
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 437188.6,
+      "abs_us": 505492.6
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 689802.7,
+      "abs_us": 758106.7
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 941456.2,
+      "abs_us": 1009760.2
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1194979.4,
+      "abs_us": 1263283.4
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1449659.4,
+      "abs_us": 1517963.4
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1700522.4,
+      "abs_us": 1768826.4
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1954382.6,
+      "abs_us": 2022686.6
+     },
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 87504.29999999981,
+      "abs_us": 2272993.3
+     }
+    ],
+    "window": {
+     "at_us": 2412026.5,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 2485968.3,
+    "total": {
+     "first_present_us": 2485974.4
+    }
+   },
+   "trace_events": [],
+   "trace_stages_us": {},
+   "trace_span_us": 0.0
+  },
+  {
+   "arm": "B-traced-40000",
+   "index": 7,
+   "entities": 40000,
+   "mode": "static",
+   "traced": true,
+   "returncode": 0,
+   "wall_s": 3.137,
+   "stages_us": {
+    "fixture_source": 62317.1,
+    "playback_prepare": 2045789.7,
+    "sdl_runtime": 58385.3,
+    "gl_context": 24.5,
+    "window_create": 231221.3,
+    "backend_create": 11279.7,
+    "pixel_readback": 4.7,
+    "renderer_prepare": 348.8,
+    "session_commit": 10.1,
+    "backend_activate": 1.7,
+    "first_update": 6001.3,
+    "first_extract": 11766.3,
+    "first_submit": 42890.5,
+    "first_present": 145.6
+   },
+   "extra": {
+    "heartbeat": [
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 191515.5,
+      "abs_us": 253919.5
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 443831.3,
+      "abs_us": 506235.3
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 698644.6,
+      "abs_us": 761048.6
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 950646.5,
+      "abs_us": 1013050.5
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1202838.4,
+      "abs_us": 1265242.4
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1455972.1,
+      "abs_us": 1518376.1
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1709401.2,
+      "abs_us": 1771805.2
+     },
+     {
+      "stage": "playback_prepare",
+      "stage_elapsed_us": 1960975.5,
+      "abs_us": 2023379.5
+     },
+     {
+      "stage": "window_create",
+      "stage_elapsed_us": 107397.70000000019,
+      "abs_us": 2274097.7
+     }
+    ],
+    "window": {
+     "at_us": 2398088,
+     "window_id": 2,
+     "hidden": false,
+     "opengl": true,
+     "width": 1280,
+     "height": 720
+    },
+    "shown_us": 2473378.6,
+    "total": {
+     "first_present_us": 2473386.1
+    }
+   },
+   "trace_events": [
+    {
+     "event": "end",
+     "stage": "json_dom_parse",
+     "elapsed_us": 720973.0,
+     "abs_us": 87453305070.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_typed_read",
+     "elapsed_us": 345169.0,
+     "abs_us": 87453650264.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_canonical_write",
+     "elapsed_us": 649729.0,
+     "abs_us": 87454300017.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_chart",
+     "elapsed_us": 1715954.0,
+     "abs_us": 87454300041.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_canonical",
+     "elapsed_us": 16982.0,
+     "abs_us": 87454317027.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "load_document",
+     "elapsed_us": 1733001.0,
+     "abs_us": 87454317060.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resolve_parameters",
+     "elapsed_us": 6.0,
+     "abs_us": 87454317068.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "preflight",
+     "elapsed_us": 15.0,
+     "abs_us": 87454317087.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "animation_compile",
+     "elapsed_us": 16.0,
+     "abs_us": 87454317105.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "chart_compile",
+     "elapsed_us": 86696.0,
+     "abs_us": 87454403810.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "resources",
+     "elapsed_us": 31.0,
+     "abs_us": 87454403870.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "audio",
+     "elapsed_us": 2.0,
+     "abs_us": 87454403874.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "runtime",
+     "elapsed_us": 198523.0,
+     "abs_us": 87454602400.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "presentation",
+     "elapsed_us": 1966.0,
+     "abs_us": 87454604390.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_runtime",
+     "elapsed_us": 6.0,
+     "abs_us": 87454604403.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "commit_frame",
+     "elapsed_us": 2.0,
+     "abs_us": 87454604407.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "snapshot_layout",
+     "elapsed_us": 18838.0,
+     "abs_us": 87454623246.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "identity",
+     "elapsed_us": 16.0,
+     "abs_us": 87454623287.0,
+     "begin_us": null
+    },
+    {
+     "event": "end",
+     "stage": "assemble",
+     "elapsed_us": 1702.0,
+     "abs_us": 87454624990.0,
+     "begin_us": null
+    }
+   ],
+   "trace_stages_us": {
+    "json_dom_parse": 720973.0,
+    "chart_typed_read": 345169.0,
+    "chart_canonical_write": 649729.0,
+    "load_chart": 1715954.0,
+    "load_canonical": 16982.0,
+    "load_document": 1733001.0,
+    "resolve_parameters": 6.0,
+    "preflight": 15.0,
+    "animation_compile": 16.0,
+    "chart_compile": 86696.0,
+    "resources": 31.0,
+    "audio": 2.0,
+    "runtime": 198523.0,
+    "presentation": 1966.0,
+    "commit_runtime": 6.0,
+    "commit_frame": 2.0,
+    "snapshot_layout": 18838.0,
+    "identity": 16.0,
+    "assemble": 1702.0
+   },
+   "trace_span_us": 0.0
+  }
+ ]
+}

@@ -1,0 +1,59 @@
+Filters: "R3c real allocation failures preserve fault prefix and discard staged owners"
+Randomness seeded to: 1
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+rpa-mutant.exe is a Catch2 v3.15.2 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+R3c real allocation failures preserve fault prefix and discard staged owners
+-------------------------------------------------------------------------------
+D:\Cuexis-redesign\out\verification-20261030\r3-resume-v1\budget-observer-v3\rpa_b3_tests.cpp(2498)
+...............................................................................
+
+D:\Cuexis-redesign\out\verification-20261030\r3-resume-v1\budget-observer-v3\rpa_b3_tests.cpp(2531): FAILED:
+  CHECK( detail::ExecutionKernel::tickPointCount(*archive) == 0 )
+with expansion:
+  1 == 0
+
+D:\Cuexis-redesign\out\verification-20261030\r3-resume-v1\budget-observer-v3\rpa_b3_tests.cpp(2532): FAILED:
+  CHECK( detail::ExecutionKernel::tickPayloadBytes(*archive) == 0 )
+with expansion:
+  1565016 (0x17e158) == 0
+
+-------------------------------------------------------------------------------
+R3c real allocation failures preserve fault prefix and discard staged owners
+-------------------------------------------------------------------------------
+D:\Cuexis-redesign\out\verification-20261030\r3-resume-v1\budget-observer-v3\rpa_b3_tests.cpp(2498)
+...............................................................................
+
+D:\Cuexis-redesign\out\verification-20261030\r3-resume-v1\budget-observer-v3\rpa_b3_tests.cpp(2531): FAILED:
+  CHECK( detail::ExecutionKernel::tickPointCount(*archive) == 0 )
+with expansion:
+  1 == 0
+
+D:\Cuexis-redesign\out\verification-20261030\r3-resume-v1\budget-observer-v3\rpa_b3_tests.cpp(2532): FAILED:
+  CHECK( detail::ExecutionKernel::tickPayloadBytes(*archive) == 0 )
+with expansion:
+  1565016 (0x17e158) == 0
+
+-------------------------------------------------------------------------------
+R3c real allocation failures preserve fault prefix and discard staged owners
+-------------------------------------------------------------------------------
+D:\Cuexis-redesign\out\verification-20261030\r3-resume-v1\budget-observer-v3\rpa_b3_tests.cpp(2498)
+...............................................................................
+
+D:\Cuexis-redesign\out\verification-20261030\r3-resume-v1\budget-observer-v3\rpa_b3_tests.cpp(2531): FAILED:
+  CHECK( detail::ExecutionKernel::tickPointCount(*archive) == 0 )
+with expansion:
+  1 == 0
+
+D:\Cuexis-redesign\out\verification-20261030\r3-resume-v1\budget-observer-v3\rpa_b3_tests.cpp(2532): FAILED:
+  CHECK( detail::ExecutionKernel::tickPayloadBytes(*archive) == 0 )
+with expansion:
+  1565016 (0x17e158) == 0
+
+===============================================================================
+test cases:   1 |  0 passed | 1 failed
+assertions: 102 | 96 passed | 6 failed
+

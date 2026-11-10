@@ -1,0 +1,2130 @@
+{
+  "scope": "Evidence for the submit-path stall mechanism at 1080p: what the render thread waits on, how long it waits, whether the wait count or the wait duration scales with entity count, and what the frame looks like at 40000 entities. Produced by the suspend/resume instruction-pointer sampler, which is a separate instrument from the pre-registered capacity ladder and from the GPU-timer diagnostic. Diagnostic only: nothing here is a capacity point, a matrix row, or acceptance.",
+  "source_run": {
+    "work_dir": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1",
+    "archive": "2026-11-01-submit-stall-wait-evidence",
+    "created_utc": "2026-11-01T02:39:40.746606+00:00",
+    "runs": 5,
+    "timer_runs": 3,
+    "walk_runs": 4
+  },
+  "runs": [
+    {
+      "archive": "runs/wait-2800-static",
+      "role": "group A: 3 processes, 2800 entities, static, wait sampler",
+      "files": 22,
+      "archived_files": [
+        "runs/wait-2800-static/01-static-2800.log.txt.gz",
+        "runs/wait-2800-static/01-static-2800.modules.txt",
+        "runs/wait-2800-static/01-static-2800.runs.json",
+        "runs/wait-2800-static/01-static-2800.sampler.txt",
+        "runs/wait-2800-static/01-static-2800.samples.txt.gz",
+        "runs/wait-2800-static/01-static-2800.wait.json",
+        "runs/wait-2800-static/02-static-2800.log.txt.gz",
+        "runs/wait-2800-static/02-static-2800.modules.txt",
+        "runs/wait-2800-static/02-static-2800.runs.json",
+        "runs/wait-2800-static/02-static-2800.sampler.txt",
+        "runs/wait-2800-static/02-static-2800.samples.txt.gz",
+        "runs/wait-2800-static/02-static-2800.wait.json",
+        "runs/wait-2800-static/03-static-2800.log.txt.gz",
+        "runs/wait-2800-static/03-static-2800.modules.txt",
+        "runs/wait-2800-static/03-static-2800.runs.json",
+        "runs/wait-2800-static/03-static-2800.sampler.txt",
+        "runs/wait-2800-static/03-static-2800.samples.txt.gz",
+        "runs/wait-2800-static/03-static-2800.wait.json",
+        "runs/wait-2800-static/registration.json",
+        "runs/wait-2800-static/results-01-static-2800.json",
+        "runs/wait-2800-static/results-02-static-2800.json",
+        "runs/wait-2800-static/results-03-static-2800.json"
+      ],
+      "entities": 2800,
+      "mode": "static",
+      "processes": 3,
+      "handles": false,
+      "registration": {
+        "scope": "instruction pointer sampling of the submit-path stall at 1080p; separate instrument, diagnostic only, not the pre-registered ladder and not acceptance",
+        "created_utc": "2026-11-01T02:05:03.338243+00:00",
+        "head": "04b6fa3c193accdd8914357b6b98d933cdeda1c5",
+        "dirty_files": [],
+        "plan": {
+          "groups": [
+            "static"
+          ],
+          "processes_per_group": 3,
+          "entities": 2800,
+          "seconds_per_process": 20.0,
+          "frames_per_process": 120,
+          "viewport": [
+            1920,
+            1080
+          ],
+          "affinity": 65535,
+          "sampler_affinity": 32768,
+          "priority": "BelowNormal",
+          "qos": "execution throttling OFF",
+          "timer": false,
+          "pixel_readback": true,
+          "budget_us": 4166.666666666667,
+          "pass_rule": "wall FPS >= 240 and cycle p99 <= 4.166667 ms and every complete one-second window >= 240 frames",
+          "stop": "an invalid process stops the run; budget failures are retained",
+          "instrument": "sample_wait.py instruction pointer sampling, roughly 13 kHz per thread",
+          "sampler": "sample_wait.py",
+          "identify_handles": false,
+          "identify_stack_bytes": 0
+        },
+        "binary": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_execution_device_probe.exe",
+        "binary_sha256": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8",
+        "probe_source_sha256": "e98f1dac026e51cfebdfb331c657bdb9a6e77e6896a493f6c57a8040fdcd07f0",
+        "sampler": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\sample_wait.py",
+        "sampler_sha256": "af4bd451f1f69da98253a888e2058614edec022e053c50b6398334ca2c8e317c",
+        "analyzer": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\analyze_wait.py",
+        "analyzer_sha256": "79a4707d78ccdac87372a9d0c1af8a18a9f00141eff6f14775dd4213dbdf5553",
+        "driver": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\run_sample.py",
+        "driver_sha256": "79b362f302f0b67c58856291867a63e0d9413f2eb09524a953246a608a8eebd3",
+        "runner_sha256": "30a34162c5ded51c06fbe01796349966f215e37554a2150f093dad5680000a01"
+      }
+    },
+    {
+      "archive": "runs/wait-1800-static",
+      "role": "group B: 3 processes, 1800 entities, static, wait sampler",
+      "files": 22,
+      "archived_files": [
+        "runs/wait-1800-static/01-static-1800.log.txt.gz",
+        "runs/wait-1800-static/01-static-1800.modules.txt",
+        "runs/wait-1800-static/01-static-1800.runs.json",
+        "runs/wait-1800-static/01-static-1800.sampler.txt",
+        "runs/wait-1800-static/01-static-1800.samples.txt.gz",
+        "runs/wait-1800-static/01-static-1800.wait.json",
+        "runs/wait-1800-static/02-static-1800.log.txt.gz",
+        "runs/wait-1800-static/02-static-1800.modules.txt",
+        "runs/wait-1800-static/02-static-1800.runs.json",
+        "runs/wait-1800-static/02-static-1800.sampler.txt",
+        "runs/wait-1800-static/02-static-1800.samples.txt.gz",
+        "runs/wait-1800-static/02-static-1800.wait.json",
+        "runs/wait-1800-static/03-static-1800.log.txt.gz",
+        "runs/wait-1800-static/03-static-1800.modules.txt",
+        "runs/wait-1800-static/03-static-1800.runs.json",
+        "runs/wait-1800-static/03-static-1800.sampler.txt",
+        "runs/wait-1800-static/03-static-1800.samples.txt.gz",
+        "runs/wait-1800-static/03-static-1800.wait.json",
+        "runs/wait-1800-static/registration.json",
+        "runs/wait-1800-static/results-01-static-1800.json",
+        "runs/wait-1800-static/results-02-static-1800.json",
+        "runs/wait-1800-static/results-03-static-1800.json"
+      ],
+      "entities": 1800,
+      "mode": "static",
+      "processes": 3,
+      "handles": false,
+      "registration": {
+        "scope": "instruction pointer sampling of the submit-path stall at 1080p; separate instrument, diagnostic only, not the pre-registered ladder and not acceptance",
+        "created_utc": "2026-11-01T02:06:21.564361+00:00",
+        "head": "04b6fa3c193accdd8914357b6b98d933cdeda1c5",
+        "dirty_files": [],
+        "plan": {
+          "groups": [
+            "static"
+          ],
+          "processes_per_group": 3,
+          "entities": 1800,
+          "seconds_per_process": 20.0,
+          "frames_per_process": 120,
+          "viewport": [
+            1920,
+            1080
+          ],
+          "affinity": 65535,
+          "sampler_affinity": 32768,
+          "priority": "BelowNormal",
+          "qos": "execution throttling OFF",
+          "timer": false,
+          "pixel_readback": true,
+          "budget_us": 4166.666666666667,
+          "pass_rule": "wall FPS >= 240 and cycle p99 <= 4.166667 ms and every complete one-second window >= 240 frames",
+          "stop": "an invalid process stops the run; budget failures are retained",
+          "instrument": "sample_wait.py instruction pointer sampling, roughly 13 kHz per thread",
+          "sampler": "sample_wait.py",
+          "identify_handles": false,
+          "identify_stack_bytes": 0
+        },
+        "binary": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_execution_device_probe.exe",
+        "binary_sha256": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8",
+        "probe_source_sha256": "e98f1dac026e51cfebdfb331c657bdb9a6e77e6896a493f6c57a8040fdcd07f0",
+        "sampler": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\sample_wait.py",
+        "sampler_sha256": "af4bd451f1f69da98253a888e2058614edec022e053c50b6398334ca2c8e317c",
+        "analyzer": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\analyze_wait.py",
+        "analyzer_sha256": "79a4707d78ccdac87372a9d0c1af8a18a9f00141eff6f14775dd4213dbdf5553",
+        "driver": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\run_sample.py",
+        "driver_sha256": "79b362f302f0b67c58856291867a63e0d9413f2eb09524a953246a608a8eebd3",
+        "runner_sha256": "30a34162c5ded51c06fbe01796349966f215e37554a2150f093dad5680000a01"
+      }
+    },
+    {
+      "archive": "runs/wait-2800-static-handles",
+      "role": "identity run: 1 process, 2800 entities, static, wait sampler with handle labelling",
+      "files": 9,
+      "archived_files": [
+        "runs/wait-2800-static-handles/01-static-2800.handles.txt",
+        "runs/wait-2800-static-handles/01-static-2800.log.txt.gz",
+        "runs/wait-2800-static-handles/01-static-2800.modules.txt",
+        "runs/wait-2800-static-handles/01-static-2800.runs.json",
+        "runs/wait-2800-static-handles/01-static-2800.sampler.txt",
+        "runs/wait-2800-static-handles/01-static-2800.samples.txt.gz",
+        "runs/wait-2800-static-handles/01-static-2800.wait.json",
+        "runs/wait-2800-static-handles/registration.json",
+        "runs/wait-2800-static-handles/results-01-static-2800.json"
+      ],
+      "entities": 2800,
+      "mode": "static",
+      "processes": 1,
+      "handles": true,
+      "registration": {
+        "scope": "instruction pointer sampling of the submit-path stall at 1080p; separate instrument, diagnostic only, not the pre-registered ladder and not acceptance",
+        "created_utc": "2026-11-01T02:07:38.799182+00:00",
+        "head": "04b6fa3c193accdd8914357b6b98d933cdeda1c5",
+        "dirty_files": [],
+        "plan": {
+          "groups": [
+            "static"
+          ],
+          "processes_per_group": 1,
+          "entities": 2800,
+          "seconds_per_process": 20.0,
+          "frames_per_process": 120,
+          "viewport": [
+            1920,
+            1080
+          ],
+          "affinity": 65535,
+          "sampler_affinity": 32768,
+          "priority": "BelowNormal",
+          "qos": "execution throttling OFF",
+          "timer": false,
+          "pixel_readback": true,
+          "budget_us": 4166.666666666667,
+          "pass_rule": "wall FPS >= 240 and cycle p99 <= 4.166667 ms and every complete one-second window >= 240 frames",
+          "stop": "an invalid process stops the run; budget failures are retained",
+          "instrument": "sample_wait.py instruction pointer sampling, roughly 13 kHz per thread",
+          "sampler": "sample_wait.py",
+          "identify_handles": true,
+          "identify_stack_bytes": 0
+        },
+        "binary": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_execution_device_probe.exe",
+        "binary_sha256": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8",
+        "probe_source_sha256": "e98f1dac026e51cfebdfb331c657bdb9a6e77e6896a493f6c57a8040fdcd07f0",
+        "sampler": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\sample_wait.py",
+        "sampler_sha256": "af4bd451f1f69da98253a888e2058614edec022e053c50b6398334ca2c8e317c",
+        "analyzer": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\analyze_wait.py",
+        "analyzer_sha256": "79a4707d78ccdac87372a9d0c1af8a18a9f00141eff6f14775dd4213dbdf5553",
+        "driver": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\run_sample.py",
+        "driver_sha256": "79b362f302f0b67c58856291867a63e0d9413f2eb09524a953246a608a8eebd3",
+        "runner_sha256": "30a34162c5ded51c06fbe01796349966f215e37554a2150f093dad5680000a01"
+      }
+    },
+    {
+      "archive": "runs/rip-2800-static",
+      "role": "instrument lineage: the RIP-sampler pilot at 2800 static. Superseded by group A; its analyzer was revised afterwards, so its analysis file is not reproducible from the archived instrument and no number in the report derives from it.",
+      "files": 13,
+      "archived_files": [
+        "runs/rip-2800-static/01-static-2800.log.txt.gz",
+        "runs/rip-2800-static/01-static-2800.modules.txt",
+        "runs/rip-2800-static/01-static-2800.sampler.txt",
+        "runs/rip-2800-static/01-static-2800.samples.txt.gz",
+        "runs/rip-2800-static/analysis-01.json",
+        "runs/rip-2800-static/registration.json",
+        "runs/rip-2800-static/results-01-static-2800.json",
+        "runs/rip-2800-static/invalid-attempt-01/01-static-2800.log.txt.gz",
+        "runs/rip-2800-static/invalid-attempt-01/01-static-2800.modules.txt",
+        "runs/rip-2800-static/invalid-attempt-01/01-static-2800.sampler.txt",
+        "runs/rip-2800-static/invalid-attempt-01/01-static-2800.samples.txt.gz",
+        "runs/rip-2800-static/invalid-attempt-01/registration.json",
+        "runs/rip-2800-static/invalid-attempt-01/results-01-static-2800.json"
+      ],
+      "entities": 2800,
+      "mode": "static",
+      "processes": 1,
+      "handles": false,
+      "registration": {
+        "scope": "instruction pointer sampling of the submit-path stall at 1080p; separate instrument, diagnostic only, not the pre-registered ladder and not acceptance",
+        "created_utc": "2026-11-01T01:37:32.550437+00:00",
+        "head": "04b6fa3c193accdd8914357b6b98d933cdeda1c5",
+        "dirty_files": [],
+        "plan": {
+          "groups": [
+            "static"
+          ],
+          "processes_per_group": 1,
+          "entities": 2800,
+          "seconds_per_process": 20.0,
+          "frames_per_process": 120,
+          "viewport": [
+            1920,
+            1080
+          ],
+          "affinity": 65535,
+          "sampler_affinity": 32768,
+          "priority": "BelowNormal",
+          "qos": "execution throttling OFF",
+          "timer": false,
+          "pixel_readback": true,
+          "budget_us": 4166.666666666667,
+          "pass_rule": "wall FPS >= 240 and cycle p99 <= 4.166667 ms and every complete one-second window >= 240 frames",
+          "stop": "an invalid process stops the run; budget failures are retained",
+          "instrument": "sample_rip.py instruction pointer sampling, roughly 13 kHz per thread"
+        },
+        "binary": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_execution_device_probe.exe",
+        "binary_sha256": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8",
+        "probe_source_sha256": "e98f1dac026e51cfebdfb331c657bdb9a6e77e6896a493f6c57a8040fdcd07f0",
+        "sampler": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\sample_rip.py",
+        "sampler_sha256": "70cbd75e45bca327019bf2b8d00c5fb032c4ba3c91afa78396b6a2991c715291",
+        "analyzer": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\analyze_rip.py",
+        "analyzer_sha256": "326bc47795ed5e7d6b6b1bf1baa69d5c95b229352fd174998b93648aaf339544",
+        "driver": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\run_sample.py",
+        "driver_sha256": "07dd1ccf89b6f5010953b4e5d877edf808c0e2ea2f1c6265f110c390bd863eef",
+        "runner_sha256": "30a34162c5ded51c06fbe01796349966f215e37554a2150f093dad5680000a01"
+      }
+    },
+    {
+      "archive": "runs/rip-smoke",
+      "role": "instrument self-test: one short process that proves the sampler attaches, captures samples and writes the handle table. No number in the report derives from it.",
+      "files": 6,
+      "archived_files": [
+        "runs/rip-smoke/00-static-2800.log.txt.gz",
+        "runs/rip-smoke/00-static-2800.modules.txt",
+        "runs/rip-smoke/00-static-2800.sampler.txt",
+        "runs/rip-smoke/00-static-2800.samples.txt.gz",
+        "runs/rip-smoke/registration.json",
+        "runs/rip-smoke/results-00-static-2800.json"
+      ],
+      "entities": 2800,
+      "mode": "static",
+      "processes": 1,
+      "handles": false,
+      "registration": {
+        "scope": "instruction pointer sampling of the submit-path stall at 1080p; separate instrument, diagnostic only, not the pre-registered ladder and not acceptance",
+        "created_utc": "2026-11-01T01:52:17.467476+00:00",
+        "head": "04b6fa3c193accdd8914357b6b98d933cdeda1c5",
+        "dirty_files": [],
+        "plan": {
+          "groups": [
+            "static"
+          ],
+          "processes_per_group": 1,
+          "entities": 2800,
+          "seconds_per_process": 5.0,
+          "frames_per_process": 120,
+          "viewport": [
+            1920,
+            1080
+          ],
+          "affinity": 65535,
+          "sampler_affinity": 32768,
+          "priority": "BelowNormal",
+          "qos": "execution throttling OFF",
+          "timer": false,
+          "pixel_readback": true,
+          "budget_us": 4166.666666666667,
+          "pass_rule": "wall FPS >= 240 and cycle p99 <= 4.166667 ms and every complete one-second window >= 240 frames",
+          "stop": "an invalid process stops the run; budget failures are retained",
+          "instrument": "sample_rip.py instruction pointer sampling, roughly 13 kHz per thread",
+          "sampler": "sample_wait.py",
+          "identify_handles": false
+        },
+        "binary": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_execution_device_probe.exe",
+        "binary_sha256": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8",
+        "probe_source_sha256": "e98f1dac026e51cfebdfb331c657bdb9a6e77e6896a493f6c57a8040fdcd07f0",
+        "sampler": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\sample_wait.py",
+        "sampler_sha256": "af4bd451f1f69da98253a888e2058614edec022e053c50b6398334ca2c8e317c",
+        "analyzer": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\analyze_rip.py",
+        "analyzer_sha256": "62bf05ac09f384c705502b3dc5c001c6587a7af0d548e5fe725bc14e6146e166",
+        "driver": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\run_sample.py",
+        "driver_sha256": "998c5665b93e61b104da4942c636612746e8756e2b4aa8ca4bf68c17e811e77e",
+        "runner_sha256": "30a34162c5ded51c06fbe01796349966f215e37554a2150f093dad5680000a01"
+      }
+    }
+  ],
+  "timer_runs": [
+    {
+      "archive": "timer-instrument/runs/n1800",
+      "role": "GPU-timer instrument at 1800 entities, both modes, 3 processes each",
+      "files": 8,
+      "archived_files": [
+        "timer-instrument/runs/n1800/01-render-only-1800.log.txt.gz",
+        "timer-instrument/runs/n1800/01-static-1800.log.txt.gz",
+        "timer-instrument/runs/n1800/02-render-only-1800.log.txt.gz",
+        "timer-instrument/runs/n1800/02-static-1800.log.txt.gz",
+        "timer-instrument/runs/n1800/03-render-only-1800.log.txt.gz",
+        "timer-instrument/runs/n1800/03-static-1800.log.txt.gz",
+        "timer-instrument/runs/n1800/registration.json",
+        "timer-instrument/runs/n1800/results.json"
+      ],
+      "entities": 1800,
+      "mode": "render-only+static",
+      "registration": {
+        "scope": "GPU-timer diagnosis of the submit-path stall at 1080p; separate instrument, diagnostic only, not the pre-registered ladder and not acceptance",
+        "created_utc": "2026-11-01T01:15:49.575217+00:00",
+        "head": "04b6fa3c193accdd8914357b6b98d933cdeda1c5",
+        "dirty_files": [],
+        "plan": {
+          "groups": [
+            "render-only",
+            "static"
+          ],
+          "processes_per_group": 3,
+          "entities": 1800,
+          "frames_per_process": null,
+          "seconds_per_process": 20,
+          "warmup": "at least 8 frames and 2000 ms",
+          "viewport": [
+            1920,
+            1080
+          ],
+          "affinity": 65535,
+          "priority": "BelowNormal",
+          "qos": "execution throttling OFF",
+          "timer": true,
+          "pixel_readback": true,
+          "budget_us": 4166.666666666667,
+          "pass_rule": "wall FPS >= 240 and cycle p99 <= 4.166667 ms and every complete one-second window >= 240 frames",
+          "stop": "an invalid process stops the run; budget failures are retained"
+        },
+        "binary": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_execution_device_probe.exe",
+        "binary_sha256": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8",
+        "probe_source_sha256": "e98f1dac026e51cfebdfb331c657bdb9a6e77e6896a493f6c57a8040fdcd07f0",
+        "runner_sha256": "30a34162c5ded51c06fbe01796349966f215e37554a2150f093dad5680000a01"
+      }
+    },
+    {
+      "archive": "timer-instrument/runs/n2400",
+      "role": "GPU-timer instrument at 2400 entities, both modes, 3 processes each",
+      "files": 8,
+      "archived_files": [
+        "timer-instrument/runs/n2400/01-render-only-2400.log.txt.gz",
+        "timer-instrument/runs/n2400/01-static-2400.log.txt.gz",
+        "timer-instrument/runs/n2400/02-render-only-2400.log.txt.gz",
+        "timer-instrument/runs/n2400/02-static-2400.log.txt.gz",
+        "timer-instrument/runs/n2400/03-render-only-2400.log.txt.gz",
+        "timer-instrument/runs/n2400/03-static-2400.log.txt.gz",
+        "timer-instrument/runs/n2400/registration.json",
+        "timer-instrument/runs/n2400/results.json"
+      ],
+      "entities": 2400,
+      "mode": "render-only+static",
+      "registration": {
+        "scope": "GPU-timer diagnosis of the submit-path stall at 1080p; separate instrument, diagnostic only, not the pre-registered ladder and not acceptance",
+        "created_utc": "2026-11-01T01:18:07.327176+00:00",
+        "head": "04b6fa3c193accdd8914357b6b98d933cdeda1c5",
+        "dirty_files": [],
+        "plan": {
+          "groups": [
+            "render-only",
+            "static"
+          ],
+          "processes_per_group": 3,
+          "entities": 2400,
+          "frames_per_process": null,
+          "seconds_per_process": 20,
+          "warmup": "at least 8 frames and 2000 ms",
+          "viewport": [
+            1920,
+            1080
+          ],
+          "affinity": 65535,
+          "priority": "BelowNormal",
+          "qos": "execution throttling OFF",
+          "timer": true,
+          "pixel_readback": true,
+          "budget_us": 4166.666666666667,
+          "pass_rule": "wall FPS >= 240 and cycle p99 <= 4.166667 ms and every complete one-second window >= 240 frames",
+          "stop": "an invalid process stops the run; budget failures are retained"
+        },
+        "binary": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_execution_device_probe.exe",
+        "binary_sha256": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8",
+        "probe_source_sha256": "e98f1dac026e51cfebdfb331c657bdb9a6e77e6896a493f6c57a8040fdcd07f0",
+        "runner_sha256": "30a34162c5ded51c06fbe01796349966f215e37554a2150f093dad5680000a01"
+      }
+    },
+    {
+      "archive": "timer-instrument/runs/n2800",
+      "role": "GPU-timer instrument at 2800 entities, both modes, 3 processes each",
+      "files": 8,
+      "archived_files": [
+        "timer-instrument/runs/n2800/01-render-only-2800.log.txt.gz",
+        "timer-instrument/runs/n2800/01-static-2800.log.txt.gz",
+        "timer-instrument/runs/n2800/02-render-only-2800.log.txt.gz",
+        "timer-instrument/runs/n2800/02-static-2800.log.txt.gz",
+        "timer-instrument/runs/n2800/03-render-only-2800.log.txt.gz",
+        "timer-instrument/runs/n2800/03-static-2800.log.txt.gz",
+        "timer-instrument/runs/n2800/registration.json",
+        "timer-instrument/runs/n2800/results.json"
+      ],
+      "entities": 2800,
+      "mode": "render-only+static",
+      "registration": {
+        "scope": "GPU-timer diagnosis of the submit-path stall at 1080p; separate instrument, diagnostic only, not the pre-registered ladder and not acceptance",
+        "created_utc": "2026-11-01T01:20:25.155573+00:00",
+        "head": "04b6fa3c193accdd8914357b6b98d933cdeda1c5",
+        "dirty_files": [],
+        "plan": {
+          "groups": [
+            "render-only",
+            "static"
+          ],
+          "processes_per_group": 3,
+          "entities": 2800,
+          "frames_per_process": null,
+          "seconds_per_process": 20,
+          "warmup": "at least 8 frames and 2000 ms",
+          "viewport": [
+            1920,
+            1080
+          ],
+          "affinity": 65535,
+          "priority": "BelowNormal",
+          "qos": "execution throttling OFF",
+          "timer": true,
+          "pixel_readback": true,
+          "budget_us": 4166.666666666667,
+          "pass_rule": "wall FPS >= 240 and cycle p99 <= 4.166667 ms and every complete one-second window >= 240 frames",
+          "stop": "an invalid process stops the run; budget failures are retained"
+        },
+        "binary": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_execution_device_probe.exe",
+        "binary_sha256": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8",
+        "probe_source_sha256": "e98f1dac026e51cfebdfb331c657bdb9a6e77e6896a493f6c57a8040fdcd07f0",
+        "runner_sha256": "30a34162c5ded51c06fbe01796349966f215e37554a2150f093dad5680000a01"
+      }
+    }
+  ],
+  "walks": [
+    {
+      "archive": "walks/walk-probe",
+      "role": "2800 static, readback on: the caller chain above the waiting ntdll stub",
+      "files": 3,
+      "archived_files": [
+        "walks/walk-probe/probe.log.txt.gz",
+        "walks/walk-probe/walk.json",
+        "walks/walk-probe/walk.txt"
+      ]
+    },
+    {
+      "archive": "walks/walk-readback-0",
+      "role": "2800 static, readback off: same unwinder, readback contribution",
+      "files": 3,
+      "archived_files": [
+        "walks/walk-readback-0/probe.log.txt.gz",
+        "walks/walk-readback-0/walk.json",
+        "walks/walk-readback-0/walk.txt"
+      ]
+    },
+    {
+      "archive": "walks/walk-readback-1",
+      "role": "2800 static, readback on: the pair of walk-readback-0",
+      "files": 3,
+      "archived_files": [
+        "walks/walk-readback-1/probe.log.txt.gz",
+        "walks/walk-readback-1/walk.json",
+        "walks/walk-readback-1/walk.txt"
+      ]
+    },
+    {
+      "archive": "walks/walk-40000",
+      "role": "40000 static, readback on: what the frame looks like when no waiting happens",
+      "files": 3,
+      "archived_files": [
+        "walks/walk-40000/probe.log.txt.gz",
+        "walks/walk-40000/walk.json",
+        "walks/walk-40000/walk.txt"
+      ]
+    }
+  ],
+  "copied_files": [
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\PLAN.md",
+      "archive": "plan/PLAN.md",
+      "mode": "text",
+      "source_bytes": 3370,
+      "bytes": 3420,
+      "sha256": "626c2a5001af54d1cafa3d95c8447a192c80411a91904506a4b7452ef77b5d21",
+      "source_sha256": "b071b83e70ffb549bb4fce4d51ea9b10bb04da490d459b067ca146f209401a5f",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\PLAN-RIP.md",
+      "archive": "plan/PLAN-RIP.md",
+      "mode": "text",
+      "source_bytes": 6399,
+      "bytes": 6453,
+      "sha256": "0f013988614355dc20c0436fc5561f311c2b7951a4e8d65cd8f481c2e92a66c7",
+      "source_sha256": "24e74fc3b6c1deeaadad5f325dffda185c38af998eb75124f1f7c761d6c2c74c",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\PLAN-WAIT.md",
+      "archive": "plan/PLAN-WAIT.md",
+      "mode": "text",
+      "source_bytes": 6935,
+      "bytes": 6990,
+      "sha256": "4d01d5b11ad0e82d2f6648d937053414527f79a5169ae4c4596bf67bb3109044",
+      "source_sha256": "49f17c2da46c04286ffc40d86a2ffafb2addd960428abc5c7b39966f23718de4",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\analyze_rip.py",
+      "archive": "instruments/analyze_rip.py",
+      "mode": "text",
+      "source_bytes": 13768,
+      "bytes": 14103,
+      "sha256": "e5e51db223aa46bd345e0b246e3c2906a5655120fa737d733bfd1fdcdcfada1d",
+      "source_sha256": "62bf05ac09f384c705502b3dc5c001c6587a7af0d548e5fe725bc14e6146e166",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\analyze_wait.py",
+      "archive": "instruments/analyze_wait.py",
+      "mode": "text",
+      "source_bytes": 12375,
+      "bytes": 12678,
+      "sha256": "00ec2599e0b78582fdcbe886d215d413a046a8407a0fa1043f09d8ff99312d3d",
+      "source_sha256": "79a4707d78ccdac87372a9d0c1af8a18a9f00141eff6f14775dd4213dbdf5553",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\derive_all.py",
+      "archive": "instruments/derive_all.py",
+      "mode": "text",
+      "source_bytes": 3287,
+      "bytes": 3375,
+      "sha256": "99d78c718ace0bb7aa9b78103e7c2657f8d3995f248ca463342ef17ce0e844f1",
+      "source_sha256": "06194c686878ebf4bac5395afcd2ac945a3e9e4801be12ade9eb0f324fa70c21",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\derive_wait_runs.py",
+      "archive": "instruments/derive_wait_runs.py",
+      "mode": "text",
+      "source_bytes": 7204,
+      "bytes": 7368,
+      "sha256": "c664c5c1507207b5db23ad62732f4bc883aaaadf3b2549905f2c4f5b9c9878dc",
+      "source_sha256": "e89507d7240d71bdcfdf3144498687bef09bc32270cdb3911f51d0b356ba3718",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\pe_bytes.py",
+      "archive": "instruments/pe_bytes.py",
+      "mode": "text",
+      "source_bytes": 7410,
+      "bytes": 7603,
+      "sha256": "9603c8b736c35f1410a4d46b40022e07fe1c4dcd762231c23980484716d9324d",
+      "source_sha256": "4511328b986f8d2105dc063c3cc83220931d71fce710712784c36cc547ec883e",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\run_sample.py",
+      "archive": "instruments/run_sample.py",
+      "mode": "text",
+      "source_bytes": 17902,
+      "bytes": 18296,
+      "sha256": "5d231fc51661575b9adfff227271268881de2f895851ea2c15e78342b2111d09",
+      "source_sha256": "79b362f302f0b67c58856291867a63e0d9413f2eb09524a953246a608a8eebd3",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\run_wait_group.py",
+      "archive": "instruments/run_wait_group.py",
+      "mode": "text",
+      "source_bytes": 3145,
+      "bytes": 3227,
+      "sha256": "884cc52fe289be5010a5dba3f325a4e1724b363d710d142586eba0d61e15d3ec",
+      "source_sha256": "68f8d4da5e40d378587201f88e3d1d17ee7ec6218f1f2523ebc9e12399534f5a",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\sample_rip.py",
+      "archive": "instruments/sample_rip.py",
+      "mode": "text",
+      "source_bytes": 11357,
+      "bytes": 11637,
+      "sha256": "d78ed4560bbd136a383d5c11c8299672a80337a5e4b0805ce4e8702d1f50d9c8",
+      "source_sha256": "70cbd75e45bca327019bf2b8d00c5fb032c4ba3c91afa78396b6a2991c715291",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\sample_wait.py",
+      "archive": "instruments/sample_wait.py",
+      "mode": "text",
+      "source_bytes": 23453,
+      "bytes": 23966,
+      "sha256": "c1608452c5ad9820b09e1397d0f1cb7ebcb90d9a1c50c42917bccd12923b1634",
+      "source_sha256": "af4bd451f1f69da98253a888e2058614edec022e053c50b6398334ca2c8e317c",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\tabulate_wait.py",
+      "archive": "instruments/tabulate_wait.py",
+      "mode": "text",
+      "source_bytes": 11891,
+      "bytes": 12151,
+      "sha256": "a15289f0d73a281ee84f413fccb54d4431d169d7866a513ef748a13f286b52d4",
+      "source_sha256": "78194e7deb11a9ffc2460bacbb13ad9d8232d3790ef19b0a3ac1c211d2b527bc",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\walk_once.py",
+      "archive": "instruments/walk_once.py",
+      "mode": "text",
+      "source_bytes": 15492,
+      "bytes": 15844,
+      "sha256": "130e937c6ce8d9934535e834819530c7ed56514bf80fc950f1cc7410d8f3e3a0",
+      "source_sha256": "dea32245832edfb4b1009d1628c2d649c64f1d5adbf82faf2082a0ecce04fca0",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\walk_probe.py",
+      "archive": "instruments/walk_probe.py",
+      "mode": "text",
+      "source_bytes": 4673,
+      "bytes": 4786,
+      "sha256": "b19907e99c802a1534e4ede6edc0b430977835cd8f63b47acc58ce014d8f7962",
+      "source_sha256": "985843a66e8ac5b5fbe8ed3d407c1c2213d4ef168af76966b4752c0dbf2f93ff",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-groups.tabulated.json",
+      "archive": "derived/wait-groups.tabulated.json",
+      "mode": "text",
+      "source_bytes": 53816,
+      "bytes": 55053,
+      "sha256": "5cad5a2f88d4c346599674c6aa04fea5d3358b220354a59ddca65e61321b49de",
+      "source_sha256": "c59044564cdeb98ac5196312519ea538b57305e62f92d92d79406afc1a9e6c67",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-groups.run.log",
+      "archive": "derived/wait-groups.run.log",
+      "mode": "text",
+      "source_bytes": 458590,
+      "bytes": 458590,
+      "sha256": "bce315128441eeb9ad5706a99637bc5698062e4bdf23d5a0c930d4b62aca7a43",
+      "source_sha256": "bce315128441eeb9ad5706a99637bc5698062e4bdf23d5a0c930d4b62aca7a43",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\run_wait_group.summary.json",
+      "archive": "derived/run_wait_group.summary.json",
+      "mode": "text",
+      "source_bytes": 596,
+      "bytes": 626,
+      "sha256": "cc0d38546d1cdbecc2e251fbb9102cd32b607478552e6f1cef058a431c7c51c8",
+      "source_sha256": "36f7f40e1a1a2e3c4ebc5d0d5d670fe67f87dccb5b63084f5077ecbc1eefc5a8",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static\\01-static-2800.log.txt",
+      "archive": "runs/wait-2800-static/01-static-2800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 774370,
+      "bytes": 103790,
+      "sha256": "df6aaebe7dc98b279088c1a189da94bad51efe36be55169f54f57ae76fccdf36",
+      "source_sha256": "785741a59d75b85bc1124ab94ebbfa645e31c1979d80b29cc3c8df939f7776bf",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static\\01-static-2800.modules.txt",
+      "archive": "runs/wait-2800-static/01-static-2800.modules.txt",
+      "mode": "text",
+      "source_bytes": 8739,
+      "bytes": 8912,
+      "sha256": "0c099b31c471125caba948d6b755e77c34259613b94284db0ffa4a9867b092d4",
+      "source_sha256": "10006fefa2c41a1614a5fd84b494fd5c95c9629ec118afafad69212af3935f64",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static\\01-static-2800.runs.json",
+      "archive": "runs/wait-2800-static/01-static-2800.runs.json",
+      "mode": "text",
+      "source_bytes": 20253,
+      "bytes": 20926,
+      "sha256": "7e36f7fc88ee36180cacec34cc510b9da01865d920ec7925a1004aec9a1931bf",
+      "source_sha256": "0b85742be7c318e2ab2928533531f4691bd61fc74e924b818a76c36362bcabe4",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static\\01-static-2800.sampler.txt",
+      "archive": "runs/wait-2800-static/01-static-2800.sampler.txt",
+      "mode": "text",
+      "source_bytes": 390,
+      "bytes": 390,
+      "sha256": "d95b71c337884511366bb4ffd5ac5a810d67bf480d115dccceae4114d9e49cef",
+      "source_sha256": "d95b71c337884511366bb4ffd5ac5a810d67bf480d115dccceae4114d9e49cef",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static\\01-static-2800.samples.txt",
+      "archive": "runs/wait-2800-static/01-static-2800.samples.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 55978885,
+      "bytes": 3123141,
+      "sha256": "ffa98f2dd9cb941fecca6188b9a1cec1171cd3bc1769f425b6676daffe285214",
+      "source_sha256": "13b2fb7a97149b0deedbf2518826ab3bb723c2366eb310e2c0c808d519e0995a",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static\\01-static-2800.wait.json",
+      "archive": "runs/wait-2800-static/01-static-2800.wait.json",
+      "mode": "text",
+      "source_bytes": 55901,
+      "bytes": 57257,
+      "sha256": "8d77de4ef2d8165724fa326fe9240531e2dae8a6c7a25dc7222a9763855b1b5d",
+      "source_sha256": "a414656d4b7617757878184931abcfef1143ad6d07fe898aa6254cd1e6dd739a",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static\\02-static-2800.log.txt",
+      "archive": "runs/wait-2800-static/02-static-2800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 773188,
+      "bytes": 103123,
+      "sha256": "fb50c82ec97fd213ee60ea49ab28a805d8fa9f5f859be581729971d6801989c7",
+      "source_sha256": "14b2166458227a137193591f186d6e8712d184f0396be4350e319aee15d8b7e3",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static\\02-static-2800.modules.txt",
+      "archive": "runs/wait-2800-static/02-static-2800.modules.txt",
+      "mode": "text",
+      "source_bytes": 8739,
+      "bytes": 8912,
+      "sha256": "a6f21b149475f0c4b3a411614c954d57d652a177ac695aec40b0811aafa59c22",
+      "source_sha256": "79e59861e0c3ab9b9afe5f2b2f97baa433e9b68abd36ed1420e2d5f3931a52b1",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static\\02-static-2800.runs.json",
+      "archive": "runs/wait-2800-static/02-static-2800.runs.json",
+      "mode": "text",
+      "source_bytes": 19902,
+      "bytes": 20563,
+      "sha256": "f1d362b210ef38a17323db346628079efe60e9d505a5fec6af311abd6e4ef420",
+      "source_sha256": "94777f01d0eb6f1fe44a1965c04edebe6ef6ce700bcb96ad20a90366a2d9cbc2",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static\\02-static-2800.sampler.txt",
+      "archive": "runs/wait-2800-static/02-static-2800.sampler.txt",
+      "mode": "text",
+      "source_bytes": 391,
+      "bytes": 391,
+      "sha256": "5841011d1457a8ef962d533c609ceff7252fdf3674e6ceb1bb327e7f0201eaab",
+      "source_sha256": "5841011d1457a8ef962d533c609ceff7252fdf3674e6ceb1bb327e7f0201eaab",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static\\02-static-2800.samples.txt",
+      "archive": "runs/wait-2800-static/02-static-2800.samples.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 51304473,
+      "bytes": 2845376,
+      "sha256": "7b09b93b9754a0cde2c6e157ef9aac278bf67de81dbcc67898328ebdbb4cf2f3",
+      "source_sha256": "86e18aad5a8fa47a9971d831513423505662628e943f3494816052fe348be4e6",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static\\02-static-2800.wait.json",
+      "archive": "runs/wait-2800-static/02-static-2800.wait.json",
+      "mode": "text",
+      "source_bytes": 56995,
+      "bytes": 58371,
+      "sha256": "c1e21b9c2941e2ea17c1679e53795098108ea6fe234486713d949eec16f4b4af",
+      "source_sha256": "ab3fea0ab7f2d4613d6f7c14fcc4d1add4284c8ec7759147028179ace401aca2",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static\\03-static-2800.log.txt",
+      "archive": "runs/wait-2800-static/03-static-2800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 758763,
+      "bytes": 102102,
+      "sha256": "a2a7e2d12129720aaa74fe4ffcc2c2522760fce75ff9a4225af5527fc6d01062",
+      "source_sha256": "ce0cf2f3adeb2bd9e52d3e73a35d8309a885ca338bb063163a49b7ad288a1dc3",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static\\03-static-2800.modules.txt",
+      "archive": "runs/wait-2800-static/03-static-2800.modules.txt",
+      "mode": "text",
+      "source_bytes": 8739,
+      "bytes": 8912,
+      "sha256": "b2c18693f7fc386bf7c560d68d531c12456226ec378f3e598cce0729e28b85d6",
+      "source_sha256": "7b4353919ca2977186d8420a8aaa0193e6eb92f7cda70c9366a913b8ace3d142",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static\\03-static-2800.runs.json",
+      "archive": "runs/wait-2800-static/03-static-2800.runs.json",
+      "mode": "text",
+      "source_bytes": 19153,
+      "bytes": 19790,
+      "sha256": "425267daabf216bfae13ac505d91c2ccbda1b04ea5344386689117fe56b09286",
+      "source_sha256": "f1ff653074f4e5c308d0f15be21e67c91d732bbd8c615411f5d23a24d0216370",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static\\03-static-2800.sampler.txt",
+      "archive": "runs/wait-2800-static/03-static-2800.sampler.txt",
+      "mode": "text",
+      "source_bytes": 391,
+      "bytes": 391,
+      "sha256": "ea46fe880074814a4429deb4355dbb6ccc57cfe7da602a5da9e0e1fc26f3dd43",
+      "source_sha256": "ea46fe880074814a4429deb4355dbb6ccc57cfe7da602a5da9e0e1fc26f3dd43",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static\\03-static-2800.samples.txt",
+      "archive": "runs/wait-2800-static/03-static-2800.samples.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 54581400,
+      "bytes": 3010770,
+      "sha256": "9fe175e72d4706827e28c0f996641f218bb96eb34ea5a89febd2e88aab553e5b",
+      "source_sha256": "ae25f1d3a81728fb83649e2548b60dee10dfabae00cd717684e10f1e1c7576ba",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static\\03-static-2800.wait.json",
+      "archive": "runs/wait-2800-static/03-static-2800.wait.json",
+      "mode": "text",
+      "source_bytes": 56923,
+      "bytes": 58315,
+      "sha256": "c0c88e76d2684b8895fed42b5a2de54d4001bd90436d7a7700d85d9076c5ca3c",
+      "source_sha256": "fb4836ed7e04fb3327c6597bf10c7aa6e968f2782bbee53062a49186f7176360",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static\\registration.json",
+      "archive": "runs/wait-2800-static/registration.json",
+      "mode": "text",
+      "source_bytes": 2053,
+      "bytes": 2095,
+      "sha256": "29ab9cd1a7eb1764fbf0ef8e298242f8bc5060a28201488aa82f269a0a08ee29",
+      "source_sha256": "8219ae2dad7f0c5b58ed2a0d9313e8011e615c465892ff5700dc0b9cfd962c2a",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static\\results-01-static-2800.json",
+      "archive": "runs/wait-2800-static/results-01-static-2800.json",
+      "mode": "text",
+      "source_bytes": 3745,
+      "bytes": 3902,
+      "sha256": "2cf265a67d5cc4b7a465a50b9d548df3599b5d567c62508c731c12369044412c",
+      "source_sha256": "f7d0771b99e24dd42fb8ece116f80a65ca43a1b8417290f32ac7c15a654521fe",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static\\results-02-static-2800.json",
+      "archive": "runs/wait-2800-static/results-02-static-2800.json",
+      "mode": "text",
+      "source_bytes": 3754,
+      "bytes": 3911,
+      "sha256": "2c2d562b116784fbfcb636ef88aa99c3b2254e8368ccc8dedaa3dcd5cf8a5179",
+      "source_sha256": "3c3a14c60115e7649b626f4126b72bbc26cee2e3e337a00898b078bf9f097d39",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static\\results-03-static-2800.json",
+      "archive": "runs/wait-2800-static/results-03-static-2800.json",
+      "mode": "text",
+      "source_bytes": 3749,
+      "bytes": 3906,
+      "sha256": "df29ac295837c2a0b537ef532073b930e00158534651535e14ce27bfcee36ccb",
+      "source_sha256": "3dfd1e6d16b65508820116c7936222beb0933becd50ade9ba2c55cf1bfe5fb1f",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-1800-static\\01-static-1800.log.txt",
+      "archive": "runs/wait-1800-static/01-static-1800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1456846,
+      "bytes": 181751,
+      "sha256": "e400dd5222cfcb15985aafb443018e9887a1f0e3ca10a3338d0f14839365c5cc",
+      "source_sha256": "4948cfd4b5a0ca382ac17d636ed12bd8d1f6a5433d6bd463c95a10d15fb7afeb",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-1800-static\\01-static-1800.modules.txt",
+      "archive": "runs/wait-1800-static/01-static-1800.modules.txt",
+      "mode": "text",
+      "source_bytes": 8739,
+      "bytes": 8912,
+      "sha256": "3cc2b41cef8a1dbe2f97583f27121bf863b1a31a09b11a7434d932b14dcd015a",
+      "source_sha256": "f74f898798dd9fe7214b251e3abc4efa58fa2a12fb40036db113f6da0a843a50",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-1800-static\\01-static-1800.runs.json",
+      "archive": "runs/wait-1800-static/01-static-1800.runs.json",
+      "mode": "text",
+      "source_bytes": 19862,
+      "bytes": 20523,
+      "sha256": "93432d3f1ae48ba89cb34b3726a1bc34dbe5dfd309d7007b2f94b72bdeed7e16",
+      "source_sha256": "e1cf41f0a6d37af799bd5516f814e49d251578d1ac11e2073428732ddfbf48a6",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-1800-static\\01-static-1800.sampler.txt",
+      "archive": "runs/wait-1800-static/01-static-1800.sampler.txt",
+      "mode": "text",
+      "source_bytes": 392,
+      "bytes": 392,
+      "sha256": "3e21a48b525154f14584d038279703dd9633c1b239f97667b781d071b5928304",
+      "source_sha256": "3e21a48b525154f14584d038279703dd9633c1b239f97667b781d071b5928304",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-1800-static\\01-static-1800.samples.txt",
+      "archive": "runs/wait-1800-static/01-static-1800.samples.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 57474011,
+      "bytes": 3172601,
+      "sha256": "4715b5d8a62860c9a8d813ab17848d0a6c0a6e967335c482188ade4d3719e775",
+      "source_sha256": "9144dc877aaf51e70ab68f1baa35badeb6d652bb70de327094a55f20456febbc",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-1800-static\\01-static-1800.wait.json",
+      "archive": "runs/wait-1800-static/01-static-1800.wait.json",
+      "mode": "text",
+      "source_bytes": 66301,
+      "bytes": 67880,
+      "sha256": "05f7dbf6a838754c44f9e25be424eb162ebaa3c59a6dfa2580b58ae28979d0df",
+      "source_sha256": "3d1d80ec9047bd752ed44e8d47871122fe2d63144935e5b28cf857e1b53dc26e",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-1800-static\\02-static-1800.log.txt",
+      "archive": "runs/wait-1800-static/02-static-1800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1461269,
+      "bytes": 182435,
+      "sha256": "2d396b6c302393ffdd13cb2c0408762983de0fb4e82b8ab03482f1e74026f1d9",
+      "source_sha256": "b14c60f544c9129b053d3649aa4a2457e8f77ff2967d2d3e87d887d0a48ddee6",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-1800-static\\02-static-1800.modules.txt",
+      "archive": "runs/wait-1800-static/02-static-1800.modules.txt",
+      "mode": "text",
+      "source_bytes": 8739,
+      "bytes": 8912,
+      "sha256": "129444aeba36a3478e9e923aab42cc32ecefee2a43c1b3e316094dec3c86510f",
+      "source_sha256": "8694b54186035234cca8ae2f3b001d98e696ee0ae7c7b71c0abc3fcc0b52e471",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-1800-static\\02-static-1800.runs.json",
+      "archive": "runs/wait-1800-static/02-static-1800.runs.json",
+      "mode": "text",
+      "source_bytes": 19876,
+      "bytes": 20537,
+      "sha256": "280413679b86534160420df1947a9b22e9feb84a4a987eedcb96093365c5818d",
+      "source_sha256": "426509d97ee2b603a9238a6d40fa02ae543e39ebf9d968a9372b53939c01badf",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-1800-static\\02-static-1800.sampler.txt",
+      "archive": "runs/wait-1800-static/02-static-1800.sampler.txt",
+      "mode": "text",
+      "source_bytes": 391,
+      "bytes": 391,
+      "sha256": "8ecc1e4512657d234d39d34e1b5078f30f511ec1414bb4bcc10808ea1f9c9068",
+      "source_sha256": "8ecc1e4512657d234d39d34e1b5078f30f511ec1414bb4bcc10808ea1f9c9068",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-1800-static\\02-static-1800.samples.txt",
+      "archive": "runs/wait-1800-static/02-static-1800.samples.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 58653220,
+      "bytes": 3237669,
+      "sha256": "ab6b1325325afd5d1afc9663c17922e80dfd0bc57a626ad94342cfe4632ff34b",
+      "source_sha256": "92784bccdc428a187fbb682ba16c05a36251e9b1604ec8d1ef6aa8cf4b0c12ae",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-1800-static\\02-static-1800.wait.json",
+      "archive": "runs/wait-1800-static/02-static-1800.wait.json",
+      "mode": "text",
+      "source_bytes": 69338,
+      "bytes": 70979,
+      "sha256": "b023f05dec682370d03b4b529e33cefaec7c7fd53f4eb0cfd0ab3ff515f23bb8",
+      "source_sha256": "9039057744610294e2fc417a85a4867e248bebcc067b455278caa826fe4998c2",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-1800-static\\03-static-1800.log.txt",
+      "archive": "runs/wait-1800-static/03-static-1800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1446778,
+      "bytes": 181421,
+      "sha256": "d709d394ade2ad0ac7e626d3455a93a8eed993cb062c28da00b9283818a625ac",
+      "source_sha256": "976d61989c26dabaaf2db9f525b1bfebd59172d4f712eca417d3917c9cade039",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-1800-static\\03-static-1800.modules.txt",
+      "archive": "runs/wait-1800-static/03-static-1800.modules.txt",
+      "mode": "text",
+      "source_bytes": 8739,
+      "bytes": 8912,
+      "sha256": "4ebd2e8a12129be42a8bcf234c93d6a08d8549e7937d47f70cbaa927466a8123",
+      "source_sha256": "7606545c458becac8ec45202a283839199496e838696ad89e489c550124f4ecb",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-1800-static\\03-static-1800.runs.json",
+      "archive": "runs/wait-1800-static/03-static-1800.runs.json",
+      "mode": "text",
+      "source_bytes": 18455,
+      "bytes": 19068,
+      "sha256": "353c40c4651a86a94140ee191f36ee2f1b79d7a5492bb8fe807f4a9c972bff59",
+      "source_sha256": "3483da03f3eec9fd9e2801e8f5c96a1773ee3f0a6ba8584a6bf0231415cd0cd8",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-1800-static\\03-static-1800.sampler.txt",
+      "archive": "runs/wait-1800-static/03-static-1800.sampler.txt",
+      "mode": "text",
+      "source_bytes": 391,
+      "bytes": 391,
+      "sha256": "9141957c9b46b94b74e1608eb5460885c2fc1ee4973c1bcd1450499c2b0bcdca",
+      "source_sha256": "9141957c9b46b94b74e1608eb5460885c2fc1ee4973c1bcd1450499c2b0bcdca",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-1800-static\\03-static-1800.samples.txt",
+      "archive": "runs/wait-1800-static/03-static-1800.samples.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 56641275,
+      "bytes": 3111869,
+      "sha256": "ac8e9ee784bf066556753796327eefc8df1ae3445ba2584c04ad5616f53703f8",
+      "source_sha256": "edbe76303853965dca3e60cd517ff30a8630277bf6aa4dc96e51d027ed8915ae",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-1800-static\\03-static-1800.wait.json",
+      "archive": "runs/wait-1800-static/03-static-1800.wait.json",
+      "mode": "text",
+      "source_bytes": 73791,
+      "bytes": 75540,
+      "sha256": "fc76f7d85f7c58539d6cff0f8f658eba845445b78e6060bcce6065fb94209807",
+      "source_sha256": "b39c00ee1f7da431dd97e64b44854778430856962f3e7936789cb119cae82fb6",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-1800-static\\registration.json",
+      "archive": "runs/wait-1800-static/registration.json",
+      "mode": "text",
+      "source_bytes": 2053,
+      "bytes": 2095,
+      "sha256": "b0522ad563cffc9adc909d58c04d6bad7d1455d4e35777704b89ebb21de23c03",
+      "source_sha256": "422d5d36f83c1d1632e6e789fecd1f47c5a1090a0c2e2371f7eb79e9b294c01b",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-1800-static\\results-01-static-1800.json",
+      "archive": "runs/wait-1800-static/results-01-static-1800.json",
+      "mode": "text",
+      "source_bytes": 3731,
+      "bytes": 3888,
+      "sha256": "4a4043a93c86f4b56289de6eb9db2313026086d3abc05b1c2ef89ceb263c75d9",
+      "source_sha256": "9a704035a3069311be94b5c49363c4df986fc3d0209499609450a9f57b4bc0f8",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-1800-static\\results-02-static-1800.json",
+      "archive": "runs/wait-1800-static/results-02-static-1800.json",
+      "mode": "text",
+      "source_bytes": 3726,
+      "bytes": 3883,
+      "sha256": "f16cad178e333e403f8e1c47af5be42a53ef20c08df4999880a29ceb563176a3",
+      "source_sha256": "8195543c8f62640c08b209f618b640cd53172905970d671b321df320deecf692",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-1800-static\\results-03-static-1800.json",
+      "archive": "runs/wait-1800-static/results-03-static-1800.json",
+      "mode": "text",
+      "source_bytes": 3739,
+      "bytes": 3896,
+      "sha256": "b3a43d50a9420ae6aaa9856fd38bbce1d915306222b900b9966bdd281d9c2f15",
+      "source_sha256": "ba5bdbdf8911223a8fde27cb017d2d84e9f5313ac53c9bdc3ca2c923cff94b1c",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static-handles\\01-static-2800.handles.txt",
+      "archive": "runs/wait-2800-static-handles/01-static-2800.handles.txt",
+      "mode": "text",
+      "source_bytes": 10220,
+      "bytes": 10563,
+      "sha256": "52c55851b21d8132ac44626a91e0f74d0dca883ebb4381c22bde9a9471b6618b",
+      "source_sha256": "87243f55cb6ee0b87fcdc8ed4ad0b5b1683cfb460d252a0bf8ed92d6d0f03f98",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static-handles\\01-static-2800.log.txt",
+      "archive": "runs/wait-2800-static-handles/01-static-2800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 805909,
+      "bytes": 106178,
+      "sha256": "afdaabf37c175e65821cc2cc28c6d8242477941b07a4db86406b2b6246b8ae11",
+      "source_sha256": "28026292c0d6b9903cd6b80835b198ebc3b480874c4b6d72c990f85ee19c0dc5",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static-handles\\01-static-2800.modules.txt",
+      "archive": "runs/wait-2800-static-handles/01-static-2800.modules.txt",
+      "mode": "text",
+      "source_bytes": 8658,
+      "bytes": 8830,
+      "sha256": "9d2b6e5fb33a83557a3d98cacbf17b026288947a25658b467d84fb59edcaf3b4",
+      "source_sha256": "aece4fa84419dbce468fc6a8c680d2287a0fc546075b2324a76fd97a1311c816",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static-handles\\01-static-2800.runs.json",
+      "archive": "runs/wait-2800-static-handles/01-static-2800.runs.json",
+      "mode": "text",
+      "source_bytes": 19184,
+      "bytes": 19821,
+      "sha256": "ae4e7bc135ba7b0ef3521eb7b3b7d16dae3a4afb7fa42f63a58ae9d98e7a770b",
+      "source_sha256": "6246dba77bda66b3bc9162d62983cc92a32ea7df65f179e53e0de8324cd5eba3",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static-handles\\01-static-2800.sampler.txt",
+      "archive": "runs/wait-2800-static-handles/01-static-2800.sampler.txt",
+      "mode": "text",
+      "source_bytes": 393,
+      "bytes": 393,
+      "sha256": "5c3adda9685c1088b02ad9573599e2e139d920ded2f6d10362f49b423e80624f",
+      "source_sha256": "5c3adda9685c1088b02ad9573599e2e139d920ded2f6d10362f49b423e80624f",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static-handles\\01-static-2800.samples.txt",
+      "archive": "runs/wait-2800-static-handles/01-static-2800.samples.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 57414856,
+      "bytes": 3195505,
+      "sha256": "99d17054b8bae29129a85ab4098679351a48b76265a3faa27b814ee74a72126f",
+      "source_sha256": "31acc070704c654965831b5180a3a7f84f1f074c0bb89e9b4e294451399ed714",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static-handles\\01-static-2800.wait.json",
+      "archive": "runs/wait-2800-static-handles/01-static-2800.wait.json",
+      "mode": "text",
+      "source_bytes": 57134,
+      "bytes": 58523,
+      "sha256": "a333307614da8e13f04c9104e781a11232e72561904307c606e00e5bf810b789",
+      "source_sha256": "05a08980e388a08bb417acc795e3488f85544b10350ae04e83e7916188c46857",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static-handles\\registration.json",
+      "archive": "runs/wait-2800-static-handles/registration.json",
+      "mode": "text",
+      "source_bytes": 2052,
+      "bytes": 2094,
+      "sha256": "2937ba7faed30dd45795fde6aad10d6f9018a2cff0f618b17cce613c5a44841a",
+      "source_sha256": "6540434c794ba6547a8e3f15f862ad4f417db5f7b2489a24dc70c990f0fd1784",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\wait-2800-static-handles\\results-01-static-2800.json",
+      "archive": "runs/wait-2800-static-handles/results-01-static-2800.json",
+      "mode": "text",
+      "source_bytes": 3811,
+      "bytes": 3968,
+      "sha256": "86e2d391da5753a92110c5f94283feebde7003192b7fe96eaeeac5000d3538d7",
+      "source_sha256": "9ae4de8b9fbf4cf81e821a145e6db2aa8393c97484cca5c4a91def8516a486d3",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\rip-2800-static\\01-static-2800.log.txt",
+      "archive": "runs/rip-2800-static/01-static-2800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 821725,
+      "bytes": 109273,
+      "sha256": "a048c294062f9e7c89781fb90c7993704d42492b3cf50e64cf1d68a01eae20c4",
+      "source_sha256": "55ded0ff25f4617c3225f918f91e2c58f6c5aea75c5ce2dfd6d76bde0a9352b9",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\rip-2800-static\\01-static-2800.modules.txt",
+      "archive": "runs/rip-2800-static/01-static-2800.modules.txt",
+      "mode": "text",
+      "source_bytes": 8658,
+      "bytes": 8830,
+      "sha256": "1f4afa743316117083ed678dffd766ac170fd28ecb4a6cbf2cbff27c3ed71e29",
+      "source_sha256": "85d62082a084f7986699021595230252a306f88a80ed1d1cfbf815eb85fdcd9c",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\rip-2800-static\\01-static-2800.sampler.txt",
+      "archive": "runs/rip-2800-static/01-static-2800.sampler.txt",
+      "mode": "text",
+      "source_bytes": 262,
+      "bytes": 262,
+      "sha256": "cd519da6d1a3703939d8d2234c34ea13f506fca0ceebeeb885276f1f79117419",
+      "source_sha256": "cd519da6d1a3703939d8d2234c34ea13f506fca0ceebeeb885276f1f79117419",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\rip-2800-static\\01-static-2800.samples.txt",
+      "archive": "runs/rip-2800-static/01-static-2800.samples.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 31946305,
+      "bytes": 2764216,
+      "sha256": "d3c19fd450c4e53c215e9cd4fa211e74169325af51ea18a915b6e3d09d86422d",
+      "source_sha256": "fbf1b4a99b0a1de99e89ef9a94ea920b96c2aeb910c2856cb55127126f0f7b3b",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\rip-2800-static\\analysis-01.json",
+      "archive": "runs/rip-2800-static/analysis-01.json",
+      "mode": "text",
+      "source_bytes": 9266,
+      "bytes": 9647,
+      "sha256": "0b2cbad079301a837bedcb160ad6484229c8bfd9721bc52d0cd5300a4054d306",
+      "source_sha256": "c8821bd0e86357b745ef5a0fb7521acd18a07bf428e34b606c7ce5d735a8c605",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\rip-2800-static\\registration.json",
+      "archive": "runs/rip-2800-static/registration.json",
+      "mode": "text",
+      "source_bytes": 1955,
+      "bytes": 1994,
+      "sha256": "f995998bdc8ad197bb6bd15a307cb5ad34dcf186de73a565f61719e43993c04a",
+      "source_sha256": "02b7ddb49746e4aca6d3e829a3f4a0ef5a122f5d9800563203136eb215696cd2",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\rip-2800-static\\results-01-static-2800.json",
+      "archive": "runs/rip-2800-static/results-01-static-2800.json",
+      "mode": "text",
+      "source_bytes": 3534,
+      "bytes": 3687,
+      "sha256": "596ca8cb2daf222436a68fbfb201e72401a2a96b8bf99c8432a70ee4ad232ee5",
+      "source_sha256": "5348cebbe60f38ad85a7456e6212ed90e27ea2526c7bfc313c04b7ed6ef3b5d6",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\rip-2800-static\\invalid-attempt-01\\01-static-2800.log.txt",
+      "archive": "runs/rip-2800-static/invalid-attempt-01/01-static-2800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 973,
+      "bytes": 381,
+      "sha256": "cd865e868a84641cf4a03b9639b8398234309d141afa072a903ef7aa3ea4c392",
+      "source_sha256": "2aaf304fcb469c5247998899b9395744de7db7a87332f682579056766ce76a87",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\rip-2800-static\\invalid-attempt-01\\01-static-2800.modules.txt",
+      "archive": "runs/rip-2800-static/invalid-attempt-01/01-static-2800.modules.txt",
+      "mode": "text",
+      "source_bytes": 2354,
+      "bytes": 2387,
+      "sha256": "b83eb4e5c351d458ab83574278d80995b19370cf83775148b1d970e0aa8ec081",
+      "source_sha256": "df185d2e09e9870b00274b424146d177b9f686ecc374cf69456e4f8227b223f7",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\rip-2800-static\\invalid-attempt-01\\01-static-2800.sampler.txt",
+      "archive": "runs/rip-2800-static/invalid-attempt-01/01-static-2800.sampler.txt",
+      "mode": "text",
+      "source_bytes": 250,
+      "bytes": 250,
+      "sha256": "e16d5c1f3d680fc538c1e2efe2f12f740f13869f3bb08bb8da72913582af8da5",
+      "source_sha256": "e16d5c1f3d680fc538c1e2efe2f12f740f13869f3bb08bb8da72913582af8da5",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\rip-2800-static\\invalid-attempt-01\\01-static-2800.samples.txt",
+      "archive": "runs/rip-2800-static/invalid-attempt-01/01-static-2800.samples.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 32428,
+      "bytes": 3039,
+      "sha256": "91109491f999a33907102201a3cc26d6e181f9b8e985f45859010076bdb0f800",
+      "source_sha256": "e96bf0a022ead82f0d69de6641c0018448ad39e984b5b64a17d62cd0e76623d1",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\rip-2800-static\\invalid-attempt-01\\registration.json",
+      "archive": "runs/rip-2800-static/invalid-attempt-01/registration.json",
+      "mode": "text",
+      "source_bytes": 1924,
+      "bytes": 1962,
+      "sha256": "45990d0030092b0c43c119ba1128bc8d49bab26eab092bbea286e1af4ce68edc",
+      "source_sha256": "cbb6603b9df88adfa23bab27acb978214f1a195735a95748961ad1b44a6a376a",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\rip-2800-static\\invalid-attempt-01\\results-01-static-2800.json",
+      "archive": "runs/rip-2800-static/invalid-attempt-01/results-01-static-2800.json",
+      "mode": "text",
+      "source_bytes": 1531,
+      "bytes": 1584,
+      "sha256": "a591e4d44b1a6ac547fad15fc85824db006a4f04553679e1064c2bc35533f511",
+      "source_sha256": "eebaa8a4e256dde50bbbd42146dc821c5dd9b65d21ab1871d13f1a9bb398a51f",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\rip-smoke\\00-static-2800.log.txt",
+      "archive": "runs/rip-smoke/00-static-2800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 229086,
+      "bytes": 30506,
+      "sha256": "0b4437ed3a1fa4d37aa58b5d33c9a6722b2bef82e56b4285a4182626f71990e6",
+      "source_sha256": "48cdef6976cbbae55f217c8510756795752121d49efca6bf7533dde692774fd0",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\rip-smoke\\00-static-2800.modules.txt",
+      "archive": "runs/rip-smoke/00-static-2800.modules.txt",
+      "mode": "text",
+      "source_bytes": 7188,
+      "bytes": 7301,
+      "sha256": "09cdb2bfd8891ec28f3cbefae98fe2a43db01a46c317fdfc996b429fda85f063",
+      "source_sha256": "40cdd6fae6c792f1084e9052d7411d78ebe6af445f7df8089de1d16569856d9c",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\rip-smoke\\00-static-2800.sampler.txt",
+      "archive": "runs/rip-smoke/00-static-2800.sampler.txt",
+      "mode": "text",
+      "source_bytes": 377,
+      "bytes": 377,
+      "sha256": "f38090b249a640978ff9d58f9b9730a5997ea16e08ca17e054d52d3800a045f4",
+      "source_sha256": "f38090b249a640978ff9d58f9b9730a5997ea16e08ca17e054d52d3800a045f4",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\rip-smoke\\00-static-2800.samples.txt",
+      "archive": "runs/rip-smoke/00-static-2800.samples.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 8268050,
+      "bytes": 500549,
+      "sha256": "66bb3d3913a5d212d4bdc41a67c36befa989ee5d83fe491a6e84623477d203b7",
+      "source_sha256": "bd31b43624b814f4688af5f278398c835147486ca8573178df8c5ad7e999c81c",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\rip-smoke\\registration.json",
+      "archive": "runs/rip-smoke/registration.json",
+      "mode": "text",
+      "source_bytes": 2019,
+      "bytes": 2060,
+      "sha256": "49c1ea8376543fad6dc3037e30d077aae31572b953c534e1753e7d27c571ddc6",
+      "source_sha256": "227408aaa2134ef6da3be3bf85bc36ba584c54dd3d926c529d0831986dd0d02e",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\rip-smoke\\results-00-static-2800.json",
+      "archive": "runs/rip-smoke/results-00-static-2800.json",
+      "mode": "text",
+      "source_bytes": 3579,
+      "bytes": 3721,
+      "sha256": "0684805586ded4580675dde128cc07d7c04c95024ee70153b8a969841d582f01",
+      "source_sha256": "3a44089d68c7d81d7e09177346023d8a864d84d6ccbd9d0710e91f9d04f26c68",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\n1800\\01-render-only-1800.log.txt",
+      "archive": "timer-instrument/runs/n1800/01-render-only-1800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1918226,
+      "bytes": 206746,
+      "sha256": "704b9fcceaff48c7b99d1418cc7d5923dd5d3603a3b2fdd2b19220e7e882503a",
+      "source_sha256": "c7bea04965269a0b5bb7cc4ec7982cae2f8eb8687b10070627f416675a91e52a",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\n1800\\01-static-1800.log.txt",
+      "archive": "timer-instrument/runs/n1800/01-static-1800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1944250,
+      "bytes": 233982,
+      "sha256": "87e1aec8e29b985a884737b5e16e8eb464a3e39aee4c40ca0acf26af88a9ebf4",
+      "source_sha256": "42c84a4573a24afa96aa590bfbd3175f783a0a4fe1ab9b9d920d0c854fbdc1de",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\n1800\\02-render-only-1800.log.txt",
+      "archive": "timer-instrument/runs/n1800/02-render-only-1800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1996339,
+      "bytes": 209235,
+      "sha256": "24469d0cb306c73a7a2b03c97cbbf9d05fde171b329dd8a38c9860c3f7cac8ac",
+      "source_sha256": "0e0ff383e3365c1a95a112e7020a19dfda518b209843b6a6311f27ba1ba35d74",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\n1800\\02-static-1800.log.txt",
+      "archive": "timer-instrument/runs/n1800/02-static-1800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1969007,
+      "bytes": 234853,
+      "sha256": "48fa972cf417124bf6658a5e07097c657c3bb8c1783a2c73b292d28bb8ebbeb0",
+      "source_sha256": "0b5c8f27ca83fc455529cf57fa5d4d5c0b3a1029db96ca6801c70e77af1025bc",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\n1800\\03-render-only-1800.log.txt",
+      "archive": "timer-instrument/runs/n1800/03-render-only-1800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 2026958,
+      "bytes": 208814,
+      "sha256": "f7e8420faf9d51c217f975a26874240cb9e7a54cffa1ce930ab69b56fe932761",
+      "source_sha256": "ce3c98edb8a24acd68e2cf932be6b592af0d5219e8ba9a1f3c1e1c043b26f3b2",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\n1800\\03-static-1800.log.txt",
+      "archive": "timer-instrument/runs/n1800/03-static-1800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1967812,
+      "bytes": 234448,
+      "sha256": "a2117338cb6c2515f1eacb0ef8fa048fe4fa5e28f75a446dcbe9bdcb93f6d47e",
+      "source_sha256": "2dc8ce61cf67c6b90eeed5459371f8097481f1caeb194039c40a7f0a2f5091b2",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\n1800\\registration.json",
+      "archive": "timer-instrument/runs/n1800/registration.json",
+      "mode": "text",
+      "source_bytes": 1350,
+      "bytes": 1350,
+      "sha256": "c14455c3cc16aa6c66e62574ba96adf937cade7afd5a838c965b0adcc67f9c92",
+      "source_sha256": "c14455c3cc16aa6c66e62574ba96adf937cade7afd5a838c965b0adcc67f9c92",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\n1800\\results.json",
+      "archive": "timer-instrument/runs/n1800/results.json",
+      "mode": "text",
+      "source_bytes": 24240,
+      "bytes": 24240,
+      "sha256": "1cd3c8c71753c3e46f27f829f8b07192e443706f13d3d13dbba6dd285cf2aed7",
+      "source_sha256": "1cd3c8c71753c3e46f27f829f8b07192e443706f13d3d13dbba6dd285cf2aed7",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\n2400\\01-render-only-2400.log.txt",
+      "archive": "timer-instrument/runs/n2400/01-render-only-2400.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1544901,
+      "bytes": 164215,
+      "sha256": "b607d2f1108053e0a100577c895b1ad97c59a30e8e601782667c46daf07f86d2",
+      "source_sha256": "c37fb7bb2b4fdc36bfcc841ec326c7f509a4ba5b08c717402ca9e7393d7f45de",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\n2400\\01-static-2400.log.txt",
+      "archive": "timer-instrument/runs/n2400/01-static-2400.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1381558,
+      "bytes": 171358,
+      "sha256": "ee5779f69fd06b426face5b7b518ef973ad689c3819a76b6fe171cda85fe04c2",
+      "source_sha256": "5451528fe829281a2f7526d4af62cee9b8fd23911207967a0e44f3d7db25db4b",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\n2400\\02-render-only-2400.log.txt",
+      "archive": "timer-instrument/runs/n2400/02-render-only-2400.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1552712,
+      "bytes": 165714,
+      "sha256": "a56978fe055395e18b10d55adc3839b53213f900fc1cf5b825fd9c9e0846cd61",
+      "source_sha256": "d37bc2338f1e729696ebbb31a2b916b73468d992fa627e2155c3df324282025c",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\n2400\\02-static-2400.log.txt",
+      "archive": "timer-instrument/runs/n2400/02-static-2400.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1346011,
+      "bytes": 167459,
+      "sha256": "5c9adf6ecc26f14d9cf28f2c9fa8630e9602e6bd9c3b334d1f6eb1671f770230",
+      "source_sha256": "3119e6a732aba9bb071f858a4f0424ff67479c00cdeb0edf8d01a3d2c68f0dc2",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\n2400\\03-render-only-2400.log.txt",
+      "archive": "timer-instrument/runs/n2400/03-render-only-2400.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1541937,
+      "bytes": 164492,
+      "sha256": "636f799760f8d63a79ef2950d5f9c55fec7d78ea3542a01a26947ddf4a6b2905",
+      "source_sha256": "d575314ccc2f384b83f08964d6872f75a26f4bc55cfee9eedcee1c3164e68c61",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\n2400\\03-static-2400.log.txt",
+      "archive": "timer-instrument/runs/n2400/03-static-2400.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1320621,
+      "bytes": 166276,
+      "sha256": "39bd941bb5418cf74a14fca2fea4face14e128cc3e78626a9ec7727454b58a08",
+      "source_sha256": "d8ab911c71095e101101cc5bdeb3ae2759a0162d969d9093b4bae2761609ec5b",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\n2400\\registration.json",
+      "archive": "timer-instrument/runs/n2400/registration.json",
+      "mode": "text",
+      "source_bytes": 1350,
+      "bytes": 1350,
+      "sha256": "fbd718409fd600a7ce5de5cd55ab3f699fdf538f07883dd9349d6684bedbd482",
+      "source_sha256": "fbd718409fd600a7ce5de5cd55ab3f699fdf538f07883dd9349d6684bedbd482",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\n2400\\results.json",
+      "archive": "timer-instrument/runs/n2400/results.json",
+      "mode": "text",
+      "source_bytes": 24316,
+      "bytes": 24316,
+      "sha256": "3a1940bf6f456d30e55aa3f6024d577b0bf200a15d63a95d0fbbb9d33ae7d334",
+      "source_sha256": "3a1940bf6f456d30e55aa3f6024d577b0bf200a15d63a95d0fbbb9d33ae7d334",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\n2800\\01-render-only-2800.log.txt",
+      "archive": "timer-instrument/runs/n2800/01-render-only-2800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1181281,
+      "bytes": 135619,
+      "sha256": "6baecd4ca520f7e1c99bcd261ad3c26c42312402d6ee3ed241b6e4dbf83ab4b1",
+      "source_sha256": "68118de0898dd8b0c743bfccd0c9e19e1c01effe71a23babb4ac2c52c154e5b3",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\n2800\\01-static-2800.log.txt",
+      "archive": "timer-instrument/runs/n2800/01-static-2800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1104911,
+      "bytes": 141728,
+      "sha256": "1f3d0a9001e186bf3caed303ace21870ae6553fbdb1fc7bddbee4bdcb8d9057d",
+      "source_sha256": "f10a44c95cdc9b7e28c30c1db28aec1736e7b47d02ef4caf06f1c6e129a6d1bb",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\n2800\\02-render-only-2800.log.txt",
+      "archive": "timer-instrument/runs/n2800/02-render-only-2800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1220323,
+      "bytes": 137633,
+      "sha256": "5abf9094f8cd26ed55be3b1a0877e116c4122bfde48200f987b7fa98d788f27a",
+      "source_sha256": "5818e22e343c49d1ce9517d7118126356465f0a63b2b7a97085c0e97a7a1a1d6",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\n2800\\02-static-2800.log.txt",
+      "archive": "timer-instrument/runs/n2800/02-static-2800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1115797,
+      "bytes": 142381,
+      "sha256": "d4472370d9e040dfd39f324c96c3419e93cdd36f94258c13918be861d6288349",
+      "source_sha256": "d27eb686e043a145afbac0b6be53fa73a6be597745e7ed77131a03c0ebc5008e",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\n2800\\03-render-only-2800.log.txt",
+      "archive": "timer-instrument/runs/n2800/03-render-only-2800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1209939,
+      "bytes": 137391,
+      "sha256": "695712ecb27f4dd7b0210eb6bb16cb3b59fcf6af59760c62724361299bad4a48",
+      "source_sha256": "8cb3faab5e5189b769f11bae9b6c25396e370758d9fe67612806a859407c3a7c",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\n2800\\03-static-2800.log.txt",
+      "archive": "timer-instrument/runs/n2800/03-static-2800.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1075231,
+      "bytes": 137520,
+      "sha256": "6cc88830b67eda77aecb6093c11db4a5804aa743813fede3cd32cd2798e4417f",
+      "source_sha256": "3fd38852911e03f44a3a863e8ace7ce966e73ae75f146aec714e26b6a8b0e14d",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\n2800\\registration.json",
+      "archive": "timer-instrument/runs/n2800/registration.json",
+      "mode": "text",
+      "source_bytes": 1350,
+      "bytes": 1350,
+      "sha256": "ce755171b6e36dc8b8d295cc33d02f4670803d678bc5d91c41ea99e1341cc757",
+      "source_sha256": "ce755171b6e36dc8b8d295cc33d02f4670803d678bc5d91c41ea99e1341cc757",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\n2800\\results.json",
+      "archive": "timer-instrument/runs/n2800/results.json",
+      "mode": "text",
+      "source_bytes": 24302,
+      "bytes": 24302,
+      "sha256": "e98b75b130aa4cca95144974a259a023d4eab939fbc043a75b178e93c3cdb56f",
+      "source_sha256": "e98b75b130aa4cca95144974a259a023d4eab939fbc043a75b178e93c3cdb56f",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\analyze.py",
+      "archive": "timer-instrument/analyze.py",
+      "mode": "text",
+      "source_bytes": 8382,
+      "bytes": 8576,
+      "sha256": "cbdfc7ba8e3d34c97853403f8d71ffbf58dedde0823a5f23d5d4c0e5a92adab2",
+      "source_sha256": "b75d72dfbd424fda822b9d5b46137b96d78f6a12e1199733ab60c422b9c80923",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\analysis.json",
+      "archive": "timer-instrument/analysis.json",
+      "mode": "text",
+      "source_bytes": 14931,
+      "bytes": 14931,
+      "sha256": "83fab8977a8d78051f60f64c3d029c69fc17f3a5e823e6cb442fb0084feaaca9",
+      "source_sha256": "83fab8977a8d78051f60f64c3d029c69fc17f3a5e823e6cb442fb0084feaaca9",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261031\\r3-40k-throughput-refresh-v1\\run_stall_diagnosis.py",
+      "archive": "timer-instrument/run_stall_diagnosis.py",
+      "mode": "text",
+      "source_bytes": 20772,
+      "bytes": 21228,
+      "sha256": "38294bf694230f6d275c5954fc76110e6edef863c49666a3e923f56a348df648",
+      "source_sha256": "30a34162c5ded51c06fbe01796349966f215e37554a2150f093dad5680000a01",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\walk-probe\\probe.log.txt",
+      "archive": "walks/walk-probe/probe.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 930313,
+      "bytes": 116847,
+      "sha256": "ea25eb80f45335fba73b1e54dd72effdfb2a62545c0f8ff79010076852456d15",
+      "source_sha256": "6f3be94d6aba7502cae220666f908eec66ccc4714e4eb4387b7243e139e01ed1",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\walk-probe\\walk.json",
+      "archive": "walks/walk-probe/walk.json",
+      "mode": "text",
+      "source_bytes": 272,
+      "bytes": 282,
+      "sha256": "53111298dd6b07b734b05d65a6542ef20d195935b96ace965dfc9c07b2a11c7c",
+      "source_sha256": "50b72df6b56be3c6fe26b82d8db26820212acdeb5b6a2fd6cddefb9868bb38ce",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\walk-probe\\walk.txt",
+      "archive": "walks/walk-probe/walk.txt",
+      "mode": "text",
+      "source_bytes": 11132,
+      "bytes": 11345,
+      "sha256": "384dc0a7e43d54049a46a9c54af95443a9b6a5807f6407d2165759040c25dc06",
+      "source_sha256": "a7c35cf006b5a45492a5a6a2e29e5510e91f6041697cf94cb21a18efb90fb7af",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\walk-readback-0\\probe.log.txt",
+      "archive": "walks/walk-readback-0/probe.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 1391045,
+      "bytes": 167739,
+      "sha256": "89df952d14f6c29fd7e60f69d5b60618489152d2b2448d72f5c50340f13a8579",
+      "source_sha256": "706e61ca6ee9e750fe5ddee67d265fe42ef7f67807569092f5e48dfb86e8e0a8",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\walk-readback-0\\walk.json",
+      "archive": "walks/walk-readback-0/walk.json",
+      "mode": "text",
+      "source_bytes": 289,
+      "bytes": 300,
+      "sha256": "f8b78df6c0b5e4b57d7e126afb36753b9cc79c7a05a2c6bd94c55be7387b2f0a",
+      "source_sha256": "03dcf188db2910846927fcccfdce52bd9122f327e3ce64636dcefc2eea1f839e",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\walk-readback-0\\walk.txt",
+      "archive": "walks/walk-readback-0/walk.txt",
+      "mode": "text",
+      "source_bytes": 10500,
+      "bytes": 10701,
+      "sha256": "887ba13fa277a68ab12bdf4cd920a7edb96b3d3eb556c8716575524ae11451c3",
+      "source_sha256": "c17874bae3b4345cb2b8afda11168b1b93861d24ed3b5e68f09a8a77a936b97f",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\walk-readback-1\\probe.log.txt",
+      "archive": "walks/walk-readback-1/probe.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 943245,
+      "bytes": 118408,
+      "sha256": "65f356d1b87272071344963808ba512669c43c398ad287c41fc1bee143b06025",
+      "source_sha256": "7a42a8f77f3ed4d2283600941391be1e126a76a5f11a4671d908ad77e7ae9a4d",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\walk-readback-1\\walk.json",
+      "archive": "walks/walk-readback-1/walk.json",
+      "mode": "text",
+      "source_bytes": 289,
+      "bytes": 300,
+      "sha256": "4d8b1d0fc0fb8b408e421c8b12fde6dbeaa91a0b7ff0c2c749f64f4c51d6a671",
+      "source_sha256": "c0388115e3e84dffbc9d41d6b57cf615be434599f1828bb48dc3370b04382ac6",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\walk-readback-1\\walk.txt",
+      "archive": "walks/walk-readback-1/walk.txt",
+      "mode": "text",
+      "source_bytes": 10791,
+      "bytes": 10996,
+      "sha256": "c41d9e805d7387d669cc853befff64364f7ab6c347efe2c1745f071da209b6cc",
+      "source_sha256": "cbd34bc949e6fbf31d46a1a75129f0fc4753d5bee838dc8bbb0a41c639524070",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\walk-40000\\probe.log.txt",
+      "archive": "walks/walk-40000/probe.log.txt.gz",
+      "mode": "gzip",
+      "source_bytes": 85422,
+      "bytes": 12515,
+      "sha256": "bdc1efbf0a73dd9bad62ecbbd5daedf244ad9b133a68ea1ac1fe41feda95c474",
+      "source_sha256": "1d20267b81d1cb5660bf50d16c1cd6ed508075c5b1596aec689af6f030d1efba",
+      "eol": "binary-gzip"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\walk-40000\\walk.json",
+      "archive": "walks/walk-40000/walk.json",
+      "mode": "text",
+      "source_bytes": 290,
+      "bytes": 301,
+      "sha256": "c5e2cf097457b7d16acfc5cd5a929ec41e4260c826814be6ae1d131b006b65a9",
+      "source_sha256": "4b73536f3623354e5c8836d4af1012dc6a6e6f9e421224908be5c00e8275caaa",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-stall-mechanism-v1\\walk-40000\\walk.txt",
+      "archive": "walks/walk-40000/walk.txt",
+      "mode": "text",
+      "source_bytes": 9996,
+      "bytes": 10184,
+      "sha256": "4637302b072c8cfd6b665fa974004d3847cfda20feca668fd27cb9e3dbca9e92",
+      "source_sha256": "dd1230487b85916aed2044b7c6a84bc1d93d7897cf411e0197f0d2894968916e",
+      "eol": "crlf"
+    },
+    {
+      "source": "D:\\Cuexis-redesign\\out\\verification-20261101\\evidence-staging\\r3-wait\\authored\\verify_wait_evidence.py",
+      "archive": "verify/verify_wait_evidence.py",
+      "mode": "text",
+      "source_bytes": 16160,
+      "bytes": 16498,
+      "sha256": "bc58e484befb2f92af3171641500591075b96fe6c62abb03c052dc67761645a0",
+      "source_sha256": "222ce860f24023afbadeab3c77aa47a829241f490e11b69bc644d5daa8140a47",
+      "eol": "crlf"
+    }
+  ],
+  "attached_files": [
+    {
+      "archive": "plan/PLAN.md",
+      "role": "plan",
+      "note": "Pre-registration of the GPU-timer diagnostic (questions P1-P4)."
+    },
+    {
+      "archive": "plan/PLAN-RIP.md",
+      "role": "plan",
+      "note": "Pre-registration of the instruction-pointer sampler reads."
+    },
+    {
+      "archive": "plan/PLAN-WAIT.md",
+      "role": "plan",
+      "note": "Pre-registration of the A/B wait-cost test and the H5/H6 decision rule."
+    },
+    {
+      "archive": "instruments/analyze_rip.py",
+      "role": "instrument",
+      "note": "Reduces the RIP samples to module/kernel-call shares and stack chains."
+    },
+    {
+      "archive": "instruments/analyze_wait.py",
+      "role": "instrument",
+      "note": "Reduces the wait samples to thread, module, kernel-call and handle tables."
+    },
+    {
+      "archive": "instruments/derive_all.py",
+      "role": "instrument",
+      "note": "Re-derives every per-frame wait episode from the archived sample stream."
+    },
+    {
+      "archive": "instruments/derive_wait_runs.py",
+      "role": "instrument",
+      "note": "Single-stream form of derive_all.py, used for spot checks."
+    },
+    {
+      "archive": "instruments/pe_bytes.py",
+      "role": "instrument",
+      "note": "Reads PE section tables; used to prove the ntdll stub layout byte-exactly."
+    },
+    {
+      "archive": "instruments/run_sample.py",
+      "role": "instrument",
+      "note": "Per-process driver: launches the probe and the sampler, writes the results."
+    },
+    {
+      "archive": "instruments/run_wait_group.py",
+      "role": "instrument",
+      "note": "Runs the seven registered processes of group A, B and the identity run."
+    },
+    {
+      "archive": "instruments/sample_rip.py",
+      "role": "instrument",
+      "note": "Suspend/resume RIP sampler (predecessor of sample_wait.py)."
+    },
+    {
+      "archive": "instruments/sample_wait.py",
+      "role": "instrument",
+      "note": "Suspend/resume sampler that also captures the syscall handle argument."
+    },
+    {
+      "archive": "instruments/tabulate_wait.py",
+      "role": "instrument",
+      "note": "Applies the registered decision rule and writes the tabulation."
+    },
+    {
+      "archive": "instruments/walk_once.py",
+      "role": "instrument",
+      "note": "x64 stack unwinder used to name the caller of the ntdll stub."
+    },
+    {
+      "archive": "instruments/walk_probe.py",
+      "role": "instrument",
+      "note": "Repeats walk_once.py over a running probe and records the chains."
+    },
+    {
+      "archive": "timer-instrument/analyze.py",
+      "role": "instrument",
+      "note": "P1-P4 analysis of the GPU-timer diagnostic."
+    },
+    {
+      "archive": "timer-instrument/run_stall_diagnosis.py",
+      "role": "instrument",
+      "note": "Driver of the GPU-timer diagnostic. Its sha256 30a34162c5ded51c06fbe01796349966f215e37554a2150f093dad5680000a01 is the runner_sha256 recorded by all ten registrations, timer and wait alike; the verified copy lives in 2026-11-01-capacity-frontier-evidence/tools/."
+    },
+    {
+      "archive": "verify/verify_wait_evidence.py",
+      "role": "verifier",
+      "note": "Re-checks every hash in this manifest, gunzips every stream."
+    }
+  ],
+  "derived_files": [
+    {
+      "archive": "derived/wait-groups.tabulated.json",
+      "note": "Authoritative tabulation: per-process wait episodes, costs, shares and the H5/H6 verdict.",
+      "sha256": "5cad5a2f88d4c346599674c6aa04fea5d3358b220354a59ddca65e61321b49de",
+      "source_sha256": "c59044564cdeb98ac5196312519ea538b57305e62f92d92d79406afc1a9e6c67"
+    },
+    {
+      "archive": "derived/wait-groups.run.log",
+      "note": "Stdout of the seven-process group run, in order, including every sampler summary line.",
+      "sha256": "bce315128441eeb9ad5706a99637bc5698062e4bdf23d5a0c930d4b62aca7a43",
+      "source_sha256": "bce315128441eeb9ad5706a99637bc5698062e4bdf23d5a0c930d4b62aca7a43"
+    },
+    {
+      "archive": "derived/run_wait_group.summary.json",
+      "note": "Group manifest written by the runner: entities, process count, handle mode, analysis files.",
+      "sha256": "cc0d38546d1cdbecc2e251fbb9102cd32b607478552e6f1cef058a431c7c51c8",
+      "source_sha256": "36f7f40e1a1a2e3c4ebc5d0d5d670fe67f87dccb5b63084f5077ecbc1eefc5a8"
+    },
+    {
+      "archive": "timer-instrument/analysis.json",
+      "note": "P1-P4 answers for the GPU-timer diagnostic.",
+      "sha256": "83fab8977a8d78051f60f64c3d029c69fc17f3a5e823e6cb442fb0084feaaca9"
+    }
+  ],
+  "instrument_versions": [
+    {
+      "run": "wait-2800-static",
+      "sampler": "sample_wait.py",
+      "sampler_sha256": "af4bd451f1f69da98253a888e2058614edec022e053c50b6398334ca2c8e317c",
+      "sampler_matches_archive": true,
+      "analyzer": "analyze_wait.py",
+      "analyzer_sha256": "79a4707d78ccdac87372a9d0c1af8a18a9f00141eff6f14775dd4213dbdf5553",
+      "analyzer_matches_archive": true,
+      "driver_sha256": "79b362f302f0b67c58856291867a63e0d9413f2eb09524a953246a608a8eebd3",
+      "driver_matches_archive": true,
+      "runner_sha256": "30a34162c5ded51c06fbe01796349966f215e37554a2150f093dad5680000a01",
+      "head": "04b6fa3c193accdd8914357b6b98d933cdeda1c5",
+      "binary_sha256": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8"
+    },
+    {
+      "run": "wait-1800-static",
+      "sampler": "sample_wait.py",
+      "sampler_sha256": "af4bd451f1f69da98253a888e2058614edec022e053c50b6398334ca2c8e317c",
+      "sampler_matches_archive": true,
+      "analyzer": "analyze_wait.py",
+      "analyzer_sha256": "79a4707d78ccdac87372a9d0c1af8a18a9f00141eff6f14775dd4213dbdf5553",
+      "analyzer_matches_archive": true,
+      "driver_sha256": "79b362f302f0b67c58856291867a63e0d9413f2eb09524a953246a608a8eebd3",
+      "driver_matches_archive": true,
+      "runner_sha256": "30a34162c5ded51c06fbe01796349966f215e37554a2150f093dad5680000a01",
+      "head": "04b6fa3c193accdd8914357b6b98d933cdeda1c5",
+      "binary_sha256": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8"
+    },
+    {
+      "run": "wait-2800-static-handles",
+      "sampler": "sample_wait.py",
+      "sampler_sha256": "af4bd451f1f69da98253a888e2058614edec022e053c50b6398334ca2c8e317c",
+      "sampler_matches_archive": true,
+      "analyzer": "analyze_wait.py",
+      "analyzer_sha256": "79a4707d78ccdac87372a9d0c1af8a18a9f00141eff6f14775dd4213dbdf5553",
+      "analyzer_matches_archive": true,
+      "driver_sha256": "79b362f302f0b67c58856291867a63e0d9413f2eb09524a953246a608a8eebd3",
+      "driver_matches_archive": true,
+      "runner_sha256": "30a34162c5ded51c06fbe01796349966f215e37554a2150f093dad5680000a01",
+      "head": "04b6fa3c193accdd8914357b6b98d933cdeda1c5",
+      "binary_sha256": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8"
+    },
+    {
+      "run": "rip-2800-static",
+      "sampler": "sample_rip.py",
+      "sampler_sha256": "70cbd75e45bca327019bf2b8d00c5fb032c4ba3c91afa78396b6a2991c715291",
+      "sampler_matches_archive": true,
+      "analyzer": "analyze_rip.py",
+      "analyzer_sha256": "326bc47795ed5e7d6b6b1bf1baa69d5c95b229352fd174998b93648aaf339544",
+      "analyzer_matches_archive": false,
+      "driver_sha256": "07dd1ccf89b6f5010953b4e5d877edf808c0e2ea2f1c6265f110c390bd863eef",
+      "driver_matches_archive": false,
+      "runner_sha256": "30a34162c5ded51c06fbe01796349966f215e37554a2150f093dad5680000a01",
+      "head": "04b6fa3c193accdd8914357b6b98d933cdeda1c5",
+      "binary_sha256": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8"
+    },
+    {
+      "run": "rip-smoke",
+      "sampler": "sample_wait.py",
+      "sampler_sha256": "af4bd451f1f69da98253a888e2058614edec022e053c50b6398334ca2c8e317c",
+      "sampler_matches_archive": true,
+      "analyzer": "analyze_rip.py",
+      "analyzer_sha256": "62bf05ac09f384c705502b3dc5c001c6587a7af0d548e5fe725bc14e6146e166",
+      "analyzer_matches_archive": true,
+      "driver_sha256": "998c5665b93e61b104da4942c636612746e8756e2b4aa8ca4bf68c17e811e77e",
+      "driver_matches_archive": false,
+      "runner_sha256": "30a34162c5ded51c06fbe01796349966f215e37554a2150f093dad5680000a01",
+      "head": "04b6fa3c193accdd8914357b6b98d933cdeda1c5",
+      "binary_sha256": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8"
+    }
+  ],
+  "superseded_attempts": [
+    {
+      "archive": "runs/rip-2800-static/invalid-attempt-01",
+      "state": "stopped before it measured anything",
+      "reason": "The first RIP-sampler attempt at 2800 static produced 32428 sample bytes before the run stopped, so it holds no measuring interval. It is kept because it is the attempt the pilot directory was rewritten from, and because deleting it would make the pilot look like a first try that worked.",
+      "quoted_in_report": false
+    }
+  ],
+  "superseded_notes": [
+    "No group run was discarded. The RIP-sampler pilot and the sampler self-test are archived under runs/ as instrument lineage rather than as superseded attempts, because their numbers are quoted nowhere.",
+    "run_sample.py and analyze_rip.py were revised in place between the pilot, the self-test and the three group runs, so the older versions are not recoverable; instrument_versions records which archived file each run actually used."
+  ],
+  "excluded": [
+    {
+      "path": "*.ready",
+      "reason": "seven-byte handshake marker written by the sampler; carries no measurement"
+    },
+    {
+      "path": "_ctx_debug.py, _ctx_debug2.py, _ctx_probe.ps1, _ctx_probe2.ps1",
+      "reason": "throwaway scripts used to locate CONTEXT offsets; superseded by walk_once.py"
+    },
+    {
+      "path": "_spin.py",
+      "reason": "one-line busy-wait harness for sampler calibration"
+    },
+    {
+      "path": "_selftest.csv, _selftest_modules.txt, _selftest_samples.txt",
+      "reason": "output of the sampler self-test; the same self-test is archived as rip-smoke with its own registration"
+    },
+    {
+      "path": "rip_sampler.cs, sample_rip.ps1",
+      "reason": "abandoned C#/PowerShell sampler attempts; the host PowerShell is 32-bit, which is why the sampler is Python with ctypes"
+    },
+    {
+      "path": "__pycache__/",
+      "reason": "byte-code cache"
+    },
+    {
+      "path": "analysis.json generated for the walk runs",
+      "reason": "empty in this work directory; the walk outputs are archived per run instead"
+    }
+  ],
+  "excluded_files": [
+    "rip-2800-static/01-static-2800.ready",
+    "rip-2800-static/invalid-attempt-01/01-static-2800.ready",
+    "rip-smoke/00-static-2800.ready",
+    "wait-1800-static/01-static-1800.ready",
+    "wait-1800-static/02-static-1800.ready",
+    "wait-1800-static/03-static-1800.ready",
+    "wait-2800-static-handles/01-static-2800.ready",
+    "wait-2800-static/01-static-2800.ready",
+    "wait-2800-static/02-static-2800.ready",
+    "wait-2800-static/03-static-2800.ready"
+  ],
+  "generated_files": {
+    "index.md": {
+      "archive": "index.md",
+      "authored": "D:\\Cuexis-redesign\\out\\verification-20261101\\evidence-staging\\r3-wait\\authored\\index.md",
+      "bytes": 12375,
+      "sha256": "014632d8cf23de04d08cd341e0ddb2f2b1fb789ff4642896db86c3e45e4c833a",
+      "eol": "lf"
+    }
+  },
+  "binding": {
+    "probe_binary": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_execution_device_probe.exe",
+    "probe_binary_sha256": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8",
+    "probe_binary_bytes": 5725696,
+    "probe_source_sha256": "e98f1dac026e51cfebdfb331c657bdb9a6e77e6896a493f6c57a8040fdcd07f0",
+    "head": "04b6fa3c193accdd8914357b6b98d933cdeda1c5",
+    "heads_observed": [
+      "04b6fa3c193accdd8914357b6b98d933cdeda1c5"
+    ],
+    "driver_version": "3.3.0 NVIDIA 616.64",
+    "worktree_clean": true,
+    "timer_runner_sha256": "30a34162c5ded51c06fbe01796349966f215e37554a2150f093dad5680000a01",
+    "tabulated_sha256": "5cad5a2f88d4c346599674c6aa04fea5d3358b220354a59ddca65e61321b49de",
+    "tabulated_source_sha256": "c59044564cdeb98ac5196312519ea538b57305e62f92d92d79406afc1a9e6c67",
+    "tabulated_sha256_note": "tabulated_sha256 is the archived copy, which is CRLF-normalised like every other text copy; tabulated_source_sha256 is the byte-exact file tabulate_wait.py wrote, and it is what a re-derivation must reproduce",
+    "probe_binary_matches_capacity_frontier": "daa0c3cf370c74a408073eac35334a4e4dd81c113f80928fcfd9744a23d6aca8",
+    "head_differs_from_capacity_frontier": "8e275a59d6ff18d88a8193643254dc0d3fb9c034 is the capacity-frontier head; the two commits in between changed 438 files, all under docs/, so no probe source changed"
+  },
+  "environment": {
+    "ntdll_path": "C:\\WINDOWS\\System32\\ntdll.dll",
+    "ntdll_sha256": "a74f7482085eab125ccc09152ab7e0b5994bcb13e1a7b29880bdbb24179ecb8b",
+    "ntdll_bytes": 2522080,
+    "platform_version": "10.0.26300",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "python": "3.14.6",
+    "python_64bit": true,
+    "note": "derive_all.py and derive_wait_runs.py translate sampled instruction pointers through the syscall stub table of the ntdll named here; re-derivation is byte-identical only on a system whose ntdll matches this hash."
+  },
+  "totals": {
+    "raw_bytes": 473156453,
+    "archived_bytes": 31243556,
+    "files": 131,
+    "text": 88,
+    "gzip": 42,
+    "binary": 0
+  }
+}

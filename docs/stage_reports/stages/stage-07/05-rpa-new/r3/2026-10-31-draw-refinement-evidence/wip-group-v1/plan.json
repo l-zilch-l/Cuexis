@@ -1,0 +1,120 @@
+{
+  "scope": "Non-inferiority screen between the committed selected neutral draw builder (baseline) and the uncommitted worktree refinement (candidate). Same product-sequence Release libraries, same app-local Release DLLs, ordinary physical GPU, no timer or pixel readback in timed frames. Not a selection gate and not a capacity acceptance.",
+  "plan": [
+    {
+      "entities": 1000,
+      "mode": "render-only",
+      "repeat": 0,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "render-only",
+      "repeat": 0,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "render-only",
+      "repeat": 1,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "render-only",
+      "repeat": 1,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "static",
+      "repeat": 0,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "static",
+      "repeat": 0,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "static",
+      "repeat": 1,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 1000,
+      "mode": "static",
+      "repeat": 1,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "render-only",
+      "repeat": 0,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "render-only",
+      "repeat": 0,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "render-only",
+      "repeat": 1,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "render-only",
+      "repeat": 1,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "static",
+      "repeat": 0,
+      "variant": "baseline",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "static",
+      "repeat": 0,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "static",
+      "repeat": 1,
+      "variant": "candidate",
+      "frames": 60
+    },
+    {
+      "entities": 40000,
+      "mode": "static",
+      "repeat": 1,
+      "variant": "baseline",
+      "frames": 60
+    }
+  ],
+  "binding_sha256": "9120cafc50c0dc9f58647d3d66e7da14f468e9b326f0fa2c7b33a6bf991de330",
+  "gate": "Non-inferiority only: every one of the four points must keep cycle median change <= +5%; process relative range <= 15%; no re-sampling, no replacement.",
+  "resolves": "Whether the worktree refinement may be committed without a performance regression."
+}

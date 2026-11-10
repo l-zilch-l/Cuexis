@@ -1,0 +1,5 @@
+#pragma once
+#include <string_view>
+namespace cuexis::json::gameplay {
+inline constexpr std::string_view kAuthorPayloadSchema = R"author(@CUEXIS_AUTHOR_SCHEMA@)author";
+}

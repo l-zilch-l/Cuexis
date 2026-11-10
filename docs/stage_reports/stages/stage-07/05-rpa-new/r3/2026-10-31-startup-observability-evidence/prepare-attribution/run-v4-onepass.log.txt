@@ -1,0 +1,41 @@
+chart bytes 13171906 repeats 2 prepare 1
+-- repeat 0
+nlohmann raw                  229.86 ms  peak_ws   142.6 MiB  private   143.2 MiB
+                           nodes 11
+nlohmann + observer          9055.74 ms  peak_ws   143.9 MiB  private   143.9 MiB
+                           nodes 11 duplicate ''
+nlohmann + trivial obs       9355.66 ms  peak_ws   144.0 MiB  private   144.2 MiB
+                           nodes 11
+json.parse                    971.64 ms  peak_ws   192.2 MiB  private   151.4 MiB
+json.parseBounded             979.44 ms  peak_ws   192.5 MiB  private   151.0 MiB
+writeCanonicalJson           1896.71 ms  peak_ws   310.3 MiB  private    45.2 MiB
+                           canonical bytes 29652435
+ChartLoader.load             1522.81 ms  peak_ws   310.3 MiB  private    41.8 MiB
+                           objects 40001
+scanTopLevelInteger             0.04 ms  peak_ws   310.3 MiB  private    16.5 MiB
+                           version 3
+fromFilesystemProject          30.60 ms  peak_ws   310.3 MiB  private    29.1 MiB
+prepareLoad                  3981.30 ms  peak_ws   343.5 MiB  private   255.1 MiB
+                           chart 019f0000-0000-7abc-8def-000000000301 format v3
+                           identity 936c32eede42abfbd136e217591c623b3ba3dc7093694fe60a356e070f656869
+startup path total           4012.00 ms  peak_ws   343.5 MiB  private   255.1 MiB
+-- repeat 1
+nlohmann raw                  329.35 ms  peak_ws   343.5 MiB  private   149.3 MiB
+                           nodes 11
+nlohmann + observer          9458.47 ms  peak_ws   343.5 MiB  private   149.1 MiB
+                           nodes 11 duplicate ''
+nlohmann + trivial obs       9238.84 ms  peak_ws   343.5 MiB  private   149.4 MiB
+                           nodes 11
+json.parse                    924.41 ms  peak_ws   343.5 MiB  private   153.8 MiB
+json.parseBounded             937.66 ms  peak_ws   343.5 MiB  private   150.9 MiB
+writeCanonicalJson           1810.44 ms  peak_ws   343.5 MiB  private    45.7 MiB
+                           canonical bytes 29652435
+ChartLoader.load             1471.27 ms  peak_ws   343.5 MiB  private    41.8 MiB
+                           objects 40001
+scanTopLevelInteger             0.02 ms  peak_ws   343.5 MiB  private    16.8 MiB
+                           version 3
+fromFilesystemProject          26.30 ms  peak_ws   343.5 MiB  private    29.4 MiB
+prepareLoad                  3788.66 ms  peak_ws   345.6 MiB  private   256.0 MiB
+                           chart 019f0000-0000-7abc-8def-000000000301 format v3
+                           identity 936c32eede42abfbd136e217591c623b3ba3dc7093694fe60a356e070f656869
+startup path total           3815.05 ms  peak_ws   345.6 MiB  private   256.0 MiB

@@ -1,0 +1,35 @@
+Filters: [r3c-memory]
+Randomness seeded to: 1
+{"event":"r3c.budget_heap","n":1000,"wave":0,"capture":0,"phase":0,"requested_delta":2299878,"crt_usable_delta":2626374,"payload_charge":0,"process_private_bytes":25296896,"working_set":29372416,"points":0}
+{"event":"r3c.budget_heap","n":1000,"wave":0,"capture":0,"phase":1,"requested_delta":7629253,"crt_usable_delta":9114533,"payload_charge":0,"process_private_bytes":35266560,"working_set":39030784,"points":0}
+{"event":"r3c.budget_heap","n":1000,"wave":0,"capture":0,"phase":2,"requested_delta":7614758,"crt_usable_delta":9098758,"payload_charge":0,"process_private_bytes":35266560,"working_set":39030784,"points":0}
+{"event":"r3c.budget_heap","n":1000,"wave":0,"capture":0,"phase":3,"requested_delta":2293710,"crt_usable_delta":2618990,"payload_charge":0,"process_private_bytes":25600000,"working_set":29720576,"points":0}
+{"event":"r3c.budget_release","n":1000,"capture":0,"requested_peak_delta":11741522,"crt_usable_peak_delta":14094386,"requested_release_delta":0,"storage_release_delta":0}
+{"event":"r3c.budget_heap","n":1000,"wave":0,"capture":1,"phase":0,"requested_delta":2299878,"crt_usable_delta":2626374,"payload_charge":0,"process_private_bytes":25374720,"working_set":29618176,"points":1}
+{"event":"r3c.budget_heap","n":1000,"wave":0,"capture":1,"phase":1,"requested_delta":7640556,"crt_usable_delta":9126092,"payload_charge":1239160,"process_private_bytes":35397632,"working_set":39055360,"points":1}
+{"event":"r3c.budget_heap","n":1000,"wave":0,"capture":1,"phase":2,"requested_delta":7626061,"crt_usable_delta":9110317,"payload_charge":1239160,"process_private_bytes":35397632,"working_set":39055360,"points":1}
+{"event":"r3c.budget_heap","n":1000,"wave":0,"capture":1,"phase":3,"requested_delta":2293710,"crt_usable_delta":2618990,"payload_charge":0,"process_private_bytes":26427392,"working_set":29982720,"points":1}
+{"event":"r3c.budget_release","n":1000,"capture":1,"requested_peak_delta":11741522,"crt_usable_peak_delta":14094386,"requested_release_delta":0,"storage_release_delta":0}
+{"event":"r3c.budget_heap","n":1536,"wave":256,"capture":0,"phase":0,"requested_delta":3518589,"crt_usable_delta":4018717,"payload_charge":0,"process_private_bytes":37920768,"working_set":41398272,"points":0}
+{"event":"r3c.budget_heap","n":1536,"wave":256,"capture":0,"phase":1,"requested_delta":13122613,"crt_usable_delta":15851861,"payload_charge":0,"process_private_bytes":52465664,"working_set":55480320,"points":0}
+{"event":"r3c.budget_heap","n":1536,"wave":256,"capture":0,"phase":2,"requested_delta":13094671,"crt_usable_delta":15822511,"payload_charge":0,"process_private_bytes":52465664,"working_set":55480320,"points":0}
+{"event":"r3c.budget_heap","n":1536,"wave":256,"capture":0,"phase":3,"requested_delta":3512421,"crt_usable_delta":4011333,"payload_charge":0,"process_private_bytes":37388288,"working_set":41111552,"points":0}
+{"event":"r3c.budget_release","n":1536,"capture":0,"requested_peak_delta":14381737,"crt_usable_peak_delta":17352297,"requested_release_delta":0,"storage_release_delta":0}
+{"event":"r3c.budget_heap","n":1536,"wave":256,"capture":1,"phase":0,"requested_delta":3518589,"crt_usable_delta":4018717,"payload_charge":0,"process_private_bytes":37720064,"working_set":41381888,"points":4}
+{"event":"r3c.budget_heap","n":1536,"wave":256,"capture":1,"phase":1,"requested_delta":13221716,"crt_usable_delta":15952852,"payload_charge":10458048,"process_private_bytes":52355072,"working_set":55484416,"points":4}
+{"event":"r3c.budget_heap","n":1536,"wave":256,"capture":1,"phase":2,"requested_delta":13193774,"crt_usable_delta":15923502,"payload_charge":10458048,"process_private_bytes":52355072,"working_set":55484416,"points":4}
+{"event":"r3c.budget_heap","n":1536,"wave":256,"capture":1,"phase":3,"requested_delta":3512421,"crt_usable_delta":4011333,"payload_charge":0,"process_private_bytes":37187584,"working_set":40914944,"points":4}
+{"event":"r3c.budget_release","n":1536,"capture":1,"requested_peak_delta":14456154,"crt_usable_peak_delta":17428250,"requested_release_delta":0,"storage_release_delta":0}
+{"event":"r3c.budget_heap","n":40000,"wave":0,"capture":0,"phase":0,"requested_delta":91285816,"crt_usable_delta":104248280,"payload_charge":0,"process_private_bytes":956592128,"working_set":899092480,"points":0}
+{"event":"r3c.budget_heap","n":40000,"wave":0,"capture":0,"phase":1,"requested_delta":303503949,"crt_usable_delta":362787181,"payload_charge":0,"process_private_bytes":1294397440,"working_set":1232093184,"points":0}
+{"event":"r3c.budget_heap","n":40000,"wave":0,"capture":0,"phase":2,"requested_delta":303177454,"crt_usable_delta":362459406,"payload_charge":0,"process_private_bytes":1294397440,"working_set":1232093184,"points":0}
+{"event":"r3c.budget_heap","n":40000,"wave":0,"capture":0,"phase":3,"requested_delta":91279648,"crt_usable_delta":104240896,"payload_charge":0,"process_private_bytes":998035456,"working_set":945414144,"points":0}
+{"event":"r3c.budget_release","n":40000,"capture":0,"requested_peak_delta":463568877,"crt_usable_peak_delta":557532685,"requested_release_delta":0,"storage_release_delta":0}
+{"event":"r3c.budget_heap","n":40000,"wave":0,"capture":1,"phase":0,"requested_delta":91285816,"crt_usable_delta":104248280,"payload_charge":0,"process_private_bytes":955994112,"working_set":901140480,"points":1}
+{"event":"r3c.budget_heap","n":40000,"wave":0,"capture":1,"phase":1,"requested_delta":303827252,"crt_usable_delta":363110740,"payload_charge":45263048,"process_private_bytes":1295675392,"working_set":1230364672,"points":1}
+{"event":"r3c.budget_heap","n":40000,"wave":0,"capture":1,"phase":2,"requested_delta":303500757,"crt_usable_delta":362782965,"payload_charge":45263048,"process_private_bytes":1295675392,"working_set":1230364672,"points":1}
+{"event":"r3c.budget_heap","n":40000,"wave":0,"capture":1,"phase":3,"requested_delta":91279648,"crt_usable_delta":104240896,"payload_charge":0,"process_private_bytes":1002299392,"working_set":950702080,"points":1}
+{"event":"r3c.budget_release","n":40000,"capture":1,"requested_peak_delta":463568877,"crt_usable_peak_delta":557532685,"requested_release_delta":0,"storage_release_delta":0}
+===============================================================================
+All tests passed (103 assertions in 1 test case)
+

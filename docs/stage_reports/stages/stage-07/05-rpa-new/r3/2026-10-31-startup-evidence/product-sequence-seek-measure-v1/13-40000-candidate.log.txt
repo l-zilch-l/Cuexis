@@ -1,0 +1,11 @@
+Filters: [redesign-host-perf]
+Randomness seeded to: 1
+{"event":"r3.redesign.setup_start","requirements":40000,"records":129}
+{"event":"r3.redesign.setup_done","requirements":40000,"records":129,"setup_us":5551977}
+{"event":"r3.redesign.host","requirements":40000,"horizon":902,"attempt":0,"seek_us":206039,"request_to_present_us":206163,"archive_us":40,"capsule_revision":4,"content_path":"packed","setup_us":5551977,"cut_us":13,"records":129,"identity":"source","renderer":"cpu-test","audio":false,"formal":false}
+{"event":"r3.redesign.host","requirements":40000,"horizon":902,"attempt":1,"seek_us":241394,"request_to_present_us":241507,"archive_us":40,"capsule_revision":4,"content_path":"packed","setup_us":5551977,"cut_us":14,"records":129,"identity":"source","renderer":"cpu-test","audio":false,"formal":false}
+R3_SEEK_WIRE {"bytes":92623328,"sha256":"9391d9a2e9fb01a8705ba6609765280622ce758e35d96a3badeab75eb49b0989"}
+{"event":"r3.redesign.host","requirements":40000,"horizon":902,"attempt":2,"seek_us":231892,"request_to_present_us":232012,"archive_us":40,"capsule_revision":4,"content_path":"packed","setup_us":5551977,"cut_us":22,"records":129,"identity":"source","renderer":"cpu-test","audio":false,"formal":false}
+===============================================================================
+All tests passed (455 assertions in 1 test case)
+

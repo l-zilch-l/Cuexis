@@ -1,0 +1,144 @@
+{
+  "scope": "Measured throughput, sustained capacity and budget behaviour of the 40000-entity fixture on one laptop, one Release configuration. Localised device diagnostic; not R3/R4 or Stage 7 acceptance, not a production capacity claim, not a 240 FPS target commitment.",
+  "head": "466ff76a0b2a2f45b90280331bded77897ef6421",
+  "commits": [
+    "f90c2e1 - frozen base of the 2026-10-29 capacity scan and the 2026-10-30 budget census",
+    "6ae7bd7 - prepare moved before window creation; startup phase observability",
+    "6217f00 - v4 version scan without building a value tree",
+    "f70d6ba - one-pass parse in engine/json_support",
+    "466ff76 - legacy prepare owns the parsed Chart tree once"
+  ],
+  "frozen_base": "Every frozen row in the report predates 6ae7bd7. The four refreshed rows were produced on 466ff76 with the same fixture; nothing in the frozen directories was re-measured, re-labelled or rewritten.",
+  "binary_binding": {
+    "executable_sha256": "91ed0d303c09ef92e6abab9e30b63c87da77322d1dc7132c6b45204c220578b9",
+    "probe_source_sha256": "e98f1dac026e51cfebdfb331c657bdb9a6e77e6896a493f6c57a8040fdcd07f0",
+    "runner_sha256": "0264c702",
+    "runner_sha256_note": "run_40k_refresh.py, recorded in full inside each registration.json; the short form here is a reading aid only.",
+    "shared_across_runs": "All four refresh runs (1080P, 720P, 1800 sustain, 1300 sustain) record the same executable hash, so they are one measurement regime, not four builds compared against each other.",
+    "not_copied": "The executable is a build artefact. A later full matrix rebuilds the same path with --clean-first, so the bytes on disk after that point are not the bytes that produced these numbers. The manifest records the registered sha256 and the on-disk sha256 side by side instead of presenting the current file as truth.",
+    "head_worktree": "Each registration.json records head 466ff76 and an empty dirty_files list; run_40k_refresh.py refuses a dirty worktree unless --allow-dirty is passed, and it was not passed."
+  },
+  "measurement_regime": {
+    "window": "Visible window, VSync read-back 0, real OpenGL backend, opaque command count verified per frame, final material pixel [255,204,51,255].",
+    "budget": "One complete cycle 4.166667 ms (1000000/240 us) between consecutive present returns, including event pump and loop overhead.",
+    "stable": "p99 <= 4.166667 ms AND every complete one-second window >= 240 frames. Mean FPS is never used as a stability claim.",
+    "strictness": "120 measured frames per process for the two 40K groups; six fixed 20 s processes per entity count for the sustain groups.",
+    "warmup": "At least 8 frames and 2000 ms before measurement starts.",
+    "affinity": "Execution-QoS off, controller mask 3, saved GPU mask 65535; every process of a group runs the same mask.",
+    "aggregation": "Per-process median, then median across the three processes; wall FPS and cycle p99 are aggregated separately. Repeatability is (max-min)/median inside a group and is allowed up to 15%.",
+    "no_resampling": "No process was dropped, re-run or replaced after seeing its numbers."
+  },
+  "four_lineages": {
+    "1_1080p_40k": "Three processes, 120 frames each, 1920x1080, render-only and static in alternating order.",
+    "2_720p_40k": "Same executable, same fixture, same warmup and CPU set, only the viewport changes to 1280x720. This makes the resolution comparison controlled rather than cross-batch.",
+    "3_1800_sustain": "Both render modes, three processes each, 20 s per process, at the head of the frozen confirmed capacity.",
+    "4_1300_sustain": "Both render modes, three processes each, 20 s per process, at the frozen static confirmed point.",
+    "why_not_one_run": "The 40K short groups and the 20 s sustain groups have different durations and different CPU cost profiles; interleaving them would put a 20 s saturation run next to a short tail measurement. They were still produced serially on one machine, one binary and one fixture, and the serial controller waited for matrix idle before starting. No number here was taken while a build or another measurement was running."
+  },
+  "fresh_numbers": {
+    "1080p_render_only": {
+      "fps": [22.09, 22.54, 22.42],
+      "mean_ms": [45.270, 44.365, 44.611],
+      "p99_ms": [47.004, 50.845, 50.282],
+      "median_p99_ms": 50.282,
+      "p99_relative_range": 0.0764,
+      "fps_relative_range": 0.0201,
+      "multiple_of_budget": 12.07,
+      "required_speedup": 10.71
+    },
+    "1080p_static": {
+      "fps": [17.52, 17.41, 17.51],
+      "mean_ms": [57.073, 57.430, 57.114],
+      "p99_ms": [60.042, 61.664, 61.325],
+      "median_p99_ms": 61.325,
+      "p99_relative_range": 0.0264,
+      "fps_relative_range": 0.0062,
+      "multiple_of_budget": 14.72,
+      "required_speedup": 13.71
+    },
+    "720p_render_only": {
+      "fps": [22.51, 22.76, 22.82],
+      "p99_ms": [47.756, 46.994, 46.810],
+      "median_p99_ms": 46.994,
+      "p99_relative_range": 0.0201,
+      "fps_relative_range": 0.0132,
+      "multiple_of_budget": 11.28
+    },
+    "720p_static": {
+      "fps": [17.62, 17.39, 17.49],
+      "p99_ms": [59.541, 62.493, 60.485],
+      "median_p99_ms": 60.485,
+      "p99_relative_range": 0.0488,
+      "fps_relative_range": 0.0131,
+      "multiple_of_budget": 14.52
+    },
+    "per_entity_us": {
+      "1080p_render_only_mean": 1.115,
+      "1080p_render_only_p99": 1.257,
+      "1080p_static_mean": 1.428,
+      "1080p_static_p99": 1.533,
+      "720p_render_only_mean": 1.098,
+      "720p_render_only_p99": 1.175,
+      "720p_static_mean": 1.429,
+      "720p_static_p99": 1.512,
+      "budget_per_entity": 0.1042
+    },
+    "resolution_delta": {
+      "render_only_fps": "-1.53%",
+      "render_only_p99": "+7.00%",
+      "static_fps": "+0.09%",
+      "static_p99": "+1.39%",
+      "pixel_ratio": 2.25,
+      "reading": "A 2.25x reduction in pixels changes neither wall FPS nor cycle p99. The 40K cost at this head is not a fill-rate cost, so the older hint that 720P lives in a different cost regime is withdrawn."
+    },
+    "over_budget_frames": "120 of 120 measured frames in all four groups."
+  },
+  "sustain_numbers": {
+    "1800_render_only": {"fps": [383.77, 387.81, 426.37], "median_p99_ms": 3.211, "p99_relative_range": 0.1214, "fps_relative_range": 0.1099, "slowest_second_frames": [374, 370, 418], "verdict": "pass"},
+    "1800_static": {"fps": [314.85, 342.57, 338.04], "median_p99_ms": 3.725, "p99_relative_range": 0.1435, "fps_relative_range": 0.0820, "slowest_second_frames": [303, 336, 312], "verdict": "pass, never measured on the frozen side"},
+    "1300_render_only": {"fps": [498.15, 500.24, 573.98], "median_p99_ms": 2.568, "p99_relative_range": 0.1504, "fps_relative_range": 0.1516, "slowest_second_frames": [485, 485, 559], "verdict": "pass, never measured on the frozen side"},
+    "1300_static": {"fps": [435.78, 418.10, 411.17], "median_p99_ms": 3.071, "p99_relative_range": 0.0278, "fps_relative_range": 0.0589, "slowest_second_frames": [402, 398, 383], "verdict": "pass"},
+    "repeatability_exception": "The 1300 render-only group exceeds the 15% screen on both metrics: its third process completed 11,480 frames in 20 s against 9,964 and 10,005, with no logged cause. The group is used only for pass/fail. Its speed is not quoted, and its slowest process (p99 2.570 ms, slowest second 485 frames) still clears the gate by a wide margin."
+  },
+  "capacity_reading": {
+    "frozen_frontier": "1800 render-only and 1300 static, from the f90c2e1 era; adjacent failures 1900, 1500 and 1400 are retained in frozen-1080p/.",
+    "head": "At 466ff76 both paths pass at 1800 and again at 1300, with more headroom than the frozen runs, and 1800 static passes although it was never tested on the frozen side.",
+    "published": "The capacity statement stays 'stable 240 FPS at 1800 render-only / 1300 static on this laptop, this fixture, uncapped present'. The frontier is a conservative lower bound.",
+    "withheld": "No new frontier is published. Only 1800 and 1300 were measured on the head; nothing above 1800 was scanned, so '>=1800' is the strongest defensible statement.",
+    "arithmetic_not_measurement": "1300 x 84.073/61.325 = about 1782 explains why 1800 static passes, and 1800 x 4.094/3.211 = about 2295 is a prediction for the render-only crossing. Neither is a measurement. Both are recorded as predictions before any bracket run and must not be quoted as capacity.",
+    "against_demand": "40000/1800 = 22.2x and 40000/1300 = 30.8x, so the demand is an order of magnitude outside the measured frontier."
+  },
+  "two_generation_rule": {
+    "rule": "Rows from f90c2e1 and rows from 466ff76 are never averaged, blended or fitted together, and no single-commit attribution is drawn between them.",
+    "allowed": "Direction and magnitude only: 40K wall FPS x1.26 render-only and x1.30 static, p99 -26.4% / -27.1%, required speedup 13.50x -> 10.71x and 17.76x -> 13.71x.",
+    "withheld": "The frozen linear fit (1.688 us/entity render-only, 2.078 us/entity static, crossings about 1990 and about 1530) is not refitted. One head point cannot define a slope, and silently replacing the registered fit would change the measurement regime.",
+    "not_a_pass": "Even after the improvement the gap stays at 12-15x over budget. The two-generation comparison changes the size of the gap, not the verdict."
+  },
+  "architecture_lever": {
+    "only_measured_candidate": "Instancing: 40K submit segment -24.02%, below the pre-registered 30% screen, therefore not selected.",
+    "arithmetic": "Even a full 24.02% on the complete cycle is a 1.32x speedup against the 10.7-17.8x still required.",
+    "routes_without_local_evidence": "Reducing visible entities (contradicts the 40K-in-frame definition), changing the submission architecture, or changing device class. None has local evidence, so none is planned here.",
+    "consequence": "No '40K at 240 FPS' optimisation task is registered in R3. It would be an architecture topic requiring its own stage argument."
+  },
+  "budget_layers": {
+    "as_process_cap": "128 MiB cannot host a 40K prepared playback. Six readings over two rounds: peak private 254.7-315.3 MiB, peak working set 343.5-359.5 MiB, canonical text 29,652,435 B over 40001 objects. 128 MiB is about 50.3% of the smallest peak private (50.1% against the first-round minimum of 255.5 MiB). The third reading in each round is the high one; identity bytes, canonical length and object count are identical in all six.",
+    "as_checkpoint_charge": "As a charge parameter 128 MiB rejects 40K dense while the real extra retention is 323,303 B: 755x overstatement (1K dense 541x, 40K six-wave 822x). The logged outcome is R3C_QUOTA_MISS with charge 0 and points 0 in all five phases. The six-wave frontier row at 128 MiB is 1,2,2,2,2,2 points and 90,159,856 B.",
+    "consequence": "No 40K conclusion is drawn from 128 MiB in either layer. It is an unaccepted prototype parameter. Raising it requires a documented census, not a silent bump."
+  },
+  "exclusions": [
+    "Per-frame trace logs: 12 files of 1.46-2.21 MB for the sustain groups and 15 files of 1.3-1.9 MB on the frozen side. Their content is already reduced to results.json (per-second windows, quantiles) in the same directories; the manifest records path, bytes and sha256 so the bytes stay identifiable without copying 20 MB of trace.",
+    "The probe executable: a build artefact, digest-pinned in the manifest with the registered hash and the current on-disk hash, because the matrix rebuilds the same path.",
+    "The 40K chart fixture: unchanged since the frozen scan and already recorded by identity and sha256 in the startup evidence set; copying a 29.6 MB document twice would add nothing."
+  ],
+  "open_items": [
+    "The head frontier is not bracketed. A defensible bracket would measure static 1800/2000 and render-only 2300/2400 with the predictions written down first; it must not run concurrently with the matrix or with any build.",
+    "The 1300 render-only spread (15.16% FPS, 15.04% p99) has no root cause. A repeat of that group would settle whether the third process was an outlier or a warm-cache effect.",
+    "The 128 MiB prototype still has no documented charge census in the product path; the census quoted here is from the isolated budget-source-v2 prototype."
+  ],
+  "falsifiers": [
+    "A rerun of the 1080P 40K group on the same binary that reports a median p99 at or below 4.166667 ms would falsify the throughput verdict.",
+    "A sustained 20 s group above 1800 render-only or above 1300 static that meets both criteria would move the frontier; the arithmetic predicts render-only near 2295 and static near 1782, both untested.",
+    "A controlled comparison in which the viewport materially changes cycle p99 would falsify the resolution-insensitivity finding."
+  ],
+  "limitations": "One laptop (Ryzen 7 8845H, RTX 4060 Laptop, 2560x1600 at 240 Hz), one synthetic fixture sharing a single triangle mesh and one opaque unlit material, no gameplay, audio, full player or complex materials, and only in-frame entity count rather than post-culling visible count. The refreshed rows and the frozen rows are two binary generations; only direction and magnitude are comparable. The 720P comparison is two points with three processes each. Nothing here is an installed-consumer, cross-platform or formal acceptance result."
+}

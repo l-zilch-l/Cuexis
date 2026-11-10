@@ -1,0 +1,78 @@
+from pathlib import Path
+import json, hashlib
+
+root=Path.cwd();base=Path(__file__).resolve().parent;out=base/'legacy-parse-once-source-v1';out.mkdir(exist_ok=False)
+paths=['engine/chart/include/cuexis/chart/detail/chart_dispatch_internal.hpp',
+       'engine/chart/src/canonical_chart_loader_internal.hpp', 'engine/chart/src/chart_writer_internal.hpp',
+       'engine/chart/src/chart_v4_loader.cpp','engine/chart/src/canonical_chart_loader.cpp',
+       'engine/chart/src/chart_writer.cpp','engine/playback/src/playback_session.cpp']
+contents={p:(root/p).read_text(encoding='utf-8') for p in paths}
+p=paths[0];s=contents[p]
+s=s.replace('#include <cuexis/core/diagnostic.hpp>','#include <cuexis/core/diagnostic.hpp>\n#include <cuexis/core/result.hpp>\n#include <string>')
+needle='// Filesystem source discovery only needs'
+index=s.index(needle)
+s=s[:index]+'''// Playback can canonicalize a successfully loaded legacy source from the same parsed tree.
+// The original two-argument path keeps its behavior for callers that do not need source identity.
+[[nodiscard]] auto loadChartForPlayback(std::string_view jsonText, const ChartLimits& limits,
+                                      core::Result<std::string>* legacyCanonical)
+    -> ChartDispatchResult;
+
+'''+s[index:];contents[p]=s
+p=paths[1];s=contents[p];i=s.index('} // namespace')
+s=s[:i]+'''// The typed legacy reader borrows a parsed tree without mutating it.
+[[nodiscard]] auto loadCanonicalView(const json::Value& parsed, const ChartLimits& limits)
+    -> ChartDocumentResult;
+
+'''+s[i:];contents[p]=s
+p=paths[2];s=contents[p];i=s.index('} // namespace')
+s=s[:i]+'''// Uses the exact legacy canonicalization and serialization rules on an owned parsed tree.
+[[nodiscard]] auto writeLegacyValue(json::Value value) -> core::Result<std::string>;
+
+'''+s[i:];contents[p]=s
+p=paths[3];s=contents[p]
+s=s.replace('#include "chart_project_path_internal.hpp"','#include "chart_project_path_internal.hpp"\n#include "chart_writer_internal.hpp"')
+needle='''auto detail::loadChartForPlayback(std::string_view jsonText, const ChartLimits& limits)
+    -> ChartDispatchResult {'''
+assert s.count(needle)==1
+s=s.replace(needle,needle+'''
+    return loadChartForPlayback(jsonText, limits, nullptr);
+}
+
+auto detail::loadChartForPlayback(std::string_view jsonText, const ChartLimits& limits,
+                                core::Result<std::string>* legacyCanonical)
+    -> ChartDispatchResult {''')
+needle='''    auto loaded = detail::loadCanonicalValue(std::move(*parsed), limits);
+    return ChartDispatchResult{'''
+assert s.count(needle)==1
+s=s.replace(needle,'''    auto loaded = detail::loadCanonicalView(*parsed, limits);
+    if (legacyCanonical != nullptr && loaded.hasValue()) {
+        *legacyCanonical = detail::writeLegacyValue(std::move(*parsed));
+    }
+    return ChartDispatchResult{''');contents[p]=s
+p=paths[4];s=contents[p]
+needle='''auto detail::loadCanonicalValue(json::Value parsed, const ChartLimits& limits)
+    -> ChartDocumentResult {'''
+assert s.count(needle)==1
+s=s.replace(needle,needle+'''
+    return loadCanonicalView(parsed, limits);
+}
+
+auto detail::loadCanonicalView(const json::Value& parsed, const ChartLimits& limits)
+    -> ChartDocumentResult {''');contents[p]=s
+p=paths[5];s=contents[p];i=s.index('auto detail::writeV4Value(')
+s=s[:i]+'''auto detail::writeLegacyValue(json::Value value) -> core::Result<std::string> {
+    return serializeCanonical(std::move(value));
+}
+
+'''+s[i:];contents[p]=s
+p=paths[6];s=contents[p]
+needle='    auto loaded = chart::detail::loadChartForPlayback(context.chartJson, context.limits);'
+assert s.count(needle)==1
+s=s.replace(needle,'''    core::Result<std::string> canonical{std::string{}};
+    auto loaded = chart::detail::loadChartForPlayback(context.chartJson, context.limits, &canonical);''')
+needle='    auto canonical = chart::ChartWriter::writeCanonicalJson(context.chartJson, context.limits);'
+assert s.count(needle)==1
+s=s.replace(needle,'    // The legacy source was canonicalized from the exact same parsed input tree.');contents[p]=s
+for p,s in contents.items():
+    target=out/p;target.parent.mkdir(parents=True,exist_ok=True);target.write_text(s,encoding='utf-8')
+(out/'binding.json').write_text(json.dumps(dict(scope='Unselected combination of direct SAX plus legacy parse-once. No public layout change: original dispatch symbol preserved, new private overload, const borrowed typed reader and exact existing canonical writer. All owning CPP callers recompiled.',files={p:hashlib.sha256((out/p).read_bytes()).hexdigest() for p in paths}),indent=2),encoding='utf-8')

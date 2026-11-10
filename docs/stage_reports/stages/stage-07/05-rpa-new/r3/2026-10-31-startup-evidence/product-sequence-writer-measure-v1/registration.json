@@ -1,0 +1,125 @@
+{
+  "formal": false,
+  "scope": "Fixed independent product activeRequirements sharing diagnostic only. No continuation/budget/batch publication. Old failed groups are distinct. Same candidate class definitions and fresh libraries; all timings exclude fault/heap observers.",
+  "plan": [
+    {
+      "n": 1000,
+      "wave": 0,
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "wave": 0,
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 1000,
+      "wave": 0,
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 1000,
+      "wave": 0,
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "wave": 0,
+      "pair": 2,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "wave": 0,
+      "pair": 2,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "wave": 0,
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "wave": 0,
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "wave": 0,
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "wave": 0,
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "wave": 0,
+      "pair": 2,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "wave": 0,
+      "pair": 2,
+      "variant": "candidate"
+    },
+    {
+      "n": 1536,
+      "wave": 256,
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 1536,
+      "wave": 256,
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 1536,
+      "wave": 256,
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 1536,
+      "wave": 256,
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 1536,
+      "wave": 256,
+      "pair": 2,
+      "variant": "baseline"
+    },
+    {
+      "n": 1536,
+      "wave": 256,
+      "pair": 2,
+      "variant": "candidate"
+    }
+  ],
+  "attempts": 3,
+  "gate": "Dense40K process-median advance overhead <=5%; 1K and six-wave overhead <=10%; original (max-min)/median<=15% screen. Exact full Snapshot wire hash/size. Preparation/encoding outside advance timer, not load acceptance.",
+  "binaries": {
+    "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-next-v1\\product-sequence-probes-v1\\writer-baseline.exe": "fa0512fa505594390ec05c2c4065ab8891c2ef995646a8870d19727327775689",
+    "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-next-v1\\product-sequence-probes-v1\\writer-candidate.exe": "86f2b810b1e6c33c3765c682e64c03a054c0ef4f349151ddca2c9d26018d83a6"
+  },
+  "runner_sha256": "f7efec32d78fe42bdb4e9688849b345d1e7defac9648587a10022749a3c3e52a",
+  "affinity": 4,
+  "priority": "BelowNormal",
+  "qos": "execution throttling OFF",
+  "failure": "Invalid process stops; original failed/noisy groups retained; no replacement/extension. Builds must be absent."
+}

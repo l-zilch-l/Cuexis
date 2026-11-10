@@ -4,6 +4,7 @@
 #include <cuexis/json/parse.hpp>
 #include <cuexis/json/reader.hpp>
 
+#include "cxc_hash_internal.hpp"
 #include "cxc_path_internal.hpp"
 
 #include <algorithm>
@@ -60,13 +61,6 @@ void addParseError(core::Diagnostics& diagnostics, const core::Error& error) {
                       (character >= 'a' && character <= 'z') ||
                       (character >= '0' && character <= '9') || character == '.' ||
                       character == '_' || character == '-';
-           });
-}
-
-[[nodiscard]] auto isSha256(std::string_view value) noexcept -> bool {
-    return value.size() == 64 && std::ranges::all_of(value, [](char character) {
-               return (character >= '0' && character <= '9') ||
-                      (character >= 'a' && character <= 'f');
            });
 }
 
@@ -172,7 +166,7 @@ void addParseError(core::Diagnostics& diagnostics, const core::Error& error) {
         }
         const auto pathValid = path && detail::isPortablePath(*path) && *path != "cuexis.cxc.json";
         const auto byteCountValid = byteCount && *byteCount <= limits.maxEntryBytes;
-        const auto shaValid = sha && isSha256(*sha);
+        const auto shaValid = sha && detail::isSha256(*sha);
         if (path && !pathValid) {
             addError(diagnostics, "cxc.entry.path_invalid", "CXC entry path is not portable",
                      std::string{pathReader->fieldPath()});

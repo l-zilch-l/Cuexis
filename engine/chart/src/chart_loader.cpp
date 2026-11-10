@@ -53,7 +53,7 @@ auto ChartLoader::load(std::string_view jsonText, const ChartLimits& limits)
         return ChartDocumentResult{std::nullopt, std::move(diagnostics)};
     }
     if (*format == "cuexis.chart") {
-        return detail::loadCanonicalValue(std::move(*parsed), limits);
+        return detail::loadCanonicalValue(*parsed, limits);
     }
     diagnostics.add(core::Diagnostic{core::DiagnosticSeverity::Error, "chart.format.unsupported",
                                      "Chart format is unsupported",

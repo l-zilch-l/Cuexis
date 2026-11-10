@@ -1,0 +1,23 @@
+{
+  "scope": "Current campaign source and runtime identity correction; no frozen receipts rewritten.",
+  "head": "b7233fc14aeb3f90bb69b96dc4bc61e163b38548",
+  "product_sequence_source_manifest": "product-sequence-source-v1-resume-v2.json is actual final test-source binding; initial probes binding points to pre-resume manifest. Production kernel CPP is unchanged across resumes.",
+  "common_libraries": "GL paired overlays use product-sequence-build-v1: private activeRequirements SharedSequence candidate in both, not root product kernel. This is irrelevant to rendering fixture gameplay but prevents claiming full root-source matrix.",
+  "old_runtime_gap": "Early GL state/instancing groups copied no app-local DLLs and .buildenv put global debug/bin before Release/bin. Exact loaded module files were not captured. Those groups cannot establish a verified Release device result. Do not re-label frozen binaries or timings.",
+  "schema_negative": "Original parser json-sax-check-v2 baseline crashed in schema before candidate ran, exit 0xC0000005. Exact unchanged executables with correct app-local Release DLLs in runtime-v3 pass expected checks. This establishes a runtime-binding failure, not a SAX parser failure.",
+  "verified_runtime": "json-sax-runtime-v3 and downstream corrected runtime directories contain Release DLL copies from the exact vcpkg tree used by headers and import libraries, hashed in bindings. Final formatted startup probe uses gl-startup-build-v2.",
+  "selection": {
+    "root_product_optimization_selected": false,
+    "probe_responsiveness_fix": true,
+    "product_sequence": "No material original-product gain, writer 40K -0.80%, Seek -0.83% approximate; full Seek repeatability fails. Not selected.",
+    "state_cache": "23/24 processes, 1380 frames; user-reported startup hangs led to interruption. No aggregate pass. Runtime binding gap retained.",
+    "instancing": "Numeric screen failed: 40K submit -24.02% vs preset >=30%; process repeatability passed. Runtime binding gap, no product selection.",
+    "sax": "All 29 JSON cases / 6454 assertions pass with Release DLLs; full corpus equals baseline except intentional empty duplicate key fix. Ordinary all-scales >=30% gate fails at 1K -25.27%. Unselected.",
+    "parse_once": "Numerical all-scale gate passes, full repeatability fails at 1K both and 10K baseline. 40K prepare 17.555 -> 2.028 seconds is not first-load <=2s. Unselected."
+  },
+  "review": {
+    "sax": "Read-only code-quality reviewer found no blocker; first duplicate key, syntax/string/depth precedence and numeric classes reviewed. Empty-key fix is an intentional behavior correction.",
+    "parse_once": "No normal-input blocker. Writer exceptions now occur before caller diagnostics.append, possibly losing prior loader warnings on exceptional allocation failure. Output parameter only assigned on successful legacy dispatch; callers must check it independently of hasValue(). Combination also requires explicit SAX v2 binding."
+  },
+  "limitations": "No current ordinary performance, original load/240FPS/Seek/full-memory/final matrix/R4/Stage7 acceptance. Startup message polling still has 100ms timeout observations around cold graphics submission; moving CPU preparation is not proof that all window operations stay responsive."
+}

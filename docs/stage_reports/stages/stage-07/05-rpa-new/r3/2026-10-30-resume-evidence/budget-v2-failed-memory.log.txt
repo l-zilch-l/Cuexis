@@ -1,0 +1,66 @@
+Filters: [r3c-memory]
+Randomness seeded to: 1
+{"event":"r3c.budget_heap","n":1000,"wave":0,"capture":0,"phase":0,"requested_delta":2299822,"crt_usable_delta":2626286,"payload_charge":0,"process_private_bytes":25714688,"working_set":29347840,"points":0}
+{"event":"r3c.budget_heap","n":1000,"wave":0,"capture":0,"phase":1,"requested_delta":7629141,"crt_usable_delta":9114357,"payload_charge":0,"process_private_bytes":35057664,"working_set":38924288,"points":0}
+{"event":"r3c.budget_heap","n":1000,"wave":0,"capture":0,"phase":2,"requested_delta":7614646,"crt_usable_delta":9098582,"payload_charge":0,"process_private_bytes":35057664,"working_set":38924288,"points":0}
+{"event":"r3c.budget_heap","n":1000,"wave":0,"capture":0,"phase":3,"requested_delta":2293654,"crt_usable_delta":2618902,"payload_charge":0,"process_private_bytes":25710592,"working_set":29908992,"points":0}
+{"event":"r3c.budget_release","n":1000,"capture":0,"requested_peak_delta":11741466,"crt_usable_peak_delta":14094298,"requested_release_delta":0,"storage_release_delta":0}
+{"event":"r3c.budget_heap","n":1000,"wave":0,"capture":1,"phase":0,"requested_delta":2299822,"crt_usable_delta":2626286,"payload_charge":0,"process_private_bytes":25800704,"working_set":29581312,"points":1}
+{"event":"r3c.budget_heap","n":1000,"wave":0,"capture":1,"phase":1,"requested_delta":7640444,"crt_usable_delta":9125916,"payload_charge":6115528,"process_private_bytes":35319808,"working_set":39006208,"points":1}
+{"event":"r3c.budget_heap","n":1000,"wave":0,"capture":1,"phase":2,"requested_delta":7625949,"crt_usable_delta":9110141,"payload_charge":6115528,"process_private_bytes":35319808,"working_set":39006208,"points":1}
+{"event":"r3c.budget_heap","n":1000,"wave":0,"capture":1,"phase":3,"requested_delta":2293654,"crt_usable_delta":2618902,"payload_charge":0,"process_private_bytes":26824704,"working_set":29986816,"points":1}
+{"event":"r3c.budget_release","n":1000,"capture":1,"requested_peak_delta":11741466,"crt_usable_peak_delta":14094298,"requested_release_delta":0,"storage_release_delta":0}
+{"event":"r3c.budget_heap","n":1536,"wave":256,"capture":0,"phase":0,"requested_delta":3518533,"crt_usable_delta":4018629,"payload_charge":0,"process_private_bytes":38035456,"working_set":41443328,"points":0}
+{"event":"r3c.budget_heap","n":1536,"wave":256,"capture":0,"phase":1,"requested_delta":13122221,"crt_usable_delta":15851245,"payload_charge":0,"process_private_bytes":52498432,"working_set":55439360,"points":0}
+{"event":"r3c.budget_heap","n":1536,"wave":256,"capture":0,"phase":2,"requested_delta":13094279,"crt_usable_delta":15821895,"payload_charge":0,"process_private_bytes":52498432,"working_set":55439360,"points":0}
+{"event":"r3c.budget_heap","n":1536,"wave":256,"capture":0,"phase":3,"requested_delta":3512365,"crt_usable_delta":4011245,"payload_charge":0,"process_private_bytes":38580224,"working_set":41832448,"points":0}
+{"event":"r3c.budget_release","n":1536,"capture":0,"requested_peak_delta":14381401,"crt_usable_peak_delta":17351769,"requested_release_delta":0,"storage_release_delta":0}
+{"event":"r3c.budget_heap","n":1536,"wave":256,"capture":1,"phase":0,"requested_delta":3518533,"crt_usable_delta":4018629,"payload_charge":0,"process_private_bytes":37625856,"working_set":41185280,"points":4}
+{"event":"r3c.budget_heap","n":1536,"wave":256,"capture":1,"phase":1,"requested_delta":13221324,"crt_usable_delta":15952236,"payload_charge":37172064,"process_private_bytes":52322304,"working_set":55263232,"points":4}
+{"event":"r3c.budget_heap","n":1536,"wave":256,"capture":1,"phase":2,"requested_delta":13193382,"crt_usable_delta":15922886,"payload_charge":37172064,"process_private_bytes":52322304,"working_set":55263232,"points":4}
+{"event":"r3c.budget_heap","n":1536,"wave":256,"capture":1,"phase":3,"requested_delta":3512365,"crt_usable_delta":4011245,"payload_charge":0,"process_private_bytes":37236736,"working_set":40923136,"points":4}
+{"event":"r3c.budget_release","n":1536,"capture":1,"requested_peak_delta":14455818,"crt_usable_peak_delta":17427722,"requested_release_delta":0,"storage_release_delta":0}
+{"event":"r3c.budget_heap","n":40000,"wave":0,"capture":0,"phase":0,"requested_delta":91285760,"crt_usable_delta":104248192,"payload_charge":0,"process_private_bytes":952954880,"working_set":898387968,"points":0}
+{"event":"r3c.budget_heap","n":40000,"wave":0,"capture":0,"phase":1,"requested_delta":303503837,"crt_usable_delta":362787005,"payload_charge":0,"process_private_bytes":1292115968,"working_set":1231781888,"points":0}
+{"event":"r3c.budget_heap","n":40000,"wave":0,"capture":0,"phase":2,"requested_delta":303177342,"crt_usable_delta":362459230,"payload_charge":0,"process_private_bytes":1292115968,"working_set":1231781888,"points":0}
+{"event":"r3c.budget_heap","n":40000,"wave":0,"capture":0,"phase":3,"requested_delta":91279592,"crt_usable_delta":104240808,"payload_charge":0,"process_private_bytes":987516928,"working_set":936562688,"points":0}
+{"event":"r3c.budget_release","n":40000,"capture":0,"requested_peak_delta":463568821,"crt_usable_peak_delta":557532597,"requested_release_delta":0,"storage_release_delta":0}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+rpa-normal.exe is a Catch2 v3.15.2 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+R3c budget actual heap tracks multiple generations and last archive release
+-------------------------------------------------------------------------------
+D:\Cuexis-redesign\out\verification-20261030\r3-resume-v1\budget-observer-v2\rpa_b3_tests.cpp(2659)
+...............................................................................
+
+D:\Cuexis-redesign\out\verification-20261030\r3-resume-v1\budget-observer-v2\rpa_b3_tests.cpp(2702): FAILED:
+  CHECK( points > 0 )
+with expansion:
+  0 > 0
+
+D:\Cuexis-redesign\out\verification-20261030\r3-resume-v1\budget-observer-v2\rpa_b3_tests.cpp(2711): FAILED:
+  CHECK( requestedAfter == requestedBefore )
+with expansion:
+  591224189 (0x233d5d7d)
+  ==
+  591223941 (0x233d5c85)
+
+D:\Cuexis-redesign\out\verification-20261030\r3-resume-v1\budget-observer-v2\rpa_b3_tests.cpp(2712): FAILED:
+  CHECK( storageAfter == storageBefore )
+with expansion:
+  701327677 (0x29cd693d)
+  ==
+  701327397 (0x29cd6825)
+
+{"event":"r3c.budget_heap","n":40000,"wave":0,"capture":1,"phase":0,"requested_delta":91285760,"crt_usable_delta":104248192,"payload_charge":0,"process_private_bytes":957956096,"working_set":903151616,"points":0}
+{"event":"r3c.budget_heap","n":40000,"wave":0,"capture":1,"phase":1,"requested_delta":303503837,"crt_usable_delta":362787005,"payload_charge":0,"process_private_bytes":1294970880,"working_set":1230303232,"points":0}
+{"event":"r3c.budget_heap","n":40000,"wave":0,"capture":1,"phase":2,"requested_delta":303177342,"crt_usable_delta":362459230,"payload_charge":0,"process_private_bytes":1294970880,"working_set":1230303232,"points":0}
+{"event":"r3c.budget_heap","n":40000,"wave":0,"capture":1,"phase":3,"requested_delta":91279840,"crt_usable_delta":104241088,"payload_charge":0,"process_private_bytes":1002020864,"working_set":950394880,"points":0}
+{"event":"r3c.budget_release","n":40000,"capture":1,"requested_peak_delta":463568821,"crt_usable_peak_delta":557532597,"requested_release_delta":248,"storage_release_delta":280}
+===============================================================================
+test cases:   1 |   0 passed | 1 failed
+assertions: 103 | 100 passed | 3 failed
+

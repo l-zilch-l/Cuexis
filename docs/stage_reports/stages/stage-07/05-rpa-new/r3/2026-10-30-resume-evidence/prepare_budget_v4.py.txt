@@ -1,0 +1,47 @@
+from pathlib import Path
+import hashlib,json,shutil,subprocess
+root=Path.cwd();base=Path(__file__).resolve().parent
+source=base/'budget-source-v4';shutil.copytree(base/'budget-source-v3',source)
+p=source/'engine/judgement/src/execution_kernel.cpp';s=p.read_text(encoding='utf-8')
+old='struct NativeRecoveryIndex final {\n';new='''struct NativeRecoveryIndex final {
+    // Destroyed last: even archive assignment must keep the exact mandatory Fact owner
+    // alive until every optional point and its payload lease have been released.
+    std::shared_ptr<const ReplayData> exactSourceFloor;
+''';assert s.count(old)==1;s=s.replace(old,new)
+old='''        auto index = std::make_shared<NativeRecoveryIndex>();
+        index->points = impl_->nativePoints;''';new='''        auto index = std::make_shared<NativeRecoveryIndex>();
+        index->exactSourceFloor = archive.anchor();
+        index->points = impl_->nativePoints;''';assert s.count(old)==1;s=s.replace(old,new);p.write_text(s,encoding='utf-8')
+p=source/'tests/rpa/rpa_b3_tests.cpp';s=p.read_text(encoding='utf-8')
+start=s.index('TEST_CASE("R3c ordinary writer after origin archive release')
+s=s[:start]+'''
+TEST_CASE("R3c ordinary writer after origin archive release retains exact Fact floor", "[r3c-budget]") {
+    Fixture3 f; expandTickFixture(f,1536,256);
+    auto made=detail::ExecutionKernel::prepare(f.configuration(),f.prepared()); REQUIRE(made);
+    auto empty=(*made)->archive();
+    REQUIRE((*made)->advance(Tick{2503}));
+    auto archive=(*made)->archive();
+    auto wire=encodeReplay(archive);REQUIRE(wire);
+    auto independent=decodeReplay(*wire,archive.dependencies());REQUIRE(independent);
+    CHECK(independent->anchor()!=archive.anchor());
+    std::weak_ptr<const ReplayData> original=archive.anchor();
+    const auto cut=replayCutAt(archive,Tick{1504});
+    auto branch=detail::ExecutionKernel::seekCandidate(archive,Tick{1504},nullptr,&cut); REQUIRE(branch);
+    auto expected=detail::ExecutionKernel::seekCandidate(*independent,Tick{1504},nullptr,&cut); REQUIRE(expected);
+    made->reset(); archive=empty;
+    CHECK_FALSE(original.expired());
+    REQUIRE((*branch)->advance(Tick{2504}));
+    CHECK(original.expired());
+    REQUIRE((*expected)->advanceForReplay(Tick{2504}));
+    auto a=(*branch)->snapshot();auto b=(*expected)->snapshot();REQUIRE(a);REQUIRE(b);
+    CHECK(sameSnapshot((*a)->dto,(*b)->dto));
+    const auto av=(*branch)->archive();const auto bv=(*expected)->archive();
+    CHECK(sameReplayHistory(av,bv));
+    auto aw=encodeReplay(av);auto bw=encodeReplay(bv);REQUIRE(aw);REQUIRE(bw);CHECK(*aw==*bw);
+}
+''';p.write_text(s,encoding='utf-8')
+paths=[source/'engine/judgement/src/execution_kernel.cpp',p]
+subprocess.run(['clang-format','-i',*[str(p) for p in paths]],check=True)
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+(base/'budget-source-v4-binding.json').write_text(json.dumps(dict(selected=False,parent='budget-source-v3',scope='Only private NativeRecoveryIndex source-floor ownership and independent replay test changed. No shared class/template/header changes since fresh v3. Common libraries may be reused; kernel and affected test TU must recompile.',sources={str(p.relative_to(source)):sha(p) for p in paths}),indent=2),encoding='utf-8')
+print(source)

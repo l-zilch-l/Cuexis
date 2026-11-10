@@ -2,7 +2,7 @@
 
 状态：阶段 1C/1D 会话合同、阶段 2 Timing/Behavior/表现属性和阶段 3C portable Snapshot 均已实现
 
-更新日期：2026-08-07
+更新日期：2026-10-28
 
 ## 职责与所有权
 
@@ -31,18 +31,18 @@ PlaybackSession 负责把宿主输入组织成单一播放会话，并隐藏 Run
 ```text
 typed/memory Project 或 Chart source
 ContentProvider 与资源预算
-RuntimeFrame 与标准化 InputEvent
+RuntimeFrame 与显式选择的 candidate Gameplay 输入/协调
 RuntimeSession prepare/update/reload/unload
-extractResult()：从 Session 开始累积的判定事件、分数、连击和统计快照
 extractFrame()：后端无关的拥有型 FrameSnapshot 提取
-startRecording()：按 chartTimeMs 记录全部 InputEvent
-stopRecording()：停止记录并返回可序列化 ReplayData
-loadReplay()：注入预记录 InputEvent 替代实时输入
-阶段 11 的 JudgementResult 与 ReplayData
 结构化 Diagnostics
 ```
 
 PlaybackSession 不创建宿主窗口、不拥有宿主主循环，也不要求 SDL/OpenGL。当前 C++20 门面已提供 `loadChart(string_view)`、`update(RuntimeFrame)`、`extractFrame(FrameViewport)`、显式目标帧 `reload` 和 `unload`。`FrameSnapshot` 拥有对象 ID、World Matrix、Camera View/Projection、Visibility、Material asset/opacity/tint、Mesh/Material portable ref 和视口数据；Reload/Unload 不使已返回 Snapshot 悬空。`findEntity(entt::entity)`、`withWorld`、Runtime 调试快照和 Registry 访问只能作为内部或受限调试接口，不能进入安装后的 SDK 公共头。
+
+本页描述内部 Runtime 生命周期，不定义 Gameplay 录制/恢复门面。旧概念名 `extractResult()`、
+`startRecording()`、`stopRecording()`、`loadReplay()` 不作为现有方法承诺；当前 candidate
+入口、Replay 与执行协调见 [API 索引](../api/README.md)及
+[实时宿主边界](../api/realtime-host-boundary.md)，具体签名以对应头文件为准。
 
 ADR 0037 的 Stage 3A 合同及 3B/3C 实现保持 `FrameSnapshot` 为唯一公共权威帧。
 `PreparedPlayback` 和活动 Session 提供 owning manifest 与按 ref 获取 owning immutable portable
@@ -153,6 +153,18 @@ Transform/FOV/Visibility/Material resolver -> World transform update。Resolver 
 或 EnTT 遍历顺序。对于不包含 Animation 的会话，预热后的 `PlaybackSession::update()` 与复用
 destination 的 `extractFrame()` 不分配；包含 Animation 的会话遵循 Stage 4 已定义的有界分配
 合同，本节不作全路径零分配承诺。
+
+## Transform 缓存与外部修改
+
+Runtime 的事务式属性求值显式使用 `TransformUpdate` 的可信缓存路径。缓存有效时，仅从
+变化的 local transform 沿后代传播矩阵计算，并按缓存拓扑顺序提交受影响项；本路径仍执行
+输入和矩阵校验，不承诺整帧为零扫描。冷缓存重新构建层级与矩阵。
+
+可变 `RuntimeSession::withWorld()` 回调结束后将缓存置为无效，下一次更新不能沿用旧层级假设。
+该失效由 Runtime 外层完成，不能假定独立 `World::withRegistry()` 自身会失效；独立 World 的
+默认 `updateWorldTransforms()` 保留完整验证。新增可变 Runtime 入口必须维护缓存失效边界，
+不得让未受追踪的 Registry 修改进入可信路径。共享所有权与缓存均不改变 owner-thread 合同。
+具体实现与维护规则见 [执行状态、恢复与准备路径](execution-state-and-recovery.md)。
 
 ## Stage 2 调试快照
 

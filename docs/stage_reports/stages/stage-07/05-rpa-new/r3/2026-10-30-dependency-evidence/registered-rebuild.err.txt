@@ -1,0 +1,2 @@
+ninja explain: output CMakeFiles/canary.dir/main.cpp.obj older than most recent input ../source/value.hpp (8150676596070514 vs 8150676602824322)
+ninja explain: CMakeFiles/canary.dir/main.cpp.obj is dirty

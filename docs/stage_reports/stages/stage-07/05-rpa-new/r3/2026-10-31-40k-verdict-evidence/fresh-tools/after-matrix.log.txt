@@ -1,0 +1,335 @@
+[23:53:42] waiting for the acceptance matrix to finish
+[23:53:42] matrix idle
+[23:53:42] start run-1 (1080p 40000, 120 frames)
+{"head": "466ff76a0b2a2f45b90280331bded77897ef6421", "binary_sha256": "91ed0d303c09ef92e6abab9e30b63c87da77322d1dc7132c6b45204c220578b9", "affinity": 65535}
+{"mode": "render-only", "index": 1, "valid": true, "wall_fps": 22.09, "p99_ms": 47.004, "max_ms": 187.242, "over_budget": 120, "min_second_fps": null, "problems": []}
+{"mode": "render-only", "index": 2, "valid": true, "wall_fps": 22.54, "p99_ms": 50.845, "max_ms": 51.722, "over_budget": 120, "min_second_fps": null, "problems": []}
+{"mode": "render-only", "index": 3, "valid": true, "wall_fps": 22.42, "p99_ms": 50.282, "max_ms": 50.4, "over_budget": 120, "min_second_fps": null, "problems": []}
+{"mode": "static", "index": 1, "valid": true, "wall_fps": 17.52, "p99_ms": 60.042, "max_ms": 60.448, "over_budget": 120, "min_second_fps": null, "problems": []}
+{"mode": "static", "index": 2, "valid": true, "wall_fps": 17.41, "p99_ms": 61.664, "max_ms": 62.355, "over_budget": 120, "min_second_fps": null, "problems": []}
+{"mode": "static", "index": 3, "valid": true, "wall_fps": 17.51, "p99_ms": 61.325, "max_ms": 63.658, "over_budget": 120, "min_second_fps": null, "problems": []}
+{
+ "render-only": {
+  "processes": 3,
+  "frames": [
+   120,
+   120,
+   120
+  ],
+  "seconds": null,
+  "min_second_fps": null,
+  "wall_fps": [
+   22.089516587864768,
+   22.540218370762588,
+   22.416045883852643
+  ],
+  "wall_fps_median": 22.416045883852643,
+  "p99_us": [
+   47003.5,
+   50845.4,
+   50282.1
+  ],
+  "p99_us_median": 50282.1,
+  "p99_relative_range": 0.07640691220135996,
+  "fps_relative_range": 0.020106212542261172,
+  "all_passed_budget": false,
+  "p99_vs_budget": 12.067703999999999,
+  "required_speedup": 10.7066162,
+  "per_entity_mean_us": 1.1152725208333334,
+  "per_entity_p99_us": 1.2570525,
+  "per_entity_budget_us": 0.10416666666666667
+ },
+ "static": {
+  "processes": 3,
+  "frames": [
+   120,
+   120,
+   120
+  ],
+  "seconds": null,
+  "min_second_fps": null,
+  "wall_fps": [
+   17.521530200788412,
+   17.412594904265045,
+   17.508908897616042
+  ],
+  "wall_fps_median": 17.508908897616042,
+  "p99_us": [
+   60042.4,
+   61664.1,
+   61325.2
+  ],
+  "p99_us_median": 61325.2,
+  "p99_relative_range": 0.02644426760940033,
+  "fps_relative_range": 0.006221706741429149,
+  "all_passed_budget": false,
+  "p99_vs_budget": 14.718047999999998,
+  "required_speedup": 13.7073076,
+  "per_entity_mean_us": 1.4278445416666667,
+  "per_entity_p99_us": 1.5331299999999999,
+  "per_entity_budget_us": 0.10416666666666667
+ }
+}
+[23:54:54] run-1 exit 0 in 71.6 s
+[23:54:54] start run-2-720p (720p 40000, same binary)
+{"head": "466ff76a0b2a2f45b90280331bded77897ef6421", "binary_sha256": "91ed0d303c09ef92e6abab9e30b63c87da77322d1dc7132c6b45204c220578b9", "affinity": 65535}
+{"mode": "render-only", "index": 1, "valid": true, "wall_fps": 22.51, "p99_ms": 47.756, "max_ms": 48.029, "over_budget": 120, "min_second_fps": null, "problems": []}
+{"mode": "render-only", "index": 2, "valid": true, "wall_fps": 22.76, "p99_ms": 46.994, "max_ms": 48.245, "over_budget": 120, "min_second_fps": null, "problems": []}
+{"mode": "render-only", "index": 3, "valid": true, "wall_fps": 22.82, "p99_ms": 46.81, "max_ms": 49.49, "over_budget": 120, "min_second_fps": null, "problems": []}
+{"mode": "static", "index": 1, "valid": true, "wall_fps": 17.62, "p99_ms": 59.541, "max_ms": 59.965, "over_budget": 120, "min_second_fps": null, "problems": []}
+{"mode": "static", "index": 2, "valid": true, "wall_fps": 17.39, "p99_ms": 62.493, "max_ms": 65.764, "over_budget": 120, "min_second_fps": null, "problems": []}
+{"mode": "static", "index": 3, "valid": true, "wall_fps": 17.49, "p99_ms": 60.485, "max_ms": 63.089, "over_budget": 120, "min_second_fps": null, "problems": []}
+{
+ "render-only": {
+  "processes": 3,
+  "frames": [
+   120,
+   120,
+   120
+  ],
+  "seconds": null,
+  "min_second_fps": null,
+  "wall_fps": [
+   22.51434923905815,
+   22.764921077812776,
+   22.815214143029564
+  ],
+  "wall_fps_median": 22.764921077812776,
+  "p99_us": [
+   47756.3,
+   46994.3,
+   46809.7
+  ],
+  "p99_us_median": 46994.3,
+  "p99_relative_range": 0.02014286839042194,
+  "fps_relative_range": 0.013216162838563306,
+  "all_passed_budget": false,
+  "p99_vs_budget": 11.278632,
+  "required_speedup": 10.542536,
+  "per_entity_mean_us": 1.0981808333333332,
+  "per_entity_p99_us": 1.1748575,
+  "per_entity_budget_us": 0.10416666666666667
+ },
+ "static": {
+  "processes": 3,
+  "frames": [
+   120,
+   120,
+   120
+  ],
+  "seconds": null,
+  "min_second_fps": null,
+  "wall_fps": [
+   17.6155078945807,
+   17.386406924565424,
+   17.493460579988106
+  ],
+  "wall_fps_median": 17.493460579988106,
+  "p99_us": [
+   59540.7,
+   62493.2,
+   60485.4
+  ],
+  "p99_us_median": 60485.4,
+  "p99_relative_range": 0.04881343266308894,
+  "fps_relative_range": 0.013096377870331586,
+  "all_passed_budget": false,
+  "p99_vs_budget": 14.516496,
+  "required_speedup": 13.7194124,
+  "per_entity_mean_us": 1.4291054583333334,
+  "per_entity_p99_us": 1.512135,
+  "per_entity_budget_us": 0.10416666666666667
+ }
+}
+[23:56:06] run-2-720p exit 0 in 72.4 s
+[23:56:06] start run-3-1800-sustain (1080p 1800, 20 s windows)
+{"head": "466ff76a0b2a2f45b90280331bded77897ef6421", "binary_sha256": "91ed0d303c09ef92e6abab9e30b63c87da77322d1dc7132c6b45204c220578b9", "affinity": 65535}
+{"mode": "render-only", "index": 1, "valid": true, "wall_fps": 383.77, "p99_ms": 3.247, "max_ms": 4.565, "over_budget": 2, "min_second_fps": 374, "problems": []}
+{"mode": "render-only", "index": 2, "valid": true, "wall_fps": 387.81, "p99_ms": 3.211, "max_ms": 7.998, "over_budget": 3, "min_second_fps": 370, "problems": []}
+{"mode": "render-only", "index": 3, "valid": true, "wall_fps": 426.37, "p99_ms": 2.857, "max_ms": 5.205, "over_budget": 1, "min_second_fps": 418, "problems": []}
+{"mode": "static", "index": 1, "valid": true, "wall_fps": 314.85, "p99_ms": 3.963, "max_ms": 5.535, "over_budget": 17, "min_second_fps": 303, "problems": []}
+{"mode": "static", "index": 2, "valid": true, "wall_fps": 342.57, "p99_ms": 3.429, "max_ms": 5.44, "over_budget": 1, "min_second_fps": 336, "problems": []}
+{"mode": "static", "index": 3, "valid": true, "wall_fps": 338.04, "p99_ms": 3.725, "max_ms": 6.74, "over_budget": 3, "min_second_fps": 312, "problems": []}
+{
+ "render-only": {
+  "processes": 3,
+  "frames": [
+   7676,
+   7757,
+   8528
+  ],
+  "seconds": 20,
+  "min_second_fps": [
+   374,
+   370,
+   418
+  ],
+  "wall_fps": [
+   383.76526348717545,
+   387.8074672160331,
+   426.37324081540646
+  ],
+  "wall_fps_median": 387.8074672160331,
+  "p99_us": [
+   3246.5,
+   3210.5,
+   2856.8
+  ],
+  "p99_us_median": 3210.5,
+  "p99_relative_range": 0.12138296215542745,
+  "fps_relative_range": 0.10986889353653342,
+  "all_passed_budget": true,
+  "p99_vs_budget": 0.77052,
+  "required_speedup": 0.6188637927033647,
+  "per_entity_mean_us": 1.4325550757022332,
+  "per_entity_p99_us": 1.783611111111111,
+  "per_entity_budget_us": 2.314814814814815
+ },
+ "static": {
+  "processes": 3,
+  "frames": [
+   6297,
+   6852,
+   6761
+  ],
+  "seconds": 20,
+  "min_second_fps": [
+   303,
+   336,
+   312
+  ],
+  "wall_fps": [
+   314.84800543788555,
+   342.5738324978047,
+   338.0416199482415
+  ],
+  "wall_fps_median": 338.0416199482415,
+  "p99_us": [
+   3963.4,
+   3428.9,
+   3725.1
+  ],
+  "p99_us_median": 3725.1,
+  "p99_relative_range": 0.14348608091057957,
+  "fps_relative_range": 0.0820189746581037,
+  "all_passed_budget": true,
+  "p99_vs_budget": 0.8940239999999999,
+  "required_speedup": 0.7099717485579057,
+  "per_entity_mean_us": 1.6434531216618187,
+  "per_entity_p99_us": 2.0695,
+  "per_entity_budget_us": 2.314814814814815
+ }
+}
+[23:58:29] run-3-1800-sustain exit 0 in 142.6 s
+[23:58:29] start run-4-1300-sustain (1080p 1300, 20 s windows)
+{"head": "466ff76a0b2a2f45b90280331bded77897ef6421", "binary_sha256": "91ed0d303c09ef92e6abab9e30b63c87da77322d1dc7132c6b45204c220578b9", "affinity": 65535}
+{"mode": "render-only", "index": 1, "valid": true, "wall_fps": 498.15, "p99_ms": 2.57, "max_ms": 5.996, "over_budget": 1, "min_second_fps": 485, "problems": []}
+{"mode": "render-only", "index": 2, "valid": true, "wall_fps": 500.24, "p99_ms": 2.568, "max_ms": 5.669, "over_budget": 1, "min_second_fps": 485, "problems": []}
+{"mode": "render-only", "index": 3, "valid": true, "wall_fps": 573.98, "p99_ms": 2.183, "max_ms": 6.666, "over_budget": 1, "min_second_fps": 559, "problems": []}
+{"mode": "static", "index": 1, "valid": true, "wall_fps": 435.78, "p99_ms": 3.011, "max_ms": 5.695, "over_budget": 2, "min_second_fps": 402, "problems": []}
+{"mode": "static", "index": 2, "valid": true, "wall_fps": 418.1, "p99_ms": 3.071, "max_ms": 5.491, "over_budget": 2, "min_second_fps": 398, "problems": []}
+{"mode": "static", "index": 3, "valid": true, "wall_fps": 411.17, "p99_ms": 3.096, "max_ms": 7.659, "over_budget": 2, "min_second_fps": 383, "problems": []}
+{
+ "render-only": {
+  "processes": 3,
+  "frames": [
+   9964,
+   10005,
+   11480
+  ],
+  "seconds": 20,
+  "min_second_fps": [
+   485,
+   485,
+   559
+  ],
+  "wall_fps": [
+   498.1523268223231,
+   500.23545815523147,
+   573.9788546189958
+  ],
+  "wall_fps_median": 500.23545815523147,
+  "p99_us": [
+   2569.7,
+   2567.9,
+   2183.4
+  ],
+  "p99_us_median": 2567.9,
+  "p99_relative_range": 0.15043420693952245,
+  "fps_relative_range": 0.15158167331101594,
+  "all_passed_budget": true,
+  "p99_vs_budget": 0.616296,
+  "required_speedup": 0.4797740665667166,
+  "per_entity_mean_us": 1.5377373928420406,
+  "per_entity_p99_us": 1.9753076923076924,
+  "per_entity_budget_us": 3.2051282051282053
+ },
+ "static": {
+  "processes": 3,
+  "frames": [
+   8716,
+   8363,
+   8224
+  ],
+  "seconds": 20,
+  "min_second_fps": [
+   402,
+   398,
+   383
+  ],
+  "wall_fps": [
+   435.7789148372056,
+   418.1003944786971,
+   411.16842637653855
+  ],
+  "wall_fps_median": 418.1003944786971,
+  "p99_us": [
+   3010.8,
+   3071,
+   3096.2
+  ],
+  "p99_us_median": 3071,
+  "p99_relative_range": 0.027808531422989134,
+  "fps_relative_range": 0.05886262913325474,
+  "all_passed_budget": true,
+  "p99_vs_budget": 0.7370399999999999,
+  "required_speedup": 0.5740248111921559,
+  "per_entity_mean_us": 1.8398231127953715,
+  "per_entity_p99_us": 2.3623076923076924,
+  "per_entity_budget_us": 3.2051282051282053
+ }
+}
+[00:00:58] run-4-1300-sustain exit 0 in 149.6 s
+[00:00:58] start run-head-after-v8 (product startup observation)
+{
+  "executable": "D:\\Cuexis-redesign\\out\\build\\release\\bin\\cuexis_player.exe",
+  "project": "D:\\Cuexis-redesign\\out\\verification-20261031\\r3-product-startup-v1\\fixture-40k",
+  "started_utc": "2026-10-31T16:00:59.3586530Z",
+  "sampled_ms": 30075,
+  "window_first_ms": 2821,
+  "first_responsive_ms": 2821,
+  "unresponsive_probe_ms": 186,
+  "hung_samples": 3,
+  "waiting_samples": 25,
+  "answering_samples": 207,
+  "close_requested": true,
+  "forced_kill": false,
+  "still_alive": false,
+  "exit_code": null,
+  "log_first_timestamp": "2026-11-01T00:00:59.413",
+  "log_last_timestamp": "2026-11-01T00:01:02.244",
+  "log_span_seconds": 2.831,
+  "log_line_count": 18,
+  "player.sdl": 2.417,
+  "player.startup": 0.0,
+  "player.opengl": 2.754,
+  "player.startup_phase.elapsed_us": 73439,
+  "player.config": 2.756,
+  "player.startup_phase.total_us": 2820918,
+  "player.playback": 2.756,
+  "player.startup_phase": 2.83,
+  "player.snapshot": 2.831,
+  "player.build_flavor": 0.004
+}
+[00:01:29] run-head-after-v8 exit 0 in 31.2 s
+[00:01:30] chain finished; failed = 

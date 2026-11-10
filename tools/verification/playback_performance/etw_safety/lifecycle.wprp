@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WindowsPerformanceRecorder Version="1.0" Author="Cuexis tool verification">
+  <Profiles>
+    <SystemCollector Id="LifecycleSystem" Name="WPR System Collector">
+      <BufferSize Value="64"/>
+      <Buffers Value="16"/>
+    </SystemCollector>
+    <EventCollector Id="LifecycleEvents" Name="WPR Event Collector">
+      <BufferSize Value="64"/>
+      <Buffers Value="16"/>
+    </EventCollector>
+    <SystemProvider Id="LifecycleProcessThread">
+      <Keywords><Keyword Value="ProcessThread"/></Keywords>
+    </SystemProvider>
+    <EventProvider Id="LifecycleWprControl" Name="36b6f488-aad7-48c2-afe3-d4ec2c8b46fa">
+      <Keywords><Keyword Value="0x40000"/></Keywords>
+    </EventProvider>
+    <Profile Id="PD5ToolLifecycle.Light.File" Name="PD5ToolLifecycle" Description="Tool lifecycle only; no performance attribution" DetailLevel="Light" LoggingMode="File">
+      <Collectors>
+        <SystemCollectorId Value="LifecycleSystem">
+          <SystemProviderId Value="LifecycleProcessThread"/>
+        </SystemCollectorId>
+        <EventCollectorId Value="LifecycleEvents">
+          <EventProviders><EventProviderId Value="LifecycleWprControl"/></EventProviders>
+        </EventCollectorId>
+      </Collectors>
+    </Profile>
+  </Profiles>
+</WindowsPerformanceRecorder>

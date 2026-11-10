@@ -5,6 +5,7 @@
 // IPresentationRenderer, and the backend-neutral audio seat only.
 
 #include "player_audio_seat.hpp"
+#include "player_gameplay.hpp"
 #include "player_options.hpp"
 #include "player_surface.hpp"
 
@@ -50,6 +51,9 @@ struct PlayerControlPorts final {
                                                        audio::AudioClipStore&)>
         prepareClip;
     PlayerAudioOpener openAudio;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    std::optional<PlayerGameplayProfile> gameplay{};
+#endif
 };
 
 // Distance one relative seek key moves the chart time. The controller clamps the result at zero
@@ -65,6 +69,26 @@ inline constexpr double playerSeekStepMs = 5000.0;
 [[nodiscard]] auto playerCommandForInput(PlayerInputAction action,
                                          player_support::PlayerAppState state,
                                          double currentChartTimeMs) -> PlayerCommand;
+
+// The renderer-free first half of a Load transaction. Content preparation is CPU-only: it reads
+// and validates the source, lowers it into a Prepared Playback bundle, and needs no window, no GL
+// context, and no audio device. The Player runs it before any device exists, so a large bundle
+// never forces a message-free window onto the screen, and the controller adopts the finished
+// bundle once the presentation backend can accept it. This keeps the two costs of the old startup
+// order apart: the CPU work now happens where no desktop window can be reported as unresponsive.
+struct PlayerLoadBundle final {
+    std::unique_ptr<playback::PlaybackSession> session;
+    playback::PreparedPlayback prepared;
+    playback::PlaybackMode mode{playback::PlaybackMode::ChartClock};
+    player_support::ResolvedSessionConfig config;
+};
+
+// Prepares one Load bundle without touching a renderer or an audio device. The caller owns the
+// result until it hands it to PlayerController::adoptStartupLoad.
+[[nodiscard]] auto preparePlayerLoadBundle(playback::PlaybackSource source,
+                                           playback::PlaybackMode mode,
+                                           std::int64_t profileCorrectionUs)
+    -> core::Result<PlayerLoadBundle>;
 
 // Owns the active content bundle, the application state, and the fixed transaction order for
 // load, reload, and rebuild. Every command runs on the owner thread and at most one transaction
@@ -86,6 +110,12 @@ class PlayerController final {
     // explicit source is move-only.
     [[nodiscard]] auto apply(PlayerCommand command) -> core::Result<void>;
 
+    // Commits a bundle that preparePlayerLoadBundle already prepared. It runs the part of a Load
+    // transaction that needs the presentation backend: the renderer candidate, the audio
+    // replacement, and the single no-failure content exchange. Only the startup path uses it,
+    // because every interactive Load goes through apply() to stay inside the command table.
+    [[nodiscard]] auto adoptStartupLoad(PlayerLoadBundle&& load) -> core::Result<void>;
+
     // Folds an observed audio transport state into the application state.
     void observeTransport(const audio::SourceClockSample& sample) noexcept;
     // Records the frame the active bundle last produced; a reload uses it as its target.
@@ -94,6 +124,11 @@ class PlayerController final {
     void markFailed(std::string_view reason);
 
     [[nodiscard]] auto state() const noexcept -> player_support::PlayerAppState;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    [[nodiscard]] auto gameplay() noexcept -> PlayerGameplay* {
+        return gameplay_ ? &*gameplay_ : nullptr;
+    }
+#endif
     // Valid only while state() is not Empty, which is the precondition for running the frame loop.
     [[nodiscard]] auto session() -> playback::PlaybackSession&;
     [[nodiscard]] auto timeline() -> playback::RuntimeTimeline&;
@@ -127,8 +162,6 @@ class PlayerController final {
     [[nodiscard]] auto runSeek(double targetMs) -> core::Result<void>;
 
     [[nodiscard]] auto sourceFor(PlayerCommand& command) -> core::Result<playback::PlaybackSource>;
-    [[nodiscard]] auto freezeConfig(playback::PlaybackMode mode) const
-        -> player_support::ResolvedSessionConfig;
     // Steps 1 to 6 of the fixed transaction. `session` becomes the active bundle on success.
     [[nodiscard]] auto commitBundle(playback::PlaybackSession& session,
                                     std::unique_ptr<playback::PlaybackSession> adopt,
@@ -165,6 +198,9 @@ class PlayerController final {
     // sets it to the requested target.
     double chartResumeMs_{};
     std::optional<double> pendingChartSeekMs_;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    std::optional<PlayerGameplay> gameplay_;
+#endif
 };
 
 struct PlayerClockContext final {
@@ -201,6 +237,8 @@ struct PlayerFrameLoop final {
     PlayerSurface& surface;
     bool smokeTest{};
     bool audioSmokeTest{};
+    bool debugAxes{};
+    bool showFps{};
     FrameDiagnostics* diagnostics{};
     PlayerHooks hooks{};
     PlayerLogger& logger;

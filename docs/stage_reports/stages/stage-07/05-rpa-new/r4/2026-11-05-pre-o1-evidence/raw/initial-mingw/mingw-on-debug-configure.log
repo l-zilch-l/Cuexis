@@ -1,0 +1,279 @@
+["cmake", "--preset", "mingw-headless-debug", "--fresh", "-B", "D:\\Cuexis-worktree\\out\\build\\r4\\pre-o1\\preflight\\20261105-123139-c8af190f\\mingw-on-debug", "-DCUEXIS_ENABLE_CHART_V5_CANDIDATE=ON"]
+-- Running vcpkg install
+D:\vcpkg\buildtrees\vcpkg-running.lock: note: waiting to take filesystem lock...
+D:\vcpkg\buildtrees\vcpkg-running.lock: note: waiting to take filesystem lock...
+D:\vcpkg\buildtrees\vcpkg-running.lock: note: waiting to take filesystem lock...
+D:\vcpkg\buildtrees\vcpkg-running.lock: note: waiting to take filesystem lock...
+D:\vcpkg\buildtrees\vcpkg-running.lock: note: waiting to take filesystem lock...
+Detecting compiler hash for triplet x64-windows...
+-- Automatically setting %HTTP(S)_PROXY% environment variables to "127.0.0.1:7890".
+Compiler found: D:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe
+Detecting compiler hash for triplet x64-mingw-static...
+-- Automatically setting %HTTP(S)_PROXY% environment variables to "127.0.0.1:7890".
+Compiler found: C:/msys64/ucrt64/bin/x86_64-w64-mingw32-g++.exe
+The following packages will be built and installed:
+    catch2:x64-mingw-static@3.15.2#1
+    entt:x64-mingw-static@3.16.0
+    glm:x64-mingw-static@1.0.3
+    json-schema-validator:x64-mingw-static@2.4.0
+    minizip-ng:x64-mingw-static@4.1.0
+    nlohmann-json:x64-mingw-static@3.12.0#2
+    tl-expected:x64-mingw-static@1.3.1
+  * vcpkg-cmake:x64-windows@2024-04-23
+  * vcpkg-cmake-config:x64-windows@2026-07-21
+Additional packages (*) will be modified to complete this operation.
+Restored 2 package(s) from C:\Users\Zilch\AppData\Local\vcpkg\archives in 42 ms. Use --debug to see more details.
+Installing 1/9 vcpkg-cmake-config:x64-windows@2026-07-21...
+vcpkg-cmake-config:x64-windows@2026-07-21 package ABI: 9909bc98c17e2b7344ba2dfb41e002623c5b79a2a336674f0e121e1098b1a2ec
+Elapsed time to handle vcpkg-cmake-config:x64-windows: 24.2 ms
+Installing 2/9 vcpkg-cmake:x64-windows@2024-04-23...
+vcpkg-cmake:x64-windows@2024-04-23 package ABI: 89328d57ab4cb3b455a421a3c5653320e6200b1e733ad0a7df3f5ab52d5d1f05
+Elapsed time to handle vcpkg-cmake:x64-windows: 110 ms
+Installing 3/9 entt:x64-mingw-static@3.16.0...
+entt:x64-mingw-static@3.16.0 package ABI: f99550e57f58b7dc0ca492e6bbcc6498f635856a3b8965bc66786db38519d121
+Building entt:x64-mingw-static@3.16.0...
+D:\vcpkg\triplets\community\x64-mingw-static.cmake: info: loaded community triplet from here. Community triplets are not built in the curated registry and are thus less likely to succeed.
+-- Using cached skypjack-entt-v3.16.0.tar.gz
+-- Cleaning sources at D:/vcpkg/buildtrees/entt/src/v3.16.0-863d35e199.clean. Use --editable to skip cleaning for the packages you specify.
+-- Extracting source D:/vcpkg/downloads/skypjack-entt-v3.16.0.tar.gz
+-- Using source at D:/vcpkg/buildtrees/entt/src/v3.16.0-863d35e199.clean
+-- Configuring x64-mingw-static
+-- Building x64-mingw-static-rel
+-- Installing: D:/vcpkg/packages/entt_x64-mingw-static/share/entt/natvis/natvis
+-- Installing: D:/vcpkg/packages/entt_x64-mingw-static/share/entt/natvis/natvis/config.natvis
+-- Installing: D:/vcpkg/packages/entt_x64-mingw-static/share/entt/natvis/natvis/container.natvis
+-- Installing: D:/vcpkg/packages/entt_x64-mingw-static/share/entt/natvis/natvis/core.natvis
+-- Installing: D:/vcpkg/packages/entt_x64-mingw-static/share/entt/natvis/natvis/entity.natvis
+-- Installing: D:/vcpkg/packages/entt_x64-mingw-static/share/entt/natvis/natvis/graph.natvis
+-- Installing: D:/vcpkg/packages/entt_x64-mingw-static/share/entt/natvis/natvis/locator.natvis
+-- Installing: D:/vcpkg/packages/entt_x64-mingw-static/share/entt/natvis/natvis/meta.natvis
+-- Installing: D:/vcpkg/packages/entt_x64-mingw-static/share/entt/natvis/natvis/poly.natvis
+-- Installing: D:/vcpkg/packages/entt_x64-mingw-static/share/entt/natvis/natvis/process.natvis
+-- Installing: D:/vcpkg/packages/entt_x64-mingw-static/share/entt/natvis/natvis/resource.natvis
+-- Installing: D:/vcpkg/packages/entt_x64-mingw-static/share/entt/natvis/natvis/signal.natvis
+-- Installing: D:/vcpkg/packages/entt_x64-mingw-static/share/entt/copyright
+-- Installing: D:/vcpkg/packages/entt_x64-mingw-static/share/entt/usage
+-- Performing post-build validation
+Starting submission of entt:x64-mingw-static@3.16.0 to 1 binary cache(s) in the background
+Elapsed time to handle entt:x64-mingw-static: 8.1 s
+Installing 4/9 glm:x64-mingw-static@1.0.3...
+glm:x64-mingw-static@1.0.3 package ABI: c66917aff05dbeb507d4236390ae075508c6ddcb00d7a67d9782d87b0f86b176
+Building glm:x64-mingw-static@1.0.3...
+D:\vcpkg\triplets\community\x64-mingw-static.cmake: info: loaded community triplet from here. Community triplets are not built in the curated registry and are thus less likely to succeed.
+-- Using cached g-truc-glm-1.0.3.tar.gz
+-- Cleaning sources at D:/vcpkg/buildtrees/glm/src/1.0.3-65552ff9f1.clean. Use --editable to skip cleaning for the packages you specify.
+-- Extracting source D:/vcpkg/downloads/g-truc-glm-1.0.3.tar.gz
+-- Using source at D:/vcpkg/buildtrees/glm/src/1.0.3-65552ff9f1.clean
+-- Configuring x64-mingw-static
+-- Building x64-mingw-static-dbg
+-- Building x64-mingw-static-rel
+-- Installing: D:/vcpkg/packages/glm_x64-mingw-static/share/glm/copyright
+-- Installing: D:/vcpkg/packages/glm_x64-mingw-static/share/glm/usage
+-- Performing post-build validation
+Starting submission of glm:x64-mingw-static@1.0.3 to 1 binary cache(s) in the background
+Elapsed time to handle glm:x64-mingw-static: 24 s
+Completed submission of entt:x64-mingw-static@3.16.0 to 1 binary cache(s) in 97.3 ms
+Installing 5/9 nlohmann-json:x64-mingw-static@3.12.0#2...
+nlohmann-json:x64-mingw-static@3.12.0#2 package ABI: beefab87eeff60e0999a3243ed6375e6178473f5ea14a4ec974c80078f6a5c33
+Building nlohmann-json:x64-mingw-static@3.12.0#2...
+D:\vcpkg\triplets\community\x64-mingw-static.cmake: info: loaded community triplet from here. Community triplets are not built in the curated registry and are thus less likely to succeed.
+-- Using cached nlohmann-json-v3.12.0.tar.gz
+-- Cleaning sources at D:/vcpkg/buildtrees/nlohmann-json/src/v3.12.0-89fed620e6.clean. Use --editable to skip cleaning for the packages you specify.
+-- Extracting source D:/vcpkg/downloads/nlohmann-json-v3.12.0.tar.gz
+-- Applying patch fix-4736_char8_t.patch
+-- Applying patch fix-4742_std_optional.patch
+-- Using source at D:/vcpkg/buildtrees/nlohmann-json/src/v3.12.0-89fed620e6.clean
+-- Configuring x64-mingw-static
+-- Building x64-mingw-static-dbg
+-- Building x64-mingw-static-rel
+-- Fixing pkgconfig file: D:/vcpkg/packages/nlohmann-json_x64-mingw-static/share/pkgconfig/nlohmann_json.pc
+-- Using cached msys2-mingw-w64-x86_64-pkgconf-1~2.5.1-1-any.pkg.tar.zst
+-- Using cached msys2-msys2-runtime-3.6.5-1-x86_64.pkg.tar.zst
+-- Using msys root at D:/vcpkg/downloads/tools/msys2/3e71d1f8e22ab23f
+-- Fixing pkgconfig file: D:/vcpkg/packages/nlohmann-json_x64-mingw-static/debug/share/pkgconfig/nlohmann_json.pc
+-- Installing: D:/vcpkg/packages/nlohmann-json_x64-mingw-static/share/nlohmann-json/copyright
+-- Performing post-build validation
+Starting submission of nlohmann-json:x64-mingw-static@3.12.0#2 to 1 binary cache(s) in the background
+Elapsed time to handle nlohmann-json:x64-mingw-static: 6.9 s
+Completed submission of glm:x64-mingw-static@1.0.3 to 1 binary cache(s) in 415 ms
+Installing 6/9 json-schema-validator:x64-mingw-static@2.4.0...
+json-schema-validator:x64-mingw-static@2.4.0 package ABI: 44292ecae3d4e51499840b0aa8a36a23f81d115f491a6045fa922eebf7957151
+Building json-schema-validator:x64-mingw-static@2.4.0...
+D:\vcpkg\triplets\community\x64-mingw-static.cmake: info: loaded community triplet from here. Community triplets are not built in the curated registry and are thus less likely to succeed.
+-- Using cached pboettch-json-schema-validator-2.4.0.tar.gz
+-- Cleaning sources at D:/vcpkg/buildtrees/json-schema-validator/src/2.4.0-b885f3e6b7.clean. Use --editable to skip cleaning for the packages you specify.
+-- Extracting source D:/vcpkg/downloads/pboettch-json-schema-validator-2.4.0.tar.gz
+-- Using source at D:/vcpkg/buildtrees/json-schema-validator/src/2.4.0-b885f3e6b7.clean
+-- Configuring x64-mingw-static
+-- Building x64-mingw-static-dbg
+-- Building x64-mingw-static-rel
+-- Installing: D:/vcpkg/packages/json-schema-validator_x64-mingw-static/share/json-schema-validator/copyright
+-- Performing post-build validation
+Starting submission of json-schema-validator:x64-mingw-static@2.4.0 to 1 binary cache(s) in the background
+Elapsed time to handle json-schema-validator:x64-mingw-static: 38 s
+Completed submission of nlohmann-json:x64-mingw-static@3.12.0#2 to 1 binary cache(s) in 86.2 ms
+Installing 7/9 minizip-ng:x64-mingw-static@4.1.0...
+minizip-ng:x64-mingw-static@4.1.0 package ABI: e52c29adcea46e1b79615050716b76a65e3559bf9e8e5c3adaadfbe14f1be57b
+Building minizip-ng:x64-mingw-static@4.1.0...
+D:\vcpkg\triplets\community\x64-mingw-static.cmake: info: loaded community triplet from here. Community triplets are not built in the curated registry and are thus less likely to succeed.
+-- Using cached zlib-ng-minizip-ng-4.1.0.tar.gz
+-- Cleaning sources at D:/vcpkg/buildtrees/minizip-ng/src/4.1.0-776e85994d.clean. Use --editable to skip cleaning for the packages you specify.
+-- Extracting source D:/vcpkg/downloads/zlib-ng-minizip-ng-4.1.0.tar.gz
+-- Applying patch dependencies.diff
+-- Using source at D:/vcpkg/buildtrees/minizip-ng/src/4.1.0-776e85994d.clean
+-- Configuring x64-mingw-static
+CMake Warning at D:/Cuexis-worktree/out/build/r4/pre-o1/preflight/20261105-123139-c8af190f/mingw-on-debug/vcpkg_installed/x64-windows/share/vcpkg-cmake/vcpkg_cmake_configure.cmake:344 (message):
+  The following variables are not used in CMakeLists.txt:
+
+      CMAKE_DISABLE_FIND_PACKAGE_ZLIBNG
+
+  Please recheck them and remove the unnecessary options from the
+  `vcpkg_cmake_configure` call.
+
+  If these options should still be passed for whatever reason, please use the
+  `MAYBE_UNUSED_VARIABLES` argument.
+Call Stack (most recent call first):
+  buildtrees/versioning_/versions/minizip-ng/b6677369c4d8c677604963a4f97f075db0d18948/portfile.cmake:27 (vcpkg_cmake_configure)
+  scripts/ports.cmake:206 (include)
+
+
+-- Building x64-mingw-static-dbg
+-- Building x64-mingw-static-rel
+-- Fixing pkgconfig file: D:/vcpkg/packages/minizip-ng_x64-mingw-static/lib/pkgconfig/minizip-ng.pc
+-- Using cached msys2-mingw-w64-x86_64-pkgconf-1~2.5.1-1-any.pkg.tar.zst
+-- Using cached msys2-msys2-runtime-3.6.5-1-x86_64.pkg.tar.zst
+-- Using msys root at D:/vcpkg/downloads/tools/msys2/3e71d1f8e22ab23f
+-- Fixing pkgconfig file: D:/vcpkg/packages/minizip-ng_x64-mingw-static/debug/lib/pkgconfig/minizip-ng.pc
+-- Installing: D:/vcpkg/packages/minizip-ng_x64-mingw-static/share/minizip-ng/copyright
+-- Performing post-build validation
+Starting submission of minizip-ng:x64-mingw-static@4.1.0 to 1 binary cache(s) in the background
+Elapsed time to handle minizip-ng:x64-mingw-static: 28 s
+Completed submission of json-schema-validator:x64-mingw-static@2.4.0 to 1 binary cache(s) in 1.8 s
+Installing 8/9 tl-expected:x64-mingw-static@1.3.1...
+tl-expected:x64-mingw-static@1.3.1 package ABI: 897e3b0d61b14dc73c7c9e517affc68501925831511e1dbe2a83adff90bc72e3
+Building tl-expected:x64-mingw-static@1.3.1...
+D:\vcpkg\triplets\community\x64-mingw-static.cmake: info: loaded community triplet from here. Community triplets are not built in the curated registry and are thus less likely to succeed.
+-- Using cached TartanLlama-expected-v1.3.1.tar.gz
+-- Cleaning sources at D:/vcpkg/buildtrees/tl-expected/src/v1.3.1-e05cd218d6.clean. Use --editable to skip cleaning for the packages you specify.
+-- Extracting source D:/vcpkg/downloads/TartanLlama-expected-v1.3.1.tar.gz
+-- Using source at D:/vcpkg/buildtrees/tl-expected/src/v1.3.1-e05cd218d6.clean
+-- Configuring x64-mingw-static
+-- Building x64-mingw-static-dbg
+-- Building x64-mingw-static-rel
+-- Installing: D:/vcpkg/packages/tl-expected_x64-mingw-static/share/tl-expected/copyright
+-- Performing post-build validation
+Starting submission of tl-expected:x64-mingw-static@1.3.1 to 1 binary cache(s) in the background
+Elapsed time to handle tl-expected:x64-mingw-static: 6.8 s
+Completed submission of minizip-ng:x64-mingw-static@4.1.0 to 1 binary cache(s) in 109 ms
+Installing 9/9 catch2:x64-mingw-static@3.15.2#1...
+catch2:x64-mingw-static@3.15.2#1 package ABI: 1cfd122f0f091231324b3ae288bbabaaebfca9e59236f78b219670ff4b25271b
+Building catch2:x64-mingw-static@3.15.2#1...
+D:\vcpkg\triplets\community\x64-mingw-static.cmake: info: loaded community triplet from here. Community triplets are not built in the curated registry and are thus less likely to succeed.
+-- Using cached catchorg-Catch2-v3.15.2.tar.gz
+-- Cleaning sources at D:/vcpkg/buildtrees/catch2/src/v3.15.2-3c55a82f64.clean. Use --editable to skip cleaning for the packages you specify.
+-- Extracting source D:/vcpkg/downloads/catchorg-Catch2-v3.15.2.tar.gz
+-- Applying patch fix-install-path.patch
+-- Using source at D:/vcpkg/buildtrees/catch2/src/v3.15.2-3c55a82f64.clean
+-- Configuring x64-mingw-static
+-- Building x64-mingw-static-dbg
+-- Building x64-mingw-static-rel
+-- Fixing pkgconfig file: D:/vcpkg/packages/catch2_x64-mingw-static/lib/pkgconfig/catch2-with-main.pc
+-- Fixing pkgconfig file: D:/vcpkg/packages/catch2_x64-mingw-static/lib/pkgconfig/catch2.pc
+-- Using cached msys2-mingw-w64-x86_64-pkgconf-1~2.5.1-1-any.pkg.tar.zst
+-- Using cached msys2-msys2-runtime-3.6.5-1-x86_64.pkg.tar.zst
+-- Using msys root at D:/vcpkg/downloads/tools/msys2/3e71d1f8e22ab23f
+-- Fixing pkgconfig file: D:/vcpkg/packages/catch2_x64-mingw-static/debug/lib/pkgconfig/catch2-with-main.pc
+-- Fixing pkgconfig file: D:/vcpkg/packages/catch2_x64-mingw-static/debug/lib/pkgconfig/catch2.pc
+-- Installing: D:/vcpkg/packages/catch2_x64-mingw-static/share/catch2/copyright
+-- Performing post-build validation
+Starting submission of catch2:x64-mingw-static@3.15.2#1 to 1 binary cache(s) in the background
+Elapsed time to handle catch2:x64-mingw-static: 41 s
+Installed contents are licensed to you by owners. Microsoft is not responsible for, nor does it grant any licenses to, third-party packages.
+Packages installed in this vcpkg installation declare the following licenses:
+BSL-1.0
+CC0-1.0
+MIT
+Zlib
+entt provides CMake targets:
+
+    find_package(EnTT CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE EnTT::EnTT)
+
+The package glm provides CMake targets:
+
+    find_package(glm CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE glm::glm)
+
+    # Or use the header-only version
+    find_package(glm CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE glm::glm-header-only)
+
+The package nlohmann-json provides CMake targets:
+
+    find_package(nlohmann_json CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE nlohmann_json::nlohmann_json)
+
+The package nlohmann-json can be configured to not provide implicit conversions via a custom triplet file:
+
+    set(nlohmann-json_IMPLICIT_CONVERSIONS OFF)
+
+For more information, see the docs here:
+    
+    https://json.nlohmann.me/api/macros/json_use_implicit_conversions/
+
+json-schema-validator provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(nlohmann_json_schema_validator CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE nlohmann_json_schema_validator::validator)
+
+minizip-ng provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(minizip-ng CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE MINIZIP::minizip-ng)
+
+minizip-ng provides pkg-config modules:
+
+  # Zip manipulation library
+  minizip-ng
+
+tl-expected provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(tl-expected CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE tl::expected)
+
+catch2 provides CMake targets:
+
+  # this is heuristically generated, and may not be correct
+  find_package(Catch2 CONFIG REQUIRED)
+  target_link_libraries(main PRIVATE Catch2::Catch2 Catch2::Catch2WithMain)
+
+catch2 provides pkg-config modules:
+
+  # A modern, C++-native test framework for C++14 and above (links in default main)
+  catch2-with-main
+
+  # A modern, C++-native, test framework for C++14 and above
+  catch2
+
+Completed submission of tl-expected:x64-mingw-static@1.3.1 to 1 binary cache(s) in 62.7 ms
+Waiting for 1 remaining binary cache submissions...
+Completed submission of catch2:x64-mingw-static@3.15.2#1 to 1 binary cache(s) in 2.5 s (1/1)
+All requested installations completed successfully in: 2.6 min
+-- Running vcpkg install - done
+-- The CXX compiler identification is GNU 16.1.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/msys64/ucrt64/bin/c++.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Performing Test COMPILER_HAS_DEPRECATED_ATTR
+-- Performing Test COMPILER_HAS_DEPRECATED_ATTR - Success
+-- Found nlohmann_json: D:/Cuexis-worktree/out/build/r4/pre-o1/preflight/20261105-123139-c8af190f/mingw-on-debug/vcpkg_installed/x64-mingw-static/share/nlohmann_json/nlohmann_jsonConfig.cmake (found version "3.12.0")
+-- cuexis_cxc_tests: developer tool layer absent; candidate CXC cases excluded
+-- Found Python3: C:/Users/Zilch/AppData/Local/Programs/Python/Python314/python.exe (found version "3.14.0") found components: Interpreter
+-- Configuring done (189.1s)
+-- Generating done (1.7s)
+-- Build files have been written to: D:/Cuexis-worktree/out/build/r4/pre-o1/preflight/20261105-123139-c8af190f/mingw-on-debug

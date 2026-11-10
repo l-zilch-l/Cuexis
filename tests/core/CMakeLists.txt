@@ -10,6 +10,13 @@ add_executable(cuexis_core_tests
     version_tests.cpp
 )
 
+if(CUEXIS_PD_METRICS_TEST_ONLY)
+    target_sources(cuexis_core_tests PRIVATE
+        ../pd/metrics_storage_tests.cpp
+        ../pd/metrics_storage_other.cpp
+    )
+endif()
+
 target_link_libraries(cuexis_core_tests
     PRIVATE
         cuexis::core

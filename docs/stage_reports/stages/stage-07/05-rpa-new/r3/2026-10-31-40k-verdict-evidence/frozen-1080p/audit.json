@@ -1,0 +1,53 @@
+{
+  "valid_processes": 107,
+  "measured_frames": 150171,
+  "groups": {
+    "pilot": 4,
+    "duration-pilot": 2,
+    "coarse": 32,
+    "fine": 42,
+    "gap": 12,
+    "sustain": 6,
+    "sustain-lower": 6,
+    "sustain-static-1300": 3
+  },
+  "confirmed": [
+    {
+      "mode": "render-only",
+      "entities": 1800,
+      "independent_processes": 3,
+      "seconds_per_process": 20,
+      "fps": [
+        341.27396591551013,
+        348.91511895555806,
+        353.0556456192408
+      ],
+      "p99_ms": [
+        4.0939,
+        4.0023,
+        3.6804
+      ],
+      "minimum_one_second_fps": 319
+    },
+    {
+      "mode": "static",
+      "entities": 1300,
+      "independent_processes": 3,
+      "seconds_per_process": 20,
+      "fps": [
+        407.8575848504635,
+        370.9477761680819,
+        399.3573326625783
+      ],
+      "p99_ms": [
+        3.1536,
+        3.7785,
+        3.2299
+      ],
+      "minimum_one_second_fps": 344
+    }
+  ],
+  "all_hashes_samples_statistics_reverified": true,
+  "old_720p_build_and_evidence_unchanged": true,
+  "formal_acceptance": false
+}

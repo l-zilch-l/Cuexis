@@ -2,9 +2,9 @@
 
 状态：active
 
-更新日期：2026-08-30
+更新日期：2026-10-28
 
-适用版本：SDK API `0.7.0`
+适用版本：SDK API `0.9.1`
 
 文档角色：内部技术参考，不是宿主 API
 
@@ -29,6 +29,8 @@
 | 动画编译、采样与混合 | `animation` | JSON/CXC/CXT parser |
 | World 实例化与帧求值 | `runtime`、`world` | public Playback header |
 | 时钟与音频传输 | `audio` | SDL backend 细节 |
+| Gameplay typed 准备、kernel / Fold 与恢复 | 内部 `judgement`；宿主经 `playback` candidate 接入 | World、平台或第二套执行内核 |
+| 执行状态、prepare 与恢复缓存 | [当前内部架构](../architecture/execution-state-and-recovery.md) | 公开结构冒充内部缓存凭证 |
 | SDL 音频实现 | `audio_sdl` | `audio` core |
 | backend-neutral render scene | `render` | OpenGL 调用 |
 | OpenGL adapter | `render_opengl` | `playback`、`runtime` |

@@ -1,0 +1,25 @@
+{
+  "scope": "Neutral-path lever A/B screen on the ordinary physical GPU; readback on, timer off; not formal capacity acceptance.",
+  "cells": [
+    {
+      "entities": 1800,
+      "mode": "render-only"
+    },
+    {
+      "entities": 2600,
+      "mode": "render-only"
+    }
+  ],
+  "pairs": 3,
+  "order": "per pair the arm order alternates (baseline-first, candidate-first, baseline-first); each process runs one gate cell",
+  "seconds": 20,
+  "diagnostic": "40000 render-only one process per arm, reported apart and never spliced with the gate cells",
+  "gate": {
+    "submit_improvement": "submit median improves by at least 10 percent at both (1800, render-only) and (2600, render-only)",
+    "cycle_non_regression": "cycle median and cycle p99 median regress by at most 5 percent in every gate cell",
+    "repeatability": "per cell and arm, (max-min)/median of the process medians is at most 15 percent for submit and cycle",
+    "value_identity": "every process reports 255,204,51,255 with draws and in-view centers equal to the entity count, and both arms agree",
+    "stop": "an invalid process stops the group; no retry, no replacement, no extra samples"
+  },
+  "binding_sha256": "1cd7361a909f817784ad1728ccf14f8b995d814f6cc13e3d476db784f7fc4124"
+}

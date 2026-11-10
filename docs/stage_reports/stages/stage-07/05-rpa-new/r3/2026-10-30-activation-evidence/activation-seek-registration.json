@@ -1,0 +1,161 @@
+{
+  "formal": false,
+  "scope": "Fixed ordinary v4 vs v5 activation capture diagnostic. Neither variant uses batch publication. No production memory quota decision. Same candidate class definitions and fresh libraries; all timings exclude fault/heap observers.",
+  "plan": [
+    {
+      "n": 1000,
+      "horizon": "5",
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "horizon": "5",
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 1000,
+      "horizon": "5",
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 1000,
+      "horizon": "5",
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "horizon": "5",
+      "pair": 2,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "horizon": "5",
+      "pair": 2,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "horizon": "5",
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "horizon": "5",
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "horizon": "5",
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "horizon": "5",
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "horizon": "5",
+      "pair": 2,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "horizon": "5",
+      "pair": 2,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "pair": 2,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "pair": 2,
+      "variant": "candidate"
+    },
+    {
+      "n": 1000,
+      "horizon": "final",
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "horizon": "final",
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 1000,
+      "horizon": "final",
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 1000,
+      "horizon": "final",
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "horizon": "final",
+      "pair": 2,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "horizon": "final",
+      "pair": 2,
+      "variant": "candidate"
+    }
+  ],
+  "attempts": 3,
+  "gate": "40K first-record H5 median improves >=50%; every candidate request <=20ms; 40K H902 and1K final guard <=5% regression; 1K H5 <=10% regression. Original relative range <=15% reported, no new samples to force pass. first/repeats separate; exact full Snapshot raw bytes/hash/size. CPU Host request through target present only, not physical GPU or formal acceptance.",
+  "binaries": {
+    "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-next-v1\\activation-host-v1\\probe-baseline.exe": "0fa03312b6effa1c3812a78209e0e3bdcc5c81de2f1de242714e7fb5c218a811",
+    "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-next-v1\\activation-host-v1\\probe-candidate.exe": "e8cc97186a342a486fe18c2637c2b638cb1c450466b223173a0e31732dc6c7c8"
+  },
+  "runner_sha256": "2561ccf7763e9d514e3634481222a10eebbb3c4683a0cfbfa15d057cab15d8db",
+  "affinity": 4,
+  "priority": "BelowNormal",
+  "qos": "execution throttling OFF",
+  "failure": "Invalid process stops; original failed/noisy groups retained; no replacement/extension. Builds must be absent."
+}

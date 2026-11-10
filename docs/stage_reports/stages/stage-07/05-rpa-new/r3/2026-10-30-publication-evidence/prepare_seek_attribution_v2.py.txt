@@ -1,0 +1,55 @@
+from pathlib import Path
+import hashlib,json,subprocess
+base=Path(__file__).resolve().parent
+original=(base/'prepare_seek_attribution.py').read_text()
+original=original.replace("out=base/'seek-attribution-v1'", "out=base/'seek-attribution-v2'")
+exec(compile(original,str(base/'prepare_seek_attribution.py'),'exec'))
+source=Path.cwd()/'out/verification-20261030/r3-resume-v1/budget-source-v4'
+out=base/'seek-attribution-v2'
+inc='#include "'+(out/'timing.hpp').as_posix()+'"\n'
+s=inc+(source/'engine/playback/src/playback_session.cpp').read_text(encoding='utf-8')
+def replace(a,b):
+ global s
+ assert s.count(a)==1,(a,s.count(a))
+ s=s.replace(a,b)
+replace('    auto result = seekGameplay(archive, horizon, cut, checkpoints, tick, frame);', '''    cuexis_r3_timing::Scope whole{20};
+    auto result = [&] { cuexis_r3_timing::Scope timing{21};
+        return seekGameplay(archive, horizon, cut, checkpoints, tick, frame); }();''')
+replace('    return beginRealtimeGameplay(profile, mapping,\n                                 {next.sessionScope, next.clockSegment, next.runEpoch}, domain);', '''    cuexis_r3_timing::Scope restart{22};
+    return beginRealtimeGameplay(profile, mapping,
+                                 {next.sessionScope, next.clockSegment, next.runEpoch}, domain);''')
+replace('    auto candidate = state_->gameplay->forkForSeek(archive->archive, judgement::Tick{h.value},\n                                                   internalCut, certificates);', '''    auto candidate = [&] { cuexis_r3_timing::Scope timing{23};
+        return state_->gameplay->forkForSeek(archive->archive, judgement::Tick{h.value},
+                                                   internalCut, certificates); }();''')
+start=s.index('auto PlaybackSession::seekGameplay(const GameplayReplay& a, GameplayTick h,\n                                   const GameplayReplayCut& cut,')
+end=s.index('\nnamespace {',start)
+part=s[start:end]
+needle='    auto q = replacement->query();'
+assert part.count(needle)==1
+part=part.replace(needle,'    auto q = [&] { cuexis_r3_timing::Scope timing{24}; return replacement->query(); }();')
+part=part.replace('detail::GameplayPublicationAccess::publish(*this, *replacement, t, frame, false, true)', '[&] { cuexis_r3_timing::Scope timing{25}; return detail::GameplayPublicationAccess::publish(*this, *replacement, t, frame, false, true); }()')
+s=s[:start]+part+s[end:]
+start=s.index('auto PlaybackSession::beginRealtimeGameplay(');end=s.index('auto PlaybackSession::beginRealtimeTail(',start)
+part=s[start:end]
+part=part.replace('    auto query = state_->gameplay->query();','    auto query = [&] { cuexis_r3_timing::Scope timing{26}; return state_->gameplay->query(); }();')
+part=part.replace('    auto scheduler = judgement::ExecutionScheduler::create(', '    auto scheduler = [&] { cuexis_r3_timing::Scope timing{27}; return judgement::ExecutionScheduler::create(')
+part=part.replace('state_->pendingRetiredRequestFloor);','state_->pendingRetiredRequestFloor); }();')
+s=s[:start]+part+s[end:]
+(out/'playback_session.cpp').write_text(s,encoding='utf-8')
+s=inc+(source/'app/execution_host/host_candidate.cpp').read_text(encoding='utf-8')
+needle='    auto result = session.seekExecutionStep(request, proof, archive, horizon, cut, checkpoints,\n                                            tick, frame, profile, mapping, domain);'
+assert s.count(needle)==1
+s=s.replace(needle,'    auto result = [&] { cuexis_r3_timing::Scope timing{28}; return session.seekExecutionStep(request, proof, archive, horizon, cut, checkpoints,\n                                            tick, frame, profile, mapping, domain); }();')
+(out/'host_candidate.cpp').write_text(s,encoding='utf-8')
+subprocess.run(['clang-format','-i',str(out/'playback_session.cpp'),str(out/'host_candidate.cpp')],check=True)
+manifest=json.loads((out/'source-binding.json').read_text())
+manifest['stages'].update({'20':'seekExecutionStep after guards','21':'seekGameplay including old owner release','22':'beginRealtimeGameplay','23':'forkForSeek','24':'replacement query','25':'GameplayPublicationAccess publish','26':'beginRealtime query','27':'ExecutionScheduler create','28':'HostCoordination apply seekExecutionStep'})
+manifest['sources']={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in out.iterdir() if p.suffix in ('.cpp','.hpp')}
+(out/'source-binding.json').write_text(json.dumps(manifest,indent=2),encoding='utf-8')
+builder=(base/'build_seek_attribution.py').read_text().replace("out=base/'seek-attribution-v1'","out=base/'seek-attribution-v2'")
+builder=builder.replace("probe=compile('rpa_b5_host_tests.cpp','host_probe',True)","probe=compile('rpa_b5_host_tests.cpp','host_probe',True)\nplayback=compile('playback_session.cpp','playback_session')\ncoordination=compile('host_candidate.cpp','host_candidate',True)")
+builder=builder.replace("else p for p in objects]","else coordination if p.endswith('host_candidate.cpp.obj') else p for p in objects]")
+builder=builder.replace("kernel,worker,*objects,*libs","kernel,worker,playback,*objects,*libs").replace('Four TUs instrumented','Six TUs instrumented')
+(base/'build_seek_attribution_v2.py').write_text(builder,encoding='utf-8')
+runner=(base/'run_seek_attribution.py').read_text().replace("build=base/'seek-attribution-v1';out=base/'seek-attribution-measure-v1'", "build=base/'seek-attribution-v2';out=base/'seek-attribution-measure-v2'")
+(base/'run_seek_attribution_v2.py').write_text(runner,encoding='utf-8')

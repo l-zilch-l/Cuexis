@@ -1,6 +1,8 @@
 add_library(cuexis_assets STATIC
     src/asset_database.cpp
     src/resource_manager.cpp
+    src/resource_manager_state_internal.hpp
+    src/resource_scope.cpp
 )
 add_library(cuexis::assets ALIAS cuexis_assets)
 

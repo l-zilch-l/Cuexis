@@ -1,0 +1,4 @@
+from pathlib import Path
+base=Path(__file__).resolve().parent
+s=(base/'build_activation.py').read_text().replace("draft=base/'activation-source-v1';out=base/'activation-build-v1'", "draft=base/'active-sequence-source-v1';out=base/'active-sequence-build-v1'")
+exec(compile(s,str(base/'build_activation.py'),'exec'))

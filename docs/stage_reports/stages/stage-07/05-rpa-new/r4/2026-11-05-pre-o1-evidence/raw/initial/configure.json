@@ -1,0 +1,13 @@
+{
+  "command": [
+    "cmake",
+    "--preset",
+    "candidate-debug",
+    "--fresh",
+    "-B",
+    "D:\\Cuexis-worktree\\out\\build\\r4\\pre-o1\\msvc-on-debug"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 29.725927800000022,
+  "log_sha256": "6d3be26a9b038b179179e1ed9e296f273d50b1892c3736ede480cbdf59ad0ef4"
+}

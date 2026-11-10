@@ -1,0 +1,13 @@
+{
+  "scope": "Exact unchanged v2 executables with app-local Release DLLs from the same vcpkg tree as headers/import libraries. v2 lacked local DLLs and buildenv PATH preferred debug DLLs; baseline schema test crashed before candidate testing. No source/binary rewrite.",
+  "parent_binding_sha256": "bf9dae856857339a05876ff8bbf37488fd331654aa9dce96769ecefb6144a8d6",
+  "files": {
+    "fmt.dll": "8219387a1b0de304630a67564a0ec30271e061c1e92cc77ae7cf9753a5f75214",
+    "gpu-sax.exe": "0b41cb31c73f5f6c734c6e74d45d5dc2c67bc802b36ba4c3edd9cb66a47ac386",
+    "json-baseline.exe": "6facb85075bcdc9e4fe50ef6ca52dfb4eddbf5ed5b64f7c2e0e4eacafe7b4155",
+    "json-candidate.exe": "ff923782e68427f77a135952ac7c2f559ac29d92fafd0ec9c98ddafc257102ca",
+    "nlohmann_json_schema_validator.dll": "1c0a7cdcd718802c79052f323f52e63afcedac969dd7eb5a44d12c521502f248",
+    "SDL3.dll": "cedddd9456105f8b2df78c33a0282c170b86b0d16146a8ccbb0c6e01571ee783",
+    "spdlog.dll": "a7c410914f4aff0cb84f642ff91da8a6b1a85d21cb0de11e88a3a37dc7575214"
+  }
+}

@@ -23,6 +23,9 @@
 #include <vector>
 
 namespace cuexis::world {
+namespace detail {
+struct ResolverAccess;
+}
 
 class World;
 
@@ -63,6 +66,7 @@ enum class PropertyLayer : std::uint8_t {
     Animation = 2,
     HostOverride = 3,
     StudioPreviewOverride = 4,
+    GameplayOverride = 5,
 };
 
 enum class OverrideKind : std::uint8_t {
@@ -151,6 +155,8 @@ class PropertyWriteBuffer final {
 };
 
 class PropertyResolver final {
+    friend struct detail::ResolverAccess;
+
   public:
     PropertyResolver() = default;
 
@@ -197,6 +203,7 @@ class PropertyResolver final {
         PropertyValue candidate{};
         PropertyValue behavior{};
         PropertyValue animation{};
+        PropertyValue gameplay{};
         PropertyValue host{};
         PropertyValue preview{};
         PropertyLayer source{PropertyLayer::Initial};
@@ -207,6 +214,7 @@ class PropertyResolver final {
     struct Entry final {
         entt::entity entity{entt::null};
         bool hasTransform{};
+        bool touched{};
         TransformComponent transformBaseline{};
         TransformComponent transformCandidate{};
         TransformComponent transformPrevious{};

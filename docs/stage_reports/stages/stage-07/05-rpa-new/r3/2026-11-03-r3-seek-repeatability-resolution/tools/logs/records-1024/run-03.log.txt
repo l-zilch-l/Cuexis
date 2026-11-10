@@ -1,0 +1,22 @@
+Filters: "PD5 scripted seek timing probe"
+Randomness seeded to: 817648598
+PD5_SEEK_ID {"schema":"pd5.seek.v1","records":1024,"seeks":16}
+PD5_SEEK {"records":1024,"index":0,"horizon":1103,"request_to_ready_us":580,"request_to_present_us":756}
+PD5_SEEK {"records":1024,"index":1,"horizon":8103,"request_to_ready_us":456,"request_to_present_us":676}
+PD5_SEEK {"records":1024,"index":2,"horizon":15103,"request_to_ready_us":337,"request_to_present_us":510}
+PD5_SEEK {"records":1024,"index":3,"horizon":22103,"request_to_ready_us":359,"request_to_present_us":502}
+PD5_SEEK {"records":1024,"index":4,"horizon":29103,"request_to_ready_us":342,"request_to_present_us":487}
+PD5_SEEK {"records":1024,"index":5,"horizon":36103,"request_to_ready_us":308,"request_to_present_us":437}
+PD5_SEEK {"records":1024,"index":6,"horizon":43103,"request_to_ready_us":461,"request_to_present_us":715}
+PD5_SEEK {"records":1024,"index":7,"horizon":50103,"request_to_ready_us":374,"request_to_present_us":525}
+PD5_SEEK {"records":1024,"index":8,"horizon":57103,"request_to_ready_us":323,"request_to_present_us":499}
+PD5_SEEK {"records":1024,"index":9,"horizon":64103,"request_to_ready_us":303,"request_to_present_us":431}
+PD5_SEEK {"records":1024,"index":10,"horizon":71103,"request_to_ready_us":419,"request_to_present_us":552}
+PD5_SEEK {"records":1024,"index":11,"horizon":78103,"request_to_ready_us":353,"request_to_present_us":532}
+PD5_SEEK {"records":1024,"index":12,"horizon":85103,"request_to_ready_us":435,"request_to_present_us":645}
+PD5_SEEK {"records":1024,"index":13,"horizon":92103,"request_to_ready_us":386,"request_to_present_us":568}
+PD5_SEEK {"records":1024,"index":14,"horizon":99103,"request_to_ready_us":401,"request_to_present_us":545}
+PD5_SEEK {"records":1024,"index":15,"horizon":106103,"request_to_ready_us":340,"request_to_present_us":487}
+===============================================================================
+All tests passed (14 assertions in 1 test case)
+

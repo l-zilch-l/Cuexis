@@ -1,0 +1,53 @@
+{
+  "mode": "static",
+  "index": 1,
+  "entities": 2800,
+  "seconds": 20.0,
+  "log": "01-static-2800.log.txt",
+  "log_sha256": "2aaf304fcb469c5247998899b9395744de7db7a87332f682579056766ce76a87",
+  "samples": "01-static-2800.samples.txt",
+  "samples_sha256": "e96bf0a022ead82f0d69de6641c0018448ad39e984b5b64a17d62cd0e76623d1",
+  "modules": "01-static-2800.modules.txt",
+  "modules_sha256": "df185d2e09e9870b00274b424146d177b9f686ecc374cf69456e4f8227b223f7",
+  "sampler_log": "01-static-2800.sampler.txt",
+  "sampler_sha256": "e16d5c1f3d680fc538c1e2efe2f12f740f13869f3bb08bb8da72913582af8da5",
+  "sampler_output": [
+    "pid=24716 threads=4 opened=4",
+    "elapsed_s=24.002 samples=800 rate=33/s failures=1019040",
+    "  tid=16808 samples=200 failures=254760",
+    "  tid=24624 samples=200 failures=254760",
+    "  tid=6464 samples=200 failures=254760",
+    "  tid=28632 samples=200 failures=254760"
+  ],
+  "sampler_affinity": 32768,
+  "sampler_note": "",
+  "started_utc": "2026-11-01T01:36:00.123392+00:00",
+  "exit": 42,
+  "problems": [
+    "exit 42",
+    "test not passed",
+    "identity lines 0",
+    "no samples"
+  ],
+  "controls": {
+    "affinity": 65535,
+    "priority": 16384,
+    "qos_control": 1,
+    "qos_state": 0
+  },
+  "identity": null,
+  "frames": 0,
+  "wall_fps": null,
+  "second_windows": [],
+  "min_window": null,
+  "summary": {},
+  "slow_frames": {
+    "threshold_us": 6000.0,
+    "count": 0,
+    "share": null,
+    "submit_us": null,
+    "fast_submit_us": null
+  },
+  "budget_pass": false,
+  "control_ok": true
+}

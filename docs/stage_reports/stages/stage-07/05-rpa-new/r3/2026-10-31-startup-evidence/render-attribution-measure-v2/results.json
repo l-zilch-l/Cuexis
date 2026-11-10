@@ -1,0 +1,198 @@
+[
+  {
+    "name": "40k-render-stages",
+    "n": 40000,
+    "cancel": false,
+    "valid": true,
+    "exit": 0,
+    "elapsed_seconds": 6.063193500005582,
+    "startup_stages": [
+      "GPU_STARTUP_BEGIN fixture_source",
+      "GPU_STARTUP_END fixture_source 65449.199999999997",
+      "GPU_STARTUP_BEGIN playback_prepare",
+      "GPU_STARTUP_END playback_prepare 2816635.7999999998",
+      "GPU_STARTUP_BEGIN renderer_prepare",
+      "GPU_STARTUP_END renderer_prepare 433.10000000000002",
+      "GPU_STARTUP_BEGIN first_update",
+      "GPU_STARTUP_END first_update 6444",
+      "GPU_STARTUP_BEGIN first_extract",
+      "GPU_STARTUP_END first_extract 13059.700000000001",
+      "GPU_STARTUP_BEGIN first_submit",
+      "GPU_STARTUP_END first_submit 48061"
+    ],
+    "window_observations": [
+      {
+        "elapsed_seconds": 3.311981700004253,
+        "stage": "GPU_STARTUP_END playback_prepare 2816635.7999999998",
+        "acknowledged": true,
+        "latency_ms": 38.78509999776725
+      },
+      {
+        "elapsed_seconds": 3.402553700005228,
+        "stage": "GPU_STARTUP_BEGIN first_submit",
+        "acknowledged": true,
+        "latency_ms": 19.84299999458017
+      },
+      {
+        "elapsed_seconds": 3.473686400000588,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": false,
+        "latency_ms": 114.50329999934183
+      },
+      {
+        "elapsed_seconds": 3.639513000001898,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": true,
+        "latency_ms": 17.94060000247555
+      },
+      {
+        "elapsed_seconds": 3.7090072999999393,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": true,
+        "latency_ms": 34.06160000304226
+      },
+      {
+        "elapsed_seconds": 3.7947888000053354,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": true,
+        "latency_ms": 38.52229999756673
+      },
+      {
+        "elapsed_seconds": 3.884930300002452,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": true,
+        "latency_ms": 45.06209999817656
+      },
+      {
+        "elapsed_seconds": 3.9820420000032755,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": true,
+        "latency_ms": 39.08969999611145
+      },
+      {
+        "elapsed_seconds": 4.0732284000041545,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": true,
+        "latency_ms": 38.110499997856095
+      },
+      {
+        "elapsed_seconds": 4.1625201999995625,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": true,
+        "latency_ms": 38.30100000050152
+      },
+      {
+        "elapsed_seconds": 4.252302100001543,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": true,
+        "latency_ms": 37.239299999782816
+      },
+      {
+        "elapsed_seconds": 4.340770499999053,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": true,
+        "latency_ms": 35.82270000333665
+      },
+      {
+        "elapsed_seconds": 4.428183700001682,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": true,
+        "latency_ms": 41.14760000084061
+      },
+      {
+        "elapsed_seconds": 4.521171100001084,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": true,
+        "latency_ms": 50.049900004523806
+      },
+      {
+        "elapsed_seconds": 4.623202200004016,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": true,
+        "latency_ms": 34.79030000016792
+      },
+      {
+        "elapsed_seconds": 4.709343900001841,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": true,
+        "latency_ms": 32.44010000344133
+      },
+      {
+        "elapsed_seconds": 4.793795900004625,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": true,
+        "latency_ms": 34.62949999811826
+      },
+      {
+        "elapsed_seconds": 4.880159899999853,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": true,
+        "latency_ms": 36.19180000532651
+      },
+      {
+        "elapsed_seconds": 4.967630200000713,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": true,
+        "latency_ms": 34.258600004250184
+      },
+      {
+        "elapsed_seconds": 5.053942999998981,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": true,
+        "latency_ms": 35.38040000421461
+      },
+      {
+        "elapsed_seconds": 5.140700100004324,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": true,
+        "latency_ms": 35.03099999943515
+      },
+      {
+        "elapsed_seconds": 5.227155699998548,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": true,
+        "latency_ms": 33.58920000027865
+      },
+      {
+        "elapsed_seconds": 5.312302900005307,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": true,
+        "latency_ms": 31.111599993892014
+      },
+      {
+        "elapsed_seconds": 5.395201500003168,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": true,
+        "latency_ms": 43.11030000098981
+      },
+      {
+        "elapsed_seconds": 5.4897354999993695,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": true,
+        "latency_ms": 32.66770000482211
+      },
+      {
+        "elapsed_seconds": 5.573770900002273,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": true,
+        "latency_ms": 33.09889999945881
+      },
+      {
+        "elapsed_seconds": 5.6586284000004525,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": true,
+        "latency_ms": 36.69320000335574
+      },
+      {
+        "elapsed_seconds": 5.746622900005605,
+        "stage": "GPU_STARTUP_END first_submit 48061",
+        "acknowledged": true,
+        "latency_ms": 111.42829999880632
+      }
+    ],
+    "unacknowledged_messages": 1,
+    "window_during_cpu_prepare": false,
+    "sent_close": false,
+    "log_sha256": "50b6d59171b4c25e2e968555c60b025a8ab966d2adf849a4e7e4dddb8a8695e8"
+  }
+]

@@ -1,0 +1,8 @@
+{
+  "selected": false,
+  "scope": "Combined activation and lazy bounded Fact batch. Small prefixes retain original single read; buffer initialized only for >=64. No class/header definition changes from fresh publication build. v5 kernel separately compiled. Test-only second batch malformed Fact supplement; production CPP unchanged.",
+  "files": {
+    "host_probe.cpp": "4291455948c8ee585348b0834bce34d53f12faedf6c246e1f123388ba3a95fee",
+    "playback_session.cpp": "1c0a0c60beb3f3a1e1b95a419c779fa651530d6606230ab4d6a97d52d63c7234"
+  }
+}

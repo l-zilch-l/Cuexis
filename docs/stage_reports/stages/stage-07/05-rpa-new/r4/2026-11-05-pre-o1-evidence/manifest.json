@@ -1,0 +1,612 @@
+{
+  "schema": "rpa.r4.pre-o1-manifest.v1",
+  "files": [
+    {
+      "path": "raw/initial/configure.cmd",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\configure.cmd",
+      "bytes": 293,
+      "sha256": "d156200410a6e6607168e94fd04dfb11fb95747a90bd96bb85fa51903de64115"
+    },
+    {
+      "path": "raw/initial/configure.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\configure.json",
+      "bytes": 321,
+      "sha256": "b0148c3457a6c5973d2a1c7be7d37a52740a0567a4649b6e4d0da716a43e173e"
+    },
+    {
+      "path": "raw/initial/configure.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\configure.log",
+      "bytes": 8703,
+      "sha256": "6d3be26a9b038b179179e1ed9e296f273d50b1892c3736ede480cbdf59ad0ef4"
+    },
+    {
+      "path": "raw/initial/build.cmd",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\build.cmd",
+      "bytes": 292,
+      "sha256": "eb3ca6b481e77d4ebd66cc730901ab64d57274508ba92c633e9706d13f9046cc"
+    },
+    {
+      "path": "raw/initial/build.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\build.json",
+      "bytes": 313,
+      "sha256": "5237f19d5c63cef4308c38d3e0f1c0ac9737683b5a77bb4ac800e01fcb7190fe"
+    },
+    {
+      "path": "raw/initial/build.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\build.log",
+      "bytes": 67211,
+      "sha256": "2332a418c0961237e8bcefb75e85ca83927a2e62e96cca4d020204f45edc8c9f"
+    },
+    {
+      "path": "raw/initial/ctest-debug.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\ctest-debug.json",
+      "bytes": 399,
+      "sha256": "b2a53ec224f7897f2966279bced5a3475bcd382bf8e5c054f3157dfd9bfb3b55"
+    },
+    {
+      "path": "raw/initial/ctest-debug.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\ctest-debug.log",
+      "bytes": 463575,
+      "sha256": "c595e5596369c7d2ef2ffb4eb800b9ee551575eb1b370fcd81156e5fbb00512c"
+    },
+    {
+      "path": "raw/initial/ctest-debug-v2.cmd",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\ctest-debug-v2.cmd",
+      "bytes": 310,
+      "sha256": "b089cd85fcaaf93d46b4ac8349daaba517b602b1c99ea116cf24d5f67671408e"
+    },
+    {
+      "path": "raw/initial/ctest-debug-v2.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\ctest-debug-v2.json",
+      "bytes": 393,
+      "sha256": "7ab32e979db54352c23e7f069d9cb92a5983b58b2079a1d7a009ce32acb12f5b"
+    },
+    {
+      "path": "raw/initial/ctest-debug-v2.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\ctest-debug-v2.log",
+      "bytes": 337770,
+      "sha256": "ee0d414030fd0b1b423f322f1aea8dbdfe9943dec2285be91e9e54dff9f40735"
+    },
+    {
+      "path": "raw/initial/rebuild-final.cmd",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\rebuild-final.cmd",
+      "bytes": 278,
+      "sha256": "a37bcc1fb88a536e184189dd8de783cf1a88ef71760832f0c2ea3d862ba6ae26"
+    },
+    {
+      "path": "raw/initial/rebuild-final.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\rebuild-final.json",
+      "bytes": 322,
+      "sha256": "e9eccd4b0129fe3d2729f0fce7b54d09bc5e92be8fe98f9b6c4bc05c348cce6a"
+    },
+    {
+      "path": "raw/initial/rebuild-final.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\rebuild-final.log",
+      "bytes": 11292,
+      "sha256": "72b756a8dabc05d74bd19f117b19a34b223e2060171d58d794d1b09162e3a5f0"
+    },
+    {
+      "path": "raw/initial/format.cmd",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\format.cmd",
+      "bytes": 294,
+      "sha256": "a0c69ad05e589ef69d244d18eb69fd12df45c4332d03a59e439a32992259a073"
+    },
+    {
+      "path": "raw/initial/format.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\format.json",
+      "bytes": 337,
+      "sha256": "a064115fdbc151dec0ebb566dfb4d9e389589affd447a4c02ba98170d7202f57"
+    },
+    {
+      "path": "raw/initial/format.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\format.log",
+      "bytes": 430,
+      "sha256": "05429c5be3a4de4c2981e7c594ca1e1260bdd76d8fe5cbae14946939cc4fae7f"
+    },
+    {
+      "path": "raw/initial/environment.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\environment.json",
+      "bytes": 1460,
+      "sha256": "5c7e21ca933aeeca1f5e36417d36d263ef357a94e4c46ed0632d13b098962de9"
+    },
+    {
+      "path": "raw/initial/audit.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\audit.json",
+      "bytes": 1584,
+      "sha256": "8ffac6a6e4db43f9ab604fa6cdab148f92e08224db891d531718a73c4693420a"
+    },
+    {
+      "path": "raw/initial/integration-runs.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\integration-runs.json",
+      "bytes": 236,
+      "sha256": "c235c1136a0e8825d226513870a269b2ff7c345afb6d35bc289f9826909f8e11"
+    },
+    {
+      "path": "raw/initial/cuexis_rpa_tests.xml",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\cuexis_rpa_tests.xml",
+      "bytes": 19291,
+      "sha256": "3e12e497202f88899c26a63d5d25f8b06eb3435358947413e1968ace27238ac2"
+    },
+    {
+      "path": "raw/initial/cuexis_host_protocol_tests.xml",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\cuexis_host_protocol_tests.xml",
+      "bytes": 20792,
+      "sha256": "dbf3b02b8ac9abd63e96f6a6ad5eaf37f0e46b1989c17768a1886f22152a84b5"
+    },
+    {
+      "path": "raw/initial/cuexis_execution_host_tests.xml",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\cuexis_execution_host_tests.xml",
+      "bytes": 54543,
+      "sha256": "47061d3484100ae84a44f455ba0ab51ec49a360cf27005be241b0d871806a7d1"
+    },
+    {
+      "path": "raw/initial/smoke-result.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\smoke-result.json",
+      "bytes": 66,
+      "sha256": "03d69c87a8c073fb7dad816e4bf49c0d2758b582a315d7b1f57c7a4e97013ddf"
+    },
+    {
+      "path": "raw/initial/smoke.stdout.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\smoke.stdout.log",
+      "bytes": 4533,
+      "sha256": "35a02653446206b6e46bc7e5e763d6bac84f319cfda838b132b31f117c2f6e3b"
+    },
+    {
+      "path": "raw/initial/smoke.stderr.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\smoke.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "raw/initial/smoke-v2-result.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\smoke-v2-result.json",
+      "bytes": 186,
+      "sha256": "4cf2e6b23ed16c100582546cbbe6d878ab313b5d124ebea1ddce4383be3f5307"
+    },
+    {
+      "path": "raw/initial/smoke-v2.stdout.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\smoke-v2.stdout.log",
+      "bytes": 4551,
+      "sha256": "cdd2a82ca2ec5d8e912db1b5ff891cf29800d149165d9ca2c154a8a8e6b6739e"
+    },
+    {
+      "path": "raw/initial/smoke-v2.stderr.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\smoke-v2.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "raw/baseline/manifest.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\baseline\\manifest.json",
+      "bytes": 1471291,
+      "sha256": "7898a5489629e8ae6c015d7e3da2f3b536cefb519bdf1db70f4e20f61a160b46"
+    },
+    {
+      "path": "raw/baseline/status.txt",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\baseline\\status.txt",
+      "bytes": 267,
+      "sha256": "5c74752f857de6500ceb24512ec83dfd9fa297038c5e8c7214862756189b8107"
+    },
+    {
+      "path": "raw/baseline/tracked.patch",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\baseline\\tracked.patch",
+      "bytes": 49503,
+      "sha256": "448b2c60e88aecb3ffcf543b9aae47ac9b17efdfc5293dd0a39d87b8174289fd"
+    },
+    {
+      "path": "raw/audio-startup-repro/build-green.cmd",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\audio-startup-repro\\build-green.cmd",
+      "bytes": 315,
+      "sha256": "fd1c0300ac099565dcfef23658ebc95723886cdb1b19db963449019f25b6d8f7"
+    },
+    {
+      "path": "raw/audio-startup-repro/build-green.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\audio-startup-repro\\build-green.log",
+      "bytes": 316,
+      "sha256": "de434d834368b93c4759d733838c12e5997b8ac45927b679b0fb9a18284b5bf1"
+    },
+    {
+      "path": "raw/audio-startup-repro/build-red.cmd",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\audio-startup-repro\\build-red.cmd",
+      "bytes": 315,
+      "sha256": "fd1c0300ac099565dcfef23658ebc95723886cdb1b19db963449019f25b6d8f7"
+    },
+    {
+      "path": "raw/audio-startup-repro/build-red.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\audio-startup-repro\\build-red.log",
+      "bytes": 2407,
+      "sha256": "9413231e3ed790d2d9fe945062b533b8b0e211f44af24ec94f0c0fc148f9eec9"
+    },
+    {
+      "path": "raw/audio-startup-repro/green.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\audio-startup-repro\\green.json",
+      "bytes": 241,
+      "sha256": "08c700c884dd62b303f1cd71705641157e0586c04a6297ff56c81fc44f841d8d"
+    },
+    {
+      "path": "raw/audio-startup-repro/green.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\audio-startup-repro\\green.log",
+      "bytes": 260,
+      "sha256": "14d1b855fb1135750cff848cb123fb6498cce11b23772f0a5800d79eaf0e8bdc"
+    },
+    {
+      "path": "raw/audio-startup-repro/original-1.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\audio-startup-repro\\original-1.log",
+      "bytes": 243,
+      "sha256": "263ba2dcb7edc5afa513370e98b2be3bf898fd0074699b1b0bd793ed503b7216"
+    },
+    {
+      "path": "raw/audio-startup-repro/original-10.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\audio-startup-repro\\original-10.log",
+      "bytes": 243,
+      "sha256": "e6d5d046078681ffe023bb5e32e2ad6999cf8b89bb3733f883f575a0715d7b3e"
+    },
+    {
+      "path": "raw/audio-startup-repro/original-2.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\audio-startup-repro\\original-2.log",
+      "bytes": 243,
+      "sha256": "2187acb00790525dbafbeb328f740321ab37db3ec11be105c2341cfc902ff2d6"
+    },
+    {
+      "path": "raw/audio-startup-repro/original-3.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\audio-startup-repro\\original-3.log",
+      "bytes": 243,
+      "sha256": "e4530afdd245bb61342a60638907042a23f1b98fdd04fb37250f65c6ef70c555"
+    },
+    {
+      "path": "raw/audio-startup-repro/original-4.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\audio-startup-repro\\original-4.log",
+      "bytes": 243,
+      "sha256": "c994a063ba2c940aec0940b294741f9b856c34dabfc947e508c7ff5743bfcf9c"
+    },
+    {
+      "path": "raw/audio-startup-repro/original-5.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\audio-startup-repro\\original-5.log",
+      "bytes": 242,
+      "sha256": "0d1a6cd69217f4069689ddf1855416018baad6def49bbef3bc8d48c58e8c6edb"
+    },
+    {
+      "path": "raw/audio-startup-repro/original-6.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\audio-startup-repro\\original-6.log",
+      "bytes": 243,
+      "sha256": "5e6b7313f2342a5744e6ba9eff2b99b5a76e2f03e508c31be848b36b43288138"
+    },
+    {
+      "path": "raw/audio-startup-repro/original-7.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\audio-startup-repro\\original-7.log",
+      "bytes": 243,
+      "sha256": "af7ce1e49847e6d1150199d15c2be596b1d0feb04fea333145e8c3d780b2d3dc"
+    },
+    {
+      "path": "raw/audio-startup-repro/original-8.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\audio-startup-repro\\original-8.log",
+      "bytes": 243,
+      "sha256": "a266e6861df9256901aa84bf4eff5c2cd273371c5b482bec1b4c1d976f838e0f"
+    },
+    {
+      "path": "raw/audio-startup-repro/original-9.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\audio-startup-repro\\original-9.log",
+      "bytes": 243,
+      "sha256": "9dcd010297de7eade5589bcb4d1689db06494f1022fdf0573d0b0c14e95d5d4e"
+    },
+    {
+      "path": "raw/audio-startup-repro/red.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\audio-startup-repro\\red.json",
+      "bytes": 242,
+      "sha256": "fd5835e8708e7c69ee2d14a2143332bc7570146a54ba2ae50f0a59bc7f5aa5de"
+    },
+    {
+      "path": "raw/audio-startup-repro/red.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\audio-startup-repro\\red.log",
+      "bytes": 1006,
+      "sha256": "cdf6ddb59a311baffb64a86c50d9a0653c35be9c17b05d749f470522816bebae"
+    },
+    {
+      "path": "raw/audio-startup-repro/results.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\audio-startup-repro\\results.json",
+      "bytes": 486,
+      "sha256": "7d8dccdde2d7ea66f2e94fbc3461f668f5cd63fd2586f3b0b7ccbed3273587c1"
+    },
+    {
+      "path": "raw/after-audio-fix/mingw/build.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\after-audio-fix\\mingw\\build.json",
+      "bytes": 360,
+      "sha256": "47e22f6f1618cff7697065df1755183f2bfaf1fa1a3de60044795de94836d1a1"
+    },
+    {
+      "path": "raw/after-audio-fix/mingw/build.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\after-audio-fix\\mingw\\build.log",
+      "bytes": 4346,
+      "sha256": "c4548d02828e84ba2ccfc12694e3bdc8167634117996efa47e528129f770df2e"
+    },
+    {
+      "path": "raw/after-audio-fix/mingw/ctest.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\after-audio-fix\\mingw\\ctest.json",
+      "bytes": 437,
+      "sha256": "db397e7914d47f1acc451a948cd9f7b154972187780e3fcd4068adf4655d31fb"
+    },
+    {
+      "path": "raw/after-audio-fix/mingw/ctest.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\after-audio-fix\\mingw\\ctest.log",
+      "bytes": 302335,
+      "sha256": "a13e763dddd827c9f7c8165f42191cf88ab3cc799c692ce438cea26b53da3c5f"
+    },
+    {
+      "path": "raw/after-audio-fix/mingw/regression.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\after-audio-fix\\mingw\\regression.json",
+      "bytes": 431,
+      "sha256": "20b08de9d989990d61c394c76cecb9b1a9e5d8a23031d4cd2c6acea1cbbee653"
+    },
+    {
+      "path": "raw/after-audio-fix/mingw/regression.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\after-audio-fix\\mingw\\regression.log",
+      "bytes": 260,
+      "sha256": "129055ae953c33ba731a42c155672a20cd3422aa7393573f277e96a4856ed139"
+    },
+    {
+      "path": "raw/after-audio-fix/msvc/build.cmd",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\after-audio-fix\\msvc\\build.cmd",
+      "bytes": 278,
+      "sha256": "a37bcc1fb88a536e184189dd8de783cf1a88ef71760832f0c2ea3d862ba6ae26"
+    },
+    {
+      "path": "raw/after-audio-fix/msvc/build.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\after-audio-fix\\msvc\\build.json",
+      "bytes": 322,
+      "sha256": "90e83352881b5b71ddd484fbdbf2f00f997c63da4eb51b93c4fe4235095f5256"
+    },
+    {
+      "path": "raw/after-audio-fix/msvc/build.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\after-audio-fix\\msvc\\build.log",
+      "bytes": 6591,
+      "sha256": "e6986c8a573e7a4072a96e6f2f8a9b95200dc983adc55005227a3037c290ff67"
+    },
+    {
+      "path": "raw/after-audio-fix/msvc/ctest.cmd",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\after-audio-fix\\msvc\\ctest.cmd",
+      "bytes": 310,
+      "sha256": "b089cd85fcaaf93d46b4ac8349daaba517b602b1c99ea116cf24d5f67671408e"
+    },
+    {
+      "path": "raw/after-audio-fix/msvc/ctest.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\after-audio-fix\\msvc\\ctest.json",
+      "bytes": 399,
+      "sha256": "4776cf8d36811b7c22371d6212109e7e5e3629766cfc1a41bb16dc31600d03b9"
+    },
+    {
+      "path": "raw/after-audio-fix/msvc/ctest.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\after-audio-fix\\msvc\\ctest.log",
+      "bytes": 338020,
+      "sha256": "35318d447fb46bc5b2d3eeb28f973fe5da939a575f61df7114cf0f31ea8f031b"
+    },
+    {
+      "path": "raw/after-audio-fix/msvc/format.cmd",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\after-audio-fix\\msvc\\format.cmd",
+      "bytes": 294,
+      "sha256": "a0c69ad05e589ef69d244d18eb69fd12df45c4332d03a59e439a32992259a073"
+    },
+    {
+      "path": "raw/after-audio-fix/msvc/format.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\after-audio-fix\\msvc\\format.json",
+      "bytes": 338,
+      "sha256": "86657e93dfad052c67c50029ac7f466dd15ec70444eec7dd2ae77b43d0e949f2"
+    },
+    {
+      "path": "raw/after-audio-fix/msvc/format.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\after-audio-fix\\msvc\\format.log",
+      "bytes": 430,
+      "sha256": "05429c5be3a4de4c2981e7c594ca1e1260bdd76d8fe5cbae14946939cc4fae7f"
+    },
+    {
+      "path": "raw/layout-published/compile.cmd",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\layout-published\\compile.cmd",
+      "bytes": 2185,
+      "sha256": "ca59b94418e1508926640f1e81bc2fea1facd512f7bbe735f114f23b74f72abc"
+    },
+    {
+      "path": "raw/layout-published/compile.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\layout-published\\compile.log",
+      "bytes": 19,
+      "sha256": "e17b8d6b783b5dce56c7b0c0ffdbd4bb68d418d43305748b9d0c41f590d8282a"
+    },
+    {
+      "path": "raw/layout-published/raw.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\layout-published\\raw.json",
+      "bytes": 951,
+      "sha256": "3a78feb06f2f0d7318ce66de0fd63004a9d7f031fcf7f713672b4051a1d8b32b"
+    },
+    {
+      "path": "raw/layout-published/result.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\layout-published\\result.json",
+      "bytes": 40494,
+      "sha256": "862f300daf06f4629db623f713eefee24ea632d112a09859d001f920a3e73874"
+    },
+    {
+      "path": "raw/final-checks/b0-canonical-check.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\final-checks\\b0-canonical-check.json",
+      "bytes": 467,
+      "sha256": "bf7f2a01163a6883f1d994441655d29b164f7d1bfa38e72ceef85abeedd0b59a"
+    },
+    {
+      "path": "raw/final-checks/docs.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\final-checks\\docs.log",
+      "bytes": 92,
+      "sha256": "7badc31ddaa31bfe19bf54cab4e94c0e583cb52bd1612cf84179f197fe363e5a"
+    },
+    {
+      "path": "raw/final-checks/format.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\final-checks\\format.log",
+      "bytes": 4415,
+      "sha256": "959a43c6eb84883c03227bc53a26ef6dd9ec6d88c3faa1e2df0655bdaf34c46a"
+    },
+    {
+      "path": "raw/final-checks/frozen-b0.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\final-checks\\frozen-b0.log",
+      "bytes": 46,
+      "sha256": "1a37c5aed7f1adfe0ceccd34f3251b61eb392e859449b331e403b5fdd3c548ef"
+    },
+    {
+      "path": "raw/final-checks/python-tests.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\final-checks\\python-tests.log",
+      "bytes": 1823,
+      "sha256": "db7629ab155d69915f6c28eec789b899327a1284c8d3b165ab6991e4538e0d1d"
+    },
+    {
+      "path": "raw/final-checks/results.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\final-checks\\results.json",
+      "bytes": 1613,
+      "sha256": "d692677fe0f4df46051434f34f8a956bc145e62e6ee9bb1c7f15eaa71b29a4c3"
+    },
+    {
+      "path": "raw/final-checks/version.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\final-checks\\version.log",
+      "bytes": 42,
+      "sha256": "a8984136312bd4f1c60436230760bbde099797a68a55196173e2a169c432d416"
+    },
+    {
+      "path": "raw/final-checks/whitespace.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\final-checks\\whitespace.log",
+      "bytes": 115,
+      "sha256": "6f0ea81975d298e5c1cc37adb3ba10d9597d182b108081250006298fd59d4809"
+    },
+    {
+      "path": "raw/initial-mingw/manifest.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\platform-preflight\\20261105-123139-c8af190f\\manifest.json",
+      "bytes": 3567508,
+      "sha256": "693e332eca6e160ac61f697bbd89d8ba842385b2f94b203c65ced1b6141332e7"
+    },
+    {
+      "path": "raw/initial-mingw/mingw-on-debug-build.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\platform-preflight\\20261105-123139-c8af190f\\mingw-on-debug-build.log",
+      "bytes": 51203,
+      "sha256": "18799926b35d33e71cfef60ec4a78bc245dbf0d65b5d09dc35dfcfbf8ba62525"
+    },
+    {
+      "path": "raw/initial-mingw/mingw-on-debug-CMakeCache.txt",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\platform-preflight\\20261105-123139-c8af190f\\mingw-on-debug-CMakeCache.txt",
+      "bytes": 29421,
+      "sha256": "963e30c50390eea89e868ba27e6fc872997c7a68ae2b73408bc3983177300c88"
+    },
+    {
+      "path": "raw/initial-mingw/mingw-on-debug-configure.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\platform-preflight\\20261105-123139-c8af190f\\mingw-on-debug-configure.log",
+      "bytes": 17529,
+      "sha256": "da8496269915357cf325bcafd8369fd06009c36ef66d0514222fe92f576a2d52"
+    },
+    {
+      "path": "raw/initial-mingw/mingw-on-debug-ctest.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\platform-preflight\\20261105-123139-c8af190f\\mingw-on-debug-ctest.log",
+      "bytes": 303465,
+      "sha256": "992af66e85dba1cfc383fac8245c9bb9f9ba1a12ba8b1201688d268c2fd21b09"
+    },
+    {
+      "path": "raw/initial-mingw/mingw-on-debug-LastTest.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\platform-preflight\\20261105-123139-c8af190f\\mingw-on-debug-LastTest.log",
+      "bytes": 1693073,
+      "sha256": "ae4099a1cdec1ad5504199dcbae9e2c52b8e71daf07ff8767d921a8856c46230"
+    },
+    {
+      "path": "raw/initial-mingw/mingw-on-debug-LastTestsFailed.log",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\platform-preflight\\20261105-123139-c8af190f\\mingw-on-debug-LastTestsFailed.log",
+      "bytes": 71,
+      "sha256": "cb0f8e805e097cb4e5a770b9d635ca2969fc3db8633c6f003b14d74137f79883"
+    },
+    {
+      "path": "raw/preparation-tools/__init__.py",
+      "source": "D:\\Cuexis-worktree\\tools\\verification\\execution_acceptance\\__init__.py",
+      "bytes": 87,
+      "sha256": "71309cc567b78d29fe4c27e2341ecfb99bf2a33c188d903d4482ab4d80d92e5e"
+    },
+    {
+      "path": "raw/preparation-tools/audit_layout.py",
+      "source": "D:\\Cuexis-worktree\\tools\\verification\\execution_acceptance\\audit_layout.py",
+      "bytes": 3530,
+      "sha256": "4de0d32ca53a6a42ebcd7a5f92d0d865e85f8a68a71ce8fc3ac37e42f50a0b54"
+    },
+    {
+      "path": "raw/preparation-tools/budget-proposal.v1.json",
+      "source": "D:\\Cuexis-worktree\\tools\\verification\\execution_acceptance\\budget-proposal.v1.json",
+      "bytes": 36205,
+      "sha256": "563cd5260db1389dfd1e703209deb44c80b28cc603a7d247b22ccf5197976133"
+    },
+    {
+      "path": "raw/preparation-tools/budgets.py",
+      "source": "D:\\Cuexis-worktree\\tools\\verification\\execution_acceptance\\budgets.py",
+      "bytes": 11915,
+      "sha256": "c5561f21c23b1cbb28b12fe687091535210cf25d61f79873f208a8b7c6ac4d19"
+    },
+    {
+      "path": "raw/preparation-tools/element-sizes-msvc-release.v1.json",
+      "source": "D:\\Cuexis-worktree\\tools\\verification\\execution_acceptance\\element-sizes-msvc-release.v1.json",
+      "bytes": 40494,
+      "sha256": "862f300daf06f4629db623f713eefee24ea632d112a09859d001f920a3e73874"
+    },
+    {
+      "path": "raw/preparation-tools/element_sizes.cpp",
+      "source": "D:\\Cuexis-worktree\\tools\\verification\\execution_acceptance\\element_sizes.cpp",
+      "bytes": 3156,
+      "sha256": "3a48fa41b403560b4b0ccf7ed2ebecd35f8f7c77bb5ee9d6a9cfc1508f4ffa06"
+    },
+    {
+      "path": "raw/preparation-tools/registration.py",
+      "source": "D:\\Cuexis-worktree\\tools\\verification\\execution_acceptance\\registration.py",
+      "bytes": 3374,
+      "sha256": "cfeda6857fdb0a224911eb16da4ad3d0a901d9a21bd6b3c4b17c83e4c72402ec"
+    },
+    {
+      "path": "raw/preparation-tools/test_budgets.py",
+      "source": "D:\\Cuexis-worktree\\tools\\verification\\execution_acceptance\\test_budgets.py",
+      "bytes": 1811,
+      "sha256": "2dff20bd09cf15df0bafd6256f01a4328bb50e3209f5fdf7fe0de04470774eb5"
+    },
+    {
+      "path": "raw/preparation-tools/test_build_isolation.py",
+      "source": "D:\\Cuexis-worktree\\tools\\verification\\execution_acceptance\\test_build_isolation.py",
+      "bytes": 1934,
+      "sha256": "6ef8c96904b56917ca9b87be8895eb329f0af4f62f14b68c26e8b32a34ca46c2"
+    },
+    {
+      "path": "raw/preparation-tools/test_registration.py",
+      "source": "D:\\Cuexis-worktree\\tools\\verification\\execution_acceptance\\test_registration.py",
+      "bytes": 3348,
+      "sha256": "47de3370ae5654005c8530f8be63a9698427d569a9024d221d39452bec08cded"
+    },
+    {
+      "path": "raw/frozen-b0/tools/verification/playback_performance/memory_caps.py",
+      "source": "D:\\Cuexis-worktree\\tools\\verification\\playback_performance\\memory_caps.py",
+      "bytes": 29521,
+      "sha256": "b8648a58e0d9da3ce7b91a7c0e2374b83605ddd00f5a8aaeef4b9fd54a7182d7"
+    },
+    {
+      "path": "raw/frozen-b0/tools/verification/playback_performance/memory_caps.v1.json",
+      "source": "D:\\Cuexis-worktree\\tools\\verification\\playback_performance\\memory_caps.v1.json",
+      "bytes": 288435,
+      "sha256": "197285d6d3cc5d5894cf6826715ad862a7b6df7412d5a0cdf4ebe5f4a4e6d90d"
+    },
+    {
+      "path": "raw/frozen-b0/tools/verification/playback_performance/profiles.json",
+      "source": "D:\\Cuexis-worktree\\tools\\verification\\playback_performance\\profiles.json",
+      "bytes": 9659,
+      "sha256": "1d432e023c575f32d1abbcf563190c193987015927d78d7aa8d5c745d049f39e"
+    },
+    {
+      "path": "raw/frozen-b0/tools/verification/playback_performance/element_sizes.v1.json",
+      "source": "D:\\Cuexis-worktree\\tools\\verification\\playback_performance\\element_sizes.v1.json",
+      "bytes": 4983,
+      "sha256": "6788ec77dfb790f85c2fcdae87b6c5942dbed2022d8222d92c6d3a3e81341216"
+    },
+    {
+      "path": "raw/product-and-runner.patch",
+      "source": "git diff initial HEAD -- app tests/rpa tools/verification/run_rpa_acceptance_matrix.py",
+      "bytes": 13436,
+      "sha256": "e71e58c276c6f0342e81420c6f8101b0dd747ff9fb2e4afdb96ca5d3408bd011"
+    },
+    {
+      "path": "raw/final-checks/delivery-audit.json",
+      "source": "D:\\Cuexis-worktree\\out\\evidence\\r4\\pre-o1\\delivery-audit.json",
+      "bytes": 1558,
+      "sha256": "b43974518b1cbcf2c54c49f1316df1931da95e916c7d6f2b9d9c3c3e95f09c41"
+    }
+  ],
+  "summary_sha256": "ead4686aabab14fe86328e85a62484ba9b88df037a693d4d904c88ca3eec072e"
+}

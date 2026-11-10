@@ -1,0 +1,27 @@
+from pathlib import Path
+import json, shutil
+
+root = Path.cwd()
+base = Path(__file__).resolve().parent
+old = base / 'gl-state-build-v3'
+out = base / 'gl-instancing-build-v1'
+script = (base / 'build_gl_state_v3_generated.py').read_text()
+script = script[:script.index('adapter_objects=[]')]
+script = script.replace("out=base/'gl-state-build-v3'", "out=base/'gl-instancing-build-v1'")
+exec(compile(script, str(base / 'build_gl_state_v3_generated.py'), 'exec'))
+candidate = compile('open_gl_presentation.cpp', base / 'gl-instancing-source-v1/open_gl_presentation.cpp', 'gl-instancing')
+old_commands = json.loads((old / 'commands.json').read_text())
+for variant in ('baseline', 'candidate'):
+    args = next(c['args'] for c in old_commands if c['label'] == 'link-baseline')
+    args = [('/OUT:' + str(out / ('gpu-' + variant + '.exe'))) if a.startswith('/OUT:') else
+            str(base / 'gl-startup-build-v1/gpu-probe.obj') if a == str(old / 'gpu-probe.obj') else
+            candidate if variant == 'candidate' and a == str(old / 'cuexis_render_opengl-open_gl_presentation.obj') else a for a in args]
+    run(args, 'link-' + variant)
+for dll in old.glob('*.dll'): shutil.copyfile(dll, out / dll.name)
+(out / 'binding.json').write_text(json.dumps(dict(
+    scope='Original product GL versus CPP-only adjacent opaque instancing. Identical new responsive startup probe. Common paged-sequence libraries reused immutably in both; no R3c/batch/memory observer.',
+    old_binding_sha256=sha(old / 'binding.json'),
+    candidate_source_sha256=sha(base / 'gl-instancing-source-v1/open_gl_presentation.cpp'),
+    startup_binding_sha256=sha(base / 'gl-startup-build-v1/binding.json'),
+    commands_sha256=sha(out / 'commands.json'),
+    binaries={p.name: sha(p) for p in out.glob('*.exe')}), indent=2), encoding='utf-8')

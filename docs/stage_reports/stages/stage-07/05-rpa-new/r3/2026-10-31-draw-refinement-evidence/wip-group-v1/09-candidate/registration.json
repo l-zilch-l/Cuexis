@@ -1,0 +1,32 @@
+{
+  "scope": "Neutral draw worktree refinement non-inferiority screen; exact Release DLLs, no formal acceptance",
+  "created_utc": "2026-10-31T13:09:19.502148+00:00",
+  "head": "0a575c4496f476111bd320f4d021e73ebda59771",
+  "plan": [
+    {
+      "entities": 40000,
+      "mode": "render-only",
+      "repeat": 0,
+      "variant": "candidate",
+      "frames": 60
+    }
+  ],
+  "binary_sha256": "80b6c1886b7ee91191fa8d70b24f3e78d12eb3fbebc4209e8024662b99d0af77",
+  "source_sha256": "e98f1dac026e51cfebdfb331c657bdb9a6e77e6896a493f6c57a8040fdcd07f0",
+  "runner_sha256": "424e1b619f786fcb0ea10f73dd3af0679e7adb63acd60b2c48f04d3c076e6904",
+  "native_sha256": "44f9c49e8ec353a6386a7b481f178859abcf1c46b11688db70bb411ed21f15ce",
+  "viewport": [
+    1920,
+    1080
+  ],
+  "affinity": 65535,
+  "priority": "BelowNormal",
+  "qos": "execution throttling OFF",
+  "timer": false,
+  "normal_allocator": true,
+  "metrics": "OFF",
+  "warmup": "at least 8 frames and 2000ms",
+  "budget_us": 4166.666666666667,
+  "pass_rule": "wall FPS>=240 and cycle p99<=4.166667ms; duration runs additionally every full 1-second bin >=240 completed frames",
+  "stop": "invalid process stops; budget failures are retained capacity points, never replaced or extended"
+}

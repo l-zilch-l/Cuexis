@@ -1,0 +1,12 @@
+{
+  "corpus_equal": true,
+  "lines": 26,
+  "candidate_suite_pass": true,
+  "baseline_expected_failure": "Only empty duplicate key regression is expected; inspect original test log.",
+  "logs": {
+    "baseline-all.log": "2c7551398189672523e2d137411e5923c304b974661187970a0921f32258e556",
+    "baseline-corpus.log": "288c2c962df58d449cbed04f3da97b18b8877a2360a14c2aab82ee0f03254084",
+    "candidate-all.log": "5fce76952dac2fd686f6157c7f41d960c909b8109c1b056345edafd1cd326eb5",
+    "candidate-corpus.log": "288c2c962df58d449cbed04f3da97b18b8877a2360a14c2aab82ee0f03254084"
+  }
+}

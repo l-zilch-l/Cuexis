@@ -1,0 +1,95 @@
+{
+  "scope": "Single diagnostic process; includes warmup/proof and inserted output overhead. Last 8 observations approximate tail frames, not matched ordinary samples.",
+  "all_process": {
+    "neutral_construct": {
+      "n": 52,
+      "median_us": 7642.15,
+      "min_us": 7333.9,
+      "max_us": 9558.9
+    },
+    "neutral_sort": {
+      "n": 52,
+      "median_us": 5792.45,
+      "min_us": 5010.9,
+      "max_us": 7714.6
+    },
+    "neutral_copy": {
+      "n": 52,
+      "median_us": 4145.85,
+      "min_us": 3810.9,
+      "max_us": 5674.2
+    },
+    "neutral_digest": {
+      "n": 52,
+      "median_us": 11769.7,
+      "min_us": 11449.1,
+      "max_us": 13171.8
+    },
+    "neutral_builder": {
+      "n": 52,
+      "median_us": 31859.6,
+      "min_us": 30016.3,
+      "max_us": 42262.6
+    },
+    "gpu_resolution": {
+      "n": 52,
+      "median_us": 4673.75,
+      "min_us": 4384.2,
+      "max_us": 7707.9
+    },
+    "frame_setup": {
+      "n": 52,
+      "median_us": 98.4,
+      "min_us": 84.6,
+      "max_us": 147659.1
+    },
+    "gl_draws": {
+      "n": 52,
+      "median_us": 1844.45,
+      "min_us": 1648.7,
+      "max_us": 2611.9
+    }
+  },
+  "last_eight": {
+    "neutral_construct": {
+      "median_us": 7633.3,
+      "min_us": 7446.0,
+      "max_us": 9558.9
+    },
+    "neutral_sort": {
+      "median_us": 5475.85,
+      "min_us": 5089.9,
+      "max_us": 6090.0
+    },
+    "neutral_copy": {
+      "median_us": 4061.05,
+      "min_us": 3853.2,
+      "max_us": 4324.7
+    },
+    "neutral_digest": {
+      "median_us": 11608.85,
+      "min_us": 11449.1,
+      "max_us": 12159.6
+    },
+    "neutral_builder": {
+      "median_us": 31169.65,
+      "min_us": 30203.0,
+      "max_us": 34104.9
+    },
+    "gpu_resolution": {
+      "median_us": 4622.85,
+      "min_us": 4409.0,
+      "max_us": 5278.2
+    },
+    "frame_setup": {
+      "median_us": 91.8,
+      "min_us": 88.1,
+      "max_us": 120.7
+    },
+    "gl_draws": {
+      "median_us": 1838.9,
+      "min_us": 1657.0,
+      "max_us": 2372.8
+    }
+  }
+}

@@ -783,3 +783,5 @@ TEST_CASE("S5-H warmed parameterized update and extract do not allocate or refet
     REQUIRE(snapshot.objects.size() == 2);
     CHECK(snapshot.objects[0].materialAssetId == "material.sprite");
 }
+
+#include "../pd/post_install_extraction_tests.hpp"

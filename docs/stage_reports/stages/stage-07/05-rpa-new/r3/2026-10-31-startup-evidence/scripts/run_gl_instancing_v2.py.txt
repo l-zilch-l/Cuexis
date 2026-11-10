@@ -1,0 +1,53 @@
+from pathlib import Path
+import sys
+
+root = Path.cwd()
+base = Path(__file__).resolve().parent
+sys.path.insert(0, str(root / 'out/verification-20261029/r3-completion'))
+from native import *
+
+# Reuse the exact overlapping-color characterization before any finite timing group.
+script = (base / 'run_gl_state_v3.py').read_text()
+script = script[:script.index('# Start the already specified finite plan')]
+script = script.replace('gl-state-build-v3', 'gl-instancing-build-v2')
+script = script.replace('gl-state-function-v1', 'gl-instancing-function-v2')
+script = script.replace('state-cache candidate', 'opaque-adjacent instancing candidate')
+exec(compile(script, str(base / 'run_gl_state_v3.py'), 'exec'))
+
+build = base / 'gl-instancing-build-v2'
+out = base / 'gl-instancing-screen-v2'
+out.mkdir(exist_ok=False)
+plan = [dict(entities=n, mode='render-only', repeat=pair, variant=v, frames=60)
+        for n in (1000, 40000) for pair in range(2)
+        for v in (('baseline', 'candidate') if pair == 0 else ('candidate', 'baseline'))]
+write(out / 'plan.json', dict(
+    scope='CPP-only adjacent opaque instancing screen, no state-cache combination. Same immutable common paged-active libraries. Responsive startup in both. Finite local diagnostic, no formal/stage or 240FPS acceptance.',
+    plan=plan, binaries={v: sha(build / ('gpu-' + v + '.exe')) for v in ('baseline', 'candidate')},
+    gate='40K submit improves at least 30%, 1K cycle regression <=5%; report original 15% process repeatability. No replacement or extension.',
+    timer=False, pixel_readback=False, normal_allocator=True))
+original = (root / 'out/verification-20261029/r3-completion/gpu_runner.py').read_text()
+original = original.replace('P3 validated resolver index final physical GPU diagnostic; no formal acceptance',
+    'Opaque adjacent instancing screen; identical paged-sequence library and responsive startup in both; no formal acceptance')
+original = original.replace('env.update(CUEXIS_GPU_BARRIER=', "env['CUEXIS_GPU_PIXEL_READBACK']='0'\n  env.update(CUEXIS_GPU_BARRIER=")
+namespace = dict(__name__='instancing_runner', __file__=str(root / 'out/verification-20261029/r3-completion/gpu_runner.py'))
+exec(compile(original, namespace['__file__'], 'exec'), namespace)
+namespace['base'] = out
+rows = []
+for ordinal, item in enumerate(plan):
+    namespace['exe'] = build / ('gpu-' + item['variant'] + '.exe')
+    rows += namespace['run_group'](f'{ordinal:02}-{item["variant"]}', [item])
+    write(out / 'results.json', rows)
+summary = []
+for n in (1000, 40000):
+    values = {v: {metric: dict(samples_us=(points := [r['statistics'][metric]['mean_us'] for r in rows if r['entities'] == n and r['variant'] == v]),
+        median_us=statistics.median(points), relative_range_percent=(max(points)-min(points))/statistics.median(points)*100)
+        for metric in ('submit_us', 'cycle_us')}
+        for v in ('baseline', 'candidate')}
+    summary.append(dict(n=n, values=values,
+        submit_change_percent=(values['candidate']['submit_us']['median_us']/values['baseline']['submit_us']['median_us']-1)*100,
+        cycle_change_percent=(values['candidate']['cycle_us']['median_us']/values['baseline']['cycle_us']['median_us']-1)*100))
+numeric = summary[1]['submit_change_percent'] <= -30 and summary[0]['cycle_change_percent'] <= 5
+repeatability = all(s['values'][v]['cycle_us']['relative_range_percent'] <= 15 for s in summary for v in ('baseline', 'candidate'))
+write(out / 'decision.json', dict(local_numeric_gate=numeric, repeatability_screen=repeatability,
+    selected=False, summary=summary, scope='Render-only exploration only; no static/animated or full frame acceptance.'))
+print(json.dumps(dict(numeric=numeric, repeatability=repeatability, summary=summary)), flush=True)

@@ -1,0 +1,56 @@
+Filters: "GPU visible entity throughput probe"
+Randomness seeded to: 2532708606
+GPU_STARTUP_ORIGIN 0
+GPU_STARTUP_BEGIN fixture_source
+GPU_STARTUP_END fixture_source 3682.5
+GPU_STARTUP_AT fixture_source 3750.5999999999999
+GPU_STARTUP_BEGIN playback_prepare
+GPU_STARTUP_END playback_prepare 78894.100000000006
+GPU_STARTUP_AT playback_prepare 82659.399999999994
+GPU_STARTUP_BEGIN sdl_runtime
+GPU_STARTUP_END sdl_runtime 57794.300000000003
+GPU_STARTUP_AT sdl_runtime 140479.20000000001
+GPU_STARTUP_BEGIN gl_context
+GPU_STARTUP_END gl_context 16.199999999999999
+GPU_STARTUP_AT gl_context 140529.70000000001
+GPU_STARTUP_BEGIN window_create
+GPU_STARTUP_HEARTBEAT window_create 110119.79999999999 250656.79999999999
+GPU_STARTUP_END window_create 225566.89999999999
+GPU_STARTUP_AT window_create 366104.20000000001
+GPU_STARTUP_WINDOW {"at_us":366629.40000000002,"window_id":2,"hidden":false,"opengl":true,"width":1280,"height":720}
+GPU_STARTUP_BEGIN backend_create
+GPU_STARTUP_END backend_create 10832.5
+GPU_STARTUP_AT backend_create 377484.40000000002
+GPU_STARTUP_BEGIN pixel_readback
+GPU_STARTUP_END pixel_readback 4.9000000000000004
+GPU_STARTUP_AT pixel_readback 377522.09999999998
+GPU_STARTUP_BEGIN renderer_prepare
+GPU_STARTUP_END renderer_prepare 348.10000000000002
+GPU_STARTUP_AT renderer_prepare 377896.5
+GPU_STARTUP_BEGIN session_commit
+GPU_STARTUP_END session_commit 9.9000000000000004
+GPU_STARTUP_AT session_commit 377915.29999999999
+GPU_STARTUP_BEGIN backend_activate
+GPU_STARTUP_END backend_activate 2.5
+GPU_STARTUP_AT backend_activate 377924.40000000002
+GPU_STARTUP_BEGIN first_update
+GPU_STARTUP_END first_update 332.60000000000002
+GPU_STARTUP_AT first_update 378305.29999999999
+GPU_STARTUP_BEGIN first_extract
+GPU_STARTUP_END first_extract 568.70000000000005
+GPU_STARTUP_AT first_extract 378884.79999999999
+GPU_STARTUP_BEGIN first_submit
+GPU_STARTUP_END first_submit 3315.0999999999999
+GPU_STARTUP_AT first_submit 382248.09999999998
+GPU_STARTUP_BEGIN first_present
+GPU_STARTUP_END first_present 75.299999999999997
+GPU_STARTUP_AT first_present 382452.90000000002
+GPU_STARTUP_SHOWN 382465.09999999998
+GPU_STARTUP_TOTAL {"first_present_us":382469.79999999999}
+GPU_THROUGHPUT_ID {"mode":"static","entities":1800,"draws_per_frame":1800,"in_view_centers":1800,"fixture_revision":3,"moved_entities":0,"frames":3,"duration_seconds":0,"warmup_frames":2,"pixel_readback":true,"outside_timing_pixel_proof_frames":2,"warmup_ms":0,"timer":false,"vsync":0,"width":1280,"height":720,"vendor":"NVIDIA Corporation","renderer":"NVIDIA GeForce RTX 4060 Laptop GPU/PCIe/SSE2","gl_version":"3.3.0 NVIDIA 616.64","measured_wall_us":7516.3000000000002,"pixel_rgba":[255,204,51,255],"audio":false,"formal":false}
+GPU_THROUGHPUT_SAMPLE {"ordinal":0,"update_us":196,"extract_us":255.30000000000001,"submit_us":2033.5,"present_us":46.899999999999999,"total_us":2531.6999999999998,"cycle_us":2535.9000000000001,"end_us":2535.9000000000001}
+GPU_THROUGHPUT_SAMPLE {"ordinal":1,"update_us":142.19999999999999,"extract_us":163.69999999999999,"submit_us":2227.5,"present_us":47.899999999999999,"total_us":2581.3000000000002,"cycle_us":2584.3000000000002,"end_us":5120.1999999999998}
+GPU_THROUGHPUT_SAMPLE {"ordinal":2,"update_us":151.19999999999999,"extract_us":168.90000000000001,"submit_us":2036.5999999999999,"present_us":36.100000000000001,"total_us":2392.8000000000002,"cycle_us":2396.0999999999999,"end_us":7516.3000000000002}
+===============================================================================
+All tests passed (21 assertions in 1 test case)
+

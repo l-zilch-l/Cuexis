@@ -1,0 +1,616 @@
+# Building Cuexis
+
+状态：阶段 3 最终验收后的现行构建、安装与质量门禁规范
+
+更新日期：2026-09-28
+
+## 当前仓库说明
+
+当前仓库提供阶段 0 工程基础、阶段 1A-1E Playback Core 闭环、阶段 2 的 Chart/Behavior/迁移
+能力，以及阶段 3A-3G 的 Portable Presentation v1、Validation Sink、OpenGL Player adapter、外部
+package consumer 与性能 probe。阶段 3 本地和 hosted 跨平台矩阵已经关闭；以下命令是受支持的
+标准入口，旧的 IDE 私有构建目录和手工编译产物不能作为验收依据。
+
+默认 `debug` 预设的正式 active target 如下。顶层 CMake 在 configure 时从
+`CUEXIS_ACTIVE_TARGETS` 生成 `generated/cuexis-targets.txt`；本标记块由文档检查器与该产物逐项
+比较，不能单独手工维护。
+
+<!-- CUEXIS_ACTIVE_TARGETS_BEGIN -->
+```text
+cuexis_core
+cuexis_audio
+cuexis_filesystem
+cuexis_content
+cuexis_json_support
+cuexis_project
+cuexis_world
+cuexis_assets
+cuexis_chart
+cuexis_animation
+cuexis_cxc
+cuexis_behavior
+cuexis_gameplay
+cuexis_render
+cuexis_debug
+cuexis_runtime
+cuexis_playback
+cuexis_presentation_renderer
+cuexis_player_support
+cuexis_platform_sdl
+cuexis_audio_sdl
+cuexis_render_opengl
+cuexis_shader_cache
+cuexis_player
+cuexis_chart_migrator
+cuexis_chart_validator
+cuexis_cxc_pack
+cuexis_cxc_tool_common
+cuexis_cxc_unpack
+cuexis_cxc_validate
+cuexis_core_tests
+cuexis_audio_tests
+cuexis_filesystem_tests
+cuexis_content_tests
+cuexis_json_support_tests
+cuexis_project_tests
+cuexis_assets_tests
+cuexis_chart_tests
+cuexis_animation_tests
+cuexis_cxc_tests
+cuexis_behavior_tests
+cuexis_gameplay_tests
+cuexis_debug_tests
+cuexis_render_tests
+cuexis_presentation_renderer_tests
+cuexis_player_support_tests
+cuexis_runtime_tests
+cuexis_world_tests
+cuexis_playback_tests
+cuexis_playback_allocation_tests
+cuexis_presentation_validation_tests
+cuexis_cfu_f_headless_consumer
+cuexis_cfu_f4_performance_probe
+cuexis_chart_capacity_probe
+cuexis_s4g_performance_probe
+cuexis_s5h_performance_probe
+cuexis_platform_sdl_tests
+cuexis_audio_sdl_tests
+cuexis_render_opengl_tests
+cuexis_player_diagnostics_tests
+cuexis_player_control_tests
+cuexis_format_check
+cuexis_player_dist
+```
+<!-- CUEXIS_ACTIVE_TARGETS_END -->
+
+## C++ toolchain and Catch2 ABI
+
+All C++ dependencies, including Catch2, must be built by the same toolchain as Cuexis. The
+standard `debug` and `release` presets use the MSVC-compatible `x64-windows` vcpkg triplet and
+must be configured from a Visual Studio Developer PowerShell with `cl.exe` available:
+
+```powershell
+cmake --preset debug --fresh
+cmake --build --preset debug
+ctest --preset debug --no-tests=error
+```
+
+For the repository MinGW environment, use the matching preset and triplet instead. A fresh
+build directory is required when changing compiler or triplet:
+
+```powershell
+$env:HTTP_PROXY = "http://127.0.0.1:7890"
+$env:HTTPS_PROXY = "http://127.0.0.1:7890"
+cmake --preset mingw-debug --fresh
+cmake --build --preset mingw-debug
+ctest --preset mingw-debug --no-tests=error
+```
+
+For a complete headless test run (without SDL/OpenGL/Player targets), use:
+
+```powershell
+$env:HTTP_PROXY = "http://127.0.0.1:7890"
+$env:HTTPS_PROXY = "http://127.0.0.1:7890"
+cmake --preset mingw-headless-debug --fresh
+cmake --build --preset mingw-headless-debug
+ctest --preset mingw-headless-debug --no-tests=error
+```
+
+Configure rejects GNU/MinGW with `x64-windows` and MSVC with a `*-mingw-*` triplet. This
+prevents late linker failures caused by mixing MinGW objects with MSVC-built Catch2 libraries,
+including `__CxxFrameHandler4`, MSVC STL symbols, and unresolved Catch2 C++ ABI symbols.
+
+启用 `CUEXIS_BUILD_SHADER_TOOLS` 后还会增加依赖 shader 编译器的 `cuexis_shader`、
+`cuexis_shader_tests` 和 `cuexis_asset_importer`。`app/studio/` 目录已存在但尚未接入 CMake。
+对应模块测试、架构扫描和 Player 失败路径由顶层 CMake 统一注册。
+
+ADR 0027 已将长期交付方向调整为 Playback SDK + 独立 Player + 独立 Studio。当前
+`cuexis_playback` 已通过正式 Runtime 路径驱动 Behavior，并提供 Prepared load/reload、
+主音乐内容视图和后端无关 RuntimeTimeline。当前 C++20 static/shared package 导出
+Playback、Content、Audio，可选导出 AudioSDL；七个 `add_subdirectory`/`find_package(Cuexis)`
+外部 consumer 模式包含两个只消费 `Cuexis::Playback` 的 Stage 3 宿主，并验证基础包不会引入
+SDL/OpenGL。ADR 0033 的 matching-toolchain C++ shared preview
+构建、部署和 consumer 门禁已实现；稳定 C ABI、Studio 与宿主专用 adapter 仍属于后续阶段。
+
+## Windows/MSVC 前置条件
+
+```text
+Windows 10/11 x64
+Visual Studio 2022，Desktop development with C++
+MSVC 工具集和 Windows SDK
+CMake >= 3.25
+Ninja
+clang-format
+Git
+vcpkg
+```
+
+设置 `VCPKG_ROOT` 指向 vcpkg 根目录。不得在 Preset 中提交个人绝对路径。
+
+使用 Visual Studio Developer PowerShell/Command Prompt，或确保 `cl.exe`、Ninja 和 CMake 已处于 PATH。
+
+## 配置、构建和测试
+
+```powershell
+cmake --preset debug --fresh
+cmake --build --preset debug
+ctest --preset debug --no-tests=error
+```
+
+Release：
+
+```powershell
+cmake --preset release --fresh
+cmake --build --preset release --clean-first
+ctest --preset release --no-tests=error
+```
+
+无 SDL/OpenGL/Player 的 Playback 构建：
+
+```powershell
+cmake --preset headless-debug --fresh
+cmake --build --preset headless-debug
+ctest --preset headless-debug --no-tests=error
+
+cmake --preset headless-release --fresh
+cmake --build --preset headless-release --clean-first
+ctest --preset headless-release --no-tests=error
+```
+
+Release 与 `headless-release` 预设强制 `CUEXIS_WARNINGS_AS_ERRORS=ON`。基础 Debug 预设保留
+`OFF`，便于日常开发先观察新工具链诊断。GCC 构建另有两处记录在案的例外，均在
+`cmake/CuexisWarnings.cmake`：规范字节键比较不使用 `std::vector<std::byte>` 的三向比较
+（GCC 会给出伪 `-Wstringop-overread`），测试与探针目标对 `-Wmaybe-uninitialized` 只降级
+不静默（libstdc++ `std::string` 拷贝路径的伪阳性），其余诊断仍按 `-Werror` 处理。
+
+`headless-*` 预设同时设置 `CUEXIS_BUILD_DEVELOPER_TOOLS=OFF`，因此不添加 `tools/` 子目录
+（含 `cuexis::cxc_tool_common`）。依赖该工具层的 CXC candidate 扩展与往返用例在这些配置中
+不注册，configure 会输出
+`cuexis_cxc_tests: developer tool layer absent; candidate CXC cases excluded`。需要这些用例
+时使用非 headless 预设，或显式设置 `CUEXIS_BUILD_DEVELOPER_TOOLS=ON`。
+
+构建目录固定在 `out/build/<preset>`，安装或打包目录不得与源码混合。
+
+## vcpkg
+
+项目使用 manifest mode 和固定 baseline。新增依赖同时更新：
+
+```text
+vcpkg.json
+vcpkg-configuration.json（仅在升级 baseline 时）
+docs/guides/DEPENDENCY_POLICY.md 规定的依赖记录
+THIRD_PARTY_NOTICES.md
+```
+
+不得把 `D:/vcpkg` 等机器路径提交到项目配置。
+
+当前 Windows/MSVC 验收固定 `x64-windows` triplet。无头基础依赖为 EnTT、GLM、
+nlohmann-json、json-schema-validator 和 tl-expected；`audio-sdl` feature 增加 SDL3，`player`
+feature 增加 SDL3、glad 与 spdlog，`tests` feature 增加 Catch2。可选 feature `shader-tools`
+增加 shaderc、SPIRV-Tools 与 SPIRV-Cross，仅在 `CUEXIS_BUILD_SHADER_TOOLS=ON` 时由内部
+`cuexis_shader` 使用；默认 Debug 与 headless 预设不得下载这些 port。准确版本和许可证记录见根目录
+`vcpkg.json` 与 `THIRD_PARTY_NOTICES.md`。
+
+可选 Shader 编译器（S5-B 接线，默认关闭）：
+
+```powershell
+cmake --preset debug-shader-tools --fresh
+cmake --build --preset debug-shader-tools
+ctest --preset debug-shader-tools --no-tests=error
+```
+
+`debug-shader-tools` 在默认 Debug feature 之上追加 `shader-tools`，并打开
+`CUEXIS_BUILD_SHADER_TOOLS`。它构建内部静态库 `cuexis_shader`、`cuexis_shader_tests` 和
+developer-tools 下的 `cuexis_asset_importer`，不把编译器链入 `cuexis_playback`。
+
+Linux sanitizer 覆盖 shader-tools 时使用 `headless-sanitize-shader-tools`（`tests;shader-tools`
+feature，`CUEXIS_BUILD_SHADER_TOOLS=ON`）。默认 `headless-sanitize` 仍不下载 shader 编译器。
+S5-H 最大合法 shader/material 趋势探针默认跳过；设置 `CUEXIS_RUN_PERFORMANCE_PROBE=1` 才记录
+内存趋势，不设跨机器硬阈值。
+
+可选媒体导入工具（S6-E1/E2 接线，默认关闭）：
+
+```powershell
+cmake --preset debug-media-tools --fresh
+cmake --build --preset debug-media-tools
+ctest --preset debug-media-tools --no-tests=error
+```
+
+`debug-media-tools` 在默认 Debug feature 之上追加 `media-tools`（libpng、libjpeg-turbo、
+minimp3、libvorbis、libogg、libFLAC），并打开 `CUEXIS_BUILD_MEDIA_TOOLS`。它构建内部静态库
+`cuexis_media_import`、其 `cuexis_media_import_tests`、以及 `tools/media_importer` 下的
+`cuexis_media_importer` CLI。媒体工具与 shader-tools 相互独立，两者都不进入 `cuexis_playback`
+或 Player 的链接闭包；Playback/Player 不会在运行时启动该 CLI。Linux sanitizer 覆盖媒体工具时
+使用 `headless-sanitize-media-tools`，覆盖率使用 `media-tools-coverage`。
+
+这三个 preset 都通过 `VCPKG_OVERLAY_PORTS` 指向仓库内的 `vcpkg-overlays/`，其中
+`vcpkg-overlays/libvorbis` 在注册表 port 之上叠加 `0005-unify-m-pi-precision.patch`，把
+libvorbis 的回落 `M_PI` 固定为全精度 double，使四个平台解码同一份依赖源码。overlay 内容参与
+vcpkg ABI 哈希，改动它会触发依赖重建；不需要手工修改 `VCPKG_ROOT` 下的全局 vcpkg 树。
+
+## 生成文件
+
+版本头生成到 `${binaryDir}/generated/cuexis/version.hpp`，不写回源码树。Shader、资源缓存和测试发现文件也属于构建产物。
+
+## 最低验证
+
+提交工程结构改动前必须完成 Debug configure/build/test 和格式检查：
+
+```powershell
+cmake --build --preset debug --target cuexis_format_check
+```
+
+阶段完成、版本生成信息变更或正式验收必须在 fresh configure 后执行 clean build，避免旧对象文件保留过期的生成头内容：
+
+```powershell
+cmake --preset debug --fresh
+cmake --build --preset debug --clean-first
+ctest --preset debug --no-tests=error
+
+cmake --preset release --fresh
+cmake --build --preset release --clean-first
+ctest --preset release --no-tests=error
+```
+
+### Pre-push 检查
+
+`tools/check_pre_push.ps1` 将格式、文档、版本和跨工具链检查统一为一个入口。日常修改可先运行
+快速检查；推送前运行完整检查：
+
+```powershell
+pwsh -NoProfile -File tools/check_pre_push.ps1 -Mode Quick
+pwsh -NoProfile -File tools/check_pre_push.ps1 -Mode Full
+```
+
+#### Pull Request 前版本门禁
+
+每次提交或更新 Pull Request 前都必须递增仓库显示版本号；该规则同样适用于代码、测试、构建配置和
+文档变更，不得按变更类型跳过。使用 UTC 日期执行版本更新：日期变化时将 build 设为 `1`，同一 UTC
+日期再次提交时递增 build，并把版本源文件的改动包含在同一个 Pull Request 中：
+
+```powershell
+python -B tools/update_version.py yy.mm.dd-v
+python -B tools/update_version.py --check
+python -B tools/check_version_gate_tests.py
+python -B tools/check_version_gate.py --check-current
+```
+
+未完成版本递增、`cmake/CuexisVersion.cmake` 与 `vcpkg.json` 不一致，或版本改动未包含在 Pull Request
+中时，不得提交或合并该 Pull Request。该门禁只更新日期构建身份，不隐式升级 SDK API、内容格式或 ABI；
+完整规则见 [VERSIONING.md](VERSIONING.md)。这两个新增命令只验证本地 checker 合同和当前工作树；
+GitHub workflow 仍必须从 trusted baseline 运行，首次基线缺少 checker 时会明确失败，不会回退到候选
+checker。仓库保护规则未启用时，本地通过不能替代 required status check、最新基线和串行合并证据。
+
+`Quick` 执行版本一致性、文档契约、暂存区与工作区 whitespace 检查，并对 CMake 格式目标覆盖的
+全部 C++ 文件执行 `clang-format --dry-run --Werror`。`Full` 还会自动初始化 MSVC x64 环境，执行
+Windows Debug/Release 构建与完整 CTest，并通过 WSL 使用 GCC 13 执行 Linux static/shared Release
+构建与完整 CTest。只需复现 Linux lane 时可运行：
+
+```powershell
+pwsh -NoProfile -File tools/check_pre_push.ps1 -Mode Linux
+```
+
+脚本要求 Windows 与 WSL vcpkg 均固定在 CI 使用的 commit，并将构建隔离到
+`out/build/pre-push/`，避免 MSVC 与 Linux 缓存或 triplet 相互污染。默认从
+`VCPKG_ROOT` 读取 Windows vcpkg，并在 WSL 中依次查找 `~/vcpkg-cuexis`、
+`~/cuexis-vcpkg` 和 `/opt/vcpkg`；非默认位置可通过 `-WindowsVcpkgRoot` 或
+`-WslVcpkgRoot` 指定。`-DryRun` 可用于检查将要执行的命令。该脚本覆盖日常快速门禁、
+MSVC 和最容易暴露 GCC Release 警告差异的 Linux static/shared lane；Hosted MinGW、
+sanitizer、clang-tidy 与 coverage lane 仍由远端 CI 负责最终验证。
+
+Player 冒烟测试需要交互式桌面和支持 OpenGL 3.3 Core 的 GPU，因此与默认 CTest 分开执行。
+普通启动和 `--audio-smoke-test` 在未给出 `--project`/`--chart` 时加载阶段 1D 项目；当前
+`--smoke-test` 固定加载无音频的 `stage3_project`，执行六帧真实 presentation 脚本：Opaque、
+textured Transparent、全不可见 clear、失败 Playback reload、失败 adapter prepare 和成功原子
+reload。它同时断言规范化 draw summary 与中心像素结果：
+
+```powershell
+.\out\build\debug\bin\cuexis_player.exe --smoke-test
+```
+
+真实默认音频设备门禁执行 90 帧 load/play/pause/resume/seek/stop/reload 脚本，并可同时导出
+确定性帧轨迹、设备遥测和 metadata sidecar：
+
+```powershell
+.\out\build\debug\bin\cuexis_player.exe --audio-smoke-test `
+  --frame-stats .\out\artifacts\stage1d-debug
+```
+
+输出固定为 `<prefix>.frames.csv`、`<prefix>.audio.csv` 和 `<prefix>.meta.json`。人工门禁必须检查
+非静音连续播放、Pause 静音、Resume/Seek/Stop/Reload 行为，并确认 sidecar 中
+`droppedRows = 0`、`truncated = false`；物理设备听感与时钟精度不能由 dummy CTest 代替。
+
+canonical Stage 1A 示例仍可通过 `--chart` 作为无资源回归入口：
+
+```powershell
+.\out\build\debug\bin\cuexis_player.exe --smoke-test --chart .\out\build\debug\bin\assets\charts\stage1a_example.cuexis.chart.json
+```
+
+阶段 2A.1 已移除 `cuexis.chart.simple`；该格式稳定报告 `chart.format.unsupported`，构建产物不再复制 Simple fixture。
+
+Chart v3 示例、校验器和显式迁移器可直接运行。默认目标仍是 v3；`--target 4` 才输出静态空动画
+v4：
+
+```powershell
+.\out\build\debug\bin\cuexis_chart_validator.exe `
+  --input .\assets\charts\stage2_example.cuexis.chart.json
+
+.\out\build\debug\bin\cuexis_chart_migrator.exe `
+  --input .\tests\fixtures\stage2_migration_v1.cuexis.chart.json `
+  --output .\out\artifacts\stage2-migrated.cuexis.chart.json `
+  --report .\out\artifacts\stage2-migration-report.json
+
+.\out\build\debug\bin\cuexis_chart_migrator.exe `
+  --input .\tests\fixtures\chart_format_update\valid\chart_v3_static_migration.json `
+  --output .\out\artifacts\stage-cfu-d-migrated-v4.cuexis.chart.json `
+  --report .\out\artifacts\stage-cfu-d-migration-v4-report.json `
+  --target 4
+```
+
+迁移器要求输入、输出和报告路径互不冲突，失败不修改目标。无 `--target` 的旧调用继续拒绝
+v3 输入。`cuexis_chart_tool_tests` 会校验 v3 golden、v4 chart golden、报告字段、目标回滚和
+CLI 退出合同。Player 可使用 `--chart` 加载 Stage 2 示例进行 GPU smoke；算法、迁移和
+headless Playback 验收不依赖 GPU。Playback 已可 prepare/load 静态或参数化 v4；任意非空
+Clip/CXT/Binding/Layer/Instance 在 Stage 4 前仍以 capability 错误拒绝。
+
+默认阶段 1D 项目包含 Chart v2、Asset Index v2、索引内非静音 WAV 和 typed
+`audio.mainMusic` 引用。Player 在 Window/GL/Audio device 创建前完成 Project、Index、Chart、
+Source 和 WAV preflight，再按内容选择 ChartClock 或 CuexisAudio；已选模式失败时不会静默回退。
+构建时会先清理目标 demo project 目录再复制，避免遗留已删除资产。Release 或后端相关改动还应
+完成 Release build/test、Stage 3 六帧 GPU smoke、1D 物理音频 smoke，以及 canonical Chart 回归；
+算法单元测试不得依赖窗口、GPU、物理音频设备或墙钟。
+
+Stage 3 最大合法资源与热路径趋势 probe 不属于默认构建，必须显式执行：
+
+```powershell
+cmake --build --preset release --target stage3_performance_probe
+.\out\build\release\bin\stage3_performance_probe.exe
+```
+
+该 probe 生成 64 MiB 上限 Texture2D，并报告 prepare、manifest/acquisition、Validation candidate、
+warmed update/extract/validate 和 reload peak memory。数值用于同机趋势比较，不是跨机器验收阈值；
+确定性性能合同由资源硬预算和零分配测试承担。
+
+## 常见错误
+
+```text
+找不到 cl.exe：从 Visual Studio Developer 环境运行
+找不到 vcpkg toolchain：检查 VCPKG_ROOT
+依赖版本漂移：检查 baseline 和 overlay port
+Catch2 测试未发现：确认 CUEXIS_BUILD_TESTS、BUILD_TESTING 和 test preset
+OpenGL 启动失败：记录 SDL driver、GL version、vendor 和 renderer
+```
+
+## SDK 组件与安装
+
+当前选项：
+
+```text
+CUEXIS_BUILD_PLAYER
+CUEXIS_BUILD_SDL_ADAPTER
+CUEXIS_BUILD_AUDIO_SDL_ADAPTER
+CUEXIS_BUILD_OPENGL_ADAPTER
+CUEXIS_BUILD_TESTS
+CUEXIS_BUILD_DEVELOPER_TOOLS
+```
+
+作为顶层项目时默认构建 Player、adapter、测试和开发工具；作为 `add_subdirectory` 子项目时
+这些选项默认关闭。`CUEXIS_BUILD_AUDIO_SDL_ADAPTER` 与平台 SDL adapter 独立；只有 Player
+同时要求 SDL platform、SDL audio 和 OpenGL 三个 adapter。Cuexis C++20 preview 通过
+`CUEXIS_LIBRARY_TYPE=STATIC|SHARED` 选择 linkage，默认值为 `STATIC`。基础入口目标为
+`Cuexis::Playback`、`Cuexis::Content` 和 `Cuexis::Audio`：
+
+```powershell
+cmake --install out/build/headless-release --prefix out/install/headless-release
+```
+
+```cmake
+find_package(Cuexis 0.7 CONFIG REQUIRED COMPONENTS Playback Content Audio)
+target_link_libraries(my_host PRIVATE Cuexis::Playback Cuexis::Content Cuexis::Audio)
+```
+
+需要直接使用 `Result`、`Error` 或 `Diagnostics` 的 consumer 可以单独请求支持组件
+`Cuexis::Core`；Playback、Content 和 Audio 会传递依赖它。
+
+需要 SDL 音频 adapter 的包必须以启用 `CUEXIS_BUILD_AUDIO_SDL_ADAPTER=ON` 的配置构建和安装，
+并由 consumer 显式请求组件：
+
+```cmake
+find_package(Cuexis 0.7 CONFIG REQUIRED COMPONENTS Audio AudioSDL)
+target_link_libraries(my_host PRIVATE Cuexis::AudioSDL)
+```
+
+只有请求 `AudioSDL` 时 `CuexisConfig.cmake` 才查找 SDL3 并载入独立的
+`CuexisAudioSDLTargets.cmake`；基础 Playback/Content/Audio consumer 不查找 SDL3。
+
+Stage 3 不安装 `OpenGL` component。`cuexis_render_opengl` 仍是 Player 使用的仓库内可选 target；
+安装包显式请求 `COMPONENTS OpenGL` 会失败，基础 Playback package 不查找 OpenGL 或 GLAD。
+
+`0.7` 是当前 Playback preview 的 SDK API 兼容 minor，不是日期构建版本。安装后的
+`Cuexis_VERSION`/`Cuexis_API_VERSION` 返回完整 API 版本，`Cuexis_VERSION_DISPLAY` 返回
+`yy.mm.dd-v[-suffix]` 构建身份。版本更新必须通过
+`python -B tools/update_version.py yy.mm.dd-v` 同步 CMake 与 `vcpkg.json`；
+`python -B tools/update_version.py --check` 只执行一致性检查。
+
+安装树包含 `CuexisTargets.cmake`、`CuexisConfig.cmake`、同 minor 版本兼容文件、生成的
+`cuexis/version.hpp`、`LICENSE`、`NOTICE`、第三方 notices 和实际无头依赖版权文本。CTest 中的
+七个 `cuexis_external_consumer_*` 模式验证 add_subdirectory/find_package 的基础包、Playback-only、
+Core 和 AudioSDL 组件。Playback-only consumer 从自己的 staging fixture 完成
+load/prepare/resource validation/update/extract，只链接 `Cuexis::Playback`。基础 find_package 门禁
+显式禁用 SDL3 查找，并验证不发现 OpenGL/GLAD、`0.6`/`0.8` 请求被拒绝、未支持的 `OpenGL`
+component 被拒绝；安装包门禁同时扫描全部已安装公共头是否为纯 ASCII，并精确校验基础许可证
+清单及 AudioSDL 安装额外增加的 SDL3 copyright：
+
+```powershell
+ctest --preset headless-debug -R "^cuexis_external_consumer_" --output-on-failure
+```
+
+### 具名参考宿主（Reference Host）
+
+SDK 安装树之外还有一个独立示例宿主工程 `examples/reference_host/`。它只通过
+`find_package(Cuexis 0.7.0 CONFIG REQUIRED COMPONENTS Playback)` 消费安装后的公共头与导出
+target，自带主循环、`IContentProvider` 实现、宿主时钟和帧消费，不包含仓库内私有头，也不链接
+Player 配置实现（`cuexis_player_support`）。它的运行记录覆盖启动、加载、提交、逐帧更新与摘要、
+Seek、成功重载、被拒绝的宿主提供者故障重载、发布包加载与销毁：
+
+```powershell
+cmake -S examples/reference_host -B out/build/reference-host `
+  -DCuexis_DIR=out/install/headless-release/lib/cmake/Cuexis
+cmake --build out/build/reference-host
+```
+
+宿主声明 `CUEXIS_HOST_API_VERSION`（默认 `0.7.0`）作为它编写时对齐的 SDK API 基线，并在 SDK
+minor 不兼容时于 configure 阶段失败。门禁 `cuexis_reference_host_staging` 会把当前构建安装到
+staging 前缀、把示例工程复制到源树之外、在该副本上配置和构建，并在**清理过的 PATH** 下运行：
+
+```powershell
+ctest --preset debug -R cuexis_reference_host_staging --output-on-failure
+```
+
+门禁同时校验示例源码只包含 `cuexis/playback/` 公共头、不引用仓库内 target、包身份与参考帧摘要
+匹配 CFU-F golden，以及（shared 包）记录的 toolchain 与 consumer 不一致时被拒绝。
+
+2026-09-28 的 R7 批次（见 [W5 报告](../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-w5-host-and-distribution-gates.md)）
+把此前只靠人工核对的四项接入同一门禁，全部在 `cuexis_reference_host_staging` 内执行：
+
+1. **宿主导入表**：检查构建出的宿主可执行文件，要求每个 Cuexis 归属的导入都属于允许集
+   （Playback 及其公共运行库）；内部模块显式列名。shared 下还要求**确实**导入 `cuexis_playback`，
+   以免"什么都没链接"的宿主平凡满足禁止清单。该检查在 static 下同样运行（static 只导入系统/CRT 库）。
+2. **SDK minor 拒绝**：以 `-DCUEXIS_HOST_API_VERSION=0.8.0` 配置宿主并要求其失败。断言的是
+   安装包 `SameMinorVersion` 版本文件产生的真实文本——宿主自己的 `0.7.x` 守卫对该输入**不可达**。
+3. **candidate 隔离**：扫描 staging 前缀的 `*.hpp`/`*.cmake`/`*.txt`，要求零命中 candidate
+   开关与候选格式标识。匹配五个**具体 token** 而非子串 `candidate`，因为已接受的 S5-C 展示面
+   （`PresentationCandidateToken`、`CandidateMetadataAccess`）合法包含该子串。
+4. **`ENV{PATH}` 恢复边界**：净化 PATH 只覆盖需要它的那一次 `execute_process`，随即恢复，
+   使后续任何 `FATAL_ERROR` 都不会把调用方进程留在坏 PATH 上。
+
+该门禁在 static 与 shared 两种 flavor 下各跑一次（本机 `debug` 与
+`debug -DCUEXIS_LIBRARY_TYPE=SHARED` 均通过）；符号工具由父构建发现并传入，
+缺失时打印明确提示而不是静默通过。
+
+**shared 专属**：toolchain 不一致拒绝用例只在 SHARED 运行，因为 static 安装包的
+`CuexisConfig.cmake` 本身不含兼容性检查块。static 下另一条 `STATUS` 会说明这一点，
+而不是假装通过；static 的拒绝面由第 2 项（与 flavor 无关）承担。
+
+**已记录的机制**（2026-09-28 起，见
+[Stage 6 复核修正计划](../stage_plans/reviews/stage-06-review-remediation/plan.md) 的 R1/SPEC-29）：
+`cmake/VerifyReferenceHost.cmake` 有两处**计划外但有意**的机制，此前只在批次报告里说明，
+现纳入本节的正式记录，以免被当成意外行为：
+
+1. **插桩选项转发**：门禁把**父构建**的 sanitizer/coverage 插桩选项转发给源树之外复制出来的
+   宿主工程。Cuexis 以目录级选项施加插桩，而外部工程链接已插桩的静态库时必须镜像同一套选项，
+   否则 `__asan_*`/`__gcov_*` 会未定义。这些选项**不是安装导出的一部分**：
+   将来新增插桩类型时需要同步维护这一转发约定。
+2. **MinGW 运行库复制**：门禁会把 MinGW 编译器的运行时 DLL 复制进宿主构建目录，使清理过的
+   `PATH` 下仍能启动宿主。这些 DLL 由打包工具链提供，**不是 Cuexis 包文件**，也不进许可证清单。
+   运行宿主的门禁（`cuexis_reference_host_staging`、`cuexis_player_distribution`）因此不宣称
+   "运行目录完全由安装文件构成"，实测通过的是"安装包加公共边界足以运行"。
+
+### 可运行 Player 分发目录
+
+Player **不进入 SDK 安装树**。分发物由独立打包目标生成，一个目录即一个 flavor：
+
+```powershell
+cmake --build --preset release --target cuexis_player_dist
+```
+
+产物位于 `out/build/<preset>/dist/cuexis-player-<display-version>-<system>-<linkage>-<build-type>/`，
+包含 Player 可执行文件、它实际链接的运行时库（static 构建通常只有 vcpkg 构建的动态第三方库；
+MinGW 构建额外包含 libgcc/libstdc++/libwinpthread）、默认资源位置 `assets/`（charts、projects、
+schemas）、`VERSION.txt` 元数据、`README.txt`、许可证文本与 `licenses/` 下的全部第三方版权文本。
+分发目录不含 `.lib`/`.pdb`/`.ilk`/`CMakeCache.txt` 等构建产物，也不含 SDK 安装树。
+
+`VERSION.txt` 记录 `library_type`、`build_type`、`system_name`、`system_processor`、compiler 和
+display/SDK 版本；static/shared 或 Debug/Release 不得合并到同一目录。门禁
+`cuexis_player_distribution` 打包、校验内容与 flavor 记录，把目录复制到别处后在清理过的 PATH
+下启动 Player，并要求参数与内容失败返回稳定诊断码（`player.arguments.unknown`、
+`player.chart.open_failed`），从而证明运行时库部署完整：
+
+```powershell
+ctest --preset debug -R cuexis_player_distribution --output-on-failure
+```
+
+`--smoke-test` 仍然需要窗口与 GPU，因此不属于无头门禁。
+
+### Shared preview
+
+阶段 1E 的唯一 Cuexis linkage 选择为：
+
+```text
+CUEXIS_LIBRARY_TYPE=STATIC|SHARED
+```
+
+不得把 `BUILD_SHARED_LIBS` 当作 Cuexis 支持入口。当前 static/shared preview SDK API 均为
+`0.7.0`。一个 build tree 与 install prefix 只能包含一种 Cuexis linkage，consumer 继续链接
+相同的 `Cuexis::` target 名，不得硬编码 DLL/shared object 文件名。可直接使用
+`shared-debug`、`shared-release`、`headless-shared-debug` 和 `headless-shared-release` presets。
+
+shared preview 要求 consumer 使用匹配的 Cuexis SDK minor、编译器工具链、C++ 标准库、架构、运行时
+和 Debug/Release 配置；升级 Cuexis 后必须重新编译 consumer。`SameMinorVersion` 是 package/source
+请求规则，绝不构成可替换二进制的 ABI 承诺。shared package 的基础 Playback/Content/Audio consumer
+不应安装或查找 EnTT、GLM、JSON/schema validator、SDL3、glad 或 spdlog 开发包；只有显式
+`AudioSDL` component 才能查找 SDL3。CTest 会检查完整部署、Stage 3 manifest/acquisition/preflight
+导出符号、通用与 Playback-only consumer import table、private target/header 泄漏、配置与 MSVC
+runtime 不匹配，以及 clean staging 运行。具体规则见
+[ADR 0033](../adr/0033-cpp-shared-library-preview-boundary.md)。
+
+阶段 1E 首批正式 shared 平台矩阵是 Windows x64/MSVC 与 Linux x64/GCC 或 Clang。Windows
+Release/Debug 分别固定动态 CRT `/MD` 与 `/MDd`，不支持与 `/MT` consumer 混用。MinGW、macOS、
+其他架构和跨编译器消费在取得同等级 build/install/deploy/runtime 证据前仅为实验组合。
+
+## 跨平台质量入口
+
+Linux/Clang 或 GCC 环境可使用：
+
+```bash
+cmake --preset headless-sanitize --fresh -DCMAKE_CXX_COMPILER=clang++ \
+  -DVCPKG_TARGET_TRIPLET=x64-linux
+cmake --build --preset headless-sanitize --clean-first
+ctest --preset headless-sanitize --no-tests=error
+
+cmake --preset headless-sanitize-shader-tools --fresh -DCMAKE_CXX_COMPILER=clang++ \
+  -DVCPKG_TARGET_TRIPLET=x64-linux
+cmake --build --preset headless-sanitize-shader-tools --clean-first
+ctest --preset headless-sanitize-shader-tools --no-tests=error
+
+cmake --preset headless-clang-tidy --fresh -DCMAKE_CXX_COMPILER=clang++ \
+  -DVCPKG_TARGET_TRIPLET=x64-linux
+cmake --build --preset headless-clang-tidy --target cuexis_playback
+
+cmake --preset headless-coverage --fresh -DCMAKE_CXX_COMPILER=g++ \
+  -DVCPKG_TARGET_TRIPLET=x64-linux
+cmake --build --preset headless-coverage --clean-first
+ctest --preset headless-coverage --no-tests=error -E "^cuexis_external_consumer_"
+```
+
+`.github/workflows/` 持续验证 Windows/MSVC、Windows/MinGW、Linux/GCC Release、
+Linux/GCC shared Release、Linux/Clang shared Debug、Linux/Clang ASan+UBSan、
+Linux/Clang ASan+UBSan with optional `shader-tools`、clang-tidy 和
+不低于 40% 的 engine 行覆盖率。100k Transform 稀疏
+更新与 FrameSnapshot 缓冲复用是确定性结构门禁；墙钟时间只作为趋势证据，不作为跨机器
+硬阈值。
+
+WSL 或本地 Linux 可以提前发现跨编译器问题，但不能替代 hosted `ubuntu-latest` 发布证据。阶段
+完成报告只能引用包含当前实现 commit 的 workflow run URL；旧分支、旧 commit 或只有文档变更的
+run 不得关闭当前阶段门禁。
+

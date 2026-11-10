@@ -1,0 +1,13 @@
+{
+  "scope": "Diagnostic stage timers only, no ordinary timing/functional optimization claims. Private CPP overlays match existing fresh library definitions.",
+  "files": {
+    "engine/playback/src/playback_session.cpp": {
+      "original_sha256": "c39a818d596a4c561b0b134b38d025a16340fef848be77409925dcd5bfceaec1",
+      "observed_sha256": "0fd7fe8e523c20a3e0328057334888814c24b8509277bd007bd144c321ee2188"
+    },
+    "engine/runtime/src/runtime_session.cpp": {
+      "original_sha256": "1cd12f5bcc401cf28f96d730a1ee770d1277d883919d11aa40f0de9425c64ac0",
+      "observed_sha256": "56db2ee34e52a27183e3f9fdb1d68afc2432b0ba0a3f1451b34aae9962bad92f"
+    }
+  }
+}

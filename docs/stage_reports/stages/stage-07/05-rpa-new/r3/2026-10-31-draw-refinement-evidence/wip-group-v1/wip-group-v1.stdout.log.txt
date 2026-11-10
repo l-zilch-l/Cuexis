@@ -1,0 +1,17 @@
+{"group": "00-baseline", "index": 0, "mode": "render-only", "entities": 1000, "valid": true, "fps": 809.97566023141, "p99_ms": 1.6673, "passed": true, "min_second_fps": null}
+{"group": "01-candidate", "index": 0, "mode": "render-only", "entities": 1000, "valid": true, "fps": 808.8858810317608, "p99_ms": 1.9461, "passed": true, "min_second_fps": null}
+{"group": "02-candidate", "index": 0, "mode": "render-only", "entities": 1000, "valid": true, "fps": 797.654894609847, "p99_ms": 1.8151, "passed": true, "min_second_fps": null}
+{"group": "03-baseline", "index": 0, "mode": "render-only", "entities": 1000, "valid": true, "fps": 801.6289099450082, "p99_ms": 1.6347, "passed": true, "min_second_fps": null}
+{"group": "04-baseline", "index": 0, "mode": "static", "entities": 1000, "valid": true, "fps": 660.3158951242274, "p99_ms": 2.0082, "passed": true, "min_second_fps": null}
+{"group": "05-candidate", "index": 0, "mode": "static", "entities": 1000, "valid": true, "fps": 691.2243310964546, "p99_ms": 2.1219, "passed": true, "min_second_fps": null}
+{"group": "06-candidate", "index": 0, "mode": "static", "entities": 1000, "valid": true, "fps": 671.6473045674255, "p99_ms": 2.045, "passed": true, "min_second_fps": null}
+{"group": "07-baseline", "index": 0, "mode": "static", "entities": 1000, "valid": true, "fps": 650.7175788100328, "p99_ms": 1.9821, "passed": true, "min_second_fps": null}
+{"group": "08-baseline", "index": 0, "mode": "render-only", "entities": 40000, "valid": true, "fps": 19.129493278852536, "p99_ms": 55.9957, "passed": false, "min_second_fps": null}
+{"group": "09-candidate", "index": 0, "mode": "render-only", "entities": 40000, "valid": true, "fps": 22.642750085778285, "p99_ms": 46.6999, "passed": false, "min_second_fps": null}
+{"group": "10-candidate", "index": 0, "mode": "render-only", "entities": 40000, "valid": true, "fps": 22.638683442836648, "p99_ms": 46.6454, "passed": false, "min_second_fps": null}
+{"group": "11-baseline", "index": 0, "mode": "render-only", "entities": 40000, "valid": true, "fps": 20.481194048151355, "p99_ms": 52.8605, "passed": false, "min_second_fps": null}
+{"group": "12-baseline", "index": 0, "mode": "static", "entities": 40000, "valid": true, "fps": 15.936540271663826, "p99_ms": 67.4305, "passed": false, "min_second_fps": null}
+{"group": "13-candidate", "index": 0, "mode": "static", "entities": 40000, "valid": true, "fps": 17.293791425115636, "p99_ms": 61.4267, "passed": false, "min_second_fps": null}
+{"group": "14-candidate", "index": 0, "mode": "static", "entities": 40000, "valid": true, "fps": 17.339393721162782, "p99_ms": 62.2011, "passed": false, "min_second_fps": null}
+{"group": "15-baseline", "index": 0, "mode": "static", "entities": 40000, "valid": true, "fps": 16.39860504719546, "p99_ms": 65.0883, "passed": false, "min_second_fps": null}
+{"non_inferior": true, "repeatability": true, "cycles": {"1000-render-only": 0.32, "1000-static": -3.79, "40000-render-only": -12.63, "40000-static": -6.65}, "submits": {"1000-render-only": 0.43, "1000-static": -3.97, "40000-render-only": -12.68, "40000-static": -8.91}}

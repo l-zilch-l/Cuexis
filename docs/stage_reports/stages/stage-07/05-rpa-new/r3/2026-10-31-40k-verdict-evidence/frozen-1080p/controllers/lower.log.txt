@@ -1,0 +1,6 @@
+{"group": "sustain-lower", "index": 0, "mode": "render-only", "entities": 1800, "valid": true, "fps": 341.27396591551013, "p99_ms": 4.0939, "passed": true, "min_second_fps": 328}
+{"group": "sustain-lower", "index": 1, "mode": "static", "entities": 1400, "valid": true, "fps": 322.4931067098441, "p99_ms": 4.1718, "passed": false, "min_second_fps": 315}
+{"group": "sustain-lower", "index": 2, "mode": "render-only", "entities": 1800, "valid": true, "fps": 348.91511895555806, "p99_ms": 4.0023, "passed": true, "min_second_fps": 319}
+{"group": "sustain-lower", "index": 3, "mode": "static", "entities": 1400, "valid": true, "fps": 316.2956667493655, "p99_ms": 4.32, "passed": false, "min_second_fps": 298}
+{"group": "sustain-lower", "index": 4, "mode": "render-only", "entities": 1800, "valid": true, "fps": 353.0556456192408, "p99_ms": 3.6804, "passed": true, "min_second_fps": 350}
+{"group": "sustain-lower", "index": 5, "mode": "static", "entities": 1400, "valid": true, "fps": 354.2679281244669, "p99_ms": 3.8994, "passed": true, "min_second_fps": 328}

@@ -1,0 +1,1 @@
+run_gl_instancing_v2 failed before creating any functional or performance group: wildcard import native replaced base with 20261029/r3-completion. FileNotFoundError on run_gl_state_v3.py. No GPU process launched. v3 re-establishes task base after native import.

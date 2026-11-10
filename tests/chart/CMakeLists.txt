@@ -2,6 +2,7 @@ add_executable(cuexis_chart_tests
     animation_template_loader_tests.cpp
     canonical_chart_loader_tests.cpp
     candidate_lowering_tests.cpp
+    candidate_assembler_tests.cpp
     canonical_semantic_chart_tests.cpp
     cxt_v2_loader_tests.cpp
     chart_foundation_capacity_tests.cpp
@@ -11,7 +12,9 @@ add_executable(cuexis_chart_tests
     chart_migrator_tests.cpp
     chart_runtime_tests.cpp
     chart_v4_loader_tests.cpp
-    chart_v4_c2_contract_tests.cpp
+    chart_v4_c2_animation_tests.cpp
+    chart_v4_c2_closure_tests.cpp
+    chart_v4_c2_fixture.hpp
     chart_v4_resolver_tests.cpp
     chart_writer_tests.cpp
     example_chart_tests.cpp
@@ -24,33 +27,50 @@ add_executable(cuexis_chart_tests
     packed_fixture_support.cpp
     packed_fixture_support.hpp
     packed_profile_rejection_tests.cpp
+    packed_gameplay_static_tests.cpp
     packed_roundtrip_tests.cpp
     packed_semantic_identity_tests.cpp
     prepared_semantic_identity_tests.cpp
     rational_beat_tests.cpp
     timing_map_tests.cpp
     behavior_track_tests.cpp
+    behavior_candidate_tests.cpp
     uuid_tests.cpp
 )
 
 target_compile_definitions(cuexis_chart_tests
     PRIVATE
         CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+        CUEXIS_BINARY_DIR="${CMAKE_BINARY_DIR}"
 )
 
 target_include_directories(cuexis_chart_tests
     PRIVATE
         ${PROJECT_SOURCE_DIR}/engine/json_support/src
+        ${PROJECT_SOURCE_DIR}/engine/chart/src
 )
 
 target_link_libraries(cuexis_chart_tests
     PRIVATE
         cuexis::chart
+        cuexis::json_support
         Catch2::Catch2WithMain
 )
 
 include(Catch)
 catch_discover_tests(cuexis_chart_tests)
+
+if(TARGET cuexis_chart_candidate)
+    add_test(NAME cuexis_candidate_cli
+        COMMAND "${CMAKE_COMMAND}"
+            "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+            "-DCUEXIS_BINARY_DIR=${CMAKE_BINARY_DIR}"
+            "-DCUEXIS_CHART_TESTS=$<TARGET_FILE:cuexis_chart_tests>"
+            "-DCUEXIS_CANDIDATE_TOOL=$<TARGET_FILE:cuexis_chart_candidate>"
+            "-DCUEXIS_EXPERIMENTAL=${CUEXIS_ENABLE_CHART_V5_CANDIDATE}"
+            -P "${PROJECT_SOURCE_DIR}/cmake/VerifyCandidateCli.cmake")
+    set_tests_properties(cuexis_candidate_cli PROPERTIES LABELS "chart;candidate;tools")
+endif()
 
 # R4 capacity probe: machine-readable Packed capacity data behind CUEXIS_RUN_PERFORMANCE_PROBE.
 add_executable(cuexis_chart_capacity_probe

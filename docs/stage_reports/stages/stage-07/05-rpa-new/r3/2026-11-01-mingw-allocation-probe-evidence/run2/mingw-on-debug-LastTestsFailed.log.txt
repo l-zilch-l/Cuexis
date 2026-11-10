@@ -1,0 +1,51 @@
+900:Hash core deep Patterns use charged pages instead of recursion
+901:Capsule4 scratch charges simultaneous capacities before allocation
+902:Revision4 omits only physical projections and retains complete Gameplay2
+903:Capsule named and unused definitions survive canonical dictionary reuse
+904:Revision3 optional amount and independent competition survive all projections
+905:Hash scratch meters both capacities during vector migration
+906:Compiled Graph SAX rejects header shape counts and identity without fallback
+907:Hash core accounts large static prefix sorting and identity storage
+908:Capsule4 work arithmetic saturates without wrapping and follows rejection order
+909:Capsule exact timebase domain actions and ordered grades round trip
+910:Capsule execution context and accepted budgets cannot be bypassed
+911:Capsule hostile framing fails before atomic publication
+912:Capsule unused definitions cannot bypass the declared closure
+913:Revision4 entry hash workspace cleans up every upstream allocation failure
+914:Hash allocation observer has independent positive controls
+915:Hash core streams long Claim projections at the exact key ceiling
+916:Capsule source provenance does not change frozen semantic identity
+917:Capsule file and memory bridge replace only validated artifacts
+918:Revision3 hostile bytes and file publication preserve the previous artifact
+919:Capsule ownership index preserves coverage rejection and canonical owner order
+920:Hash core preimage reaches exact accepted bytes without an expanded vector
+921:Bounded Gameplay2 static sink preserves complete legacy prefix bytes
+922:Hash core returns a budget error at the fixed workspace floor
+923:Hash workspace unwinds every injected allocation failure without misreporting a budget
+924:POD PMR workspace preserves allocation guarantees and move ownership
+925:Revision4 Writer Reader and bounded export enforce all four hash limits
+926:Capsule requirement selects its exact Pattern from a canonical dictionary
+927:Revision4 long derived Claim keys are refused before SHA at both codec entries
+928:Compiled Graph Writer shares Capsule records with explicit candidate bounds
+929:POD PMR workspace migration honors the exact scratch overlap boundary
+930:Revision4 all physical budgets precede the bounded semantic operation
+931:Revision4 verified metadata identity gates reconstruction and shared prepare
+932:Revision4 rejects unused forbidden physical roles and mixed layouts before SHA
+933:Hash core dense short references retain every logical Ix on memo hits
+934:Capsule Reader accepts section permutation and bounded inspection
+935:Capsule revision 3 preserves executable fields and mutually rejects older readers
+936:Revision4 file and active publication remain intact on rejection
+937:Capsule Tap and resource intent remain explicit
+938:Compiled Graph Writer preserves float sign and string escaping outside Gameplay integers
+939:Capsule complete typed chart round trip uses shared prepare
+940:Capsule ordering-equivalent Patterns retain the original validation error
+941:Hash core four dimensions use exact literal and clamped limits
+942:Capsule empty requirement graph preserves independent definitions
+943:Hash core counts shared Pattern definitions once before amplification refusal
+944:Hash core matches complete legacy oracle for validated mixed and empty graphs
+945:Entry relation index adaptation is charged by the same hash operation
+946:Capsule canonical byte and structural preimage goldens
+947:Bounded semantic operation matches legacy bytes with one reusable digest
+948:Capsule4 accepted work profile clamps requests and treats zero literally
+949:Capsule instance claims share a namespace but not a structural key
+950:Compiled Graph typed SAX roundtrip and table permutations preserve full Capsule

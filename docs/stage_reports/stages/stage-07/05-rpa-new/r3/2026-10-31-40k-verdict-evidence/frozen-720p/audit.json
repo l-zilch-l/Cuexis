@@ -1,0 +1,18 @@
+{
+  "valid_processes": 12,
+  "measured_frames": 1440,
+  "over_budget_frames": 1440,
+  "all_log_hashes_and_statistics_verified": true,
+  "final_source_and_binary_match": true,
+  "invalid_groups_excluded": [
+    "pilot-v1",
+    "measure-v1"
+  ],
+  "physical_pixel_proof": [
+    255,
+    204,
+    51,
+    255
+  ],
+  "formal_acceptance": false
+}

@@ -5,8 +5,11 @@
 
 #include <cuexis/chart/packed_chart_tables.hpp>
 
+#include "packed_gameplay_internal.hpp"
 #include "packed_identity_internal.hpp"
 #include "sha256_internal.hpp"
+
+#include <cuexis_internal/pmr_buffer.hpp>
 
 #include <algorithm>
 #include <array>
@@ -15,6 +18,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <map>
+#include <optional>
 #include <set>
 #include <span>
 #include <string>
@@ -36,21 +40,31 @@ auto fail(std::string code, std::string message) -> core::Error {
 
 // Fixed-width little-endian preimage buffer. Spec 10.1 deliberately uses no varint encoding.
 struct Preimage final {
-    std::vector<std::byte> bytes;
+    std::optional<std::vector<std::byte>> bytes;
+    gameplay_detail::SemanticByteSink* sink{};
 };
 
 void append(Preimage& out, std::span<const std::byte> data) {
-    out.bytes.insert(out.bytes.end(), data.begin(), data.end());
+    if (out.sink)
+        out.sink->write(out.sink->context, data);
+    else {
+        if (!out.bytes)
+            out.bytes.emplace();
+        out.bytes->insert(out.bytes->end(), data.begin(), data.end());
+    }
 }
 
 void writeU8(Preimage& out, std::uint8_t value) {
-    out.bytes.push_back(static_cast<std::byte>(value));
+    const auto byte = static_cast<std::byte>(value);
+    append(out, std::span{&byte, 1});
 }
 
 void writeUnsigned(Preimage& out, std::uint64_t value, std::size_t width) {
+    std::array<std::byte, 8> bytes{};
     for (std::size_t index = 0; index < width; ++index) {
-        out.bytes.push_back(static_cast<std::byte>((value >> (index * 8U)) & 0xffU));
+        bytes[index] = static_cast<std::byte>((value >> (index * 8U)) & 0xffU);
     }
+    append(out, std::span{bytes}.first(width));
 }
 
 void writeU16(Preimage& out, std::uint16_t value) {
@@ -83,17 +97,6 @@ auto writeBeat(Preimage& out, const RationalBeat& beat) -> core::Result<void> {
     }
     writeU64(out, static_cast<std::uint64_t>(beat.numerator()));
     writeU64(out, static_cast<std::uint64_t>(beat.denominator()));
-    return {};
-}
-
-// I(identity): u32 byte length + canonical identity bytes from Spec 6.5.
-auto writeIdentity(Preimage& out, const CanonicalEntityIdentity& identity) -> core::Result<void> {
-    auto bytes = canonicalIdentityBytes(identity);
-    if (!bytes) {
-        return core::unexpected(std::move(bytes.error()));
-    }
-    writeU32(out, static_cast<std::uint32_t>(bytes->size()));
-    append(out, *bytes);
     return {};
 }
 
@@ -216,9 +219,9 @@ auto writeRequirement(Preimage& out, const CanonicalRequirement& requirement)
     return {};
 }
 
-auto writeEntity(Preimage& out, const CanonicalEntity& entity,
-                 const std::set<std::vector<std::byte>, identity_detail::ByteKeyLess>& identities)
-    -> core::Result<void> {
+auto writeEntity(Preimage& out, const CanonicalEntity& entity, std::span<const std::byte> key,
+                 std::span<const std::byte> parentKey, bool gameplay = false,
+                 bool gameplayOwner = false) -> core::Result<void> {
     // The wire stores at most one component per kind, so hashing more would describe an
     // artifact the format cannot carry.
     std::size_t transforms = 0;
@@ -237,24 +240,11 @@ auto writeEntity(Preimage& out, const CanonicalEntity& entity,
         return core::unexpected(fail("packed.identity.component_duplicate",
                                      "An entity must not carry two components of the same kind"));
     }
-    if (auto result = writeIdentity(out, entity.identity); !result) {
-        return result;
-    }
-    if (entity.parent) {
-        auto parentBytes = canonicalIdentityBytes(*entity.parent);
-        if (!parentBytes) {
-            return core::unexpected(std::move(parentBytes.error()));
-        }
-        if (!identities.contains(*parentBytes)) {
-            return core::unexpected(
-                fail("packed.identity.parent_missing", "Entity parent is not part of the chart"));
-        }
-        writeU32(out, static_cast<std::uint32_t>(parentBytes->size()));
-        append(out, *parentBytes);
-    } else {
-        writeU32(out, 0);
-    }
-    writeU64(out, entity.componentMask());
+    writeU32(out, static_cast<std::uint32_t>(key.size()));
+    append(out, key);
+    writeU32(out, static_cast<std::uint32_t>(parentKey.size()));
+    append(out, parentKey);
+    writeU64(out, entity.componentMask() | (gameplayOwner ? std::uint64_t{4} : 0U));
     // Spec 10.1 writes complete components in ascending bit order: 0, 1, 4. Bits 2 and 5 carry
     // no inline payload.
     for (const auto& component : entity.components) {
@@ -275,6 +265,13 @@ auto writeEntity(Preimage& out, const CanonicalEntity& entity,
                 return result;
             }
         }
+    }
+    if (gameplay) {
+        if (!entity.requirements.empty()) {
+            return core::unexpected(fail("packed.profile.requirement",
+                                         "Gameplay revision 2 forbids legacy requirements"));
+        }
+        return {};
     }
     auto requirements = std::vector<const CanonicalRequirement*>{};
     requirements.reserve(entity.requirements.size());
@@ -298,29 +295,20 @@ auto writeEntity(Preimage& out, const CanonicalEntity& entity,
     return {};
 }
 
-auto collectAssets(const CanonicalSemanticChart& chart) -> std::set<std::string> {
-    std::set<std::string> assets;
-    if (chart.mainMusic) {
-        assets.insert(chart.mainMusic->value);
-    }
-    for (const auto& entity : chart.entities) {
-        for (const auto& component : entity.components) {
-            if (const auto* renderable = std::get_if<CanonicalRenderable>(&component)) {
-                assets.insert(renderable->mesh.value);
-                assets.insert(renderable->material.value);
-            }
-        }
-    }
-    return assets;
-}
+struct PrefixResource final {
+    std::string_view id;
+    CanonicalResourceUseKind use;
+    auto operator<=>(const PrefixResource&) const = default;
+};
 
-} // namespace
-
-auto semanticPreimage(const CanonicalSemanticChart& chart) -> core::Result<std::vector<std::byte>> {
-    Preimage out;
-    out.bytes.reserve(256U + chart.entities.size() * 128U);
-
-    append(out, std::as_bytes(std::span{semanticDomain.data(), semanticDomain.size()}));
+auto writeStaticHeader(Preimage& out, const CanonicalSemanticChart& chart, bool gameplay,
+                       std::uint32_t candidateRevision, std::pmr::memory_resource* resource)
+    -> core::Result<void> {
+    const auto domain = gameplay ? (candidateRevision == 3
+                                        ? std::string_view{"cuexis.chart.semantic.v5.gameplay.2"}
+                                        : std::string_view{"cuexis.chart.semantic.v5.gameplay.1"})
+                                 : semanticDomain;
+    append(out, std::as_bytes(std::span{domain.data(), domain.size()}));
     const std::array<std::byte, 1> terminator{std::byte{0}};
     append(out, terminator);
     writeU16(out, 5);
@@ -369,7 +357,7 @@ auto semanticPreimage(const CanonicalSemanticChart& chart) -> core::Result<std::
         }
     }
 
-    auto features = std::vector<const CanonicalFeature*>{};
+    auto features = core::detail::PmrBuffer<const CanonicalFeature*>{resource};
     features.reserve(chart.features.size());
     for (const auto& feature : chart.features) {
         features.push_back(&feature);
@@ -394,7 +382,7 @@ auto semanticPreimage(const CanonicalSemanticChart& chart) -> core::Result<std::
     if (auto result = writeF64(out, chart.timing.defaultBpm); !result) {
         return core::unexpected(std::move(result.error()));
     }
-    auto tempos = std::vector<const TempoEvent*>{};
+    auto tempos = core::detail::PmrBuffer<const TempoEvent*>{resource};
     tempos.reserve(chart.timing.tempoEvents.size());
     for (const auto& tempo : chart.timing.tempoEvents) {
         tempos.push_back(&tempo);
@@ -408,7 +396,7 @@ auto semanticPreimage(const CanonicalSemanticChart& chart) -> core::Result<std::
                 fail("packed.identity.timing_order", "Tempo events must not share a start beat"));
         }
     }
-    auto stops = std::vector<const TimingStop*>{};
+    auto stops = core::detail::PmrBuffer<const TimingStop*>{resource};
     stops.reserve(chart.timing.stops.size());
     for (const auto& stop : chart.timing.stops) {
         stops.push_back(&stop);
@@ -446,40 +434,60 @@ auto semanticPreimage(const CanonicalSemanticChart& chart) -> core::Result<std::
         }
     }
 
-    // The canonical resource-requirement closure is derived from the chart's asset references.
-    // CanonicalResourceClosure itself is not part of the Packed wire format. R4/D9: a declared
-    // closure that differs from the derived one is refused instead of being silently dropped by
-    // encode and by the identity.
-    // The resource closure is a set of (asset, use) pairs: the same asset used twice contributes
-    // one entry, and the canonical order is the ascending pair order.
-    auto derivedClosure = std::set<CanonicalResourceUse>{};
-    if (chart.mainMusic) {
-        derivedClosure.insert(
-            CanonicalResourceUse{*chart.mainMusic, CanonicalResourceUseKind::MainMusic});
-    }
-    for (const auto& entity : chart.entities) {
-        for (const auto& component : entity.components) {
+    core::detail::PmrBuffer<PrefixResource> derived{resource}, declared{resource};
+    if (chart.mainMusic)
+        derived.push_back({chart.mainMusic->value, CanonicalResourceUseKind::MainMusic});
+    for (const auto& entity : chart.entities)
+        for (const auto& component : entity.components)
             if (const auto* renderable = std::get_if<CanonicalRenderable>(&component)) {
-                derivedClosure.insert(CanonicalResourceUse{
-                    renderable->mesh, CanonicalResourceUseKind::RenderableMesh});
-                derivedClosure.insert(CanonicalResourceUse{
-                    renderable->material, CanonicalResourceUseKind::RenderableMaterial});
+                derived.push_back(
+                    {renderable->mesh.value, CanonicalResourceUseKind::RenderableMesh});
+                derived.push_back(
+                    {renderable->material.value, CanonicalResourceUseKind::RenderableMaterial});
             }
-        }
-    }
-    const auto declaredClosure = std::set<CanonicalResourceUse>{
-        chart.resourceClosure.resources.begin(), chart.resourceClosure.resources.end()};
-    if (declaredClosure != derivedClosure) {
-        return core::unexpected(
-            fail("packed.identity.closure",
-                 "The declared resource closure must equal the closure derived from the chart's "
-                 "asset references"));
-    }
-    const auto assets = collectAssets(chart);
-    writeU32(out, static_cast<std::uint32_t>(assets.size()));
-    for (const auto& asset : assets) {
-        writeReference(out, 1, asset);
-    }
+    for (const auto& use : chart.resourceClosure.resources)
+        declared.push_back({use.assetId.value, use.use});
+    const auto unique = [](auto& rows) {
+        std::sort(rows.begin(), rows.end());
+        const auto last = std::unique(rows.begin(), rows.end());
+        rows.resize(static_cast<std::size_t>(last - rows.begin()));
+    };
+    unique(derived);
+    unique(declared);
+    if (!std::equal(derived.begin(), derived.end(), declared.begin(), declared.end()))
+        return core::unexpected(fail("packed.identity.closure",
+                                     "The declared resource closure must equal the closure "
+                                     "derived from the chart's asset references"));
+    std::uint32_t assetCount = 0;
+    for (std::size_t i = 0; i < derived.size(); ++i)
+        if (i == 0 || derived[i].id != derived[i - 1].id)
+            ++assetCount;
+    writeU32(out, assetCount);
+    for (std::size_t i = 0; i < derived.size(); ++i)
+        if (i == 0 || derived[i].id != derived[i - 1].id)
+            writeReference(out, 1, derived[i].id);
+    return {};
+}
+
+void writeStaticDefinitionTail(Preimage& out) {
+    writeU32(out, 0);
+    writeU32(out, 0);
+    writeU32(out, 0);
+}
+
+} // namespace
+
+static auto semanticPreimageImpl(const CanonicalSemanticChart& chart, bool gameplay,
+                                 std::span<const CanonicalEntityIdentity> gameplayOwners,
+                                 std::uint32_t candidateRevision = 2)
+    -> core::Result<std::vector<std::byte>> {
+    Preimage out;
+    out.bytes.emplace().reserve(256U + chart.entities.size() * 128U);
+
+    if (auto result = writeStaticHeader(out, chart, gameplay, candidateRevision,
+                                        std::pmr::get_default_resource());
+        !result)
+        return core::unexpected(std::move(result.error()));
 
     // Spec 6.5: canonical identity bytes define the entity order. Duplicates are rejected rather
     // than silently collapsed by the sort.
@@ -511,6 +519,21 @@ auto semanticPreimage(const CanonicalSemanticChart& chart) -> core::Result<std::
     std::sort(entities.begin(), entities.end(), [](const auto& left, const auto& right) {
         return identity_detail::ByteKeyLess{}(left.first, right.first);
     });
+    std::set<std::vector<std::byte>, identity_detail::ByteKeyLess> ownerKeys;
+    for (const auto& owner : gameplayOwners) {
+        auto key = canonicalIdentityBytes(owner);
+        if (!key) {
+            return core::unexpected(std::move(key.error()));
+        }
+        if (!identities.contains(*key)) {
+            return core::unexpected(fail("packed.requirements.component",
+                                         "Gameplay owners must name existing entity identities"));
+        }
+        if (!ownerKeys.insert(*key).second) {
+            return core::unexpected(fail("packed.requirements.owner_duplicate",
+                                         "Gameplay owner identities must be unique"));
+        }
+    }
 
     // The wire stores parents as entity ordinals and rejects self-parents and cycles, so the
     // writer must refuse those graphs before publishing rather than emit an undecodable file.
@@ -546,17 +569,37 @@ auto semanticPreimage(const CanonicalSemanticChart& chart) -> core::Result<std::
 
     writeU32(out, static_cast<std::uint32_t>(entities.size()));
     for (const auto& [bytes, entity] : entities) {
-        if (auto result = writeEntity(out, *entity, identities); !result) {
+        std::vector<std::byte> parentKey;
+        if (entity->parent) {
+            auto parent = canonicalIdentityBytes(*entity->parent);
+            if (!parent)
+                return core::unexpected(std::move(parent.error()));
+            parentKey = std::move(*parent);
+        }
+        if (auto result =
+                writeEntity(out, *entity, bytes, parentKey, gameplay, ownerKeys.contains(bytes));
+            !result) {
             return core::unexpected(std::move(result.error()));
         }
     }
 
-    // Foundation revision 1 has no Behavior, Animation or Effect definitions.
-    writeU32(out, 0);
-    writeU32(out, 0);
-    writeU32(out, 0);
+    // Foundation has no Behavior, Animation or Effect definitions.
+    writeStaticDefinitionTail(out);
 
-    return std::move(out.bytes);
+    return std::move(*out.bytes);
+}
+
+#include "packed_bounded_preimage_internal.hpp"
+
+auto semanticPreimage(const CanonicalSemanticChart& chart) -> core::Result<std::vector<std::byte>> {
+    return semanticPreimageImpl(chart, false, {});
+}
+
+auto gameplay_detail::staticPreimage(const CanonicalSemanticChart& chart,
+                                     std::span<const CanonicalEntityIdentity> gameplayOwners,
+                                     std::uint32_t candidateRevision)
+    -> core::Result<std::vector<std::byte>> {
+    return semanticPreimageImpl(chart, true, gameplayOwners, candidateRevision);
 }
 
 auto semanticIdentity(const CanonicalSemanticChart& chart) -> core::Result<PackedSemanticIdentity> {
@@ -585,20 +628,6 @@ auto hexDigit(char character) -> int {
         return character - 'A' + 10;
     }
     return -1;
-}
-
-void appendU32(std::vector<std::byte>& bytes, std::size_t value) {
-    const auto narrowed = static_cast<std::uint32_t>(value);
-    for (std::size_t index = 0; index < 4U; ++index) {
-        bytes.push_back(static_cast<std::byte>((narrowed >> (index * 8U)) & 0xffU));
-    }
-}
-
-void appendText(std::vector<std::byte>& bytes, std::string_view text) {
-    appendU32(bytes, text.size());
-    for (const auto character : text) {
-        bytes.push_back(static_cast<std::byte>(character));
-    }
 }
 
 } // namespace
@@ -636,37 +665,18 @@ auto uuidBytes(std::string_view text) -> core::Result<std::array<std::uint8_t, 1
     return bytes;
 }
 
+#include "packed_identity_stream_internal.hpp"
+
 auto canonicalIdentityBytes(const CanonicalEntityIdentity& identity)
     -> core::Result<std::vector<std::byte>> {
     std::vector<std::byte> bytes;
-    if (const auto* explicitIdentity = std::get_if<ExplicitEntityIdentity>(&identity)) {
-        bytes.push_back(std::byte{0});
-        auto uuid = uuidBytes(explicitIdentity->objectId.value);
-        if (!uuid) {
-            return core::unexpected(std::move(uuid.error()));
-        }
-        for (const auto value : *uuid) {
-            bytes.push_back(static_cast<std::byte>(value));
-        }
-        return bytes;
-    }
-    const auto& generated = std::get<GeneratedEntityIdentity>(identity);
-    bytes.push_back(std::byte{1});
-    auto chartId = uuidBytes(generated.chartId.value);
-    if (!chartId) {
-        return core::unexpected(std::move(chartId.error()));
-    }
-    for (const auto value : *chartId) {
-        bytes.push_back(static_cast<std::byte>(value));
-    }
-    appendText(bytes, generated.bindingId);
-    appendText(bytes, generated.moduleId);
-    appendText(bytes, generated.exportId);
-    appendU32(bytes, generated.path.size());
-    for (const auto& step : generated.path) {
-        appendText(bytes, step.nodeId);
-        appendU32(bytes, step.iterationIndexPlusOne);
-    }
+    auto result = streamCanonicalIdentity(
+        identity, {&bytes, [](void* context, auto data) {
+                       auto& destination = *static_cast<std::vector<std::byte>*>(context);
+                       destination.insert(destination.end(), data.begin(), data.end());
+                   }});
+    if (!result)
+        return core::unexpected(std::move(result.error()));
     return bytes;
 }
 

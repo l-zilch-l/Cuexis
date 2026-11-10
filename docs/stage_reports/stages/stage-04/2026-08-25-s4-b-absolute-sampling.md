@@ -7,7 +7,7 @@
 快照日期：2026-08-25
 
 权威范围：[Stage 4 实施计划](../../../stage_plans/completed/stage-04/plan.md) 与
-[CFU-G2 Stage 4 typed handoff](../../chart-format-update/2026-08-16-g2-stage4-handoff.md)。
+[CFU-G2 Stage 4 typed handoff](../chart-format-update/2026-08-16-g2-stage4-handoff.md)。
 
 ## 交付
 

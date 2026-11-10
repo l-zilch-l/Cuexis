@@ -1,0 +1,259 @@
+{
+  "scope": "Applicable-Seek remaining three classes on the PD5 device probe: external archive first certification, session-natural checkpoint first use, no-legal-checkpoint fallback.",
+  "source_run": "out/build/rpa-candidate-release/bin/cuexis_execution_device_probe.exe (sha256 0ac53b9c...) on c085688a + tests/pd/pd5_host_probe.cpp; copy kept at out/verification-20261103/r3-seek-classes-v1/",
+  "content_sha256": "e0d2bea5779d9a2c0217aff29f5f213feb64f88d7033c5b09808a2725799b4c6",
+  "files": [
+    {
+      "path": "index.md",
+      "bytes": 9651,
+      "sha256": "d1b289ef3fd042cf879dc37681ef7110bf9fedcb9ccc994971e2576c94bb2ce6",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/external/1024/run-00.log.txt",
+      "bytes": 3353,
+      "sha256": "6f96ddb5279de4267f3559e25ba7ec8cefa0b6f404abbf161fe44d43e6ac6b57",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/external/1024/run-01.log.txt",
+      "bytes": 3349,
+      "sha256": "9ebdf8843f4a1da94de695f3e70c1a5d8fe0798a819ef9b77dca6dc8a3ca5ad5",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/external/1024/run-02.log.txt",
+      "bytes": 3349,
+      "sha256": "b4a341e98bc6fc4470bcc4a4e3d26de79bef6b16697a1632ca4aa85a304238cd",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/external/1024/run-03.log.txt",
+      "bytes": 3347,
+      "sha256": "acb8cc68d410adcbd69e2340977b3a63dc6884c88d5efcc0b56b2e3596465f92",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/external/1024/run-04.log.txt",
+      "bytes": 3351,
+      "sha256": "d94157edf55d0a273154bfb4381eed7f96108df128c4b09ffe5f25df86456f18",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/external/1024/run-05.log.txt",
+      "bytes": 3350,
+      "sha256": "fcdd8e28a77afc67c1f6c9c0b8533236dde3664ce31dc1803e1ad671746dece7",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/external/129/run-00.log.txt",
+      "bytes": 3331,
+      "sha256": "9c5337bd31fab67ddf94f97a9e9f378a85e618d7711fcdddfbe967ef5abd15a9",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/external/129/run-01.log.txt",
+      "bytes": 3332,
+      "sha256": "3e0d1427793b307cf4d7776099753d6a9285a77c9ddda897ac728f6e6e01f96e",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/external/129/run-02.log.txt",
+      "bytes": 3330,
+      "sha256": "54836a5d2107278bd3c1bb54d5b0ec2b168ec395c5f2629d91aa2d16c74fa1c0",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/external/129/run-03.log.txt",
+      "bytes": 3333,
+      "sha256": "64388246c9c894e0e682019141d956033facbc1f4b5861ad3b7411e1a8c65fd2",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/external/129/run-04.log.txt",
+      "bytes": 3330,
+      "sha256": "e3d22ca7db54b576fb95d8c3dbcbff1ba88303ef5183bc12a4929e2defcef279",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/external/129/run-05.log.txt",
+      "bytes": 3334,
+      "sha256": "712bf629eaa51d749e7aeddae5ffd0099617d20c585b5131ea5e7a18191737b2",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/fallback/1024/run-00.log.txt",
+      "bytes": 3350,
+      "sha256": "a7808abcbaf8b6764fabeb502f1dc88986439d95d623ab40334c341147dc8b6e",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/fallback/1024/run-01.log.txt",
+      "bytes": 3350,
+      "sha256": "e5ebc319a151cc4960c5ff8b5e4b55c2dec8ba2bc45f1acb1f6136a94df54d48",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/fallback/1024/run-02.log.txt",
+      "bytes": 3348,
+      "sha256": "32495d3a216e3fc8f5b75aea56e2fdd6f3908b1c1dbd00b10542da6973a5e209",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/fallback/1024/run-03.log.txt",
+      "bytes": 3349,
+      "sha256": "dda4fdcb4a0ae54f68bd5814cbe695e2661cdbec050609faf14118d76a996e64",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/fallback/1024/run-04.log.txt",
+      "bytes": 3356,
+      "sha256": "d1e6ab01b2460236dac43e524d82fc85e63b48942c8e3c30d41116e90c213503",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/fallback/1024/run-05.log.txt",
+      "bytes": 3350,
+      "sha256": "e8d7d329cab2e7af7de46aa01ccebffc14ef46ae5abff1c8fc0c6aec3c0efd34",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/fallback/129/run-00.log.txt",
+      "bytes": 3330,
+      "sha256": "5002c8c18022505cf2b9412e9afb521ddc0c0d71a3cd3d014738dc0853926350",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/fallback/129/run-01.log.txt",
+      "bytes": 3331,
+      "sha256": "8ee22c7f58f4ddcee14d403822a483e16f1296c8f907ff9c2b8d6e8a835fc20d",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/fallback/129/run-02.log.txt",
+      "bytes": 3332,
+      "sha256": "051e8a284ff11ac80792bbf9c444dc1805e57e37d2c08a1089e7e3f0dbdec1a9",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/fallback/129/run-03.log.txt",
+      "bytes": 3330,
+      "sha256": "06e8f440bb73356186a969695d45b9967262ca608b2806a27bcc3997610e5bc2",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/fallback/129/run-04.log.txt",
+      "bytes": 3331,
+      "sha256": "31af253efc299a260a746c1d1d6418c25a8131fde3089bebef5714db0d405473",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/fallback/129/run-05.log.txt",
+      "bytes": 3332,
+      "sha256": "dab59a7247204f06bc5cd3a0ad613caa852eab787604b4fe9908bea9cee273b3",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/natural/1024/run-00.log.txt",
+      "bytes": 3331,
+      "sha256": "f71c970bc50d3e22cd3b1e5e7a31987fb2a2c5cf7edd488f1fb7652b6624b470",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/natural/1024/run-01.log.txt",
+      "bytes": 3331,
+      "sha256": "a56400142e5aeb8dab9a74fc704006c96d4b3faebbe346d9ba895110be7ee1e3",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/natural/1024/run-02.log.txt",
+      "bytes": 3330,
+      "sha256": "c70a2d21e9bc3a08a2ac0444904360ec5937c72ff2a8d6f7432f9b28e9507724",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/natural/1024/run-03.log.txt",
+      "bytes": 3332,
+      "sha256": "00bd0780449ccd4495705f2f3dd20561329f471bf13521702e2764ba9399450d",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/natural/1024/run-04.log.txt",
+      "bytes": 3331,
+      "sha256": "ad3949bcce7efe3a9b6a69b6c5ca4cf68377d602a250aecf398795a5f9759e4b",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/natural/1024/run-05.log.txt",
+      "bytes": 3329,
+      "sha256": "9bd7f55348dbea7c112ce68ed42d8681da5e95dd5b87fc3e40e963bfa4cc1e28",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/natural/129/run-00.log.txt",
+      "bytes": 3313,
+      "sha256": "0dfca80c5673137600d202823b8f6d8e1dbead362d87e7d2f22af26e8585fdb3",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/natural/129/run-01.log.txt",
+      "bytes": 3312,
+      "sha256": "b54602f3a3f7545332196cd1875de80ccd87ba9966c1c9979eac6a8059451947",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/natural/129/run-02.log.txt",
+      "bytes": 3311,
+      "sha256": "40b28f0fe8dfaa1abc88eb42ddd2c2d6c966e27fb12085a63fc9745dda8b46bb",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/natural/129/run-03.log.txt",
+      "bytes": 3313,
+      "sha256": "a3b36b1fb29b6a5c6ad102158377787084c75174de29cd60ed8d187bac3f7090",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/natural/129/run-04.log.txt",
+      "bytes": 3314,
+      "sha256": "c73249df1585d4422d3a123257af92c9f7b7c3a6602c778e0ec39c59ca9ae0b1",
+      "eol": "crlf"
+    },
+    {
+      "path": "runs/natural/129/run-05.log.txt",
+      "bytes": 3313,
+      "sha256": "65592deb975a8f8c938956d4323a327d92a60fe573a660d55096c7e0425257b8",
+      "eol": "crlf"
+    },
+    {
+      "path": "tools/environment.json",
+      "bytes": 1082,
+      "sha256": "75c261b8e7401ab3797674b1f59177315955dc41db63c70cd8d485ad3c5f9915",
+      "eol": "lf"
+    },
+    {
+      "path": "tools/preregistration.json",
+      "bytes": 5865,
+      "sha256": "ecb471c02855b348d74d1e676ebc3988619a6a0b0344d7f6521475a37457f990",
+      "eol": "crlf"
+    },
+    {
+      "path": "tools/results.json",
+      "bytes": 75037,
+      "sha256": "1ac58e9a008c931e500b201db62f21a933ae4b2940edc111da0110cad813461c",
+      "eol": "crlf"
+    },
+    {
+      "path": "tools/run.log.txt",
+      "bytes": 1864,
+      "sha256": "20ad32823dc10fe6d14c0755835fad807c1cac1b20f0a284734ad27fe6304225",
+      "eol": "crlf"
+    },
+    {
+      "path": "tools/run_r3_seek_classes.py",
+      "bytes": 8724,
+      "sha256": "7c13476107bf92762d2a8851161acd4f1784842999a58404d32a5be2ee7a0276",
+      "eol": "lf"
+    }
+  ]
+}

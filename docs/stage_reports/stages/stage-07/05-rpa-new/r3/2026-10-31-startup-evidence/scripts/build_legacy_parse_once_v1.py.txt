@@ -1,0 +1,24 @@
+from pathlib import Path
+import json, shutil
+
+root=Path.cwd();base=Path(__file__).resolve().parent;old=base/'gl-state-build-v3';out=base/'legacy-parse-once-build-v1'
+script=(base/'build_gl_state_v3_generated.py').read_text();script=script[:script.index('adapter_objects=[]')]
+script=script.replace("out=base/'gl-state-build-v3'","out=base/'legacy-parse-once-build-v1'")
+exec(compile(script,str(base/'build_gl_state_v3_generated.py'),'exec'))
+candidate_source=base/'legacy-parse-once-source-v1'
+for c in cc:
+    args=split(c['command'])
+    args.insert(1,'/I'+str(candidate_source/'engine/chart/include'))
+    args.insert(1,'/I'+str(candidate_source/'engine/chart/src'))
+    c['command']=__import__('subprocess').list2cmdline(args)
+objects=[]
+for relative in ('engine/chart/src/chart_v4_loader.cpp','engine/chart/src/canonical_chart_loader.cpp',
+                 'engine/chart/src/chart_writer.cpp','engine/playback/src/playback_session.cpp'):
+    p=Path(relative);objects.append(compile(p.name,candidate_source/p,p.stem))
+objects.append(str(base/'json-sax-build-v2/parse-candidate.obj'))
+args=next(c['args'] for c in json.loads((base/'json-prepare-build-v1/commands.json').read_text()) if c['label']=='link-baseline')
+args=[('/OUT:'+str(out/'prepare-candidate.exe')) if a.startswith('/OUT:') else a for a in args
+      if a!=str(base/'json-sax-build-v2/parse-baseline.obj')]
+run([args[0],*objects,*args[1:]],'link-prepare-candidate')
+for dll in (base/'json-sax-runtime-v3').glob('*.dll'):shutil.copyfile(dll,out/dll.name)
+(out/'binding.json').write_text(json.dumps(dict(scope='Private legacy parse-once plus identical direct SAX v2 object. Matching original public/class/template definitions. All changed private function callers compiled with overlay private headers; no public layout change.',source_binding_sha256=sha(candidate_source/'binding.json'),commands_sha256=sha(out/'commands.json'),files={p.name:sha(p) for p in out.iterdir() if p.suffix in ('.exe','.dll')}),indent=2),encoding='utf-8')

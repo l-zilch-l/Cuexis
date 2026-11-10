@@ -1,0 +1,232 @@
+"""Re-derive the neutral-path lever group from its raw per-process files.
+
+Reads only what the processes wrote plus the frozen arms; never re-runs a probe.
+"""
+
+import hashlib
+import json
+import statistics
+from pathlib import Path
+
+ROOT = Path.cwd()
+HERE = Path(__file__).resolve().parent
+GROUP = HERE / "neutral-lever-measure-v1"
+ORIGIN = ROOT / "out/verification-20261029/r3-completion"
+
+
+def sha(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def load(path):
+    """Read a group record: the instrument writes CRLF JSON without a BOM."""
+    raw = Path(path).read_bytes().decode("utf-8")
+    assert "\r\n" in raw, f"{path} lost its CRLF line endings"
+    assert not raw.startswith("\ufeff"), f"{path} carries a BOM"
+    return json.loads(raw)
+
+
+def load_plain(path):
+    """Read an arm manifest: authored ASCII artefacts keep LF line endings."""
+    raw = Path(path).read_bytes().decode("utf-8")
+    return json.loads(raw)
+
+
+checks = []
+
+
+def check(name, condition, detail=None):
+    checks.append(dict(name=name, passed=bool(condition), detail=detail))
+    if not condition:
+        print("FAILED", name, detail, flush=True)
+
+
+binding = load(GROUP / "binding.json")
+plan = load(GROUP / "plan.json")
+decision = load(GROUP / "decision.json")
+
+process_dirs = sorted(p for p in GROUP.iterdir() if p.is_dir())
+check("process count", len(process_dirs) == 14, len(process_dirs))
+check("binding is the registered one", sha(GROUP / "binding.json") == plan["binding_sha256"], None)
+check("registered plan has 14 entries", len(binding["plan"]) == 14, len(binding["plan"]))
+
+arm_files = {}
+for label, letter in (("baseline", "A"), ("candidate", "B")):
+    manifest_path = HERE / "arms" / letter / "arm.json"
+    manifest = load_plain(manifest_path)
+    arm_files[label] = dict(
+        manifest=manifest,
+        exe_sha=manifest["exe"]["cuexis_execution_device_probe.exe"]["sha256"].lower(),
+        exe_bytes=manifest["exe"]["cuexis_execution_device_probe.exe"]["bytes"],
+        live_sha=sha(HERE / "arms" / letter / "cuexis_execution_device_probe.exe"),
+        manifest_sha=sha(manifest_path),
+    )
+    check(f"arm {letter} manifest matches its file", arm_files[label]["exe_sha"] == arm_files[label]["live_sha"], None)
+    for name, recorded in {**manifest["exe"], **manifest["dlls"]}.items():
+        live = HERE / "arms" / letter / name
+        check(
+            f"arm {letter} {name}",
+            live.stat().st_size == recorded["bytes"] and sha(live).upper() == recorded["sha256"].upper(),
+            recorded["sha256"],
+        )
+
+check(
+    "baseline arm is the restore-point build",
+    arm_files["baseline"]["manifest"]["worktree_clean"] is True
+    and arm_files["baseline"]["exe_bytes"] == 5730816,
+    arm_files["baseline"]["exe_sha"],
+)
+
+rows = []
+for ordinal, directory in enumerate(process_dirs):
+    registration = load(directory / "registration.json")
+    results = load(directory / "results.json")
+    check(f"{directory.name} holds one process row", len(results) == 1, len(results))
+    row = results[0]
+    rows.append(row)
+    arm = registration["arm"]
+    expected_prefix = f'{ordinal:02}-{arm}-{registration["plan"][0]["entities"]}-{registration["plan"][0]["mode"]}'
+    check(f"{directory.name} name encodes its setup", directory.name == expected_prefix, expected_prefix)
+    check(f"{directory.name} is a gate or diagnostic as registered", (registration["diagnostic"] is None) == (ordinal < 12), ordinal)
+    check(f"{directory.name} head", registration["head"] == binding["head"], registration["head"])
+    check(f"{directory.name} binary is the frozen arm", registration["binary_sha256"] == arm_files[arm]["exe_sha"], registration["binary_sha256"])
+    check(f"{directory.name} probe source", registration["source_sha256"] == binding["instrument"]["probe_source_sha256"], None)
+    check(f"{directory.name} instrument template", registration["runner_sha256"] == binding["instrument"]["template_sha256"], None)
+    check(f"{directory.name} native helper", registration["native_sha256"] == binding["instrument"]["native_sha256"], None)
+    check(f"{directory.name} wrapper", registration["wrapper_sha256"] == binding["instrument"]["wrapper_sha256"], None)
+    check(f"{directory.name} viewport", registration["viewport"] == [1920, 1080], registration["viewport"])
+    check(f"{directory.name} timer off", registration["timer"] is False, None)
+    check(f"{directory.name} budget", abs(registration["budget_us"] - 1000000 / 240) < 1e-9, registration["budget_us"])
+    check(f"{directory.name} warmup", registration["warmup"] == "at least 8 frames and 2000ms", registration["warmup"])
+    check(f"{directory.name} scope", registration["scope"].startswith("Neutral-path lever A/B screen"), registration["scope"])
+    check(f"{directory.name} log hash", row["log_sha256"] == sha(directory / f'00-{registration["plan"][0]["mode"]}-{registration["plan"][0]["entities"]}.log'), None)
+    check(f"{directory.name} exit", row["exit"] == 0, row["exit"])
+    check(f"{directory.name} valid", row["valid"] is True, None)
+    check(
+        f"{directory.name} controls",
+        row["controls"] == dict(affinity=65535, priority=16384, qos_control=1, qos_state=0),
+        row["controls"],
+    )
+    check(f"{directory.name} on AC power", row["ac_line"] == 1, row["ac_line"])
+    identity = row["identity"]
+    item = registration["plan"][0]
+    check(f"{directory.name} identity mode", identity["mode"] == item["mode"], identity["mode"])
+    check(f"{directory.name} identity entities", identity["entities"] == item["entities"], identity["entities"])
+    check(f"{directory.name} identity draws", identity["draws_per_frame"] == item["entities"], identity["draws_per_frame"])
+    check(f"{directory.name} identity in view", identity["in_view_centers"] == item["entities"], identity["in_view_centers"])
+    check(f"{directory.name} identity fixture", identity["fixture_revision"] == 3, identity["fixture_revision"])
+    check(f"{directory.name} identity timer", identity["timer"] is False, identity["timer"])
+    check(f"{directory.name} identity vsync", identity["vsync"] == 0, identity["vsync"])
+    check(f"{directory.name} identity pixel readback", identity["pixel_readback"] is True, identity["pixel_readback"])
+    check(f"{directory.name} identity pixel", identity["pixel_rgba"] == [255, 204, 51, 255], identity["pixel_rgba"])
+    check(f"{directory.name} identity duration", identity["duration_seconds"] == 20, identity["duration_seconds"])
+    check(f"{directory.name} identity wall", identity["measured_wall_us"] >= 20000000, identity["measured_wall_us"])
+    check(f"{directory.name} identity warmup frames", identity["warmup_frames"] >= 8, identity["warmup_frames"])
+    check(f"{directory.name} vendor", "NVIDIA" in identity["vendor"], identity["vendor"])
+    log_path = directory / f'00-{item["mode"]}-{item["entities"]}.log'
+    text = log_path.read_bytes().decode("utf-8", "replace")
+    sample_lines = [line for line in text.splitlines() if line.startswith("GPU_THROUGHPUT_SAMPLE ")]
+    check(f"{directory.name} sample lines", len(sample_lines) == identity["frames"], (len(sample_lines), identity["frames"]))
+    check(f"{directory.name} one-second windows", len(row["one_second_completed_frames"]) == 20, len(row["one_second_completed_frames"]))
+
+group_rows = load(GROUP / "results.json")
+check("group results equal the per-process rows", group_rows == rows, len(group_rows))
+
+order = [(r["variant"], r["entities"]) for r in rows]
+expected_order = []
+for pair in range(3):
+    arms = ("baseline", "candidate") if pair % 2 == 0 else ("candidate", "baseline")
+    for entities in (1800, 2600):
+        for variant in arms:
+            expected_order.append((variant, entities))
+expected_order += [("baseline", 40000), ("candidate", 40000)]
+check("ABBA order", order == expected_order, order)
+
+recomputed = []
+for entities in (1800, 2600):
+    values = {}
+    for variant in ("baseline", "candidate"):
+        points = [r for r in rows if not r.get("diagnostic") and r["entities"] == entities and r["variant"] == variant]
+        check(f"{entities} {variant} process count", len(points) == 3, len(points))
+        values[variant] = {}
+        for metric in ("submit_us", "cycle_us"):
+            samples = [p["statistics"][metric]["mean_us"] for p in points]
+            median = statistics.median(samples)
+            values[variant][metric] = dict(
+                samples_us=samples,
+                median_us=median,
+                relative_range_percent=(max(samples) - min(samples)) / median * 100,
+            )
+        p99 = [p["statistics"]["cycle_us"]["p99_us"] for p in points]
+        values[variant]["cycle_p99_us"] = dict(
+            samples_us=p99,
+            median_us=statistics.median(p99),
+            relative_range_percent=(max(p99) - min(p99)) / statistics.median(p99) * 100,
+        )
+    recomputed.append(
+        dict(
+            n=entities,
+            values=values,
+            submit_change=(values["candidate"]["submit_us"]["median_us"] / values["baseline"]["submit_us"]["median_us"] - 1) * 100,
+            cycle_change=(values["candidate"]["cycle_us"]["median_us"] / values["baseline"]["cycle_us"]["median_us"] - 1) * 100,
+            cycle_p99_change=(values["candidate"]["cycle_p99_us"]["median_us"] / values["baseline"]["cycle_p99_us"]["median_us"] - 1) * 100,
+        )
+    )
+
+for expected, actual in zip(recomputed, decision["summary"]):
+    check(f'{expected["n"]} cell identity', expected["n"] == actual["n"], expected["n"])
+    for variant in ("baseline", "candidate"):
+        for metric in ("submit_us", "cycle_us", "cycle_p99_us"):
+            check(
+                f'{expected["n"]} {variant} {metric} samples',
+                expected["values"][variant][metric]["samples_us"] == actual["values"][variant][metric]["samples_us"],
+                expected["values"][variant][metric]["samples_us"],
+            )
+            check(
+                f'{expected["n"]} {variant} {metric} median',
+                abs(expected["values"][variant][metric]["median_us"] - actual["values"][variant][metric]["median_us"]) < 1e-9,
+                expected["values"][variant][metric]["median_us"],
+            )
+            check(
+                f'{expected["n"]} {variant} {metric} range',
+                abs(expected["values"][variant][metric]["relative_range_percent"] - actual["values"][variant][metric]["relative_range_percent"]) < 1e-9,
+                expected["values"][variant][metric]["relative_range_percent"],
+            )
+    for key in ("submit_change", "cycle_change", "cycle_p99_change"):
+        check(f'{expected["n"]} {key}', abs(expected[key] - actual[key]) < 1e-9, expected[key])
+
+diagnostics = [r for r in rows if r.get("diagnostic")]
+check("diagnostic processes", len(diagnostics) == 2, len(diagnostics))
+for recorded in decision["diagnostics"]:
+    row = next(r for r in diagnostics if r["variant"] == recorded["variant"])
+    check(f'diagnostic {recorded["variant"]} submit', abs(row["statistics"]["submit_us"]["mean_us"] - recorded["submit_us"]) < 1e-9, None)
+    check(f'diagnostic {recorded["variant"]} cycle', abs(row["statistics"]["cycle_us"]["mean_us"] - recorded["cycle_us"]) < 1e-9, None)
+    check(f'diagnostic {recorded["variant"]} p99', row["statistics"]["cycle_us"]["p99_us"] == recorded["cycle_p99_us"], None)
+    check(f'diagnostic {recorded["variant"]} fps', abs(row["wall_fps"] - recorded["wall_fps"]) < 1e-9, None)
+
+repeatability = all(
+    cell["values"][variant][metric]["relative_range_percent"] <= 15.0
+    for cell in recomputed
+    for variant in ("baseline", "candidate")
+    for metric in ("submit_us", "cycle_us", "cycle_p99_us")
+)
+submit_gate = all(cell["submit_change"] <= -10.0 for cell in recomputed)
+cycle_gate = all(cell["cycle_change"] <= 5.0 and cell["cycle_p99_change"] <= 5.0 for cell in recomputed)
+check("submit gate", submit_gate, [round(c["submit_change"], 2) for c in recomputed])
+check("cycle gate", cycle_gate, [round(c["cycle_change"], 2) for c in recomputed])
+check("repeatability screen", repeatability, None)
+check("decision recorded the same verdicts", decision["numeric_gate"] is True and decision["selected"] is True, None)
+check("never formal acceptance", decision["formal_acceptance"] is False, None)
+
+failures = [c for c in checks if not c["passed"]]
+summary = dict(
+    checks=len(checks),
+    passed=len(checks) - len(failures),
+    failed=len(failures),
+    result="pass" if not failures else "fail",
+    failures=failures,
+)
+(GROUP / "verification.json").write_bytes((json.dumps(summary, indent=2) + "\n").replace("\r\n", "\n").encode("utf-8"))
+print(json.dumps({key: summary[key] for key in ("checks", "passed", "failed", "result")}), flush=True)
+for failure in failures:
+    print("FAIL", failure["name"], failure["detail"], flush=True)

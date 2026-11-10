@@ -1,0 +1,306 @@
+{
+  "scope": "Neutral-path lever A/B screen on the ordinary physical GPU; readback on, timer off; not formal capacity acceptance.",
+  "head": "1474316d2bfd38809c38a1e6050c29d83351e369",
+  "worktree_porcelain": [
+    "M app/player/src/player_smoke.cpp",
+    " M engine/presentation_renderer/include/cuexis/presentation_renderer/draw_command.hpp",
+    " M engine/presentation_renderer/src/draw_command.cpp",
+    " M engine/render_opengl/src/open_gl_presentation.cpp",
+    " M engine/render_opengl/src/open_gl_presentation_internal.hpp",
+    " M tests/presentation_renderer/presentation_renderer_tests.cpp",
+    " M tests/render/open_gl_presentation_tests.cpp"
+  ],
+  "arms": {
+    "baseline": {
+      "arm": "baseline",
+      "directory": "out\\verification-20261101\\r3-neutral-path-v1\\arms\\A",
+      "arm_json_sha256": "dbf9859fa39137b5c7115afd772935ea82c406b5cc9033f90703493fed4d6dea",
+      "arm_json": {
+        "arm": "A",
+        "description": "clean rebuild of restore point 1474316 in the same build tree, no instrumentation, no levers",
+        "head": "1474316d2bfd38809c38a1e6050c29d83351e369",
+        "worktree_clean": true,
+        "built_at": "2026-11-01T07:06:19.580178+00:00",
+        "exe": {
+          "cuexis_execution_device_probe.exe": {
+            "bytes": 5730816,
+            "sha256": "04092C8F688FF18FC24E3948F8DF6F8F2A4C6A637A10AF0555BA55F38BBF9DD0"
+          },
+          "cuexis_player.exe": {
+            "bytes": 5674496,
+            "sha256": "BFDC6C5994CF56B1FC1887AF12DAFBED59A3299DCFF3AA054300CAE2294ED283"
+          }
+        },
+        "dlls": {
+          "fmt.dll": {
+            "bytes": 130048,
+            "sha256": "8219387A1B0DE304630A67564A0EC30271E061C1E92CC77AE7CF9753A5F75214"
+          },
+          "nlohmann_json_schema_validator.dll": {
+            "bytes": 432128,
+            "sha256": "1C0A7CDCD718802C79052F323F52E63AFCEDAC969DD7EB5A44D12C521502F248"
+          },
+          "SDL3.dll": {
+            "bytes": 2488832,
+            "sha256": "CEDDDD9456105F8B2DF78C33A0282C170B86B0D16146A8CCBB0C6E01571EE783"
+          },
+          "spdlog.dll": {
+            "bytes": 281600,
+            "sha256": "A7C410914F4AFF0CB84F642FF91DA8A6B1A85D21CB0DE11E88A3A37DC7575214"
+          }
+        }
+      },
+      "files": {
+        "cuexis_execution_device_probe.exe": {
+          "bytes": 5730816,
+          "sha256": "04092c8f688ff18fc24e3948f8df6f8f2a4c6a637a10af0555ba55f38bbf9dd0"
+        },
+        "cuexis_player.exe": {
+          "bytes": 5674496,
+          "sha256": "bfdc6c5994cf56b1fc1887af12dafbed59a3299dcff3aa054300cae2294ed283"
+        },
+        "fmt.dll": {
+          "bytes": 130048,
+          "sha256": "8219387a1b0de304630a67564a0ec30271e061c1e92cc77ae7cf9753a5f75214"
+        },
+        "nlohmann_json_schema_validator.dll": {
+          "bytes": 432128,
+          "sha256": "1c0a7cdcd718802c79052f323f52e63afcedac969dd7eb5a44d12c521502f248"
+        },
+        "SDL3.dll": {
+          "bytes": 2488832,
+          "sha256": "cedddd9456105f8b2df78c33a0282c170b86b0d16146a8ccbb0c6e01571ee783"
+        },
+        "spdlog.dll": {
+          "bytes": 281600,
+          "sha256": "a7c410914f4aff0cb84f642ff91da8a6b1a85d21cb0de11e88a3a37dc7575214"
+        }
+      }
+    },
+    "candidate": {
+      "arm": "candidate",
+      "directory": "out\\verification-20261101\\r3-neutral-path-v1\\arms\\B",
+      "arm_json_sha256": "06bdaa31d3785cd6a19093d8c1a0b2d50a7dedc9da48a29893e1b9fe5a09e56d",
+      "arm_json": {
+        "arm": "B",
+        "description": "lever candidate built in the same tree and configuration right after arm A: summary digest derived on demand, PreparedDraw carries a non-owning command pointer",
+        "head": "1474316d2bfd38809c38a1e6050c29d83351e369",
+        "worktree_clean": false,
+        "worktree_modified": [
+          "app/player/src/player_smoke.cpp",
+          "engine/presentation_renderer/include/cuexis/presentation_renderer/draw_command.hpp",
+          "engine/presentation_renderer/src/draw_command.cpp",
+          "engine/render_opengl/src/open_gl_presentation.cpp",
+          "engine/render_opengl/src/open_gl_presentation_internal.hpp",
+          "tests/presentation_renderer/presentation_renderer_tests.cpp",
+          "tests/render/open_gl_presentation_tests.cpp"
+        ],
+        "built_at": "2026-11-01T07:15:59.500177+00:00",
+        "exe": {
+          "cuexis_execution_device_probe.exe": {
+            "bytes": 5726720,
+            "sha256": "9AAA34F7F7AAF43D0CB06FDB6E7750E3C72E4065777E292F6E95CCE0A75AC58C"
+          },
+          "cuexis_player.exe": {
+            "bytes": 5672960,
+            "sha256": "1D54B77EFFD159C88AFAD66DE3DB973EC78F23AB33FBD793E536B03611146497"
+          }
+        },
+        "dlls": {
+          "fmt.dll": {
+            "bytes": 130048,
+            "sha256": "8219387A1B0DE304630A67564A0EC30271E061C1E92CC77AE7CF9753A5F75214"
+          },
+          "nlohmann_json_schema_validator.dll": {
+            "bytes": 432128,
+            "sha256": "1C0A7CDCD718802C79052F323F52E63AFCEDAC969DD7EB5A44D12C521502F248"
+          },
+          "SDL3.dll": {
+            "bytes": 2488832,
+            "sha256": "CEDDDD9456105F8B2DF78C33A0282C170B86B0D16146A8CCBB0C6E01571EE783"
+          },
+          "spdlog.dll": {
+            "bytes": 281600,
+            "sha256": "A7C410914F4AFF0CB84F642FF91DA8A6B1A85D21CB0DE11E88A3A37DC7575214"
+          }
+        }
+      },
+      "files": {
+        "cuexis_execution_device_probe.exe": {
+          "bytes": 5726720,
+          "sha256": "9aaa34f7f7aaf43d0cb06fdb6e7750e3c72e4065777e292f6e95cce0a75ac58c"
+        },
+        "cuexis_player.exe": {
+          "bytes": 5672960,
+          "sha256": "1d54b77effd159c88afad66de3db973ec78f23ab33fbd793e536b03611146497"
+        },
+        "fmt.dll": {
+          "bytes": 130048,
+          "sha256": "8219387a1b0de304630a67564a0ec30271e061c1e92cc77ae7cf9753a5f75214"
+        },
+        "nlohmann_json_schema_validator.dll": {
+          "bytes": 432128,
+          "sha256": "1c0a7cdcd718802c79052f323f52e63afcedac969dd7eb5a44d12c521502f248"
+        },
+        "SDL3.dll": {
+          "bytes": 2488832,
+          "sha256": "cedddd9456105f8b2df78c33a0282c170b86b0d16146a8ccbb0c6e01571ee783"
+        },
+        "spdlog.dll": {
+          "bytes": 281600,
+          "sha256": "a7c410914f4aff0cb84f642ff91da8a6b1a85d21cb0de11e88a3a37dc7575214"
+        }
+      }
+    }
+  },
+  "instrument": {
+    "template_path": "out\\verification-20261029\\r3-completion\\gpu_runner.py",
+    "template_sha256": "424e1b619f786fcb0ea10f73dd3af0679e7adb63acd60b2c48f04d3c076e6904",
+    "native_path": "out\\verification-20261029\\r3-completion\\native.py",
+    "native_sha256": "44f9c49e8ec353a6386a7b481f178859abcf1c46b11688db70bb411ed21f15ce",
+    "wrapper_path": "out\\verification-20261101\\r3-neutral-path-v1\\run_neutral_lever_v1.py",
+    "wrapper_sha256": "5056873fc4c97fc713baf823f18a99abefa1c24ce8a4f8c2c66e00608650e7ca",
+    "patches": [
+      {
+        "name": "pixel_readback",
+        "value": "CUEXIS_GPU_PIXEL_READBACK=1 for both arms (timed frames read back one pixel)"
+      },
+      {
+        "name": "environment_scrub",
+        "value": "CUEXIS_PD*, CUEXIS_GPU*, CUEXIS_NEUTRAL* removed from the inherited environment"
+      },
+      {
+        "name": "registration_scope",
+        "value": "group scope line of each process registration"
+      }
+    ],
+    "probe_source": "tests\\player\\gpu_throughput_probe.cpp",
+    "probe_source_sha256": "ff25101217404dc4c26ba7c3423cd10c6d577317a20d347e7a1c15b232bc5dd1",
+    "viewport": [
+      1920,
+      1080
+    ],
+    "affinity": "measurement_mask (all logical CPUs)",
+    "priority": "BelowNormal",
+    "qos": "execution throttling OFF",
+    "timer": false,
+    "warmup": "at least 8 frames and 2000ms",
+    "budget_us": 4166.666666666667
+  },
+  "plan": [
+    {
+      "entities": 1800,
+      "mode": "render-only",
+      "repeat": 0,
+      "variant": "baseline",
+      "frames": 600,
+      "seconds": 20
+    },
+    {
+      "entities": 1800,
+      "mode": "render-only",
+      "repeat": 0,
+      "variant": "candidate",
+      "frames": 600,
+      "seconds": 20
+    },
+    {
+      "entities": 2600,
+      "mode": "render-only",
+      "repeat": 0,
+      "variant": "baseline",
+      "frames": 600,
+      "seconds": 20
+    },
+    {
+      "entities": 2600,
+      "mode": "render-only",
+      "repeat": 0,
+      "variant": "candidate",
+      "frames": 600,
+      "seconds": 20
+    },
+    {
+      "entities": 1800,
+      "mode": "render-only",
+      "repeat": 1,
+      "variant": "candidate",
+      "frames": 600,
+      "seconds": 20
+    },
+    {
+      "entities": 1800,
+      "mode": "render-only",
+      "repeat": 1,
+      "variant": "baseline",
+      "frames": 600,
+      "seconds": 20
+    },
+    {
+      "entities": 2600,
+      "mode": "render-only",
+      "repeat": 1,
+      "variant": "candidate",
+      "frames": 600,
+      "seconds": 20
+    },
+    {
+      "entities": 2600,
+      "mode": "render-only",
+      "repeat": 1,
+      "variant": "baseline",
+      "frames": 600,
+      "seconds": 20
+    },
+    {
+      "entities": 1800,
+      "mode": "render-only",
+      "repeat": 2,
+      "variant": "baseline",
+      "frames": 600,
+      "seconds": 20
+    },
+    {
+      "entities": 1800,
+      "mode": "render-only",
+      "repeat": 2,
+      "variant": "candidate",
+      "frames": 600,
+      "seconds": 20
+    },
+    {
+      "entities": 2600,
+      "mode": "render-only",
+      "repeat": 2,
+      "variant": "baseline",
+      "frames": 600,
+      "seconds": 20
+    },
+    {
+      "entities": 2600,
+      "mode": "render-only",
+      "repeat": 2,
+      "variant": "candidate",
+      "frames": 600,
+      "seconds": 20
+    },
+    {
+      "entities": 40000,
+      "mode": "render-only",
+      "repeat": 99,
+      "variant": "baseline",
+      "frames": 600,
+      "seconds": 20,
+      "diagnostic": "separate stress diagnostic, not a gate cell"
+    },
+    {
+      "entities": 40000,
+      "mode": "render-only",
+      "repeat": 99,
+      "variant": "candidate",
+      "frames": 600,
+      "seconds": 20,
+      "diagnostic": "separate stress diagnostic, not a gate cell"
+    }
+  ]
+}

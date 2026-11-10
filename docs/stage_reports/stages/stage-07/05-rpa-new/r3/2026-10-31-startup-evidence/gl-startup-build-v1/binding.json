@@ -1,0 +1,10 @@
+{
+  "scope": "Startup diagnostic probe change only. CPU fixture/prepare precede window creation; startup timings separate; close/Escape cancellation. Old paired GL objects and libraries immutable.",
+  "old_binding_sha256": "c4724012a87b1fdc5bd4d1893c803ba94603a7df10a5fa6a3acb7d4c7f30c308",
+  "probe_source_sha256": "c6c832d0f4d07c1532f8588e2143f2e5bce0bff7c8a7976ce24c91b6293c4122",
+  "binaries": {
+    "gpu-baseline.exe": "78842f8862c803790b49da06aec28549d1e790b75a0dc6473013b3223f6dabb1",
+    "gpu-candidate.exe": "9177614d60453b80fb14c67b55988ff06045aded707abefb77c9f7f73bb24ba8"
+  },
+  "commands_sha256": "983d00614e4d9fafb2ebd11b6a5fe452caef225e0e65c80dbb2b72adeeac61bc"
+}

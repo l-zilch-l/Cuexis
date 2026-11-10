@@ -614,11 +614,11 @@ v4 报告记录 source/target canonical identity（Writer canonical bytes 的 SH
 
 迁移后的静态 v4 与源 v3 必须产生相同 FrameSnapshot 和 FrameDigest v3。Chart format version 和
 capability summary 可以不同。该运行时等价证据属于 CFU-D3，已由
-[CFU-D3 报告](../stage_reports/chart-format-update/2026-08-14-d3-equivalence.md) 关闭。D1/D2 的关闭条件是
+[CFU-D3 报告](../stage_reports/stages/chart-format-update/2026-08-14-d3-equivalence.md) 关闭。D1/D2 的关闭条件是
 结构/Writer golden 与 CLI 合同通过本地 Debug 验证；该验证已在本 worktree 取得，D1/D2 已关闭。
 整包 CFU-D 已由项目所有者于 2026-08-14 记录“未提供外部资产”并关闭；兼容窗口不缩短，
 全部 v1/v2/v3 Reader 与迁移入口保留。证据见
-[CFU-D 关闭报告](../stage_reports/chart-format-update/2026-08-14-d-close.md)。
+[CFU-D 关闭报告](../stage_reports/stages/chart-format-update/2026-08-14-d-close.md)。
 
 ## 12. 候选示例
 

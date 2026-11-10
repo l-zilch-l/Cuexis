@@ -1,0 +1,200 @@
+{
+  "scope": "Initial-load gate: process creation to first valid frame present-return.",
+  "gate_ms": 2000.0,
+  "exe": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_player.exe",
+  "exe_sha256": "f1172601b4b7cdbb1fd0e1ace5bfcf8b830015c63c1a4d27468965ed2f7fd25b",
+  "workload": "--smoke-test",
+  "head": "84277a639a01d099f0f43c6d661248b5a9b99ba2",
+  "runs": [
+    {
+      "run": 0,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 0.814,
+      "created_utc": "2026-11-01T17:25:29.163418+00:00",
+      "first_log_utc": "2026-11-02T01:25:29.218000+08:00",
+      "first_frame": {
+        "stamp": "2026-11-02T01:25:29.766+08:00",
+        "detail": "elapsed_us 2449 total_us 546548 opaque 1 transparent 0 render_us 0"
+      },
+      "golden_present": true,
+      "first_frame_lines": 1,
+      "log_lines": 35,
+      "out_log": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-00.out.log",
+      "err_log": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-00.err.log",
+      "load_ms": 602.582,
+      "logger_start_ms": 54.582,
+      "valid": true
+    },
+    {
+      "run": 1,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 0.804,
+      "created_utc": "2026-11-01T17:25:29.981618+00:00",
+      "first_log_utc": "2026-11-02T01:25:30.022000+08:00",
+      "first_frame": {
+        "stamp": "2026-11-02T01:25:30.569+08:00",
+        "detail": "elapsed_us 2573 total_us 545088 opaque 1 transparent 0 render_us 0"
+      },
+      "golden_present": true,
+      "first_frame_lines": 1,
+      "log_lines": 35,
+      "out_log": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-01.out.log",
+      "err_log": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-01.err.log",
+      "load_ms": 587.382,
+      "logger_start_ms": 40.382,
+      "valid": true
+    },
+    {
+      "run": 2,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 0.815,
+      "created_utc": "2026-11-01T17:25:30.788978+00:00",
+      "first_log_utc": "2026-11-02T01:25:30.829000+08:00",
+      "first_frame": {
+        "stamp": "2026-11-02T01:25:31.369+08:00",
+        "detail": "elapsed_us 3137 total_us 538144 opaque 1 transparent 0 render_us 0"
+      },
+      "golden_present": true,
+      "first_frame_lines": 1,
+      "log_lines": 35,
+      "out_log": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-02.out.log",
+      "err_log": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-02.err.log",
+      "load_ms": 580.022,
+      "logger_start_ms": 40.022,
+      "valid": true
+    },
+    {
+      "run": 3,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 0.794,
+      "created_utc": "2026-11-01T17:25:31.606148+00:00",
+      "first_log_utc": "2026-11-02T01:25:31.647000+08:00",
+      "first_frame": {
+        "stamp": "2026-11-02T01:25:32.193+08:00",
+        "detail": "elapsed_us 2010 total_us 544322 opaque 1 transparent 0 render_us 0"
+      },
+      "golden_present": true,
+      "first_frame_lines": 1,
+      "log_lines": 35,
+      "out_log": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-03.out.log",
+      "err_log": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-03.err.log",
+      "load_ms": 586.852,
+      "logger_start_ms": 40.852,
+      "valid": true
+    },
+    {
+      "run": 4,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 0.813,
+      "created_utc": "2026-11-01T17:25:32.403282+00:00",
+      "first_log_utc": "2026-11-02T01:25:32.444000+08:00",
+      "first_frame": {
+        "stamp": "2026-11-02T01:25:32.995+08:00",
+        "detail": "elapsed_us 2753 total_us 548920 opaque 1 transparent 0 render_us 0"
+      },
+      "golden_present": true,
+      "first_frame_lines": 1,
+      "log_lines": 35,
+      "out_log": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-04.out.log",
+      "err_log": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-04.err.log",
+      "load_ms": 591.718,
+      "logger_start_ms": 40.718,
+      "valid": true
+    },
+    {
+      "run": 5,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 0.818,
+      "created_utc": "2026-11-01T17:25:33.219582+00:00",
+      "first_log_utc": "2026-11-02T01:25:33.260000+08:00",
+      "first_frame": {
+        "stamp": "2026-11-02T01:25:33.807+08:00",
+        "detail": "elapsed_us 2347 total_us 545041 opaque 1 transparent 0 render_us 0"
+      },
+      "golden_present": true,
+      "first_frame_lines": 1,
+      "log_lines": 35,
+      "out_log": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-05.out.log",
+      "err_log": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-05.err.log",
+      "load_ms": 587.418,
+      "logger_start_ms": 40.418,
+      "valid": true
+    },
+    {
+      "run": 6,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 0.822,
+      "created_utc": "2026-11-01T17:25:34.040784+00:00",
+      "first_log_utc": "2026-11-02T01:25:34.082000+08:00",
+      "first_frame": {
+        "stamp": "2026-11-02T01:25:34.644+08:00",
+        "detail": "elapsed_us 2189 total_us 560689 opaque 1 transparent 0 render_us 0"
+      },
+      "golden_present": true,
+      "first_frame_lines": 1,
+      "log_lines": 35,
+      "out_log": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-06.out.log",
+      "err_log": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-06.err.log",
+      "load_ms": 603.216,
+      "logger_start_ms": 41.216,
+      "valid": true
+    },
+    {
+      "run": 7,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 0.793,
+      "created_utc": "2026-11-01T17:25:34.865532+00:00",
+      "first_log_utc": "2026-11-02T01:25:34.907000+08:00",
+      "first_frame": {
+        "stamp": "2026-11-02T01:25:35.448+08:00",
+        "detail": "elapsed_us 2344 total_us 538603 opaque 1 transparent 0 render_us 0"
+      },
+      "golden_present": true,
+      "first_frame_lines": 1,
+      "log_lines": 35,
+      "out_log": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-07.out.log",
+      "err_log": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-07.err.log",
+      "load_ms": 582.468,
+      "logger_start_ms": 41.468,
+      "valid": true
+    },
+    {
+      "run": 8,
+      "exit_code": 0,
+      "timed_out": false,
+      "wall_seconds": 0.807,
+      "created_utc": "2026-11-01T17:25:35.662894+00:00",
+      "first_log_utc": "2026-11-02T01:25:35.704000+08:00",
+      "first_frame": {
+        "stamp": "2026-11-02T01:25:36.245+08:00",
+        "detail": "elapsed_us 2623 total_us 539566 opaque 1 transparent 0 render_us 0"
+      },
+      "golden_present": true,
+      "first_frame_lines": 1,
+      "log_lines": 35,
+      "out_log": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-08.out.log",
+      "err_log": "out\\verification-20261101\\r3-refactor-v1\\load-prime\\run-08.err.log",
+      "load_ms": 582.106,
+      "logger_start_ms": 41.106,
+      "valid": true
+    }
+  ],
+  "summary": {
+    "valid_runs": 9,
+    "invalid_runs": 0,
+    "min_ms": 580.022,
+    "median_ms": 587.382,
+    "max_ms": 603.216,
+    "relative_range": 0.039487,
+    "gate_pass_per_run": true,
+    "repeatability_pass": true
+  }
+}

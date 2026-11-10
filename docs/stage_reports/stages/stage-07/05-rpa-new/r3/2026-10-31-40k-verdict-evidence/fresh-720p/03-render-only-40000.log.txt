@@ -1,0 +1,139 @@
+Filters: "GPU visible entity throughput probe"
+Randomness seeded to: 1
+GPU_THROUGHPUT_READY
+GPU_STARTUP_BEGIN fixture_source
+GPU_STARTUP_END fixture_source 64758.800000000003
+GPU_STARTUP_BEGIN playback_prepare
+GPU_STARTUP_END playback_prepare 2240161.2000000002
+GPU_STARTUP_BEGIN renderer_prepare
+GPU_STARTUP_END renderer_prepare 543.29999999999995
+GPU_STARTUP_BEGIN first_update
+GPU_STARTUP_END first_update 6409.6999999999998
+GPU_STARTUP_BEGIN first_extract
+GPU_STARTUP_END first_extract 13495.200000000001
+GPU_STARTUP_BEGIN first_submit
+GPU_STARTUP_END first_submit 45029.5
+GPU_THROUGHPUT_ID {"mode":"render-only","entities":40000,"draws_per_frame":40000,"in_view_centers":40000,"fixture_revision":3,"moved_entities":0,"frames":120,"duration_seconds":0,"warmup_frames":42,"pixel_readback":true,"outside_timing_pixel_proof_frames":2,"warmup_ms":2000,"timer":false,"vsync":0,"width":1280,"height":720,"vendor":"NVIDIA Corporation","renderer":"NVIDIA GeForce RTX 4060 Laptop GPU/PCIe/SSE2","gl_version":"3.3.0 NVIDIA 616.64","measured_wall_us":5259648.2000000002,"pixel_rgba":[255,204,51,255],"audio":false,"formal":false}
+GPU_THROUGHPUT_SAMPLE {"ordinal":0,"update_us":0,"extract_us":0,"submit_us":43109.099999999999,"present_us":102.40000000000001,"total_us":43211.5,"cycle_us":43222.699999999997,"end_us":43222.699999999997}
+GPU_THROUGHPUT_SAMPLE {"ordinal":1,"update_us":0,"extract_us":0,"submit_us":42427.099999999999,"present_us":108.7,"total_us":42535.800000000003,"cycle_us":42568.599999999999,"end_us":85791.300000000003}
+GPU_THROUGHPUT_SAMPLE {"ordinal":2,"update_us":0,"extract_us":0,"submit_us":43844,"present_us":111.09999999999999,"total_us":43955.099999999999,"cycle_us":43966.300000000003,"end_us":129757.60000000001}
+GPU_THROUGHPUT_SAMPLE {"ordinal":3,"update_us":0,"extract_us":0,"submit_us":43451.800000000003,"present_us":105.3,"total_us":43557.099999999999,"cycle_us":43568.5,"end_us":173326.10000000001}
+GPU_THROUGHPUT_SAMPLE {"ordinal":4,"update_us":0,"extract_us":0,"submit_us":43590.599999999999,"present_us":114.09999999999999,"total_us":43704.699999999997,"cycle_us":43715.400000000001,"end_us":217041.5}
+GPU_THROUGHPUT_SAMPLE {"ordinal":5,"update_us":0,"extract_us":0,"submit_us":43890.099999999999,"present_us":106,"total_us":43996.099999999999,"cycle_us":44007.699999999997,"end_us":261049.20000000001}
+GPU_THROUGHPUT_SAMPLE {"ordinal":6,"update_us":0,"extract_us":0,"submit_us":44953.900000000001,"present_us":103.8,"total_us":45057.699999999997,"cycle_us":45067.900000000001,"end_us":306117.09999999998}
+GPU_THROUGHPUT_SAMPLE {"ordinal":7,"update_us":0,"extract_us":0,"submit_us":44045.300000000003,"present_us":116.7,"total_us":44162,"cycle_us":44173.599999999999,"end_us":350290.70000000001}
+GPU_THROUGHPUT_SAMPLE {"ordinal":8,"update_us":0,"extract_us":0,"submit_us":43226.599999999999,"present_us":107.09999999999999,"total_us":43333.699999999997,"cycle_us":43345.300000000003,"end_us":393636}
+GPU_THROUGHPUT_SAMPLE {"ordinal":9,"update_us":0,"extract_us":0,"submit_us":43349.699999999997,"present_us":104.8,"total_us":43454.5,"cycle_us":43465.800000000003,"end_us":437101.79999999999}
+GPU_THROUGHPUT_SAMPLE {"ordinal":10,"update_us":0,"extract_us":0,"submit_us":44517.800000000003,"present_us":112.40000000000001,"total_us":44630.199999999997,"cycle_us":44641.5,"end_us":481743.29999999999}
+GPU_THROUGHPUT_SAMPLE {"ordinal":11,"update_us":0,"extract_us":0,"submit_us":43681.099999999999,"present_us":104,"total_us":43785.099999999999,"cycle_us":43797.5,"end_us":525540.80000000005}
+GPU_THROUGHPUT_SAMPLE {"ordinal":12,"update_us":0,"extract_us":0,"submit_us":42911.800000000003,"present_us":104.09999999999999,"total_us":43015.900000000001,"cycle_us":43026.099999999999,"end_us":568566.90000000002}
+GPU_THROUGHPUT_SAMPLE {"ordinal":13,"update_us":0,"extract_us":0,"submit_us":45068.699999999997,"present_us":97.099999999999994,"total_us":45165.800000000003,"cycle_us":45178.099999999999,"end_us":613745}
+GPU_THROUGHPUT_SAMPLE {"ordinal":14,"update_us":0,"extract_us":0,"submit_us":43122.199999999997,"present_us":104.7,"total_us":43226.900000000001,"cycle_us":43238.5,"end_us":656983.5}
+GPU_THROUGHPUT_SAMPLE {"ordinal":15,"update_us":0,"extract_us":0,"submit_us":43120.699999999997,"present_us":111.7,"total_us":43232.400000000001,"cycle_us":43242.900000000001,"end_us":700226.40000000002}
+GPU_THROUGHPUT_SAMPLE {"ordinal":16,"update_us":0,"extract_us":0,"submit_us":44071.400000000001,"present_us":109.90000000000001,"total_us":44181.300000000003,"cycle_us":44192.5,"end_us":744418.90000000002}
+GPU_THROUGHPUT_SAMPLE {"ordinal":17,"update_us":0,"extract_us":0,"submit_us":44188.800000000003,"present_us":104.8,"total_us":44293.599999999999,"cycle_us":44304.5,"end_us":788723.40000000002}
+GPU_THROUGHPUT_SAMPLE {"ordinal":18,"update_us":0,"extract_us":0,"submit_us":43078.400000000001,"present_us":106.90000000000001,"total_us":43185.300000000003,"cycle_us":43196.400000000001,"end_us":831919.80000000005}
+GPU_THROUGHPUT_SAMPLE {"ordinal":19,"update_us":0,"extract_us":0,"submit_us":43398.699999999997,"present_us":90.400000000000006,"total_us":43489.099999999999,"cycle_us":43499.5,"end_us":875419.30000000005}
+GPU_THROUGHPUT_SAMPLE {"ordinal":20,"update_us":0,"extract_us":0,"submit_us":43022.900000000001,"present_us":103.40000000000001,"total_us":43126.300000000003,"cycle_us":43135.900000000001,"end_us":918555.19999999995}
+GPU_THROUGHPUT_SAMPLE {"ordinal":21,"update_us":0,"extract_us":0,"submit_us":44856.199999999997,"present_us":174.69999999999999,"total_us":45030.900000000001,"cycle_us":45042.900000000001,"end_us":963598.09999999998}
+GPU_THROUGHPUT_SAMPLE {"ordinal":22,"update_us":0,"extract_us":0,"submit_us":43305.5,"present_us":112,"total_us":43417.5,"cycle_us":43429.099999999999,"end_us":1007027.2}
+GPU_THROUGHPUT_SAMPLE {"ordinal":23,"update_us":0,"extract_us":0,"submit_us":43996.099999999999,"present_us":106.90000000000001,"total_us":44103,"cycle_us":44115.300000000003,"end_us":1051142.5}
+GPU_THROUGHPUT_SAMPLE {"ordinal":24,"update_us":0,"extract_us":0,"submit_us":44312.199999999997,"present_us":121.5,"total_us":44433.699999999997,"cycle_us":44444.699999999997,"end_us":1095587.2}
+GPU_THROUGHPUT_SAMPLE {"ordinal":25,"update_us":0,"extract_us":0,"submit_us":43293.5,"present_us":112.2,"total_us":43405.699999999997,"cycle_us":43440,"end_us":1139027.2}
+GPU_THROUGHPUT_SAMPLE {"ordinal":26,"update_us":0,"extract_us":0,"submit_us":43645.699999999997,"present_us":133.30000000000001,"total_us":43779,"cycle_us":43790.5,"end_us":1182817.7}
+GPU_THROUGHPUT_SAMPLE {"ordinal":27,"update_us":0,"extract_us":0,"submit_us":42918.5,"present_us":102.90000000000001,"total_us":43021.400000000001,"cycle_us":43033.599999999999,"end_us":1225851.3}
+GPU_THROUGHPUT_SAMPLE {"ordinal":28,"update_us":0,"extract_us":0,"submit_us":43569.800000000003,"present_us":109,"total_us":43678.800000000003,"cycle_us":43690.199999999997,"end_us":1269541.5}
+GPU_THROUGHPUT_SAMPLE {"ordinal":29,"update_us":0,"extract_us":0,"submit_us":43376.699999999997,"present_us":107,"total_us":43483.699999999997,"cycle_us":43494.400000000001,"end_us":1313035.8999999999}
+GPU_THROUGHPUT_SAMPLE {"ordinal":30,"update_us":0,"extract_us":0,"submit_us":43195.800000000003,"present_us":106.59999999999999,"total_us":43302.400000000001,"cycle_us":43313.099999999999,"end_us":1356349}
+GPU_THROUGHPUT_SAMPLE {"ordinal":31,"update_us":0,"extract_us":0,"submit_us":43782.599999999999,"present_us":106.59999999999999,"total_us":43889.199999999997,"cycle_us":43899.699999999997,"end_us":1400248.7}
+GPU_THROUGHPUT_SAMPLE {"ordinal":32,"update_us":0,"extract_us":0,"submit_us":45113.900000000001,"present_us":118.7,"total_us":45232.599999999999,"cycle_us":45243.599999999999,"end_us":1445492.3}
+GPU_THROUGHPUT_SAMPLE {"ordinal":33,"update_us":0,"extract_us":0,"submit_us":42656,"present_us":92.099999999999994,"total_us":42748.099999999999,"cycle_us":42759.599999999999,"end_us":1488251.8999999999}
+GPU_THROUGHPUT_SAMPLE {"ordinal":34,"update_us":0,"extract_us":0,"submit_us":43646.400000000001,"present_us":108.7,"total_us":43755.099999999999,"cycle_us":43762.800000000003,"end_us":1532014.7}
+GPU_THROUGHPUT_SAMPLE {"ordinal":35,"update_us":0,"extract_us":0,"submit_us":43620.900000000001,"present_us":107.7,"total_us":43728.599999999999,"cycle_us":43740.699999999997,"end_us":1575755.3999999999}
+GPU_THROUGHPUT_SAMPLE {"ordinal":36,"update_us":0,"extract_us":0,"submit_us":43486.199999999997,"present_us":105.40000000000001,"total_us":43591.599999999999,"cycle_us":43602.800000000003,"end_us":1619358.2}
+GPU_THROUGHPUT_SAMPLE {"ordinal":37,"update_us":0,"extract_us":0,"submit_us":43129.199999999997,"present_us":114.40000000000001,"total_us":43243.599999999999,"cycle_us":43255.199999999997,"end_us":1662613.3999999999}
+GPU_THROUGHPUT_SAMPLE {"ordinal":38,"update_us":0,"extract_us":0,"submit_us":43724.800000000003,"present_us":103.90000000000001,"total_us":43828.699999999997,"cycle_us":43837.5,"end_us":1706450.8999999999}
+GPU_THROUGHPUT_SAMPLE {"ordinal":39,"update_us":0,"extract_us":0,"submit_us":45213.599999999999,"present_us":109.40000000000001,"total_us":45323,"cycle_us":45334.300000000003,"end_us":1751785.2}
+GPU_THROUGHPUT_SAMPLE {"ordinal":40,"update_us":0,"extract_us":0,"submit_us":43658,"present_us":107.90000000000001,"total_us":43765.900000000001,"cycle_us":43776.599999999999,"end_us":1795561.8}
+GPU_THROUGHPUT_SAMPLE {"ordinal":41,"update_us":0,"extract_us":0,"submit_us":43468.400000000001,"present_us":108.5,"total_us":43576.900000000001,"cycle_us":43588,"end_us":1839149.8}
+GPU_THROUGHPUT_SAMPLE {"ordinal":42,"update_us":0,"extract_us":0,"submit_us":43759.300000000003,"present_us":115.7,"total_us":43875,"cycle_us":43885.900000000001,"end_us":1883035.7}
+GPU_THROUGHPUT_SAMPLE {"ordinal":43,"update_us":0,"extract_us":0,"submit_us":46660.900000000001,"present_us":140.19999999999999,"total_us":46801.099999999999,"cycle_us":46809.699999999997,"end_us":1929845.3999999999}
+GPU_THROUGHPUT_SAMPLE {"ordinal":44,"update_us":0,"extract_us":0,"submit_us":44818.699999999997,"present_us":112.5,"total_us":44931.199999999997,"cycle_us":44944.400000000001,"end_us":1974789.8}
+GPU_THROUGHPUT_SAMPLE {"ordinal":45,"update_us":0,"extract_us":0,"submit_us":43531.699999999997,"present_us":107.3,"total_us":43639,"cycle_us":43650.699999999997,"end_us":2018440.5}
+GPU_THROUGHPUT_SAMPLE {"ordinal":46,"update_us":0,"extract_us":0,"submit_us":43197.800000000003,"present_us":100.8,"total_us":43298.599999999999,"cycle_us":43310,"end_us":2061750.5}
+GPU_THROUGHPUT_SAMPLE {"ordinal":47,"update_us":0,"extract_us":0,"submit_us":43576.099999999999,"present_us":98.400000000000006,"total_us":43674.5,"cycle_us":43683.300000000003,"end_us":2105433.7999999998}
+GPU_THROUGHPUT_SAMPLE {"ordinal":48,"update_us":0,"extract_us":0,"submit_us":43489.900000000001,"present_us":114.3,"total_us":43604.199999999997,"cycle_us":43648.400000000001,"end_us":2149082.2000000002}
+GPU_THROUGHPUT_SAMPLE {"ordinal":49,"update_us":0,"extract_us":0,"submit_us":43181.400000000001,"present_us":99.799999999999997,"total_us":43281.199999999997,"cycle_us":43291.800000000003,"end_us":2192374}
+GPU_THROUGHPUT_SAMPLE {"ordinal":50,"update_us":0,"extract_us":0,"submit_us":43240.300000000003,"present_us":106.3,"total_us":43346.599999999999,"cycle_us":43358.5,"end_us":2235732.5}
+GPU_THROUGHPUT_SAMPLE {"ordinal":51,"update_us":0,"extract_us":0,"submit_us":43370,"present_us":116.90000000000001,"total_us":43486.900000000001,"cycle_us":43498.199999999997,"end_us":2279230.7000000002}
+GPU_THROUGHPUT_SAMPLE {"ordinal":52,"update_us":0,"extract_us":0,"submit_us":43416.599999999999,"present_us":95.900000000000006,"total_us":43512.5,"cycle_us":43523.400000000001,"end_us":2322754.1000000001}
+GPU_THROUGHPUT_SAMPLE {"ordinal":53,"update_us":0,"extract_us":0,"submit_us":43178.800000000003,"present_us":114.59999999999999,"total_us":43293.400000000001,"cycle_us":43304.800000000003,"end_us":2366058.8999999999}
+GPU_THROUGHPUT_SAMPLE {"ordinal":54,"update_us":0,"extract_us":0,"submit_us":43280.900000000001,"present_us":112.7,"total_us":43393.599999999999,"cycle_us":43405.199999999997,"end_us":2409464.1000000001}
+GPU_THROUGHPUT_SAMPLE {"ordinal":55,"update_us":0,"extract_us":0,"submit_us":44157.900000000001,"present_us":109.40000000000001,"total_us":44267.300000000003,"cycle_us":44275.300000000003,"end_us":2453739.3999999999}
+GPU_THROUGHPUT_SAMPLE {"ordinal":56,"update_us":0,"extract_us":0,"submit_us":43831.699999999997,"present_us":113.90000000000001,"total_us":43945.599999999999,"cycle_us":43957.300000000003,"end_us":2497696.7000000002}
+GPU_THROUGHPUT_SAMPLE {"ordinal":57,"update_us":0,"extract_us":0,"submit_us":44413.199999999997,"present_us":106.2,"total_us":44519.400000000001,"cycle_us":44532.699999999997,"end_us":2542229.3999999999}
+GPU_THROUGHPUT_SAMPLE {"ordinal":58,"update_us":0,"extract_us":0,"submit_us":43946.599999999999,"present_us":120.90000000000001,"total_us":44067.5,"cycle_us":44078.400000000001,"end_us":2586307.7999999998}
+GPU_THROUGHPUT_SAMPLE {"ordinal":59,"update_us":0,"extract_us":0,"submit_us":43056,"present_us":99.799999999999997,"total_us":43155.800000000003,"cycle_us":43166.300000000003,"end_us":2629474.1000000001}
+GPU_THROUGHPUT_SAMPLE {"ordinal":60,"update_us":0,"extract_us":0,"submit_us":43282.599999999999,"present_us":103.5,"total_us":43386.099999999999,"cycle_us":43397.800000000003,"end_us":2672871.8999999999}
+GPU_THROUGHPUT_SAMPLE {"ordinal":61,"update_us":0,"extract_us":0,"submit_us":43453.900000000001,"present_us":119.09999999999999,"total_us":43573,"cycle_us":43583.5,"end_us":2716455.3999999999}
+GPU_THROUGHPUT_SAMPLE {"ordinal":62,"update_us":0,"extract_us":0,"submit_us":43861.699999999997,"present_us":108.09999999999999,"total_us":43969.800000000003,"cycle_us":43981,"end_us":2760436.3999999999}
+GPU_THROUGHPUT_SAMPLE {"ordinal":63,"update_us":0,"extract_us":0,"submit_us":43353.199999999997,"present_us":296.30000000000001,"total_us":43649.5,"cycle_us":43659.199999999997,"end_us":2804095.6000000001}
+GPU_THROUGHPUT_SAMPLE {"ordinal":64,"update_us":0,"extract_us":0,"submit_us":43480.300000000003,"present_us":97.700000000000003,"total_us":43578,"cycle_us":43590.599999999999,"end_us":2847686.2000000002}
+GPU_THROUGHPUT_SAMPLE {"ordinal":65,"update_us":0,"extract_us":0,"submit_us":43373.099999999999,"present_us":108,"total_us":43481.099999999999,"cycle_us":43490.300000000003,"end_us":2891176.5}
+GPU_THROUGHPUT_SAMPLE {"ordinal":66,"update_us":0,"extract_us":0,"submit_us":42846.099999999999,"present_us":122.3,"total_us":42968.400000000001,"cycle_us":42979.699999999997,"end_us":2934156.2000000002}
+GPU_THROUGHPUT_SAMPLE {"ordinal":67,"update_us":0,"extract_us":0,"submit_us":42679.099999999999,"present_us":107.8,"total_us":42786.900000000001,"cycle_us":42798.400000000001,"end_us":2976954.6000000001}
+GPU_THROUGHPUT_SAMPLE {"ordinal":68,"update_us":0,"extract_us":0,"submit_us":45929.400000000001,"present_us":106.59999999999999,"total_us":46036,"cycle_us":46046.599999999999,"end_us":3023001.2000000002}
+GPU_THROUGHPUT_SAMPLE {"ordinal":69,"update_us":0,"extract_us":0,"submit_us":43949.900000000001,"present_us":104.7,"total_us":44054.599999999999,"cycle_us":44064.800000000003,"end_us":3067066}
+GPU_THROUGHPUT_SAMPLE {"ordinal":70,"update_us":0,"extract_us":0,"submit_us":43515.5,"present_us":111.40000000000001,"total_us":43626.900000000001,"cycle_us":43638.199999999997,"end_us":3110704.2000000002}
+GPU_THROUGHPUT_SAMPLE {"ordinal":71,"update_us":0,"extract_us":0,"submit_us":43416.599999999999,"present_us":123.7,"total_us":43540.300000000003,"cycle_us":43549.400000000001,"end_us":3154253.6000000001}
+GPU_THROUGHPUT_SAMPLE {"ordinal":72,"update_us":0,"extract_us":0,"submit_us":44909.599999999999,"present_us":110.2,"total_us":45019.800000000003,"cycle_us":45041.699999999997,"end_us":3199295.2999999998}
+GPU_THROUGHPUT_SAMPLE {"ordinal":73,"update_us":0,"extract_us":0,"submit_us":43145.599999999999,"present_us":106.90000000000001,"total_us":43252.5,"cycle_us":43263.400000000001,"end_us":3242558.7000000002}
+GPU_THROUGHPUT_SAMPLE {"ordinal":74,"update_us":0,"extract_us":0,"submit_us":42994.900000000001,"present_us":101.5,"total_us":43096.400000000001,"cycle_us":43107.099999999999,"end_us":3285665.7999999998}
+GPU_THROUGHPUT_SAMPLE {"ordinal":75,"update_us":0,"extract_us":0,"submit_us":43547.699999999997,"present_us":107.5,"total_us":43655.199999999997,"cycle_us":43665.400000000001,"end_us":3329331.2000000002}
+GPU_THROUGHPUT_SAMPLE {"ordinal":76,"update_us":0,"extract_us":0,"submit_us":43309.599999999999,"present_us":112.09999999999999,"total_us":43421.699999999997,"cycle_us":43432.300000000003,"end_us":3372763.5}
+GPU_THROUGHPUT_SAMPLE {"ordinal":77,"update_us":0,"extract_us":0,"submit_us":43509.800000000003,"present_us":107.59999999999999,"total_us":43617.400000000001,"cycle_us":43627.900000000001,"end_us":3416391.3999999999}
+GPU_THROUGHPUT_SAMPLE {"ordinal":78,"update_us":0,"extract_us":0,"submit_us":43047.199999999997,"present_us":112.59999999999999,"total_us":43159.800000000003,"cycle_us":43171.5,"end_us":3459562.8999999999}
+GPU_THROUGHPUT_SAMPLE {"ordinal":79,"update_us":0,"extract_us":0,"submit_us":43029.300000000003,"present_us":109,"total_us":43138.300000000003,"cycle_us":43146.199999999997,"end_us":3502709.1000000001}
+GPU_THROUGHPUT_SAMPLE {"ordinal":80,"update_us":0,"extract_us":0,"submit_us":44851,"present_us":111.3,"total_us":44962.300000000003,"cycle_us":44975.099999999999,"end_us":3547684.2000000002}
+GPU_THROUGHPUT_SAMPLE {"ordinal":81,"update_us":0,"extract_us":0,"submit_us":43272.699999999997,"present_us":117.90000000000001,"total_us":43390.599999999999,"cycle_us":43401.800000000003,"end_us":3591086}
+GPU_THROUGHPUT_SAMPLE {"ordinal":82,"update_us":0,"extract_us":0,"submit_us":44023.699999999997,"present_us":106,"total_us":44129.699999999997,"cycle_us":44141.900000000001,"end_us":3635227.8999999999}
+GPU_THROUGHPUT_SAMPLE {"ordinal":83,"update_us":0,"extract_us":0,"submit_us":43071.800000000003,"present_us":132.69999999999999,"total_us":43204.5,"cycle_us":43214.699999999997,"end_us":3678442.6000000001}
+GPU_THROUGHPUT_SAMPLE {"ordinal":84,"update_us":0,"extract_us":0,"submit_us":43467.199999999997,"present_us":108.59999999999999,"total_us":43575.800000000003,"cycle_us":43585.699999999997,"end_us":3722028.2999999998}
+GPU_THROUGHPUT_SAMPLE {"ordinal":85,"update_us":0,"extract_us":0,"submit_us":43579.900000000001,"present_us":111.7,"total_us":43691.599999999999,"cycle_us":43701.199999999997,"end_us":3765729.5}
+GPU_THROUGHPUT_SAMPLE {"ordinal":86,"update_us":0,"extract_us":0,"submit_us":43326.400000000001,"present_us":103,"total_us":43429.400000000001,"cycle_us":43440.800000000003,"end_us":3809170.2999999998}
+GPU_THROUGHPUT_SAMPLE {"ordinal":87,"update_us":0,"extract_us":0,"submit_us":43413.599999999999,"present_us":108.2,"total_us":43521.800000000003,"cycle_us":43532.800000000003,"end_us":3852703.1000000001}
+GPU_THROUGHPUT_SAMPLE {"ordinal":88,"update_us":0,"extract_us":0,"submit_us":43451,"present_us":113,"total_us":43564,"cycle_us":43575.400000000001,"end_us":3896278.5}
+GPU_THROUGHPUT_SAMPLE {"ordinal":89,"update_us":0,"extract_us":0,"submit_us":43376.099999999999,"present_us":105.8,"total_us":43481.900000000001,"cycle_us":43493,"end_us":3939771.5}
+GPU_THROUGHPUT_SAMPLE {"ordinal":90,"update_us":0,"extract_us":0,"submit_us":43463.300000000003,"present_us":109.8,"total_us":43573.099999999999,"cycle_us":43584.099999999999,"end_us":3983355.6000000001}
+GPU_THROUGHPUT_SAMPLE {"ordinal":91,"update_us":0,"extract_us":0,"submit_us":43512,"present_us":105.09999999999999,"total_us":43617.099999999999,"cycle_us":43628.400000000001,"end_us":4026984}
+GPU_THROUGHPUT_SAMPLE {"ordinal":92,"update_us":0,"extract_us":0,"submit_us":43315.900000000001,"present_us":110.7,"total_us":43426.599999999999,"cycle_us":43438,"end_us":4070422}
+GPU_THROUGHPUT_SAMPLE {"ordinal":93,"update_us":0,"extract_us":0,"submit_us":43015.5,"present_us":108.09999999999999,"total_us":43123.599999999999,"cycle_us":43134.900000000001,"end_us":4113556.8999999999}
+GPU_THROUGHPUT_SAMPLE {"ordinal":94,"update_us":0,"extract_us":0,"submit_us":43696.300000000003,"present_us":111.3,"total_us":43807.599999999999,"cycle_us":43819.199999999997,"end_us":4157376.1000000001}
+GPU_THROUGHPUT_SAMPLE {"ordinal":95,"update_us":0,"extract_us":0,"submit_us":43062.800000000003,"present_us":103.59999999999999,"total_us":43166.400000000001,"cycle_us":43178,"end_us":4200554.0999999996}
+GPU_THROUGHPUT_SAMPLE {"ordinal":96,"update_us":0,"extract_us":0,"submit_us":42930.599999999999,"present_us":104.3,"total_us":43034.900000000001,"cycle_us":43058.199999999997,"end_us":4243612.2999999998}
+GPU_THROUGHPUT_SAMPLE {"ordinal":97,"update_us":0,"extract_us":0,"submit_us":43570.099999999999,"present_us":113.5,"total_us":43683.599999999999,"cycle_us":43693.900000000001,"end_us":4287306.2000000002}
+GPU_THROUGHPUT_SAMPLE {"ordinal":98,"update_us":0,"extract_us":0,"submit_us":42769.5,"present_us":102.40000000000001,"total_us":42871.900000000001,"cycle_us":42880.099999999999,"end_us":4330186.2999999998}
+GPU_THROUGHPUT_SAMPLE {"ordinal":99,"update_us":0,"extract_us":0,"submit_us":44027.599999999999,"present_us":113.2,"total_us":44140.800000000003,"cycle_us":44152.099999999999,"end_us":4374338.4000000004}
+GPU_THROUGHPUT_SAMPLE {"ordinal":100,"update_us":0,"extract_us":0,"submit_us":42986.5,"present_us":105.2,"total_us":43091.699999999997,"cycle_us":43103,"end_us":4417441.4000000004}
+GPU_THROUGHPUT_SAMPLE {"ordinal":101,"update_us":0,"extract_us":0,"submit_us":43741.199999999997,"present_us":113.3,"total_us":43854.5,"cycle_us":43865.699999999997,"end_us":4461307.0999999996}
+GPU_THROUGHPUT_SAMPLE {"ordinal":102,"update_us":0,"extract_us":0,"submit_us":43334.800000000003,"present_us":122.2,"total_us":43457,"cycle_us":43467,"end_us":4504774.0999999996}
+GPU_THROUGHPUT_SAMPLE {"ordinal":103,"update_us":0,"extract_us":0,"submit_us":43373.400000000001,"present_us":117,"total_us":43490.400000000001,"cycle_us":43501.199999999997,"end_us":4548275.2999999998}
+GPU_THROUGHPUT_SAMPLE {"ordinal":104,"update_us":0,"extract_us":0,"submit_us":43947.800000000003,"present_us":113,"total_us":44060.800000000003,"cycle_us":44072,"end_us":4592347.2999999998}
+GPU_THROUGHPUT_SAMPLE {"ordinal":105,"update_us":0,"extract_us":0,"submit_us":43527.5,"present_us":99.700000000000003,"total_us":43627.199999999997,"cycle_us":43638.400000000001,"end_us":4635985.7000000002}
+GPU_THROUGHPUT_SAMPLE {"ordinal":106,"update_us":0,"extract_us":0,"submit_us":49365.900000000001,"present_us":113.3,"total_us":49479.199999999997,"cycle_us":49490.300000000003,"end_us":4685476}
+GPU_THROUGHPUT_SAMPLE {"ordinal":107,"update_us":0,"extract_us":0,"submit_us":45793.800000000003,"present_us":84.799999999999997,"total_us":45878.599999999999,"cycle_us":45890.099999999999,"end_us":4731366.0999999996}
+GPU_THROUGHPUT_SAMPLE {"ordinal":108,"update_us":0,"extract_us":0,"submit_us":44278.199999999997,"present_us":124.8,"total_us":44403,"cycle_us":44411.900000000001,"end_us":4775778}
+GPU_THROUGHPUT_SAMPLE {"ordinal":109,"update_us":0,"extract_us":0,"submit_us":45384.900000000001,"present_us":131.5,"total_us":45516.400000000001,"cycle_us":45528.099999999999,"end_us":4821306.0999999996}
+GPU_THROUGHPUT_SAMPLE {"ordinal":110,"update_us":0,"extract_us":0,"submit_us":45161.099999999999,"present_us":110,"total_us":45271.099999999999,"cycle_us":45283.099999999999,"end_us":4866589.2000000002}
+GPU_THROUGHPUT_SAMPLE {"ordinal":111,"update_us":0,"extract_us":0,"submit_us":43848.5,"present_us":105.59999999999999,"total_us":43954.099999999999,"cycle_us":43964.800000000003,"end_us":4910554}
+GPU_THROUGHPUT_SAMPLE {"ordinal":112,"update_us":0,"extract_us":0,"submit_us":44114.199999999997,"present_us":97,"total_us":44211.199999999997,"cycle_us":44223.599999999999,"end_us":4954777.5999999996}
+GPU_THROUGHPUT_SAMPLE {"ordinal":113,"update_us":0,"extract_us":0,"submit_us":43234.400000000001,"present_us":100.7,"total_us":43335.099999999999,"cycle_us":43346.099999999999,"end_us":4998123.7000000002}
+GPU_THROUGHPUT_SAMPLE {"ordinal":114,"update_us":0,"extract_us":0,"submit_us":43495.099999999999,"present_us":111.8,"total_us":43606.900000000001,"cycle_us":43616.900000000001,"end_us":5041740.5999999996}
+GPU_THROUGHPUT_SAMPLE {"ordinal":115,"update_us":0,"extract_us":0,"submit_us":43643.699999999997,"present_us":98.599999999999994,"total_us":43742.300000000003,"cycle_us":43753.400000000001,"end_us":5085494}
+GPU_THROUGHPUT_SAMPLE {"ordinal":116,"update_us":0,"extract_us":0,"submit_us":43632.099999999999,"present_us":110.09999999999999,"total_us":43742.199999999997,"cycle_us":43751.800000000003,"end_us":5129245.7999999998}
+GPU_THROUGHPUT_SAMPLE {"ordinal":117,"update_us":0,"extract_us":0,"submit_us":43534.800000000003,"present_us":97.900000000000006,"total_us":43632.699999999997,"cycle_us":43644.699999999997,"end_us":5172890.5}
+GPU_THROUGHPUT_SAMPLE {"ordinal":118,"update_us":0,"extract_us":0,"submit_us":43331.199999999997,"present_us":110.2,"total_us":43441.400000000001,"cycle_us":43449,"end_us":5216339.5}
+GPU_THROUGHPUT_SAMPLE {"ordinal":119,"update_us":0,"extract_us":0,"submit_us":43185,"present_us":99.200000000000003,"total_us":43284.199999999997,"cycle_us":43308.699999999997,"end_us":5259648.2000000002}
+===============================================================================
+All tests passed (21 assertions in 1 test case)
+

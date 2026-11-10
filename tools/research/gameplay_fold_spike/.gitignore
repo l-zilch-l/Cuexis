@@ -1,0 +1,11 @@
+# Build outputs and captured reports. The report is written by hand in
+# docs/stage_reports/reviews/gameplay-ruleset-2026-10/, not captured here.
+fold_spike
+fold_spike.exe
+fold_spike_gcc
+fold_spike_gcc.exe
+fold_spike_clang
+fold_spike_clang.exe
+*.log
+report_*.md
+report_*.err

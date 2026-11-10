@@ -1,0 +1,30 @@
+{
+  "run": "D:\\Cuexis-redesign\\out\\rpa-acceptance\\20261101-155550-03d71bca",
+  "run_head": "6256af8b7d349b14a6d5b006d7632711152e96fa",
+  "checkout_head": "6256af8b7d349b14a6d5b006d7632711152e96fa",
+  "checkout_root": "D:\\Cuexis-redesign",
+  "reference_root": null,
+  "files_at_run_start": 4259,
+  "files_at_commit": 4259,
+  "content_equal_as_worktree": 4259,
+  "content_equal_lf_form": 0,
+  "content_equal_crlf_form": 0,
+  "content_equal_mixed_line_endings": 0,
+  "drifted": 0,
+  "added": [],
+  "removed": [],
+  "mixed_line_ending_files": [],
+  "drifted_files": [],
+  "document_deltas": [],
+  "worktree_sha256_run": "9fa7831c937b07864b45b30b8dea201fb983beff43e50014d9bd0c7d3e565294",
+  "worktree_sha256_commit": "9fa7831c937b07864b45b30b8dea201fb983beff43e50014d9bd0c7d3e565294",
+  "implementation_sha256_run": "579f034be96d296d26364ecc11ff524459b6b164f4e96a2570bbb68dcf0985d8",
+  "implementation_sha256_commit": "579f034be96d296d26364ecc11ff524459b6b164f4e96a2570bbb68dcf0985d8",
+  "aggregate_bytes_equal": {
+    "worktree": true,
+    "implementation": true
+  },
+  "content_closed": true,
+  "problems": [],
+  "note": "Aggregate sha256 values hash the exact bytes of a worktree, including each file's line-ending form. A fresh checkout applies core.autocrlf uniformly, so a run that recorded a locally accumulated mix cannot be reproduced hash-for-hash from it. Closure is therefore asserted on content: every non-document path is byte-equal, equal up to a line-ending fold, or - with a --reference checkout carrying the run's forms - equal after folding a mixed-line-ending file."
+}

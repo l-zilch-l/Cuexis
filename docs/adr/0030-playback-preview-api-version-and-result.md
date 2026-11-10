@@ -6,15 +6,16 @@
 
 ## 实现快照（2026-08-29）
 
-当前仓库的 `CUEXIS_SDK_API_VERSION` 为 `0.7.0`。当前 Playback external consumer 示例使用：
+当时仓库的 `CUEXIS_SDK_API_VERSION` 为 `0.7.0`。该快照中的 Playback external consumer 示例使用：
 
 ```cmake
 find_package(Cuexis 0.7 CONFIG REQUIRED COMPONENTS Playback Content Audio)
 ```
 
 下文关于 `0.1.0`、`0.2.0`、`0.3.0` 和 `0.4.0` 的段落保留为本 ADR 的历史决策背景；
-它们不是当前 SDK API 版本声明。当前版本和安装示例以本快照、`VERSIONING.md` 与
-`BUILDING.md` 的现行合同为准。
+它们不是当前 SDK API 版本声明。2026-10-11核对：当前分支SDK API已为`0.7.5`；
+当前版本和安装示例以[CURRENT_STATUS](../CURRENT_STATUS.md)、[VERSIONING](../guides/VERSIONING.md)与
+[BUILDING](../guides/BUILDING.md)为准，不以本历史快照决定消费者最低请求。
 
 ## 背景
 

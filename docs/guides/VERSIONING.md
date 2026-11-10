@@ -2,7 +2,7 @@
 
 状态：已接受
 
-更新日期：2026-09-28
+更新日期：2026-10-28
 
 ## 格式
 
@@ -76,7 +76,7 @@ suffix 只来自允许集合或 exp.<name>
 
 ```text
 Cuexis display version     仓库/发行构建身份
-C++ SDK API version        CMake package 与源码兼容版本；当前 static/shared preview 为 0.7.0
+C++ SDK API version        CMake package 与源码兼容版本；当前分支 static/shared preview 为 0.9.1
 C ABI version              稳定 shared-library 二进制契约，阶段 12 首次冻结
 Chart/Project/Asset format 各自持久化 format + version
 ReplayData format          阶段 11 冻结的独立持久化版本
@@ -124,11 +124,141 @@ SDK API 版本和已启用组件；稳定 C ABI 在阶段 12 建立后再提供�
 
 ## SDK 版本递增规范
 
+Stage 7 originally prepared SDK `0.7.1` as a compatible patch candidate for explicit Entry
+factories and experimental package isolation. This repair preserves installed public layouts,
+signatures, vtables and default production source selection. `0.7.0` consumers rebuild against
+the new package; the original Entry additions required at least `0.7.1`. This is the historical
+Entry baseline, not the current package version. The branch now uses `0.9.1`; its diagnostic and
+Recovery compatibility changes and consumer minimum are specified below. Delivery status belongs
+to [CURRENT_STATUS](../CURRENT_STATUS.md); approval and release gates remain separate.
+
+2026-10-08 S7A-7/8 actual diff review retains this patch under the 0.x policy below:
+production declarations of installed PlaybackSession/PlaybackSource equal PR base
+5472c463640cf3b66a03dd86fe87bd87239b2659 after excluding explicit candidate blocks;
+the original 0.7.0 consumer is unchanged. New Gameplay names/types require candidate opt-in.
+No production signature, layout, enum semantics or default selection changed. This is a
+source compatibility decision; shared consumers must rebuild and package validation must
+pass. Date identity is independently updated by update_version.py; owner release approval,
+trusted bootstrap and hosted evidence were still open at that review. Their historical S7A-8.4
+closure does not approve the later 0.7.5 changes.
+
+
+### S7A-8.4 owner approval record
+
+A same-author PR uses an owner GitHub issue-comment record because GitHub does not accept
+self-Approve reviews. The record starts with `cuexis-sdk-api-approval-v1` on its own line
+using LF or CRLF, followed by one JSON object with exactly: `repository`, integer `pr`, full `base_sha`, full
+`candidate_sha`, full `candidate_tree_sha`, `from`, `to`, `utc_date`. The API-observed actor
+must be a human owner in `.github/sdk-api-owners.json` at the trusted base. The record must
+be unedited and created on that UTC release date. Missing approval, wrong actor, stale date,
+changed SHA/base/version/tree or an unavailable API denies permission. The newest owner record
+supersedes older records; an invalid newer record revokes permission. Candidate files, labels
+and `--allow-sdk-api-change` cannot grant permission. Owner approval requires explicit owner
+authorization; the owner may invoke the double-click assistant below to publish through their
+authenticated account. Routine agent builds, tests and pushes do not authorize approval posting.
+Both comment selection and JSON parsing accept LF/CRLF line endings; normalization does not
+change the API-observed comment or its raw size bound.
+
+The metadata-only `pull_request` and `pull_request_target` gates check out the base and fetch
+the actual PR head as data; neither executes PR code. Keeping `pull_request` also makes the
+PR-head check reachable while the target-event workflow has not yet been installed on master.
+This trigger bridge does not bootstrap the trusted checker or grant owner approval; a missing
+trusted baseline still fails explicitly. The latest event base must be an ancestor of the PR head, so outdated
+branches need updating. Merge-group approval binds the actual queue tree. Post-merge audit
+permits a different merge/squash SHA only for the identical approved tree, actual previous-master
+base and SDK transition. Only single-PR queues are supported; combined queues are rejected even
+with an approval for their final tree. Historical checks
+are evidence, not new release authorization.
+
+The checker, tests, registry and workflow must first exist on trusted master. Missing baseline
+files produce `version.bootstrap.required`, never candidate fallback. CODEOWNERS records owners
+but does not activate protection. Initial bootstrap and activation of a trusted required workflow
+remain owner operations. A protected first installation may use two steps: an SDK-unchanged
+bootstrap installs the reviewed checker and owner registry while retaining compatible trusted
+tests and workflow; a later PR installs the new tests/workflow and requests SDK authorization.
+The first candidate must pass the actual old trusted checker/tests; the next workflow must use
+only installed base tools. This deployment sequence never grants SDK approval, disables a
+required check or permits candidate fallback. A separate bootstrap PR needs explicit owner
+authorization where the task excludes additional PRs. The current classic required-check context alone does not prove an
+unforgeable workflow source; protection and same-SHA hosted evidence remain acceptance items,
+subject to the explicitly accepted single-maintainer exception below.
+
+Personal repositories can enforce PRs and App-bound required checks through branch rulesets, but
+GitHub configures required-workflow rules at organization/enterprise scope. A named check from
+the GitHub Actions App does not distinguish workflow, matrix or event provenance. If the
+platform rejects a workflow-source rule, keep that acceptance item open unless the owner
+explicitly accepts and records an exception. Protection changes may be explicitly delegated by the owner.
+
+### 单人维护仓库的检查来源例外（2026-10-10）
+
+owner明确接受本仓库由本人单独维护时不强制指定可信workflow来源；这是治理要求修订，
+不声明App/context绑定具有workflow来源锁定能力。范围仅为 `l-zilch-l/Cuexis` 当前个人仓库，
+适用于S7A-8.4及后续普通PR；merge queue不在本例外内，继续保持禁用。
+
+保留以下合并条件：master必须通过PR更新；`Version advancement (pre-merge)`需绑定
+GitHub Actions App15368并通过strict检查；禁止强推/删除，无bypass；SDK变化仍要求真实
+owner未编辑评论准确绑定base/head/tree、版本及UTC日期。checker仍从可信base读取，
+不能回退候选代码、伪造status或接受CLI布尔授权。
+
+每次交付核对门禁文件差异（workflows、checker/tests/updater、owners与CODEOWNERS），
+并查看最终SHA实际Version Gate日志，确认base/head/UTC/审批comment ID以及真实校验步骤。
+自动助手或代理可完成材料核对；owner仍决定合并和发行。新SHA不沿用旧审批/日志。
+新增有写权限的维护者、改变检查App/执行方式、启用queue或转换仓库归属时，重新审查本例外，
+不得把本次单人风险接受扩为多人维护承诺。
+
+该例外接受同名Actions检查可被替换且平台无法强制锁定workflow的剩余风险；
+人工/代理核对日志是补偿措施，不是不可伪造保证。裁定及配置证据见
+[接受记录](../stage_reports/stages/stage-07/90-shared/release-gates/2026-10-10-single-maintainer-workflow-source-exception.md)。
+
+### Windows double-click approval assistant
+
+Windows用户可直接双击仓库内的 `tools/prepare_sdk_approval.cmd`（默认本仓库PR #32）。
+需要已安装并登录GitHub CLI；当前账号须在可信base的owner名单中。助手会读取**线上当前PR**的
+base、head、tree、SDK版本及UTC日期，核对版本递增，再生成LF-only UTF-8文本到
+`out/sdk-approval/`，并以当前登录的owner账号直接发布新审批评论，随后读取API核验结果。
+双击即表示本人授权发布该次线上当前候选的审批；无需复制粘贴或再打开PowerShell。
+
+最新owner记录已完整匹配时不重复发布；较新的无效记录不会被较早有效记录掩盖。同一PR的本机
+并发运行会被阻止。助手在当前进程固定使用 `http://127.0.0.1:7890` 代理，并清空代理绕过列表；
+退出时恢复环境变量，不修改Windows或Git的全局代理设置。
+读取连接失败最多尝试三次。POST失败不自动重发，而是读取评论确认是否已被GitHub接收；无法确认
+时保留错误，请检查PR后重试。
+
+发布后在该PR的Actions中重跑失败的Version Gate。每次推送后可以重新双击，文本按线上最新提交
+生成；本地未提交改动不在审批范围。发布前后均检查分支与UTC日期；若发布后发生变更，评论
+仅绑定原候选，需重新运行。候选日期过期或账号不符时停止，不以旧文件继续审批。
+
+只生成文件的命令行模式为 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/prepare_sdk_approval.ps1 -PrepareOnly`；
+可通过 `-Repository owner/repository -PullRequest number` 选择其他适用仓库/PR。
+离线测试：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/check_sdk_approval_assistant_tests.ps1`。
+助手不替代可信Version Gate或发行验收。CMD启动器使用持久窗口，成功或报错后均保留，
+需本人关闭窗口；不再依赖按任意键暂停。每次执行在 `out/sdk-approval/run-日期时间-进程号.log`
+记录输出、错误位置和调用栈。双击 `.cmd`，不要直接运行 `.ps1`。
+
+### Recovering a stale owner approval
+
+`version.sdk_api.approval_mismatch` requires comparing the newest owner record with the
+actual PR base, final head commit and tree, SDK transition and UTC date. An earlier approval
+does not cover later code or documentation commits. Finish the intended changes and push
+the final candidate before preparing its approval text; avoid another report-only commit
+after approval, since that changes the tuple again.
+
+Prepare the LF-only record from the final Git objects and have the owner post it as a new,
+unedited comment on the existing PR, either manually or by explicitly invoking the assistant.
+The agent needs explicit owner authorization to publish approval; ordinary implementation
+authorization does not suffice. Comment creation alone does not trigger this workflow: after the
+comment exists, rerun the failed pre-merge check for that same candidate and inspect its
+result. A fresh push requires a fresh tuple; a new UTC date requires the normal version/date
+validation too. Do not reuse an old record, weaken exact binding, or execute candidate tools
+as trusted code to make this rejection disappear.
+
+### SDK version selection
+
 本节是 SDK 版本选择和更新流程的统一规范；阶段计划引用本节，不为后续阶段预留版本号。
 SDK 使用 `major.minor.patch` 三个非负整数，不是小数；例如
 `0.9.0 -> 0.10.0 -> 0.11.0`，minor 和 patch 不设一位数字上限。
 SDK 版本与 Stage 编号、日期构建号及内容格式版本均不绑定。一个阶段可以不升级 SDK，
-也可以包含多次已批准的 SDK 发行；不得为了等待 Stage 12 而压低 minor。
+也可以包含多次已批准的 SDK 发行；不得为了等待 Stage 14 而压低 minor。
 
 ### 0.x preview 的选择规则
 
@@ -138,7 +268,7 @@ SDK 版本与 Stage 编号、日期构建号及内容格式版本均不绑定。
 | 恢复既有合同的兼容修复，或经审查确认兼容的新增名字 API/类型 | 可递增 patch；必须保持旧 consumer 的源码及可观察合同兼容 |
 | 不兼容的公开布局、签名、虚表、枚举语义、默认入口/行为或 capability 合同变化 | 必须递增 minor，patch 归零；先批准合同和迁移决策，再实现/发行 |
 | 一组经批准的公共合同发行，即使全部为 additive | 可递增 minor，patch 归零；记录发行边界与理由，不强制所有新增 API 都升 minor |
-| 正式稳定 SDK | 仅在 Stage 12 稳定性与 ABI 验收后进入 `1.0.0` |
+| 正式稳定 SDK | 仅在 Stage 14 稳定性与 ABI 验收后进入 `1.0.0` |
 
 以上是本项目 **0.x preview** 政策，不宣称 additive API 使用 patch 符合稳定 1.x 的版本规则。
 “additive”不能只按名字或字段数量判断：必须验证重载解析、聚合初始化、继承实现、
@@ -169,17 +299,29 @@ preview 的源码兼容不代表 shared binary 可直接替换，旧 host 仍须
    更新当前状态及后续阶段接手基线。不能仅因版本号已改就宣称阶段或 ABI 已完成。
 
 以上是规范与验收要求，不表示全部已由自动化强制执行。
-Stage 12 必须另行冻结 `1.x` 的 API/ABI 兼容、弃用和版本递增政策及其测试；
+Stage 14 必须另行冻结 `1.x` 的 API/ABI 兼容、弃用和版本递增政策及其测试；
 在此之前，`0.x` minor 可以持续增长，不能从 `0.9.x` 自动进位到 `1.0.0`。
+
+### 2026-10-10诊断正式化版本裁定
+
+owner明确指定[独立诊断正式化工作包](../stage_plans/active/stage-07/02-diagnostics/plan.md)
+目标SDK API为`0.7.5`，同时保留此前已接受的新Recovery版本拒绝旧版本方向。
+这是本工作包的具体版本裁定；版本文件与消费者已在N2集成，N1/N3已退出，
+诊断基线为0.7.5；当前分支为0.9.1。具体证据与交付状态归[CURRENT_STATUS](../CURRENT_STATUS.md)。
+N1已记录production/candidate公共差异及迁移影响，不将patch数字当作可观察合同兼容证明。
+若实际差异属于常规规则要求升minor的不兼容公开变化，本工作包按owner指定的`0.7.5`
+记录限定例外及具体影响，不反向放宽Reader来制造兼容，也不推广为其他阶段可使用breaking patch。
+该版本裁定不替代具体SHA的审批、安装消费者、内容版本拒绝或发行门禁。
 
 ## Stage 6 已冻结的版本方向（阶段已于 2026-09-27 关闭并归档）
 
 [ADR 0042](../adr/0042-stage-6-productization-boundaries.md) 将 Stage 6 SDK 目标冻结为
 `0.7.1`，仅用于新名字的源兼容增量 API；不得改变已有公开布局、签名、虚表、枚举含义或
-默认入口语义。现有实现仍为 `0.7.0`，版本代码在对应 API 实现及 consumer 门禁落地时同步更新。
+默认入口语义。该Stage 6记录形成时实现仍为 `0.7.0`；后续Stage 7完成0.7.1增量及0.7.5诊断正式化，
+当前版本不再由该历史目标表示。
 旧 consumer 需要重新构建，patch 号不承诺 shared binary 可替换。需要不兼容变更时必须重新
 裁定 minor 和 Stage 8 接手版本，不能在 `0.7.1` 内偷偷破坏契约。`0.7.1` 是以当前
-`0.7.0` 基线及上述兼容条件为前提的目标，不是可以覆盖其他已发行版本的固定配额。
+`0.7.0` 历史基线及上述兼容条件为前提的目标，不是可以覆盖其他已发行版本的固定配额。
 Stage 8 不预留 `0.8.0`；正式 v5 发行版本按届时实际基线（包括 Stage 7A）与公共合同差异
 重新裁定，并在发行前落实为具体版本、consumer 要求和验收记录。
 
@@ -215,10 +357,10 @@ configure/clean build 证据；版本变化不隐式升级 SDK API、内容格�
 
 ### 升级示例：从 `0.7.0` 基线重建宿主
 
-`examples/reference_host/` 是当前唯一可执行的升级示例，也是 `0.7.0` 基线的写法样本：
+`examples/reference_host/` 是可执行的升级示例；它源于 `0.7.0` 基线，当前默认请求已更新为：
 
 ```cmake
-find_package(Cuexis 0.7.0 CONFIG REQUIRED COMPONENTS Playback)
+find_package(Cuexis 0.7.5 CONFIG REQUIRED COMPONENTS Playback)
 ```
 
 它显式声明自己编写时对齐的 API 版本，并在安装包记录的 API minor 不兼容时于 configure 阶段失败，
@@ -228,9 +370,9 @@ find_package(Cuexis 0.7.0 CONFIG REQUIRED COMPONENTS Playback)
 2. 把宿主指向新前缀（`-DCuexis_DIR=<new-prefix>/lib/cmake/Cuexis`）。
 3. 干净重建宿主（新构建目录），不要在旧构建目录上增量链接。
 
-`0.7.0` 与当前实现之间**没有源不兼容变更**：C4 只新增了示例宿主与打包目标，没有改动任何已发布
-的公开头、签名、枚举语义或默认入口，也没有提升 SDK API 版本。因此从 `0.7.0` 基线重建宿主不需要
-迁移步骤。shared 预览仍不承诺 binary 可替换：升级必须重新构建 consumer，不能只替换 `.so`/`.dll`。
+Stage 6 C4当时只新增示例宿主与打包目标、未提升SDK；这一历史结论不能作为当前升级无需迁移的承诺。
+升级至0.7.5时，依赖诊断字符串或candidate Recovery的宿主须按下述具体差异调整；
+旧revision1归档明确拒绝。shared预览仍不承诺binary可替换：升级必须重新构建consumer，不能只替换`.so`/`.dll`。
 
 配置存储的升级与回滚边界（[STAGE6_CONFIG_AND_MEDIA.md](../formats/STAGE6_CONFIG_AND_MEDIA.md) §1）：
 `cuexis.player-preferences` 与 `cuexis.audio-device-profile` 目前都只有 v1，实现**不发明** v0
@@ -238,3 +380,56 @@ find_package(Cuexis 0.7.0 CONFIG REQUIRED COMPONENTS Playback)
 `player.preferences.unsupported_version` / `player.audio_profile.unsupported_version`，保存路径
 拒绝覆盖该文件。因此“升级”不会静默改写用户文件，回滚到旧构建也仍然可读；这是当前可验证的迁移
 安全边界，而不是迁移实现。
+
+
+### 0.7.5具体兼容差异
+
+诊断N1已将可观察差异落入Spec/ABI：现有错误code/sourceCode正式命名、两类内部legacy/query
+message修正、候选Recovery envelope revision2明确拒绝revision1（含健康归档）。
+这是owner指定0.7.5的限定breaking patch例外；不推广到其他工作包。
+production公开签名/布局/枚举无变化，candidate消费者需重建并最低请求0.7.5；
+旧归档没有内置迁移工具，回退须使用匹配旧源码/包和原件，不能把新产物降级重写。
+SDK文件已在N2.4实施，日期身份独立经updater更新并fresh/clean-first；N3证据已形成，
+当前本地提交与交付状态见CURRENT_STATUS，旧0.7.1审批不覆盖0.7.5。
+
+### 0.8.0执行协调增量
+
+增加 owning ClockObservation、checked realtime clock 和 candidate PlaybackSession 的显式批次/前缀/控制入口。
+新 execution/late/Fact token 与旧 profile 隔离；新 profile 只读写 Recovery revision3/schema2，
+旧 profile 保持 revision2/schema1。消费者必须重新编译并按包兼容规则请求0.8.0。
+字段顺序见[rev3 wire](../formats/execution-recovery-wire-v3.md)，实施和实际验证归CURRENT_STATUS与B3记录。
+该minor不表示生产实时预算、B4/B5设备或阶段收尾完成。
+
+### 0.8.1 只读表现来源增量
+
+PD-3-c 新增独立命名的 `PresentationSource`、`PresentationSourceInfo` 与
+`PlaybackSession::presentationSource()`。它复制既有已提交描述；不更改旧方法、类布局、
+FrameSnapshot、HostContext 或 FeedbackObservation。按兼容新增 preview API 的 patch 规则，
+owner 已在 2026-10-19 接受 0.8.0 → 0.8.1；使用新查询的消费者须请求至少 0.8.1。
+原 0.8.0 源码可重建，但不承诺旧二进制兼容，也不宣称 0.8.0 库含新符号。
+具体决定与验证归 [PD-3-c 记录](../stage_reports/stages/stage-07/04-pd/pd-3/c/2026-10-19-pd3c-contract-and-version-decision.md)。
+
+### 0.9.0 显式反馈寿命迁移
+
+owner 于 2026-10-19 接受 [ADR 0047](../adr/0047-pd-feedback-lifetime-and-delivery-retirement.md)。
+`FeedbackObservation::expiry` 从整数改为 `optional<GameplayPresentationTick>`：有值为有限 exclusive end，
+无值为 UntilReset，有限 INT64_MAX 不再与无期限混同。消费者须检查 optional、读取 `expiry->value`，
+修改源码并使用 0.9.0 头/库干净重建。旧 0.8.x minor 与新包互相拒绝版本请求；不支持替换 DLL 混用。
+FrameSnapshot 布局、Gameplay/Replay identity 与 wire 不因此改变。内部实施和适用本地消费者验证完成，不构成发行；见 [PD-4 报告](../stage_reports/stages/stage-07/04-pd/pd-4/2026-10-19-pd4-delivery-retirement-and-observation.md)。
+
+### 0.9.1 R3 candidate 来源绑定
+
+2026-10-28 owner 明确要求：若查到 API 有变化则更新至 `0.9.1`。核对提交 `e8fce1f` 后确认：
+安装版 candidate 头新增 `ReplaySourceIdentity`，`StepTarget` 末尾新增
+`optional<ReplaySourceIdentity> replaySourceIdentity`，嵌套 request / proof / receipt 布局随之改变。
+canonical SHA 绑定仍可选择，Seek 必须恰好选择一种绑定；没有新文件格式或哈希算法版本。
+
+本次按 owner 指定使用 `0.9.1`，是未发行 candidate 布局变化的明确例外，不修改上文通常要求
+布局不兼容时递增 minor 的规则，也不将此变化描述为纯实现重构或已证明所有旧源码兼容。
+分页状态、准备复用、Transform、closure、编码与哈希实现优化本身不要求升版。
+普通生产播放路径未因本次版本标记增加入口；新 candidate 使用者须请求至少 `0.9.1`。
+
+`SameMinorVersion` 仍是 package/source 请求策略：新包可接受较低的 `0.9.0` 请求，不证明旧包提供
+新字段或旧 shared binary 可混用。所有 candidate consumer 使用同一套新头/库干净重建；
+依赖公开结构大小、聚合分解等假设的源码须重新检查。不支持仅替换 DLL。
+本次只改独立 SDK API 版本，日期构建身份和 vcpkg `version-string` 保持 `26.10.19-1`。

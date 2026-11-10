@@ -1,0 +1,15 @@
+{
+  "scope": "Final v4 candidate identity supplement; earlier v2/v3 scope strings in reused builder binding templates are historical labels. All common/template/public class definitions are fresh-v3; private kernel source-floor and test changes are v4. Instrumented variants are excluded from timing.",
+  "files": {
+    "execution_kernel.cpp": "523f034f227c6d671bc50611d4468d631e4f5858baa82f3667958fd7e7ea7285",
+    "registration.json": "032073ce2cc6a79722b3f2f0c643f1f5b1a4de167df588057fbdde58594d7b7e",
+    "results.json": "e7c5a9748dacbb3c4c789e57b62bd099df9073079989ede1aa540c4dce7871e1",
+    "rpa-normal-binding.json": "552b058ff853a8dcc60e898b1afc94717a1dbd3637311fb8edb459cbf8b171d2",
+    "rpa-normal-commands.json": "0a3c41181c4e7283e8736d7a02a2127e63e67cd6f2d85710a15d9b78325d8ac9",
+    "rpa-normal.exe": "df2faa4242c1e9f481ace58f4a3c30d5fe2b7f488aaf8ab1a87d46fd061875ed",
+    "rpa_b3_tests.cpp": "8add58bb9c197553b6edd909b2cdf7a72eb0d289f783cd2a342ffcb0c636f2c7",
+    "summary.json": "1535c271f0216b387cbcc880aa43fbcea342cacede01c5e102248fac6c3b1353",
+    "tick_fault_probe.hpp": "b347643ce263b979b10cf415c02d9441f6c1749a283aa2cbdbeac0645bf7d21c"
+  },
+  "v4_complete_sha256": "e1ea502e4c104fda22f336d1a419172ff61d187f222d2aad5bfd5a335a9c3a7b"
+}

@@ -1,0 +1,134 @@
+from pathlib import Path
+import hashlib,json,shutil,subprocess
+root=Path.cwd();base=Path(__file__).resolve().parent;out=base/'activation-observer-v1';out.mkdir(exist_ok=False)
+source=base/'publication-source-v1'
+s=(base/'activation-source-v1/execution_kernel.cpp').read_text(encoding='utf-8')
+s='extern "C" void r3activation_event(unsigned, long long) noexcept;\n'+s
+needle='                        TickPayloadLease lease{budget, *bytes};';assert s.count(needle)==1;s=s.replace(needle,needle+'\n                        r3activation_event(0, tick->value());')
+needle='                        writable.reset();';assert s.count(needle)==1;s=s.replace(needle,needle+'\n                        r3activation_event(1, tick->value());')
+needle='        auto final = std::make_shared<RuntimeState>(*impl_->active);';assert s.count(needle)==1;s=s.replace(needle,'        if (capture) r3activation_event(2, horizon.value());\n'+needle)
+(out/'execution_kernel.cpp').write_text(s,encoding='utf-8')
+shutil.copyfile(root/'out/verification-20261030/r3-resume-v1/budget-v4-observer-v1/tick_fault_probe.hpp',out/'tick_fault_probe.hpp')
+s=(base/'publication-host-v1/host_probe.cpp').read_text(encoding='utf-8')
+s='#include "tick_fault_probe.hpp"\n#include "'+(source/'engine/judgement/src/execution_kernel.hpp').as_posix()+'"\n'+s
+s+='''
+extern "C" void r3activation_event(unsigned stage, long long tick) noexcept {
+    auto& plan = tick_probe::plan;
+    ++plan.events[stage];
+    if (stage == 1) plan.restoredFrontier = tick;
+    if (plan.failureStage == static_cast<int>(stage)) plan.armed = true;
+}
+namespace {
+auto activationContent(unsigned count) -> std::unique_ptr<test_support::SessionTestContent> {
+    auto owner = std::make_unique<test_support::SessionTestContent>();
+    auto& fixture = *owner;
+    test_support::rpa(fixture, {{0, 1}, {0, 1}, {0, 1}, {1, 1}});
+    auto& doc = fixture.request.assembly.sources[0].document;
+    auto prototype = doc.requirements.front();
+    doc.requirements.clear(); fixture.owners.clear();
+    std::erase_if(doc.declarations, [](const auto& d) {
+        return d.kind == judgement::DeclarationKind::requirement;
+    });
+    doc.relations.front().members.clear();
+    fixture.request.assembly.contentProfileLimits.maxRequirements =
+        judgement::MeasuredParameter<std::uint64_t>::measured(count);
+    for (unsigned i = 0; i < count; ++i) {
+        auto r = prototype;
+        r.stableId.declarationOrdinal = 100 + i;
+        r.identity.requirementLocalId = "activation." + std::to_string(i);
+        r.resourceClaims.front().claimPolicy.competition =
+            judgement::ClaimPolicyDeclaration::CompetitionKey{-1, i};
+        doc.declarations.push_back(judgement::testing::testDeclaration(
+            judgement::DeclarationKind::requirement, r.identity.requirementLocalId, 100 + i));
+        doc.relations.front().members.push_back(r.stableId);
+        fixture.owners.push_back({r.identity, fixture.chart.entities.front().identity});
+        doc.requirements.push_back(std::move(r));
+    }
+    return owner;
+}
+}
+TEST_CASE("Dense activation actual retained heap and full release", "[activation-memory]") {
+    const auto n = GENERATE(1000U, 40000U);
+    auto fixture = activationContent(n);
+    const auto content = fixture->content();
+    const auto* inputs = playback::detail::GameplayAccess::content(content);
+    const auto prepared = inputs->capsule.gameplay;
+    const auto config = inputs->configuration;
+    for (const bool capture : {false, true}) {
+        const auto requested = tick_probe::live.load();
+        const auto storage = tick_probe::storage.load();
+        tick_probe::peak.store(requested);tick_probe::storagePeak.store(storage);
+        std::size_t retained{},retainedStorage{},points{},charge{};
+        {
+            auto writer = judgement::detail::ExecutionKernel::prepare(config, prepared);
+            REQUIRE(writer);
+            auto floor = (*writer)->archive();
+            REQUIRE((capture ? (*writer)->advance(judgement::Tick{2003})
+                             : (*writer)->advanceForReplay(judgement::Tick{2003})));
+            {
+                auto archive = (*writer)->archive();
+                points = judgement::detail::ExecutionKernel::tickPointCount(archive);
+                charge = judgement::detail::ExecutionKernel::tickPayloadBytes(floor);
+                writer->reset();
+                retained = tick_probe::live.load() - requested;
+                retainedStorage = tick_probe::storage.load() - storage;
+                CHECK(points == (capture ? 2 : 0));
+                const auto cut = judgement::replayCutAt(archive, judgement::Tick{5});
+                auto seek = judgement::detail::ExecutionKernel::seekCandidate(
+                    archive, judgement::Tick{5}, nullptr, &cut);
+                REQUIRE(seek);
+                CHECK((*seek)->tickRestoreCount() == (capture ? 1 : 0));
+            }
+            CHECK(judgement::detail::ExecutionKernel::tickPayloadBytes(floor) == 0);
+        }
+        CHECK(tick_probe::live.load() == requested);
+        CHECK(tick_probe::storage.load() == storage);
+        std::cout << "ACTIVATION_MEMORY {\\"n\\":" << n << ",\\"capture\\":" << capture
+                  << ",\\"retained_requested\\":" << retained << ",\\"retained_storage\\":" << retainedStorage
+                  << ",\\"peak_requested\\":" << tick_probe::peak.load() - requested
+                  << ",\\"peak_storage\\":" << tick_probe::storagePeak.load() - storage
+                  << ",\\"charge\\":" << charge << ",\\"points\\":" << points
+                  << ",\\"requested_final_delta\\":" << tick_probe::live.load() - requested
+                  << ",\\"storage_final_delta\\":" << tick_probe::storage.load() - storage << "}\\n";
+    }
+}
+TEST_CASE("Dense activation optional allocation failure refunds and finalization failure discards",
+          "[activation-fault]") {
+    const auto stage = GENERATE(0, 2);
+    auto fixture = activationContent(1024);
+    const auto content = fixture->content();
+    const auto* inputs = playback::detail::GameplayAccess::content(content);
+    auto writer = judgement::detail::ExecutionKernel::prepare(inputs->configuration,inputs->capsule.gameplay);
+    REQUIRE(writer);
+    auto floor = (*writer)->archive();
+    tick_probe::plan = {};tick_probe::plan.failureStage = stage;
+    auto result = (*writer)->advance(judgement::Tick{5});
+    const auto observed = tick_probe::plan;tick_probe::plan = {};
+    REQUIRE(observed.triggered);
+    CHECK(static_cast<bool>(result) == (stage == 0));
+    auto archive = (*writer)->archive();
+    CHECK(judgement::detail::ExecutionKernel::tickPointCount(archive) == 0);
+    CHECK(judgement::detail::ExecutionKernel::tickPayloadBytes(floor) == 0);
+    if (stage == 2) {
+        REQUIRE(observed.events[1] > 0);
+        auto projection = (*writer)->query();
+        CHECK(projection->projection.state == judgement::KernelSessionState::Faulted);
+        CHECK(projection->projection.phases.size() == 1024);
+        CHECK(projection->projection.facts.empty());
+    } else {
+        const auto cut = judgement::replayCutAt(archive, judgement::Tick{5});
+        const judgement::ReplayArchive external{archive.anchor(),
+            std::make_shared<const judgement::RecoveryInputs>(archive.dependencies())};
+        auto actual = judgement::detail::ExecutionKernel::seekCandidate(archive,judgement::Tick{5},nullptr,&cut);
+        auto expected = judgement::detail::ExecutionKernel::seekCandidate(external,judgement::Tick{5},nullptr,&cut);
+        REQUIRE(actual);REQUIRE(expected);
+        auto a=(*actual)->snapshot();auto b=(*expected)->snapshot();REQUIRE(a);REQUIRE(b);
+        CHECK(judgement::testing::sameSnapshot((*a)->dto,(*b)->dto));
+    }
+}
+'''
+(out/'host_probe.cpp').write_text(s,encoding='utf-8')
+subprocess.run(['clang-format','-i',str(out/'execution_kernel.cpp'),str(out/'host_probe.cpp')],check=True)
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+(out/'source-binding.json').write_text(json.dumps(dict(scope='Observer only: real fail-next and requested/CRT usable allocation retention. Original v5 kernel with three event callbacks; common fresh library definitions, original single-Fact Playback.',files={p.name:sha(p) for p in out.iterdir() if p.suffix in ('.cpp','.hpp')}),indent=2),encoding='utf-8')
+print(out)

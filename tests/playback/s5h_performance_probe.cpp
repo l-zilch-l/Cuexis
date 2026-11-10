@@ -7,7 +7,9 @@
 
 #include "s5h_shader_fixtures.hpp"
 
+#include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
@@ -15,6 +17,7 @@
 #include <iomanip>
 #include <iostream>
 #include <iterator>
+#include <numeric>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -79,6 +82,16 @@ struct MemorySnapshot final {
     return after > before ? after - before : 0;
 }
 
+[[nodiscard]] auto percentile(std::vector<double> values, double fraction) -> double {
+    if (values.empty()) {
+        return 0.0;
+    }
+    std::sort(values.begin(), values.end());
+    const auto rank =
+        static_cast<std::size_t>(std::ceil(fraction * static_cast<double>(values.size())));
+    return values[std::min(values.size() - 1, rank == 0 ? 0 : rank - 1)];
+}
+
 [[nodiscard]] auto readBytes(const std::filesystem::path& path) -> std::vector<std::byte> {
     std::ifstream input{path, std::ios::binary};
     if (!input) {
@@ -137,8 +150,10 @@ int main() {
         }
         const auto afterWarmup = memorySnapshot();
 
-        const auto hotStarted = Clock::now();
+        std::vector<double> hotSamples;
+        hotSamples.reserve(hotFrames);
         for (std::size_t index = 0; index < hotFrames; ++index) {
+            const auto sampleStarted = Clock::now();
             const auto updated =
                 session.update({.chartTimeMs = static_cast<double>(warmupFrames + index) * 10.0,
                                 .simulationDeltaTimeMs = 10.0});
@@ -146,8 +161,8 @@ int main() {
             if (!updated || !extracted) {
                 throw std::runtime_error{"S5-H probe hot frames failed"};
             }
+            hotSamples.push_back(elapsedMicroseconds(sampleStarted));
         }
-        const auto hotMicroseconds = elapsedMicroseconds(hotStarted);
         const auto afterHot = memorySnapshot();
 
         std::cout << std::fixed << std::setprecision(3) << "keyword_count=" << layout.keywordCount
@@ -155,8 +170,15 @@ int main() {
                   << "parameter_count=" << layout.parameterCount << '\n'
                   << "binding_count=" << layout.bindingCount << '\n'
                   << "prepare_us=" << prepareMicroseconds << '\n'
-                  << "warmed_evaluate_avg_us=" << hotMicroseconds / static_cast<double>(hotFrames)
+                  << "warmed_evaluate_avg_us="
+                  << std::accumulate(hotSamples.begin(), hotSamples.end(), 0.0) /
+                         static_cast<double>(hotFrames)
                   << '\n'
+                  << "warmed_evaluate_p50_us=" << percentile(hotSamples, 0.50) << '\n'
+                  << "warmed_evaluate_p95_us=" << percentile(hotSamples, 0.95) << '\n'
+                  << "warmed_evaluate_p99_us=" << percentile(hotSamples, 0.99) << '\n'
+                  << "warmed_evaluate_max_us="
+                  << *std::max_element(hotSamples.begin(), hotSamples.end()) << '\n'
                   << "resident_before_prepare_bytes=" << beforePrepare.residentBytes << '\n'
                   << "resident_after_prepare_bytes=" << afterPrepare.residentBytes << '\n'
                   << "peak_after_prepare_bytes=" << afterPrepare.peakResidentBytes << '\n'

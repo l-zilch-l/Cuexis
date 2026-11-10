@@ -1,0 +1,19 @@
+{
+  "scope": "Final v4 candidate identity supplement; earlier v2/v3 scope strings in reused builder binding templates are historical labels. All common/template/public class definitions are fresh-v3; private kernel source-floor and test changes are v4. Instrumented variants are excluded from timing.",
+  "files": {
+    "execution_kernel.cpp": "29fd282cf0c67d7ce28393ff3d4039fcae5eb75d306a291d878a65459c02e429",
+    "execution_kernel_guard-mutant.cpp": "43fb44560a108747975610f1467601a7a243b36e1b1a0b399e17c042d895e709",
+    "guard-negative-result.json": "a18cc5a86d10f74b70e774491047787e6cd60f6e40e57b01f96e7417d94c60ed",
+    "guard-result.json": "bfdedf06596faa2042b0fedd9653ec1023d2e96ed56dc40b607985bc8438c1d5",
+    "observer-final-source-binding.json": "350876efbfc6350e54df469ded5084bb914bdd299df37351ddeaccb3a4334cd5",
+    "rpa-guard-mutant-binding.json": "f1d0c772b11da1385b84661052ad7fa7fa8adcb141362a6dd63c1b809bbc12d6",
+    "rpa-guard-mutant-commands.json": "858bae481f123454fd005283acbbc6d62b8fd6479280c56a473c93191b0a9ee6",
+    "rpa-guard-mutant.exe": "8dd848848a7a35ee56920884dc429136cddfef723fe0f86a9f3b5db94f0f3cad",
+    "rpa-normal-binding.json": "95652e61186eea7c5209a4f9e8501d06b71be29f24c409e63627bf2ad5b3d1ec",
+    "rpa-normal-commands.json": "35e4a6a657573ba7811fdb04dccdc31ab36042d3d97e84b1facb2942aecfdcb3",
+    "rpa-normal.exe": "7e8da46880a4827b45cd28023e54514cb92203c6f277e5dcb676cac69fa85f4b",
+    "rpa_b3_tests.cpp": "9340131c293ec92e1b7356db3f04809076e7ee5bd26f6f41b3121ed669fa8022",
+    "tick_fault_probe.hpp": "1ea695f1fe5777e95ef80366f8719229cb90279e0b03888952ab586d2122940f"
+  },
+  "v4_complete_sha256": "e1ea502e4c104fda22f336d1a419172ff61d187f222d2aad5bfd5a335a9c3a7b"
+}

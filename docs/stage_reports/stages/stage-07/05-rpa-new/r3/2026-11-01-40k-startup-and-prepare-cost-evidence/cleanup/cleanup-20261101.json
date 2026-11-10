@@ -1,0 +1,154 @@
+{
+  "generated_at": "2026-11-01T12:57:23+08:00",
+  "scope": "R3 pre-optimisation cleanup: old CMake build trees under out/build and throwaway temp files. Frozen evidence under out/verification-* and docs/stage_reports were NOT touched.",
+  "authorisation": "user instruction 2026-11-01: clean old build products and unneeded temp files before optimising; inventory delegated to subagents; every deletion verified by the main agent against absolute paths.",
+  "disk": {
+    "before_free_bytes": 10307858432,
+    "after_free_bytes": 93852696576,
+    "total_bytes": 701753528320,
+    "before_free_gib": 9.6,
+    "after_free_gib": 87.41
+  },
+  "deleted_build_trees": [
+    {
+      "path": "D:\\Cuexis-redesign\\out\\build\\candidate-debug",
+      "bytes": 19610478057,
+      "gib": 18.26,
+      "reason": "superseded matrix/one-off tree; rebuild command recorded in its run manifest; no frozen measurement binds its binaries (live instrument binary lives in out/build/rpa-candidate-release)"
+    },
+    {
+      "path": "D:\\Cuexis-redesign\\out\\build\\mingw-headless-debug",
+      "bytes": 15296177112,
+      "gib": 14.25,
+      "reason": "superseded matrix/one-off tree; rebuild command recorded in its run manifest; no frozen measurement binds its binaries (live instrument binary lives in out/build/rpa-candidate-release)"
+    },
+    {
+      "path": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-shared-debug",
+      "bytes": 12548918239,
+      "gib": 11.69,
+      "reason": "superseded matrix/one-off tree; rebuild command recorded in its run manifest; no frozen measurement binds its binaries (live instrument binary lives in out/build/rpa-candidate-release)"
+    },
+    {
+      "path": "D:\\Cuexis-redesign\\out\\build\\rpa-boundary-mingw-shared",
+      "bytes": 12415157135,
+      "gib": 11.56,
+      "reason": "superseded matrix/one-off tree; rebuild command recorded in its run manifest; no frozen measurement binds its binaries (live instrument binary lives in out/build/rpa-candidate-release)"
+    },
+    {
+      "path": "D:\\Cuexis-redesign\\out\\build\\b3-default-off",
+      "bytes": 10381864010,
+      "gib": 9.67,
+      "reason": "superseded matrix/one-off tree; rebuild command recorded in its run manifest; no frozen measurement binds its binaries (live instrument binary lives in out/build/rpa-candidate-release)"
+    },
+    {
+      "path": "D:\\Cuexis-redesign\\out\\build\\headless-shared-debug",
+      "bytes": 8325057839,
+      "gib": 7.75,
+      "reason": "superseded matrix/one-off tree; rebuild command recorded in its run manifest; no frozen measurement binds its binaries (live instrument binary lives in out/build/rpa-candidate-release)"
+    },
+    {
+      "path": "D:\\Cuexis-redesign\\out\\build\\headless-release",
+      "bytes": 3480789833,
+      "gib": 3.24,
+      "reason": "superseded matrix/one-off tree; rebuild command recorded in its run manifest; no frozen measurement binds its binaries (live instrument binary lives in out/build/rpa-candidate-release)"
+    },
+    {
+      "path": "D:\\Cuexis-redesign\\out\\build\\rpa-mingw-release",
+      "bytes": 1153556575,
+      "gib": 1.07,
+      "reason": "superseded matrix/one-off tree; rebuild command recorded in its run manifest; no frozen measurement binds its binaries (live instrument binary lives in out/build/rpa-candidate-release)"
+    },
+    {
+      "path": "D:\\Cuexis-redesign\\out\\build\\r3-neutral-direct",
+      "bytes": 227704407,
+      "gib": 0.21,
+      "reason": "superseded matrix/one-off tree; rebuild command recorded in its run manifest; no frozen measurement binds its binaries (live instrument binary lives in out/build/rpa-candidate-release)"
+    },
+    {
+      "path": "D:\\Cuexis-redesign\\out\\build\\r3-neutral-mingw",
+      "bytes": 154514091,
+      "gib": 0.14,
+      "reason": "superseded matrix/one-off tree; rebuild command recorded in its run manifest; no frozen measurement binds its binaries (live instrument binary lives in out/build/rpa-candidate-release)"
+    }
+  ],
+  "kept_build_trees": [
+    {
+      "path": "D:\\Cuexis-redesign\\out\\build\\debug",
+      "bytes": 12184948251,
+      "gib": 11.35
+    },
+    {
+      "path": "D:\\Cuexis-redesign\\out\\build\\release",
+      "bytes": 3644916182,
+      "gib": 3.39
+    },
+    {
+      "path": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release",
+      "bytes": 5981427083,
+      "gib": 5.57
+    }
+  ],
+  "kept_build_tree_reasons": {
+    "out\\build\\debug": "documented daily-workflow preset (cmake --preset debug)",
+    "out\\build\\release": "documented release preset (cmake --preset release)",
+    "out\\build\\rpa-candidate-release": "active R3 instrument tree: cuexis_player.exe with probe v2 + prepare-trace + device-first order, plus the object cache for the next instrumented rebuild"
+  },
+  "deleted_temp": {
+    "pycache_dirs": 138,
+    "pycache_bytes": 31956518,
+    "files": 13,
+    "file_bytes": 1176674,
+    "file_list": [
+      "out/verification-20261101/r3-stall-mechanism-v1/_ctx_debug.py",
+      "out/verification-20261101/r3-stall-mechanism-v1/_ctx_debug2.py",
+      "out/verification-20261101/r3-stall-mechanism-v1/_ctx_probe.ps1",
+      "out/verification-20261101/r3-stall-mechanism-v1/_ctx_probe2.ps1",
+      "out/verification-20261101/r3-stall-mechanism-v1/_spin.py",
+      "out/verification-20261101/r3-stall-mechanism-v1/_selftest.csv",
+      "out/verification-20261101/r3-stall-mechanism-v1/_selftest_modules.txt",
+      "out/verification-20261101/r3-stall-mechanism-v1/_selftest_samples.txt",
+      "out/verification-20261101/evidence-staging/r3-wait/_commit-msg.txt",
+      "out/verification-20261101/evidence-staging/r3-wait/rebuild-check.json",
+      "out/verification-20261101/evidence-staging/r3-wait/_probe/probe_identity_derive.py",
+      "out/verification-20261031/evidence-staging/_profile_ladder.py",
+      "out/verification-20261101/r3-startup-observability-v1/_commit-msg-code.txt"
+    ],
+    "note": "the r3-stall-mechanism-v1 cluster is declared throwaway by that archive's own excluded[] list"
+  },
+  "kept_temp": [
+    {
+      "path": "out/_stall_clock_reread.py",
+      "why": "derived re-read instrument; 2.5 KB; not cited but keeping it preserves provenance of the rejected re-read lineage"
+    },
+    {
+      "path": "out/_stall_reread.py",
+      "why": "same"
+    },
+    {
+      "path": "out/_stall_reread.json",
+      "why": "same (published output of the above)"
+    },
+    {
+      "path": "out/_stall_shape_reread.py",
+      "why": "same"
+    },
+    {
+      "path": "out/test-inventory-20261028.json",
+      "why": "dated ctest --show-only=json-v1 dump at the R3 entry point; regenerable but not identical later"
+    }
+  ],
+  "inventories": {
+    "build_inventory": "out/_cleanup-20261101/build-inventory.json",
+    "delete_plan": "out/_cleanup-20261101/delete-plan.json",
+    "temp_files": "out/_cleanup-20261101/temp-files.json",
+    "build_references": "out/_cleanup-20261101/build-references.json"
+  },
+  "verification": [
+    "every target path asserted to exist, to be a directory, and to have parent == D:\\Cuexis-redesign\\out\\build before deletion",
+    "deletion ran with cmd rmdir /s /q per tree; every tree reported rc=0 and gone=True",
+    "out/build now holds exactly debug, release, rpa-candidate-release",
+    "no git-tracked file was in the delete set (git ls-files check on the temp-file list; out/ is gitignored)",
+    "no __pycache__ or .pyc is named by any manifest under the affected evidence dirs (checked gpu-1080p-scale-v1: 0 hits)"
+  ],
+  "errors": []
+}

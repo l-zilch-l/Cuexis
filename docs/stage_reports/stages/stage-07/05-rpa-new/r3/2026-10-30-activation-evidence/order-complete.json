@@ -1,0 +1,8 @@
+{
+  "scope": "Private v5 activation capture; matching fresh definitions, explicit kernel/RPA recompile and four relinks. Host uses original one-at-a-time publication, no batch. No performance acceptance.",
+  "source_manifest_sha256": "4cec57c6399c1263afb28bb0dc193f4d7a2b5b7b22e9cbf859c67ca88fc818a1",
+  "commands_sha256": "471d3bc882aa81723b493098830c22acebe526996e59d432e6b74d802f49e696",
+  "binaries": {
+    "cuexis_rpa_tests.exe": "d782909120a2b1797d4a6c8fa9fa949b2b5bf68412f2312ab93b37d93c1cf6b0"
+  }
+}

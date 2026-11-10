@@ -1,0 +1,44 @@
+{
+  "arm": "B",
+  "description": "lever candidate built in the same tree and configuration right after arm A: summary digest derived on demand, PreparedDraw carries a non-owning command pointer",
+  "head": "1474316d2bfd38809c38a1e6050c29d83351e369",
+  "worktree_clean": false,
+  "worktree_modified": [
+    "app/player/src/player_smoke.cpp",
+    "engine/presentation_renderer/include/cuexis/presentation_renderer/draw_command.hpp",
+    "engine/presentation_renderer/src/draw_command.cpp",
+    "engine/render_opengl/src/open_gl_presentation.cpp",
+    "engine/render_opengl/src/open_gl_presentation_internal.hpp",
+    "tests/presentation_renderer/presentation_renderer_tests.cpp",
+    "tests/render/open_gl_presentation_tests.cpp"
+  ],
+  "built_at": "2026-11-01T07:15:59.500177+00:00",
+  "exe": {
+    "cuexis_execution_device_probe.exe": {
+      "bytes": 5726720,
+      "sha256": "9AAA34F7F7AAF43D0CB06FDB6E7750E3C72E4065777E292F6E95CCE0A75AC58C"
+    },
+    "cuexis_player.exe": {
+      "bytes": 5672960,
+      "sha256": "1D54B77EFFD159C88AFAD66DE3DB973EC78F23AB33FBD793E536B03611146497"
+    }
+  },
+  "dlls": {
+    "fmt.dll": {
+      "bytes": 130048,
+      "sha256": "8219387A1B0DE304630A67564A0EC30271E061C1E92CC77AE7CF9753A5F75214"
+    },
+    "nlohmann_json_schema_validator.dll": {
+      "bytes": 432128,
+      "sha256": "1C0A7CDCD718802C79052F323F52E63AFCEDAC969DD7EB5A44D12C521502F248"
+    },
+    "SDL3.dll": {
+      "bytes": 2488832,
+      "sha256": "CEDDDD9456105F8B2DF78C33A0282C170B86B0D16146A8CCBB0C6E01571EE783"
+    },
+    "spdlog.dll": {
+      "bytes": 281600,
+      "sha256": "A7C410914F4AFF0CB84F642FF91DA8A6B1A85D21CB0DE11E88A3A37DC7575214"
+    }
+  }
+}

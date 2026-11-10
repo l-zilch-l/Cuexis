@@ -304,6 +304,16 @@ struct Observation final {
         static_cast<void>(fail(std::string{sourceName} + " commit", committed.error()));
         return std::nullopt;
     }
+#if defined(CUEXIS_TEST_PRESENTATION_SOURCE)
+    const auto committedSource = session.presentationSource();
+    if (!committedSource ||
+        committedSource->source != cuexis::playback::PresentationSource::Prepared ||
+        committedSource->frame || committedSource->hasFold || committedSource->factCursor ||
+        committedSource->activationRevision) {
+        static_cast<void>(fail("Installed presentationSource contract failed"));
+        return std::nullopt;
+    }
+#endif
     const auto activeIdentity = session.semanticIdentity();
     if (!activeIdentity || *activeIdentity != *candidateIdentity) {
         static_cast<void>(fail(std::string{sourceName} + " active identity mismatch"));

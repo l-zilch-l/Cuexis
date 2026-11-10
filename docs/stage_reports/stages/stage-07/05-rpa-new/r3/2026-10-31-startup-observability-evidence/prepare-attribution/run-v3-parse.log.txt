@@ -1,0 +1,31 @@
+chart bytes 13171906 repeats 2 prepare 0
+-- repeat 0
+nlohmann raw                  236.57 ms  peak_ws   142.6 MiB  private   143.2 MiB
+                           nodes 11
+nlohmann + observer          9785.06 ms  peak_ws   143.9 MiB  private   143.9 MiB
+                           nodes 11 duplicate ''
+nlohmann + trivial obs       9869.69 ms  peak_ws   144.0 MiB  private   144.3 MiB
+                           nodes 11
+json.parse                  10048.80 ms  peak_ws   271.3 MiB  private   150.3 MiB
+json.parseBounded             948.23 ms  peak_ws   271.3 MiB  private   151.4 MiB
+writeCanonicalJson          11074.06 ms  peak_ws   311.6 MiB  private    44.4 MiB
+                           canonical bytes 29652435
+ChartLoader.load            10650.13 ms  peak_ws   311.6 MiB  private    40.9 MiB
+                           objects 40001
+scanTopLevelInteger             0.04 ms  peak_ws   311.6 MiB  private    15.8 MiB
+                           version 3
+-- repeat 1
+nlohmann raw                  328.22 ms  peak_ws   311.6 MiB  private   148.0 MiB
+                           nodes 11
+nlohmann + observer         10198.32 ms  peak_ws   311.6 MiB  private   148.6 MiB
+                           nodes 11 duplicate ''
+nlohmann + trivial obs       9941.20 ms  peak_ws   311.6 MiB  private   149.0 MiB
+                           nodes 11
+json.parse                  10055.03 ms  peak_ws   311.6 MiB  private   193.5 MiB
+json.parseBounded             957.00 ms  peak_ws   311.6 MiB  private   158.5 MiB
+writeCanonicalJson          10900.44 ms  peak_ws   312.9 MiB  private    45.4 MiB
+                           canonical bytes 29652435
+ChartLoader.load            10767.41 ms  peak_ws   312.9 MiB  private    42.2 MiB
+                           objects 40001
+scanTopLevelInteger             0.02 ms  peak_ws   312.9 MiB  private    16.6 MiB
+                           version 3

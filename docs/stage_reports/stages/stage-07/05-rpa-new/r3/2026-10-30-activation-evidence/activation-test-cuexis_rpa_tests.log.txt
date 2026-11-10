@@ -1,0 +1,8 @@
+Filters: ~[r3c-writer]
+Randomness seeded to: 1
+{"testOnly":true,"samples":32,"unit":"us","clock":"std::chrono::steady_clock","H_lag_p50_p95_p99_max":[22,79,436,436],"frontier_lag_p50_p95_p99_max":[22,79,436,436]}
+{"event":"rpa.f3.kernel_budget","test_only":true,"requirements":1,"phases_per_requirement":3,"facts":3,"prepare_ns":67800,"timer_burst_ns":18000,"steady_samples":32,"steady_p50_ns":1300,"steady_p95_ns":1900,"steady_max_ns":8800,"snapshot_encode_ns":138800,"snapshot_bytes":75738,"snapshot_decode_recover_ns":597700,"archive_encode_ns":133100,"replay_bytes":73543,"replay_decode_evaluate_ns":706400,"kernel_seek_ns":84000,"replay_records":33,"prepare_peak_heap_bytes":null,"production_max_seek_latency_ns":null}
+{"event":"rpa.f3.kernel_budget","test_only":true,"requirements":256,"phases_per_requirement":3,"facts":768,"prepare_ns":9084500,"timer_burst_ns":1834300,"steady_samples":32,"steady_p50_ns":2300,"steady_p95_ns":5100,"steady_max_ns":9600,"snapshot_encode_ns":22717900,"snapshot_bytes":16921746,"snapshot_decode_recover_ns":118220600,"archive_encode_ns":22806900,"replay_bytes":16427167,"replay_decode_evaluate_ns":90292100,"kernel_seek_ns":12562600,"replay_records":33,"prepare_peak_heap_bytes":null,"production_max_seek_latency_ns":null}
+===============================================================================
+All tests passed (27602 assertions in 81 test cases)
+

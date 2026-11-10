@@ -1,0 +1,10 @@
+{
+  "scope": "Ordinary one-at-a-time vs bounded batch Playback publication. Identical fresh library/public/internal class definitions, v4 kernel and exact fixture. No timing or heap observers.",
+  "source_binding_sha256": "33c520a32e7105b05ff47df3909d5600f8a2d1447d9471749dac0d6db5041708",
+  "commands_sha256": "a8dc41e77800e26df9ec8f8a9da70302bf951a3d2e8407ac13c91bbca58cf4b4",
+  "fresh_complete_sha256": "76aa46686565ca68e578d2ca81c65dc502a7ca087ed47e970e27d29043c6f443",
+  "binaries": {
+    "probe-baseline.exe": "0fa03312b6effa1c3812a78209e0e3bdcc5c81de2f1de242714e7fb5c218a811",
+    "probe-candidate.exe": "ad1027d245c4917f5eaae27994c60b684edc9db5e25b59ccf12d5107ae469077"
+  }
+}

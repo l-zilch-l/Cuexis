@@ -2,7 +2,7 @@
 
 状态：阶段 3 最终验收后的现行构建、安装与质量门禁规范
 
-更新日期：2026-09-28
+更新日期：2026-10-11
 
 ## 当前仓库说明
 
@@ -30,6 +30,8 @@ cuexis_animation
 cuexis_cxc
 cuexis_behavior
 cuexis_gameplay
+cuexis_judgement
+cuexis_gameplay_packed
 cuexis_render
 cuexis_debug
 cuexis_runtime
@@ -47,6 +49,9 @@ cuexis_cxc_pack
 cuexis_cxc_tool_common
 cuexis_cxc_unpack
 cuexis_cxc_validate
+cuexis_gameplay_author
+cuexis_chart_candidate
+cuexis_asset_publish
 cuexis_core_tests
 cuexis_audio_tests
 cuexis_filesystem_tests
@@ -59,6 +64,9 @@ cuexis_animation_tests
 cuexis_cxc_tests
 cuexis_behavior_tests
 cuexis_gameplay_tests
+cuexis_judgement_tests
+cuexis_rpa_tests
+cuexis_gameplay_packed_tests
 cuexis_debug_tests
 cuexis_render_tests
 cuexis_presentation_renderer_tests
@@ -78,6 +86,8 @@ cuexis_audio_sdl_tests
 cuexis_render_opengl_tests
 cuexis_player_diagnostics_tests
 cuexis_player_control_tests
+cuexis_asset_publish_tests
+cuexis_gameplay_author_tests
 cuexis_format_check
 cuexis_player_dist
 ```
@@ -149,6 +159,13 @@ vcpkg
 
 使用 Visual Studio Developer PowerShell/Command Prompt，或确保 `cl.exe`、Ninja 和 CMake 已处于 PATH。
 
+MSVC + Ninja 配置会探测 `/showIncludes` 前缀。当前复现环境的输入代码页为 936、输出代码页为
+65001：CMake 按输入代码页误解码 UTF-8 编译器输出，修复使用 UTF-8 前缀。非 UTF-8 输出保留
+CMake 原有处理；尚未验证其他代码页组合。
+`cuexis_msvc_dependency_tracking` 在非交叉编译时修改独立及嵌入布局夹具的头文件，检查 Ninja
+依赖记录及重编后的实际程序结果。已有目录须重新 configure 并完整重建，排除先前漏记导致的
+陈旧对象；冻结的验证目录保持原样，后续验证使用新目录。
+
 ## 配置、构建和测试
 
 ```powershell
@@ -188,6 +205,23 @@ Release 与 `headless-release` 预设强制 `CUEXIS_WARNINGS_AS_ERRORS=ON`。基
 不注册，configure 会输出
 `cuexis_cxc_tests: developer tool layer absent; candidate CXC cases excluded`。需要这些用例
 时使用非 headless 预设，或显式设置 `CUEXIS_BUILD_DEVELOPER_TOOLS=ON`。
+
+`candidate-*` 预设（`candidate-debug`、`candidate-headless-debug`、`candidate-shared-debug`）打开
+`CUEXIS_ENABLE_CHART_V5_CANDIDATE`，因而会编译 `#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)`
+这类候选代码块。**上面的日常门禁用的是 `debug` / `release` / `headless-*`，它们不编译这些块**，
+所以日常门禁全绿并不说明候选配置可编译。2026-11-03 就有一次这样的缺陷：一次按文件拆分把
+`publicTick` 留在 `playback_session_gameplay.cpp`，新拆出的 `playback_session_gameplay_seek.cpp`
+调用它却没有声明；`debug` 与 `release` 全绿，只有构建 candidate 预设才报 C3861。
+
+因此任何“候选配置可用”的说法都必须以实际构建过对应 candidate 预设为依据：
+
+```powershell
+cmake --preset candidate-debug --fresh
+cmake --build --preset candidate-debug
+```
+
+物理设备的探针目标（`cuexis_execution_device_probe`、`cuexis_pd_host_probe`）也只在 candidate
+预设下存在，需要它们时同样先构建 candidate 预设。
 
 构建目录固定在 `out/build/<preset>`，安装或打包目录不得与源码混合。
 
@@ -238,7 +272,7 @@ ctest --preset debug-media-tools --no-tests=error
 
 `debug-media-tools` 在默认 Debug feature 之上追加 `media-tools`（libpng、libjpeg-turbo、
 minimp3、libvorbis、libogg、libFLAC），并打开 `CUEXIS_BUILD_MEDIA_TOOLS`。它构建内部静态库
-`cuexis_media_import`、其 `cuexis_media_import_tests`、以及 `tools/media_importer` 下的
+`cuexis_media_import`、其 `cuexis_media_import_tests`、以及 `tools/media/media_importer` 下的
 `cuexis_media_importer` CLI。媒体工具与 shader-tools 相互独立，两者都不进入 `cuexis_playback`
 或 Player 的链接闭包；Playback/Player 不会在运行时启动该 CLI。Linux sanitizer 覆盖媒体工具时
 使用 `headless-sanitize-media-tools`，覆盖率使用 `media-tools-coverage`。
@@ -254,10 +288,11 @@ vcpkg ABI 哈希，改动它会触发依赖重建；不需要手工修改 `VCPKG
 
 ## 最低验证
 
-提交工程结构改动前必须完成 Debug configure/build/test 和格式检查：
+提交工程结构改动前必须完成 Debug configure/build/test、格式检查和头文件自包含检查：
 
 ```powershell
 cmake --build --preset debug --target cuexis_format_check
+python -B tools/verification/check_header_self_containment.py
 ```
 
 阶段完成、版本生成信息变更或正式验收必须在 fresh configure 后执行 clean build，避免旧对象文件保留过期的生成头内容：
@@ -271,6 +306,28 @@ cmake --preset release --fresh
 cmake --build --preset release --clean-first
 ctest --preset release --no-tests=error
 ```
+
+### 头文件自包含检查（手工）
+
+拆分后的公共头与内部分区头必须能被单独包含：一个只在特定包含顺序下才能编译的头，会把这个顺序变成
+消费者的隐含约定。构建证明不了这一点——它只证明某个编译单元在它恰好使用的顺序下能过。这条检查用一个
+**只包含该头**的探针编译单元逐个验证，当前覆盖 27 个头：`judgement` 的时间基、输入边界、离线汇编器、
+canonical 图四组公共头与内部 `recovery_wire` / `source_codes` / `pattern_dfa`，`core` 的三份诊断分区头，
+以及 `assets` 与 `chart` 的内部头。
+
+```powershell
+python -B tools/verification/check_header_self_containment.py
+```
+
+脚本从 `out/build/debug/compile_commands.json` 取同模块一个真实编译单元的编译参数，把原源文件换成探针、
+去掉 `/Fo` 与 `/Fd`，MSVC 下追加 `/Zs`、其他编译器下改用 `-fsyntax-only`，因此包含路径、宏与语言标准与
+构建完全一致。全部通过时输出 `headers=27 failures=0`；任一失败会打印该头的首条错误并以退出码 1 结束。
+
+**它刻意不是 CTest**：MSVC 的系统头路径来自 Developer Shell 的 `INCLUDE` 变量，注册成测试会在没有该环境
+的机器上假失败，而"失败"与"环境缺失"在 CTest 报告里无法区分。因此在 Developer PowerShell 中手工执行；
+修改公共头、调整 `include` 关系或再次拆分头文件之后都要跑一次。`pattern_dfa` 的四个分区头按构造只能经
+`pattern_dfa.hpp` 包含，不在清单内，其文件头已注明这一点。换编译器或换预设时用 `--build-dir` 指向对应构建
+目录，清单里的参考编译单元路径不变。
 
 ### Pre-push 检查
 
@@ -425,7 +482,7 @@ cmake --install out/build/headless-release --prefix out/install/headless-release
 ```
 
 ```cmake
-find_package(Cuexis 0.7 CONFIG REQUIRED COMPONENTS Playback Content Audio)
+find_package(Cuexis 0.9 CONFIG REQUIRED COMPONENTS Playback Content Audio)
 target_link_libraries(my_host PRIVATE Cuexis::Playback Cuexis::Content Cuexis::Audio)
 ```
 
@@ -436,7 +493,7 @@ target_link_libraries(my_host PRIVATE Cuexis::Playback Cuexis::Content Cuexis::A
 并由 consumer 显式请求组件：
 
 ```cmake
-find_package(Cuexis 0.7 CONFIG REQUIRED COMPONENTS Audio AudioSDL)
+find_package(Cuexis 0.9 CONFIG REQUIRED COMPONENTS Audio AudioSDL)
 target_link_libraries(my_host PRIVATE Cuexis::AudioSDL)
 ```
 
@@ -446,7 +503,7 @@ target_link_libraries(my_host PRIVATE Cuexis::AudioSDL)
 Stage 3 不安装 `OpenGL` component。`cuexis_render_opengl` 仍是 Player 使用的仓库内可选 target；
 安装包显式请求 `COMPONENTS OpenGL` 会失败，基础 Playback package 不查找 OpenGL 或 GLAD。
 
-`0.7` 是当前 Playback preview 的 SDK API 兼容 minor，不是日期构建版本。安装后的
+`0.9` 是当前 Playback preview 的 SDK API 兼容 minor，不是日期构建版本。安装后的
 `Cuexis_VERSION`/`Cuexis_API_VERSION` 返回完整 API 版本，`Cuexis_VERSION_DISPLAY` 返回
 `yy.mm.dd-v[-suffix]` 构建身份。版本更新必须通过
 `python -B tools/update_version.py yy.mm.dd-v` 同步 CMake 与 `vcpkg.json`；
@@ -457,7 +514,7 @@ Stage 3 不安装 `OpenGL` component。`cuexis_render_opengl` 仍是 Player 使�
 七个 `cuexis_external_consumer_*` 模式验证 add_subdirectory/find_package 的基础包、Playback-only、
 Core 和 AudioSDL 组件。Playback-only consumer 从自己的 staging fixture 完成
 load/prepare/resource validation/update/extract，只链接 `Cuexis::Playback`。基础 find_package 门禁
-显式禁用 SDL3 查找，并验证不发现 OpenGL/GLAD、`0.6`/`0.8` 请求被拒绝、未支持的 `OpenGL`
+显式禁用 SDL3 查找，并验证不发现 OpenGL/GLAD、旧 `0.8.1`、过高 patch `0.9.1`、其他 minor `0.7`/`0.10` 与 major `1.0` 请求被拒绝、未支持的 `OpenGL`
 component 被拒绝；安装包门禁同时扫描全部已安装公共头是否为纯 ASCII，并精确校验基础许可证
 清单及 AudioSDL 安装额外增加的 SDL3 copyright：
 
@@ -468,7 +525,7 @@ ctest --preset headless-debug -R "^cuexis_external_consumer_" --output-on-failur
 ### 具名参考宿主（Reference Host）
 
 SDK 安装树之外还有一个独立示例宿主工程 `examples/reference_host/`。它只通过
-`find_package(Cuexis 0.7.0 CONFIG REQUIRED COMPONENTS Playback)` 消费安装后的公共头与导出
+`find_package(Cuexis 0.9.1 CONFIG REQUIRED COMPONENTS Playback)` 消费安装后的公共头与导出
 target，自带主循环、`IContentProvider` 实现、宿主时钟和帧消费，不包含仓库内私有头，也不链接
 Player 配置实现（`cuexis_player_support`）。它的运行记录覆盖启动、加载、提交、逐帧更新与摘要、
 Seek、成功重载、被拒绝的宿主提供者故障重载、发布包加载与销毁：
@@ -479,7 +536,7 @@ cmake -S examples/reference_host -B out/build/reference-host `
 cmake --build out/build/reference-host
 ```
 
-宿主声明 `CUEXIS_HOST_API_VERSION`（默认 `0.7.0`）作为它编写时对齐的 SDK API 基线，并在 SDK
+宿主声明 `CUEXIS_HOST_API_VERSION`（默认 `0.9.1`）作为它编写时对齐的 SDK API 基线，并在 SDK
 minor 不兼容时于 configure 阶段失败。门禁 `cuexis_reference_host_staging` 会把当前构建安装到
 staging 前缀、把示例工程复制到源树之外、在该副本上配置和构建，并在**清理过的 PATH** 下运行：
 
@@ -496,8 +553,8 @@ ctest --preset debug -R cuexis_reference_host_staging --output-on-failure
 1. **宿主导入表**：检查构建出的宿主可执行文件，要求每个 Cuexis 归属的导入都属于允许集
    （Playback 及其公共运行库）；内部模块显式列名。shared 下还要求**确实**导入 `cuexis_playback`，
    以免"什么都没链接"的宿主平凡满足禁止清单。该检查在 static 下同样运行（static 只导入系统/CRT 库）。
-2. **SDK minor 拒绝**：以 `-DCUEXIS_HOST_API_VERSION=0.8.0` 配置宿主并要求其失败。断言的是
-   安装包 `SameMinorVersion` 版本文件产生的真实文本——宿主自己的 `0.7.x` 守卫对该输入**不可达**。
+2. **SDK minor 拒绝**：以 `-DCUEXIS_HOST_API_VERSION=0.10.0` 配置宿主并要求其失败。断言的是
+   安装包 `SameMinorVersion` 版本文件产生的真实文本——宿主自己的 `0.9.x` 守卫对该输入**不可达**。
 3. **candidate 隔离**：扫描 staging 前缀的 `*.hpp`/`*.cmake`/`*.txt`，要求零命中 candidate
    开关与候选格式标识。匹配五个**具体 token** 而非子串 `candidate`，因为已接受的 S5-C 展示面
    （`PresentationCandidateToken`、`CandidateMetadataAccess`）合法包含该子串。
@@ -561,7 +618,7 @@ CUEXIS_LIBRARY_TYPE=STATIC|SHARED
 ```
 
 不得把 `BUILD_SHARED_LIBS` 当作 Cuexis 支持入口。当前 static/shared preview SDK API 均为
-`0.7.0`。一个 build tree 与 install prefix 只能包含一种 Cuexis linkage，consumer 继续链接
+`0.9.1`。一个 build tree 与 install prefix 只能包含一种 Cuexis linkage，consumer 继续链接
 相同的 `Cuexis::` target 名，不得硬编码 DLL/shared object 文件名。可直接使用
 `shared-debug`、`shared-release`、`headless-shared-debug` 和 `headless-shared-release` presets。
 
@@ -614,3 +671,17 @@ WSL 或本地 Linux 可以提前发现跨编译器问题，但不能替代 hoste
 完成报告只能引用包含当前实现 commit 的 workflow run URL；旧分支、旧 commit 或只有文档变更的
 run 不得关闭当前阶段门禁。
 
+
+
+## Player 可选 FPS 显示
+
+Player 的 `--show-fps` 参数开启右上角 FPS 显示，省略时不统计或绘制 FPS。
+数值按成功呈现帧数和单调墙钟时间，每半秒更新；谱面暂停不暂停显示循环。
+它是 Player 调试覆盖层，不写入谱面或 FrameSnapshot 的内容实体。
+
+```powershell
+.\out\build\debug\bin\cuexis_player.exe --show-fps
+```
+
+Player 的 R 键选择 `RestartAtZero` 从零重播；暂停时保留暂停，Space 恢复。
+显式控制 API 的 `KeepChartTime` 重载语义继续保留。

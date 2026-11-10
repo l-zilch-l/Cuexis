@@ -1,0 +1,10 @@
+{
+  "state": "aborted before any process started",
+  "reason": "wrapper defect: the arms directory path was indexed as a mapping; the first run_group call raised TypeError before a probe process existed",
+  "traceback": "run_neutral_lever_v1.py line 154: namespace[\"exe\"] = ARMS[(...)] -> TypeError: 'WindowsPath' object is not subscriptable",
+  "processes_started": 0,
+  "preserved_files": {
+    "binding.json": "9CFA25C7DF9286F3A6FFF2AA0A87B42AF47D3AD3B2C0559BA8E224FE4DBD6DD0",
+    "plan.json": "19ED2325127ACEA27133E634916F88BCD2EF585B49E2F5E31DD8879EAD1D68D1"
+  }
+}

@@ -1,0 +1,43 @@
+from pathlib import Path
+import sys
+
+root=Path.cwd();sys.path.insert(0,str(root/'out/verification-20261029/r3-completion'))
+from native import *
+base=Path(__file__).resolve().parent;build=base/'draw-transfer-guard-build-v1';out=base/'draw-transfer-guard-measure-v1';out.mkdir(exist_ok=False)
+plan=['baseline','candidate','candidate','baseline']
+write(out/'registration.json',dict(scope='Review-driven adverse-input protection: 1K/40K late inversion and reversed. CPU only, same fixed-production objects as prior GPU group. No changed implementation or retry.',plan=plan,processes=4,affinity=4,priority=16384,throttling=False,gate='All scenario medians <=5% regression; original 15% repeatability, equal digest. 8 per-process measurements reduce to median before process aggregation.',binding_sha256=sha(build/'binding.json')))
+rows=[]
+for index,variant in enumerate(plan):
+    log=out/(f'{index:02}-'+variant+'.log');env=dict(os.environ)
+    with log.open('x',encoding='utf-8') as stream:
+        child=subprocess.Popen([str(build/('guard-'+variant+'.exe')),'Neutral draw late inversion performance guard','--rng-seed','1'],cwd=root,env=env,stdin=subprocess.PIPE,stdout=stream,stderr=subprocess.STDOUT,creationflags=subprocess.CREATE_NO_WINDOW|subprocess.BELOW_NORMAL_PRIORITY_CLASS)
+        handle=k.OpenProcess(0x0200|0x1000,False,child.pid)
+        try:
+            power=Power(1,1,0)
+            assert handle and k.SetProcessAffinityMask(handle,4) and k.SetProcessInformation(handle,4,ct.byref(power),ct.sizeof(power))
+            mask=ct.c_size_t();system=ct.c_size_t();observed=Power(1,0,0)
+            assert k.GetProcessAffinityMask(handle,ct.byref(mask),ct.byref(system)) and k.GetProcessInformation(handle,4,ct.byref(observed),ct.sizeof(observed))
+            controls=dict(affinity=mask.value,priority=k.GetPriorityClass(handle),qos_control=observed.ControlMask,qos_state=observed.StateMask)
+            assert controls==dict(affinity=4,priority=16384,qos_control=1,qos_state=0)
+            child.stdin.write(b'go\n');child.stdin.flush();child.stdin.close()
+            code=child.wait(timeout=120)
+        finally:
+            if handle:k.CloseHandle(handle)
+            if child.poll() is None:child.kill();child.wait()
+    text=log.read_text(encoding='utf-8',errors='replace')
+    samples=[json.loads(line.split(' ',1)[1]) for line in text.splitlines() if line.startswith('DRAW_GUARD ')]
+    valid=code==0 and 'All tests passed' in text and len(samples)==32
+    rows.append(dict(variant=variant,exit=code,valid=valid,controls=controls,samples=samples,log_sha256=sha(log)));write(out/'results.json',rows)
+    print(json.dumps(dict(index=index,variant=variant,valid=valid)),flush=True)
+    if not valid:raise SystemExit('Guard invalid; no more processes or retry')
+summary=[]
+for n in (1000,40000):
+    for reverse in (False,True):
+        all_samples=[s for row in rows for s in row['samples'] if s['n']==n and s['reverse']==reverse]
+        assert len({s['digest'] for s in all_samples})==1
+        values={v:dict(process_medians_us=(points:=[statistics.median(s['duration_us'] for s in row['samples'] if s['n']==n and s['reverse']==reverse) for row in rows if row['variant']==v]),median_us=statistics.median(points),relative_range_percent=(max(points)-min(points))/statistics.median(points)*100) for v in ('baseline','candidate')}
+        summary.append(dict(n=n,reverse=reverse,values=values,change_percent=(values['candidate']['median_us']/values['baseline']['median_us']-1)*100))
+numeric=all(s['change_percent']<=5 for s in summary)
+repeatability=all(s['values'][v]['relative_range_percent']<=15 for s in summary for v in ('baseline','candidate'))
+write(out/'decision.json',dict(numeric_guard=numeric,repeatability_screen=repeatability,summary=summary))
+print(json.dumps(dict(numeric=numeric,repeatability=repeatability,summary=summary)),flush=True)

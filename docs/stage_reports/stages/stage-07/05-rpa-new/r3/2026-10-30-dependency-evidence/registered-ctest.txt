@@ -1,0 +1,24 @@
+Start testing: Oct 30 20:47 中国标准时间
+----------------------------------------------------------
+2/45 Testing: cuexis_msvc_dependency_tracking
+2/45 Test: cuexis_msvc_dependency_tracking
+Command: "D:/Program Files/CMake/bin/cmake.exe" "-DCUEXIS_SOURCE_DIR=D:/Cuexis-redesign" "-DCUEXIS_VERIFY_DIR=D:/Cuexis-redesign/out/verification-20261030/r3-next-v1/dependency-root-v2/verification" "-DCUEXIS_VERIFY_COMPILER=D:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.51.36231/bin/Hostx64/x64/cl.exe" "-DCUEXIS_VERIFY_NINJA=D:/PROGRA~1/MICROS~1/18/COMMUN~1/Common7/IDE/COMMON~1/MICROS~1/CMake/Ninja/ninja.exe" "-P" "D:/Cuexis-redesign/cmake/VerifyMsvcDependencyTracking.cmake"
+Directory: D:/Cuexis-redesign/out/verification-20261030/r3-next-v1/dependency-root-v2
+"cuexis_msvc_dependency_tracking" start time: Oct 30 20:47 中国标准时间
+Output:
+----------------------------------------------------------
+-- MSVC header dependency tracking passed: D:/Cuexis-redesign/out/verification-20261030/r3-next-v1/dependency-root-v2/verification/msvc-includes-e9932bc5cb77
+<end of output>
+Test time =   6.06 sec
+----------------------------------------------------------
+Test Passed.
+"cuexis_msvc_dependency_tracking" end time: Oct 30 20:47 中国标准时间
+"cuexis_msvc_dependency_tracking" time elapsed: 00:00:06
+----------------------------------------------------------
+
+End testing: Oct 30 20:47 中国标准时间
+
+build =   6.06 sec*proc
+
+dependencies =   6.06 sec*proc
+

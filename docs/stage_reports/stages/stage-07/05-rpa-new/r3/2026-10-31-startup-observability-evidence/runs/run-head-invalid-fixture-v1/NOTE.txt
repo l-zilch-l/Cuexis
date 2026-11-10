@@ -1,0 +1,11 @@
+This run used the first generated 40K fixture, whose camera object id
+(019f0000-0000-7abc-8def-000000000320) collided with the seventeenth generated renderable id
+(0x310 + 0x10). The product correctly rejected the content:
+  playback.chart.load_failed: Chart loading produced errors
+  [diagnostic_code=chart.object.id_duplicate] [field_path=$/objects/40000/id] [command=load]
+after the full prepare cost, which is why the window never answered.
+Fixture chart at the time: 13171906 bytes, sha256
+60b33235b59b3d1710dd36afc66c90451122ecf91028b1d31033e2408e6bc3ac
+The fixture generator was corrected (camera id at the end of the same namespace) and this run is
+kept only as a record of the failure path and of the window timeline: window visible at 8480 ms,
+then 161 consecutive hung samples until the process reported the error at 27930 ms.

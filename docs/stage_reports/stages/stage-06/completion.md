@@ -253,6 +253,6 @@ playback entry"与第 1 项（`--candidate-entry` 未实现）在**主题上部�
 并未点名四项中任何一个未完成的子项，因此仍不构成逐条归属。
 
 经项目所有者于 2026-09-29 指定，四项自即日起由 **Stage 7A 承接**，登记在该计划
-「Stage 7A 承接的 Stage 6 未完成项」一节（[计划](../../../stage_plans/future/stage-07/plan.md)）。
+「Stage 7A 承接的 Stage 6 未完成项」一节（[计划](../../../stage_plans/active/stage-07/plan.md)）。
 本节只记录归属变更，不改动 §6/§7/§8 的原有表述；§7 将前两项写成已交付语气的措辞，其实际状态以
 [复核交付报告 §10.1](../../reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md) 的逐条表为准。

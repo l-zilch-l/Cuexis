@@ -1,0 +1,29 @@
+{
+  "scope": "Archive self-check: every copied file is present and hashes to its manifest entry, every gzip stream decompresses to the recorded source hash and recompresses to the same bytes, every normalised text copy contains no bare LF and round-trips through the recorded content hash, the three copies of the 40K canonical text agree with binding.canonical_40k, the tabulation's own checks all pass, and no file exists that the manifest does not list.",
+  "checked_utc": "2026-11-01T06:00:14.232001+00:00",
+  "result": "pass",
+  "file_set": {
+    "expected": 228,
+    "present": 228,
+    "stray": [],
+    "missing": []
+  },
+  "checks_run": 671,
+  "checks_failed": [],
+  "canonical_40k_copies": 3,
+  "canonical_40k_agrees": true,
+  "tabulation_checks_pass": true,
+  "tabulation_checks": 39,
+  "tabulation_findings": 9,
+  "cited_digests": 14,
+  "cited_digests_attributed": 14,
+  "cited_digests_unattributed": [],
+  "digest_closure": true,
+  "modes": {
+    "text": 215,
+    "gzip": 8,
+    "binary": 2
+  },
+  "raw_bytes": 113087767,
+  "archived_bytes": 5443309
+}

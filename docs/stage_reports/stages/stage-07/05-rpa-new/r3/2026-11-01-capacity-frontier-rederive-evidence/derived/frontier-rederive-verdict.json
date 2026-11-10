@@ -1,0 +1,450 @@
+{
+  "scope": "Pre-registration of the second 1080p p99 budget-crossing ladder, on HEAD 6256af8 after the neutral-path CPU lever. Diagnostic only; it does not replace the frozen 2026-10-29 capacity list or the 2026-10-31 ladder at 8e275a5, and it does not constitute R3/R4 or production acceptance.",
+  "head": "a93c9794c1d9772d1923178a6e49f11cb9d6d16b",
+  "binary_sha256": "6b01a30f8b01b79cf7d2314be989e89cd42dc63cb9694e5c2794dc5d3af9c790",
+  "refresh_binary_sha256": "91ed0d303c09ef92e6abab9e30b63c87da77322d1dc7132c6b45204c220578b9",
+  "binary_matches_refresh": false,
+  "completed": [
+    1800,
+    3000,
+    2400,
+    3400,
+    2600,
+    3600,
+    2800,
+    3800,
+    3200,
+    4000
+  ],
+  "pending": [],
+  "budget_us": 4166.666666666667,
+  "modes": {
+    "render-only": {
+      "points": [
+        {
+          "entities": 1800,
+          "passed": true,
+          "p99_us": 2345.2,
+          "fps": 569.7348991764973,
+          "min_second_fps": [
+            542,
+            557,
+            548
+          ],
+          "p99_range": 0.034112229234180454,
+          "fps_range": 0.008384105021993767,
+          "over_budget": [
+            11,
+            9,
+            8
+          ]
+        },
+        {
+          "entities": 2400,
+          "passed": true,
+          "p99_us": 2921.9,
+          "fps": 450.28752253275064,
+          "min_second_fps": [
+            433,
+            397,
+            434
+          ],
+          "p99_range": 0.07365070673192095,
+          "fps_range": 0.08485424519321014,
+          "over_budget": [
+            11,
+            12,
+            10
+          ]
+        },
+        {
+          "entities": 2600,
+          "passed": true,
+          "p99_us": 3030,
+          "fps": 423.4559394095044,
+          "min_second_fps": [
+            380,
+            417,
+            409
+          ],
+          "p99_range": 0.05636963696369643,
+          "fps_range": 0.06331996404398575,
+          "over_budget": [
+            12,
+            11,
+            8
+          ]
+        },
+        {
+          "entities": 2800,
+          "passed": true,
+          "p99_us": 3184.8,
+          "fps": 397.99751450552196,
+          "min_second_fps": [
+            383,
+            389,
+            376
+          ],
+          "p99_range": 0.020943230344134582,
+          "fps_range": 0.03118902404327199,
+          "over_budget": [
+            9,
+            10,
+            14
+          ]
+        },
+        {
+          "entities": 3000,
+          "passed": true,
+          "p99_us": 3358,
+          "fps": 370.92791757777707,
+          "min_second_fps": [
+            357,
+            366,
+            363
+          ],
+          "p99_range": 0.02504466944609884,
+          "fps_range": 0.029353566630419957,
+          "over_budget": [
+            9,
+            10,
+            15
+          ]
+        },
+        {
+          "entities": 3200,
+          "passed": true,
+          "p99_us": 3575.2,
+          "fps": 353.69661335492714,
+          "min_second_fps": [
+            339,
+            346,
+            318
+          ],
+          "p99_range": 0.07904452897739984,
+          "fps_range": 0.07844519567190507,
+          "over_budget": [
+            9,
+            10,
+            17
+          ]
+        },
+        {
+          "entities": 3400,
+          "passed": true,
+          "p99_us": 3735.2,
+          "fps": 332.94370403455673,
+          "min_second_fps": [
+            321,
+            323,
+            323
+          ],
+          "p99_range": 0.014698008138787652,
+          "fps_range": 0.006412170547784563,
+          "over_budget": [
+            18,
+            24,
+            15
+          ]
+        },
+        {
+          "entities": 3600,
+          "passed": true,
+          "p99_us": 4149,
+          "fps": 296.1650081042925,
+          "min_second_fps": [
+            292,
+            286,
+            288
+          ],
+          "p99_range": 0.011279826464208286,
+          "fps_range": 0.020279319898568352,
+          "over_budget": [
+            46,
+            56,
+            51
+          ]
+        },
+        {
+          "entities": 3800,
+          "passed": false,
+          "p99_us": 4338,
+          "fps": 280.3570703236067,
+          "min_second_fps": [
+            270,
+            274,
+            264
+          ],
+          "p99_range": 0.023789764868603,
+          "fps_range": 0.03298391660958634,
+          "over_budget": [
+            108,
+            139,
+            235
+          ]
+        },
+        {
+          "entities": 4000,
+          "passed": false,
+          "p99_us": 4452.4,
+          "fps": 270.07737156742326,
+          "min_second_fps": [
+            264,
+            249,
+            262
+          ],
+          "p99_range": 0.09594825262779622,
+          "fps_range": 0.0807138145037844,
+          "over_budget": [
+            146,
+            849,
+            330
+          ]
+        }
+      ],
+      "bracket": {
+        "state": "bracketed",
+        "passing_below_or_at": 3600,
+        "first_failing_above": 3800,
+        "failed_counts": [
+          3800,
+          4000
+        ],
+        "passing_counts": [
+          1800,
+          2400,
+          2600,
+          2800,
+          3000,
+          3200,
+          3400,
+          3600
+        ]
+      },
+      "drift_vs_refresh_1800": {
+        "checked": true,
+        "ladder_1800_p99_us": 2345.2,
+        "refresh_1800_p99_us": 3210.5,
+        "relative_difference": -0.2695218813268962,
+        "band": "outside 10%"
+      }
+    },
+    "static": {
+      "points": [
+        {
+          "entities": 1800,
+          "passed": true,
+          "p99_us": 3031.6,
+          "fps": 417.396295705613,
+          "min_second_fps": [
+            404,
+            404,
+            404
+          ],
+          "p99_range": 0.017152658662092625,
+          "fps_range": 0.012808527018447369,
+          "over_budget": [
+            11,
+            11,
+            7
+          ]
+        },
+        {
+          "entities": 2400,
+          "passed": true,
+          "p99_us": 3847.9,
+          "fps": 321.6554780570047,
+          "min_second_fps": [
+            311,
+            314,
+            310
+          ],
+          "p99_range": 0.012864159671509135,
+          "fps_range": 0.0014054911943527499,
+          "over_budget": [
+            23,
+            26,
+            25
+          ]
+        },
+        {
+          "entities": 2600,
+          "passed": true,
+          "p99_us": 4069.8,
+          "fps": 304.0990725283237,
+          "min_second_fps": [
+            295,
+            292,
+            287
+          ],
+          "p99_range": 0.03393287139417179,
+          "fps_range": 0.04476059816833676,
+          "over_budget": [
+            28,
+            48,
+            44
+          ]
+        },
+        {
+          "entities": 2800,
+          "passed": false,
+          "p99_us": 4436.9,
+          "fps": 278.6395997769383,
+          "min_second_fps": [
+            260,
+            269,
+            274
+          ],
+          "p99_range": 0.040997092564628586,
+          "fps_range": 0.03414447429962036,
+          "over_budget": [
+            267,
+            163,
+            127
+          ]
+        },
+        {
+          "entities": 3000,
+          "passed": false,
+          "p99_us": 4795.8,
+          "fps": 262.6480091280908,
+          "min_second_fps": [
+            231,
+            251,
+            252
+          ],
+          "p99_range": 0.07827682555569448,
+          "fps_range": 0.07679386455801433,
+          "over_budget": [
+            1517,
+            521,
+            378
+          ]
+        },
+        {
+          "entities": 3200,
+          "passed": false,
+          "p99_us": 4880.5,
+          "fps": 239.43771923938021,
+          "min_second_fps": [
+            235,
+            234,
+            238
+          ],
+          "p99_range": 0.0624526175596763,
+          "fps_range": 0.0450856334588619,
+          "over_budget": [
+            2106,
+            2077,
+            1230
+          ]
+        },
+        {
+          "entities": 3400,
+          "passed": false,
+          "p99_us": 5166.3,
+          "fps": 237.38327990867964,
+          "min_second_fps": [
+            229,
+            239,
+            227
+          ],
+          "p99_range": 0.13713876468652614,
+          "fps_range": 0.04164383986141671,
+          "over_budget": [
+            2309,
+            1652,
+            2634
+          ]
+        },
+        {
+          "entities": 3600,
+          "passed": false,
+          "p99_us": 5587.3,
+          "fps": 223.37483235763827,
+          "min_second_fps": [
+            218,
+            217,
+            213
+          ],
+          "p99_range": 0.04026989780394824,
+          "fps_range": 0.011945739228761073,
+          "over_budget": [
+            4224,
+            4347,
+            4169
+          ]
+        },
+        {
+          "entities": 3800,
+          "passed": false,
+          "p99_us": 5857.1,
+          "fps": 212.2481003795016,
+          "min_second_fps": [
+            208,
+            208,
+            202
+          ],
+          "p99_range": 0.06632975363234364,
+          "fps_range": 0.03376256689797893,
+          "over_budget": [
+            4320,
+            4243,
+            4197
+          ]
+        },
+        {
+          "entities": 4000,
+          "passed": false,
+          "p99_us": 6077.9,
+          "fps": 204.00740427402462,
+          "min_second_fps": [
+            196,
+            200,
+            201
+          ],
+          "p99_range": 0.04847068888925458,
+          "fps_range": 0.015234394819946514,
+          "over_budget": [
+            4037,
+            4081,
+            4099
+          ]
+        }
+      ],
+      "bracket": {
+        "state": "bracketed",
+        "passing_below_or_at": 2600,
+        "first_failing_above": 2800,
+        "failed_counts": [
+          2800,
+          3000,
+          3200,
+          3400,
+          3600,
+          3800,
+          4000
+        ],
+        "passing_counts": [
+          1800,
+          2400,
+          2600
+        ]
+      },
+      "drift_vs_refresh_1800": {
+        "checked": true,
+        "ladder_1800_p99_us": 3031.6,
+        "refresh_1800_p99_us": 3725.1,
+        "relative_difference": -0.1861694988054012,
+        "band": "outside 10%"
+      }
+    }
+  },
+  "markdown_table": "| 实体数 | 仅渲染 wall FPS (中位) | 仅渲染 p99 (ms) | 仅渲染 最小秒窗 | 仅渲染 判定 | 静态 wall FPS (中位) | 静态 p99 (ms) | 静态 最小秒窗 | 静态 判定 |\n| ---: | ---: | ---: | ---: | :---: | ---: | ---: | ---: | :---: |\n| 1800 | 569.735 | 2.3452 | 542 | 通过 | 417.396 | 3.0316 | 404 | 通过 |\n| 2400 | 450.288 | 2.9219 | 397 | 通过 | 321.655 | 3.8479 | 310 | 通过 |\n| 2600 | 423.456 | 3.0300 | 380 | 通过 | 304.099 | 4.0698 | 287 | 通过 |\n| 2800 | 397.998 | 3.1848 | 376 | 通过 | 278.640 | 4.4369 | 260 | 未通过 |\n| 3000 | 370.928 | 3.3580 | 357 | 通过 | 262.648 | 4.7958 | 231 | 未通过 |\n| 3200 | 353.697 | 3.5752 | 318 | 通过 | 239.438 | 4.8805 | 234 | 未通过 |\n| 3400 | 332.944 | 3.7352 | 321 | 通过 | 237.383 | 5.1663 | 227 | 未通过 |\n| 3600 | 296.165 | 4.1490 | 286 | 通过 | 223.375 | 5.5873 | 213 | 未通过 |\n| 3800 | 280.357 | 4.3380 | 264 | 未通过 | 212.248 | 5.8571 | 202 | 未通过 |\n| 4000 | 270.077 | 4.4524 | 249 | 未通过 | 204.007 | 6.0779 | 196 | 未通过 |\n\n- `render-only`：bracketed；通过点 [1800, 2400, 2600, 2800, 3000, 3200, 3400, 3600]；失败点 [3800, 4000]；区间 [3600, 3800)。\n- `static`：bracketed；通过点 [1800, 2400, 2600]；失败点 [2800, 3000, 3200, 3400, 3600, 3800, 4000]；区间 [2600, 2800)。",
+  "notes": [
+    "Diagnostic only. This ladder does not replace the frozen 2026-10-29 confirmed capacity points and does not constitute R3/R4 or production acceptance.",
+    "No point was re-sampled; no value is interpolated between entity counts.",
+    "A group whose p99 or FPS relative range exceeds 15% is used only for pass/fail and is never quoted as a speed reading.",
+    "If binary_matches_refresh is false, every published ladder number belongs to its own build and must not be differenced against the refresh sustain numbers."
+  ]
+}

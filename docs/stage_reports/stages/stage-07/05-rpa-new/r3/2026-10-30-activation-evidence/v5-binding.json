@@ -1,0 +1,9 @@
+{
+  "selected": false,
+  "scope": "R3c v5 private activation trigger only, >=512 newly activated requirements. All v4 charge/source-floor/transaction rules retained. No batch publication. Extra phase retention must be measured separately; no production quota acceptance.",
+  "sources": {
+    "execution_kernel.cpp": "35be029c7f7960615339ca71a11f1c45df5bcc9b848f7aa132289087b25f217d",
+    "rpa_b3_tests.cpp": "90011d5bb9def04aeeba4c1e939ea568689c523e9667f8e9caed6dc19d11d2f4"
+  },
+  "parent": "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-resume-v1\\budget-source-v4"
+}

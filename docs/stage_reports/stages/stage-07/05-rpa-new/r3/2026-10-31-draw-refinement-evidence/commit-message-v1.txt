@@ -1,0 +1,22 @@
+Build neutral draw commands in place without ordered copies
+
+The ordered pass no longer materialises a second OrderedDraw array and then
+moves every command into the summary. Each pass now reserves its final
+summary vector and appends the command it just built, so the opaque and
+transparent arrays are written once and the move-transfer loop disappears.
+
+Ordering, digest and the is_sorted early exit are unchanged; only the
+intermediate owning copies are gone.
+
+Localised evidence on 2026-10-31 (out/verification-20261031/r3-wip-validate-v1):
+- 24 source permutations produce the same digest sequence as the committed
+  selection, and both neutral test binaries pass with 399 assertions.
+- OpenGL presentation regression: 140 assertions in 22 test cases.
+- 16-process physical-GPU group against this commit's parent, same Release
+  libraries and app-local DLLs: 40K render-only cycle 50.550 -> 44.168 ms
+  (-12.63%), 40K static 61.865 -> 57.748 ms (-6.65%), 1K unchanged within
+  noise; every point stayed inside the +5% non-inferiority band and the 15%
+  process-to-process range.
+
+This is a localised diagnostic, not a full matrix and not a 240 FPS claim;
+40K render-only remains about 10.6x over the 4.167 ms frame budget.

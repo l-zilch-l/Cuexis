@@ -7,6 +7,7 @@
 //  World does not depend on the SDL, OpenGL, Chart or Asset modules
 
 #include <functional>
+#include <memory>
 #include <optional>
 #include <type_traits>
 #include <utility>
@@ -18,7 +19,16 @@
 #include <cuexis/core/thread_checker.hpp>
 #include <cuexis/world/components.hpp>
 
+namespace cuexis::runtime {
+class RuntimeSession;
+}
+
 namespace cuexis::world {
+namespace detail {
+class TransformUpdate;
+struct WorldTestAccess;
+struct WorldMemoryAccess;
+} // namespace detail
 
 class World final {
   private:
@@ -39,7 +49,7 @@ class World final {
     };
 
   public:
-    World() = default;
+    World();
     ~World();
 
     World(const World&) = delete;
@@ -100,20 +110,22 @@ class World final {
         core::Mat4 localMatrix{};
         core::Mat4 world{};
         std::vector<std::size_t> children;
+        std::size_t orderIndex{};
     };
 
     friend auto updateWorldTransforms(World& world) -> core::Result<void>;
+    friend class detail::TransformUpdate;
+    friend struct detail::WorldTestAccess;
+    friend struct detail::WorldMemoryAccess;
+    friend class cuexis::runtime::RuntimeSession;
 
     entt::registry registry_{};
     std::vector<TransformCacheEntry> transformCache_;
     std::vector<std::size_t> transformOrder_;
-    std::vector<core::Mat4> transformLocalScratch_;
-    std::vector<core::Mat4> transformScratch_;
-    std::vector<bool> transformLocalDirty_;
-    std::vector<bool> transformDirty_;
     bool transformCacheValid_{false};
     mutable bool callbackActive_{false};
     core::ThreadChecker threadChecker_{};
+    std::unique_ptr<detail::TransformUpdate> transformUpdateScratch_;
 };
 
 } // namespace cuexis::world

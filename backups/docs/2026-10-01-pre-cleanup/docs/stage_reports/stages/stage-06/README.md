@@ -1,0 +1,81 @@
+# Stage 6 Reports
+
+状态：historical（Stage 6 已于 2026-09-27 关闭并归档）
+
+更新日期：2026-09-27
+
+本目录保存 Stage 6 各子批次的带日期实施和验证证据。阶段已关闭；报告只记录实际
+执行结果，不把 ADR 冻结、历史 hosted 结果或后续计划当作本批次实现证据。
+
+- [Stage 6 关闭报告](completion.md)：按 `S6-G01`…`S6-G15` 汇总实现、测试、SHA 与证据，
+  记录三个核验问题的处置、Stage 7A / Stage 8 交接清单与未执行项；项目所有者于 2026-09-27
+  接受交接清单与残余，阶段关闭并归档。
+
+## 报告
+
+- [2026-09-20 S6-A1 基线、入口和证据矩阵](2026-09-20-s6-a1-baseline.md)
+  （Debug/Release 基线、candidate 注册边界、代码入口盘点和缺口台账）
+- [2026-09-21 S6-A2 冻结合同落盘与表征](2026-09-21-s6-a2-contracts-and-characterization.md)
+  （Spec/Schema、API/安装草案、依赖边界、identity/media/config golden 和 focused checker）
+- [2026-09-20 S6-B1 版本比较与发行门禁](2026-09-20-s6-b1-version-gate.md)
+  （trusted baseline checker、UTC 递增规则、bootstrap 例外、workflow 合同和本地/hosted 证据边界）
+- [2026-09-22 S6-C1 candidate source、CXC 与 typed lowering](2026-09-22-s6-c1-candidate-source.md)
+  （实现当时的本地 MSVC 快照；该页不改写成退出证据）
+- [2026-09-22 S6-C1 退出](2026-09-22-s6-c1-exit.md)
+  （同 SHA hosted 默认 OFF 矩阵与批次退出边界；不是 Stage 6 关闭或 owner acceptance）
+- [2026-09-22 S6-D1 渲染合同与测试 renderer](2026-09-22-s6-d1-renderer-contract.md)
+  （实现当时的本地 MSVC 快照；该页不改写成退出证据）
+- [2026-09-22 S6-D1 退出](2026-09-22-s6-d1-exit.md)
+  （同 SHA hosted 默认矩阵与批次退出边界；不是 D2 或 Stage 6 关闭）
+- [2026-09-22 S6-D2 OpenGL 迁移](2026-09-22-s6-d2-opengl-migration.md)
+  （实现当时的本地 GPU smoke；该页不改写成退出证据）
+- [2026-09-23 S6-D2 退出](2026-09-23-s6-d2-exit.md)
+  （OpenGL 接线与 Player 正式帧的本地退出；该页记录退出当时的证据，不含之后的 MinGW 复验）
+- [2026-09-23 S6-D2 最小化与恢复](2026-09-23-s6-d2-minimize-restore.md)
+  （本机 smoke 自动最小化再恢复；drawable 保持 1280x720）
+- [2026-09-23 S6-C2 Player support](2026-09-23-s6-c2-player-support.md)
+  （实现当时的配置发布和默认路由 smoke；该页不改写成退出证据）
+- [2026-09-23 S6-C2 退出](2026-09-23-s6-c2-exit.md)
+  （进程锁、只读偏好、热拔插观察和命名设备打开的本地退出；`e01a4b1` hosted 已通过）
+- [2026-09-24 S6-C3 退出](2026-09-24-s6-c3-exit.md)
+  （命令表、应用状态机、固定事务顺序与最小键盘绑定的本地退出；真实窗口按键验证发现并修复了
+  输入路径替换 bundle 时的 discontinuity delta 缺陷，hosted MinGW/MSVC 又发现并修复了
+  `<cstdint>`、`-Wmissing-field-initializers` 与内容先于设备的启动顺序三个缺陷；
+  `e5eb169` hosted 全部通过）
+- [2026-09-25 S6-E1/E2 媒体导入实现](2026-09-25-s6-e1-e2-media-importer.md)
+  （默认 OFF 的 `cuexis_media_import`/`cuexis_media_importer`、固定解码器 profile、canonical
+  golden、CLI 发布门禁和本地 MSVC/MinGW 语法证据；四平台字节一致仍是 hosted 证据）
+- [2026-09-25 S6-E3 资源身份、缓存与包原子发布](2026-09-25-s6-e3-publication-transaction.md)
+  （provenance 四类身份、身份复验媒体缓存、不可变 generation 目录与进程间发布锁、
+  v4+candidate 双闭包替换与回滚；`0753e6a` 四平台 hosted 矩阵通过）
+- [2026-09-26 S6-E3 退出](2026-09-26-s6-e3-exit.md)
+  （按 `S6-G12` 逐项映射验收证据、测试注册、本地与四平台 hosted 复验及残余；本地批次退出，
+  不是 Stage 6 关闭或 owner acceptance）
+- [2026-09-27 S6-C4 参考宿主与 Player 分发](2026-09-27-s6-c4-reference-host-and-player-distribution.md)
+  （`examples/reference_host/` 的安装后公共边界宿主、staging/清理 PATH/拒绝门禁、`cuexis_player_dist`
+  自包含分发目录与许可证集合、`0.7.0` 基线升级与配置回滚边界、残余与未完成项；该页明确不是
+  批次退出）
+- [2026-09-27 S6-C4 退出](2026-09-27-s6-c4-exit.md)
+  （按 `S6-G13` 逐项映射验收证据、测试注册、本地矩阵与四平台 hosted 复验、六条门禁与打包缺陷、
+  残余与 F1 消费边界；本地批次退出，不是 Stage 6 关闭或 owner acceptance）
+- [2026-09-27 S6-E1/E2 退出](2026-09-27-s6-e1-e2-exit.md)
+  （按 `S6-G10`/`S6-G11` 逐项映射验收证据、测试注册（18 个 TEST_CASE、CLI 门禁、18 个 golden）、
+  本地矩阵与同 SHA 四平台 hosted 复验、六条缺陷、残余与 F1 消费边界；本地批次退出，不是
+  Stage 6 关闭或 owner acceptance）
+- [2026-09-27 S6-F1 最终验证退出](2026-09-27-s6-f1-final-validation.md)
+  （按 `S6-G14` 与 `S6-G15` 的 F1 部分逐项映射验收证据、7 个 preset 的 fresh configure 与
+  clean-first 本地全量矩阵、candidate 开关与工具隔离、GPU/真实音频设备单列证据、同 SHA 三平台
+  hosted 与插桩覆盖核对、跳过项与未执行项；本地批次退出，不是 Stage 6 关闭或 owner acceptance）
+
+## Stage 6 复核修正报告
+
+阶段已于 2026-09-27 关闭；下列报告属于关闭后的复核修正工作包，不改变阶段状态，也不代表
+owner 接受了修正包的最终退出。
+
+- [2026-09-28 R9 参考宿主命令循环与 play/pause](2026-09-28-r9-reference-host-command-loop.md)
+  （命令行模式、§6.2 digest 关系与检查器消息截断缺陷、16 条变异证据及唯一已记录存活、
+  本地环境偏差、未主张项）
+
+权威范围见 [Stage 6 计划](../../../stage_plans/completed/stage-06/plan.md)、
+[ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md) 和
+[CURRENT_STATUS.md](../../../CURRENT_STATUS.md)。

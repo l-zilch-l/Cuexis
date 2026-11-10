@@ -4,6 +4,8 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CuexisVersion.cmake")
 
 project(Cuexis VERSION ${CUEXIS_CMAKE_VERSION} LANGUAGES CXX)
 
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CuexisMsvcDependencies.cmake")
+
 # Catch2 and all C++ dependencies must use the same ABI as the active compiler.
 # Fail during configure instead of deferring a toolchain mismatch to the linker.
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND
@@ -41,10 +43,61 @@ option(CUEXIS_BUILD_SHADER_TOOLS "Build the optional shader compiler module" OFF
 option(CUEXIS_BUILD_MEDIA_TOOLS "Build the optional offline media import library and tool" OFF)
 option(CUEXIS_ENABLE_CHART_V5_CANDIDATE
        "Enable the experimental Chart v5 candidate Playback source path" OFF)
+set(CUEXIS_BUILD_FLAVOR "production")
+set(CUEXIS_EXPERIMENTAL_CONFIG_BLOCK "")
+if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+    set(CUEXIS_BUILD_FLAVOR "experimental")
+    add_compile_definitions(CUEXIS_EXPERIMENTAL_BUILD=1)
+    set(CUEXIS_EXPERIMENTAL_CONFIG_BLOCK [=[
+if(NOT Cuexis_ALLOW_EXPERIMENTAL)
+    set(Cuexis_FOUND FALSE)
+    set(Cuexis_NOT_FOUND_MESSAGE
+        "Cuexis experimental package requires explicit Cuexis_ALLOW_EXPERIMENTAL=ON")
+    return()
+endif()
+]=])
+endif()
+configure_file(cmake/CuexisInstallFlavor.cmake.in
+    "${PROJECT_BINARY_DIR}/CuexisInstallFlavor.cmake" @ONLY)
+# Register before subdirectories install any files. A prefix cannot change flavor in place.
+install(SCRIPT "${PROJECT_BINARY_DIR}/CuexisInstallFlavor.cmake")
 option(CUEXIS_BUILD_TESTS "Build the Cuexis test suite" ${CUEXIS_TESTS_DEFAULT})
 option(CUEXIS_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
 option(CUEXIS_ENABLE_CLANG_TIDY "Run clang-tidy while compiling Cuexis targets" OFF)
 option(CUEXIS_ENABLE_COVERAGE "Enable compiler coverage instrumentation" OFF)
+option(CUEXIS_PD_METRICS_TEST_ONLY "Enable bounded internal PD stage measurements (not production)" OFF)
+option(CUEXIS_EXECUTION_DIAGNOSTICS_TEST_ONLY "Enable internal execution diagnostics (not production)" OFF)
+if(CUEXIS_EXECUTION_DIAGNOSTICS_TEST_ONLY)
+    if(NOT CUEXIS_BUILD_TESTS)
+        message(FATAL_ERROR "Execution diagnostics require the test suite")
+    endif()
+    add_compile_definitions(CUEXIS_EXECUTION_DIAGNOSTICS_TEST_ONLY=1)
+endif()
+option(CUEXIS_RPA_OBSERVATION_TEST_ONLY "Enable F5/R0 owner-local read-only observation channel (not production)" OFF)
+if(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
+    if(NOT CUEXIS_BUILD_TESTS)
+        message(FATAL_ERROR "RPA observation requires the test suite")
+    endif()
+    add_compile_definitions(CUEXIS_RPA_OBSERVATION_TEST_ONLY=1)
+endif()
+option(CUEXIS_ALLOCATION_LIFETIME_OBSERVER "Enable opt-in PD allocation lifetime observer (not production)" OFF)
+option(CUEXIS_EXECUTION_ALLOCATION_OBSERVER "Enable extended execution allocation attribution (not production)" OFF)
+if(CUEXIS_EXECUTION_ALLOCATION_OBSERVER)
+    if(NOT CUEXIS_ALLOCATION_LIFETIME_OBSERVER OR NOT CUEXIS_BUILD_TESTS)
+        message(FATAL_ERROR "Execution allocation attribution requires the test lifetime observer")
+    endif()
+    add_compile_definitions(CUEXIS_EXECUTION_ALLOCATION_OBSERVER=1)
+endif()
+option(CUEXIS_PLAYBACK_TRACE_HARNESS "Enable internal scripted Player measurement (not production)" OFF)
+if(CUEXIS_ALLOCATION_LIFETIME_OBSERVER)
+    if(NOT WIN32 OR NOT CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
+        message(FATAL_ERROR "PD allocation observer requires Windows STATIC")
+    endif()
+    add_compile_definitions(CUEXIS_ALLOCATION_LIFETIME_OBSERVER=1)
+endif()
+if(CUEXIS_PD_METRICS_TEST_ONLY)
+    add_compile_definitions(CUEXIS_PD_METRICS_TEST_ONLY=1)
+endif()
 set(CUEXIS_IMPLEMENTATION_SHA "" CACHE STRING
     "Git commit SHA recorded by deterministic implementation evidence")
 
@@ -101,6 +154,17 @@ include("${PROJECT_SOURCE_DIR}/cmake/CuexisWarnings.cmake")
 include("${PROJECT_SOURCE_DIR}/cmake/VerifyArchitecture.cmake")
 include("${PROJECT_SOURCE_DIR}/cmake/CuexisLibraryType.cmake")
 
+# The execution host is one owner-thread state machine split across units, so every target that
+# exercises it compiles the same list. Keeping the list in one place is what stops a probe or a
+# test target from linking only part of the state machine.
+set(CUEXIS_EXECUTION_HOST_SOURCES
+    "${PROJECT_SOURCE_DIR}/app/player/src/execution_host.cpp"
+    "${PROJECT_SOURCE_DIR}/app/player/src/execution_host_close.cpp"
+    "${PROJECT_SOURCE_DIR}/app/player/src/execution_host_frame.cpp"
+    "${PROJECT_SOURCE_DIR}/app/player/src/execution_host_replay.cpp"
+    "${PROJECT_SOURCE_DIR}/app/player/src/execution_host_rpa.cpp"
+)
+
 add_subdirectory(engine)
 if(CUEXIS_BUILD_PLAYER)
     add_subdirectory(app)
@@ -112,6 +176,48 @@ endif()
 
 if(CUEXIS_BUILD_TESTS)
     add_subdirectory(tests)
+endif()
+
+# Opt-in physical-device evidence. Never discovered by CTest or required by headless CI.
+if(BUILD_TESTING AND CUEXIS_BUILD_TESTS AND CUEXIS_ENABLE_CHART_V5_CANDIDATE
+   AND TARGET cuexis_platform_sdl AND TARGET cuexis_audio_sdl AND TARGET cuexis_render_opengl)
+    find_package(Catch2 CONFIG REQUIRED)
+    find_package(glad CONFIG REQUIRED)
+    add_executable(cuexis_execution_device_probe
+        tests/player/execution_device_probe.cpp
+        tests/player/gpu_throughput_probe.cpp
+        tests/player/pixel_readback_probe.cpp
+        tests/pd/pd5_device_probe.cpp
+        engine/render_opengl/src/gpu_timer.cpp
+        ${CUEXIS_EXECUTION_HOST_SOURCES}
+        app/player/src/snapshot_scene.cpp
+    )
+    target_compile_features(cuexis_execution_device_probe PRIVATE cxx_std_20)
+    target_include_directories(cuexis_execution_device_probe PRIVATE
+        "${PROJECT_SOURCE_DIR}/engine/judgement/internal"
+        "${PROJECT_SOURCE_DIR}/engine/render_opengl/internal")
+    target_compile_definitions(cuexis_execution_device_probe PRIVATE
+        CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+    )
+    target_link_libraries(cuexis_execution_device_probe PRIVATE
+        cuexis::execution_host_support
+        cuexis::playback cuexis::audio_sdl cuexis::platform_sdl cuexis::render_opengl cuexis::render
+        cuexis::judgement cuexis::gameplay_packed Catch2::Catch2WithMain glad::glad
+    )
+endif()
+
+if(CUEXIS_ALLOCATION_LIFETIME_OBSERVER)
+    foreach(probe cuexis_pd_host_probe cuexis_execution_device_probe)
+        if(TARGET ${probe})
+            if(CUEXIS_EXECUTION_ALLOCATION_OBSERVER)
+                target_sources(${probe} PRIVATE tests/pd/execution_memory_observer.cpp
+                    tests/pd/execution_memory_tests.cpp)
+            else()
+                target_sources(${probe} PRIVATE tests/pd/pd5_memory_observer.cpp)
+            endif()
+            target_link_libraries(${probe} PRIVATE psapi)
+        endif()
+    endforeach()
 endif()
 
 set(CUEXIS_ACTIVE_TARGETS
@@ -128,6 +234,8 @@ set(CUEXIS_ACTIVE_TARGETS
     cuexis_cxc
     cuexis_behavior
     cuexis_gameplay
+    cuexis_judgement
+    cuexis_gameplay_packed
     cuexis_render
     cuexis_debug
     cuexis_runtime
@@ -136,6 +244,9 @@ set(CUEXIS_ACTIVE_TARGETS
     cuexis_player_support
 )
 
+if(TARGET cuexis_execution_host_support)
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_execution_host_support)
+endif()
 if(CUEXIS_BUILD_SDL_ADAPTER)
     list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_platform_sdl)
 endif()
@@ -162,14 +273,21 @@ if(CUEXIS_BUILD_DEVELOPER_TOOLS)
         cuexis_cxc_tool_common
         cuexis_cxc_unpack
         cuexis_cxc_validate
+        cuexis_gameplay_author
+        cuexis_chart_candidate
     )
     if(TARGET cuexis_asset_importer)
         list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_asset_importer)
     endif()
 endif()
+if(TARGET cuexis_gameplay_assemble)
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_gameplay_assemble)
+endif()
+if(TARGET cuexis_asset_publish)
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_asset_publish)
+endif()
 if(CUEXIS_BUILD_MEDIA_TOOLS)
     list(APPEND CUEXIS_ACTIVE_TARGETS
-        cuexis_asset_publish
         cuexis_media_import
         cuexis_media_importer
     )
@@ -189,6 +307,10 @@ if(CUEXIS_BUILD_TESTS)
         cuexis_cxc_tests
         cuexis_behavior_tests
         cuexis_gameplay_tests
+        cuexis_judgement_tests
+        cuexis_rpa_tests
+        cuexis_gameplay_packed_tests
+
         cuexis_debug_tests
         cuexis_render_tests
         cuexis_presentation_renderer_tests
@@ -205,6 +327,22 @@ if(CUEXIS_BUILD_TESTS)
         cuexis_s5h_performance_probe
     )
 
+    if(TARGET cuexis_host_protocol_tests)
+        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_host_protocol_tests)
+    endif()
+    if(TARGET cuexis_pd_baseline_probe)
+        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_pd_baseline_probe)
+        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_pd_allocation_probe)
+    endif()
+    if(TARGET cuexis_pd_host_probe)
+        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_pd_host_probe)
+    endif()
+    if(TARGET cuexis_execution_host_tests)
+        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_execution_host_tests)
+    endif()
+    if(TARGET cuexis_execution_device_probe)
+        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_execution_device_probe)
+    endif()
     if(TARGET cuexis_platform_sdl_tests)
         list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_platform_sdl_tests)
     endif()
@@ -236,6 +374,46 @@ if(CUEXIS_BUILD_TESTS)
             "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
             -P "${PROJECT_SOURCE_DIR}/cmake/VerifyArchitecture.cmake"
     )
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND CMAKE_GENERATOR MATCHES "^Ninja"
+       AND NOT CMAKE_CROSSCOMPILING)
+        add_test(NAME cuexis_msvc_dependency_tracking
+            COMMAND "${CMAKE_COMMAND}"
+                "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+                "-DCUEXIS_VERIFY_DIR=${PROJECT_BINARY_DIR}/verification"
+                "-DCUEXIS_VERIFY_COMPILER=${CMAKE_CXX_COMPILER}"
+                "-DCUEXIS_VERIFY_COMPILER_ARG1=${CMAKE_CXX_COMPILER_ARG1}"
+                "-DCUEXIS_VERIFY_NINJA=${CMAKE_MAKE_PROGRAM}"
+                -P "${PROJECT_SOURCE_DIR}/cmake/VerifyMsvcDependencyTracking.cmake")
+        set_tests_properties(cuexis_msvc_dependency_tracking PROPERTIES
+            LABELS "build;dependencies" RUN_SERIAL TRUE TIMEOUT 120)
+    endif()
+    #  Round-6 diagnostic gate (CM-D04 / P1-09): the Gameplay V2 diagnostic code table must
+    #  be registered centrally and validate before any code string may enter a public header.
+    #  Script mode only, so it adds no cuexis_* target.
+    add_test(
+        NAME cuexis_gameplay_diagnostics_codes
+        COMMAND "${CMAKE_COMMAND}"
+            "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+            "-DCUEXIS_DIAGNOSTIC_CODES_FILE=${PROJECT_SOURCE_DIR}/schemas/cuexis.gameplay-diagnostics.v2.codes.json"
+            -P "${PROJECT_SOURCE_DIR}/cmake/VerifyGameplayDiagnosticsCodes.cmake"
+    )
+    set_tests_properties(cuexis_gameplay_diagnostics_codes PROPERTIES
+        LABELS "gameplay;judgement;diagnostics;schemas"
+        TIMEOUT 60
+    )
+    foreach(diagnostic_mode IN ITEMS residuals negatives)
+        set(diagnostic_extra_args "")
+        if(diagnostic_mode STREQUAL "negatives")
+            set(diagnostic_extra_args "--self-test")
+        endif()
+        add_test(NAME cuexis_gameplay_diagnostic_${diagnostic_mode}
+            COMMAND "${CMAKE_COMMAND}"
+                "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+                "-DCUEXIS_DIAGNOSTIC_EXTRA_ARGS=${diagnostic_extra_args}"
+                -P "${PROJECT_SOURCE_DIR}/cmake/VerifyGameplayDiagnosticFormalization.cmake")
+        set_tests_properties(cuexis_gameplay_diagnostic_${diagnostic_mode} PROPERTIES
+            LABELS "gameplay;judgement;diagnostics" TIMEOUT 120)
+    endforeach()
     if(CUEXIS_BUILD_DEVELOPER_TOOLS)
         add_test(
             NAME cuexis_cxc_tools
@@ -346,7 +524,7 @@ if(CUEXIS_BUILD_TESTS)
         # Two different tools are needed, so they get two different variables.
         #
         # The export gate reads the *dynamic symbol table*, and `nm -D
-        # --defined-only` is the right reader for that on non-MSVC.
+        # --defined-only` is the right reader for ELF. PE uses its export directory.
         #
         # The reference-host gate reads the *import list*, and `nm` cannot serve
         # it on either non-MSVC format:
@@ -364,6 +542,13 @@ if(CUEXIS_BUILD_TESTS)
             set(CUEXIS_SYMBOL_TOOL_KIND dumpbin)
             set(CUEXIS_IMPORT_TOOL "${CUEXIS_SYMBOL_TOOL}")
             set(CUEXIS_IMPORT_TOOL_KIND "${CUEXIS_SYMBOL_TOOL_KIND}")
+        elseif(WIN32)
+            # PE exports live in the export directory, not an ELF dynamic symbol table.
+            find_program(CUEXIS_PE_EXPORT_TOOL NAMES objdump REQUIRED)
+            set(CUEXIS_SYMBOL_TOOL "${CUEXIS_PE_EXPORT_TOOL}")
+            set(CUEXIS_SYMBOL_TOOL_KIND objdump)
+            set(CUEXIS_IMPORT_TOOL "${CUEXIS_SYMBOL_TOOL}")
+            set(CUEXIS_IMPORT_TOOL_KIND objdump)
         else()
             find_program(CUEXIS_SYMBOL_TOOL NAMES nm REQUIRED)
             set(CUEXIS_SYMBOL_TOOL_KIND nm)
@@ -382,6 +567,7 @@ if(CUEXIS_BUILD_TESTS)
                 NAME cuexis_external_consumer_${consumer_mode}
                 COMMAND "${CMAKE_COMMAND}"
                     "-DCUEXIS_CONSUMER_MODE=${consumer_mode}"
+                    "-DCUEXIS_EXPERIMENTAL=${CUEXIS_ENABLE_CHART_V5_CANDIDATE}"
                     "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
                     "-DCUEXIS_BINARY_DIR=${PROJECT_BINARY_DIR}"
                     "-DCUEXIS_GENERATOR=${CMAKE_GENERATOR}"
@@ -409,6 +595,50 @@ if(CUEXIS_BUILD_TESTS)
                 TIMEOUT 900
             )
         endforeach()
+        if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+            set(gameplay_host_tool_arguments)
+            if(TARGET cuexis_chart_candidate)
+                list(APPEND gameplay_host_tool_arguments "-DCUEXIS_GAMEPLAY_TOOL=$<TARGET_FILE:cuexis_chart_candidate>")
+            endif()
+            add_test(NAME cuexis_gameplay_installed_consumer
+                COMMAND "${CMAKE_COMMAND}"
+                    "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+                    "-DCUEXIS_BINARY_DIR=${PROJECT_BINARY_DIR}"
+                    "-DCUEXIS_PLAYBACK_TESTS=$<TARGET_FILE:cuexis_playback_tests>"
+                    "-DCUEXIS_GENERATOR=${CMAKE_GENERATOR}"
+                    "-DCUEXIS_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+                    "-DCUEXIS_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+                    "-DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}"
+                    "-DCMAKE_RC_COMPILER=${CMAKE_RC_COMPILER}"
+                    "-DCMAKE_MT=${CMAKE_MT}"
+                    "-DCUEXIS_VCPKG_INSTALLED_DIR=${VCPKG_INSTALLED_DIR}"
+                    "-DCUEXIS_VCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET}"
+                    "-DCUEXIS_ENABLE_SANITIZERS=${CUEXIS_ENABLE_SANITIZERS}"
+                    ${gameplay_host_tool_arguments}
+                    -P "${PROJECT_SOURCE_DIR}/cmake/VerifyGameplayInstalledConsumer.cmake")
+            set_tests_properties(cuexis_gameplay_installed_consumer PROPERTIES
+                LABELS "candidate;gameplay;external;package;headless"
+                RESOURCE_LOCK cuexis_external_consumer TIMEOUT 900)
+            if(TARGET cuexis_gameplay_assemble)
+                add_test(NAME cuexis_gameplay_assembler_cli
+                    COMMAND "${CMAKE_COMMAND}"
+                        "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+                        "-DCUEXIS_BINARY_DIR=${PROJECT_BINARY_DIR}"
+                        "-DCUEXIS_PLAYBACK_TESTS=$<TARGET_FILE:cuexis_playback_tests>"
+                        "-DCUEXIS_ENABLE_SANITIZERS=${CUEXIS_ENABLE_SANITIZERS}"
+                    ${gameplay_host_tool_arguments}
+                        -P "${PROJECT_SOURCE_DIR}/cmake/VerifyGameplayAssemblerCli.cmake")
+                set_tests_properties(cuexis_gameplay_assembler_cli PROPERTIES
+                    LABELS "candidate;gameplay;assembler;package;headless"
+                    RESOURCE_LOCK cuexis_external_consumer TIMEOUT 300)
+            endif()
+        endif()
+        set(candidate_host_arguments)
+        if(TARGET cuexis_chart_candidate)
+            list(APPEND candidate_host_arguments
+                "-DCUEXIS_CHART_TESTS=$<TARGET_FILE:cuexis_chart_tests>"
+                "-DCUEXIS_CANDIDATE_TOOL=$<TARGET_FILE:cuexis_chart_candidate>")
+        endif()
         add_test(
             NAME cuexis_reference_host_staging
             COMMAND "${CMAKE_COMMAND}"
@@ -417,6 +647,8 @@ if(CUEXIS_BUILD_TESTS)
                 "-DCUEXIS_GENERATOR=${CMAKE_GENERATOR}"
                 "-DCUEXIS_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
                 "-DCUEXIS_LIBRARY_TYPE=${CUEXIS_LIBRARY_TYPE}"
+                "-DCUEXIS_EXPERIMENTAL=${CUEXIS_ENABLE_CHART_V5_CANDIDATE}"
+                ${candidate_host_arguments}
                 "-DCUEXIS_ENABLE_SANITIZERS=${CUEXIS_ENABLE_SANITIZERS}"
                 "-DCUEXIS_ENABLE_COVERAGE=${CUEXIS_ENABLE_COVERAGE}"
                 "-DCUEXIS_SDK_API_VERSION=${CUEXIS_SDK_API_VERSION}"
@@ -465,6 +697,7 @@ if(CUEXIS_BUILD_TESTS)
                     "-DCUEXIS_ENABLE_SANITIZERS=${CUEXIS_ENABLE_SANITIZERS}"
                     "-DCUEXIS_ENABLE_COVERAGE=${CUEXIS_ENABLE_COVERAGE}"
                     "-DCUEXIS_VERSION_DISPLAY=${CUEXIS_VERSION_DISPLAY}"
+                    "-DCUEXIS_SDK_API_VERSION=${CUEXIS_SDK_API_VERSION}"
                     -P "${PROJECT_SOURCE_DIR}/cmake/VerifyPlayerDistribution.cmake"
             )
             set_tests_properties(cuexis_player_distribution PROPERTIES
@@ -480,11 +713,22 @@ if(CUEXIS_BUILD_TESTS)
                     "-DCUEXIS_SHARED_LIBRARY=$<TARGET_FILE:cuexis_playback>"
                     "-DCUEXIS_SYMBOL_TOOL=${CUEXIS_SYMBOL_TOOL}"
                     "-DCUEXIS_SYMBOL_TOOL_KIND=${CUEXIS_SYMBOL_TOOL_KIND}"
+                    "-DCUEXIS_GAMEPLAY_CANDIDATE=${CUEXIS_ENABLE_CHART_V5_CANDIDATE}"
                     -P "${PROJECT_SOURCE_DIR}/cmake/VerifySharedExports.cmake"
             )
             set_tests_properties(cuexis_shared_export_surface PROPERTIES
                 LABELS "shared;package"
             )
+            if(CUEXIS_SYMBOL_TOOL_KIND STREQUAL "objdump")
+                find_program(CUEXIS_EXPORT_GATE_PYTHON NAMES python3 python REQUIRED)
+                add_test(NAME cuexis_pe_export_gate_negatives
+                    COMMAND "${CUEXIS_EXPORT_GATE_PYTHON}" -B
+                        "${PROJECT_SOURCE_DIR}/tools/verification/check_pe_export_gate.py"
+                        --dll "$<TARGET_FILE:cuexis_playback>"
+                        --objdump "${CUEXIS_SYMBOL_TOOL}" --cmake "${CMAKE_COMMAND}"
+                        --candidate "${CUEXIS_ENABLE_CHART_V5_CANDIDATE}")
+                set_tests_properties(cuexis_pe_export_gate_negatives PROPERTIES LABELS "shared;package")
+            endif()
             if(MSVC)
                 add_test(
                     NAME cuexis_shared_consumer_imports
@@ -526,6 +770,10 @@ if(CUEXIS_BUILD_TESTS)
     endif()
 endif()
 
+if(TARGET cuexis_gameplay_author_tests)
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_gameplay_author_tests)
+endif()
+
 foreach(target IN LISTS CUEXIS_ACTIVE_TARGETS)
     cuexis_enable_warnings(${target})
 endforeach()
@@ -545,9 +793,14 @@ if(CUEXIS_BUILD_DEVELOPER_TOOLS)
 
     find_program(CUEXIS_CLANG_FORMAT_EXECUTABLE NAMES clang-format)
     if(CUEXIS_CLANG_FORMAT_EXECUTABLE)
+        string(REPLACE ";" "\n" cuexis_format_file_lines "${CUEXIS_FORMAT_FILES}")
+        file(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/cuexis-format-files.txt"
+            CONTENT "${cuexis_format_file_lines}\n")
         add_custom_target(cuexis_format_check
-            COMMAND "${CUEXIS_CLANG_FORMAT_EXECUTABLE}" --dry-run --Werror
-                    ${CUEXIS_FORMAT_FILES}
+            COMMAND "${CMAKE_COMMAND}"
+                    "-DCUEXIS_CLANG_FORMAT_EXECUTABLE=${CUEXIS_CLANG_FORMAT_EXECUTABLE}"
+                    "-DCUEXIS_FORMAT_FILE_LIST=${CMAKE_BINARY_DIR}/cuexis-format-files.txt"
+                    -P "${PROJECT_SOURCE_DIR}/cmake/CheckFormatting.cmake"
             WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
             VERBATIM
         )
@@ -594,9 +847,13 @@ set(CUEXIS_STATIC_IMPLEMENTATION_TARGETS
     cuexis_cxc
     cuexis_behavior
     cuexis_gameplay
+    cuexis_judgement
     cuexis_render
     cuexis_runtime
 )
+if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+    list(APPEND CUEXIS_STATIC_IMPLEMENTATION_TARGETS cuexis_gameplay_packed)
+endif()
 install(TARGETS ${CUEXIS_PUBLIC_EXPORT_TARGETS}
     EXPORT CuexisTargets
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
@@ -668,6 +925,10 @@ install(FILES
     "${PROJECT_SOURCE_DIR}/THIRD_PARTY_NOTICES.md"
     DESTINATION "${CMAKE_INSTALL_DATADIR}/Cuexis"
 )
+install(FILES "${PROJECT_SOURCE_DIR}/third_party/sha_intrinsics/LICENSE"
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/Cuexis/licenses" RENAME sha-intrinsics-copyright)
+install(FILES "${PROJECT_SOURCE_DIR}/third_party/fnv/LICENSE"
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/Cuexis/licenses" RENAME fnv-copyright)
 
 set(CUEXIS_DISTRIBUTED_VCPKG_PORTS
     entt
@@ -711,6 +972,9 @@ cuexis_verify_target_dependencies(cuexis_content
         cuexis::core
         cuexis::filesystem
 )
+if(TARGET cuexis_execution_host_support)
+    cuexis_verify_target_dependencies(cuexis_execution_host_support ALLOWED cuexis::playback)
+endif()
 if(TARGET cuexis_platform_sdl)
     cuexis_verify_target_dependencies(cuexis_platform_sdl
         ALLOWED
@@ -797,6 +1061,35 @@ cuexis_verify_target_dependencies(cuexis_gameplay
     ALLOWED
         cuexis::core
 )
+cuexis_verify_target_dependencies(cuexis_judgement
+    ALLOWED
+        cuexis::core
+)
+cuexis_verify_target_dependencies(cuexis_gameplay_packed
+    ALLOWED
+        cuexis::json_support
+        cuexis::chart
+        cuexis::judgement
+        cuexis::filesystem
+        cuexis::core
+)
+if(TARGET cuexis_gameplay_author_tests)
+    cuexis_verify_target_dependencies(cuexis_gameplay_author_tests ALLOWED cuexis::gameplay_author Catch2::Catch2WithMain)
+endif()
+if(TARGET cuexis_gameplay_author)
+    cuexis_verify_target_dependencies(cuexis_gameplay_author
+        ALLOWED cuexis::core cuexis::json_support cuexis::chart cuexis::judgement cuexis::gameplay_packed
+                cuexis::playback cuexis::cxc cuexis::asset_publish)
+endif()
+if(TARGET cuexis_gameplay_assemble)
+    cuexis_verify_target_dependencies(cuexis_gameplay_assemble ALLOWED
+        cuexis::gameplay_author)
+endif()
+if(TARGET cuexis_chart_candidate)
+    cuexis_verify_target_dependencies(cuexis_chart_candidate
+        ALLOWED cuexis::chart cuexis::cxc cuexis::core cuexis::json_support
+                cuexis::asset_publish cuexis::playback cuexis::gameplay_author)
+endif()
 cuexis_verify_target_dependencies(cuexis_render
     ALLOWED
         cuexis::assets
@@ -838,6 +1131,7 @@ if(TARGET cuexis_render_opengl)
 endif()
 cuexis_verify_target_dependencies(cuexis_playback
     ALLOWED
+        cuexis::json_support
         cuexis::audio
         cuexis::content
         cuexis::core
@@ -850,6 +1144,8 @@ cuexis_verify_target_dependencies(cuexis_playback
         cuexis::render
         cuexis::runtime
         cuexis::world
+        cuexis::judgement
+        cuexis::gameplay_packed
 )
 cuexis_verify_target_dependencies(cuexis_presentation_renderer
     ALLOWED
@@ -864,7 +1160,7 @@ cuexis_verify_target_dependencies(cuexis_player_support
 )
 if(TARGET cuexis_player)
     cuexis_verify_target_dependencies(cuexis_player
-        ALLOWED
+        ALLOWED cuexis::execution_host_support
             cuexis::audio
             cuexis::audio_sdl
             cuexis::playback
@@ -875,6 +1171,7 @@ if(TARGET cuexis_player)
             cuexis::render_opengl
             cuexis::player_support
             spdlog::spdlog
+            ole32 uuid
     )
 endif()
 if(TARGET cuexis_chart_migrator)
@@ -959,6 +1256,14 @@ if(TARGET cuexis_asset_publish_tests)
             Catch2::Catch2WithMain
     )
 endif()
+if(TARGET cuexis_media_import_tests)
+    cuexis_verify_target_dependencies(cuexis_media_import_tests
+        ALLOWED
+            cuexis::core
+            cuexis::media_import
+            Catch2::Catch2WithMain
+    )
+endif()
 
 if(CUEXIS_BUILD_TESTS)
     cuexis_verify_target_dependencies(cuexis_core_tests
@@ -1015,6 +1320,7 @@ if(CUEXIS_BUILD_TESTS)
     cuexis_verify_target_dependencies(cuexis_chart_tests
         ALLOWED
             cuexis::chart
+            cuexis::json_support
             Catch2::Catch2WithMain
     )
     cuexis_verify_target_dependencies(cuexis_animation_tests
@@ -1054,6 +1360,58 @@ if(CUEXIS_BUILD_TESTS)
     cuexis_verify_target_dependencies(cuexis_gameplay_tests
         ALLOWED
             cuexis::gameplay
+            Catch2::Catch2WithMain
+    )
+    cuexis_verify_target_dependencies(cuexis_judgement_tests
+        ALLOWED
+            cuexis::judgement
+            Catch2::Catch2WithMain
+    )
+    if(TARGET cuexis_pd_baseline_probe)
+        cuexis_verify_target_dependencies(cuexis_pd_baseline_probe
+            ALLOWED cuexis::playback cuexis::judgement cuexis::gameplay_packed
+                cuexis::execution_host_support cuexis::presentation_renderer Catch2::Catch2WithMain)
+        cuexis_verify_target_dependencies(cuexis_pd_allocation_probe
+            ALLOWED cuexis::playback cuexis::judgement cuexis::gameplay_packed
+                cuexis::execution_host_support cuexis::presentation_renderer Catch2::Catch2WithMain)
+    endif()
+    if(TARGET cuexis_pd_host_probe)
+        cuexis_verify_target_dependencies(cuexis_pd_host_probe
+            ALLOWED cuexis::execution_host_support cuexis::playback cuexis::presentation_renderer
+                cuexis::render cuexis::judgement cuexis::gameplay_packed Catch2::Catch2WithMain
+                psapi)
+    endif()
+    cuexis_verify_target_dependencies(cuexis_rpa_tests
+        ALLOWED
+            cuexis::playback
+            cuexis::judgement
+            Catch2::Catch2WithMain
+    )
+    if(TARGET cuexis_host_protocol_tests)
+        cuexis_verify_target_dependencies(cuexis_host_protocol_tests
+            ALLOWED cuexis::execution_host_support
+                cuexis::playback
+                cuexis::presentation_renderer
+                Catch2::Catch2WithMain
+        )
+    endif()
+    if(TARGET cuexis_execution_host_tests)
+        cuexis_verify_target_dependencies(cuexis_execution_host_tests
+            ALLOWED cuexis::execution_host_support cuexis::playback cuexis::presentation_renderer cuexis::render cuexis::judgement
+                    cuexis::gameplay_packed Catch2::Catch2WithMain
+        )
+    endif()
+    if(TARGET cuexis_execution_device_probe)
+        cuexis_verify_target_dependencies(cuexis_execution_device_probe
+            ALLOWED cuexis::execution_host_support cuexis::playback cuexis::audio_sdl cuexis::platform_sdl cuexis::render_opengl cuexis::render
+                    cuexis::judgement cuexis::gameplay_packed Catch2::Catch2WithMain glad::glad
+                    psapi
+        )
+    endif()
+    cuexis_verify_target_dependencies(cuexis_gameplay_packed_tests
+        ALLOWED
+            cuexis::gameplay_packed
+            cuexis::json_support
             Catch2::Catch2WithMain
     )
     cuexis_verify_target_dependencies(cuexis_debug_tests
@@ -1125,13 +1483,16 @@ if(CUEXIS_BUILD_TESTS)
             Catch2::Catch2WithMain
     )
     cuexis_verify_target_dependencies(cuexis_playback_tests
-        ALLOWED
+        ALLOWED cuexis::execution_host_support
             cuexis::audio
             cuexis::assets
             cuexis::chart
             cuexis::cxc
             cuexis::playback
+            cuexis::gameplay_packed
+            cuexis::judgement
             Catch2::Catch2WithMain
+            cuexis::json_support
     )
     cuexis_verify_target_dependencies(cuexis_playback_allocation_tests
         ALLOWED

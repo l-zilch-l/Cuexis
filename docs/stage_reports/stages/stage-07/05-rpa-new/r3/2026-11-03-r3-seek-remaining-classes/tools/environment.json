@@ -1,0 +1,26 @@
+{
+  "captured_local": "2026-11-03 20:05",
+  "host": {
+    "os_caption": "Microsoft Windows 11 Home",
+    "os_version": "10.0.26300",
+    "cpu": "AMD Ryzen 7 8845H w/ Radeon 780M Graphics",
+    "gpus": [
+      {
+        "name": "AMD Radeon 780M Graphics",
+        "driver_version": "31.0.22032.1"
+      },
+      {
+        "name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+        "driver_version": "32.0.16.1664"
+      }
+    ]
+  },
+  "adapter_selection": "The probe does not pin an adapter: it creates the context through render_opengl::configureOpenGlContext, exactly like the 2026-11-01 seek gate. The host inventory is recorded; the chosen adapter is not printed by this probe, so the two seek batches share the same selection path but neither states the adapter by name.",
+  "power_and_affinity": "PD_ENV rows in every run log record process/thread power throttling state, affinity mask and priorities; all rows show process_power_state=0 and full affinity 0xffff.",
+  "processes": {
+    "per_class_scale": 6,
+    "classes": 3,
+    "scales": 2,
+    "fresh_processes_total": 36
+  }
+}

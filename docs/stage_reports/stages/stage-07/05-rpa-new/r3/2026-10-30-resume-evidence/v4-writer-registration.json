@@ -1,0 +1,88 @@
+{
+  "formal": false,
+  "scope": "Fixed ordinary v4 diagnostic. No production memory quota decision. Same candidate class definitions and fresh libraries; all timings exclude fault/heap observers.",
+  "plan": [
+    {
+      "n": 1000,
+      "wave": 0,
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "wave": 0,
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 1000,
+      "wave": 0,
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 1000,
+      "wave": 0,
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "wave": 0,
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "wave": 0,
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "wave": 0,
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "wave": 0,
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 1536,
+      "wave": 256,
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 1536,
+      "wave": 256,
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 1536,
+      "wave": 256,
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 1536,
+      "wave": 256,
+      "pair": 1,
+      "variant": "baseline"
+    }
+  ],
+  "attempts": 3,
+  "gate": "Dense40K process-median advance overhead <=5%; 1K and six-wave overhead <=10%; original (max-min)/median<=15% screen. Exact full Snapshot wire hash/size. Preparation/encoding outside advance timer, not load acceptance.",
+  "binaries": {
+    "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-resume-v1\\budget-build-v4\\cuexis_rpa_tests.exe": "eec177aa9c0ed44ab0c3e5fa1535a53a482462dd869d6ea21c3851acf5f8ee8b"
+  },
+  "runner_sha256": "f4c2b433d55f411d746489f7f1ea267c22aaa5e2082e050cc5b9acb59a4fbac2",
+  "affinity": 4,
+  "priority": "BelowNormal",
+  "qos": "execution throttling OFF",
+  "failure": "Invalid process stops; original failed/noisy groups retained; no replacement/extension. Builds must be absent."
+}

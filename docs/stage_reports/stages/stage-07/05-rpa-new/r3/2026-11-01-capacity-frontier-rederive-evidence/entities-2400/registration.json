@@ -1,0 +1,33 @@
+{
+  "scope": "40K visible entity throughput refresh at 1080p; diagnostic, not acceptance",
+  "created_utc": "2026-11-01T10:42:37.026591+00:00",
+  "head": "a93c9794c1d9772d1923178a6e49f11cb9d6d16b",
+  "dirty_files": [],
+  "plan": {
+    "groups": [
+      "render-only",
+      "static"
+    ],
+    "processes_per_group": 3,
+    "entities": 2400,
+    "frames_per_process": null,
+    "seconds_per_process": 20,
+    "warmup": "at least 8 frames and 2000 ms",
+    "viewport": [
+      1920,
+      1080
+    ],
+    "affinity": 65535,
+    "priority": "BelowNormal",
+    "qos": "execution throttling OFF",
+    "timer": false,
+    "pixel_readback": true,
+    "budget_us": 4166.666666666667,
+    "pass_rule": "wall FPS >= 240 and cycle p99 <= 4.166667 ms and every complete one-second window >= 240 frames",
+    "stop": "an invalid process stops the run; budget failures are retained"
+  },
+  "binary": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_execution_device_probe.exe",
+  "binary_sha256": "6b01a30f8b01b79cf7d2314be989e89cd42dc63cb9694e5c2794dc5d3af9c790",
+  "probe_source_sha256": "ff25101217404dc4c26ba7c3423cd10c6d577317a20d347e7a1c15b232bc5dd1",
+  "runner_sha256": "16a3f57a100613f85b823eb97300d9227fe8466a3692777cd82d7e2ab2a2648b"
+}

@@ -1,0 +1,5 @@
+from run_refine import *
+previous=json.loads((base/'sustain-lower/results.json').read_text())
+assert len(previous)==6 and all(r['valid'] for r in previous)
+write(base/'static-1300-decision.json',dict(reason='1400 static failed two of three duration budget checks; next new lower entity count, fixed three processes; no 1400 retry or threshold relaxation',previous_results_sha256=sha(base/'sustain-lower/results.json'),entities=1300))
+run_group('sustain-static-1300',[item(1300,'static',rep,frames=600,seconds=20) for rep in range(3)])

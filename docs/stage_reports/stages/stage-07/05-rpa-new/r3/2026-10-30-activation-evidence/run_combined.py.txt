@@ -1,0 +1,7 @@
+from pathlib import Path
+base=Path(__file__).resolve().parent
+s=(base/'run_activation_ordinary.py').read_text()
+s=s.replace("out=base/('activation-'+mode+'-measure-v1')", "out=base/('combined-'+mode+'-measure-v1')")
+s=s.replace("build=base/'activation-host-v1'", "build=base/'combined-source-v1'")
+s=s.replace('Fixed ordinary v4 vs v5 activation capture diagnostic. Neither variant uses batch publication.', 'Fixed ordinary v4 original vs v5 activation plus lazy batch combination. New source and independent fixed group, not resampling any frozen group.')
+exec(compile(s,str(base/'run_activation_ordinary.py'),'exec'))

@@ -1,0 +1,10 @@
+{
+  "scope": "Unselected bounded Publication Fact descriptor batch. All Fact semantics remain in unchanged projection adapter. No installed API/wire/class layout changes; fresh source/build required for internal class method addition. R3c v4 kernel retained for this independent experiment.",
+  "candidate_sources": {
+    "engine/judgement/internal/cuexis/judgement/publication.hpp": "06b594518901acf886fd82c2ffc068f4b2fa881b290c897371bc8de923a8aa8a",
+    "engine/judgement/src/publication.cpp": "88089995fb39b5302cd2178de160a0f0cd9b3db6434b49001ce11e57b3db0c1a",
+    "engine/playback/src/playback_session.cpp": "cfb6bf505f9516477dc35184fd00aca169ed840a9492bf378c5f7357e630334f",
+    "tests/judgement/publication_tests.cpp": "ce8821959899c55147e63b45a6a33ca6b380bc51fd456fea9cd31210432b1589"
+  },
+  "parent": "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-resume-v1\\budget-source-v4"
+}

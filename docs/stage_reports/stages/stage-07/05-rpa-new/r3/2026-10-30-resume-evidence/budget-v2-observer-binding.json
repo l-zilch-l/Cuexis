@@ -1,0 +1,8 @@
+{
+  "binary_sha256": "3f41b340f67f56acb1d1c20e9b37f8d754123eb9f36f7aad569e5b1b6c62e936",
+  "kernel_sha256": "ec9aa0b2288376c84bb3ab4028b84fdbcabc0f0ffcbb435ad2b5d9a0d016c03a",
+  "test_sha256": "ae02fad99dc9e948d87a203bca487ed8e2f4e35e12b7b78273f07c69ea9fc941",
+  "commands_sha256": "214f7edc8ca2dd4b2d1ab031129ac3119f55628d903dbe866eb1caf18facaf15",
+  "parent_complete_sha256": "c02101bc654ca7cd25e6ae767947ca0697f1a74c16a3023492ab2e81cf82394b",
+  "scope": "Instrumented fault and actual allocation observation only. Exact same budget-v2 class definitions; all reused objects/libraries from its self-consistent fresh build."
+}

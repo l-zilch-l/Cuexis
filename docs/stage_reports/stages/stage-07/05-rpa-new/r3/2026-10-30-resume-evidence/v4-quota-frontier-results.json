@@ -1,0 +1,570 @@
+{
+  "exit": 0,
+  "seconds": 24.683292800000345,
+  "events": [
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 0,
+      "h": 904,
+      "points": 0,
+      "charge": 0,
+      "requested_delta": 156451527,
+      "storage_delta": 186835079,
+      "private_bytes": 1451069440,
+      "working_set": 1390505984
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 0,
+      "h": 1104,
+      "points": 0,
+      "charge": 0,
+      "requested_delta": 192712093,
+      "storage_delta": 231046557,
+      "private_bytes": 1464074240,
+      "working_set": 1403768832
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 0,
+      "h": 1304,
+      "points": 0,
+      "charge": 0,
+      "requested_delta": 228956428,
+      "storage_delta": 275238892,
+      "private_bytes": 1511092224,
+      "working_set": 1449758720
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 0,
+      "h": 1504,
+      "points": 0,
+      "charge": 0,
+      "requested_delta": 265326939,
+      "storage_delta": 319560763,
+      "private_bytes": 1561636864,
+      "working_set": 1499308032
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 0,
+      "h": 1704,
+      "points": 0,
+      "charge": 0,
+      "requested_delta": 301675083,
+      "storage_delta": 363851275,
+      "private_bytes": 1612357632,
+      "working_set": 1548959744
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 0,
+      "h": 1904,
+      "points": 0,
+      "charge": 0,
+      "requested_delta": 338092715,
+      "storage_delta": 408219051,
+      "private_bytes": 1663598592,
+      "working_set": 1599041536
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 0,
+      "h": -1,
+      "points": 0,
+      "charge": 0,
+      "requested_delta": 337757061,
+      "storage_delta": 407881989,
+      "private_bytes": 1663598592,
+      "working_set": 1599041536
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 0,
+      "h": -2,
+      "points": 0,
+      "charge": 0,
+      "requested_delta": 91279648,
+      "storage_delta": 104240896,
+      "private_bytes": 1374720000,
+      "working_set": 1311178752
+    },
+    {
+      "event": "r3c.quota_frontier_release",
+      "mib": 0,
+      "requested_release_delta": 0,
+      "storage_release_delta": 0
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 32,
+      "h": 904,
+      "points": 0,
+      "charge": 0,
+      "requested_delta": 156451527,
+      "storage_delta": 186835079,
+      "private_bytes": 1456328704,
+      "working_set": 1390592000
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 32,
+      "h": 1104,
+      "points": 0,
+      "charge": 0,
+      "requested_delta": 192712093,
+      "storage_delta": 231046557,
+      "private_bytes": 1478762496,
+      "working_set": 1414213632
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 32,
+      "h": 1304,
+      "points": 0,
+      "charge": 0,
+      "requested_delta": 228956428,
+      "storage_delta": 275238892,
+      "private_bytes": 1514414080,
+      "working_set": 1449459712
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 32,
+      "h": 1504,
+      "points": 0,
+      "charge": 0,
+      "requested_delta": 265326939,
+      "storage_delta": 319560763,
+      "private_bytes": 1564852224,
+      "working_set": 1498832896
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 32,
+      "h": 1704,
+      "points": 0,
+      "charge": 0,
+      "requested_delta": 301675083,
+      "storage_delta": 363851275,
+      "private_bytes": 1615835136,
+      "working_set": 1548726272
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 32,
+      "h": 1904,
+      "points": 0,
+      "charge": 0,
+      "requested_delta": 338092715,
+      "storage_delta": 408219051,
+      "private_bytes": 1666433024,
+      "working_set": 1598582784
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 32,
+      "h": -1,
+      "points": 0,
+      "charge": 0,
+      "requested_delta": 337757061,
+      "storage_delta": 407881989,
+      "private_bytes": 1666433024,
+      "working_set": 1598582784
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 32,
+      "h": -2,
+      "points": 0,
+      "charge": 0,
+      "requested_delta": 91279648,
+      "storage_delta": 104240896,
+      "private_bytes": 1451159552,
+      "working_set": 1386082304
+    },
+    {
+      "event": "r3c.quota_frontier_release",
+      "mib": 32,
+      "requested_release_delta": 0,
+      "storage_release_delta": 0
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 64,
+      "h": 904,
+      "points": 1,
+      "charge": 45053456,
+      "requested_delta": 156508166,
+      "storage_delta": 186891974,
+      "private_bytes": 1463599104,
+      "working_set": 1399676928
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 64,
+      "h": 1104,
+      "points": 1,
+      "charge": 45053456,
+      "requested_delta": 192768732,
+      "storage_delta": 231103452,
+      "private_bytes": 1486950400,
+      "working_set": 1423110144
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 64,
+      "h": 1304,
+      "points": 1,
+      "charge": 45053456,
+      "requested_delta": 229013067,
+      "storage_delta": 275295787,
+      "private_bytes": 1531445248,
+      "working_set": 1462902784
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 64,
+      "h": 1504,
+      "points": 1,
+      "charge": 45053456,
+      "requested_delta": 265383578,
+      "storage_delta": 319617658,
+      "private_bytes": 1572212736,
+      "working_set": 1502724096
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 64,
+      "h": 1704,
+      "points": 1,
+      "charge": 45053456,
+      "requested_delta": 301731722,
+      "storage_delta": 363908170,
+      "private_bytes": 1620045824,
+      "working_set": 1550028800
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 64,
+      "h": 1904,
+      "points": 1,
+      "charge": 45053456,
+      "requested_delta": 338149354,
+      "storage_delta": 408275946,
+      "private_bytes": 1671045120,
+      "working_set": 1599971328
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 64,
+      "h": -1,
+      "points": 0,
+      "charge": 45053456,
+      "requested_delta": 337813700,
+      "storage_delta": 407938884,
+      "private_bytes": 1671045120,
+      "working_set": 1599971328
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 64,
+      "h": -2,
+      "points": 0,
+      "charge": 0,
+      "requested_delta": 91279648,
+      "storage_delta": 104240896,
+      "private_bytes": 1526718464,
+      "working_set": 1462427648
+    },
+    {
+      "event": "r3c.quota_frontier_release",
+      "mib": 64,
+      "requested_release_delta": 0,
+      "storage_release_delta": 0
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 128,
+      "h": 904,
+      "points": 1,
+      "charge": 45053456,
+      "requested_delta": 156508166,
+      "storage_delta": 186891974,
+      "private_bytes": 1549078528,
+      "working_set": 1474297856
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 128,
+      "h": 1104,
+      "points": 2,
+      "charge": 90159856,
+      "requested_delta": 192878643,
+      "storage_delta": 231213587,
+      "private_bytes": 1572331520,
+      "working_set": 1497591808
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 128,
+      "h": 1304,
+      "points": 2,
+      "charge": 90159856,
+      "requested_delta": 229122978,
+      "storage_delta": 275405922,
+      "private_bytes": 1595777024,
+      "working_set": 1520852992
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 128,
+      "h": 1504,
+      "points": 2,
+      "charge": 90159856,
+      "requested_delta": 265493489,
+      "storage_delta": 319727793,
+      "private_bytes": 1619038208,
+      "working_set": 1544110080
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 128,
+      "h": 1704,
+      "points": 2,
+      "charge": 90159856,
+      "requested_delta": 301841633,
+      "storage_delta": 364018305,
+      "private_bytes": 1655255040,
+      "working_set": 1579671552
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 128,
+      "h": 1904,
+      "points": 2,
+      "charge": 90159856,
+      "requested_delta": 338259265,
+      "storage_delta": 408386081,
+      "private_bytes": 1701888000,
+      "working_set": 1625350144
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 128,
+      "h": -1,
+      "points": 0,
+      "charge": 90159856,
+      "requested_delta": 337923611,
+      "storage_delta": 408049019,
+      "private_bytes": 1701888000,
+      "working_set": 1625350144
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 128,
+      "h": -2,
+      "points": 0,
+      "charge": 0,
+      "requested_delta": 91279648,
+      "storage_delta": 104240896,
+      "private_bytes": 1524527104,
+      "working_set": 1455554560
+    },
+    {
+      "event": "r3c.quota_frontier_release",
+      "mib": 128,
+      "requested_release_delta": 0,
+      "storage_release_delta": 0
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 256,
+      "h": 904,
+      "points": 1,
+      "charge": 45053456,
+      "requested_delta": 156508166,
+      "storage_delta": 186891974,
+      "private_bytes": 1555746816,
+      "working_set": 1474027520
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 256,
+      "h": 1104,
+      "points": 2,
+      "charge": 90159856,
+      "requested_delta": 192878643,
+      "storage_delta": 231213587,
+      "private_bytes": 1580445696,
+      "working_set": 1497182208
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 256,
+      "h": 1304,
+      "points": 3,
+      "charge": 135340000,
+      "requested_delta": 229295384,
+      "storage_delta": 275578680,
+      "private_bytes": 1603678208,
+      "working_set": 1520300032
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 256,
+      "h": 1504,
+      "points": 4,
+      "charge": 180565344,
+      "requested_delta": 265891637,
+      "storage_delta": 320126645,
+      "private_bytes": 1627156480,
+      "working_set": 1543815168
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 256,
+      "h": 1704,
+      "points": 4,
+      "charge": 225868160,
+      "requested_delta": 302518859,
+      "storage_delta": 364696587,
+      "private_bytes": 1664126976,
+      "working_set": 1580040192
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 256,
+      "h": 1904,
+      "points": 4,
+      "charge": 225868160,
+      "requested_delta": 338936491,
+      "storage_delta": 409064363,
+      "private_bytes": 1690914816,
+      "working_set": 1612218368
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 256,
+      "h": -1,
+      "points": 0,
+      "charge": 225868160,
+      "requested_delta": 338600837,
+      "storage_delta": 408727301,
+      "private_bytes": 1690914816,
+      "working_set": 1612218368
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 256,
+      "h": -2,
+      "points": 0,
+      "charge": 0,
+      "requested_delta": 91279648,
+      "storage_delta": 104240896,
+      "private_bytes": 1536790528,
+      "working_set": 1459941376
+    },
+    {
+      "event": "r3c.quota_frontier_release",
+      "mib": 256,
+      "requested_release_delta": 0,
+      "storage_release_delta": 0
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 512,
+      "h": 904,
+      "points": 1,
+      "charge": 45053456,
+      "requested_delta": 156508166,
+      "storage_delta": 186891974,
+      "private_bytes": 1568985088,
+      "working_set": 1475358720
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 512,
+      "h": 1104,
+      "points": 2,
+      "charge": 90159856,
+      "requested_delta": 192878643,
+      "storage_delta": 231213587,
+      "private_bytes": 1592827904,
+      "working_set": 1498648576
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 512,
+      "h": 1304,
+      "points": 3,
+      "charge": 135340000,
+      "requested_delta": 229295384,
+      "storage_delta": 275578680,
+      "private_bytes": 1616273408,
+      "working_set": 1521917952
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 512,
+      "h": 1504,
+      "points": 4,
+      "charge": 180565344,
+      "requested_delta": 265891637,
+      "storage_delta": 320126645,
+      "private_bytes": 1639743488,
+      "working_set": 1545424896
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 512,
+      "h": 1704,
+      "points": 4,
+      "charge": 225868160,
+      "requested_delta": 302518859,
+      "storage_delta": 364696587,
+      "private_bytes": 1675706368,
+      "working_set": 1581182976
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 512,
+      "h": 1904,
+      "points": 4,
+      "charge": 271139384,
+      "requested_delta": 339268889,
+      "storage_delta": 409397113,
+      "private_bytes": 1712693248,
+      "working_set": 1618345984
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 512,
+      "h": -1,
+      "points": 0,
+      "charge": 271139384,
+      "requested_delta": 338933235,
+      "storage_delta": 409060051,
+      "private_bytes": 1712693248,
+      "working_set": 1618345984
+    },
+    {
+      "event": "r3c.quota_frontier",
+      "mib": 512,
+      "h": -2,
+      "points": 0,
+      "charge": 0,
+      "requested_delta": 91279648,
+      "storage_delta": 104240896,
+      "private_bytes": 1518817280,
+      "working_set": 1452728320
+    },
+    {
+      "event": "r3c.quota_frontier_release",
+      "mib": 512,
+      "requested_release_delta": 0,
+      "storage_release_delta": 0
+    }
+  ]
+}

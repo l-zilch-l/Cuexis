@@ -1,0 +1,6 @@
+# Frozen evidence keeps its original bytes; these are archival attachments, not active sources.
+*.txt binary
+*.json binary
+*.patch binary
+index.md text eol=lf
+.gitattributes text eol=lf

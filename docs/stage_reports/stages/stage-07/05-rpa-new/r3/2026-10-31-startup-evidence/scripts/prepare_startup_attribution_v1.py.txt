@@ -1,0 +1,62 @@
+from pathlib import Path
+import hashlib, json
+
+root = Path.cwd()
+base = Path(__file__).resolve().parent
+out = base / 'startup-attribution-source-v1'
+out.mkdir(exist_ok=False)
+timer = '''
+struct StartupStageTimer final {
+    const char* name;
+    std::chrono::steady_clock::time_point begin{std::chrono::steady_clock::now()};
+    explicit StartupStageTimer(const char* value) : name(value) {
+        std::cout << "CPU_PREPARE_BEGIN " << name << std::endl;
+    }
+    ~StartupStageTimer() {
+        std::cout << "CPU_PREPARE_END " << name << " "
+                  << std::chrono::duration<double, std::micro>(std::chrono::steady_clock::now() - begin).count()
+                  << std::endl;
+    }
+};
+'''
+bindings = {}
+for relative, functions in {
+    'engine/playback/src/playback_session.cpp': (
+        'loadDocumentStage', 'resolveParametersStage', 'prepareRuntimeStage', 'commitRuntimeStage',
+        'preparePresentationStage', 'assembleIdentityStage', 'buildSnapshotLayout'),
+    'engine/runtime/src/runtime_session.cpp': ('buildEvaluationState',),
+}.items():
+    original = root / relative
+    text = original.read_text(encoding='utf-8')
+    text = '#include <chrono>\n#include <iostream>\n' + text
+    text = text.replace('namespace {\n', 'namespace {\n' + timer, 1)
+    for name in functions:
+        index = text.index(name + '(')
+        index = text.index('{', index)
+        text = text[:index+1] + '\n    const StartupStageTimer startupStage{"' + name + '"};' + text[index+1:]
+    if original.name == 'playback_session.cpp':
+        needle = 'auto runtimeResult = chart::ChartCompiler::compile(*document, limits);'
+        assert text.count(needle) == 1
+        text = text.replace(needle, '''auto runtimeResult = [&] {
+                const StartupStageTimer startupStage{"chart_compile"};
+                return chart::ChartCompiler::compile(*document, limits);
+            }();''')
+        needle = 'auto loaded = chart::detail::loadChartForPlayback(context.chartJson, context.limits);'
+        assert text.count(needle) == 1
+        text = text.replace(needle, '''auto loaded = [&] {
+        const StartupStageTimer startupStage{"chart_load"};
+        return chart::detail::loadChartForPlayback(context.chartJson, context.limits);
+    }();''')
+        needle = 'auto canonical = chart::ChartWriter::writeCanonicalJson(context.chartJson, context.limits);'
+        assert text.count(needle) == 1
+        text = text.replace(needle, '''auto canonical = [&] {
+        const StartupStageTimer startupStage{"chart_canonical_writer"};
+        return chart::ChartWriter::writeCanonicalJson(context.chartJson, context.limits);
+    }();''')
+    target = out / original.name
+    target.write_text(text, encoding='utf-8')
+    bindings[relative] = dict(original_sha256=hashlib.sha256(original.read_bytes()).hexdigest(),
+                             observed_sha256=hashlib.sha256(target.read_bytes()).hexdigest())
+(out / 'binding.json').write_text(json.dumps(dict(
+    scope='Diagnostic stage timers only, no ordinary timing/functional optimization claims. Private CPP overlays match existing fresh library definitions.',
+    files=bindings), indent=2), encoding='utf-8')

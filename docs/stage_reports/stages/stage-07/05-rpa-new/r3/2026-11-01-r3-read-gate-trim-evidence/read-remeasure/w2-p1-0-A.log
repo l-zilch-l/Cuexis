@@ -1,0 +1,15 @@
+Filters: "PD finite read and update scaling"
+Randomness seeded to: 1708429558
+PD_ENV {"label":"begin","pid":7652,"tid":20672,"process_affinity_error":0,"process_affinity":65535,"system_affinity":65535,"processor_group_error":0,"processor_group":0,"processor_number":0,"process_priority":32,"thread_priority":0,"process_power_error":0,"process_power_control":0,"process_power_state":0,"thread_power_error":0,"thread_power_control":0,"thread_power_state":0}
+PD_FOLLOW_CONTENT {"objects":1800,"sha256":"b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3"}
+PD_FOLLOW_ROW {"objects":1800,"mode":"read","block":0,"operations":2000,"elapsed_us":178092.10000000001,"cpu_us":187500,"cycles":671130766,"digest":15103229607877196805,"ordinal":64}
+PD_FOLLOW_ROW {"objects":1800,"mode":"read","block":1,"operations":2000,"elapsed_us":179656.20000000001,"cpu_us":171875,"cycles":676336651,"digest":15103229607877196805,"ordinal":64}
+PD_FOLLOW_ROW {"objects":1800,"mode":"read","block":2,"operations":2000,"elapsed_us":179740.5,"cpu_us":171875,"cycles":676906368,"digest":15103229607877196805,"ordinal":64}
+PD_FOLLOW_CONTENT {"objects":1800,"sha256":"b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3"}
+PD_FOLLOW_ROW {"objects":1800,"mode":"updated","block":0,"operations":2000,"elapsed_us":903114.09999999998,"cpu_us":890625,"cycles":3357354588,"digest":9248281058326106199,"ordinal":2064}
+PD_FOLLOW_ROW {"objects":1800,"mode":"updated","block":1,"operations":2000,"elapsed_us":864017.30000000005,"cpu_us":859375,"cycles":3252528210,"digest":8179226190115573446,"ordinal":4064}
+PD_FOLLOW_ROW {"objects":1800,"mode":"updated","block":2,"operations":2000,"elapsed_us":902800.19999999995,"cpu_us":906250,"cycles":3377897859,"digest":13714842368213138509,"ordinal":6064}
+PD_ENV {"label":"end","pid":7652,"tid":20672,"process_affinity_error":0,"process_affinity":65535,"system_affinity":65535,"processor_group_error":0,"processor_group":0,"processor_number":11,"process_priority":32,"thread_priority":0,"process_power_error":0,"process_power_control":0,"process_power_state":0,"thread_power_error":0,"thread_power_control":0,"thread_power_state":0}
+===============================================================================
+All tests passed (28 assertions in 1 test case)
+

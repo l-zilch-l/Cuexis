@@ -1,0 +1,6 @@
+[0/2] Re-checking globbed directories...
+[1/3] Building CXX object tests\rpa\CMakeFiles\cuexis_execution_host_tests.dir\__\__\app\player\src\execution_host_close.cpp.obj
+[2/3] Linking CXX executable bin\cuexis_execution_host_tests.exe
+Checking XDG_RUNTIME_DIR env var
+Checking TMPDIR env var
+Checking TMP env var

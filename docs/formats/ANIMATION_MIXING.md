@@ -21,12 +21,24 @@ Layer、Binding、Property ID、mask、时间域
 Entity Initial State
 -> Behavior
 -> Animation Layers（priority 升序）
+-> GameplayOverride（仅显式 candidate Gameplay 会话；按 typed PresentationTick 生存期）
 -> HostOverride
 -> StudioPreviewOverride（仅 Studio）
 -> PropertyResolver commit
 ```
 
 任何层不得绕过 PropertyResolver 直接写入同一可绑定属性。
+
+S7A-7/8 revision 1（2026-10-07）：GameplayOverride 是独立层域，不能以 Host priority
+模拟。现有 Host/Studio enum 的物理值保持，求值顺序按层域明确排列，不按 enum 整数排序。
+Gameplay 写入首用为 RenderVisible:boolean；false 是实际覆盖。同 Fact/target 的完整
+区间效果先进入暂存队列，再按当前 typed Tick 聚合同值写为一个 target/property 输出；
+互斥区间不得因去重丢失。有限 lifetime 为 [start,end)，没有 end 明示 UntilReset。
+正常推进 T 单调；倒退须通过有显式 T/RuntimeFrame 的 Seek/restore 重建。作用域改变整体
+替换 cursor、未来队列、聚合和 Gameplay 写；Reset 重新求值当前帧并撤除全部旧 Gameplay 写。
+同 Tick 已 seal 而 Fold 失败时不发布该 Tick 写。纯读查询不调用 resolver。
+本补充不改变已完成 Animation 权重、Host owner/priority 或判定四分量。
+
 
 ## Animation Layer
 
@@ -144,3 +156,13 @@ HostOverride、Animation 和 Editor Preview 不得用直接写 Component 的方�
 ## 调试
 
 调试界面或 SDK 诊断快照显示属性的 Initial、Behavior、各 Animation Layer、Host/Preview Override、权重、mask、冲突和最终值。FrameSnapshot 只包含宿主渲染所需的最终表现数据，不泄漏 PropertyResolver 或 World 内部状态。
+
+
+## Candidate 组合重建与帧寿命（2026-10-07）
+
+Seek/restore/reset 是投影重建，不是新的普通显示帧；重建不得减少既有 Host/Studio
+RemainingFrames。正常 advance 仍按旧 update 规则减少。新 Gameplay consumer 使用独立
+暂存 RuntimeEvaluationState，Behavior/Animation/Gameplay/Host/Studio 求值和 debug capture
+先完成，随后发布 World；失败丢弃暂存游标/写入/寿命，恢复旧 World，不能保留半套表现。
+Debug capture 不得成为已提交 World 后的不可回滚步骤。该修订仅为组合消费边界，不重开
+既有 Animation 混合、Host priority 或完成的 Judgement/Fold 规则。

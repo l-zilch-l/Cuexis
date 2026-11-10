@@ -1,0 +1,21 @@
+{
+  "repo": "lcn2/fnv",
+  "revision": "4001d0d4f6d81b29a02bda592c7712c68434525a",
+  "files": {
+    "hash_64a.c": {
+      "sha256": "aff049297489fa796aa924342049dcf13f17cb43fa6c2328764c0edb91efc8ce"
+    },
+    "fnv.h": {
+      "sha256": "f7d0c7f00487456c723b7bc7ded6b03c32f97113c79049dac7aeda7264b3fbfb"
+    }
+  },
+  "adaptation": {
+    "file": "fnv1a64.hpp",
+    "changes": [
+      "only 64-bit buffer FNV-1a branch",
+      "const C++ byte span",
+      "upstream multiply branch and four sequential steps per loop",
+      "offset basis unchanged"
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+Filters: "GPU visible entity throughput probe"
+Randomness seeded to: 1
+GPU_THROUGHPUT_READY
+GPU_STARTUP_BEGIN fixture_source
+GPU_STARTUP_END fixture_source 2817.4000000000001
+GPU_STARTUP_BEGIN playback_prepare
+GPU_STARTUP_END playback_prepare 118465.2
+GPU_STARTUP_BEGIN renderer_prepare
+GPU_STARTUP_END renderer_prepare 936.60000000000002
+GPU_STARTUP_BEGIN first_update
+GPU_STARTUP_END first_update 460.39999999999998
+GPU_STARTUP_BEGIN first_extract
+GPU_STARTUP_END first_extract 464.19999999999999
+GPU_STARTUP_BEGIN first_submit
+GPU_STARTUP_END first_submit 6240.3000000000002
+GPU_THROUGHPUT_ID {"mode":"static","entities":1000,"draws_per_frame":1000,"in_view_centers":1000,"fixture_revision":3,"moved_entities":0,"frames":8,"duration_seconds":0,"warmup_frames":641,"pixel_readback":false,"outside_timing_pixel_proof_frames":2,"warmup_ms":2000,"timer":false,"vsync":0,"width":1920,"height":1080,"vendor":"NVIDIA Corporation","renderer":"NVIDIA GeForce RTX 4060 Laptop GPU/PCIe/SSE2","gl_version":"3.3.0 NVIDIA 616.64","measured_wall_us":21226,"pixel_rgba":[255,204,51,255],"audio":false,"formal":false}
+GPU_THROUGHPUT_SAMPLE {"ordinal":0,"update_us":151.59999999999999,"extract_us":228.30000000000001,"submit_us":1272.5,"present_us":622,"total_us":2274.4000000000001,"cycle_us":2286.9000000000001,"end_us":2286.9000000000001}
+GPU_THROUGHPUT_SAMPLE {"ordinal":1,"update_us":162.5,"extract_us":192,"submit_us":1444.5,"present_us":1744,"total_us":3543,"cycle_us":3556.9000000000001,"end_us":5843.8000000000002}
+GPU_THROUGHPUT_SAMPLE {"ordinal":2,"update_us":202.40000000000001,"extract_us":278.69999999999999,"submit_us":1222.3,"present_us":596.39999999999998,"total_us":2299.8000000000002,"cycle_us":2322.3000000000002,"end_us":8166.1000000000004}
+GPU_THROUGHPUT_SAMPLE {"ordinal":3,"update_us":151.69999999999999,"extract_us":200.19999999999999,"submit_us":1262,"present_us":1058.7,"total_us":2672.5999999999999,"cycle_us":2688.0999999999999,"end_us":10854.200000000001}
+GPU_THROUGHPUT_SAMPLE {"ordinal":4,"update_us":321.30000000000001,"extract_us":473.69999999999999,"submit_us":1472.3,"present_us":551.29999999999995,"total_us":2818.5999999999999,"cycle_us":2845.1999999999998,"end_us":13699.4}
+GPU_THROUGHPUT_SAMPLE {"ordinal":5,"update_us":124.3,"extract_us":180.59999999999999,"submit_us":1187.7,"present_us":524.70000000000005,"total_us":2017.3,"cycle_us":2029.7,"end_us":15729.1}
+GPU_THROUGHPUT_SAMPLE {"ordinal":6,"update_us":137.30000000000001,"extract_us":199.59999999999999,"submit_us":1114.2,"present_us":829.79999999999995,"total_us":2280.9000000000001,"cycle_us":2294.0999999999999,"end_us":18023.200000000001}
+GPU_THROUGHPUT_SAMPLE {"ordinal":7,"update_us":448.89999999999998,"extract_us":463.5,"submit_us":1548,"present_us":716.10000000000002,"total_us":3176.5,"cycle_us":3202.8000000000002,"end_us":21226}
+===============================================================================
+All tests passed (21 assertions in 1 test case)
+

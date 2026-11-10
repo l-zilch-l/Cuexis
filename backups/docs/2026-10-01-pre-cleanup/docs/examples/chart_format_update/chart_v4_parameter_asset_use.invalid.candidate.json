@@ -1,0 +1,51 @@
+{
+  "format": "cuexis.chart",
+  "version": 4,
+  "chartId": "019f0000-0000-7abc-8def-000000000493",
+  "metadata": {},
+  "timing": {
+    "offsetMs": 0.0,
+    "defaultBpm": 120.0,
+    "tempoEvents": [],
+    "stops": []
+  },
+  "parameters": [
+    {
+      "id": "material.selector",
+      "type": "number",
+      "default": 1.0,
+      "constraints": {}
+    }
+  ],
+  "templates": [],
+  "behaviors": [],
+  "animationTemplateImports": [],
+  "animationClips": [],
+  "objects": [
+    {
+      "id": "019f0000-0000-7abc-8def-000000000494",
+      "parent": null,
+      "components": {
+        "cuexis.transform": {
+          "version": 1,
+          "position": [0.0, 0.0, 0.0],
+          "rotation": [0.0, 0.0, 0.0, 1.0],
+          "scale": [1.0, 1.0, 1.0]
+        },
+        "cuexis.renderable": {
+          "version": 1,
+          "mesh": { "domain": "asset", "id": "mesh.note" },
+          "material": {
+            "parameter": {
+              "domain": "chart-parameter",
+              "id": "material.selector"
+            }
+          }
+        }
+      },
+      "extensions": {}
+    }
+  ],
+  "requiredExtensions": [],
+  "extensions": {}
+}

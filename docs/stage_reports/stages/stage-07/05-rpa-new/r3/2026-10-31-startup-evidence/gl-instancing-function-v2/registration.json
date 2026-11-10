@@ -1,0 +1,9 @@
+{
+  "scope": "Four-frame overlapping RGB characterization, ordinary physical GPU; baseline and opaque-adjacent instancing candidate.",
+  "binaries": {
+    "baseline": "85d6757fded4d5a99c1828765db5fa3480e75cded774af5d462a6b271e596bff",
+    "candidate": "8f1c1b2458dcad315523ca1ce39c0e991535ba97e7273eb6fb058d3e34967df6"
+  },
+  "test_source_sha256": "043ffd9a45ac4c7cf398093964ade7aa4423292fc16e3cce5febc0b8f145b1ca",
+  "controls": "BelowNormal, all originally allowed logical CPUs, throttling OFF"
+}

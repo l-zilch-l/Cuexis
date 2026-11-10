@@ -1,0 +1,11 @@
+{
+  "scope": "Private v5 activation capture; matching fresh definitions, explicit kernel/RPA recompile and four relinks. Host uses original one-at-a-time publication, no batch. No performance acceptance.",
+  "source_manifest_sha256": "e6caeff6e8dd5e068b17bf5f92643658035c5d8ef9af6bded53bb2cc818c5187",
+  "commands_sha256": "28af4e1fb70dd20979ca235a30f052c58566c567daf3ad187084b2eb9d704d9a",
+  "binaries": {
+    "cuexis_execution_host_tests.exe": "2c7cb1624d071aeedb59ef2c8dd118792a73d1c7569866ca2ff4c5e93e54ab34",
+    "cuexis_gameplay_packed_tests.exe": "1cd05952174fe5552ffa93653079c3995a170fbf8bb5ccab5acbbd09b64d633d",
+    "cuexis_judgement_tests.exe": "9e9b52833d7a5f4101c66000c42463417ddaa8a5a83fee3906a90cc35a38d082",
+    "cuexis_rpa_tests.exe": "4e4e23d2487f050496270d6668ac9efe007b7e3ba515576a10eacbde438ecea2"
+  }
+}

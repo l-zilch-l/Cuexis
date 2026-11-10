@@ -1,0 +1,10 @@
+{
+  "scope": "Same fresh product sequence libs/headers/probe in both physical GPU binaries. Candidate overrides only GL presentation private CPP. No observers, no quota, no batch publication. Missing adapters freshly compiled explicitly, common successful build left immutable. No Runtime change; normal allocator.",
+  "source_binding_sha256": "334a3b2883658600934d01a2aa21d13968fc9d38e555e6ca3c1aa1e85d953ba4",
+  "fresh_complete_sha256": "bdf25d2bf7ef114901d24057d8a24c4ea0c6cc6c6ad3f124c309a331d3c50bb3",
+  "commands_sha256": "e24d61dc81dca4452ae1739e9ee87e4d0c44d8a3a0827037d3cf7a6dd938aa81",
+  "binaries": {
+    "gpu-baseline.exe": "0d1e20f6a165280ce1036bedbb0a691a7e1bd439246233bc350f85d01874a997",
+    "gpu-candidate.exe": "8ac6ae9fb93506b82538fc90b3f3921d60b6dfb2450403db756572f649991e17"
+  }
+}

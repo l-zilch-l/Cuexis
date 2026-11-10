@@ -1,0 +1,67 @@
+{
+  "scope": "1080p visible entity capacity diagnostic, no formal acceptance",
+  "created_utc": "2026-10-28T23:26:08.631113+00:00",
+  "head": "f90c2e11ad06e2ca3f359af56c8997b07e402ed7",
+  "plan": [
+    {
+      "entities": 1800,
+      "mode": "render-only",
+      "repeat": 0,
+      "frames": 600,
+      "seconds": 20
+    },
+    {
+      "entities": 1400,
+      "mode": "static",
+      "repeat": 0,
+      "frames": 600,
+      "seconds": 20
+    },
+    {
+      "entities": 1800,
+      "mode": "render-only",
+      "repeat": 1,
+      "frames": 600,
+      "seconds": 20
+    },
+    {
+      "entities": 1400,
+      "mode": "static",
+      "repeat": 1,
+      "frames": 600,
+      "seconds": 20
+    },
+    {
+      "entities": 1800,
+      "mode": "render-only",
+      "repeat": 2,
+      "frames": 600,
+      "seconds": 20
+    },
+    {
+      "entities": 1400,
+      "mode": "static",
+      "repeat": 2,
+      "frames": 600,
+      "seconds": 20
+    }
+  ],
+  "binary_sha256": "fc62bcbd554fb6b28d7dc37d85b3ab1a96afbc690b7355fc4beb8e3a30a6afa5",
+  "source_sha256": "dd2ab9ee8dbdfd1b11b8d56cfed50e666192925ac4d1d2c20517c68cc948d530",
+  "runner_sha256": "bfe3a0a0f1675fbd19a1a475fb61da48d332bb1a9a0a3a4db2a1c0b71d4b1279",
+  "native_sha256": "44f9c49e8ec353a6386a7b481f178859abcf1c46b11688db70bb411ed21f15ce",
+  "viewport": [
+    1920,
+    1080
+  ],
+  "affinity": 65535,
+  "priority": "BelowNormal",
+  "qos": "execution throttling OFF",
+  "timer": false,
+  "normal_allocator": true,
+  "metrics": "OFF",
+  "warmup": "at least 8 frames and 2000ms",
+  "budget_us": 4166.666666666667,
+  "pass_rule": "wall FPS>=240 and cycle p99<=4.166667ms; duration runs additionally every full 1-second bin >=240 completed frames",
+  "stop": "invalid process stops; budget failures are retained capacity points, never replaced or extended"
+}

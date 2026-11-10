@@ -1,0 +1,33 @@
+Filters: "R3 CPU host Seek measures first and repeated requests through target present"
+Randomness seeded to: 1
+{"event":"r3.redesign.setup_start","requirements":1000,"records":129}
+{"event":"r3.redesign.setup_done","requirements":1000,"records":129,"setup_us":115776}
+{"event":"r3.redesign.host","requirements":1000,"attempt":0,"horizon":902,"seek_us":3506,"request_to_present_us":3635,"archive_us":25,"capsule_revision":4,"content_path":"packed","setup_us":115776,"cut_us":0,"records":129,"identity":"source","renderer":"cpu-test","audio":false,"formal":false}
+{"event":"r3.redesign.host","requirements":1000,"attempt":1,"horizon":902,"seek_us":3788,"request_to_present_us":3870,"archive_us":25,"capsule_revision":4,"content_path":"packed","setup_us":115776,"cut_us":0,"records":129,"identity":"source","renderer":"cpu-test","audio":false,"formal":false}
+{"event":"r3.redesign.host","requirements":1000,"attempt":2,"horizon":902,"seek_us":3546,"request_to_present_us":3623,"archive_us":25,"capsule_revision":4,"content_path":"packed","setup_us":115776,"cut_us":0,"records":129,"identity":"source","renderer":"cpu-test","audio":false,"formal":false}
+{"event":"r3.redesign.host","requirements":1000,"attempt":3,"horizon":902,"seek_us":5729,"request_to_present_us":5834,"archive_us":25,"capsule_revision":4,"content_path":"packed","setup_us":115776,"cut_us":0,"records":129,"identity":"source","renderer":"cpu-test","audio":false,"formal":false}
+{"event":"r3.redesign.host","requirements":1000,"attempt":4,"horizon":902,"seek_us":3948,"request_to_present_us":4020,"archive_us":25,"capsule_revision":4,"content_path":"packed","setup_us":115776,"cut_us":0,"records":129,"identity":"source","renderer":"cpu-test","audio":false,"formal":false}
+{"event":"r3.redesign.host","requirements":1000,"attempt":5,"horizon":902,"seek_us":3838,"request_to_present_us":3911,"archive_us":25,"capsule_revision":4,"content_path":"packed","setup_us":115776,"cut_us":0,"records":129,"identity":"source","renderer":"cpu-test","audio":false,"formal":false}
+{"event":"r3.redesign.host","requirements":1000,"attempt":6,"horizon":902,"seek_us":4616,"request_to_present_us":4711,"archive_us":25,"capsule_revision":4,"content_path":"packed","setup_us":115776,"cut_us":0,"records":129,"identity":"source","renderer":"cpu-test","audio":false,"formal":false}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cuexis_execution_host_tests.exe is a Catch2 v3.15.2 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+R3 CPU host Seek measures first and repeated requests through target present
+-------------------------------------------------------------------------------
+D:\Cuexis-r3formal-base\tests\rpa\rpa_b5_seek_host_tests.cpp(361)
+...............................................................................
+
+D:\Cuexis-r3formal-base\tests\rpa\rpa_b5_seek_host_tests.cpp(531): FAILED:
+  REQUIRE( (*host)->pause(clock) )
+with expansion:
+  {?}
+with message:
+
+
+===============================================================================
+test cases:   1 |   0 passed | 1 failed
+assertions: 458 | 457 passed | 1 failed
+

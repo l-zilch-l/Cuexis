@@ -1,0 +1,21 @@
+Randomness seeded to: 1
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+json-baseline.exe is a Catch2 v3.15.2 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+JSON Schema violations become field-path diagnostics
+-------------------------------------------------------------------------------
+D:\Cuexis-redesign\out\verification-20261030\r3-next-v1\product-sequence-source-v1\tests\json_support\schema_tests.cpp(6)
+...............................................................................
+
+D:\Cuexis-redesign\out\verification-20261030\r3-next-v1\product-sequence-source-v1\tests\json_support\schema_tests.cpp(13): FAILED:
+  {Unknown expression after the reported line}
+due to a fatal error condition:
+  SIGSEGV - Segmentation violation signal
+
+===============================================================================
+test cases:  4 |  3 passed | 1 failed
+assertions: 24 | 23 passed | 1 failed
+

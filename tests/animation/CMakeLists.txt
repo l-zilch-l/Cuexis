@@ -1,6 +1,8 @@
 add_executable(cuexis_animation_tests
     animation_compiler_tests.cpp
-    animation_mixer_tests.cpp
+    animation_mixer_blend_tests.cpp
+    animation_mixer_conflict_tests.cpp
+    animation_mixer_test_fixture.hpp
     animation_sampler_tests.cpp
 )
 

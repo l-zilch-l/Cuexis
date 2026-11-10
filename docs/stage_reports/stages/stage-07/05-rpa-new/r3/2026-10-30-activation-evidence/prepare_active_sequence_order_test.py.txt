@@ -1,0 +1,53 @@
+from pathlib import Path
+import hashlib,json,shutil,subprocess
+base=Path(__file__).resolve().parent;source=base/'active-sequence-source-v1';out=base/'active-sequence-source-v2';out.mkdir(exist_ok=False)
+shutil.copyfile(source/'execution_kernel.cpp',out/'execution_kernel.cpp')
+s=(source/'rpa_b3_tests.cpp').read_text(encoding='utf-8')
+s+='''
+TEST_CASE("Activation canonical order survives reversed wave and shared page boundaries",
+          "[rpa][r3c][active-order]") {
+    const auto early = GENERATE(63U, 64U, 65U);
+    Fixture3 fixture;expandTickFixture(fixture,early+1);
+    auto& document=fixture.assembly.sources[0].document;
+    for(unsigned i=0;i<=early;++i) {
+        auto& requirement=document.requirements[i];
+        requirement.identity.requirementLocalId="active."+std::to_string(1000+i);
+        const auto declaration=std::find_if(document.declarations.begin(),document.declarations.end(),
+            [&](const auto& value){return value.stableId==requirement.stableId;});
+        REQUIRE(declaration!=document.declarations.end());
+        declaration->localName=requirement.identity.requirementLocalId;
+    }
+    auto& late=document.requirements[0];
+    const auto shift=[](Tick& tick){tick=Tick{tick.value()+200};};
+    shift(late.timing->end);
+    for(auto& window:late.timing->successWindows){shift(window.start);shift(window.end);}
+    shift(late.timing->body->start);shift(late.timing->body->end);
+    for(auto& target:late.timing->phaseTargets)shift(target.chartTick);
+    const auto config=fixture.configuration();const auto prepared=fixture.prepared();
+    auto made=detail::ExecutionKernel::prepare(config,prepared);REQUIRE(made);
+    REQUIRE((*made)->advance(Tick{854}));
+    auto saved=(*made)->snapshot();REQUIRE(saved);
+    auto old=(*made)->archive();
+    REQUIRE((*saved)->dto.activeRequirements.size()==early);
+    for(unsigned i=0;i<early;++i)CHECK((*saved)->dto.activeRequirements[i]==i+1);
+    REQUIRE((*made)->advance(Tick{1054}));
+    auto current=(*made)->snapshot();REQUIRE(current);
+    REQUIRE((*current)->dto.activeRequirements.size()==early+1);
+    for(unsigned i=0;i<=early;++i)CHECK((*current)->dto.activeRequirements[i]==i);
+    auto payload=detail::KernelTestAccess::snapshotValue((*current)->dto,{config,prepared});
+    auto encoded=encodeSnapshot(payload);REQUIRE(encoded);
+    auto decoded=decodeSnapshot(*encoded,{config,prepared});REQUIRE(decoded);
+    CHECK(sameSnapshot(decoded->state(),(*current)->dto));
+    auto restored=JudgementSession::recover(*decoded,{config,prepared});REQUIRE(restored);
+    CHECK(sameSnapshot(restored->snapshot()->state(),(*current)->dto));
+    auto recoveredOld=detail::ExecutionKernel::seekCandidate(old,Tick{854});REQUIRE(recoveredOld);
+    auto oldSnapshot=(*recoveredOld)->snapshot();REQUIRE(oldSnapshot);
+    CHECK((*oldSnapshot)->dto.activeRequirements==(*saved)->dto.activeRequirements);
+    CHECK(sameSnapshot((*oldSnapshot)->dto,(*saved)->dto));
+}
+'''
+(out/'rpa_b3_tests.cpp').write_text(s,encoding='utf-8')
+subprocess.run(['clang-format','-i',str(out/'rpa_b3_tests.cpp')],check=True)
+m=json.loads((source/'binding.json').read_text());m['sources']={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in out.glob('*.cpp')};m['scope']+=' Supplemental explicit canonical ordering,63/64/65 early activations then index0; production CPP unchanged.'
+(out/'binding.json').write_text(json.dumps(m,indent=2),encoding='utf-8')
+print(out)

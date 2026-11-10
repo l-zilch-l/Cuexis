@@ -1,0 +1,77 @@
+from pathlib import Path
+import json,subprocess
+root=Path.cwd();base=Path(__file__).resolve().parent
+script=(base/'prepare_v3_observer_generated.py').read_text(encoding='utf-8')
+script=script.replace("source = base / 'budget-source-v3'","source = base / 'budget-source-v4'")
+script=script.replace("out = base / 'budget-v3-observer-v1'","out = base / 'budget-v4-observer-v1'")
+script=script.replace("    assert sha(source / name) == digest, name","    if name not in ('engine/judgement/src/execution_kernel.cpp','tests/rpa/rpa_b3_tests.cpp'):\n        assert sha(source / name) == digest, name")
+(base/'prepare_v4_observer_generated.py').write_text(script,encoding='utf-8')
+subprocess.run(['python','-B',str(base/'prepare_v4_observer_generated.py')],check=True)
+out=base/'budget-v4-observer-v1'
+p=out/'execution_kernel.cpp';s=p.read_text(encoding='utf-8')
+s=s.replace('extern "C" void r3c_staged_point','extern "C" void r3c_floor_release(bool, std::size_t) noexcept;\nextern "C" void r3c_staged_point',1)
+old='''        ReplayArchive archive{std::make_shared<const ReplayData>(std::move(data)),
+                              impl_->recoveryInputs};'''
+new='''        const auto weakPoint = std::weak_ptr<const NativeTickPoint>{
+            impl_->tickPoints.count ? impl_->tickPoints.points[0] : nullptr};
+        const auto budget = impl_->preparation->tickBudget;
+        ReplayArchive archive{
+            std::shared_ptr<const ReplayData>{new ReplayData(std::move(data)),
+                [weakPoint,budget](const ReplayData* value) noexcept {
+                    r3c_floor_release(weakPoint.expired(),budget ? budget->live.load() : 0);
+                    delete value;
+                }},impl_->recoveryInputs};'''
+assert s.count(old)==1;s=s.replace(old,new);p.write_text(s,encoding='utf-8')
+p=out/'tick_fault_probe.hpp';s=p.read_text(encoding='utf-8');s=s.replace('    std::size_t stagedCount{};','''    std::size_t stagedCount{};
+    bool watchFloor{}, pointExpired{};
+    std::size_t floorReleaseCount{}, floorLive{};''');p.write_text(s,encoding='utf-8')
+p=out/'rpa_b3_tests.cpp';s=p.read_text(encoding='utf-8');s=s.replace('CHECK(points > 0);','CHECK(points == (wave ? 4 : 1));')
+s+='''
+extern "C" void r3c_floor_release(bool pointExpired,std::size_t live) noexcept {
+    auto& p=tick_probe::plan;
+    if(p.watchFloor) { ++p.floorReleaseCount;p.pointExpired=pointExpired;p.floorLive=live; }
+}
+TEST_CASE("R3c exact source floor releases after last point during archive assignment", "[r3c-fault]") {
+    const bool move=GENERATE(false,true);
+    Fixture3 f;expandTickFixture(f,256);
+    auto made=detail::ExecutionKernel::prepare(f.configuration(),f.prepared());REQUIRE(made);
+    auto empty=(*made)->archive();
+    REQUIRE((*made)->advance(Tick{1203}));
+    auto archive=(*made)->archive();
+    std::weak_ptr<const ReplayData> oldSource=archive.anchor();
+    REQUIRE(detail::ExecutionKernel::tickPayloadBytes(empty)>0);
+    made->reset();
+    tick_probe::plan={};tick_probe::plan.watchFloor=true;
+    if(move) archive=ReplayArchive{empty}; else archive=empty;
+    const auto observed=tick_probe::plan;tick_probe::plan={};
+    CHECK(oldSource.expired());
+    REQUIRE(observed.floorReleaseCount==1);
+    CHECK(observed.pointExpired);
+    CHECK(observed.floorLive==0);
+    CHECK(detail::ExecutionKernel::tickPayloadBytes(empty)==0);
+}
+''';p.write_text(s,encoding='utf-8')
+subprocess.run(['clang-format','-i',*[str(out/n) for n in ('execution_kernel.cpp','rpa_b3_tests.cpp','tick_fault_probe.hpp')]],check=True)
+builder=(base/'build_budget_observer_v3.py').read_text(encoding='utf-8')
+builder=builder.replace("parent=root/'out/verification-20261029/r3-completion/tick-prototype-v1/budget-build-v2'","parent=base/'budget-build-v3'")
+builder=builder.replace("out=base/'budget-observer-v3'","out=base/'budget-v4-observer-v1'")
+builder=builder.replace("root/'out/verification-20261029/r3-completion/tick-prototype-v1/budget-source-v2/engine/judgement/src'","base/'budget-source-v4/engine/judgement/src'")
+old="args=[a for a in split(entry['command']) if not a.startswith(('/Fo','/Fd')) and not a.endswith('.cpp')]"
+builder=builder.replace(old,old+"\n    args=[a.replace(str(base/'budget-source-v3'),str(base/'budget-source-v4')).replace((base/'budget-source-v3').as_posix(),(base/'budget-source-v4').as_posix()) for a in args]")
+start=builder.index("if mode=='mutant':");end=builder.index("production=compile",start)
+builder=builder[:start]+'''if mode!='normal':
+    original=kernel.read_text(encoding='utf-8')
+    kernel=out/('execution_kernel_'+mode+'.cpp')
+    if mode=='floor-mutant':
+        needle='        index->exactSourceFloor = archive.anchor();'
+        assert original.count(needle)==1
+        kernel.write_text(original.replace(needle,''),encoding='utf-8')
+    else:
+        assert mode=='mutant'
+        needle='if (outcome && collecting)\\n        for (std::size_t i = 0; i < capture.count; ++i)'
+        assert original.count(needle)==1
+        kernel.write_text(original.replace(needle,'if (collecting)\\n        for (std::size_t i = 0; i < capture.count; ++i)'),encoding='utf-8')
+'''+builder[end:]
+builder=builder.replace("if mode=='mutant' else compile", "if mode!='normal' else compile")
+(base/'build_v4_observer.py').write_text(builder,encoding='utf-8')
+print(out)

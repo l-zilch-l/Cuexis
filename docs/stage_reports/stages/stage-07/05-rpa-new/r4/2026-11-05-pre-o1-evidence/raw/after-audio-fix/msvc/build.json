@@ -1,0 +1,13 @@
+{
+  "command": [
+    "cmake",
+    "--build",
+    "D:\\Cuexis-worktree\\out\\build\\r4\\pre-o1\\msvc-on-debug",
+    "--parallel",
+    "4"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 39.971138599999904,
+  "test_counts": null,
+  "log_sha256": "e6986c8a573e7a4072a96e6f2f8a9b95200dc983adc55005227a3037c290ff67"
+}

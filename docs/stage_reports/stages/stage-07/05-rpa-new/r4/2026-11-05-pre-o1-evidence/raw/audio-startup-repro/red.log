@@ -1,0 +1,25 @@
+Filters: "B5 Close waits for a failed audio owner's drained exit before binding participants"
+Randomness seeded to: 3475771587
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cuexis_execution_host_tests.exe is a Catch2 v3.15.2 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+B5 Close waits for a failed audio owner's drained exit before binding
+participants
+-------------------------------------------------------------------------------
+D:\Cuexis-worktree\tests\rpa\rpa_b5_seek_host_tests.cpp(361)
+...............................................................................
+
+D:\Cuexis-worktree\tests\rpa\rpa_b5_seek_host_tests.cpp(405): FAILED:
+  REQUIRE( closed )
+with expansion:
+  {?}
+with message:
+  host.rpa.owner_closed
+
+===============================================================================
+test cases: 1 | 1 failed
+assertions: 5 | 4 passed | 1 failed
+

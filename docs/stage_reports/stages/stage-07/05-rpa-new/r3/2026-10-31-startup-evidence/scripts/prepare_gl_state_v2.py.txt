@@ -1,0 +1,19 @@
+from pathlib import Path
+import hashlib,json,shutil,subprocess
+base=Path(__file__).resolve().parent;old=base/'gl-state-source-v1';out=base/'gl-state-source-v2';out.mkdir(exist_ok=False)
+s=(old/'open_gl_presentation.cpp').read_text(encoding='utf-8')
+s=s.replace('    glActiveTexture(GL_TEXTURE0);\n    for (const auto& draw : draws) {', '    for (const auto& draw : draws) {',1)
+s=s.replace('''        if (!color || *color != nextColor) {''','''        const bool sameColor = color && std::equal(color->begin(), color->end(), nextColor.begin(),
+            [](float a, float b) {return std::bit_cast<std::uint32_t>(a)==std::bit_cast<std::uint32_t>(b);});
+        if (!sameColor) {''',1)
+s=s.replace('''        if (!texture || *texture != nextTexture) {
+            texture = nextTexture;''','''        if (!texture || *texture != nextTexture) {
+            glActiveTexture(GL_TEXTURE0);
+            texture = nextTexture;''',1)
+(out/'open_gl_presentation.cpp').write_text(s,encoding='utf-8')
+shutil.copyfile(old/'state_test.cpp',out/'state_test.cpp')
+subprocess.run(['clang-format','-i',str(out/'open_gl_presentation.cpp')],check=True)
+m=json.loads((old/'binding.json').read_text());m['source_sha256']=hashlib.sha256((out/'open_gl_presentation.cpp').read_bytes()).hexdigest();m['scope']+=' Exact float bit comparisons for signed zero; active texture set only when binding an actual unlit draw.'
+(out/'binding.json').write_text(json.dumps(m,indent=2),encoding='utf-8')
+s=(base/'build_gl_state.py').read_text().replace("out=base/'gl-state-build-v1'", "out=base/'gl-state-build-v2'").replace("base/'gl-state-source-v1", "base/'gl-state-source-v2")
+(base/'build_gl_state_v2.py').write_text(s,encoding='utf-8')

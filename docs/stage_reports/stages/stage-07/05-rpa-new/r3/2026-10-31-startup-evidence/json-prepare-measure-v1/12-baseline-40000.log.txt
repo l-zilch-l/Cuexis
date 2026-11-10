@@ -1,0 +1,7 @@
+Filters: "CPU legacy preparation fixed diagnostic"
+Randomness seeded to: 1
+JSON_PREPARE_READY
+JSON_PREPARE_RESULT {"entities":40000,"prepare_us":17678394.5,"identity":"e07412ced305241fac0afede08eeecdb8a56c6f428212002fdc8fcc1983e112f","frame_digest":7993277345286377341}
+===============================================================================
+All tests passed (3 assertions in 1 test case)
+

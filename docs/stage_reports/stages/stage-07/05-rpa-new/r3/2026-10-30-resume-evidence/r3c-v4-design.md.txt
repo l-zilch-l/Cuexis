@@ -1,0 +1,32 @@
+# R3c append-only Fact ownership floor candidate
+
+Status: unselected experiment. 128 MiB payload limit stays unchanged; no production cap acceptance.
+
+The v2 full-page charge rejects dense 40K: 244028048 B total, 198803392 B Fact charge,
+43275024 B phases. Observed optional requested delta is tiny at smaller scales, but that
+does not prove an exemption. V3 uses a structural invariant for only SharedSequence<KernelFact>.
+
+The normal writer ledger only appends Facts. SharedSequence append never writes a complete
+page; it clones a partial tail. During an advance the mandatory active/fault state owns all
+complete Fact pages. On success the actual original record result is published before any
+point promotion and owns the same full pages. On fault no point is promoted. Each staged
+point charges its entire directory, partial tail allocation and nested tail fields. All other
+state/prefix owners retain the v2 full conservative charge. Count/lineage/lease rules stay.
+
+Promotion checks complete Fact page owner identity against the just-published final state;
+value equality cannot grant the exemption. The exact source journal must outlive every
+optional point: writer log, sealed archive or seekSource owns it. seekNativeSource is dropped
+before seekSource on branch publication. A branch creates new points against its own original
+record; inherited native index is paired with the entire original source and is cleared on
+divergence. Public/untrusted archives cannot introduce this exemption or construct a point.
+
+This is an append-only invariant, not a generic dynamic-memory deduplicator. Any change that
+updates/removes Fact rows must revisit staging, fault and owner proof, not just final equality.
+Exact full-page validation is a guard, not a substitute for the no-mutation staging proof.
+No caller configurable cap, no new wire field or installed public carrier; Judgement internal
+headers remain uninstalled. Full related fresh build is mandatory for the changed template.
+
+Verify full/partial page boundaries, equal-but-independent pages, reentrant storage visits,
+original fault/optional misses, retired archives, branch source release, requested/CRT/process
+memory, and ordinary writer/Seek with this candidate's own build. Mutant failure/no promotion
+and unknown full-page mutation must remain detectable. Old v2/unbudgeted results are separate.

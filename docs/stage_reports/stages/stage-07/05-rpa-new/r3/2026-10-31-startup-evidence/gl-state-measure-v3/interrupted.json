@@ -1,0 +1,8 @@
+{
+  "time": "2026-10-30T23:45:44.7933882+08:00",
+  "reason": "User reported window unresponsive for a long time after creation. Controller stopped first, active last baseline child terminated. Preserve partial fixed group; no replacement or completion claim.",
+  "controller": 20124,
+  "child": 29560,
+  "stopped_group": "23-baseline",
+  "status": "interrupted-for-startup-responsiveness-investigation"
+}

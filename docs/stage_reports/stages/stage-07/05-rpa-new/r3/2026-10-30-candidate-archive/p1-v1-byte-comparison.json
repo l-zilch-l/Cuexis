@@ -1,0 +1,92 @@
+[
+  {
+    "n": 64,
+    "profile": "split",
+    "key": "R3_PREPARE",
+    "exact_hash_and_size_match": true
+  },
+  {
+    "n": 1000,
+    "profile": "shared",
+    "key": "R3_PREPARE",
+    "exact_hash_and_size_match": true
+  },
+  {
+    "n": 10000,
+    "profile": "split",
+    "key": "R3_PREPARE",
+    "exact_hash_and_size_match": true
+  },
+  {
+    "raw": "raw-1000-shared-baseline-chart.bin",
+    "other": "raw-1000-shared-candidate-chart.bin",
+    "full_byte_comparison": true,
+    "sha256": "b836ba4151f080945200d98d77dc198095cb2357414d7666244f1c1dcbce21b6"
+  },
+  {
+    "raw": "raw-1000-shared-baseline-content.bin",
+    "other": "raw-1000-shared-candidate-content.bin",
+    "full_byte_comparison": true,
+    "sha256": "9d3bddd23f0dcb3bc42485912958ae1ae2398e5ed5c814ec21cdba1f138f2412"
+  },
+  {
+    "raw": "raw-1000-shared-baseline-packed.bin",
+    "other": "raw-1000-shared-candidate-packed.bin",
+    "full_byte_comparison": true,
+    "sha256": "6ffc9cff685d297486032bc46a5308bfe8b4ebd314b0d881675962324e1e71f3"
+  },
+  {
+    "raw": "raw-1000-shared-baseline-prepared.bin",
+    "other": "raw-1000-shared-candidate-prepared.bin",
+    "full_byte_comparison": true,
+    "sha256": "051154099ccb7a872a13db90b1d5dea2ec972a34343c5b614e8fe0bf8f01b934"
+  },
+  {
+    "raw": "raw-10000-split-baseline-chart.bin",
+    "other": "raw-10000-split-candidate-chart.bin",
+    "full_byte_comparison": true,
+    "sha256": "c7a7c0ec9b0a4510d7722c9d09052179a29c43cfd9403fb9076b58cbfba3156e"
+  },
+  {
+    "raw": "raw-10000-split-baseline-content.bin",
+    "other": "raw-10000-split-candidate-content.bin",
+    "full_byte_comparison": true,
+    "sha256": "d616ad59d8eb5b647c9b5afa58068dfa19b8f162689155e171f623ec25c1bda3"
+  },
+  {
+    "raw": "raw-10000-split-baseline-packed.bin",
+    "other": "raw-10000-split-candidate-packed.bin",
+    "full_byte_comparison": true,
+    "sha256": "5024d26f02bd62b4a4d6bee373ac363ff0ada268acefc4ed1eedce5371ecbf92"
+  },
+  {
+    "raw": "raw-10000-split-baseline-prepared.bin",
+    "other": "raw-10000-split-candidate-prepared.bin",
+    "full_byte_comparison": true,
+    "sha256": "1f23e6ba75bd5e0dcbefb95071519c2598461223be035df863912c7148fd4cef"
+  },
+  {
+    "raw": "raw-64-split-baseline-chart.bin",
+    "other": "raw-64-split-candidate-chart.bin",
+    "full_byte_comparison": true,
+    "sha256": "7914568397c0c49e00ca559562972c71adfc13cd1fc089370f6fbf46ef679cc9"
+  },
+  {
+    "raw": "raw-64-split-baseline-content.bin",
+    "other": "raw-64-split-candidate-content.bin",
+    "full_byte_comparison": true,
+    "sha256": "bafe62d8ae16669646c0f082013a0b01eee5cb43994643f06868146ee9d17714"
+  },
+  {
+    "raw": "raw-64-split-baseline-packed.bin",
+    "other": "raw-64-split-candidate-packed.bin",
+    "full_byte_comparison": true,
+    "sha256": "d4228216c86ab7cb73bee3ef5779004d1b69c6fe5e39967d06d514d4386bd468"
+  },
+  {
+    "raw": "raw-64-split-baseline-prepared.bin",
+    "other": "raw-64-split-candidate-prepared.bin",
+    "full_byte_comparison": true,
+    "sha256": "d8f89ff6e496a33d62039f030e7e50db37f16e906460aea854fd0397cdc25611"
+  }
+]

@@ -1,0 +1,34 @@
+{
+  "schema": "cuexis.r2-owner-exit-acceptance.v1",
+  "status": "accepted",
+  "stage": "Stage 7-RPA",
+  "batch": "R2",
+  "accepted_by": "owner",
+  "accepted_on": "2026-10-26",
+  "timezone": "Asia/Shanghai",
+  "owner_statement": "好，那我现在接受R2退出，你可以开始修改文档了",
+  "basis": "R2 original plan: implementation, applicable correctness/compatibility, new candidate comparison and local-benefit evidence; no reduction of original requirements",
+  "R2_owner_exit_accepted": true,
+  "R2_technical_work_complete": true,
+  "R3_implementation_started": false,
+  "R4_formal_accepted": false,
+  "acceptance_changes_product_or_budget_contracts": false,
+  "preserved_limits": [
+    "Historical noisy/inconclusive groups keep their original results",
+    "Confirmed local performance is scoped to registered Release STATIC HighQoS/mask4/common-unchanged-object configuration",
+    "R4 formal, 40k acceptance, device/production and Stage 7 closure remain separate"
+  ],
+  "reviewed_report": {
+    "path": "D:\\Cuexis-worktree\\docs\\stage_reports\\stages\\stage-07\\05-rpa-new\\r2\\2026-10-26-r2-technical-closure-review.md",
+    "pre_acceptance_sha256": "19105215097abbc49ec17c2c4077430bb1eb3c80fbc0a8b9bb404a10f32a9b1e"
+  },
+  "frozen_evidence": {
+    "D:\\Cuexis-worktree\\docs\\stage_reports\\stages\\stage-07\\05-rpa-new\\r2\\2026-10-26-r2-exit-evidence.zip": "2f0a38c9f3998ef20d5a27ac78cb096f4af54ece66155d3565776182a8aa63d4",
+    "D:\\Cuexis-worktree\\docs\\stage_reports\\stages\\stage-07\\05-rpa-new\\r2\\2026-10-26-r2-technical-closure-audit.zip": "28f6c9c8cafdeb9dc55bb9fb9e1a67603e2c6f8475f43cc0a98f56d549d0c3ce",
+    "D:\\Cuexis-worktree\\docs\\stage_reports\\stages\\stage-07\\05-rpa-new\\r2\\2026-10-26-r2-technical-closure-audit.json": "5dedae08341f194bc07f5bfb72bd21b4c76f6bcf77484c276257ce435dd6b45a",
+    "D:\\Cuexis-worktree\\docs\\stage_reports\\stages\\stage-07\\05-rpa-new\\r2\\2026-10-26-r2-exit-evidence.json": "7c22524b52a4f9d5d76dfc88d3237a33b8e2d9c20221a4e32886fe3a67c81517"
+  },
+  "source_head": "c4bc5d4456ffe4778a90f9bae410638c0016a8eb",
+  "documentation_update_only": true,
+  "new_measurements": false
+}

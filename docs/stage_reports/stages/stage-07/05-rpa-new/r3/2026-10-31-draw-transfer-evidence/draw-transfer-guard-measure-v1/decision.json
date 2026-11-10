@@ -1,0 +1,98 @@
+{
+  "numeric_guard": true,
+  "repeatability_screen": true,
+  "summary": [
+    {
+      "n": 1000,
+      "reverse": false,
+      "values": {
+        "baseline": {
+          "process_medians_us": [
+            697.55,
+            640.3
+          ],
+          "median_us": 668.925,
+          "relative_range_percent": 8.558508053967188
+        },
+        "candidate": {
+          "process_medians_us": [
+            611.95,
+            613.55
+          ],
+          "median_us": 612.75,
+          "relative_range_percent": 0.2611179110566967
+        }
+      },
+      "change_percent": -8.397802444220194
+    },
+    {
+      "n": 1000,
+      "reverse": true,
+      "values": {
+        "baseline": {
+          "process_medians_us": [
+            742.7,
+            676.65
+          ],
+          "median_us": 709.675,
+          "relative_range_percent": 9.307077183217679
+        },
+        "candidate": {
+          "process_medians_us": [
+            649.7,
+            629.75
+          ],
+          "median_us": 639.725,
+          "relative_range_percent": 3.118527492281847
+        }
+      },
+      "change_percent": -9.856624511219913
+    },
+    {
+      "n": 40000,
+      "reverse": false,
+      "values": {
+        "baseline": {
+          "process_medians_us": [
+            31791.9,
+            31335.1
+          ],
+          "median_us": 31563.5,
+          "relative_range_percent": 1.447241275523953
+        },
+        "candidate": {
+          "process_medians_us": [
+            29076.25,
+            28562.6
+          ],
+          "median_us": 28819.425,
+          "relative_range_percent": 1.782304816976749
+        }
+      },
+      "change_percent": -8.69382356202576
+    },
+    {
+      "n": 40000,
+      "reverse": true,
+      "values": {
+        "baseline": {
+          "process_medians_us": [
+            33927.55,
+            33028.35
+          ],
+          "median_us": 33477.95,
+          "relative_range_percent": 2.6859470188586947
+        },
+        "candidate": {
+          "process_medians_us": [
+            29713.25,
+            29609.25
+          ],
+          "median_us": 29661.25,
+          "relative_range_percent": 0.3506258165114417
+        }
+      },
+      "change_percent": -11.400638330602675
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "scope": "One instanced render-only 40K diagnostic with CPU substage timers; SAX startup, exact app-local Release DLLs. Not ordinary throughput or startup comparison. Window message acknowledgements observed; no performance acceptance from these samples.",
+  "plan": [
+    {
+      "name": "40k-render-stages",
+      "n": 40000,
+      "cancel": false
+    }
+  ],
+  "binary_sha256": "e136f8c93ee8e69f98d0f443d09f9af756923bb5ba411ae6748eebc5af24f662",
+  "poll_ms": 50,
+  "message_timeout_ms": 100,
+  "process_timeout_seconds": 180,
+  "frames": 8,
+  "warmup_ms": 2000,
+  "probe_sha256": "e98f1dac026e51cfebdfb331c657bdb9a6e77e6896a493f6c57a8040fdcd07f0"
+}

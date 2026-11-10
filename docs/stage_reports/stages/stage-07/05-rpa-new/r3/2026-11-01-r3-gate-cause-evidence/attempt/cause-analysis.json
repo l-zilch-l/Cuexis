@@ -1,0 +1,84 @@
+{
+  "scope": "Root-cause investigation for the two over-budget gates on HEAD 6256af8. Diagnostic only; every instrument or product change used here was reverted, so no code from this investigation is kept.",
+  "head": "6256af8b7d349b14a6d5b006d7632711152e96fa",
+  "read_gate_ablations": {
+    "workload": "CUEXIS_FOLLOW_COUNTS=1800 2000 2000, test 'PD finite read and update scaling', three alternating pairs each against the pre-patch binary of the same commit",
+    "baseline_sha256": "5d5829a6e1400222ac5543b813be058592c0821cd9582703b6074c37af1436b4",
+    "experiments": [
+      {
+        "id": "E0",
+        "change": "per-object Result<ObjectVisualRead> and repeated window validation removed",
+        "ratio": 1.0175,
+        "conclusion": "no gain, slightly worse; reverted"
+      },
+      {
+        "id": "E1",
+        "change": "registry not read at all per object (row shape preserved so the write path is identical)",
+        "ratio": 0.8247,
+        "conclusion": "the whole gap lives in the per-object component reads"
+      },
+      {
+        "id": "E2",
+        "change": "only registry.valid(entity) removed",
+        "ratio": 1.0068,
+        "conclusion": "the validity check is not the cost"
+      },
+      {
+        "id": "E3",
+        "change": "per-object read replaced by a chunked bulk read inside the runtime translation unit (32 rows per call, loop visible to the compiler)",
+        "ratio": 1.0392,
+        "conclusion": "worse; the boundary and the missing inlining are not the cost either"
+      }
+    ],
+    "conclusion": "the regression is per-object memory traffic for the transform (64 B matrix) and appearance rows, not the call shape, the validation or the Result wrapper. Removing the reads entirely returns the arm to the pre-PD level (0.8247), but no available restructuring recovers it.",
+    "next_step": "data-layout experiment: measure bytes touched per object in both arms and decide whether the presentation read may carry a compact pre-gathered row. That touches the read contract, so it is an owner-scoped change, not a local fix."
+  },
+  "pause_cause": {
+    "split_of_first_pause": {
+      "pause_call_us": 258,
+      "frozen_sample_us": 49,
+      "frozen_present_us": 175836,
+      "total_us": 176141
+    },
+    "gpu_time_of_that_draw": {
+      "metric": "gpu_render",
+      "us": 1.024,
+      "note": "timer query around the GPU command range; effectively zero"
+    },
+    "window_visibility_control": {
+      "hidden_window_first_pause_us": 178703,
+      "visible_window_first_pause_us": 182752,
+      "conclusion": "not a hidden-window or compositor-visibility effect"
+    },
+    "warm_frame_experiment": [
+      {
+        "warm_live_frames": 1,
+        "live_presents_us": [
+          929,
+          174870
+        ],
+        "first_frozen_present_us": 713
+      },
+      {
+        "warm_live_frames": 2,
+        "live_presents_us": [
+          1013,
+          177446
+        ],
+        "first_frozen_present_us": 236
+      }
+    ],
+    "conclusion": "the 175-190 ms stall is the process's SECOND SwapWindow, independent of the frozen flag. In the registered workload the second present is the first paused frame, so the overrun lands inside the first pause; with one warm live frame the stall moves there and the first pause costs 0.7 ms.",
+    "implication": "the gate reading is honest for the registered workload, but the cause is a one-time swap chain stall rather than the pause path. A product-representative pause (swap chain already warm) measures 0.4-0.9 ms in the same runs.",
+    "fix_options": [
+      "present one warm frame after the first frame at startup, so the stall is paid inside load (2000 ms budget, currently 410 ms) and not inside the first pause; the first_frame_presented boundary is unchanged because the extra present happens after it",
+      "register a controls workload that presents N live frames before the first control, and report both readings"
+    ]
+  },
+  "reverted": [
+    "tests/pd/pd5_host_probe.cpp diagnostics",
+    "engine/runtime presentation read ablations",
+    "engine/playback materializer bulk-read rewrite"
+  ],
+  "recorded_local": "2026-11-01 22:42"
+}

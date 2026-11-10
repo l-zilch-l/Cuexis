@@ -1,0 +1,161 @@
+{
+  "formal": false,
+  "scope": "Fixed independent product activeRequirements sharing diagnostic only. No continuation/budget/batch publication. Old failed groups are distinct. Same candidate class definitions and fresh libraries; all timings exclude fault/heap observers.",
+  "plan": [
+    {
+      "n": 1000,
+      "horizon": "902",
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "horizon": "902",
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 1000,
+      "horizon": "902",
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 1000,
+      "horizon": "902",
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "horizon": "902",
+      "pair": 2,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "horizon": "902",
+      "pair": 2,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "horizon": "5",
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "horizon": "5",
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "horizon": "5",
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "horizon": "5",
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "horizon": "5",
+      "pair": 2,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "horizon": "5",
+      "pair": 2,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "pair": 2,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "horizon": "902",
+      "pair": 2,
+      "variant": "candidate"
+    },
+    {
+      "n": 1000,
+      "horizon": "final",
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "horizon": "final",
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 1000,
+      "horizon": "final",
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 1000,
+      "horizon": "final",
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "horizon": "final",
+      "pair": 2,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "horizon": "final",
+      "pair": 2,
+      "variant": "candidate"
+    }
+  ],
+  "attempts": 3,
+  "gate": "No target may regress >5% except1K H902 guard10%; every candidate request <=20ms; H5 and 1K final guard <=5% regression. Original relative range <=15% reported, no new samples to force pass. first/repeats separate; exact full Snapshot raw bytes/hash/size. CPU Host request through target present only, not physical GPU or formal acceptance.",
+  "binaries": {
+    "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-next-v1\\product-sequence-probes-v1\\host-baseline.exe": "2f70f67bf7d2a8b970250e3aca6224e45c8d46298d513e2aa0f870e991d78ad4",
+    "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-next-v1\\product-sequence-probes-v1\\host-candidate.exe": "499274f607154ae70b705b53b4565e556d34b4ce182d6425e0b75bbe41f12a7f"
+  },
+  "runner_sha256": "f7efec32d78fe42bdb4e9688849b345d1e7defac9648587a10022749a3c3e52a",
+  "affinity": 4,
+  "priority": "BelowNormal",
+  "qos": "execution throttling OFF",
+  "failure": "Invalid process stops; original failed/noisy groups retained; no replacement/extension. Builds must be absent."
+}

@@ -1,0 +1,5 @@
+ninja explain: output CMakeFiles/canary.dir/main.cpp.obj older than most recent input ../source/value.hpp (8150664420080502 vs 8150664426273991)
+ninja: Entering directory `D:\Cuexis-redesign\out\verification-20261030\r3-next-v1\dependency-raw-prefix-v1\build'
+[1/2] Building CXX object CMakeFiles\canary.dir\main.cpp.obj
+ninja explain: CMakeFiles/canary.dir/main.cpp.obj is dirty
+[2/2] Linking CXX executable canary.exe

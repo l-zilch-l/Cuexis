@@ -1,0 +1,43 @@
+Filters: [r3c-guard]
+Randomness seeded to: 1
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+rpa-guard-mutant.exe is a Catch2 v3.15.2 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+R3c actual promotion rejects equal but independently owned complete Fact page
+-------------------------------------------------------------------------------
+D:\Cuexis-redesign\out\verification-20261030\r3-resume-v1\budget-v4-guard-v1\rpa_b3_tests.cpp(2855)
+...............................................................................
+
+D:\Cuexis-redesign\out\verification-20261030\r3-resume-v1\budget-v4-guard-v1\rpa_b3_tests.cpp(2887): FAILED:
+  CHECK( detail::ExecutionKernel::tickPointCount(archive) == 0 )
+with expansion:
+  1 == 0
+
+D:\Cuexis-redesign\out\verification-20261030\r3-resume-v1\budget-v4-guard-v1\rpa_b3_tests.cpp(2888): FAILED:
+  CHECK( detail::ExecutionKernel::tickPayloadBytes(empty) == 0 )
+with expansion:
+  292920 (0x47838) == 0
+
+-------------------------------------------------------------------------------
+R3c actual promotion rejects equal but independently owned complete Fact page
+-------------------------------------------------------------------------------
+D:\Cuexis-redesign\out\verification-20261030\r3-resume-v1\budget-v4-guard-v1\rpa_b3_tests.cpp(2855)
+...............................................................................
+
+D:\Cuexis-redesign\out\verification-20261030\r3-resume-v1\budget-v4-guard-v1\rpa_b3_tests.cpp(2887): FAILED:
+  CHECK( detail::ExecutionKernel::tickPointCount(archive) == 0 )
+with expansion:
+  1 == 0
+
+D:\Cuexis-redesign\out\verification-20261030\r3-resume-v1\budget-v4-guard-v1\rpa_b3_tests.cpp(2888): FAILED:
+  CHECK( detail::ExecutionKernel::tickPayloadBytes(empty) == 0 )
+with expansion:
+  292920 (0x47838) == 0
+
+===============================================================================
+test cases:  1 |  0 passed | 1 failed
+assertions: 58 | 54 passed | 4 failed
+

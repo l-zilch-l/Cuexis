@@ -623,6 +623,8 @@ Portable v1 已有 presentation code 保持含义。Stage 5 新增 code 不得�
 
 ## 13. SDK、Digest 与 package（S5A-12）
 
+下表SDK版本记录S5-C公开类型引入时的历史基线；当前分支为0.7.5，见[CURRENT_STATUS](../CURRENT_STATUS.md)。
+
 ```text
 CUEXIS_SDK_API_VERSION: 0.7.0            public types landed in S5-C
 FrameDigest algorithm: remains 3
@@ -641,7 +643,7 @@ FrameDigest v3 已包含 material type、AssetId 与 32 identity bytes。Paramet
 identity 递归包含 shader 与纹理，因此不需要 digest v4。v1/v2 digest golden 保持不变。
 
 Package：Portable/Parameterized 公开 API 仍属于 `Playback` component。Validation Sink 不安装。
-OpenGL adapter 与 `cuexis_shader` 均不安装。稳定 C ABI 仍属 Stage 12。
+OpenGL adapter 与 `cuexis_shader` 均不安装。稳定 C ABI 仍属 Stage 14。
 
 ## 14. Implementation status
 

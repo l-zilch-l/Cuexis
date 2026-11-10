@@ -1,0 +1,5 @@
+Written and placed in the public domain by Jeffrey Walton.
+Based on Intel and Sean Gulley (miTLS) code.
+Original declaration preserved at the top of sha256_x86.cpp.
+Upstream: https://github.com/noloader/SHA-Intrinsics
+Revision: d03795497f3e4576083fc2cd8fe0b924f24d0bb2

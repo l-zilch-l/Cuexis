@@ -1,0 +1,872 @@
+[
+  {
+    "kind": "prepare-wire",
+    "n": 64,
+    "allocator": "normal",
+    "profile": "split",
+    "repeat": 0,
+    "variant": "baseline",
+    "ordinal": 0,
+    "valid": true,
+    "exit": 0,
+    "seconds": 0.07174590000067838,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "ac_line": 1,
+    "records": {
+      "R3_PROCESS_MEMORY": [
+        {
+          "label": "before-fixture",
+          "private_commit_bytes": 970752,
+          "peak_pagefile_bytes": 970752,
+          "working_set_bytes": 6316032,
+          "peak_working_set_bytes": 6316032
+        },
+        {
+          "label": "after-fixture",
+          "private_commit_bytes": 1458176,
+          "peak_pagefile_bytes": 1458176,
+          "working_set_bytes": 6901760,
+          "peak_working_set_bytes": 6901760
+        },
+        {
+          "label": "after-source-prepare",
+          "private_commit_bytes": 2191360,
+          "peak_pagefile_bytes": 2191360,
+          "working_set_bytes": 8019968,
+          "peak_working_set_bytes": 8019968
+        },
+        {
+          "label": "after-packed-encode",
+          "private_commit_bytes": 2174976,
+          "peak_pagefile_bytes": 2555904,
+          "working_set_bytes": 8327168,
+          "peak_working_set_bytes": 8691712
+        },
+        {
+          "label": "after-packed-decode",
+          "private_commit_bytes": 3469312,
+          "peak_pagefile_bytes": 3735552,
+          "working_set_bytes": 9863168,
+          "peak_working_set_bytes": 10170368
+        },
+        {
+          "label": "after-source-temporaries-release",
+          "private_commit_bytes": 2609152,
+          "peak_pagefile_bytes": 3735552,
+          "working_set_bytes": 9199616,
+          "peak_working_set_bytes": 10170368
+        },
+        {
+          "label": "after-test-session",
+          "private_commit_bytes": 1318912,
+          "peak_pagefile_bytes": 3735552,
+          "working_set_bytes": 7974912,
+          "peak_working_set_bytes": 10170368
+        }
+      ],
+      "R3_PREPARE": [
+        {
+          "requirements": 64,
+          "unique_patterns": 0,
+          "source_prepare_us": 1672,
+          "packed_encode_us": 2331,
+          "packed_decode_us": 4598,
+          "packed_bytes": 11738,
+          "packed_sha256": "d4228216c86ab7cb73bee3ef5779004d1b69c6fe5e39967d06d514d4386bd468",
+          "chart_sha256": "7914568397c0c49e00ca559562972c71adfc13cd1fc089370f6fbf46ef679cc9",
+          "content_sha256": "bafe62d8ae16669646c0f082013a0b01eee5cb43994643f06868146ee9d17714",
+          "prepared_sha256": "d8f89ff6e496a33d62039f030e7e50db37f16e906460aea854fd0397cdc25611"
+        }
+      ]
+    },
+    "log_sha256": "05c588bc9ad47f61eff7fb372360faefb0c6e6cb0946686fe587ef7483bd61c5"
+  },
+  {
+    "kind": "prepare-wire",
+    "n": 64,
+    "allocator": "normal",
+    "profile": "split",
+    "repeat": 0,
+    "variant": "candidate",
+    "ordinal": 1,
+    "valid": true,
+    "exit": 0,
+    "seconds": 0.07126379999681376,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "ac_line": 1,
+    "records": {
+      "R3_PROCESS_MEMORY": [
+        {
+          "label": "before-fixture",
+          "private_commit_bytes": 962560,
+          "peak_pagefile_bytes": 962560,
+          "working_set_bytes": 6283264,
+          "peak_working_set_bytes": 6283264
+        },
+        {
+          "label": "after-fixture",
+          "private_commit_bytes": 1441792,
+          "peak_pagefile_bytes": 1441792,
+          "working_set_bytes": 6893568,
+          "peak_working_set_bytes": 6893568
+        },
+        {
+          "label": "after-source-prepare",
+          "private_commit_bytes": 2162688,
+          "peak_pagefile_bytes": 2162688,
+          "working_set_bytes": 7991296,
+          "peak_working_set_bytes": 7991296
+        },
+        {
+          "label": "after-packed-encode",
+          "private_commit_bytes": 2162688,
+          "peak_pagefile_bytes": 2564096,
+          "working_set_bytes": 8323072,
+          "peak_working_set_bytes": 8687616
+        },
+        {
+          "label": "after-packed-decode",
+          "private_commit_bytes": 3579904,
+          "peak_pagefile_bytes": 3801088,
+          "working_set_bytes": 9850880,
+          "peak_working_set_bytes": 10199040
+        },
+        {
+          "label": "after-source-temporaries-release",
+          "private_commit_bytes": 2600960,
+          "peak_pagefile_bytes": 3801088,
+          "working_set_bytes": 9183232,
+          "peak_working_set_bytes": 10199040
+        },
+        {
+          "label": "after-test-session",
+          "private_commit_bytes": 1290240,
+          "peak_pagefile_bytes": 3801088,
+          "working_set_bytes": 7958528,
+          "peak_working_set_bytes": 10199040
+        }
+      ],
+      "R3_PREPARE": [
+        {
+          "requirements": 64,
+          "unique_patterns": 0,
+          "source_prepare_us": 1671,
+          "packed_encode_us": 2306,
+          "packed_decode_us": 4579,
+          "packed_bytes": 11738,
+          "packed_sha256": "d4228216c86ab7cb73bee3ef5779004d1b69c6fe5e39967d06d514d4386bd468",
+          "chart_sha256": "7914568397c0c49e00ca559562972c71adfc13cd1fc089370f6fbf46ef679cc9",
+          "content_sha256": "bafe62d8ae16669646c0f082013a0b01eee5cb43994643f06868146ee9d17714",
+          "prepared_sha256": "d8f89ff6e496a33d62039f030e7e50db37f16e906460aea854fd0397cdc25611"
+        }
+      ]
+    },
+    "log_sha256": "53e183855c7cb0787da47c14ba55b4cca1cd11f3dea7b96447006de199bb21de"
+  },
+  {
+    "kind": "prepare-wire",
+    "n": 1000,
+    "allocator": "normal",
+    "profile": "shared",
+    "repeat": 0,
+    "variant": "baseline",
+    "ordinal": 2,
+    "valid": true,
+    "exit": 0,
+    "seconds": 0.1645033999993757,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "ac_line": 1,
+    "records": {
+      "R3_PROCESS_MEMORY": [
+        {
+          "label": "before-fixture",
+          "private_commit_bytes": 905216,
+          "peak_pagefile_bytes": 909312,
+          "working_set_bytes": 5857280,
+          "peak_working_set_bytes": 5857280
+        },
+        {
+          "label": "after-fixture",
+          "private_commit_bytes": 5218304,
+          "peak_pagefile_bytes": 5234688,
+          "working_set_bytes": 10027008,
+          "peak_working_set_bytes": 10027008
+        },
+        {
+          "label": "after-source-prepare",
+          "private_commit_bytes": 14168064,
+          "peak_pagefile_bytes": 15441920,
+          "working_set_bytes": 19054592,
+          "peak_working_set_bytes": 20148224
+        },
+        {
+          "label": "after-packed-encode",
+          "private_commit_bytes": 14155776,
+          "peak_pagefile_bytes": 18411520,
+          "working_set_bytes": 19357696,
+          "peak_working_set_bytes": 23511040
+        },
+        {
+          "label": "after-packed-decode",
+          "private_commit_bytes": 25104384,
+          "peak_pagefile_bytes": 31854592,
+          "working_set_bytes": 30040064,
+          "peak_working_set_bytes": 36352000
+        },
+        {
+          "label": "after-source-temporaries-release",
+          "private_commit_bytes": 16965632,
+          "peak_pagefile_bytes": 31854592,
+          "working_set_bytes": 21479424,
+          "peak_working_set_bytes": 36352000
+        },
+        {
+          "label": "after-test-session",
+          "private_commit_bytes": 2043904,
+          "peak_pagefile_bytes": 31854592,
+          "working_set_bytes": 8077312,
+          "peak_working_set_bytes": 36352000
+        }
+      ],
+      "R3_PREPARE": [
+        {
+          "requirements": 1000,
+          "unique_patterns": 0,
+          "source_prepare_us": 21801,
+          "packed_encode_us": 25016,
+          "packed_decode_us": 52832,
+          "packed_bytes": 109452,
+          "packed_sha256": "6ffc9cff685d297486032bc46a5308bfe8b4ebd314b0d881675962324e1e71f3",
+          "chart_sha256": "b836ba4151f080945200d98d77dc198095cb2357414d7666244f1c1dcbce21b6",
+          "content_sha256": "9d3bddd23f0dcb3bc42485912958ae1ae2398e5ed5c814ec21cdba1f138f2412",
+          "prepared_sha256": "051154099ccb7a872a13db90b1d5dea2ec972a34343c5b614e8fe0bf8f01b934"
+        }
+      ]
+    },
+    "log_sha256": "9edc01b2708e5c74ed92fe5271cab95b2c92d400b8a7aa8730a2768e10513bcc"
+  },
+  {
+    "kind": "prepare-wire",
+    "n": 1000,
+    "allocator": "normal",
+    "profile": "shared",
+    "repeat": 0,
+    "variant": "candidate",
+    "ordinal": 3,
+    "valid": true,
+    "exit": 0,
+    "seconds": 0.18964620000042487,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "ac_line": 1,
+    "records": {
+      "R3_PROCESS_MEMORY": [
+        {
+          "label": "before-fixture",
+          "private_commit_bytes": 913408,
+          "peak_pagefile_bytes": 917504,
+          "working_set_bytes": 5828608,
+          "peak_working_set_bytes": 5828608
+        },
+        {
+          "label": "after-fixture",
+          "private_commit_bytes": 5226496,
+          "peak_pagefile_bytes": 5259264,
+          "working_set_bytes": 10063872,
+          "peak_working_set_bytes": 10063872
+        },
+        {
+          "label": "after-source-prepare",
+          "private_commit_bytes": 14819328,
+          "peak_pagefile_bytes": 16572416,
+          "working_set_bytes": 19554304,
+          "peak_working_set_bytes": 21164032
+        },
+        {
+          "label": "after-packed-encode",
+          "private_commit_bytes": 15519744,
+          "peak_pagefile_bytes": 18292736,
+          "working_set_bytes": 19570688,
+          "peak_working_set_bytes": 23490560
+        },
+        {
+          "label": "after-packed-decode",
+          "private_commit_bytes": 25116672,
+          "peak_pagefile_bytes": 30806016,
+          "working_set_bytes": 30150656,
+          "peak_working_set_bytes": 35381248
+        },
+        {
+          "label": "after-source-temporaries-release",
+          "private_commit_bytes": 15462400,
+          "peak_pagefile_bytes": 30806016,
+          "working_set_bytes": 21045248,
+          "peak_working_set_bytes": 35381248
+        },
+        {
+          "label": "after-test-session",
+          "private_commit_bytes": 1912832,
+          "peak_pagefile_bytes": 30806016,
+          "working_set_bytes": 7991296,
+          "peak_working_set_bytes": 35381248
+        }
+      ],
+      "R3_PREPARE": [
+        {
+          "requirements": 1000,
+          "unique_patterns": 0,
+          "source_prepare_us": 23946,
+          "packed_encode_us": 34963,
+          "packed_decode_us": 75500,
+          "packed_bytes": 109452,
+          "packed_sha256": "6ffc9cff685d297486032bc46a5308bfe8b4ebd314b0d881675962324e1e71f3",
+          "chart_sha256": "b836ba4151f080945200d98d77dc198095cb2357414d7666244f1c1dcbce21b6",
+          "content_sha256": "9d3bddd23f0dcb3bc42485912958ae1ae2398e5ed5c814ec21cdba1f138f2412",
+          "prepared_sha256": "051154099ccb7a872a13db90b1d5dea2ec972a34343c5b614e8fe0bf8f01b934"
+        }
+      ]
+    },
+    "log_sha256": "da2d48f3703d362e8eac0d7cc9dae3d26f4712229ec8c5345c34bc676c05faec"
+  },
+  {
+    "kind": "prepare-wire",
+    "n": 1000,
+    "allocator": "normal",
+    "profile": "shared",
+    "repeat": 1,
+    "variant": "candidate",
+    "ordinal": 4,
+    "valid": true,
+    "exit": 0,
+    "seconds": 0.1407413999986602,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "ac_line": 1,
+    "records": {
+      "R3_PROCESS_MEMORY": [
+        {
+          "label": "before-fixture",
+          "private_commit_bytes": 917504,
+          "peak_pagefile_bytes": 921600,
+          "working_set_bytes": 5832704,
+          "peak_working_set_bytes": 5832704
+        },
+        {
+          "label": "after-fixture",
+          "private_commit_bytes": 5341184,
+          "peak_pagefile_bytes": 5341184,
+          "working_set_bytes": 10039296,
+          "peak_working_set_bytes": 10039296
+        },
+        {
+          "label": "after-source-prepare",
+          "private_commit_bytes": 14196736,
+          "peak_pagefile_bytes": 15966208,
+          "working_set_bytes": 19038208,
+          "peak_working_set_bytes": 20029440
+        },
+        {
+          "label": "after-packed-encode",
+          "private_commit_bytes": 14585856,
+          "peak_pagefile_bytes": 18370560,
+          "working_set_bytes": 19468288,
+          "peak_working_set_bytes": 23494656
+        },
+        {
+          "label": "after-packed-decode",
+          "private_commit_bytes": 26112000,
+          "peak_pagefile_bytes": 30789632,
+          "working_set_bytes": 30175232,
+          "peak_working_set_bytes": 35299328
+        },
+        {
+          "label": "after-source-temporaries-release",
+          "private_commit_bytes": 16338944,
+          "peak_pagefile_bytes": 30789632,
+          "working_set_bytes": 21016576,
+          "peak_working_set_bytes": 35299328
+        },
+        {
+          "label": "after-test-session",
+          "private_commit_bytes": 1568768,
+          "peak_pagefile_bytes": 30789632,
+          "working_set_bytes": 7704576,
+          "peak_working_set_bytes": 35299328
+        }
+      ],
+      "R3_PREPARE": [
+        {
+          "requirements": 1000,
+          "unique_patterns": 0,
+          "source_prepare_us": 18957,
+          "packed_encode_us": 23060,
+          "packed_decode_us": 46472,
+          "packed_bytes": 109452,
+          "packed_sha256": "6ffc9cff685d297486032bc46a5308bfe8b4ebd314b0d881675962324e1e71f3",
+          "chart_sha256": "b836ba4151f080945200d98d77dc198095cb2357414d7666244f1c1dcbce21b6",
+          "content_sha256": "9d3bddd23f0dcb3bc42485912958ae1ae2398e5ed5c814ec21cdba1f138f2412",
+          "prepared_sha256": "051154099ccb7a872a13db90b1d5dea2ec972a34343c5b614e8fe0bf8f01b934"
+        }
+      ]
+    },
+    "log_sha256": "d20ec94deb35315c70631b8a01da5698a4ce1a6e504477b074d167846719a942"
+  },
+  {
+    "kind": "prepare-wire",
+    "n": 1000,
+    "allocator": "normal",
+    "profile": "shared",
+    "repeat": 1,
+    "variant": "baseline",
+    "ordinal": 5,
+    "valid": true,
+    "exit": 0,
+    "seconds": 0.1617804999987129,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "ac_line": 1,
+    "records": {
+      "R3_PROCESS_MEMORY": [
+        {
+          "label": "before-fixture",
+          "private_commit_bytes": 917504,
+          "peak_pagefile_bytes": 921600,
+          "working_set_bytes": 5861376,
+          "peak_working_set_bytes": 5861376
+        },
+        {
+          "label": "after-fixture",
+          "private_commit_bytes": 5341184,
+          "peak_pagefile_bytes": 5341184,
+          "working_set_bytes": 10047488,
+          "peak_working_set_bytes": 10047488
+        },
+        {
+          "label": "after-source-prepare",
+          "private_commit_bytes": 14225408,
+          "peak_pagefile_bytes": 15966208,
+          "working_set_bytes": 19001344,
+          "peak_working_set_bytes": 20021248
+        },
+        {
+          "label": "after-packed-encode",
+          "private_commit_bytes": 14581760,
+          "peak_pagefile_bytes": 18374656,
+          "working_set_bytes": 19415040,
+          "peak_working_set_bytes": 23441408
+        },
+        {
+          "label": "after-packed-decode",
+          "private_commit_bytes": 26103808,
+          "peak_pagefile_bytes": 30777344,
+          "working_set_bytes": 30072832,
+          "peak_working_set_bytes": 35213312
+        },
+        {
+          "label": "after-source-temporaries-release",
+          "private_commit_bytes": 16330752,
+          "peak_pagefile_bytes": 30777344,
+          "working_set_bytes": 20967424,
+          "peak_working_set_bytes": 35213312
+        },
+        {
+          "label": "after-test-session",
+          "private_commit_bytes": 1572864,
+          "peak_pagefile_bytes": 30777344,
+          "working_set_bytes": 7704576,
+          "peak_working_set_bytes": 35213312
+        }
+      ],
+      "R3_PREPARE": [
+        {
+          "requirements": 1000,
+          "unique_patterns": 0,
+          "source_prepare_us": 21669,
+          "packed_encode_us": 26057,
+          "packed_decode_us": 55229,
+          "packed_bytes": 109452,
+          "packed_sha256": "6ffc9cff685d297486032bc46a5308bfe8b4ebd314b0d881675962324e1e71f3",
+          "chart_sha256": "b836ba4151f080945200d98d77dc198095cb2357414d7666244f1c1dcbce21b6",
+          "content_sha256": "9d3bddd23f0dcb3bc42485912958ae1ae2398e5ed5c814ec21cdba1f138f2412",
+          "prepared_sha256": "051154099ccb7a872a13db90b1d5dea2ec972a34343c5b614e8fe0bf8f01b934"
+        }
+      ]
+    },
+    "log_sha256": "648f694c8c52c2ac02e3995cc881457cc2b289707645aaa45f93436b39c17ba5"
+  },
+  {
+    "kind": "prepare-wire",
+    "n": 10000,
+    "allocator": "normal",
+    "profile": "split",
+    "repeat": 0,
+    "variant": "baseline",
+    "ordinal": 6,
+    "valid": true,
+    "exit": 0,
+    "seconds": 3.153573299998243,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "ac_line": 1,
+    "records": {
+      "R3_PROCESS_MEMORY": [
+        {
+          "label": "before-fixture",
+          "private_commit_bytes": 897024,
+          "peak_pagefile_bytes": 901120,
+          "working_set_bytes": 5853184,
+          "peak_working_set_bytes": 5853184
+        },
+        {
+          "label": "after-fixture",
+          "private_commit_bytes": 46542848,
+          "peak_pagefile_bytes": 50159616,
+          "working_set_bytes": 45740032,
+          "peak_working_set_bytes": 46825472
+        },
+        {
+          "label": "after-source-prepare",
+          "private_commit_bytes": 156188672,
+          "peak_pagefile_bytes": 161349632,
+          "working_set_bytes": 152027136,
+          "peak_working_set_bytes": 154202112
+        },
+        {
+          "label": "after-packed-encode",
+          "private_commit_bytes": 159023104,
+          "peak_pagefile_bytes": 219566080,
+          "working_set_bytes": 154439680,
+          "peak_working_set_bytes": 212533248
+        },
+        {
+          "label": "after-packed-decode",
+          "private_commit_bytes": 286367744,
+          "peak_pagefile_bytes": 356605952,
+          "working_set_bytes": 276656128,
+          "peak_working_set_bytes": 339775488
+        },
+        {
+          "label": "after-source-temporaries-release",
+          "private_commit_bytes": 165965824,
+          "peak_pagefile_bytes": 356605952,
+          "working_set_bytes": 161058816,
+          "peak_working_set_bytes": 339775488
+        },
+        {
+          "label": "after-test-session",
+          "private_commit_bytes": 2600960,
+          "peak_pagefile_bytes": 356605952,
+          "working_set_bytes": 8544256,
+          "peak_working_set_bytes": 339775488
+        }
+      ],
+      "R3_PREPARE": [
+        {
+          "requirements": 10000,
+          "unique_patterns": 0,
+          "source_prepare_us": 324316,
+          "packed_encode_us": 1256238,
+          "packed_decode_us": 1357338,
+          "packed_bytes": 1706126,
+          "packed_sha256": "5024d26f02bd62b4a4d6bee373ac363ff0ada268acefc4ed1eedce5371ecbf92",
+          "chart_sha256": "c7a7c0ec9b0a4510d7722c9d09052179a29c43cfd9403fb9076b58cbfba3156e",
+          "content_sha256": "d616ad59d8eb5b647c9b5afa58068dfa19b8f162689155e171f623ec25c1bda3",
+          "prepared_sha256": "1f23e6ba75bd5e0dcbefb95071519c2598461223be035df863912c7148fd4cef"
+        }
+      ]
+    },
+    "log_sha256": "3badf0cae47e2b7815bcc7e37f1970230ab9c90904cd86157735d5d8c4168bd6"
+  },
+  {
+    "kind": "prepare-wire",
+    "n": 10000,
+    "allocator": "normal",
+    "profile": "split",
+    "repeat": 0,
+    "variant": "candidate",
+    "ordinal": 7,
+    "valid": true,
+    "exit": 0,
+    "seconds": 2.890991299998859,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "ac_line": 1,
+    "records": {
+      "R3_PROCESS_MEMORY": [
+        {
+          "label": "before-fixture",
+          "private_commit_bytes": 917504,
+          "peak_pagefile_bytes": 921600,
+          "working_set_bytes": 5832704,
+          "peak_working_set_bytes": 5832704
+        },
+        {
+          "label": "after-fixture",
+          "private_commit_bytes": 46596096,
+          "peak_pagefile_bytes": 50286592,
+          "working_set_bytes": 45826048,
+          "peak_working_set_bytes": 46804992
+        },
+        {
+          "label": "after-source-prepare",
+          "private_commit_bytes": 156205056,
+          "peak_pagefile_bytes": 161316864,
+          "working_set_bytes": 152018944,
+          "peak_working_set_bytes": 154206208
+        },
+        {
+          "label": "after-packed-encode",
+          "private_commit_bytes": 159371264,
+          "peak_pagefile_bytes": 219566080,
+          "working_set_bytes": 154521600,
+          "peak_working_set_bytes": 212594688
+        },
+        {
+          "label": "after-packed-decode",
+          "private_commit_bytes": 286834688,
+          "peak_pagefile_bytes": 356343808,
+          "working_set_bytes": 276377600,
+          "peak_working_set_bytes": 339496960
+        },
+        {
+          "label": "after-source-temporaries-release",
+          "private_commit_bytes": 166043648,
+          "peak_pagefile_bytes": 356343808,
+          "working_set_bytes": 161353728,
+          "peak_working_set_bytes": 339496960
+        },
+        {
+          "label": "after-test-session",
+          "private_commit_bytes": 2625536,
+          "peak_pagefile_bytes": 356343808,
+          "working_set_bytes": 8564736,
+          "peak_working_set_bytes": 339496960
+        }
+      ],
+      "R3_PREPARE": [
+        {
+          "requirements": 10000,
+          "unique_patterns": 0,
+          "source_prepare_us": 301868,
+          "packed_encode_us": 1244990,
+          "packed_decode_us": 1130730,
+          "packed_bytes": 1706126,
+          "packed_sha256": "5024d26f02bd62b4a4d6bee373ac363ff0ada268acefc4ed1eedce5371ecbf92",
+          "chart_sha256": "c7a7c0ec9b0a4510d7722c9d09052179a29c43cfd9403fb9076b58cbfba3156e",
+          "content_sha256": "d616ad59d8eb5b647c9b5afa58068dfa19b8f162689155e171f623ec25c1bda3",
+          "prepared_sha256": "1f23e6ba75bd5e0dcbefb95071519c2598461223be035df863912c7148fd4cef"
+        }
+      ]
+    },
+    "log_sha256": "a3d0cdc86419ecf2e2af67b4cbe1050eac083b158b138bc414f9f287fc19ef35"
+  },
+  {
+    "kind": "prepare-wire",
+    "n": 10000,
+    "allocator": "normal",
+    "profile": "split",
+    "repeat": 1,
+    "variant": "candidate",
+    "ordinal": 8,
+    "valid": true,
+    "exit": 0,
+    "seconds": 2.7200005000013334,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "ac_line": 1,
+    "records": {
+      "R3_PROCESS_MEMORY": [
+        {
+          "label": "before-fixture",
+          "private_commit_bytes": 909312,
+          "peak_pagefile_bytes": 913408,
+          "working_set_bytes": 5828608,
+          "peak_working_set_bytes": 5828608
+        },
+        {
+          "label": "after-fixture",
+          "private_commit_bytes": 46587904,
+          "peak_pagefile_bytes": 50327552,
+          "working_set_bytes": 45867008,
+          "peak_working_set_bytes": 46821376
+        },
+        {
+          "label": "after-source-prepare",
+          "private_commit_bytes": 156184576,
+          "peak_pagefile_bytes": 161329152,
+          "working_set_bytes": 152154112,
+          "peak_working_set_bytes": 154308608
+        },
+        {
+          "label": "after-packed-encode",
+          "private_commit_bytes": 159293440,
+          "peak_pagefile_bytes": 219783168,
+          "working_set_bytes": 154566656,
+          "peak_working_set_bytes": 213090304
+        },
+        {
+          "label": "after-packed-decode",
+          "private_commit_bytes": 285544448,
+          "peak_pagefile_bytes": 356573184,
+          "working_set_bytes": 276070400,
+          "peak_working_set_bytes": 339886080
+        },
+        {
+          "label": "after-source-temporaries-release",
+          "private_commit_bytes": 166440960,
+          "peak_pagefile_bytes": 356573184,
+          "working_set_bytes": 161492992,
+          "peak_working_set_bytes": 339886080
+        },
+        {
+          "label": "after-test-session",
+          "private_commit_bytes": 2482176,
+          "peak_pagefile_bytes": 356573184,
+          "working_set_bytes": 8376320,
+          "peak_working_set_bytes": 339886080
+        }
+      ],
+      "R3_PREPARE": [
+        {
+          "requirements": 10000,
+          "unique_patterns": 0,
+          "source_prepare_us": 333947,
+          "packed_encode_us": 1113797,
+          "packed_decode_us": 1077207,
+          "packed_bytes": 1706126,
+          "packed_sha256": "5024d26f02bd62b4a4d6bee373ac363ff0ada268acefc4ed1eedce5371ecbf92",
+          "chart_sha256": "c7a7c0ec9b0a4510d7722c9d09052179a29c43cfd9403fb9076b58cbfba3156e",
+          "content_sha256": "d616ad59d8eb5b647c9b5afa58068dfa19b8f162689155e171f623ec25c1bda3",
+          "prepared_sha256": "1f23e6ba75bd5e0dcbefb95071519c2598461223be035df863912c7148fd4cef"
+        }
+      ]
+    },
+    "log_sha256": "103d84014b806b3db28bbc12039dce8811c099db1769ea20bf3dd964edf5dd6f"
+  },
+  {
+    "kind": "prepare-wire",
+    "n": 10000,
+    "allocator": "normal",
+    "profile": "split",
+    "repeat": 1,
+    "variant": "baseline",
+    "ordinal": 9,
+    "valid": true,
+    "exit": 0,
+    "seconds": 2.934617099999741,
+    "controls": {
+      "affinity": 4,
+      "priority": 16384,
+      "qos_control": 1,
+      "qos_state": 0
+    },
+    "ac_line": 1,
+    "records": {
+      "R3_PROCESS_MEMORY": [
+        {
+          "label": "before-fixture",
+          "private_commit_bytes": 917504,
+          "peak_pagefile_bytes": 921600,
+          "working_set_bytes": 5861376,
+          "peak_working_set_bytes": 5861376
+        },
+        {
+          "label": "after-fixture",
+          "private_commit_bytes": 46600192,
+          "peak_pagefile_bytes": 50327552,
+          "working_set_bytes": 45887488,
+          "peak_working_set_bytes": 46833664
+        },
+        {
+          "label": "after-source-prepare",
+          "private_commit_bytes": 156196864,
+          "peak_pagefile_bytes": 161320960,
+          "working_set_bytes": 152080384,
+          "peak_working_set_bytes": 154275840
+        },
+        {
+          "label": "after-packed-encode",
+          "private_commit_bytes": 159313920,
+          "peak_pagefile_bytes": 219795456,
+          "working_set_bytes": 154517504,
+          "peak_working_set_bytes": 213028864
+        },
+        {
+          "label": "after-packed-decode",
+          "private_commit_bytes": 287477760,
+          "peak_pagefile_bytes": 356659200,
+          "working_set_bytes": 276967424,
+          "peak_working_set_bytes": 339877888
+        },
+        {
+          "label": "after-source-temporaries-release",
+          "private_commit_bytes": 166535168,
+          "peak_pagefile_bytes": 356659200,
+          "working_set_bytes": 161628160,
+          "peak_working_set_bytes": 339877888
+        },
+        {
+          "label": "after-test-session",
+          "private_commit_bytes": 2686976,
+          "peak_pagefile_bytes": 356659200,
+          "working_set_bytes": 8577024,
+          "peak_working_set_bytes": 339877888
+        }
+      ],
+      "R3_PREPARE": [
+        {
+          "requirements": 10000,
+          "unique_patterns": 0,
+          "source_prepare_us": 306500,
+          "packed_encode_us": 1301089,
+          "packed_decode_us": 1137766,
+          "packed_bytes": 1706126,
+          "packed_sha256": "5024d26f02bd62b4a4d6bee373ac363ff0ada268acefc4ed1eedce5371ecbf92",
+          "chart_sha256": "c7a7c0ec9b0a4510d7722c9d09052179a29c43cfd9403fb9076b58cbfba3156e",
+          "content_sha256": "d616ad59d8eb5b647c9b5afa58068dfa19b8f162689155e171f623ec25c1bda3",
+          "prepared_sha256": "1f23e6ba75bd5e0dcbefb95071519c2598461223be035df863912c7148fd4cef"
+        }
+      ]
+    },
+    "log_sha256": "2996805e963bd5d54626b8e4d92767828a31102099d702130aa65ff3f6a35aeb"
+  }
+]

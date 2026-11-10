@@ -1,0 +1,138 @@
+--- a/engine/judgement/src/execution_kernel.cpp
++++ b/engine/judgement/src/execution_kernel.cpp
+@@ -64,7 +64,8 @@
+         : ProjectionStorage(std::move(projection)), matchers(std::move(matchers)) {}
+     SharedSequence<MatcherState> matchers;
+     std::vector<HeadContactOwnership> coverageHistory;
+-    std::vector<std::size_t> activeRequirements;
++    // Append/sort only on activation; ordinary immutable recovery copies share pages.
++    SharedSequence<std::size_t> activeRequirements;
+     std::vector<Tick> signalVisibility;
+     std::size_t timerCursor{0};
+     std::uint64_t nextCommitId{0};
+@@ -2251,8 +2252,19 @@
+                 impl_->timer(*draft, facts, timers[timerIndex],
+                              impl_->preparation->timerRequirements[timerIndex], inputs);
+             }
+-            if (draft->activeRequirements.size() != activeCount)
+-                std::sort(draft->activeRequirements.begin(), draft->activeRequirements.end());
++            // Activation can copy many phase pages without publishing any Facts.
++            // Count actual newly activated requirements, not unrelated window/deadline timers.
++            const auto activationsThisTick = draft->activeRequirements.size() - activeCount;
++            if (activationsThisTick != 0 && !std::is_sorted(draft->activeRequirements.begin(),
++                                                            draft->activeRequirements.end())) {
++                auto ordered = draft->activeRequirements.materialize();
++                std::sort(ordered.begin(), ordered.end());
++                SharedSequence<std::size_t> sorted;
++                sorted.reserve(ordered.size());
++                for (const auto index : ordered)
++                    sorted.push_back(index);
++                draft->activeRequirements = std::move(sorted);
++            }
+             impl_->failIfRequested(*tick, KernelFailurePoint::afterTimers);
+             for (const auto& input : inputs) {
+                 impl_->input(*draft, facts, input);
+@@ -2338,8 +2350,8 @@
+                 (!writable->projection.rpa ||
+                  writable->projection.rpa->foldAtTickStart.has_value() ==
+                      writable->projection.fold.has_value());
+-            if (capture && facts.size() >= 512 && impl_->pending.empty() &&
+-                impl_->active->signalVisibility.empty()) {
++            if (capture && (facts.size() >= 512 || activationsThisTick >= 512) &&
++                impl_->pending.empty() && impl_->active->signalVisibility.empty()) {
+                 try {
+                     const auto& budget = impl_->preparation->tickBudget;
+                     const auto used = budget->live.load(std::memory_order_relaxed);
+--- a/engine/judgement/internal/cuexis/judgement/publication.hpp
++++ b/engine/judgement/internal/cuexis/judgement/publication.hpp
+@@ -5,6 +5,7 @@
+ #include <cuexis/judgement/judgement_session.hpp>
+ 
+ #include <functional>
++#include <span>
+ 
+ namespace cuexis::judgement::detail {
+ struct PublicationLifetime;
+@@ -36,6 +37,11 @@
+     ~PublicationRead();
+     auto metadata() const -> core::Result<std::reference_wrapper<const PublicationMetadata>>;
+     auto fact(std::uint64_t ordinal) const -> core::Result<PublicationFact>;
++    // Copy a bounded batch of borrowed Fact descriptors within this read's prefix.
++    // Validate owner/epoch once per batch. References retain the same lifetime as fact().
++    // No caller may keep a batch across a session mutation.
++    auto readFacts(std::uint64_t first, std::span<PublicationFact> output) const
++        -> core::Result<std::size_t>;
+ 
+   private:
+     friend struct PublicationAccess;
+--- a/engine/judgement/src/publication.cpp
++++ b/engine/judgement/src/publication.cpp
+@@ -1,5 +1,6 @@
+ #include "diagnostic_policy.hpp"
+ #include "publication_lifetime.hpp"
++#include <algorithm>
+ 
+ namespace cuexis::judgement::detail {
+ PublicationRead::PublicationRead(std::weak_ptr<PublicationLifetime> lifetime,
+@@ -40,6 +41,27 @@
+     const auto& receipt = std::get<ReceiptFact>(value);
+     return PublicationFact{receipt.kind, receipt.factId, nullptr, {}, {}, {}};
+ }
++auto PublicationRead::readFacts(std::uint64_t first, std::span<PublicationFact> output) const
++    -> core::Result<std::size_t> {
++    if (auto valid = validate(); !valid)
++        return core::unexpected(std::move(valid.error()));
++    if (first < metadata_.fromCursor || first > metadata_.publishableCursor)
++        return core::unexpected(publicationError("Fact ordinal outside requested prefix"));
++    const auto count = static_cast<std::size_t>(
++        std::min<std::uint64_t>(output.size(), metadata_.publishableCursor - first));
++    for (std::size_t i = 0; i < count; ++i) {
++        const auto& value = projection_->facts[static_cast<std::size_t>(first) + i];
++        if (const auto* phase = std::get_if<PhaseOutcomeFact>(&value))
++            output[i] = {FactKind::phaseOutcome, phase->factId,  &phase->requirement,
++                         phase->phase,           phase->outcome, phase->error};
++        else {
++            const auto& receipt = std::get<ReceiptFact>(value);
++            output[i] = {receipt.kind, receipt.factId, nullptr, {}, {}, {}};
++        }
++    }
++    return count;
++}
++
+ auto classifyPublicDiagnostic(std::string_view code) noexcept -> bool {
+     return categoryProjectedDiagnostic(code);
+ }
+--- a/engine/playback/src/playback_session.cpp
++++ b/engine/playback/src/playback_session.cpp
+@@ -3908,9 +3908,30 @@
+         internal::presentation::Mutation::reserve(state_->presentationClock, false, !rebuildScope);
+     if (!mutation)
+         return core::unexpected(std::move(mutation.error()));
++    // This synchronous projection cannot mutate its Judgement source. Buffer borrowed
++    // descriptors locally; each refill checks owner, lifetime and epoch. The adapter still
++    // validates every Fact, including when no presentation bindings are configured.
++    std::optional<std::array<judgement::detail::PublicationFact, 64>> factBatch;
++    std::uint64_t batchFirst{};
++    std::size_t batchSize{};
+     auto candidate = PresentationProjectionAdapter::project(
+         state_->gameplayProjectionIndex, projection, publication, t,
+-        [&](std::uint64_t ordinal) { return read->fact(ordinal); },
++        [&](std::uint64_t ordinal) -> core::Result<judgement::detail::PublicationFact> {
++            if (!factBatch && publication.publishableCursor - ordinal < 64)
++                return read->fact(ordinal);
++            if (ordinal < batchFirst || ordinal - batchFirst >= batchSize) {
++                if (!factBatch)
++                    factBatch.emplace();
++                auto filled = read->readFacts(ordinal, *factBatch);
++                if (!filled)
++                    return core::unexpected(std::move(filled.error()));
++                batchFirst = ordinal;
++                batchSize = *filled;
++            }
++            if (batchSize == 0)
++                return core::unexpected(gameplayError("Publication Fact batch is empty"));
++            return (*factBatch)[static_cast<std::size_t>(ordinal - batchFirst)];
++        },
+         [&](std::size_t index, std::string_view id) -> core::Result<bool> {
+             if (index >= state_->snapshotLayout.entities.size())
+                 return false;

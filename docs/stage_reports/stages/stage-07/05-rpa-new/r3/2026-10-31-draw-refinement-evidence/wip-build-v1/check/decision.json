@@ -1,0 +1,16 @@
+{
+  "permutations": 24,
+  "order_digest_and_owning_payload_equal_between_variants": true,
+  "candidate_matches_archived_selected_evidence": true,
+  "neutral_assertions": {
+    "baseline": "All tests passed (399 assertions in 3 test cases)",
+    "candidate": "All tests passed (399 assertions in 3 test cases)",
+    "opengl-candidate": "All tests passed (140 assertions in 22 test cases)"
+  },
+  "logs": {
+    "neutral-baseline.log": "0cd04aeeee41597172da42c26c22d238e6db00c831b4a12854c99887466fb5da",
+    "neutral-candidate.log": "0cd04aeeee41597172da42c26c22d238e6db00c831b4a12854c99887466fb5da",
+    "opengl-candidate.log": "58f6d891e86aa577e972f698c06d8f0d6e774c5785d5d176a3f04dff75779d18"
+  },
+  "note": "Equivalence of observable output and focused regression only. No performance claim is made by this group."
+}

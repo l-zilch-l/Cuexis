@@ -1,0 +1,83 @@
+from pathlib import Path
+import hashlib,json,re,subprocess
+root=Path.cwd();base=Path(__file__).resolve().parent;parent=root/'out/verification-20261030/r3-resume-v1';source=parent/'budget-source-v4';out=base/'seek-attribution-v1';out.mkdir(exist_ok=False)
+header='''#pragma once
+#include <cstdint>
+namespace cuexis_r3_timing {
+struct Stamp { std::int64_t wall{}, cpu{}; std::uint64_t cycles{}; };
+auto begin() noexcept -> Stamp;
+void end(unsigned,Stamp) noexcept;
+class Scope final {
+    unsigned stage_; Stamp stamp_;
+public:
+    explicit Scope(unsigned stage) noexcept : stage_(stage),stamp_(begin()) {}
+    ~Scope() noexcept { end(stage_,stamp_); }
+};
+}
+'''
+(out/'timing.hpp').write_text(header,encoding='ascii')
+inc='#include "'+(out/'timing.hpp').as_posix()+'"\n'
+s=(source/'app/player/src/execution_host.cpp').read_text(encoding='utf-8');s=inc+s
+needle='auto ExecutionHost::sessionCommand(SessionCommand command, bool control) -> SessionReply {';assert s.count(needle)==1;s=s.replace(needle,needle+'\n    cuexis_r3_timing::Scope timing{100+static_cast<unsigned>(command.index())};')
+needle='auto ExecutionHost::awaitSession() -> SessionReply {';assert s.count(needle)==1;s=s.replace(needle,needle+'\n    cuexis_r3_timing::Scope timing{2};')
+needle='void ExecutionHost::pump(std::chrono::steady_clock::time_point deadline) {';assert s.count(needle)==1;s=s.replace(needle,needle+'\n    cuexis_r3_timing::Scope timing{3};')
+(out/'execution_host.cpp').write_text(s,encoding='utf-8')
+s=inc+(source/'app/execution_host/session_worker.cpp').read_text(encoding='utf-8')
+needle='                    channel_.complete(next->first, owner.dispatch(std::move(next->second)));';assert s.count(needle)==1;s=s.replace(needle,'''                    auto result=[&] {
+                        cuexis_r3_timing::Scope timing{200+static_cast<unsigned>(next->second.index())};
+                        return owner.dispatch(std::move(next->second));
+                    }();
+                    channel_.complete(next->first,std::move(result));''')
+(out/'session_worker.cpp').write_text(s,encoding='utf-8')
+s=inc+(source/'engine/judgement/src/execution_kernel.cpp').read_text(encoding='utf-8')
+needle='    const auto cut = requestedCut ? *requestedCut : replayCutAt(archive, horizon);';assert s.count(needle)==1;s=s.replace(needle,'    cuexis_r3_timing::Scope timing{10};\n'+needle)
+needle='    auto candidate = [&]() -> core::Result<std::unique_ptr<ExecutionKernel>> {';assert s.count(needle)==1;s=s.replace(needle,needle+'\n        cuexis_r3_timing::Scope timing{11};')
+needle='                auto state = std::make_shared<RuntimeState>(*selected->state);';assert s.count(needle)==1;s=s.replace(needle,'                cuexis_r3_timing::Scope restoreTiming{12};\n'+needle)
+needle='auto ExecutionKernel::advanceRecorded(Tick horizon, TickCapture* capture) -> core::Result<void> {';assert s.count(needle)==1;s=s.replace(needle,needle+'\n    cuexis_r3_timing::Scope timing{13};')
+(out/'execution_kernel.cpp').write_text(s,encoding='utf-8')
+s=(parent/'budget-v4-host-v1/host_probe.cpp').read_text(encoding='utf-8')
+impl='''
+#include <Windows.h>
+#include <array>
+#include "timing.hpp"
+namespace cuexis_r3_timing {
+struct Event {unsigned stage{},thread{};Stamp start{},finish{};};
+std::atomic<bool> enabled{};
+std::atomic<unsigned> count{};
+std::array<Event,512> events{};
+auto stamp() noexcept -> Stamp {
+    FILETIME created,exited,kernel,user; LARGE_INTEGER ticks;
+    GetThreadTimes(GetCurrentThread(),&created,&exited,&kernel,&user);
+    QueryPerformanceCounter(&ticks);
+    ULONG64 cycles{};QueryThreadCycleTime(GetCurrentThread(),&cycles);
+    const auto value=[](FILETIME v){return (static_cast<std::int64_t>(v.dwHighDateTime)<<32)|v.dwLowDateTime;};
+    return {ticks.QuadPart,value(kernel)+value(user),cycles};
+}
+auto begin() noexcept -> Stamp {return enabled.load(std::memory_order_relaxed)?stamp():Stamp{};}
+void end(unsigned stage,Stamp start) noexcept {
+    if(!start.wall)return;
+    const auto finish=stamp();const auto index=count.fetch_add(1);
+    if(index<events.size())events[index]={stage,GetCurrentThreadId(),start,finish};
+}
+void reset() noexcept { count.store(0);enabled.store(true); }
+void emit(unsigned attempt) {
+    enabled.store(false);LARGE_INTEGER frequency;QueryPerformanceFrequency(&frequency);
+    const auto size=count.load();REQUIRE(size<events.size());
+    for(unsigned i=0;i<size;++i) {
+        const auto& e=events[i];
+        std::cout<<"R3_SPLIT {\\"attempt\\":"<<attempt<<",\\"stage\\":"<<e.stage
+                 <<",\\"thread\\":"<<e.thread<<",\\"wall_us\\":"<<(e.finish.wall-e.start.wall)*1000000.0/frequency.QuadPart
+                 <<",\\"thread_cpu_us\\":"<<(e.finish.cpu-e.start.cpu)/10.0
+                 <<",\\"cycles\\":"<<e.finish.cycles-e.start.cycles<<"}\\n";
+    }
+}
+}
+'''
+anchor='using namespace cuexis;';assert s.count(anchor)==1;s=s.replace(anchor,impl+'\n'+anchor)
+needle='        const auto started = std::chrono::steady_clock::now();';assert s.count(needle)==1;s=s.replace(needle,'        cuexis_r3_timing::reset();\n'+needle)
+needle='        const auto actual = (*host)->snapshotGameplay();';assert s.count(needle)==1;s=s.replace(needle,'        cuexis_r3_timing::emit(attempt);\n'+needle)
+(out/'host_probe.cpp').write_text(s,encoding='utf-8')
+subprocess.run(['clang-format','-i',*[str(out/n) for n in ('timing.hpp','execution_host.cpp','session_worker.cpp','execution_kernel.cpp','host_probe.cpp')]],check=True)
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+(out/'source-binding.json').write_text(json.dumps(dict(scope='Observed timing attribution only. Unique scope type and fixed512-event buffer. QPC wall, GetThreadTimes CPU and thread cycles at actual calls. No public class/template definition changes; common v3 libraries and v4 kernel semantics.',stages={'2':'host awaitSession','3':'host pump/wait','10':'kernel seekCandidate','11':'kernel candidate prepare','12':'kernel tick restore','13':'kernel partial advanceRecorded','100+index':'host sessionCommand by variant index','200+index':'worker dispatch by variant index'},sources={p.name:sha(p) for p in out.iterdir() if p.is_file()}),indent=2),encoding='utf-8')
+print(out)

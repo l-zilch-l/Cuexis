@@ -1,0 +1,53 @@
+{
+  "source": "docs/stage_reports/stages/stage-07/05-rpa-new/r3/2026-10-31-startup-evidence/legacy-parse-once-measure-v1/decision.json",
+  "scales": [
+    {
+      "n": 1000,
+      "baseline_median_us": 79384.9,
+      "baseline_relative_range_pct": 42.1028,
+      "candidate_median_us": 53455.8,
+      "candidate_relative_range_pct": 31.6368,
+      "change_pct": -32.6625,
+      "paired_ratio": 0.5725,
+      "interval": [
+        0.3259,
+        1.0058
+      ],
+      "df": 2,
+      "upper_within_1_10": true
+    },
+    {
+      "n": 10000,
+      "baseline_median_us": 1676904.4,
+      "baseline_relative_range_pct": 17.2192,
+      "candidate_median_us": 508633.7,
+      "candidate_relative_range_pct": 0.8431,
+      "change_pct": -69.6683,
+      "paired_ratio": 0.2892,
+      "interval": [
+        0.2322,
+        0.3603
+      ],
+      "df": 2,
+      "upper_within_1_10": true
+    },
+    {
+      "n": 40000,
+      "baseline_median_us": 17555066.9,
+      "baseline_relative_range_pct": 1.8239,
+      "candidate_median_us": 2028390.1,
+      "candidate_relative_range_pct": 0.4368,
+      "change_pct": -88.4456,
+      "paired_ratio": 0.1157,
+      "interval": [
+        0.1133,
+        0.1182
+      ],
+      "df": 2,
+      "upper_within_1_10": true
+    }
+  ],
+  "numeric_gate": true,
+  "repeatability_screen": false,
+  "selected": false
+}

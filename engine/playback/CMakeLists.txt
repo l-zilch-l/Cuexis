@@ -3,14 +3,33 @@ add_library(cuexis_playback ${CUEXIS_LIBRARY_TYPE}
     src/frame_digest_internal.hpp
     src/frame_digest_version.cpp
     src/presentation.cpp
+    src/presentation_identity.cpp
+    src/presentation_parse.cpp
+    src/presentation_reader.cpp
+    src/presentation_units_internal.hpp
     src/presentation_extraction.cpp
     src/presentation_extraction.hpp
     src/presentation_internal.hpp
     src/playback_candidate_internal.hpp
     src/playback_session.cpp
+    src/playback_session_execution.cpp
+    src/playback_session_gameplay.cpp
+        src/playback_session_gameplay_seek.cpp
+    src/playback_session_internal.hpp
+    src/playback_session_prepare.cpp
+    src/playback_session_prepared.cpp
+    src/playback_session_prepare_capabilities.cpp
+    src/playback_session_prepare_internal.hpp
+    src/playback_session_prepare_stages.cpp
+    src/playback_session_realtime.cpp
+    src/presentation_materializer.cpp
     src/playback_source.cpp
+    src/playback_source_gameplay.cpp
+    src/playback_source_internal.hpp
     src/playback_source_state.hpp
+    src/playback_source_support.cpp
     src/runtime_timeline.cpp
+    src/realtime_clock.cpp
 )
 add_library(cuexis::playback ALIAS cuexis_playback)
 add_library(Cuexis::Playback ALIAS cuexis_playback)
@@ -27,6 +46,11 @@ else()
 endif()
 if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
     target_compile_definitions(cuexis_playback PRIVATE CUEXIS_ENABLE_CHART_V5_CANDIDATE=1)
+    target_compile_definitions(cuexis_playback PUBLIC CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE=1)
+    target_include_directories(cuexis_playback PRIVATE ${PROJECT_SOURCE_DIR}/engine/judgement/internal)
+    target_sources(cuexis_playback PRIVATE src/gameplay_candidate.cpp src/gameplay_configuration.cpp src/gameplay_entry.cpp
+        src/presentation_projection.cpp src/presentation_projection.hpp)
+    target_link_libraries(cuexis_playback PRIVATE cuexis::judgement cuexis::gameplay_packed cuexis::json_support)
 endif()
 
 set_target_properties(cuexis_playback PROPERTIES EXPORT_NAME Playback)
@@ -44,9 +68,18 @@ target_sources(cuexis_playback
             include/cuexis/playback/playback_source.hpp
             include/cuexis/playback/presentation.hpp
             include/cuexis/playback/runtime_timeline.hpp
+            include/cuexis/playback/realtime_clock.hpp
+            include/cuexis/playback/playback_types.hpp
+            include/cuexis/playback/presentation_candidate.hpp
 )
 
 target_compile_features(cuexis_playback PUBLIC cxx_std_20)
+if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+    target_sources(cuexis_playback PUBLIC FILE_SET HEADERS FILES
+        include/cuexis/playback/gameplay_candidate.hpp
+        include/cuexis/playback/execution_coordination.hpp
+        include/cuexis/playback/execution_control.hpp)
+endif()
 
 target_link_libraries(cuexis_playback
     PUBLIC
@@ -64,3 +97,5 @@ target_link_libraries(cuexis_playback
         cuexis::render
         cuexis::world
 )
+
+target_include_directories(cuexis_playback PRIVATE "${PROJECT_SOURCE_DIR}/engine/runtime/internal")

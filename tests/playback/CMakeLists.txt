@@ -1,4 +1,5 @@
 add_executable(cuexis_playback_tests
+    ../pd/presentation_state_tests.cpp
     frame_digest_tests.cpp
     mode_parity_tests.cpp
     playback_candidate_tests.cpp
@@ -12,8 +13,15 @@ add_executable(cuexis_playback_tests
     presentation_shader_budget_tests.cpp
     presentation_shader_tests.cpp
     presentation_tests.cpp
+    presentation_extraction_tests.cpp
+    presentation_fixture.hpp
     runtime_timeline_tests.cpp
     ../presentation/validation_sink.cpp
+    ../presentation/validation_sink_canonical.hpp
+    ../presentation/validation_sink_common.hpp
+    ../presentation/validation_sink_digest.hpp
+    ../presentation/validation_sink_frame.cpp
+    ../presentation/validation_sink_model.hpp
     ${PROJECT_SOURCE_DIR}/engine/playback/src/frame_digest_version.cpp
     ${PROJECT_SOURCE_DIR}/engine/playback/src/presentation_extraction.cpp
 )
@@ -29,8 +37,17 @@ target_include_directories(cuexis_playback_tests
         ${PROJECT_SOURCE_DIR}/engine/core/internal
         ${PROJECT_SOURCE_DIR}/engine/json_support/src
         ${PROJECT_SOURCE_DIR}/engine/playback/src
+        ${PROJECT_SOURCE_DIR}/engine/runtime/internal
+        ${PROJECT_SOURCE_DIR}/engine/runtime/include
         ${PROJECT_SOURCE_DIR}/tests/presentation
 )
+
+# The frozen R2 materializer oracle uses real Runtime components only in static tests.
+if(CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
+    target_include_directories(cuexis_playback_tests PRIVATE
+        ${PROJECT_SOURCE_DIR}/engine/render/include
+        ${PROJECT_SOURCE_DIR}/engine/world/include)
+endif()
 
 target_link_libraries(cuexis_playback_tests
     PRIVATE
@@ -42,9 +59,25 @@ target_link_libraries(cuexis_playback_tests
 )
 
 if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+    target_include_directories(cuexis_playback_tests PRIVATE ${PROJECT_SOURCE_DIR}/engine/judgement/internal)
+    target_sources(cuexis_playback_tests PRIVATE ../pd/publication_integration_tests.cpp
+        ../pd/projection_adapter_tests.cpp ../pd/projection_integration_tests.cpp
+        ../pd/software_transaction_integration_tests.cpp
+        "${PROJECT_SOURCE_DIR}/engine/playback/src/presentation_projection.cpp")
+    target_link_libraries(cuexis_playback_tests PRIVATE cuexis::execution_host_support)
+    target_sources(cuexis_playback_tests PRIVATE ../pd/revision4_physical_budget_tests.cpp
+        playback_gameplay_contract_tests.cpp
+    playback_gameplay_recovery_tests.cpp
+        playback_gameplay_diagnostics_tests.cpp
+        playback_gameplay_execution_tests.cpp
+        playback_gameplay_fixture.hpp
+        ../judgement/execution_reference.cpp
+        "${PROJECT_SOURCE_DIR}/engine/playback/src/gameplay_entry.cpp")
+    target_link_libraries(cuexis_playback_tests PRIVATE cuexis::gameplay_packed cuexis::judgement cuexis::json_support)
     target_compile_definitions(cuexis_playback_tests
         PRIVATE
             CUEXIS_ENABLE_CHART_V5_CANDIDATE=1
+            CUEXIS_S7A78_FIXTURE_DIR="${PROJECT_BINARY_DIR}/s7a78-public-fixture"
     )
 endif()
 
@@ -53,6 +86,11 @@ catch_discover_tests(cuexis_playback_tests)
 
 add_executable(cuexis_playback_allocation_tests
     ../presentation/validation_sink.cpp
+    ../presentation/validation_sink_canonical.hpp
+    ../presentation/validation_sink_common.hpp
+    ../presentation/validation_sink_digest.hpp
+    ../presentation/validation_sink_frame.cpp
+    ../presentation/validation_sink_model.hpp
     playback_allocation_tests.cpp
     ${PROJECT_SOURCE_DIR}/engine/playback/src/presentation_extraction.cpp
 )
@@ -89,6 +127,11 @@ catch_discover_tests(cuexis_playback_allocation_tests)
 
 add_executable(stage3_performance_probe EXCLUDE_FROM_ALL
     ../presentation/validation_sink.cpp
+    ../presentation/validation_sink_canonical.hpp
+    ../presentation/validation_sink_common.hpp
+    ../presentation/validation_sink_digest.hpp
+    ../presentation/validation_sink_frame.cpp
+    ../presentation/validation_sink_model.hpp
     stage3_performance_probe.cpp
 )
 

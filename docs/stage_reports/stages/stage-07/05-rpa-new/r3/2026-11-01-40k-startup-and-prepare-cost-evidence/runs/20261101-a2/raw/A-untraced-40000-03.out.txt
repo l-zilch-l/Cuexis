@@ -1,0 +1,64 @@
+Filters: "GPU visible entity throughput probe"
+Randomness seeded to: 1357307469
+GPU_STARTUP_ORIGIN 0
+GPU_STARTUP_BEGIN fixture_source
+GPU_STARTUP_END fixture_source 62533.800000000003
+GPU_STARTUP_AT fixture_source 62591.900000000001
+GPU_STARTUP_BEGIN playback_prepare
+GPU_STARTUP_HEARTBEAT playback_prepare 192483.5 255114.5
+GPU_STARTUP_HEARTBEAT playback_prepare 443533.79999999999 506164.79999999999
+GPU_STARTUP_HEARTBEAT playback_prepare 696349.40000000002 758980.40000000002
+GPU_STARTUP_HEARTBEAT playback_prepare 949690.69999999995 1012321.7
+GPU_STARTUP_HEARTBEAT playback_prepare 1203825.1000000001 1266456.1000000001
+GPU_STARTUP_HEARTBEAT playback_prepare 1458109.5 1520740.5
+GPU_STARTUP_HEARTBEAT playback_prepare 1711568.5 1774199.5
+GPU_STARTUP_HEARTBEAT playback_prepare 1963757.7 2026388.7
+GPU_STARTUP_END playback_prepare 2035130.3
+GPU_STARTUP_AT playback_prepare 2097761.2999999998
+GPU_STARTUP_BEGIN sdl_runtime
+GPU_STARTUP_END sdl_runtime 60737.699999999997
+GPU_STARTUP_AT sdl_runtime 2158555.7000000002
+GPU_STARTUP_BEGIN gl_context
+GPU_STARTUP_END gl_context 12.699999999999999
+GPU_STARTUP_AT gl_context 2158601.7999999998
+GPU_STARTUP_BEGIN window_create
+GPU_STARTUP_HEARTBEAT window_create 118820.5 2277427.5
+GPU_STARTUP_END window_create 247828.10000000001
+GPU_STARTUP_AT window_create 2406435.3999999999
+GPU_STARTUP_WINDOW {"at_us":2406530.6000000001,"window_id":2,"hidden":false,"opengl":true,"width":1280,"height":720}
+GPU_STARTUP_BEGIN backend_create
+GPU_STARTUP_END backend_create 12573.4
+GPU_STARTUP_AT backend_create 2419119.2000000002
+GPU_STARTUP_BEGIN pixel_readback
+GPU_STARTUP_END pixel_readback 4.9000000000000004
+GPU_STARTUP_AT pixel_readback 2419160.3999999999
+GPU_STARTUP_BEGIN renderer_prepare
+GPU_STARTUP_END renderer_prepare 358.69999999999999
+GPU_STARTUP_AT renderer_prepare 2419545.7999999998
+GPU_STARTUP_BEGIN session_commit
+GPU_STARTUP_END session_commit 12.4
+GPU_STARTUP_AT session_commit 2419568.2999999998
+GPU_STARTUP_BEGIN backend_activate
+GPU_STARTUP_END backend_activate 4.7000000000000002
+GPU_STARTUP_AT backend_activate 2419578.7000000002
+GPU_STARTUP_BEGIN first_update
+GPU_STARTUP_END first_update 6165.1999999999998
+GPU_STARTUP_AT first_update 2425787
+GPU_STARTUP_BEGIN first_extract
+GPU_STARTUP_END first_extract 14401.9
+GPU_STARTUP_AT first_extract 2440217.7000000002
+GPU_STARTUP_BEGIN first_submit
+GPU_STARTUP_END first_submit 43832.400000000001
+GPU_STARTUP_AT first_submit 2484748.2999999998
+GPU_STARTUP_BEGIN first_present
+GPU_STARTUP_END first_present 117.3
+GPU_STARTUP_AT first_present 2486869.1000000001
+GPU_STARTUP_SHOWN 2486887
+GPU_STARTUP_TOTAL {"first_present_us":2486892.6000000001}
+GPU_THROUGHPUT_ID {"mode":"static","entities":40000,"draws_per_frame":40000,"in_view_centers":40000,"fixture_revision":3,"moved_entities":0,"frames":3,"duration_seconds":0,"warmup_frames":2,"pixel_readback":true,"outside_timing_pixel_proof_frames":2,"warmup_ms":0,"timer":false,"vsync":0,"width":1280,"height":720,"vendor":"NVIDIA Corporation","renderer":"NVIDIA GeForce RTX 4060 Laptop GPU/PCIe/SSE2","gl_version":"3.3.0 NVIDIA 616.64","measured_wall_us":162969.79999999999,"pixel_rgba":[255,204,51,255],"audio":false,"formal":false}
+GPU_THROUGHPUT_SAMPLE {"ordinal":0,"update_us":5302.1999999999998,"extract_us":7027.6999999999998,"submit_us":42146.900000000001,"present_us":102.5,"total_us":54579.300000000003,"cycle_us":54588.800000000003,"end_us":54588.800000000003}
+GPU_THROUGHPUT_SAMPLE {"ordinal":1,"update_us":5084.1999999999998,"extract_us":7118.1999999999998,"submit_us":41769.900000000001,"present_us":103.7,"total_us":54076,"cycle_us":54086.300000000003,"end_us":108675.10000000001}
+GPU_THROUGHPUT_SAMPLE {"ordinal":2,"update_us":5242.6000000000004,"extract_us":7195.1999999999998,"submit_us":41749.900000000001,"present_us":97.099999999999994,"total_us":54284.800000000003,"cycle_us":54294.699999999997,"end_us":162969.79999999999}
+===============================================================================
+All tests passed (21 assertions in 1 test case)
+

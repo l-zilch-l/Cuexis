@@ -1,0 +1,29 @@
+from pathlib import Path
+import hashlib,json,subprocess
+root=Path.cwd();base=Path(__file__).resolve().parent
+source=base/'publication-source-v1';out=base/'publication-host-v1';out.mkdir(exist_ok=False)
+old=root/'out/verification-20261030/r3-resume-v1/budget-source-v4'
+s=(root/'out/verification-20261030/r3-resume-v1/budget-v4-host-v1/host_probe.cpp').read_text(encoding='utf-8')
+s=s.replace(old.as_posix(),source.as_posix()).replace(str(old),str(source))
+(out/'host_probe.cpp').write_text(s,encoding='utf-8')
+s=(source/'engine/playback/src/playback_session.cpp').read_text(encoding='utf-8')
+a=s.index('    // This synchronous projection cannot mutate its Judgement source.');b=s.index('    auto candidate = PresentationProjectionAdapter::project(',a)
+s=s[:a]+s[b:]
+a=s.index('        [&](std::uint64_t ordinal) -> core::Result<judgement::detail::PublicationFact> {');b=s.index('        [&](std::size_t index, std::string_view id)',a)
+s=s[:a]+'        [&](std::uint64_t ordinal) { return read->fact(ordinal); },\n'+s[b:]
+(out/'playback_baseline.cpp').write_text(s,encoding='utf-8')
+subprocess.run(['clang-format','-i',str(out/'host_probe.cpp'),str(out/'playback_baseline.cpp')],check=True)
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+(out/'source-binding.json').write_text(json.dumps(dict(scope='Ordinary bounded batch comparison. Identical fresh candidate libraries and headers; baseline replaces only Playback TU to keep one-at-a-time callback. Both retain v4 kernel. No observers.',files={p.name:sha(p) for p in out.iterdir() if p.suffix=='.cpp'}),indent=2),encoding='utf-8')
+runner=(root/'out/verification-20261030/r3-resume-v1/run_v4_ordinary.py').read_text(encoding='utf-8')
+runner=runner.replace("out=base/('budget-v4-'+mode+'-measure-v1')","out=base/('publication-'+mode+'-measure-v1')")
+runner=runner.replace("build=base/'budget-v4-host-v1' if mode=='seek' else base/'budget-build-v4'","build=base/'publication-host-v1'")
+runner=runner.replace("cases=[(1000,'902',2),(40000,'5',2),(40000,'902',2),(1000,'final',1)]", "cases=[(1000,'902',3),(40000,'5',3),(40000,'902',3),(1000,'final',1)]")
+runner=runner.replace("(('baseline','candidate') if pair==0 else ('candidate','baseline'))", "(('baseline','candidate') if pair%2==0 else ('candidate','baseline'))")
+runner=runner.replace('40K first-record H902 median improves >=50%;','40K first-record H902 median improves >=20%;')
+runner=runner.replace('H5 and 1K final guard <=5% regression.','H5 and 1K final guard <=5% regression; 1K H902 <=10% regression.')
+runner=runner.replace('Fixed ordinary v4 diagnostic. No production memory quota decision.', 'Fixed ordinary bounded publication batch diagnostic. Both variants use v4 continuation. No production memory quota decision.')
+runner=runner.replace("(-50 if s['n']==40000 and s['case']=='902' else 5)","(-20 if s['n']==40000 and s['case']=='902' else 5)")
+runner=runner.replace("else True) and max", "else s['change_percent']<=10) and max")
+(base/'run_publication_ordinary.py').write_text(runner,encoding='utf-8')
+print(out)

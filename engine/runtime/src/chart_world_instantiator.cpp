@@ -14,6 +14,7 @@
 #include <cuexis/world/components.hpp>
 #include <cuexis/world/property.hpp>
 #include <cuexis/world/transform_system.hpp>
+#include <cuexis_internal/semantic_memory.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -358,10 +359,13 @@ auto ChartWorldInstantiator::instantiate(
         auto populated = world->withRegistry([&](entt::registry& registry) {
             for (const auto& object : runtime.objects) {
                 objects.entries_.push_back(
-                    ObjectEntityEntry{.objectId = object.id, .entity = registry.create()});
+                    ObjectEntityEntry{.objectId = object.id,
+                                      .entity = internal::pd::memory::withSemanticOwner(
+                                          world.get(), [&] { return registry.create(); })});
             }
 
             for (std::size_t index = 0; index < runtime.objects.size(); ++index) {
+                const internal::pd::memory::SemanticOwnerScope memoryOwner{world.get()};
                 const auto& object = runtime.objects[index];
                 const entt::entity entity = objects.entries_[index].entity;
 
@@ -389,17 +393,22 @@ auto ChartWorldInstantiator::instantiate(
                     const auto& resources = *renderableResources[index];
                     registry.emplace<render::RenderableComponent>(entity, resources.mesh,
                                                                   resources.material);
+                    // Nested strings may later swap into RuntimeEvaluationState. Observe
+                    // the actual component pages separately, never their allocation origin.
+                    const internal::pd::memory::SemanticOwnerScope unclaimed{nullptr};
                     registry.emplace<render::AppearanceComponent>(
                         entity, true, object.components.renderable->material.value,
                         object.renderableOpacity, core::Vec3{1.0F, 1.0F, 1.0F});
                 }
                 if (object.components.camera.has_value()) {
+                    const internal::pd::memory::SemanticOwnerScope unclaimed{nullptr};
                     const auto& cam = *object.components.camera;
                     registry.emplace<render::CameraComponent>(
                         entity, cam.type, cam.fovY, cam.nearPlane, cam.farPlane, 0.0, 0.0, 0.0);
                 }
             }
 
+            const internal::pd::memory::SemanticOwnerScope memoryOwner{world.get()};
             const auto cameraEntity = registry.create();
             core::Vec3 cameraPosition{};
             if (runtime.camera.defaultTransform.has_value()) {
@@ -428,6 +437,7 @@ auto ChartWorldInstantiator::instantiate(
             };
             registry.emplace<world::TransformComponent>(
                 cameraEntity, cameraPosition, cameraRotation, core::Vec3{1.0F, 1.0F, 1.0F});
+            const internal::pd::memory::SemanticOwnerScope unclaimed{nullptr};
             registry.emplace<render::CameraComponent>(cameraEntity, runtime.camera.type,
                                                       runtime.camera.fovY, runtime.camera.nearPlane,
                                                       runtime.camera.farPlane, runtime.camera.pitch,

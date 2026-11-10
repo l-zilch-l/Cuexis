@@ -1,0 +1,11 @@
+from pathlib import Path
+base=Path(__file__).resolve().parent
+s=(base/'prepare_activation_observer.py').read_text().replace("out=base/'activation-observer-v1'", "out=base/'activation-observer-v4'")
+s=s.replace('judgement::testing::sameSnapshot','judgement::sameSnapshot')
+s=s.replace('    const auto content = fixture->content();','''    const auto content = [&] {
+        const auto prepared = judgement::prepareResolvedGameplay(fixture->request);REQUIRE(prepared);
+        auto packed=gameplay_packed::encode({fixture->chart,*prepared,fixture->owners,
+            {"normalization.one","coordinator.policy.greedy_v1"},{},{},4});REQUIRE(packed);
+        auto made=GameplayContent::fromPacked(*packed,fixture->config);REQUIRE(made);return *made;
+    }();''')
+exec(compile(s,str(base/'prepare_activation_observer.py'),'exec'))

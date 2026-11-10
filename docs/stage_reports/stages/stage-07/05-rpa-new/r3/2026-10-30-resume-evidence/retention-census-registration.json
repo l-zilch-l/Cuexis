@@ -1,0 +1,19 @@
+{
+  "formal": false,
+  "scope": "Cost census only; no cap acceptance or performance. Predeclared 1K dense,40K dense,40K six-wave multi-generation. Limits 0 and old128MiB characterize refusal; SIZE_MAX intentionally disables byte admission to observe four-slot actual incremental cost, not a recommended budget or a candidate retention gate.",
+  "stages": [
+    "writer empty",
+    "six/all generations + writer",
+    "generations after writer destruction",
+    "earliest generation only",
+    "last generation released"
+  ],
+  "observer": "Global requested C++ bytes; CRT usable includes observer headers/alignment; absolute process private/working set includes fixture and allocator retention",
+  "stop": "Any functional invalidity or final live allocation leak stops; no rerun/extension to pass.",
+  "sources": {
+    "execution_kernel.cpp": "ec9aa0b2288376c84bb3ab4028b84fdbcabc0f0ffcbb435ad2b5d9a0d016c03a",
+    "rpa_b3_tests.cpp": "f9fb8b8ced3fe6df8626cbc197d1ad9f3fcf7ac643013420f8f0f7f457b03523",
+    "tick_fault_probe.hpp": "ed0641caad2037485ce326ee40cef5f4e0a8225bd42cd2d6a471fda228584ecd"
+  },
+  "reused_kernel_sha256": "b4d823e902a60f7de109b9fe693fb8ad50f5dcd6676a89b81e773d6aa862070e"
+}

@@ -1,0 +1,28 @@
+# R3 相对读取门裁剪证据（2026-11-01）
+
+本目录保存"材料化器两处裁剪后相对读取门重测"的全部字节：预注册、驱动器、9 对进程日志与派生结果。
+
+- [返回裁剪报告](../2026-11-01-r3-read-gate-materializer-trims.md)
+
+## 分组
+
+| 路径 | 内容 |
+| --- | --- |
+| `tools/read-remeasure-preregistration.json` | 测量前写定的臂、协议、判据与二进制哈希，含一次构建后重记哈希的补记 |
+| `tools/run_read_pair_v2.py` | 驱动器：3 窗口 × 3 对、窗间 600 s、首臂交替、中位数比、配对 t 区间 |
+| `tools/read-remeasure.log.txt` | 运行期间的逐对输出 |
+| `read-remeasure/results.json` | 每对的 A/B 中位数与比值、逐窗区间、全组区间与 `decision` |
+| `recheck/load-results.json`、`recheck/pd5-results.json` | 裁剪后构建上重跑已通过的门：初次 load 9 进程与 PD5 controls/stream 的判定 |
+| `read-remeasure/w*-p*-*.log.txt` | 每个进程的原始 `PD_FOLLOW_ROW` 行，可重算任何分位数 |
+
+## 关键数值
+
+- 全组 9 对：比值 **1.0405**，95% 区间 **[1.0191, 1.0624]**，`decision: pass`。
+- 逐窗：1.0478 [0.9671, 1.1352]、1.0247 [0.9549, 1.0996]、1.0493 [0.9902, 1.1119]。
+- 对照第一次登记：1.1732 [1.1574, 1.1893]（超界）。
+
+## 边界
+
+- test-only；只对本机、本构建、本会话成立。
+- 逐窗区间跨线的两个窗口已在报告里写明，不用全组结论掩盖。
+- 本次没有重跑 11 行同源矩阵。

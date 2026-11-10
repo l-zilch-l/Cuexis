@@ -1,0 +1,30 @@
+{
+  "wait-2800-static": {
+    "entities": 2800,
+    "processes": 3,
+    "handles": false,
+    "analyses": [
+      "01-static-2800.wait.json",
+      "02-static-2800.wait.json",
+      "03-static-2800.wait.json"
+    ]
+  },
+  "wait-1800-static": {
+    "entities": 1800,
+    "processes": 3,
+    "handles": false,
+    "analyses": [
+      "01-static-1800.wait.json",
+      "02-static-1800.wait.json",
+      "03-static-1800.wait.json"
+    ]
+  },
+  "wait-2800-static-handles": {
+    "entities": 2800,
+    "processes": 1,
+    "handles": true,
+    "analyses": [
+      "01-static-2800.wait.json"
+    ]
+  }
+}

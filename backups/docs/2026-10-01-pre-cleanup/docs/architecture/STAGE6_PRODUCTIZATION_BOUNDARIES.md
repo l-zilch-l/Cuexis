@@ -1,0 +1,126 @@
+# Stage 6 Productization Boundaries
+
+Status: S6-A2 dependency and installation contract. `cuexis_presentation_renderer` and
+`cuexis_player_support` exist as internal static libraries. `cuexis_media_import` remains planned.
+Player source boundaries are recorded in [PLAYER_APPLICATION.md](PLAYER_APPLICATION.md).
+
+## 1. Direct Dependency Graph
+
+Arrows mean direct build dependencies. Existing lower-level dependencies are abbreviated; every new
+target must be registered in the root CMake allowlists before implementation.
+
+~~~text
+cuexis_playback
+  -> cuexis_runtime / cuexis_render / existing internal dependencies
+
+cuexis_presentation_renderer (new internal static library)
+  -> cuexis_playback / cuexis_render / cuexis_core
+
+cuexis_render_opengl
+  -> cuexis_presentation_renderer / cuexis_platform_sdl / existing shader cache
+
+cuexis_player_support
+  -> cuexis_core / cuexis_json_support
+
+cuexis_player control sources
+  -> cuexis_playback / cuexis_presentation_renderer / backend-neutral cuexis_audio /
+     cuexis_player_support
+
+cuexis_player assembly and smoke sources
+  -> cuexis_platform_sdl / cuexis_render_opengl / cuexis_audio_sdl
+
+cuexis_media_import (new default-OFF internal tool library)
+  -> fixed private decoder adapters / cuexis_core / portable output writers
+cuexis_media_importer
+  -> cuexis_media_import
+~~~
+
+The graph is intentionally one-way. cuexis_render and cuexis_runtime do not depend on
+cuexis_presentation_renderer; the renderer layer consumes prepared Playback values and does not
+create a second Runtime scene. cuexis_playback does not depend on SDL, OpenGL, the media importer,
+Player support or tools. A forward declaration, header-only trick or private Runtime path cannot
+hide a cycle.
+
+## 2. Renderer Ownership
+
+cuexis_presentation_renderer owns the backend-neutral IPresentationRenderer, move-only prepared
+presentation candidate, common draw ordering/pass construction, transaction token and normalized
+frame submission. It consumes existing PreparedPlayback/FrameSnapshot values and immutable portable
+resources. cuexis_render_opengl owns GPU upload, OpenGL drawing, pixel probes and native diagnostics.
+A test renderer consumes the same neutral commands and does not implement a second sort.
+
+Prepare may have at most one outstanding renderer candidate. Candidate activation/discard is an
+owner-thread, no-allocation, no-failure exchange after the token/generation guard has passed.
+Submit and present are separate operations; a valid frame is submitted/presented at most once.
+Zero-size surfaces suspend submission. Resize does not rebuild Playback content. Renderer close
+releases GPU/context resources but does not close the application-owned window.
+
+The Player control sources include Playback, the renderer contract and backend-neutral audio only.
+SDL, OpenGL and concrete factories occur only in the assembly and smoke sources. The typed command
+table remains S6-C3. File boundaries are in [PLAYER_APPLICATION.md](PLAYER_APPLICATION.md).
+
+## 3. Media And Tool Isolation
+
+cuexis_media_import is a build-time/offline tool boundary. It owns the fixed PNG/JPEG/MP3/Ogg
+Vorbis/FLAC adapters, hard budgets, canonical Texture2D/WAV writers, provenance, cache validation
+and generation/atomic publication. It does not enter the Playback or Player link closure and is not
+an installed SDK component. Runtime direct decode is not a fallback.
+
+The candidate source extension is a typed shared contract between ProjectConfig/CXC validation and
+Playback source selection. It is not a Player-private JSON channel and does not make the CXC package
+API public.
+
+## 4. Installation And Staging
+
+~~~text
+production install
+  Cuexis::Core / Cuexis::Playback / existing explicitly requested SDK components
+  no candidate entry capability, no renderer target, no media importer target
+
+experimental candidate install
+  same public declaration surface plus candidate implementation flavor
+  separate prefix, package flavor metadata and binary/import-library identity
+  requires Cuexis_ALLOW_EXPERIMENTAL=ON
+
+application staging
+  Player support + renderer + SDL/OpenGL/audio adapters + optional media tools
+  never exported as Cuexis SDK components
+
+player distribution
+  one self-contained directory per flavor: executable, loaded runtime libraries,
+  assets/ default resource location, VERSION.txt metadata, notices and licenses/
+  produced by cuexis_player_dist; never merged across static/shared or Debug/Release
+
+reference-host staging (S6-C4)
+  clean find_package consumer of the installed public Playback boundary
+  no source-tree engine include, no Player private library, no third-party engine SDK
+  examples/reference_host/ configured and run from a copied directory with a
+  sanitized PATH
+~~~
+
+Production/experimental, static/shared and Debug/Release staging directories are independent.
+The runtime directory does not rely on source-tree assets or developer PATH. Installed package
+metadata exposes display version, SDK API version, enabled flavor/components and required license
+files. A candidate package cannot be accepted by a production consumer accidentally: SDK API
+`0.7.0` installs one production flavor, the candidate switch `CUEXIS_ENABLE_CHART_V5_CANDIDATE` is a
+build-tree compile definition that is not installed and adds no consumer-visible switch, and the
+`Cuexis_ALLOW_EXPERIMENTAL` opt-in of the draft proposal is still not implemented.
+
+## 5. Architecture Verification State
+
+| Boundary | Current state | Required verification |
+| --- | --- | --- |
+| Existing Playback isolation | Implemented and covered by A1 baseline | Preserve in C1/F1 |
+| New renderer direction | D2 local exit: OpenGL implements the interface and Player submits through it. At `eaaf375` the adapter still carried its own `SummaryHash`/`hashCommand`/`buildDraws` and never called `buildPresentationCommands`, which ADR 0042 `:145`/`:159` forbid; converged at `670cca8`, where the adapter consumes `presentation_renderer::buildPresentationCommands` and keeps only the diagnostic `probeBuildDraws` | Local smoke minimized and restored; hosted CI does not run that step |
+| Player support separation | C2 local exit: config snapshots and enumerated device open exist and are not installed | C3 still consumes the exited batch |
+| Player source boundaries | Control, options, assembly, and smoke are separate translation units | C3 adds the typed command table |
+| Media importer isolation | E1/E2 local exit: `cuexis_media_import` and `cuexis_media_importer` exist behind default-OFF `CUEXIS_BUILD_MEDIA_TOOLS`; Playback/Player do not link them | Hosted four-platform byte equality and package tests |
+| Production/experimental staging | Contract only; no package flavor gate yet | B1/C4 clean staging |
+| Reference Host | C4: `examples/reference_host/` builds against the installed `Cuexis::Playback` package only and runs from a clean staging copy; gate `cuexis_reference_host_staging` | Hosted evidence on the C4 SHA |
+| Player distribution | C4: `cuexis_player_dist` assembles one flavor-labelled self-contained directory; gate `cuexis_player_distribution` verifies contents, licenses and a sanitized-PATH start | Hosted evidence on the C4 SHA; Linux hosted presets do not build the Player |
+
+This document records the dependency contract. The presentation renderer target and the OpenGL
+dependency edge now exist. Player support exists and is not installed. The media import target exists
+behind the media-tools feature and remains outside the SDK install closure. The reference host and the
+Player distribution are separate artifacts: the host consumes the installed SDK package, the
+distribution is not an SDK install tree.

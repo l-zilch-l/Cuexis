@@ -1,0 +1,16 @@
+{
+  "scope": "Baseline is the committed HEAD draw_command.cpp; candidate is the live worktree refinement. No other source differs.",
+  "baseline_source": "git cat-file blob HEAD:engine/presentation_renderer/src/draw_command.cpp",
+  "baseline_blob_sha1": "40fefc93ed22df316197e4b2c8b1d886127dd409",
+  "baseline_rehash_sha1": "40fefc93ed22df316197e4b2c8b1d886127dd409",
+  "baseline_sha256": "483ef1b7fb0d6b2e28a072677e813609d800053b50969190b2ba12640e6a7ee9",
+  "baseline_lf_sha256": "483ef1b7fb0d6b2e28a072677e813609d800053b50969190b2ba12640e6a7ee9",
+  "baseline_bytes": 23641,
+  "candidate_sha256": "634157c2f12da2e15c6974d9d09014240070ff976b9bebc181a11848e3807b2e",
+  "candidate_lf_sha256": "de83159e47bf79d9149ceb37bb39de5e33ad35174316775429291e6d5d26cf41",
+  "candidate_bytes": 23353,
+  "on_disk_selected_crlf_sha256": "45dc935f891d2811c90640ec6006c91c5f3d4fe8fd64597859ea83381249cd03",
+  "on_disk_candidate_crlf_sha256": "634157c2f12da2e15c6974d9d09014240070ff976b9bebc181a11848e3807b2e",
+  "characterization_sha256": "39b66eb275e770c76a6ca3858bcb8b7513aee1d06b4edb6a30fd53fbe9765966",
+  "identity_proof": "git hash-object --path of the extracted blob equals git rev-parse HEAD:path, so the compiled baseline is byte-identical to the committed source."
+}

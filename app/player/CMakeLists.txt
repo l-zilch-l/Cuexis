@@ -13,6 +13,10 @@ add_executable(
     src/player_assembly.hpp
     src/player_control.cpp
     src/player_control.hpp
+    src/player_control_frame_loop.cpp
+    src/player_control_internal.hpp
+    src/player_control_transaction.cpp
+    src/player_gameplay.cpp
     src/player_smoke.cpp
     src/player_smoke.hpp
     src/player_log.cpp
@@ -25,7 +29,21 @@ add_executable(
 
 find_package(spdlog CONFIG REQUIRED)
 
+if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+    target_sources(cuexis_player PRIVATE ${CUEXIS_EXECUTION_HOST_SOURCES} src/player_execution.cpp)
+    target_link_libraries(cuexis_player PRIVATE cuexis::execution_host_support)
+endif()
+if(CUEXIS_PLAYBACK_TRACE_HARNESS)
+    if(NOT WIN32 OR NOT CUEXIS_ENABLE_CHART_V5_CANDIDATE OR CUEXIS_PD_METRICS_TEST_ONLY OR CUEXIS_ALLOCATION_LIFETIME_OBSERVER)
+        message(FATAL_ERROR "PD5 Player harness requires Windows candidate and normal allocator/metrics OFF")
+    endif()
+    target_compile_definitions(cuexis_player PRIVATE CUEXIS_PLAYBACK_TRACE_HARNESS=1)
+    target_link_libraries(cuexis_player PRIVATE ole32 uuid)
+endif()
+
 target_compile_features(cuexis_player PRIVATE cxx_std_20)
+target_include_directories(cuexis_player PRIVATE
+    "${PROJECT_SOURCE_DIR}/engine/render_opengl/internal")
 
 target_link_libraries(
     cuexis_player

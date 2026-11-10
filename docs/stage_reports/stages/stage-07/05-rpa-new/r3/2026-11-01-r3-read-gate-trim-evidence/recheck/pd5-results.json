@@ -1,0 +1,837 @@
+{
+  "scope": "Second R3 gate batch: PD5 controls and stream on the device probe.",
+  "instrument": {
+    "exe": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_execution_device_probe.exe",
+    "sha256": "13c6149295d70c1c0929d54d424e249b4838085b6561e52a74b598f7da9e6acd",
+    "test": "PD5 scripted host timing probe"
+  },
+  "head": "43ae1e9e160cefdbf613a299fa3f8cd72d8dd9a1",
+  "started_local": "2026-11-02 00:30:35",
+  "groups": {
+    "controls": {
+      "environment": {
+        "CUEXIS_PD5_MODE": "controls",
+        "CUEXIS_PD5_CYCLES": "20",
+        "CUEXIS_PD5_SMOKE": "1"
+      },
+      "runs": [
+        {
+          "run": 0,
+          "group": "controls",
+          "exit_code": 0,
+          "wall_seconds": 2.037,
+          "metrics": {
+            "close": {
+              "n": 1,
+              "min_us": 1433,
+              "median_us": 1433,
+              "p95_us": 1433,
+              "p99_us": 1433,
+              "max_us": 1433
+            },
+            "load_host": {
+              "n": 1,
+              "min_us": 21018,
+              "median_us": 21018,
+              "p95_us": 21018,
+              "p99_us": 21018,
+              "max_us": 21018
+            },
+            "pause": {
+              "n": 40,
+              "min_us": 454,
+              "median_us": 2261.5,
+              "p95_us": 4462,
+              "p99_us": 176994,
+              "max_us": 176994
+            },
+            "reset_paused": {
+              "n": 20,
+              "min_us": 8304,
+              "median_us": 14311.5,
+              "p95_us": 14980,
+              "p99_us": 69875,
+              "max_us": 69875
+            },
+            "reset_running": {
+              "n": 20,
+              "min_us": 7439,
+              "median_us": 10649.0,
+              "p95_us": 12095,
+              "p99_us": 20166,
+              "max_us": 20166
+            },
+            "resize": {
+              "n": 20,
+              "min_us": 534,
+              "median_us": 753.0,
+              "p95_us": 929,
+              "p99_us": 1014,
+              "max_us": 1014
+            },
+            "resume": {
+              "n": 40,
+              "min_us": 417,
+              "median_us": 1196.0,
+              "p95_us": 4160,
+              "p99_us": 5204,
+              "max_us": 5204
+            }
+          },
+          "metric_counts": {
+            "close": 1,
+            "load_host": 1,
+            "pause": 40,
+            "reset_paused": 20,
+            "reset_running": 20,
+            "resize": 20,
+            "resume": 40
+          },
+          "id": {
+            "schema": "pd5.probe.v1",
+            "mode": "controls",
+            "metrics_compile_enabled": false,
+            "allocator": "normal",
+            "smoke": true,
+            "gpu_timer": false,
+            "frames": 512,
+            "warmup_frames": 32,
+            "cycles": 20,
+            "rate": 240,
+            "source_step_ticks": 7000,
+            "source_tick_rate": 1000000,
+            "payload_peak_count": 2,
+            "payload_peak_bytes": 10495648,
+            "payload_after_close": 0,
+            "journal_peak_bytes": 4624,
+            "audio": false,
+            "closed": true,
+            "replay_equal": true,
+            "digest": 8491549097615837694,
+            "counts": {
+              "close": 1,
+              "load_host": 1,
+              "pause": 40,
+              "reset_paused": 20,
+              "reset_running": 20,
+              "resize": 20,
+              "resume": 40
+            }
+          },
+          "environment": {
+            "label": "begin",
+            "pid": 24548,
+            "tid": 28488,
+            "process_affinity_error": 0,
+            "process_affinity": 65535,
+            "system_affinity": 65535,
+            "processor_group_error": 0,
+            "processor_group": 0,
+            "processor_number": 5,
+            "process_priority": 32,
+            "thread_priority": 0,
+            "process_power_error": 0,
+            "process_power_control": 0,
+            "process_power_state": 0,
+            "thread_power_error": 0,
+            "thread_power_control": 0,
+            "thread_power_state": 0
+          },
+          "log": "out\\verification-20261101\\r3-refactor-v1\\pd5-recheck\\controls\\run-00.log.txt",
+          "valid": true
+        },
+        {
+          "run": 1,
+          "group": "controls",
+          "exit_code": 0,
+          "wall_seconds": 1.431,
+          "metrics": {
+            "close": {
+              "n": 1,
+              "min_us": 1425,
+              "median_us": 1425,
+              "p95_us": 1425,
+              "p99_us": 1425,
+              "max_us": 1425
+            },
+            "load_host": {
+              "n": 1,
+              "min_us": 18949,
+              "median_us": 18949,
+              "p95_us": 18949,
+              "p99_us": 18949,
+              "max_us": 18949
+            },
+            "pause": {
+              "n": 40,
+              "min_us": 455,
+              "median_us": 781.0,
+              "p95_us": 4473,
+              "p99_us": 178251,
+              "max_us": 178251
+            },
+            "reset_paused": {
+              "n": 20,
+              "min_us": 13290,
+              "median_us": 14136.5,
+              "p95_us": 16359,
+              "p99_us": 73080,
+              "max_us": 73080
+            },
+            "reset_running": {
+              "n": 20,
+              "min_us": 9627,
+              "median_us": 11219.0,
+              "p95_us": 11761,
+              "p99_us": 11920,
+              "max_us": 11920
+            },
+            "resize": {
+              "n": 20,
+              "min_us": 588,
+              "median_us": 666.5,
+              "p95_us": 837,
+              "p99_us": 881,
+              "max_us": 881
+            },
+            "resume": {
+              "n": 40,
+              "min_us": 423,
+              "median_us": 671.5,
+              "p95_us": 2166,
+              "p99_us": 2312,
+              "max_us": 2312
+            }
+          },
+          "metric_counts": {
+            "close": 1,
+            "load_host": 1,
+            "pause": 40,
+            "reset_paused": 20,
+            "reset_running": 20,
+            "resize": 20,
+            "resume": 40
+          },
+          "id": {
+            "schema": "pd5.probe.v1",
+            "mode": "controls",
+            "metrics_compile_enabled": false,
+            "allocator": "normal",
+            "smoke": true,
+            "gpu_timer": false,
+            "frames": 512,
+            "warmup_frames": 32,
+            "cycles": 20,
+            "rate": 240,
+            "source_step_ticks": 7000,
+            "source_tick_rate": 1000000,
+            "payload_peak_count": 2,
+            "payload_peak_bytes": 10495648,
+            "payload_after_close": 0,
+            "journal_peak_bytes": 4624,
+            "audio": false,
+            "closed": true,
+            "replay_equal": true,
+            "digest": 8491549097615837694,
+            "counts": {
+              "close": 1,
+              "load_host": 1,
+              "pause": 40,
+              "reset_paused": 20,
+              "reset_running": 20,
+              "resize": 20,
+              "resume": 40
+            }
+          },
+          "environment": {
+            "label": "begin",
+            "pid": 3032,
+            "tid": 28952,
+            "process_affinity_error": 0,
+            "process_affinity": 65535,
+            "system_affinity": 65535,
+            "processor_group_error": 0,
+            "processor_group": 0,
+            "processor_number": 6,
+            "process_priority": 32,
+            "thread_priority": 0,
+            "process_power_error": 0,
+            "process_power_control": 0,
+            "process_power_state": 0,
+            "thread_power_error": 0,
+            "thread_power_control": 0,
+            "thread_power_state": 0
+          },
+          "log": "out\\verification-20261101\\r3-refactor-v1\\pd5-recheck\\controls\\run-01.log.txt",
+          "valid": true
+        },
+        {
+          "run": 2,
+          "group": "controls",
+          "exit_code": 0,
+          "wall_seconds": 1.437,
+          "metrics": {
+            "close": {
+              "n": 1,
+              "min_us": 1445,
+              "median_us": 1445,
+              "p95_us": 1445,
+              "p99_us": 1445,
+              "max_us": 1445
+            },
+            "load_host": {
+              "n": 1,
+              "min_us": 20810,
+              "median_us": 20810,
+              "p95_us": 20810,
+              "p99_us": 20810,
+              "max_us": 20810
+            },
+            "pause": {
+              "n": 40,
+              "min_us": 464,
+              "median_us": 980.0,
+              "p95_us": 4466,
+              "p99_us": 174105,
+              "max_us": 174105
+            },
+            "reset_paused": {
+              "n": 20,
+              "min_us": 12574,
+              "median_us": 14308.0,
+              "p95_us": 15065,
+              "p99_us": 71170,
+              "max_us": 71170
+            },
+            "reset_running": {
+              "n": 20,
+              "min_us": 10267,
+              "median_us": 10908.5,
+              "p95_us": 12227,
+              "p99_us": 20619,
+              "max_us": 20619
+            },
+            "resize": {
+              "n": 20,
+              "min_us": 562,
+              "median_us": 702.5,
+              "p95_us": 874,
+              "p99_us": 878,
+              "max_us": 878
+            },
+            "resume": {
+              "n": 40,
+              "min_us": 446,
+              "median_us": 604.5,
+              "p95_us": 2234,
+              "p99_us": 2302,
+              "max_us": 2302
+            }
+          },
+          "metric_counts": {
+            "close": 1,
+            "load_host": 1,
+            "pause": 40,
+            "reset_paused": 20,
+            "reset_running": 20,
+            "resize": 20,
+            "resume": 40
+          },
+          "id": {
+            "schema": "pd5.probe.v1",
+            "mode": "controls",
+            "metrics_compile_enabled": false,
+            "allocator": "normal",
+            "smoke": true,
+            "gpu_timer": false,
+            "frames": 512,
+            "warmup_frames": 32,
+            "cycles": 20,
+            "rate": 240,
+            "source_step_ticks": 7000,
+            "source_tick_rate": 1000000,
+            "payload_peak_count": 2,
+            "payload_peak_bytes": 10495648,
+            "payload_after_close": 0,
+            "journal_peak_bytes": 4624,
+            "audio": false,
+            "closed": true,
+            "replay_equal": true,
+            "digest": 8491549097615837694,
+            "counts": {
+              "close": 1,
+              "load_host": 1,
+              "pause": 40,
+              "reset_paused": 20,
+              "reset_running": 20,
+              "resize": 20,
+              "resume": 40
+            }
+          },
+          "environment": {
+            "label": "begin",
+            "pid": 5428,
+            "tid": 6092,
+            "process_affinity_error": 0,
+            "process_affinity": 65535,
+            "system_affinity": 65535,
+            "processor_group_error": 0,
+            "processor_group": 0,
+            "processor_number": 6,
+            "process_priority": 32,
+            "thread_priority": 0,
+            "process_power_error": 0,
+            "process_power_control": 0,
+            "process_power_state": 0,
+            "thread_power_error": 0,
+            "thread_power_control": 0,
+            "thread_power_state": 0
+          },
+          "log": "out\\verification-20261101\\r3-refactor-v1\\pd5-recheck\\controls\\run-02.log.txt",
+          "valid": true
+        }
+      ],
+      "verdicts": {
+        "pause": {
+          "budget_ms": 50,
+          "max_ms": 178.251,
+          "decision": "over"
+        },
+        "resume": {
+          "budget_ms": 50,
+          "max_ms": 5.204,
+          "decision": "pass"
+        },
+        "reset_paused": {
+          "budget_ms": 1000,
+          "max_ms": 73.08,
+          "decision": "pass"
+        },
+        "reset_running": {
+          "budget_ms": 1000,
+          "max_ms": 20.619,
+          "decision": "pass"
+        },
+        "resize": {
+          "budget_ms": 50,
+          "max_ms": 1.014,
+          "decision": "pass"
+        },
+        "close": {
+          "budget_ms": 1000,
+          "max_ms": 1.445,
+          "decision": "pass"
+        }
+      }
+    },
+    "stream": {
+      "environment": {
+        "CUEXIS_PD5_MODE": "stream",
+        "CUEXIS_PD5_FRAMES": "1200",
+        "CUEXIS_PD5_WARMUP": "64",
+        "CUEXIS_PD5_RATE": "240",
+        "CUEXIS_PD5_GPU_TIMER": "1",
+        "CUEXIS_PD5_SMOKE": "1"
+      },
+      "runs": [
+        {
+          "run": 0,
+          "group": "stream",
+          "exit_code": 0,
+          "wall_seconds": 6.003,
+          "metrics": {
+            "close": {
+              "n": 1,
+              "min_us": 2773,
+              "median_us": 2773,
+              "p95_us": 2773,
+              "p99_us": 2773,
+              "max_us": 2773
+            },
+            "cpu_submit": {
+              "n": 1200,
+              "min_us": 76.6,
+              "median_us": 149.55,
+              "p95_us": 277.2,
+              "p99_us": 330.9,
+              "max_us": 3735.1
+            },
+            "gpu_render": {
+              "n": 1200,
+              "min_us": 0,
+              "median_us": 1.024,
+              "p95_us": 3.072,
+              "p99_us": 3.072,
+              "max_us": 3.072
+            },
+            "load_host": {
+              "n": 1,
+              "min_us": 18920,
+              "median_us": 18920,
+              "p95_us": 18920,
+              "p99_us": 18920,
+              "max_us": 18920
+            },
+            "present_call": {
+              "n": 1200,
+              "min_us": 32.9,
+              "median_us": 57.75,
+              "p95_us": 101,
+              "p99_us": 199.4,
+              "max_us": 351.9
+            },
+            "request_to_present_return": {
+              "n": 1200,
+              "min_us": 347,
+              "median_us": 488.0,
+              "p95_us": 652,
+              "p99_us": 740,
+              "max_us": 8053
+            },
+            "request_to_ready": {
+              "n": 1200,
+              "min_us": 189,
+              "median_us": 258.0,
+              "p95_us": 351,
+              "p99_us": 430,
+              "max_us": 544
+            }
+          },
+          "metric_counts": {
+            "close": 1,
+            "cpu_submit": 1200,
+            "gpu_render": 1200,
+            "load_host": 1,
+            "present_call": 1200,
+            "request_to_present_return": 1200,
+            "request_to_ready": 1200
+          },
+          "id": {
+            "schema": "pd5.probe.v1",
+            "mode": "stream",
+            "metrics_compile_enabled": false,
+            "allocator": "normal",
+            "smoke": true,
+            "gpu_timer": true,
+            "frames": 1200,
+            "warmup_frames": 64,
+            "cycles": 10,
+            "rate": 240,
+            "source_step_ticks": 7000,
+            "source_tick_rate": 1000000,
+            "payload_peak_count": 2,
+            "payload_peak_bytes": 10495648,
+            "payload_after_close": 0,
+            "journal_peak_bytes": 5520,
+            "audio": false,
+            "closed": true,
+            "replay_equal": true,
+            "digest": 10778331860267600774,
+            "counts": {
+              "close": 1,
+              "cpu_submit": 1200,
+              "gpu_render": 1200,
+              "load_host": 1,
+              "present_call": 1200,
+              "request_to_present_return": 1200,
+              "request_to_ready": 1200
+            }
+          },
+          "environment": {
+            "label": "begin",
+            "pid": 6180,
+            "tid": 22872,
+            "process_affinity_error": 0,
+            "process_affinity": 65535,
+            "system_affinity": 65535,
+            "processor_group_error": 0,
+            "processor_group": 0,
+            "processor_number": 7,
+            "process_priority": 32,
+            "thread_priority": 0,
+            "process_power_error": 0,
+            "process_power_control": 0,
+            "process_power_state": 0,
+            "thread_power_error": 0,
+            "thread_power_control": 0,
+            "thread_power_state": 0
+          },
+          "log": "out\\verification-20261101\\r3-refactor-v1\\pd5-recheck\\stream\\run-00.log.txt",
+          "valid": true
+        },
+        {
+          "run": 1,
+          "group": "stream",
+          "exit_code": 0,
+          "wall_seconds": 6.013,
+          "metrics": {
+            "close": {
+              "n": 1,
+              "min_us": 2889,
+              "median_us": 2889,
+              "p95_us": 2889,
+              "p99_us": 2889,
+              "max_us": 2889
+            },
+            "cpu_submit": {
+              "n": 1200,
+              "min_us": 76.9,
+              "median_us": 148.5,
+              "p95_us": 265.6,
+              "p99_us": 317.1,
+              "max_us": 3794.5
+            },
+            "gpu_render": {
+              "n": 1200,
+              "min_us": 0,
+              "median_us": 1.024,
+              "p95_us": 3.072,
+              "p99_us": 3.072,
+              "max_us": 3.072
+            },
+            "load_host": {
+              "n": 1,
+              "min_us": 21554,
+              "median_us": 21554,
+              "p95_us": 21554,
+              "p99_us": 21554,
+              "max_us": 21554
+            },
+            "present_call": {
+              "n": 1200,
+              "min_us": 30.5,
+              "median_us": 58.5,
+              "p95_us": 85.1,
+              "p99_us": 193.5,
+              "max_us": 259
+            },
+            "request_to_present_return": {
+              "n": 1200,
+              "min_us": 294,
+              "median_us": 485.0,
+              "p95_us": 646,
+              "p99_us": 741,
+              "max_us": 4189
+            },
+            "request_to_ready": {
+              "n": 1200,
+              "min_us": 183,
+              "median_us": 256.0,
+              "p95_us": 334,
+              "p99_us": 430,
+              "max_us": 560
+            }
+          },
+          "metric_counts": {
+            "close": 1,
+            "cpu_submit": 1200,
+            "gpu_render": 1200,
+            "load_host": 1,
+            "present_call": 1200,
+            "request_to_present_return": 1200,
+            "request_to_ready": 1200
+          },
+          "id": {
+            "schema": "pd5.probe.v1",
+            "mode": "stream",
+            "metrics_compile_enabled": false,
+            "allocator": "normal",
+            "smoke": true,
+            "gpu_timer": true,
+            "frames": 1200,
+            "warmup_frames": 64,
+            "cycles": 10,
+            "rate": 240,
+            "source_step_ticks": 7000,
+            "source_tick_rate": 1000000,
+            "payload_peak_count": 2,
+            "payload_peak_bytes": 10495648,
+            "payload_after_close": 0,
+            "journal_peak_bytes": 5520,
+            "audio": false,
+            "closed": true,
+            "replay_equal": true,
+            "digest": 10778331860267600774,
+            "counts": {
+              "close": 1,
+              "cpu_submit": 1200,
+              "gpu_render": 1200,
+              "load_host": 1,
+              "present_call": 1200,
+              "request_to_present_return": 1200,
+              "request_to_ready": 1200
+            }
+          },
+          "environment": {
+            "label": "begin",
+            "pid": 11208,
+            "tid": 8964,
+            "process_affinity_error": 0,
+            "process_affinity": 65535,
+            "system_affinity": 65535,
+            "processor_group_error": 0,
+            "processor_group": 0,
+            "processor_number": 6,
+            "process_priority": 32,
+            "thread_priority": 0,
+            "process_power_error": 0,
+            "process_power_control": 0,
+            "process_power_state": 0,
+            "thread_power_error": 0,
+            "thread_power_control": 0,
+            "thread_power_state": 0
+          },
+          "log": "out\\verification-20261101\\r3-refactor-v1\\pd5-recheck\\stream\\run-01.log.txt",
+          "valid": true
+        },
+        {
+          "run": 2,
+          "group": "stream",
+          "exit_code": 0,
+          "wall_seconds": 6.027,
+          "metrics": {
+            "close": {
+              "n": 1,
+              "min_us": 3014,
+              "median_us": 3014,
+              "p95_us": 3014,
+              "p99_us": 3014,
+              "max_us": 3014
+            },
+            "cpu_submit": {
+              "n": 1200,
+              "min_us": 90.6,
+              "median_us": 143.75,
+              "p95_us": 251,
+              "p99_us": 316.2,
+              "max_us": 3851.1
+            },
+            "gpu_render": {
+              "n": 1200,
+              "min_us": 0,
+              "median_us": 1.024,
+              "p95_us": 3.072,
+              "p99_us": 3.072,
+              "max_us": 6.144
+            },
+            "load_host": {
+              "n": 1,
+              "min_us": 19373,
+              "median_us": 19373,
+              "p95_us": 19373,
+              "p99_us": 19373,
+              "max_us": 19373
+            },
+            "present_call": {
+              "n": 1200,
+              "min_us": 32.8,
+              "median_us": 57.3,
+              "p95_us": 101.8,
+              "p99_us": 142.3,
+              "max_us": 389.8
+            },
+            "request_to_present_return": {
+              "n": 1200,
+              "min_us": 332,
+              "median_us": 466.0,
+              "p95_us": 621,
+              "p99_us": 727,
+              "max_us": 4177
+            },
+            "request_to_ready": {
+              "n": 1200,
+              "min_us": 184,
+              "median_us": 248.0,
+              "p95_us": 331,
+              "p99_us": 439,
+              "max_us": 2236
+            }
+          },
+          "metric_counts": {
+            "close": 1,
+            "cpu_submit": 1200,
+            "gpu_render": 1200,
+            "load_host": 1,
+            "present_call": 1200,
+            "request_to_present_return": 1200,
+            "request_to_ready": 1200
+          },
+          "id": {
+            "schema": "pd5.probe.v1",
+            "mode": "stream",
+            "metrics_compile_enabled": false,
+            "allocator": "normal",
+            "smoke": true,
+            "gpu_timer": true,
+            "frames": 1200,
+            "warmup_frames": 64,
+            "cycles": 10,
+            "rate": 240,
+            "source_step_ticks": 7000,
+            "source_tick_rate": 1000000,
+            "payload_peak_count": 2,
+            "payload_peak_bytes": 10495648,
+            "payload_after_close": 0,
+            "journal_peak_bytes": 5520,
+            "audio": false,
+            "closed": true,
+            "replay_equal": true,
+            "digest": 10778331860267600774,
+            "counts": {
+              "close": 1,
+              "cpu_submit": 1200,
+              "gpu_render": 1200,
+              "load_host": 1,
+              "present_call": 1200,
+              "request_to_present_return": 1200,
+              "request_to_ready": 1200
+            }
+          },
+          "environment": {
+            "label": "begin",
+            "pid": 29656,
+            "tid": 24916,
+            "process_affinity_error": 0,
+            "process_affinity": 65535,
+            "system_affinity": 65535,
+            "processor_group_error": 0,
+            "processor_group": 0,
+            "processor_number": 14,
+            "process_priority": 32,
+            "thread_priority": 0,
+            "process_power_error": 0,
+            "process_power_control": 0,
+            "process_power_state": 0,
+            "thread_power_error": 0,
+            "thread_power_control": 0,
+            "thread_power_state": 0
+          },
+          "log": "out\\verification-20261101\\r3-refactor-v1\\pd5-recheck\\stream\\run-02.log.txt",
+          "valid": true
+        }
+      ],
+      "verdicts": {
+        "request_to_ready": {
+          "budget_ms": 4.166666666666667,
+          "p99_ms_per_process": [
+            0.43,
+            0.43,
+            0.439
+          ],
+          "worst_p99_ms": 0.439,
+          "decision": "pass"
+        },
+        "gpu_render": {
+          "budget_ms": 4.166666666666667,
+          "p99_ms_per_process": [
+            0.0031,
+            0.0031,
+            0.0031
+          ],
+          "worst_p99_ms": 0.0031,
+          "decision": "pass"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,321 @@
+["cmake", "--build", "D:\\Cuexis-redesign\\out\\build\\rpa-boundary-mingw-shared", "--clean-first", "--parallel", "4"]
+[1/1] Cleaning all built files...
+Cleaning... 0 files.
+[1/332] Building CXX object engine/core/CMakeFiles/cuexis_core.dir/src/log_sink.cpp.obj
+[2/332] Building CXX object engine/core/CMakeFiles/cuexis_core.dir/src/error.cpp.obj
+[3/332] Building CXX object engine/core/CMakeFiles/cuexis_core.dir/src/portable_path.cpp.obj
+[4/332] Building CXX object engine/core/CMakeFiles/cuexis_core.dir/src/diagnostic.cpp.obj
+[5/332] Building CXX object engine/core/CMakeFiles/cuexis_core.dir/src/sha256.cpp.obj
+[6/332] Building CXX object engine/core/CMakeFiles/cuexis_core.dir/src/math.cpp.obj
+[7/332] Building CXX object engine/core/CMakeFiles/cuexis_core.dir/src/thread_checker.cpp.obj
+[8/332] Building CXX object engine/core/CMakeFiles/cuexis_core.dir/src/uuid.cpp.obj
+[9/332] Building CXX object engine/core/CMakeFiles/cuexis_core.dir/__/__/third_party/sha_intrinsics/sha256_x86.cpp.obj
+[10/332] Linking CXX shared library bin\libcuexis_core-candidate-0.9d.dll
+[11/332] Building CXX object engine/content/CMakeFiles/cuexis_content.dir/src/content_provider.cpp.obj
+[12/332] Building CXX object engine/filesystem/CMakeFiles/cuexis_filesystem.dir/src/secure_file.cpp.obj
+[13/332] Linking CXX static library lib\libcuexis_filesystem.a
+[14/332] Building CXX object engine/json_support/CMakeFiles/cuexis_json_support.dir/src/reader.cpp.obj
+[15/332] Building CXX object engine/json_support/CMakeFiles/cuexis_json_support.dir/src/bounded_parse.cpp.obj
+[16/332] Building CXX object engine/json_support/CMakeFiles/cuexis_json_support.dir/src/value.cpp.obj
+[17/332] Building CXX object engine/json_support/CMakeFiles/cuexis_json_support.dir/src/parse.cpp.obj
+[18/332] Building CXX object engine/json_support/CMakeFiles/cuexis_json_support.dir/src/schema.cpp.obj
+[19/332] Linking CXX shared library bin\libcuexis_content-candidate-0.9d.dll
+[20/332] Building CXX object engine/world/CMakeFiles/cuexis_world.dir/src/world.cpp.obj
+[21/332] Building CXX object engine/json_support/CMakeFiles/cuexis_json_support.dir/src/gameplay_author.cpp.obj
+[22/332] Linking CXX static library lib\libcuexis_json_support.a
+[23/332] Building CXX object engine/world/CMakeFiles/cuexis_world.dir/src/transform_system.cpp.obj
+[24/332] Building CXX object engine/world/CMakeFiles/cuexis_world.dir/src/property.cpp.obj
+[25/332] Building CXX object engine/assets/CMakeFiles/cuexis_assets.dir/src/asset_database.cpp.obj
+[26/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/animation_template_loader.cpp.obj
+[27/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/canonical_chart_template_internal.cpp.obj
+[28/332] Building CXX object engine/assets/CMakeFiles/cuexis_assets.dir/src/resource_manager.cpp.obj
+[29/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/canonical_chart_loader.cpp.obj
+[30/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/cxt_v2_loader.cpp.obj
+[31/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/chart_loader.cpp.obj
+[32/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/chart_parameter_resolver.cpp.obj
+[33/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/chart_migrator.cpp.obj
+[34/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/candidate_lowering.cpp.obj
+[35/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/chart_runtime.cpp.obj
+[36/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/candidate_assembler.cpp.obj
+[37/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/behavior_candidate.cpp.obj
+[38/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/chart_writer.cpp.obj
+[39/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/prepared_semantic_identity.cpp.obj
+[40/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/chart_v4_loader.cpp.obj
+[41/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/chart_v4_common_reader_internal.cpp.obj
+[42/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/chart_project_path_internal.cpp.obj
+[43/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/packed_chart_primitives.cpp.obj
+[44/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/packed_profile.cpp.obj
+[45/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/chart_v4_animation_reader_internal.cpp.obj
+[46/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/chart_v4_resolver.cpp.obj
+[47/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/packed_semantic_identity.cpp.obj
+[48/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/rational_beat.cpp.obj
+[49/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/timing_map.cpp.obj
+[50/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/uuid.cpp.obj
+[51/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/packed_chart_io.cpp.obj
+[52/332] Linking CXX static library lib\libcuexis_world.a
+[53/332] Linking CXX static library lib\libcuexis_assets.a
+[54/332] Building CXX object engine/project/CMakeFiles/cuexis_project.dir/src/asset_index_reader.cpp.obj
+[55/332] Building CXX object engine/chart/CMakeFiles/cuexis_chart.dir/src/packed_chart_tables.cpp.obj
+[56/332] Building CXX object engine/animation/CMakeFiles/cuexis_animation.dir/src/animation_compiler.cpp.obj
+[57/332] Linking CXX static library lib\libcuexis_chart.a
+[58/332] Building CXX object engine/animation/CMakeFiles/cuexis_animation.dir/src/animation_program.cpp.obj
+[59/332] Building CXX object engine/project/CMakeFiles/cuexis_project.dir/src/project_loader.cpp.obj
+[60/332] Building CXX object engine/animation/CMakeFiles/cuexis_animation.dir/src/animation_system.cpp.obj
+[61/332] Building CXX object engine/animation/CMakeFiles/cuexis_animation.dir/src/animation_mixer.cpp.obj
+[62/332] Building CXX object engine/animation/CMakeFiles/cuexis_animation.dir/src/animation_sampler.cpp.obj
+[63/332] Building CXX object engine/behavior/CMakeFiles/cuexis_behavior.dir/src/behavior_system.cpp.obj
+[64/332] Building CXX object engine/judgement/CMakeFiles/cuexis_judgement.dir/src/diagnostic.cpp.obj
+[65/332] Building CXX object engine/judgement/CMakeFiles/cuexis_judgement.dir/src/execution_profile.cpp.obj
+[66/332] Building CXX object engine/judgement/CMakeFiles/cuexis_judgement.dir/src/execution_scheduler.cpp.obj
+[67/332] Building CXX object engine/judgement/CMakeFiles/cuexis_judgement.dir/src/gameplay_graph.cpp.obj
+[68/332] Building CXX object engine/judgement/CMakeFiles/cuexis_judgement.dir/src/input.cpp.obj
+[69/332] Building CXX object engine/judgement/CMakeFiles/cuexis_judgement.dir/src/gameplay_prepare.cpp.obj
+[70/332] Building CXX object engine/judgement/CMakeFiles/cuexis_judgement.dir/src/kernel_types.cpp.obj
+[71/332] Building CXX object engine/judgement/CMakeFiles/cuexis_judgement.dir/src/gameplay_assembler.cpp.obj
+[72/332] Building CXX object engine/judgement/CMakeFiles/cuexis_judgement.dir/src/recovery.cpp.obj
+[73/332] Building CXX object engine/judgement/CMakeFiles/cuexis_judgement.dir/src/ruleset.cpp.obj
+[74/332] Building CXX object engine/judgement/CMakeFiles/cuexis_judgement.dir/src/publication.cpp.obj
+[75/332] Building CXX object engine/judgement/CMakeFiles/cuexis_judgement.dir/src/execution_kernel.cpp.obj
+[76/332] Building CXX object engine/judgement/CMakeFiles/cuexis_judgement.dir/src/session.cpp.obj
+[77/332] Building CXX object engine/render/CMakeFiles/cuexis_render.dir/src/render_scene.cpp.obj
+[78/332] Building CXX object engine/judgement/CMakeFiles/cuexis_judgement.dir/src/timebase.cpp.obj
+[79/332] Building CXX object engine/audio/CMakeFiles/cuexis_audio.dir/src/audio_config.cpp.obj
+[80/332] Building CXX object engine/judgement/CMakeFiles/cuexis_judgement.dir/src/recovery_codec.cpp.obj
+[81/332] Building CXX object engine/audio/CMakeFiles/cuexis_audio.dir/src/audio_transport.cpp.obj
+[82/332] Linking CXX static library lib\libcuexis_project.a
+[83/332] Building CXX object engine/audio/CMakeFiles/cuexis_audio.dir/src/audio_clip.cpp.obj
+[84/332] Linking CXX static library lib\libcuexis_animation.a
+[85/332] Building CXX object engine/cxc/CMakeFiles/cuexis_cxc.dir/src/cxc_hash_internal.cpp.obj
+[86/332] Building CXX object engine/cxc/CMakeFiles/cuexis_cxc.dir/src/cxc_path_internal.cpp.obj
+[87/332] Building CXX object engine/cxc/CMakeFiles/cuexis_cxc.dir/src/cxc_manifest_loader.cpp.obj
+[88/332] Building CXX object engine/cxc/CMakeFiles/cuexis_cxc.dir/src/cxc_writer.cpp.obj
+[89/332] Building CXX object engine/cxc/CMakeFiles/cuexis_cxc.dir/src/zip32_envelope_internal.cpp.obj
+[90/332] Building CXX object engine/cxc/CMakeFiles/cuexis_cxc.dir/src/cxc_candidate.cpp.obj
+[91/332] Linking CXX static library lib\libcuexis_behavior.a
+[92/332] Building CXX object engine/cxc/CMakeFiles/cuexis_cxc.dir/src/cxc_package.cpp.obj
+[93/332] Linking CXX static library lib\libcuexis_render.a
+[94/332] Linking CXX static library lib\libcuexis_judgement.a
+[95/332] Building CXX object engine/runtime/CMakeFiles/cuexis_runtime.dir/src/presentation_read.cpp.obj
+[96/332] Linking CXX shared library bin\libcuexis_audio-candidate-0.9d.dll
+[97/332] Linking CXX static library lib\libcuexis_cxc.a
+[98/332] Building CXX object engine/runtime/CMakeFiles/cuexis_runtime.dir/src/chart_world_instantiator.cpp.obj
+[99/332] Building CXX object engine/playback/CMakeFiles/cuexis_playback.dir/src/frame_digest.cpp.obj
+[100/332] Building CXX object engine/playback/CMakeFiles/cuexis_playback.dir/src/frame_digest_version.cpp.obj
+[101/332] Building CXX object engine/playback/CMakeFiles/cuexis_playback.dir/src/presentation_extraction.cpp.obj
+[102/332] Building CXX object engine/runtime/CMakeFiles/cuexis_runtime.dir/src/runtime_session.cpp.obj
+[103/332] Linking CXX static library lib\libcuexis_runtime.a
+[104/332] Building CXX object engine/playback/CMakeFiles/cuexis_playback.dir/src/presentation.cpp.obj
+[105/332] Building CXX object engine/playback/CMakeFiles/cuexis_playback.dir/src/presentation_materializer.cpp.obj
+[106/332] Building CXX object engine/playback/CMakeFiles/cuexis_playback.dir/src/runtime_timeline.cpp.obj
+[107/332] Building CXX object engine/playback/CMakeFiles/cuexis_playback.dir/src/realtime_clock.cpp.obj
+[108/332] Building CXX object engine/playback/CMakeFiles/cuexis_playback.dir/src/playback_source.cpp.obj
+[109/332] Building CXX object engine/gameplay_packed/CMakeFiles/cuexis_gameplay_packed.dir/src/gameplay_capsule.cpp.obj
+[110/332] Linking CXX static library lib\libcuexis_gameplay_packed.a
+[111/332] Building CXX object engine/playback/CMakeFiles/cuexis_playback.dir/src/gameplay_candidate.cpp.obj
+[112/332] Building CXX object engine/playback/CMakeFiles/cuexis_playback.dir/src/gameplay_configuration.cpp.obj
+[113/332] Building CXX object engine/player_support/CMakeFiles/cuexis_player_support.dir/src/config_json.cpp.obj
+[114/332] Building CXX object engine/playback/CMakeFiles/cuexis_playback.dir/src/gameplay_entry.cpp.obj
+[115/332] Building CXX object engine/player_support/CMakeFiles/cuexis_player_support.dir/src/config_location.cpp.obj
+[116/332] Building CXX object engine/playback/CMakeFiles/cuexis_playback.dir/src/presentation_projection.cpp.obj
+[117/332] Building CXX object engine/player_support/CMakeFiles/cuexis_player_support.dir/src/audio_device_profile.cpp.obj
+[118/332] Building CXX object engine/player_support/CMakeFiles/cuexis_player_support.dir/src/resolved_config.cpp.obj
+[119/332] Building CXX object engine/player_support/CMakeFiles/cuexis_player_support.dir/src/user_preferences.cpp.obj
+[120/332] Building CXX object engine/player_support/CMakeFiles/cuexis_player_support.dir/src/player_command.cpp.obj
+[121/332] Building CXX object engine/debug/CMakeFiles/cuexis_debug.dir/src/debug_draw.cpp.obj
+[122/332] Building CXX object engine/presentation_renderer/CMakeFiles/cuexis_presentation_renderer.dir/src/draw_command.cpp.obj
+[123/332] Building CXX object engine/presentation_renderer/CMakeFiles/cuexis_presentation_renderer.dir/src/presentation_renderer.cpp.obj
+[124/332] Building CXX object app/execution_host/CMakeFiles/cuexis_execution_host_support.dir/host_protocol.cpp.obj
+[125/332] Building CXX object engine/playback/CMakeFiles/cuexis_playback.dir/src/playback_session.cpp.obj
+[126/332] Building CXX object app/execution_host/CMakeFiles/cuexis_execution_host_support.dir/audio_owner.cpp.obj
+[127/332] Building CXX object app/execution_host/CMakeFiles/cuexis_execution_host_support.dir/host_candidate.cpp.obj
+[128/332] Building CXX object app/execution_host/CMakeFiles/cuexis_execution_host_support.dir/frame_observation.cpp.obj
+[129/332] Building CXX object app/execution_host/CMakeFiles/cuexis_execution_host_support.dir/capture_route.cpp.obj
+[130/332] Building CXX object app/execution_host/CMakeFiles/cuexis_execution_host_support.dir/audio_worker.cpp.obj
+[131/332] Building CXX object app/execution_host/CMakeFiles/cuexis_execution_host_support.dir/frame_storage.cpp.obj
+[132/332] Linking CXX static library lib\libcuexis_player_support.a
+[133/332] Linking CXX static library lib\libcuexis_debug.a
+[134/332] Building CXX object tests/core/CMakeFiles/cuexis_core_tests.dir/diagnostic_tests.cpp.obj
+[135/332] Building CXX object app/execution_host/CMakeFiles/cuexis_execution_host_support.dir/frame_delivery.cpp.obj
+[136/332] Building CXX object tests/core/CMakeFiles/cuexis_core_tests.dir/error_tests.cpp.obj
+[137/332] Building CXX object tests/core/CMakeFiles/cuexis_core_tests.dir/log_sink_tests.cpp.obj
+[138/332] Linking CXX shared library bin\libcuexis_playback-candidate-0.9d.dll
+[139/332] Linking CXX static library lib\libcuexis_presentation_renderer.a
+[140/332] Building CXX object tests/core/CMakeFiles/cuexis_core_tests.dir/math_tests.cpp.obj
+[141/332] Building CXX object tests/core/CMakeFiles/cuexis_core_tests.dir/result_tests.cpp.obj
+[142/332] Building CXX object tests/core/CMakeFiles/cuexis_core_tests.dir/sha256_tests.cpp.obj
+[143/332] Building CXX object tests/core/CMakeFiles/cuexis_core_tests.dir/thread_checker_tests.cpp.obj
+[144/332] Building CXX object tests/core/CMakeFiles/cuexis_core_tests.dir/uuid_tests.cpp.obj
+[145/332] Building CXX object tests/core/CMakeFiles/cuexis_core_tests.dir/version_tests.cpp.obj
+[146/332] Building CXX object tests/audio/CMakeFiles/cuexis_audio_tests.dir/audio_tests.cpp.obj
+[147/332] Building CXX object tests/audio/CMakeFiles/cuexis_audio_tests.dir/fake_audio_transport_tests.cpp.obj
+[148/332] Building CXX object tests/content/CMakeFiles/cuexis_content_tests.dir/content_provider_tests.cpp.obj
+[149/332] Building CXX object tests/filesystem/CMakeFiles/cuexis_filesystem_tests.dir/secure_file_tests.cpp.obj
+[150/332] Building CXX object tests/json_support/CMakeFiles/cuexis_json_support_tests.dir/parse_tests.cpp.obj
+[151/332] Building CXX object tests/json_support/CMakeFiles/cuexis_json_support_tests.dir/reader_tests.cpp.obj
+[152/332] Building CXX object app/execution_host/CMakeFiles/cuexis_execution_host_support.dir/session_worker.cpp.obj
+[153/332] Building CXX object tests/json_support/CMakeFiles/cuexis_json_support_tests.dir/schema_tests.cpp.obj
+[154/332] Building CXX object tests/json_support/CMakeFiles/cuexis_json_support_tests.dir/schema_artifact_tests.cpp.obj
+[155/332] Linking CXX static library lib\libcuexis_execution_host_support.a
+[156/332] Building CXX object tests/project/CMakeFiles/cuexis_project_tests.dir/asset_index_reader_tests.cpp.obj
+[157/332] Building CXX object tests/project/CMakeFiles/cuexis_project_tests.dir/project_loader_tests.cpp.obj
+[158/332] Building CXX object tests/assets/CMakeFiles/cuexis_assets_tests.dir/asset_types_tests.cpp.obj
+[159/332] Building CXX object tests/assets/CMakeFiles/cuexis_assets_tests.dir/asset_database_tests.cpp.obj
+[160/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/animation_template_loader_tests.cpp.obj
+[161/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/canonical_chart_loader_tests.cpp.obj
+[162/332] Building CXX object tests/assets/CMakeFiles/cuexis_assets_tests.dir/resource_manager_tests.cpp.obj
+[163/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/candidate_lowering_tests.cpp.obj
+[164/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/candidate_assembler_tests.cpp.obj
+[165/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/canonical_semantic_chart_tests.cpp.obj
+[166/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/cxt_v2_loader_tests.cpp.obj
+[167/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/chart_foundation_capacity_tests.cpp.obj
+[168/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/chart_loader_tests.cpp.obj
+[169/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/cfu_f4_limits_tests.cpp.obj
+[170/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/chart_foundation_hardening_characterization_tests.cpp.obj
+[171/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/chart_migrator_tests.cpp.obj
+[172/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/chart_v4_loader_tests.cpp.obj
+[173/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/chart_runtime_tests.cpp.obj
+[174/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/chart_v4_c2_contract_tests.cpp.obj
+[175/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/chart_writer_tests.cpp.obj
+[176/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/example_chart_tests.cpp.obj
+[177/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/chart_v4_resolver_tests.cpp.obj
+[178/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/limits_tests.cpp.obj
+[179/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/parse_characterization_tests.cpp.obj
+[180/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/packed_chart_primitives_tests.cpp.obj
+[181/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/packed_budget_tests.cpp.obj
+[182/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/packed_atomic_write_tests.cpp.obj
+[183/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/packed_fixture_support.cpp.obj
+[184/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/packed_chart_io_tests.cpp.obj
+[185/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/packed_profile_rejection_tests.cpp.obj
+[186/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/packed_gameplay_static_tests.cpp.obj
+[187/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/packed_semantic_identity_tests.cpp.obj
+[188/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/prepared_semantic_identity_tests.cpp.obj
+[189/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/packed_roundtrip_tests.cpp.obj
+[190/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/rational_beat_tests.cpp.obj
+[191/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/timing_map_tests.cpp.obj
+[192/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/behavior_track_tests.cpp.obj
+[193/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/uuid_tests.cpp.obj
+[194/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_tests.dir/behavior_candidate_tests.cpp.obj
+[195/332] Building CXX object tests/chart/CMakeFiles/cuexis_chart_capacity_probe.dir/chart_capacity_probe.cpp.obj
+[196/332] Building CXX object tests/animation/CMakeFiles/cuexis_animation_tests.dir/animation_compiler_tests.cpp.obj
+[197/332] Building CXX object tests/animation/CMakeFiles/cuexis_animation_tests.dir/animation_sampler_tests.cpp.obj
+[198/332] Building CXX object tests/animation/CMakeFiles/cuexis_animation_tests.dir/animation_mixer_tests.cpp.obj
+[199/332] Building CXX object tests/cxc/CMakeFiles/cuexis_cxc_tests.dir/cfu_f4_safety_tests.cpp.obj
+[200/332] Building CXX object tests/cxc/CMakeFiles/cuexis_cxc_tests.dir/cxc_binary_fixture_tests.cpp.obj
+[201/332] Building CXX object tests/animation/CMakeFiles/cuexis_s4g_performance_probe.dir/animation_performance_probe.cpp.obj
+[202/332] Building CXX object tests/cxc/CMakeFiles/cuexis_cxc_tests.dir/cxc_candidate_bridge_tests.cpp.obj
+[203/332] Building CXX object tests/cxc/CMakeFiles/cuexis_cxc_tests.dir/cxc_manifest_loader_tests.cpp.obj
+[204/332] Building CXX object tests/cxc/CMakeFiles/cuexis_cxc_tests.dir/cxc_test_support.cpp.obj
+[205/332] Building CXX object tests/cxc/CMakeFiles/cuexis_cxc_tests.dir/cxc_package_tests.cpp.obj
+[206/332] Building CXX object tests/cxc/CMakeFiles/cuexis_cxc_tests.dir/parse_characterization_tests.cpp.obj
+[207/332] Building CXX object tests/behavior/CMakeFiles/cuexis_behavior_tests.dir/behavior_component_tests.cpp.obj
+[208/332] Building CXX object tests/cxc/CMakeFiles/cuexis_cxc_tests.dir/zip32_envelope_tests.cpp.obj
+[209/332] Building CXX object tests/behavior/CMakeFiles/cuexis_behavior_tests.dir/behavior_system_tests.cpp.obj
+[210/332] Building CXX object tests/gameplay/CMakeFiles/cuexis_gameplay_tests.dir/gameplay_tag_tests.cpp.obj
+[211/332] Building CXX object tests/judgement/CMakeFiles/cuexis_judgement_tests.dir/claim_key_tests.cpp.obj
+[212/332] Building CXX object tests/judgement/CMakeFiles/cuexis_judgement_tests.dir/shared_sequence_tests.cpp.obj
+[213/332] Building CXX object tests/judgement/CMakeFiles/cuexis_judgement_tests.dir/execution_profile_tests.cpp.obj
+[214/332] Building CXX object tests/judgement/CMakeFiles/cuexis_judgement_tests.dir/publication_tests.cpp.obj
+[215/332] Building CXX object tests/judgement/CMakeFiles/cuexis_judgement_tests.dir/execution_kernel_tests.cpp.obj
+[216/332] Building CXX object tests/judgement/CMakeFiles/cuexis_judgement_tests.dir/execution_reference.cpp.obj
+[217/332] Building CXX object tests/judgement/CMakeFiles/cuexis_judgement_tests.dir/gameplay_assembler_tests.cpp.obj
+[218/332] Building CXX object tests/judgement/CMakeFiles/cuexis_judgement_tests.dir/gameplay_identity_tests.cpp.obj
+[219/332] Building CXX object tests/judgement/CMakeFiles/cuexis_judgement_tests.dir/gameplay_graph_tests.cpp.obj
+[220/332] Building CXX object tests/judgement/CMakeFiles/cuexis_judgement_tests.dir/gameplay_measure_compile_tests.cpp.obj
+[221/332] Building CXX object tests/judgement/CMakeFiles/cuexis_judgement_tests.dir/input_mapping_tests.cpp.obj
+[222/332] Building CXX object tests/judgement/CMakeFiles/cuexis_judgement_tests.dir/gameplay_pattern_compile_tests.cpp.obj
+[223/332] Building CXX object tests/judgement/CMakeFiles/cuexis_judgement_tests.dir/fold_recovery_tests.cpp.obj
+[224/332] Building CXX object tests/judgement/CMakeFiles/cuexis_judgement_tests.dir/judgement_boundary_tests.cpp.obj
+[225/332] Building CXX object tests/judgement/CMakeFiles/cuexis_judgement_tests.dir/judgement_diagnostic_tests.cpp.obj
+[226/332] Building CXX object tests/judgement/CMakeFiles/cuexis_judgement_tests.dir/gameplay_prepare_tests.cpp.obj
+[227/332] Building CXX object tests/judgement/CMakeFiles/cuexis_judgement_tests.dir/judgement_session_tests.cpp.obj
+[228/332] Building CXX object tests/rpa/CMakeFiles/cuexis_rpa_tests.dir/rpa_b1_fixture.cpp.obj
+[229/332] Building CXX object tests/judgement/CMakeFiles/cuexis_judgement_tests.dir/observation_normalization_tests.cpp.obj
+[230/332] Building CXX object tests/judgement/CMakeFiles/cuexis_judgement_tests.dir/timebase_tests.cpp.obj
+[231/332] Building CXX object tests/rpa/CMakeFiles/cuexis_rpa_tests.dir/rpa_b2_fixture.cpp.obj
+[232/332] Building CXX object tests/rpa/CMakeFiles/cuexis_rpa_tests.dir/rpa_b1_tests.cpp.obj
+[233/332] Building CXX object tests/rpa/CMakeFiles/cuexis_rpa_tests.dir/rpa_b2_tests.cpp.obj
+[234/332] Building CXX object tests/rpa/CMakeFiles/cuexis_rpa_tests.dir/rpa_b3_clock_tests.cpp.obj
+[235/332] Building CXX object tests/rpa/CMakeFiles/cuexis_host_protocol_tests.dir/execution_boundary_tests.cpp.obj
+[236/332] Building CXX object tests/rpa/CMakeFiles/cuexis_rpa_tests.dir/__/judgement/execution_reference.cpp.obj
+[237/332] Building CXX object tests/rpa/CMakeFiles/cuexis_host_protocol_tests.dir/__/pd/control_binding_tests.cpp.obj
+[238/332] Building CXX object tests/rpa/CMakeFiles/cuexis_host_protocol_tests.dir/rpa_b4_tests.cpp.obj
+[239/332] Building CXX object tests/rpa/CMakeFiles/cuexis_execution_host_tests.dir/rpa_b5_audio_tests.cpp.obj
+[240/332] Building CXX object tests/rpa/CMakeFiles/cuexis_host_protocol_tests.dir/__/pd/delivery_retirement_tests.cpp.obj
+[241/332] Building CXX object tests/rpa/CMakeFiles/cuexis_execution_host_tests.dir/rpa_b5_failure_tests.cpp.obj
+[242/332] Building CXX object tests/rpa/CMakeFiles/cuexis_execution_host_tests.dir/rpa_b5_capture_tests.cpp.obj
+[243/332] Building CXX object tests/rpa/CMakeFiles/cuexis_rpa_tests.dir/rpa_b3_tests.cpp.obj
+[244/332] Building CXX object tests/rpa/CMakeFiles/cuexis_execution_host_tests.dir/__/pd/retained_control_tests.cpp.obj
+[245/332] Building CXX object tests/rpa/CMakeFiles/cuexis_execution_host_tests.dir/__/__/app/player/src/snapshot_scene.cpp.obj
+[246/332] Building CXX object tests/rpa/CMakeFiles/cuexis_execution_host_tests.dir/rpa_b5_host_tests.cpp.obj
+[247/332] Building CXX object tests/rpa/CMakeFiles/cuexis_execution_host_tests.dir/rpa_b5_session_tests.cpp.obj
+[248/332] Building CXX object tests/gameplay_packed/CMakeFiles/cuexis_gameplay_packed_tests.dir/hash_work_tests.cpp.obj
+[249/332] Building CXX object tests/rpa/CMakeFiles/cuexis_execution_host_tests.dir/__/__/app/player/src/execution_host.cpp.obj
+[250/332] Building CXX object tests/gameplay_packed/CMakeFiles/cuexis_gameplay_packed_tests.dir/__/chart/packed_fixture_support.cpp.obj
+[251/332] Building CXX object tests/debug/CMakeFiles/cuexis_debug_tests.dir/debug_draw_tests.cpp.obj
+[252/332] Building CXX object tests/render/CMakeFiles/cuexis_render_tests.dir/render_scene_tests.cpp.obj
+[253/332] Building CXX object tests/gameplay_packed/CMakeFiles/cuexis_gameplay_packed_tests.dir/hash_core_tests.cpp.obj
+[254/332] Building CXX object tests/gameplay_packed/CMakeFiles/cuexis_gameplay_packed_tests.dir/gameplay_capsule_tests.cpp.obj
+[255/332] Building CXX object tests/gameplay_packed/CMakeFiles/cuexis_gameplay_packed_tests.dir/revision4_entry_tests.cpp.obj
+[256/332] Building CXX object tests/runtime/CMakeFiles/cuexis_runtime_tests.dir/animation_runtime_tests.cpp.obj
+[257/332] Building CXX object tests/runtime/CMakeFiles/cuexis_runtime_tests.dir/migration_equivalence_tests.cpp.obj
+[258/332] Building CXX object tests/runtime/CMakeFiles/cuexis_runtime_tests.dir/behavior_runtime_tests.cpp.obj
+[259/332] Building CXX object tests/runtime/CMakeFiles/cuexis_runtime_tests.dir/runtime_session_tests.cpp.obj
+[260/332] Building CXX object tests/world/CMakeFiles/cuexis_world_tests.dir/world_tests.cpp.obj
+[261/332] Building CXX object tests/world/CMakeFiles/cuexis_world_tests.dir/property_tests.cpp.obj
+[262/332] Building CXX object tests/playback/CMakeFiles/cuexis_playback_tests.dir/frame_digest_tests.cpp.obj
+[263/332] Building CXX object tests/world/CMakeFiles/cuexis_world_tests.dir/__/pd/world_transaction_tests.cpp.obj
+[264/332] Building CXX object tests/playback/CMakeFiles/cuexis_playback_tests.dir/mode_parity_tests.cpp.obj
+[265/332] Building CXX object tests/runtime/CMakeFiles/cuexis_runtime_tests.dir/__/pd/runtime_transaction_tests.cpp.obj
+[266/332] Building CXX object tests/playback/CMakeFiles/cuexis_playback_tests.dir/playback_candidate_tests.cpp.obj
+[267/332] Building CXX object tests/playback/CMakeFiles/cuexis_playback_tests.dir/__/pd/presentation_state_tests.cpp.obj
+[268/332] Building CXX object tests/playback/CMakeFiles/cuexis_playback_tests.dir/playback_identity_tests.cpp.obj
+[269/332] Building CXX object tests/playback/CMakeFiles/cuexis_playback_tests.dir/playback_migration_equivalence_tests.cpp.obj
+[270/332] Building CXX object tests/playback/CMakeFiles/cuexis_playback_tests.dir/playback_source_tests.cpp.obj
+[271/332] Building CXX object tests/playback/CMakeFiles/cuexis_playback_tests.dir/preparation_characterization_tests.cpp.obj
+[272/332] Building CXX object tests/playback/CMakeFiles/cuexis_playback_tests.dir/playback_session_tests.cpp.obj
+[273/332] Building CXX object tests/playback/CMakeFiles/cuexis_playback_tests.dir/playback_v4_animation_tests.cpp.obj
+[274/332] Building CXX object tests/playback/CMakeFiles/cuexis_playback_tests.dir/playback_v4_prepare_tests.cpp.obj
+[275/332] Building CXX object tests/playback/CMakeFiles/cuexis_playback_tests.dir/presentation_shader_budget_tests.cpp.obj
+[276/332] Building CXX object tests/playback/CMakeFiles/cuexis_playback_tests.dir/presentation_shader_tests.cpp.obj
+[277/332] Building CXX object tests/playback/CMakeFiles/cuexis_playback_tests.dir/runtime_timeline_tests.cpp.obj
+[278/332] Building CXX object tests/playback/CMakeFiles/cuexis_playback_tests.dir/__/__/engine/playback/src/frame_digest_version.cpp.obj
+[279/332] Building CXX object tests/playback/CMakeFiles/cuexis_playback_tests.dir/__/presentation/validation_sink.cpp.obj
+[280/332] Building CXX object tests/playback/CMakeFiles/cuexis_playback_tests.dir/__/__/engine/playback/src/presentation_extraction.cpp.obj
+[281/332] Building CXX object tests/playback/CMakeFiles/cuexis_playback_tests.dir/presentation_tests.cpp.obj
+[282/332] Building CXX object tests/playback/CMakeFiles/cuexis_playback_tests.dir/__/pd/projection_integration_tests.cpp.obj
+FAILED: [code=1] tests/playback/CMakeFiles/cuexis_playback_tests.dir/__/pd/projection_integration_tests.cpp.obj 
+C:\msys64\ucrt64\bin\c++.exe -DCUEXIS_ENABLE_CHART_V5_CANDIDATE=1 -DCUEXIS_EXPERIMENTAL_BUILD=1 -DCUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE=1 -DCUEXIS_PLAYBACK_PARSE_COUNT_PROBE_UNAVAILABLE=1 -DCUEXIS_S7A78_FIXTURE_DIR=\"D:/Cuexis-redesign/out/build/rpa-boundary-mingw-shared/s7a78-public-fixture\" -DCUEXIS_SOURCE_DIR=\"D:/Cuexis-redesign\" -ID:/Cuexis-redesign/engine/assets/include -ID:/Cuexis-redesign/engine/core/internal -ID:/Cuexis-redesign/engine/json_support/src -ID:/Cuexis-redesign/engine/playback/src -ID:/Cuexis-redesign/engine/runtime/internal -ID:/Cuexis-redesign/engine/runtime/include -ID:/Cuexis-redesign/tests/presentation -ID:/Cuexis-redesign/engine/judgement/internal -ID:/Cuexis-redesign/engine/audio/include -ID:/Cuexis-redesign/out/build/rpa-boundary-mingw-shared/generated -ID:/Cuexis-redesign/engine/core/include -ID:/Cuexis-redesign/engine/chart/include -ID:/Cuexis-redesign/engine/cxc/include -ID:/Cuexis-redesign/engine/content/include -ID:/Cuexis-redesign/engine/project/include -ID:/Cuexis-redesign/engine/playback/include -ID:/Cuexis-redesign/engine/gameplay_packed/include -ID:/Cuexis-redesign/engine/judgement/include -ID:/Cuexis-redesign/engine/filesystem/include -ID:/Cuexis-redesign/engine/json_support/include -isystem D:/Cuexis-redesign/out/build/rpa-boundary-mingw-shared/vcpkg_installed/x64-mingw-static/include -isystem D:/Cuexis-redesign/out/build/rpa-boundary-mingw-shared/vcpkg_installed/x64-mingw-static/share -g -std=c++20 -fvisibility=hidden -fno-keep-inline-dllexport -Wall -Wextra -Wpedantic -Wno-missing-field-initializers -Wno-error=maybe-uninitialized -MD -MT tests/playback/CMakeFiles/cuexis_playback_tests.dir/__/pd/projection_integration_tests.cpp.obj -MF tests\playback\CMakeFiles\cuexis_playback_tests.dir\__\pd\projection_integration_tests.cpp.obj.d -o tests/playback/CMakeFiles/cuexis_playback_tests.dir/__/pd/projection_integration_tests.cpp.obj -c D:/Cuexis-redesign/tests/pd/projection_integration_tests.cpp
+In file included from D:/Cuexis-redesign/out/build/rpa-boundary-mingw-shared/vcpkg_installed/x64-mingw-static/include/catch2/catch_tostring.hpp:17,
+                 from D:/Cuexis-redesign/out/build/rpa-boundary-mingw-shared/vcpkg_installed/x64-mingw-static/include/catch2/internal/catch_decomposer.hpp:11,
+                 from D:/Cuexis-redesign/out/build/rpa-boundary-mingw-shared/vcpkg_installed/x64-mingw-static/include/catch2/internal/catch_assertion_handler.hpp:12,
+                 from D:/Cuexis-redesign/out/build/rpa-boundary-mingw-shared/vcpkg_installed/x64-mingw-static/include/catch2/internal/catch_test_macro_impl.hpp:12,
+                 from D:/Cuexis-redesign/out/build/rpa-boundary-mingw-shared/vcpkg_installed/x64-mingw-static/include/catch2/catch_test_macros.hpp:11,
+                 from D:/Cuexis-redesign/tests/judgement/gameplay_test_fixture.hpp:17,
+                 from D:/Cuexis-redesign/tests/judgement/execution_test_fixture.hpp:3,
+                 from D:/Cuexis-redesign/tests/rpa/execution_fixture.hpp:2,
+                 from D:/Cuexis-redesign/tests/pd/projection_integration_tests.cpp:1:
+D:/Cuexis-redesign/tests/pd/projection_integration_tests.cpp: In function 'void CATCH2_INTERNAL_TEST_5()':
+D:/Cuexis-redesign/tests/pd/projection_integration_tests.cpp:79:24: error: 'count_if' is not a member of 'std::ranges'; did you mean 'std::count_if'?
+   79 |     CHECK(std::ranges::count_if(diagnostics->items(),
+      |                        ^~~~~~~~
+In file included from C:/msys64/ucrt64/include/c++/16.1.0/chrono:57,
+                 from D:/Cuexis-redesign/out/build/rpa-boundary-mingw-shared/vcpkg_installed/x64-mingw-static/include/catch2/catch_tostring.hpp:541:
+C:/msys64/ucrt64/include/c++/16.1.0/bits/stl_algo.h:4070:5: note: 'std::count_if' declared here
+ 4070 |     count_if(_InputIterator __first, _InputIterator __last, _Predicate __pred)
+      |     ^~~~~~~~
+D:/Cuexis-redesign/tests/pd/projection_integration_tests.cpp:79:24: error: 'count_if' is not a member of 'std::ranges'; did you mean 'std::count_if'?
+   79 |     CHECK(std::ranges::count_if(diagnostics->items(),
+      |                        ^~~~~~~~
+C:/msys64/ucrt64/include/c++/16.1.0/bits/stl_algo.h:4070:5: note: 'std::count_if' declared here
+ 4070 |     count_if(_InputIterator __first, _InputIterator __last, _Predicate __pred)
+      |     ^~~~~~~~
+D:/Cuexis-redesign/tests/pd/projection_integration_tests.cpp:79:24: error: 'count_if' is not a member of 'std::ranges'; did you mean 'std::count_if'?
+   79 |     CHECK(std::ranges::count_if(diagnostics->items(),
+      |                        ^~~~~~~~
+C:/msys64/ucrt64/include/c++/16.1.0/bits/stl_algo.h:4070:5: note: 'std::count_if' declared here
+ 4070 |     count_if(_InputIterator __first, _InputIterator __last, _Predicate __pred)
+      |     ^~~~~~~~
+[283/332] Building CXX object tests/playback/CMakeFiles/cuexis_playback_tests.dir/__/pd/publication_integration_tests.cpp.obj
+[284/332] Building CXX object tests/playback/CMakeFiles/cuexis_playback_tests.dir/__/pd/projection_adapter_tests.cpp.obj
+[285/332] Building CXX object tests/playback/CMakeFiles/cuexis_playback_tests.dir/__/pd/software_transaction_integration_tests.cpp.obj
+ninja: build stopped: subcommand failed.

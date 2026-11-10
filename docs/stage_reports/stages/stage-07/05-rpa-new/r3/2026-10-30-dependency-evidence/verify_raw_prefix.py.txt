@@ -1,0 +1,39 @@
+from pathlib import Path
+import hashlib,json,os,subprocess
+root=Path.cwd();base=Path(__file__).resolve().parent;out=base/'dependency-raw-prefix-v1';out.mkdir(exist_ok=False)
+source=out/'source';source.mkdir()
+(source/'CMakeLists.txt').write_text(r'''cmake_minimum_required(VERSION 3.25)
+project(DependencyCanary LANGUAGES CXX)
+set(probe "${CMAKE_BINARY_DIR}/prefix-probe")
+file(MAKE_DIRECTORY "${probe}")
+file(WRITE "${probe}/unique.hpp" "\n")
+file(WRITE "${probe}/main.cpp" "#include \"unique.hpp\"\nint main(){}\n")
+execute_process(COMMAND "${CMAKE_CXX_COMPILER}" /nologo /showIncludes /c main.cpp
+  WORKING_DIRECTORY "${probe}" OUTPUT_VARIABLE raw ERROR_VARIABLE err RESULT_VARIABLE code ENCODING NONE)
+if(NOT code EQUAL 0)
+  message(FATAL_ERROR "prefix probe failed: ${code} ${err}")
+endif()
+if("${raw}" MATCHES "(^|\n)([^:\n][^:\n]+:[^:\n]*[^: \n][^: \n]:?[ \t]+)([A-Za-z]:\\\\|\\./|\\.\\\\|/)")
+  set(CMAKE_CL_SHOWINCLUDES_PREFIX "${CMAKE_MATCH_2}")
+else()
+  message(FATAL_ERROR "prefix regex did not match")
+endif()
+add_executable(canary main.cpp)
+''',encoding='ascii')
+(source/'value.hpp').write_text('#pragma once\n#define CANARY_VALUE 41\n',encoding='ascii')
+(source/'main.cpp').write_text('#include "value.hpp"\nint main(){return CANARY_VALUE;}\n',encoding='ascii')
+build=out/'build';commands=[]
+def run(args,label):
+ commands.append(dict(label=label,args=args));(out/'commands.json').write_text(json.dumps(commands,indent=2))
+ with (out/(label+'.log')).open('xb') as f:r=subprocess.run(args,cwd=root,stdout=f,stderr=subprocess.STDOUT)
+ if r.returncode:raise RuntimeError((label,r.returncode))
+run(['cmake','-S',str(source),'-B',str(build),'-G','Ninja','-DCMAKE_BUILD_TYPE=Release'],'configure')
+run(['cmake','--build',str(build),'--parallel','1'],'initial-build')
+cache=dict(l.split('=',1) for l in (build/'CMakeCache.txt').read_text().splitlines() if '=' in l and not l.startswith(('#','//')));ninja=cache['CMAKE_MAKE_PROGRAM:FILEPATH']
+deps=subprocess.check_output([ninja,'-C',str(build),'-t','deps']);(out/'deps.log').write_bytes(deps)
+first=subprocess.run([str(build/'canary.exe')]).returncode
+(source/'value.hpp').write_text('#pragma once\n#define CANARY_VALUE 42\n',encoding='ascii')
+run([ninja,'-C',str(build),'-d','explain'],'header-rebuild')
+second=subprocess.run([str(build/'canary.exe')]).returncode
+receipt=dict(initial=first,after_header_edit=second,header_dependency_observed=b'value.hpp' in deps,correct=first==41 and second==42 and b'value.hpp' in deps,scope='Raw ENCODING NONE showIncludes prefix, preserving compiler bytes in Ninja rules')
+(out/'results.json').write_text(json.dumps(receipt,indent=2),encoding='utf-8');print(json.dumps(receipt));assert receipt['correct']

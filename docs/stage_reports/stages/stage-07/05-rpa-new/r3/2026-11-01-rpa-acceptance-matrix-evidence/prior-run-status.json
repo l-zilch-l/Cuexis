@@ -1,0 +1,566 @@
+{
+  "scope": "Terminal state of the acceptance-matrix run that was aborted by disk exhaustion, as recorded by its own manifest and stdout. It documents why the current run is the first complete execution of the same eleven rows, and it is not itself a matrix result.",
+  "run": "D:\\Cuexis-redesign\\out\\rpa-acceptance\\20261031-220604-9e3ab6ac",
+  "manifest": {
+    "path": "D:\\Cuexis-redesign\\out\\rpa-acceptance\\20261031-220604-9e3ab6ac\\manifest.json",
+    "sha256": "624fc96da0736a6ba190b5ec10a677a34f42d39a15399ea3532ae4558ddbac7c",
+    "bytes": 8029901
+  },
+  "log": {
+    "path": "D:\\Cuexis-redesign\\out\\rpa-acceptance\\matrix-v1-20261031.log.txt",
+    "sha256": "6fcc4f568a3025b17d54bc30409648eadf98d517f469d3ca0730a54d0281330d",
+    "bytes": 3603,
+    "tail": [
+      "msvc-off-headless-debug build: exit=0",
+      "msvc-off-headless-debug ctest: exit=0",
+      "msvc-off-release configure: exit=0",
+      "msvc-off-release build: exit=0",
+      "msvc-off-release ctest: exit=0",
+      "msvc-off-headless-release configure: exit=0",
+      "msvc-off-headless-release build: exit=0",
+      "msvc-off-headless-release ctest: exit=0",
+      "msvc-off-shared-debug configure: exit=0",
+      "msvc-off-shared-debug build: exit=0",
+      "msvc-off-shared-debug ctest: exit=8",
+      "Traceback (most recent call last):",
+      "  File \"D:\\Cuexis-redesign\\tools\\verification\\run_rpa_acceptance_matrix.py\", line 173, in <module>",
+      "    raise SystemExit(main())",
+      "                     ~~~~^^",
+      "  File \"D:\\Cuexis-redesign\\tools\\verification\\run_rpa_acceptance_matrix.py\", line 135, in main",
+      "    (run / f\"{row}-{name}\").write_bytes(artifact.read_bytes())",
+      "    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^",
+      "  File \"C:\\msys64\\ucrt64\\lib\\python3.14\\pathlib\\__init__.py\", line 796, in write_bytes",
+      "    with self.open(mode='wb') as f:",
+      "         ~~~~~~~~~^^^^^^^^^^^",
+      "  File \"C:\\msys64\\ucrt64\\lib\\python3.14\\pathlib\\__init__.py\", line 771, in open",
+      "    return io.open(self, mode, buffering, encoding, errors, newline)",
+      "           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+      "OSError: [Errno 28] No space left on device: 'D:\\\\Cuexis-redesign\\\\out\\\\rpa-acceptance\\\\20261031-220604-9e3ab6ac\\\\msvc-off-shared-debug-LastTest.log'"
+    ]
+  },
+  "source": {
+    "head": "466ff76a0b2a2f45b90280331bded77897ef6421",
+    "worktree_sha256": "9b6217829df4243771b7513e1c4ab64635b0e01d57143c380df5f9f119962078",
+    "implementation_sha256": "9325489520d69a7e6e7bbcb28c8d5122e58b81f343dac812b1bb975adbef6f8d"
+  },
+  "manifest_source_unchanged": null,
+  "rows": [
+    {
+      "name": "msvc-on-debug",
+      "status": "local_pass",
+      "test_counts": [
+        100,
+        0,
+        1416
+      ],
+      "skipped_tests": [
+        "61/1416 Test   #76: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.08 sec"
+      ],
+      "phases": [
+        {
+          "phase": "configure",
+          "exit_code": 0,
+          "elapsed_seconds": 24.874342399998568,
+          "log": "msvc-on-debug-configure.log",
+          "log_sha256": "add82d45106da021f3ce45f674d35e9c3a6c5681a71359f347ec8d8fcbe93a4f"
+        },
+        {
+          "phase": "build",
+          "exit_code": 0,
+          "elapsed_seconds": 212.3564761000016,
+          "log": "msvc-on-debug-build.log",
+          "log_sha256": "dad6dbb26163ba5ae08afeb7141e3c4a406db9feb2c159290a03141650949d79"
+        },
+        {
+          "phase": "ctest",
+          "exit_code": 0,
+          "elapsed_seconds": 462.2285879999981,
+          "log": "msvc-on-debug-ctest.log",
+          "log_sha256": "661a4d640c8d09fa6ec26f3f4c90b177f5ecc8b93b6e5063aa45484b74056a9c"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-1",
+          "exit_code": 0,
+          "elapsed_seconds": 4.071808400003647,
+          "log": "msvc-on-debug-cuexis_execution_host_tests-budget-1.log",
+          "log_sha256": "82f005aab284b6d08cba42074ba7f0bd53b89c1233923409ba4e624dbb0a1fc1"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-2",
+          "exit_code": 0,
+          "elapsed_seconds": 4.0292449999979,
+          "log": "msvc-on-debug-cuexis_execution_host_tests-budget-2.log",
+          "log_sha256": "70da7d1ecccff249fe615f50b6167d10da67d9f9c79fff433a595f8b270c0d71"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-3",
+          "exit_code": 0,
+          "elapsed_seconds": 3.861262299993541,
+          "log": "msvc-on-debug-cuexis_execution_host_tests-budget-3.log",
+          "log_sha256": "8257acccac72c3f4a9cc4292c44679bc5b567a25750d6133c8b00f0d2dc8837d"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-4",
+          "exit_code": 0,
+          "elapsed_seconds": 4.019678299999214,
+          "log": "msvc-on-debug-cuexis_execution_host_tests-budget-4.log",
+          "log_sha256": "0be101a17395b3aeed1f41a24e934d1057116d8293965b580c764b9f3bdfa511"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-5",
+          "exit_code": 0,
+          "elapsed_seconds": 3.932536899999832,
+          "log": "msvc-on-debug-cuexis_execution_host_tests-budget-5.log",
+          "log_sha256": "8610d075ebe0cd493e4d1c923470bc7b5f54585acd30659c53532375e9c15187"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-1",
+          "exit_code": 0,
+          "elapsed_seconds": 7.426463999996486,
+          "log": "msvc-on-debug-cuexis_rpa_tests-budget-1.log",
+          "log_sha256": "48628196f58eeb9c010799a483d85119799b41ac24637a77330e8a1a908ad350"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-2",
+          "exit_code": 0,
+          "elapsed_seconds": 7.3870263999997405,
+          "log": "msvc-on-debug-cuexis_rpa_tests-budget-2.log",
+          "log_sha256": "cefd9e95ee1e364fd31600513b6545cf21a0925caa528811933cf96e2f700507"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-3",
+          "exit_code": 0,
+          "elapsed_seconds": 7.344669999998587,
+          "log": "msvc-on-debug-cuexis_rpa_tests-budget-3.log",
+          "log_sha256": "d860102a0e11027ec5eeff066676f7a3434f97fed273755d39166f70aff0d93e"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-4",
+          "exit_code": 0,
+          "elapsed_seconds": 7.344868799998949,
+          "log": "msvc-on-debug-cuexis_rpa_tests-budget-4.log",
+          "log_sha256": "6d3403948ac64f10148f442203207d2ff7ba9e82b55804278da943667713a003"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-5",
+          "exit_code": 0,
+          "elapsed_seconds": 7.338540700002341,
+          "log": "msvc-on-debug-cuexis_rpa_tests-budget-5.log",
+          "log_sha256": "1b6a45c07d28101bce35a5742fe13ec2c1f72ff586d39fd72ac39be5edb52996"
+        }
+      ],
+      "measurement_count": 20,
+      "source_unchanged": true,
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\candidate-debug"
+    },
+    {
+      "name": "msvc-on-release",
+      "status": "local_pass",
+      "test_counts": [
+        100,
+        0,
+        1416
+      ],
+      "skipped_tests": [
+        "63/1416 Test   #76: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.06 sec"
+      ],
+      "phases": [
+        {
+          "phase": "configure",
+          "exit_code": 0,
+          "elapsed_seconds": 24.276374400003988,
+          "log": "msvc-on-release-configure.log",
+          "log_sha256": "bdb1b5e13537c814cc644a526569d8a551a442d1921e32408a41296201cb1ede"
+        },
+        {
+          "phase": "build",
+          "exit_code": 0,
+          "elapsed_seconds": 305.19479759999376,
+          "log": "msvc-on-release-build.log",
+          "log_sha256": "11f2e02dba2fcfa50b79e17d211c1f09d120e9c96eb6dfe192c2a8fd505abe2b"
+        },
+        {
+          "phase": "ctest",
+          "exit_code": 0,
+          "elapsed_seconds": 673.9529874,
+          "log": "msvc-on-release-ctest.log",
+          "log_sha256": "e4bbc362b58f545cc1c7578a671c3ec95cd00fec6ea8aa67a1f9ec3b04de8742"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-1",
+          "exit_code": 0,
+          "elapsed_seconds": 3.357789000001503,
+          "log": "msvc-on-release-cuexis_execution_host_tests-budget-1.log",
+          "log_sha256": "89b513aa98c7165db06f7e6bdf5dce29191d67b399678e0688ffaa18e862a390"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-2",
+          "exit_code": 0,
+          "elapsed_seconds": 3.230731300005573,
+          "log": "msvc-on-release-cuexis_execution_host_tests-budget-2.log",
+          "log_sha256": "3948c39cea313bf658a6fb8978a3fc3c3a439aeb03199944d2bebbe261b9941a"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-3",
+          "exit_code": 0,
+          "elapsed_seconds": 3.306885300000431,
+          "log": "msvc-on-release-cuexis_execution_host_tests-budget-3.log",
+          "log_sha256": "997fe2b54c3d62077356845c8afb9c2383c7ca3265ab1d42638fc07afe0df497"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-4",
+          "exit_code": 0,
+          "elapsed_seconds": 3.240287200002058,
+          "log": "msvc-on-release-cuexis_execution_host_tests-budget-4.log",
+          "log_sha256": "ba5f9dabf5487ffc526562240f6e4fb6e6d3074364d4a8721e7d5acdbbc26b20"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-5",
+          "exit_code": 0,
+          "elapsed_seconds": 3.2256826000011642,
+          "log": "msvc-on-release-cuexis_execution_host_tests-budget-5.log",
+          "log_sha256": "19021a12eb4b9658f1e26137bc4b9d24d83ab0aebe0561c5a46caa33fdfa62bd"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-1",
+          "exit_code": 0,
+          "elapsed_seconds": 3.7714945999978227,
+          "log": "msvc-on-release-cuexis_rpa_tests-budget-1.log",
+          "log_sha256": "ed120b516531842a7b07859746000263803d32b9660f8e09c581863ff7dfc79b"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-2",
+          "exit_code": 0,
+          "elapsed_seconds": 3.7995837000053143,
+          "log": "msvc-on-release-cuexis_rpa_tests-budget-2.log",
+          "log_sha256": "131255297133876f95a3034aa07c8a39433f8c38b2e0668ab3a4bcaef276fbdb"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-3",
+          "exit_code": 0,
+          "elapsed_seconds": 3.76343139999517,
+          "log": "msvc-on-release-cuexis_rpa_tests-budget-3.log",
+          "log_sha256": "cad821fdcfdd9282a8b5fef4f53ea7e4836c90ec53164eb7422716e6fb21ea8c"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-4",
+          "exit_code": 0,
+          "elapsed_seconds": 3.7364749999978812,
+          "log": "msvc-on-release-cuexis_rpa_tests-budget-4.log",
+          "log_sha256": "f7b4042dd1d01bb40f5b446f0844aa56aacd4a1a0cad04b20625e3c8ffb0476a"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-5",
+          "exit_code": 0,
+          "elapsed_seconds": 3.749298499998986,
+          "log": "msvc-on-release-cuexis_rpa_tests-budget-5.log",
+          "log_sha256": "f7e455415d6414efa461949b6426b5a0cf292e5585940bb24accd7424dca552c"
+        }
+      ],
+      "measurement_count": 20,
+      "source_unchanged": true,
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release"
+    },
+    {
+      "name": "msvc-on-shared-debug",
+      "status": "local_pass",
+      "test_counts": [
+        100,
+        0,
+        1399
+      ],
+      "skipped_tests": [
+        "62/1399 Test   #79: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.10 sec",
+        "1170/1399 Test #1188: Playback v4 prepare reuses the initial Chart parse ..................................................***Skipped   0.05 sec",
+        "1245/1399 Test #1261: Playback legacy prepare reuses the initial Chart parse ..............................................***Skipped   0.07 sec",
+        "1280/1399 Test #1297: PD3b materializer allocation failure retains the public extraction error boundary ...................***Skipped   0.05 sec",
+        "1282/1399 Test #1298: PB-08 owning-copy queries contain allocation failures at the Playback boundary ......................***Skipped   0.10 sec",
+        "1284/1399 Test #1299: PD3a extraction failure after install preserves committed state and override lifetime ...............***Skipped   0.07 sec"
+      ],
+      "phases": [
+        {
+          "phase": "configure",
+          "exit_code": 0,
+          "elapsed_seconds": 24.0124022999953,
+          "log": "msvc-on-shared-debug-configure.log",
+          "log_sha256": "a3dfc79caf85c1652cffc6a0107aedb2a56efa1fcae1fde37daf2545745d9dd1"
+        },
+        {
+          "phase": "build",
+          "exit_code": 0,
+          "elapsed_seconds": 194.29492860000028,
+          "log": "msvc-on-shared-debug-build.log",
+          "log_sha256": "091463321fa68043b7d413989a0358b8852b9a02eeb1884637c53f9c31c0b4f5"
+        },
+        {
+          "phase": "ctest",
+          "exit_code": 0,
+          "elapsed_seconds": 488.21241430000373,
+          "log": "msvc-on-shared-debug-ctest.log",
+          "log_sha256": "898c5698ca6db6ed3b7834012577ce0df7a00a05cca0d5030a9bb38ac9a619ca"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-1",
+          "exit_code": 0,
+          "elapsed_seconds": 4.113039700001536,
+          "log": "msvc-on-shared-debug-cuexis_execution_host_tests-budget-1.log",
+          "log_sha256": "1a68282729ddc751992e1800611ac1b7fe9adfa4946ce94624461ee76dcd2917"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-2",
+          "exit_code": 0,
+          "elapsed_seconds": 4.000478000001749,
+          "log": "msvc-on-shared-debug-cuexis_execution_host_tests-budget-2.log",
+          "log_sha256": "bfb600c4f0e6601b4c0ba01636171da67377b732a267cebc2696fb5d27dc4e78"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-3",
+          "exit_code": 0,
+          "elapsed_seconds": 4.053986700004316,
+          "log": "msvc-on-shared-debug-cuexis_execution_host_tests-budget-3.log",
+          "log_sha256": "d53e5311a31e493fd90aa76611b269e07fa43e37b1acdfc48e1d20273cd4a4cf"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-4",
+          "exit_code": 0,
+          "elapsed_seconds": 3.9798338000036892,
+          "log": "msvc-on-shared-debug-cuexis_execution_host_tests-budget-4.log",
+          "log_sha256": "10d82d4ea2e341cf6d645fe85efc7d2f1dd53ff100e0daff16083d25f8cc8f9a"
+        },
+        {
+          "phase": "cuexis_execution_host_tests-budget-5",
+          "exit_code": 0,
+          "elapsed_seconds": 3.995154600001115,
+          "log": "msvc-on-shared-debug-cuexis_execution_host_tests-budget-5.log",
+          "log_sha256": "fc8612bf72b4c6a59c747706b76df26339c0a1c16e2d082593b1a11ea39c0965"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-1",
+          "exit_code": 0,
+          "elapsed_seconds": 7.415127100000973,
+          "log": "msvc-on-shared-debug-cuexis_rpa_tests-budget-1.log",
+          "log_sha256": "e6dcfbb452ef8a61f576ae59e74dfa3d259509ffb572f9c9e02798a6d45f0881"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-2",
+          "exit_code": 0,
+          "elapsed_seconds": 7.377432000001136,
+          "log": "msvc-on-shared-debug-cuexis_rpa_tests-budget-2.log",
+          "log_sha256": "bb498e1d85e7a8356c6577cdc2ea2acd9f05c2406d7e94b8911320919a9bd0e6"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-3",
+          "exit_code": 0,
+          "elapsed_seconds": 7.384203499997966,
+          "log": "msvc-on-shared-debug-cuexis_rpa_tests-budget-3.log",
+          "log_sha256": "6bf406638c46853f330b05c7bce5dd1bec22bac1e95e1eab9a4fef68f03ab574"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-4",
+          "exit_code": 0,
+          "elapsed_seconds": 7.39119650000066,
+          "log": "msvc-on-shared-debug-cuexis_rpa_tests-budget-4.log",
+          "log_sha256": "5ac555deefaad72f21b2ee4fd94d48be41aaa449c82dc3d9a3e1e96b545c6fac"
+        },
+        {
+          "phase": "cuexis_rpa_tests-budget-5",
+          "exit_code": 0,
+          "elapsed_seconds": 7.425037499997416,
+          "log": "msvc-on-shared-debug-cuexis_rpa_tests-budget-5.log",
+          "log_sha256": "e19b2b141e6f7c8f2697ad25b8e66caadce02a09af9190fce706005d09ba5fb2"
+        }
+      ],
+      "measurement_count": 20,
+      "source_unchanged": true,
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-shared-debug"
+    },
+    {
+      "name": "msvc-off-debug",
+      "status": "local_pass",
+      "test_counts": [
+        100,
+        0,
+        1209
+      ],
+      "skipped_tests": [
+        "62/1209 Test   #76: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.08 sec"
+      ],
+      "phases": [
+        {
+          "phase": "configure",
+          "exit_code": 0,
+          "elapsed_seconds": 20.199609299997974,
+          "log": "msvc-off-debug-configure.log",
+          "log_sha256": "dbed00514c7206fb6a5a98662bbd1df47bb7bfec19c6123e4b463537aee01456"
+        },
+        {
+          "phase": "build",
+          "exit_code": 0,
+          "elapsed_seconds": 161.7578768999956,
+          "log": "msvc-off-debug-build.log",
+          "log_sha256": "2c07b6713d7d23b0cc4bcc8019274cc3dbce7580e9eb916e8dc72d303e8849c8"
+        },
+        {
+          "phase": "ctest",
+          "exit_code": 0,
+          "elapsed_seconds": 394.91205739999714,
+          "log": "msvc-off-debug-ctest.log",
+          "log_sha256": "e18c87085b9175f3186e083cefeb4298e27ea20bd0ce0b2cf2929503a4bd21fe"
+        }
+      ],
+      "measurement_count": 0,
+      "source_unchanged": true,
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\debug"
+    },
+    {
+      "name": "msvc-off-headless-debug",
+      "status": "local_pass",
+      "test_counts": [
+        100,
+        0,
+        1064
+      ],
+      "skipped_tests": [
+        "53/1064 Test   #63: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.07 sec"
+      ],
+      "phases": [
+        {
+          "phase": "configure",
+          "exit_code": 0,
+          "elapsed_seconds": 18.949706499995955,
+          "log": "msvc-off-headless-debug-configure.log",
+          "log_sha256": "43951fb26b52ed82f1f0b3922e486c2fdf9a2f19ef9fdda34b7e6245f9566f59"
+        },
+        {
+          "phase": "build",
+          "exit_code": 0,
+          "elapsed_seconds": 124.10184469999513,
+          "log": "msvc-off-headless-debug-build.log",
+          "log_sha256": "552fd5a7b0f7805d117da479a2bfd3f8e16b637f39650410a23042969f9d42ea"
+        },
+        {
+          "phase": "ctest",
+          "exit_code": 0,
+          "elapsed_seconds": 384.7845527000027,
+          "log": "msvc-off-headless-debug-ctest.log",
+          "log_sha256": "2f181abc300dc473510e02750819d289584aac69a06c70450612423f35a65027"
+        }
+      ],
+      "measurement_count": 0,
+      "source_unchanged": true,
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\b3-default-off"
+    },
+    {
+      "name": "msvc-off-release",
+      "status": "local_pass",
+      "test_counts": [
+        100,
+        0,
+        1209
+      ],
+      "skipped_tests": [
+        "65/1209 Test   #77: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.06 sec"
+      ],
+      "phases": [
+        {
+          "phase": "configure",
+          "exit_code": 0,
+          "elapsed_seconds": 19.77582529999927,
+          "log": "msvc-off-release-configure.log",
+          "log_sha256": "14216b2e4c1708f40e2973468dc46e59d733eec601c7d4469fff01ea20ffcf56"
+        },
+        {
+          "phase": "build",
+          "exit_code": 0,
+          "elapsed_seconds": 226.24730859999545,
+          "log": "msvc-off-release-build.log",
+          "log_sha256": "acb12835207ba50dc09337b9b248436f933e74f63d538cc9fff1ff17f41099c7"
+        },
+        {
+          "phase": "ctest",
+          "exit_code": 0,
+          "elapsed_seconds": 568.6080998000034,
+          "log": "msvc-off-release-ctest.log",
+          "log_sha256": "b1b7c79791d819dfe276446fc3813be9add14e951447dea696f35d7ad8261d5e"
+        }
+      ],
+      "measurement_count": 0,
+      "source_unchanged": true,
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\release"
+    },
+    {
+      "name": "msvc-off-headless-release",
+      "status": "local_pass",
+      "test_counts": [
+        100,
+        0,
+        1064
+      ],
+      "skipped_tests": [
+        "51/1064 Test   #62: Secure file rejects physical containment escapes through symlinks ...................................***Skipped   0.05 sec"
+      ],
+      "phases": [
+        {
+          "phase": "configure",
+          "exit_code": 0,
+          "elapsed_seconds": 19.018380100002105,
+          "log": "msvc-off-headless-release-configure.log",
+          "log_sha256": "5ca5022d5681f6cea956e475fe7c84da09ccb7fce06dffe8660240d114b5a537"
+        },
+        {
+          "phase": "build",
+          "exit_code": 0,
+          "elapsed_seconds": 188.58191369999986,
+          "log": "msvc-off-headless-release-build.log",
+          "log_sha256": "ba2f6f1a4addd897cd2d97534117fd14385ecc970cd034ccc54db6babda7f069"
+        },
+        {
+          "phase": "ctest",
+          "exit_code": 0,
+          "elapsed_seconds": 563.8261643000005,
+          "log": "msvc-off-headless-release-ctest.log",
+          "log_sha256": "744acd045210f01f709554272c1b97a8b8ff073e8d4cf4b21cbcbee597be1ed5"
+        }
+      ],
+      "measurement_count": 0,
+      "source_unchanged": true,
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\headless-release"
+    },
+    {
+      "name": "msvc-off-shared-debug",
+      "status": null,
+      "test_counts": null,
+      "skipped_tests": [],
+      "phases": [
+        {
+          "phase": "configure",
+          "exit_code": 0,
+          "elapsed_seconds": 19.339652399998158,
+          "log": "msvc-off-shared-debug-configure.log",
+          "log_sha256": "6d962b01a8f67b60ba441810dcd4565b15c65c2829f613c26935170604cd9cb4"
+        },
+        {
+          "phase": "build",
+          "exit_code": 0,
+          "elapsed_seconds": 125.19761769999604,
+          "log": "msvc-off-shared-debug-build.log",
+          "log_sha256": "7f1d71fe689ee399dc267b764437b967fb48100a9e3fe8671f51d3a7771cef5b"
+        }
+      ],
+      "measurement_count": 0,
+      "source_unchanged": null,
+      "build_directory": "D:\\Cuexis-redesign\\out\\build\\headless-shared-debug"
+    }
+  ],
+  "row_census": {
+    "rows_in_manifest": 8,
+    "rows_with_status": 7,
+    "rows_local_pass": 7,
+    "rows_without_status": [
+      "msvc-off-shared-debug"
+    ],
+    "note": "The run died while running the eighth row, so the manifest holds eight row records; the three mingw rows were never created and have no record in this manifest."
+  },
+  "reading": "Seven rows reached local_pass, the eighth has no status, and the run never wrote a manifest-level source_unchanged value, so it cannot stand as a completed matrix.",
+  "command": "python -B summarize_aborted_run.py --run D:\\Cuexis-redesign\\out\\rpa-acceptance\\20261031-220604-9e3ab6ac --log D:\\Cuexis-redesign\\out\\rpa-acceptance\\matrix-v1-20261031.log.txt --out D:\\Cuexis-redesign\\out\\verification-20261031\\r3-matrix-flake-904\\prior-run-status.json"
+}

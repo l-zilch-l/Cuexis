@@ -1,0 +1,10 @@
+{
+  "started_utc": "2026-11-01T01:57:12.400943+00:00",
+  "probe": "D:\\Cuexis-redesign\\out\\build\\rpa-candidate-release\\bin\\cuexis_execution_device_probe.exe",
+  "attempts": 40,
+  "want": 8,
+  "entities": 2800,
+  "mode": "static",
+  "seconds": 20,
+  "probe_exit": 0
+}

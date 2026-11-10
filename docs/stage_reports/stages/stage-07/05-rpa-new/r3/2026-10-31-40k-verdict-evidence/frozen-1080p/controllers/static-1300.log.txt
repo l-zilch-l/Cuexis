@@ -1,0 +1,3 @@
+{"group": "sustain-static-1300", "index": 0, "mode": "static", "entities": 1300, "valid": true, "fps": 407.8575848504635, "p99_ms": 3.1536, "passed": true, "min_second_fps": 401}
+{"group": "sustain-static-1300", "index": 1, "mode": "static", "entities": 1300, "valid": true, "fps": 370.9477761680819, "p99_ms": 3.7785, "passed": true, "min_second_fps": 344}
+{"group": "sustain-static-1300", "index": 2, "mode": "static", "entities": 1300, "valid": true, "fps": 399.3573326625783, "p99_ms": 3.2299, "passed": true, "min_second_fps": 379}

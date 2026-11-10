@@ -1,0 +1,101 @@
+{
+ "before": "before: nlohmann DOM dump",
+ "after": "serializer-direct-v1",
+ "rows": [
+  {
+   "stage": "json_dom_parse",
+   "before_us": 720669,
+   "after_us": 730610,
+   "delta_us": 9941,
+   "delta_pct": 1.38
+  },
+  {
+   "stage": "chart_typed_read",
+   "before_us": 345446,
+   "after_us": 334906,
+   "delta_us": -10540,
+   "delta_pct": -3.05
+  },
+  {
+   "stage": "chart_canonical_normalize",
+   "before_us": 181025,
+   "after_us": 172823,
+   "delta_us": -8202,
+   "delta_pct": -4.53
+  },
+  {
+   "stage": "chart_canonical_dump",
+   "before_us": 391141,
+   "after_us": 91237,
+   "delta_us": -299904,
+   "delta_pct": -76.67
+  },
+  {
+   "stage": "chart_canonical_write",
+   "before_us": 649232,
+   "after_us": 343941,
+   "delta_us": -305291,
+   "delta_pct": -47.02
+  },
+  {
+   "stage": "load_canonical",
+   "before_us": 16949,
+   "after_us": 17128,
+   "delta_us": 179,
+   "delta_pct": 1.06
+  },
+  {
+   "stage": "load_chart",
+   "before_us": 1711145,
+   "after_us": 1408323,
+   "delta_us": -302822,
+   "delta_pct": -17.7
+  },
+  {
+   "stage": "load_document",
+   "before_us": 1728265,
+   "after_us": 1425483,
+   "delta_us": -302782,
+   "delta_pct": -17.52
+  },
+  {
+   "stage": "chart_compile",
+   "before_us": 90734,
+   "after_us": 88435,
+   "delta_us": -2299,
+   "delta_pct": -2.53
+  },
+  {
+   "stage": "runtime",
+   "before_us": 206751,
+   "after_us": 208222,
+   "delta_us": 1471,
+   "delta_pct": 0.71
+  },
+  {
+   "stage": "snapshot_layout",
+   "before_us": 19522,
+   "after_us": 19676,
+   "delta_us": 154,
+   "delta_pct": 0.79
+  },
+  {
+   "stage": "presentation",
+   "before_us": 2125,
+   "after_us": 1994,
+   "delta_us": -131,
+   "delta_pct": -6.16
+  },
+  {
+   "stage": "assemble",
+   "before_us": 1632,
+   "after_us": 1655,
+   "delta_us": 23,
+   "delta_pct": 1.41
+  }
+ ],
+ "content_prepared_us": {
+  "before": 2055866,
+  "after": 1748435
+ }
+}

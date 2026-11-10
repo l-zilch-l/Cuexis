@@ -1,0 +1,38 @@
+from pathlib import Path
+import ctypes,hashlib,json,shutil,subprocess
+root=Path.cwd();base=Path(__file__).resolve().parent
+parent=base/'budget-build-v3';source=base/'budget-source-v4';oldsource=base/'budget-source-v3';out=base/'budget-build-v4';out.mkdir(exist_ok=False)
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+paths=json.loads((parent/'source-binding.json').read_text())['sources']
+changed=[n for n in paths if sha(source/n)!=sha(oldsource/n)]
+assert sorted(changed)==['engine/judgement/src/execution_kernel.cpp','tests/rpa/rpa_b3_tests.cpp'],changed
+shell=ctypes.WinDLL('shell32');shell.CommandLineToArgvW.argtypes=[ctypes.c_wchar_p,ctypes.POINTER(ctypes.c_int)];shell.CommandLineToArgvW.restype=ctypes.POINTER(ctypes.c_wchar_p)
+k=ctypes.WinDLL('kernel32');k.LocalFree.argtypes=[ctypes.c_void_p]
+def split(line):
+ n=ctypes.c_int();p=shell.CommandLineToArgvW(line,ctypes.byref(n))
+ try:return [p[i] for i in range(n.value)]
+ finally:k.LocalFree(p)
+cache=dict(l.split('=',1) for l in (parent/'CMakeCache.txt').read_text().splitlines() if '=' in l and not l.startswith(('#','//')))
+cc=json.loads((parent/'compile_commands.json').read_text());commands=[];ninja=(parent/'build.ninja').read_text()
+def run(args,label):
+ commands.append(dict(label=label,args=args));(out/'commands.json').write_text(json.dumps(commands,indent=2))
+ with (out/(label+'.log')).open('x',encoding='utf-8') as f:r=subprocess.run(args,cwd=parent,stdout=f,stderr=subprocess.STDOUT)
+ print(label,r.returncode,flush=True)
+ if r.returncode:raise SystemExit(r.returncode)
+def compile(suffix,name):
+ c=next(c for c in cc if c['file'].endswith('/'+suffix));args=[a for a in split(c['command']) if not a.startswith(('/Fo','/Fd')) and not a.endswith('.cpp')]
+ args=[a.replace(str(oldsource),str(source)).replace(oldsource.as_posix(),source.as_posix()) for a in args]
+ path=source/Path(c['file']).relative_to(oldsource)
+ obj=out/(name+'.obj');run([*args,'/Fo'+str(obj),'/Fd'+str(out/(name+'.pdb')),str(path)],'compile-'+name);return str(obj)
+kernel=compile('execution_kernel.cpp','kernel');test=compile('rpa_b3_tests.cpp','test')
+for target in ('cuexis_rpa_tests','cuexis_judgement_tests','cuexis_execution_host_tests','cuexis_gameplay_packed_tests'):
+ block=ninja.split('build bin\\'+target+'.exe',1)[1].split('\n\n',1)[0]
+ objects=split(block.split(': CXX_EXECUTABLE_LINKER__'+target+'_Release ',1)[1].split(' | ',1)[0])
+ objects=[test if target=='cuexis_rpa_tests' and 'rpa_b3_tests.cpp.obj' in p else p for p in objects]
+ libs=split(next(l.split(' = ',1)[1] for l in block.splitlines() if l.startswith('  LINK_LIBRARIES = ')))
+ run([cache['CMAKE_LINKER:FILEPATH'],'/NOLOGO','/machine:x64','/INCREMENTAL:NO','/subsystem:console','/OUT:'+str(out/(target+'.exe')),kernel,*objects,*libs],'link-'+target)
+for dll in (parent/'bin').glob('*.dll'):shutil.copyfile(dll,out/dll.name)
+for target in ('cuexis_rpa_tests','cuexis_judgement_tests','cuexis_execution_host_tests','cuexis_gameplay_packed_tests'):
+ run([str(out/(target+'.exe')),'~[r3c-writer]','--rng-seed','1'],'test-'+target)
+ assert 'All tests passed' in (out/('test-'+target+'.log')).read_text(encoding='utf-8')
+(out/'complete.json').write_text(json.dumps(dict(scope='Ordinary v4 private source-floor candidate; all installed/shared/template definitions identical to fresh v3. Only kernel and RPA B3 recompiled; all four binaries relinked. No performance or product acceptance.',parent_complete_sha256=sha(parent/'complete.json'),changed_sources={n:sha(source/n) for n in changed},binaries={p.name:sha(p) for p in out.glob('*.exe')},commands_sha256=sha(out/'commands.json')),indent=2),encoding='utf-8')

@@ -1,0 +1,110 @@
+{
+  "selected": true,
+  "scope": "Neutral-path lever A/B screen on the ordinary physical GPU; readback on, timer off; not formal capacity acceptance.",
+  "head": "1474316d2bfd38809c38a1e6050c29d83351e369",
+  "worktree_porcelain": [
+    "M app/player/src/player_smoke.cpp",
+    " M engine/presentation_renderer/include/cuexis/presentation_renderer/draw_command.hpp",
+    " M engine/presentation_renderer/src/draw_command.cpp",
+    " M engine/render_opengl/src/open_gl_presentation.cpp",
+    " M engine/render_opengl/src/open_gl_presentation_internal.hpp",
+    " M tests/presentation_renderer/presentation_renderer_tests.cpp",
+    " M tests/render/open_gl_presentation_tests.cpp"
+  ],
+  "patch_sha256": "bd7ea93546a73d00ee849645e31e922428a5f7d0f4b153fee8e5993f5d2fd389",
+  "gate": {
+    "submit_improvement": "submit median improves by at least 10 percent at both (1800, render-only) and (2600, render-only)",
+    "cycle_non_regression": "cycle median and cycle p99 median regress by at most 5 percent in every gate cell",
+    "repeatability": "per cell and arm, (max-min)/median of the process medians is at most 15 percent for submit and cycle",
+    "value_identity": "every process reports 255,204,51,255 with draws and in-view centers equal to the entity count, and both arms agree",
+    "stop": "an invalid process stops the group; no retry, no replacement, no extra samples"
+  },
+  "gates_observed": {
+    "numeric_gate": true,
+    "submit_improvement_gate": true,
+    "cycle_non_regression_gate": true,
+    "repeatability_screen": true,
+    "value_identity": true,
+    "valid_processes": true,
+    "selected": true
+  },
+  "formal_acceptance": false,
+  "performance": {
+    "1800": {
+      "baseline": {
+        "submit_us": 2239.3510850279786,
+        "cycle_us": 2721.8879014697877,
+        "cycle_p99_us": 3496.3,
+        "wall_fps": 367.3920588206486,
+        "min_one_second_window": 353
+      },
+      "candidate": {
+        "submit_us": 1478.4872505328424,
+        "cycle_us": 1930.651361003861,
+        "cycle_p99_us": 2624.7,
+        "wall_fps": 517.9599073133744,
+        "min_one_second_window": 488
+      }
+    },
+    "2600": {
+      "baseline": {
+        "submit_us": 3213.2117874396135,
+        "cycle_us": 3864.8829565217393,
+        "cycle_p99_us": 4685.4,
+        "wall_fps": 258.74004756407044,
+        "min_one_second_window": 237
+      },
+      "candidate": {
+        "submit_us": 2051.2219555330976,
+        "cycle_us": 2526.577059120768,
+        "cycle_p99_us": 3282,
+        "wall_fps": 395.79240078590493,
+        "min_one_second_window": 379
+      }
+    },
+    "diagnostic_40000": {
+      "baseline": {
+        "submit_us": 44083.248565121416,
+        "cycle_us": 44204.100441501105,
+        "cycle_p99_us": 52501.1,
+        "wall_fps": 22.622335711217147,
+        "frames_completed": 600,
+        "min_one_second_window": 22
+      },
+      "candidate": {
+        "submit_us": 27475.950206896552,
+        "cycle_us": 27594.988137931035,
+        "cycle_p99_us": 31994.2,
+        "wall_fps": 36.23846457195746,
+        "frames_completed": 600,
+        "min_one_second_window": 36
+      }
+    }
+  },
+  "release_suite": {
+    "build_dir": "out/build/rpa-candidate-release",
+    "command": "ctest --test-dir out/build/rpa-candidate-release --output-on-failure",
+    "tests_started": 1418,
+    "tests_passed": 1418,
+    "tests_failed": 0,
+    "summary_percent": 100,
+    "skipped": [
+      {
+        "index": 77,
+        "name": "Secure file rejects physical containment escapes through symlinks",
+        "kind": "Skipped"
+      }
+    ],
+    "wall_seconds": 783.54,
+    "sum_of_test_seconds": 779.73,
+    "exit_code": 0,
+    "format_target": {
+      "command": "cmake --build out/build/rpa-candidate-release --target cuexis_format_check",
+      "exit_code": 0,
+      "file_list_entries": 651,
+      "changed_files_covered": 7
+    },
+    "console_note": "The console stream archived beside the journal starts at test 335 of 1418 because the job buffer dropped the earlier lines. Nothing was reconstructed: the journal holds every test block, and the console tail holds the final tally, the wall time, the skipped list and the exit marker verbatim. The format target was re-run by this builder, so its transcript and return code are recorded by the same run that froze the archive."
+  },
+  "limitation": "One group on one physical GPU with pixel readback enabled on both arms, so the absolute times are readback-inclusive and are not frontier points. The 40000 cell exists to show the lever still acts at stress scale; it gates nothing."
+}

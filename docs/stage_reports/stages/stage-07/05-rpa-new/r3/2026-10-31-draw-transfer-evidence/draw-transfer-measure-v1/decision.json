@@ -1,0 +1,184 @@
+{
+  "numeric_gate": true,
+  "repeatability_screen": true,
+  "selected": false,
+  "summary": [
+    {
+      "n": 1000,
+      "mode": "render-only",
+      "values": {
+        "baseline": {
+          "submit_us": {
+            "samples_us": [
+              1214.395,
+              1215.0133333333333
+            ],
+            "median_us": 1214.7041666666667,
+            "relative_range_percent": 0.050904026700603185
+          },
+          "cycle_us": {
+            "samples_us": [
+              1245.2483333333334,
+              1251.3333333333333
+            ],
+            "median_us": 1248.2908333333335,
+            "relative_range_percent": 0.48746652923429107
+          }
+        },
+        "candidate": {
+          "submit_us": {
+            "samples_us": [
+              1129.4833333333333,
+              1132.99
+            ],
+            "median_us": 1131.2366666666667,
+            "relative_range_percent": 0.3099852373950627
+          },
+          "cycle_us": {
+            "samples_us": [
+              1164.1200000000001,
+              1168.7866666666666
+            ],
+            "median_us": 1166.4533333333334,
+            "relative_range_percent": 0.4000731562342698
+          }
+        }
+      },
+      "submit_change": -6.871426170295236,
+      "cycle_change": -6.555964188366903
+    },
+    {
+      "n": 1000,
+      "mode": "static",
+      "values": {
+        "baseline": {
+          "submit_us": {
+            "samples_us": [
+              1263.0133333333333,
+              1246.8833333333332
+            ],
+            "median_us": 1254.9483333333333,
+            "relative_range_percent": 1.2853118787094908
+          },
+          "cycle_us": {
+            "samples_us": [
+              1454.8816666666667,
+              1430.2033333333334
+            ],
+            "median_us": 1442.5425,
+            "relative_range_percent": 1.710752600587732
+          }
+        },
+        "candidate": {
+          "submit_us": {
+            "samples_us": [
+              1129.0316666666668,
+              1130.095
+            ],
+            "median_us": 1129.5633333333335,
+            "relative_range_percent": 0.09413667228338463
+          },
+          "cycle_us": {
+            "samples_us": [
+              1313.9716666666666,
+              1327.165
+            ],
+            "median_us": 1320.5683333333332,
+            "relative_range_percent": 0.9990647965964189
+          }
+        }
+      },
+      "submit_change": -9.991247979664486,
+      "cycle_change": -8.455499000318312
+    },
+    {
+      "n": 40000,
+      "mode": "render-only",
+      "values": {
+        "baseline": {
+          "submit_us": {
+            "samples_us": [
+              53438.06333333333,
+              53785.505
+            ],
+            "median_us": 53611.784166666665,
+            "relative_range_percent": 0.6480695840797794
+          },
+          "cycle_us": {
+            "samples_us": [
+              53535.20333333333,
+              53875.515
+            ],
+            "median_us": 53705.35916666666,
+            "relative_range_percent": 0.6336642598563791
+          }
+        },
+        "candidate": {
+          "submit_us": {
+            "samples_us": [
+              47352.675,
+              48775.335
+            ],
+            "median_us": 48064.005000000005,
+            "relative_range_percent": 2.959928120846351
+          },
+          "cycle_us": {
+            "samples_us": [
+              47439.78,
+              48872.71833333333
+            ],
+            "median_us": 48156.24916666666,
+            "relative_range_percent": 2.975602041541888
+          }
+        }
+      },
+      "submit_change": -10.348059205453586,
+      "cycle_change": -10.332507008805504
+    },
+    {
+      "n": 40000,
+      "mode": "static",
+      "values": {
+        "baseline": {
+          "submit_us": {
+            "samples_us": [
+              55806.458333333336,
+              54509.97
+            ],
+            "median_us": 55158.21416666667,
+            "relative_range_percent": 2.3504900456273856
+          },
+          "cycle_us": {
+            "samples_us": [
+              69288.785,
+              67567.12166666667
+            ],
+            "median_us": 68427.95333333334,
+            "relative_range_percent": 2.5160234223966707
+          }
+        },
+        "candidate": {
+          "submit_us": {
+            "samples_us": [
+              46613.92,
+              47837.846666666665
+            ],
+            "median_us": 47225.88333333333,
+            "relative_range_percent": 2.5916437772647973
+          },
+          "cycle_us": {
+            "samples_us": [
+              59377.17833333334,
+              60981.00666666667
+            ],
+            "median_us": 60179.0925,
+            "relative_range_percent": 2.665092254977642
+          }
+        }
+      },
+      "submit_change": -14.381050861010337,
+      "cycle_change": -12.054811566773937
+    }
+  ],
+  "formal_acceptance": false
+}

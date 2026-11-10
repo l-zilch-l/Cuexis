@@ -1,0 +1,14 @@
+from pathlib import Path
+base=Path(__file__).resolve().parent
+s=(base/'build_seek_attribution_v2.py').read_text()
+s=s.replace('commands=[]', "commands=json.loads((out/'commands.json').read_text())")
+a=s.index("kernel=compile("); b=s.index("block=(build/",a)
+s=s[:a]+'''kernel=str(out/'execution_kernel.obj')
+worker=str(out/'session_worker.obj')
+host=str(out/'execution_host.obj')
+probe=str(out/'host_probe.obj')
+playback=str(out/'playback_session.obj')
+coordination=compile('host_candidate.cpp','host_candidate')
+'''+s[b:]
+s=s.replace("kernel,worker,playback,*objects,*libs", "kernel,worker,playback,coordination,*objects,*libs")
+exec(compile(s,str(base/'build_seek_attribution_v2.py'),'exec'))

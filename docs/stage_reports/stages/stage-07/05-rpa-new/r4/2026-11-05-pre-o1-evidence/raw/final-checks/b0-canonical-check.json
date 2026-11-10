@@ -1,0 +1,11 @@
+{
+  "raw_check_exit_code": 1,
+  "reason": "initial checkout CRLF changes two source digests; frozen sources unchanged from baseline",
+  "canonical_lf_full_document_equal": true,
+  "modified_frozen_files": false,
+  "canonicalized_sources": [
+    "tools\\verification\\playback_performance\\memory_caps.py",
+    "tools\\verification\\playback_performance\\profiles.json"
+  ],
+  "frozen_caps_sha256": "197285d6d3cc5d5894cf6826715ad862a7b6df7412d5a0cdf4ebe5f4a4e6d90d"
+}

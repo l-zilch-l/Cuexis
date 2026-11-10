@@ -1,0 +1,61 @@
+{
+  "scope": "First-principles refactor round on the two over-budget gates: five pause discriminators and four read ablations, all reverted; baseline tagged r3-gate-baseline-2026-11-01.",
+  "source_run": "out\\verification-20261101\\r3-refactor-v1",
+  "copied_files": [
+    {
+      "source": "out\\verification-20261101\\r3-refactor-v1\\refactor-round.json",
+      "archive": "attempt/refactor-round.json",
+      "bytes": 8845,
+      "sha256": "eacb03f39d089fbaae55b910830aa8819ea6959ced7060cb0a7c48651f42dc6a",
+      "source_sha256": "eacb03f39d089fbaae55b910830aa8819ea6959ced7060cb0a7c48651f42dc6a",
+      "eol": "crlf"
+    }
+  ],
+  "attached_files": [],
+  "excluded": [],
+  "generated_files": {
+    "index.md": "2fc49d1788fe104fc6c17d01fd640bd72a78852f98ea2186f2ca7e845a85261d"
+  },
+  "binding": {
+    "head": "09a5b53a",
+    "tag": "r3-gate-baseline-2026-11-01",
+    "baseline_binaries": {
+      "pd_probe": "6d2555d843ba07ea1884ffca2bddee864b1540f624cc55f8aea421643c6ef7b2",
+      "device_probe": "e6bf6fef6a4805189c350de2d0744c9cb55243bb99490cee5988a10cc7b27963"
+    },
+    "pause_discriminators": 7,
+    "read_ablations": {
+      "E0": 1.0175,
+      "E1": 0.8247,
+      "E2": 1.0068,
+      "E3": 1.0392,
+      "E4": null,
+      "E5": null
+    },
+    "kept_code": [],
+    "compact_rows": {
+      "baseline": {
+        "extract_only": 103.49,
+        "update_plus_extract": 180.4,
+        "implied_update": 76.91
+      },
+      "compact_rows": {
+        "extract_only": 84.78,
+        "update_plus_extract": 199.46,
+        "implied_update": 114.68
+      }
+    },
+    "compact_rows_ratio_read_block": 0.7968,
+    "compact_rows_kept": false,
+    "component_split": {
+      "e4_no_transform_read": 0.9346,
+      "e5_no_appearance_read": 0.932
+    },
+    "next_direction": "single presentation component read in pool order",
+    "pool_order_check": {
+      "compared": 1800,
+      "mismatches": 1799
+    },
+    "read_gate_conclusion": "not closable within the current contracts by local work; needs an owner decision."
+  }
+}

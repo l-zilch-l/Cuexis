@@ -2,9 +2,9 @@
 
 状态：active
 
-更新日期：2026-08-30
+更新日期：2026-10-28
 
-适用版本：SDK API `0.7.0`
+适用版本：SDK API `0.9.1`
 
 文档角色：公共 API 导航
 
@@ -20,12 +20,17 @@
 
 | 当前任务 | 入口 |
 | --- | --- |
+| 理解RPA与表现领域词义 | [Glossary](GLOSSARY.md) |
 | 创建 Session、加载、重载、逐帧更新 | [PlaybackSession 生命周期](playback-session.md) |
 | 选择输入来源、接入资源读取 | [PlaybackSource 与 ContentProvider](sources-and-content.md) |
 | 读取帧、计算摘要、处理时钟 | [帧、摘要与时间线](frames-digests-and-timelines.md) |
 | 检查表现资源、renderer capability | [表现资源与能力预检](presentation-and-capabilities.md) |
 | 处理错误、diagnostics、identity 和兼容性 | [诊断、身份与兼容性](diagnostics-identity-and-compatibility.md) |
 | 判断实现应落在哪个内部模块 | [内部模块速查](internal-module-catalog.md) |
+| 设计 Gameplay Judgement typed preview 边界 | [Gameplay Judgement ABI（候选）](GAMEPLAY_JUDGEMENT_ABI.md) |
+| 设计 Gameplay V2 typed preview 边界 | [Gameplay V2 ABI（候选）](GAMEPLAY_V2_ABI.md)（语义权威在 [Gameplay V2 Spec](../formats/GAMEPLAY_V2_SPEC.md)，决策在 [ADR 0044](../adr/0044-gameplay-v2-semantic-kernel.md)） |
+| 查阅 S7A-3/4 首次执行字段基线 | [Execution typed supplement](gameplay-v2-execution-types.md)（内部 candidate 基线；后续 RPA 字段见实时合同，不安装为宿主 API） |
+| 接入实际输入、音频时钟与发布协调 | [实时宿主边界合同](realtime-host-boundary.md)（candidate 已有分支实施；区分安装版入口和非安装 Host 实现，接受状态见 CURRENT_STATUS） |
 
 ## 公共边界
 
@@ -35,3 +40,6 @@
 
 本目录解释 API 的使用顺序、所有权和稳定行为，不复制完整头文件声明。公共头文件、SDK API 版本、
 capability 或行为合同变化时，必须同步更新对应页面并运行 `python -B tools/check_docs.py`。
+
+- [执行协调 preview](execution-coordination.md)：SDK 0.8.0 首用，当前分支 0.9.1；显式 occurrence、prefix、控制、时钟与恢复。
+- [执行状态、恢复与准备路径](../architecture/execution-state-and-recovery.md)：当前内部所有权、缓存与维护约束。

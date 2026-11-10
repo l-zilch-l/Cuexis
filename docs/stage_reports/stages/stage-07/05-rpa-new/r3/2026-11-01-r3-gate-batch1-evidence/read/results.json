@@ -1,0 +1,605 @@
+{
+  "scope": "Paired read-cost comparison, A = pre-PD d344088, B = HEAD 6256af8.",
+  "gate": {
+    "upper_bound_passes_below": 1.1,
+    "min_block_us": 100000.0,
+    "windows": 3,
+    "pairs_per_window": 3
+  },
+  "arm_a": {
+    "exe": "out/_armA-d344088/out/build/armA-release/bin/cuexis_pd_baseline_probe.exe",
+    "sha256": "6af4edd2d365fb99e9df5b7da7e77dd6e45a6e284b37e7b8979dd1c1ed293a94"
+  },
+  "arm_b": {
+    "exe": "out/build/rpa-candidate-release/bin/cuexis_pd_baseline_probe.exe",
+    "sha256": "5d5829a6e1400222ac5543b813be058592c0821cd9582703b6074c37af1436b4"
+  },
+  "head": "c31f4f14e4a288d5147a42b754121b89e8bbf7ad",
+  "started_local": "2026-11-01 22:47:00",
+  "note": "Window 1 was measured before the driver crashed on a t-table indexing bug (df was keyed by the number of ratios instead of n-1). The six window-1 processes and their logs were written before the crash; this record was reconstructed from those logs, not re-measured. The fix changes only the interval computation.",
+  "windows": [
+    {
+      "window": 1,
+      "pairs": [
+        {
+          "pair": 1,
+          "first": "B",
+          "a": {
+            "arm": "A",
+            "window": 1,
+            "pair": 1,
+            "order": 1,
+            "exit_code": 0,
+            "wall_seconds": null,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              173812.9,
+              173215.3,
+              203151.3
+            ],
+            "updated_blocks_us": [
+              837890.5,
+              834869.3,
+              868215.9
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-gate-batch1\\read\\w1-p1-1-A.log",
+            "read_median_us": 173812.9,
+            "valid": true
+          },
+          "b": {
+            "arm": "B",
+            "window": 1,
+            "pair": 1,
+            "order": 0,
+            "exit_code": 0,
+            "wall_seconds": null,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              202854.7,
+              205603.9,
+              205382.3
+            ],
+            "updated_blocks_us": [
+              360555.7,
+              370412.7,
+              354540.6
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-gate-batch1\\read\\w1-p1-0-B.log",
+            "read_median_us": 205382.3,
+            "valid": true
+          },
+          "ratio": 1.181629
+        },
+        {
+          "pair": 2,
+          "first": "A",
+          "a": {
+            "arm": "A",
+            "window": 1,
+            "pair": 2,
+            "order": 0,
+            "exit_code": 0,
+            "wall_seconds": null,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              182078.9,
+              174883.6,
+              174698.8
+            ],
+            "updated_blocks_us": [
+              828340.6,
+              882783.7,
+              845351.7
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-gate-batch1\\read\\w1-p2-0-A.log",
+            "read_median_us": 174883.6,
+            "valid": true
+          },
+          "b": {
+            "arm": "B",
+            "window": 1,
+            "pair": 2,
+            "order": 1,
+            "exit_code": 0,
+            "wall_seconds": null,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              205319.6,
+              206448,
+              202676.8
+            ],
+            "updated_blocks_us": [
+              359429.7,
+              377944.5,
+              383632.5
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-gate-batch1\\read\\w1-p2-1-B.log",
+            "read_median_us": 205319.6,
+            "valid": true
+          },
+          "ratio": 1.174036
+        },
+        {
+          "pair": 3,
+          "first": "B",
+          "a": {
+            "arm": "A",
+            "window": 1,
+            "pair": 3,
+            "order": 1,
+            "exit_code": 0,
+            "wall_seconds": null,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              209484.5,
+              178897.3,
+              179744.3
+            ],
+            "updated_blocks_us": [
+              839095,
+              835302.4,
+              889447.9
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-gate-batch1\\read\\w1-p3-1-A.log",
+            "read_median_us": 179744.3,
+            "valid": true
+          },
+          "b": {
+            "arm": "B",
+            "window": 1,
+            "pair": 3,
+            "order": 0,
+            "exit_code": 0,
+            "wall_seconds": null,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              207742.2,
+              205297.8,
+              205646.8
+            ],
+            "updated_blocks_us": [
+              356975.4,
+              361729.8,
+              375748.4
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-gate-batch1\\read\\w1-p3-0-B.log",
+            "read_median_us": 205646.8,
+            "valid": true
+          },
+          "ratio": 1.144107
+        }
+      ],
+      "ratios": [
+        1.181629,
+        1.174036,
+        1.144107
+      ],
+      "interval": {
+        "n": 3,
+        "ratio": 1.1665,
+        "lower": 1.118,
+        "upper": 1.217,
+        "ratios": [
+          1.1816,
+          1.174,
+          1.1441
+        ]
+      },
+      "started_local": "2026-11-01 22:47:00",
+      "finished_local": "2026-11-01 22:52:00"
+    },
+    {
+      "window": 2,
+      "pairs": [
+        {
+          "pair": 1,
+          "first": "A",
+          "a": {
+            "arm": "A",
+            "window": 2,
+            "pair": 1,
+            "order": 0,
+            "exit_code": 0,
+            "wall_seconds": 3.598,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              173383.1,
+              173817.7,
+              173538.4
+            ],
+            "updated_blocks_us": [
+              903856,
+              866935.4,
+              862268.3
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-gate-batch1\\read\\w2-p1-0-A.log",
+            "read_median_us": 173538.4,
+            "valid": true
+          },
+          "b": {
+            "arm": "B",
+            "window": 2,
+            "pair": 1,
+            "order": 1,
+            "exit_code": 0,
+            "wall_seconds": 1.956,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              239199.6,
+              205820.8,
+              204308.3
+            ],
+            "updated_blocks_us": [
+              353251.7,
+              361770.7,
+              358774.5
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-gate-batch1\\read\\w2-p1-1-B.log",
+            "read_median_us": 205820.8,
+            "valid": true
+          },
+          "ratio": 1.186025
+        },
+        {
+          "pair": 2,
+          "first": "B",
+          "a": {
+            "arm": "A",
+            "window": 2,
+            "pair": 2,
+            "order": 1,
+            "exit_code": 0,
+            "wall_seconds": 3.518,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              174377.4,
+              176476.6,
+              177548.8
+            ],
+            "updated_blocks_us": [
+              836111.6,
+              880025.3,
+              842049.2
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-gate-batch1\\read\\w2-p2-1-A.log",
+            "read_median_us": 176476.6,
+            "valid": true
+          },
+          "b": {
+            "arm": "B",
+            "window": 2,
+            "pair": 2,
+            "order": 0,
+            "exit_code": 0,
+            "wall_seconds": 1.979,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              204863.1,
+              207758.9,
+              205484.7
+            ],
+            "updated_blocks_us": [
+              398445.8,
+              369022.3,
+              357809.4
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-gate-batch1\\read\\w2-p2-0-B.log",
+            "read_median_us": 205484.7,
+            "valid": true
+          },
+          "ratio": 1.164374
+        },
+        {
+          "pair": 3,
+          "first": "A",
+          "a": {
+            "arm": "A",
+            "window": 2,
+            "pair": 3,
+            "order": 0,
+            "exit_code": 0,
+            "wall_seconds": 3.746,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              173947.3,
+              178051.1,
+              211073.4
+            ],
+            "updated_blocks_us": [
+              913800.8,
+              897433.9,
+              944133.9
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-gate-batch1\\read\\w2-p3-0-A.log",
+            "read_median_us": 178051.1,
+            "valid": true
+          },
+          "b": {
+            "arm": "B",
+            "window": 2,
+            "pair": 3,
+            "order": 1,
+            "exit_code": 0,
+            "wall_seconds": 1.919,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              206305.6,
+              204194.3,
+              206112.4
+            ],
+            "updated_blocks_us": [
+              351548.8,
+              359549.8,
+              358363.6
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-gate-batch1\\read\\w2-p3-1-B.log",
+            "read_median_us": 206112.4,
+            "valid": true
+          },
+          "ratio": 1.157603
+        }
+      ],
+      "started_local": "2026-11-01 21:28:52",
+      "ratios": [
+        1.186025,
+        1.164374,
+        1.157603
+      ],
+      "interval": {
+        "n": 3,
+        "ratio": 1.1693,
+        "lower": 1.1331,
+        "upper": 1.2066,
+        "ratios": [
+          1.186,
+          1.1644,
+          1.1576
+        ]
+      },
+      "finished_local": "2026-11-01 21:29:15"
+    },
+    {
+      "window": 3,
+      "pairs": [
+        {
+          "pair": 1,
+          "first": "B",
+          "a": {
+            "arm": "A",
+            "window": 3,
+            "pair": 1,
+            "order": 1,
+            "exit_code": 0,
+            "wall_seconds": 3.987,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              175171.4,
+              178379.3,
+              178130.8
+            ],
+            "updated_blocks_us": [
+              982455.1,
+              967363,
+              1034458.8
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-gate-batch1\\read\\w3-p1-1-A.log",
+            "read_median_us": 178130.8,
+            "valid": true
+          },
+          "b": {
+            "arm": "B",
+            "window": 3,
+            "pair": 1,
+            "order": 0,
+            "exit_code": 0,
+            "wall_seconds": 1.983,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              211009.3,
+              205941.8,
+              200602.6
+            ],
+            "updated_blocks_us": [
+              364085.6,
+              364981.3,
+              372211.8
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-gate-batch1\\read\\w3-p1-0-B.log",
+            "read_median_us": 205941.8,
+            "valid": true
+          },
+          "ratio": 1.156127
+        },
+        {
+          "pair": 2,
+          "first": "A",
+          "a": {
+            "arm": "A",
+            "window": 3,
+            "pair": 2,
+            "order": 0,
+            "exit_code": 0,
+            "wall_seconds": 3.961,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              176796.5,
+              174368.1,
+              174051.5
+            ],
+            "updated_blocks_us": [
+              952890.7,
+              1071798.7,
+              979717.1
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-gate-batch1\\read\\w3-p2-0-A.log",
+            "read_median_us": 174368.1,
+            "valid": true
+          },
+          "b": {
+            "arm": "B",
+            "window": 3,
+            "pair": 2,
+            "order": 1,
+            "exit_code": 0,
+            "wall_seconds": 2.032,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              204807.7,
+              206295,
+              206112.6
+            ],
+            "updated_blocks_us": [
+              380673.3,
+              431744.5,
+              374064.6
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-gate-batch1\\read\\w3-p2-1-B.log",
+            "read_median_us": 206112.6,
+            "valid": true
+          },
+          "ratio": 1.182055
+        },
+        {
+          "pair": 3,
+          "first": "B",
+          "a": {
+            "arm": "A",
+            "window": 3,
+            "pair": 3,
+            "order": 1,
+            "exit_code": 0,
+            "wall_seconds": 3.483,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              173198.9,
+              173027.8,
+              173236.6
+            ],
+            "updated_blocks_us": [
+              825397.7,
+              869585.9,
+              844995
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-gate-batch1\\read\\w3-p3-1-A.log",
+            "read_median_us": 173198.9,
+            "valid": true
+          },
+          "b": {
+            "arm": "B",
+            "window": 3,
+            "pair": 3,
+            "order": 0,
+            "exit_code": 0,
+            "wall_seconds": 2.03,
+            "chart_sha256": "b05e03548e16260ed516afe329fc6627afc30a71f6f563187d36447bd769d3d3",
+            "read_blocks_us": [
+              221719.9,
+              210340.9,
+              203950.8
+            ],
+            "updated_blocks_us": [
+              375082.7,
+              385674.1,
+              364989.4
+            ],
+            "read_digests": [
+              15103229607877196805
+            ],
+            "log": "out\\verification-20261101\\r3-gate-batch1\\read\\w3-p3-0-B.log",
+            "read_median_us": 210340.9,
+            "valid": true
+          },
+          "ratio": 1.214447
+        }
+      ],
+      "started_local": "2026-11-01 21:39:15",
+      "ratios": [
+        1.156127,
+        1.182055,
+        1.214447
+      ],
+      "interval": {
+        "n": 3,
+        "ratio": 1.184,
+        "lower": 1.1137,
+        "upper": 1.2587,
+        "ratios": [
+          1.1561,
+          1.1821,
+          1.2144
+        ]
+      },
+      "finished_local": "2026-11-01 21:39:38"
+    }
+  ],
+  "whole_group": {
+    "n": 9,
+    "ratio": 1.1732,
+    "lower": 1.1574,
+    "upper": 1.1893,
+    "ratios": [
+      1.1816,
+      1.174,
+      1.1441,
+      1.186,
+      1.1644,
+      1.1576,
+      1.1561,
+      1.1821,
+      1.2144
+    ],
+    "decision": "over"
+  },
+  "finished_local": "2026-11-01 21:39:38"
+}

@@ -1,0 +1,54 @@
+{
+  "scope": "Evidence for one repair attempt on HEAD: the per-object read hypothesis was measured and falsified, and the first-pause overrun was split into its control and frozen-draw halves. No code change from this attempt is kept.",
+  "source_run": "D:\\Cuexis-redesign\\out\\verification-20261101\\r3-repair-v1",
+  "copied_files": [
+    {
+      "source": "out\\verification-20261101\\r3-repair-v1\\attempt\\build.log",
+      "archive": "attempt/build.log",
+      "bytes": 628,
+      "sha256": "d95c7a1daa3cb4bff137af8de20d27e55aa80b63ff5953ce6213abd35eb4946c",
+      "source_sha256": "d95c7a1daa3cb4bff137af8de20d27e55aa80b63ff5953ce6213abd35eb4946c",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-repair-v1\\attempt\\comparison.json",
+      "archive": "attempt/comparison.json",
+      "bytes": 1535,
+      "sha256": "333843047a1387c50244d9e8fe442ae7892c60272909e20275d8ae57d26630f2",
+      "source_sha256": "333843047a1387c50244d9e8fe442ae7892c60272909e20275d8ae57d26630f2",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-repair-v1\\attempt\\pause-split.json",
+      "archive": "attempt/pause-split.json",
+      "bytes": 696,
+      "sha256": "90657aa1e77f9ece8b7f174462f9b276e014b1145258d0523496caf29f2a2038",
+      "source_sha256": "90657aa1e77f9ece8b7f174462f9b276e014b1145258d0523496caf29f2a2038",
+      "eol": "crlf"
+    },
+    {
+      "source": "out\\verification-20261101\\r3-repair-v1\\attempt\\scale-gap.json",
+      "archive": "attempt/scale-gap.json",
+      "bytes": 700,
+      "sha256": "433c23a628f4094139f260407f405e0df0c525891f77715d530ae97338b576c5",
+      "source_sha256": "433c23a628f4094139f260407f405e0df0c525891f77715d530ae97338b576c5",
+      "eol": "crlf"
+    }
+  ],
+  "attached_files": [],
+  "excluded": [
+    {
+      "path": "bin/baseline-B.exe",
+      "reason": "5.7 MiB executable; its sha256 is recorded in attempt/comparison.json and the binary itself stays in the work directory instead of the repository"
+    }
+  ],
+  "generated_files": {
+    "index.md": "fae436bdb6bcc8fc9d46046e0c54ddc15cb38a0f4ef5a297fee646fa48d68381"
+  },
+  "binding": {
+    "head": "6256af8b7d349b14a6d5b006d7632711152e96fa",
+    "baseline_binary_sha256": "5d5829a6e1400222ac5543b813be058592c0821cd9582703b6074c37af1436b4",
+    "geometric_mean_ratio_patched_over_baseline": 1.0175,
+    "decision": "the patch made the read path slightly slower; hypothesis falsified, change reverted"
+  }
+}

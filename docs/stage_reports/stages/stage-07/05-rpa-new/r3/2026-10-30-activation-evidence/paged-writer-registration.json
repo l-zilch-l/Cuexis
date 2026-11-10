@@ -1,0 +1,125 @@
+{
+  "formal": false,
+  "scope": "Fixed ordinary writer comparison after correcting only stale test point-count expectation2 instead1. Original invalid group retained; production kernel unchanged. Original v4 writer capture ON vs v6 capture ON, snapshot wire equality required. No production memory quota decision. Same candidate class definitions and fresh libraries; all timings exclude fault/heap observers.",
+  "plan": [
+    {
+      "n": 1000,
+      "wave": 0,
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "wave": 0,
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 1000,
+      "wave": 0,
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 1000,
+      "wave": 0,
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "wave": 0,
+      "pair": 2,
+      "variant": "baseline"
+    },
+    {
+      "n": 1000,
+      "wave": 0,
+      "pair": 2,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "wave": 0,
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "wave": 0,
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "wave": 0,
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 40000,
+      "wave": 0,
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "wave": 0,
+      "pair": 2,
+      "variant": "baseline"
+    },
+    {
+      "n": 40000,
+      "wave": 0,
+      "pair": 2,
+      "variant": "candidate"
+    },
+    {
+      "n": 1536,
+      "wave": 256,
+      "pair": 0,
+      "variant": "baseline"
+    },
+    {
+      "n": 1536,
+      "wave": 256,
+      "pair": 0,
+      "variant": "candidate"
+    },
+    {
+      "n": 1536,
+      "wave": 256,
+      "pair": 1,
+      "variant": "candidate"
+    },
+    {
+      "n": 1536,
+      "wave": 256,
+      "pair": 1,
+      "variant": "baseline"
+    },
+    {
+      "n": 1536,
+      "wave": 256,
+      "pair": 2,
+      "variant": "baseline"
+    },
+    {
+      "n": 1536,
+      "wave": 256,
+      "pair": 2,
+      "variant": "candidate"
+    }
+  ],
+  "attempts": 3,
+  "gate": "Dense40K process-median advance overhead <=5%; 1K and six-wave overhead <=10%; original (max-min)/median<=15% screen. Exact full Snapshot wire hash/size. Preparation/encoding outside advance timer, not load acceptance.",
+  "binaries": {
+    "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-next-v1\\publication-build-v2\\bin\\cuexis_rpa_tests.exe": "91c097db772ae226c3a3589efcfdbae4ef82ad9e8b65d6ffbea9c30b64ca76d4",
+    "D:\\Cuexis-redesign\\out\\verification-20261030\\r3-next-v1\\active-sequence-order-build-v1\\cuexis_rpa_tests.exe": "d782909120a2b1797d4a6c8fa9fa949b2b5bf68412f2312ab93b37d93c1cf6b0"
+  },
+  "runner_sha256": "b3a8841aa12d03c27e760718f41d8eed94f3fe3bedda4b8134c4a92fdab6c304",
+  "affinity": 4,
+  "priority": "BelowNormal",
+  "qos": "execution throttling OFF",
+  "failure": "Invalid process stops; original failed/noisy groups retained; no replacement/extension. Builds must be absent."
+}

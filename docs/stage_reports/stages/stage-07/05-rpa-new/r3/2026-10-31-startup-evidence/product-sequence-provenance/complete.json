@@ -1,0 +1,11 @@
+{
+  "scope": "Fresh product Release STATIC private activeRequirements paging only. No continuation or quota or batch publication. Full definitions consistent; four related suites, architecture and dependency gate. No ordinary performance acceptance.",
+  "source_manifest_sha256": "ad0ea251e97236229e997184a8c11273d26251eaa13b9829a25e3c7dc72b7498",
+  "commands_sha256": "3d7d3c073aadba4008776ff6bbcde85bc82ba89df7de9b2f2735cd7156b1eff9",
+  "binaries": {
+    "cuexis_execution_host_tests.exe": "8d035eeb71f492259c63a0c4290f071d7f36841fcb4c613c52d20c51376b13de",
+    "cuexis_gameplay_packed_tests.exe": "f5902c3c14ff694bc1ddafab7b04d2d6095916fc3f8dfb89870e86da88d90d60",
+    "cuexis_judgement_tests.exe": "c2466a70ce9a86573cf45c774cb091999b32c7cf9b2118d22f395a7ae6d758ad",
+    "cuexis_rpa_tests.exe": "6405f26e25855c80e3069e29d53b1e6175df29795bd4a6db47c0fa0bacf7221f"
+  }
+}

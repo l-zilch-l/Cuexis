@@ -1,0 +1,12 @@
+2026-11-01T11:17:41.502+08:00 [info] [Cuexis Player] [player.startup] Starting Cuexis Player 26.10.19-1
+2026-11-01T11:17:41.502+08:00 [info] [Cuexis Player] [player.build_flavor] experimental
+2026-11-01T11:17:41.503+08:00 [info] [Cuexis Player] [player.config] Profile system-default, gain 1.000000
+2026-11-01T11:17:41.522+08:00 [info] [Cuexis Player] [player.startup_phase] content_resolved elapsed_us 19643 total_us 19643
+2026-11-01T11:17:41.584+08:00 [info] [Cuexis Player] [player.sdl] Video driver: windows
+2026-11-01T11:17:41.832+08:00 [info] [Cuexis Player] [player.startup_phase] window_created elapsed_us 309867 total_us 329511
+2026-11-01T11:17:41.844+08:00 [info] [Cuexis Player] [player.opengl] Version: 3.3.0 NVIDIA 616.64
+2026-11-01T11:17:41.844+08:00 [info] [Cuexis Player] [player.opengl] Vendor: NVIDIA Corporation
+2026-11-01T11:17:41.844+08:00 [info] [Cuexis Player] [player.opengl] Renderer: NVIDIA GeForce RTX 4060 Laptop GPU/PCIe/SSE2
+2026-11-01T11:17:41.844+08:00 [info] [Cuexis Player] [player.startup_phase] backend_created elapsed_us 12045 total_us 341556
+2026-11-01T11:17:43.962+08:00 [info] [Cuexis Player] [player.startup_phase] content_prepared elapsed_us 2117546 total_us 2459103
+2026-11-01T11:17:43.962+08:00 [info] [Cuexis Player] [player.startup_close_requested] The window closed while the content was preparing

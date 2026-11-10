@@ -1,0 +1,269 @@
+diff --git a/app/execution_host/audio_worker.cpp b/app/execution_host/audio_worker.cpp
+index 6f536a31..6d399797 100644
+--- a/app/execution_host/audio_worker.cpp
++++ b/app/execution_host/audio_worker.cpp
+@@ -81,6 +81,9 @@ void AudioWorker::requestShutdown() {
+ auto AudioWorker::exited() const noexcept -> bool {
+     return state_->exited.load(std::memory_order_acquire);
+ }
++auto AudioWorker::admissionClosed() const -> bool {
++    return state_->channel.admissionClosed();
++}
+ auto AudioWorker::joinExited() -> core::Result<void> try {
+     if (!exited())
+         return core::unexpected(error("control_pending"));
+@@ -286,6 +289,13 @@ void AudioWorker::run(State& state) noexcept {
+     state.channel.closeAdmission();
+     while (auto pending = state.channel.take())
+         state.channel.complete(pending->first, core::unexpected(error("owner_closed")));
++    if (state.options.beforeExitForTest) {
++        try {
++            state.options.beforeExitForTest();
++        } catch (...) {
++            state.fault.store(AudioPublication::Fault::allocation, std::memory_order_release);
++        }
++    }
+     state.exited.store(true, std::memory_order_release);
+ }
+ } // namespace cuexis::playback::detail
+diff --git a/app/execution_host/audio_worker.hpp b/app/execution_host/audio_worker.hpp
+index f1462faf..ac6ff64b 100644
+--- a/app/execution_host/audio_worker.hpp
++++ b/app/execution_host/audio_worker.hpp
+@@ -69,6 +69,8 @@ struct AudioWorkerOptions final {
+     std::size_t capacity{}, controlReserve{};
+     audio::AudioClipStoreLimits clipLimits;
+     std::chrono::milliseconds serviceInterval{2};
++    // Deterministic test gate after local retirement/draining, before exit publication.
++    std::function<void()> beforeExitForTest;
+ };
+ class AudioWorker final {
+   public:
+@@ -89,6 +91,7 @@ class AudioWorker final {
+     [[nodiscard]] auto publication() const -> core::Result<AudioPublication>;
+     void requestShutdown();
+     [[nodiscard]] auto exited() const noexcept -> bool;
++    [[nodiscard]] auto admissionClosed() const -> bool;
+     [[nodiscard]] auto joinExited() -> core::Result<void>;
+ 
+   private:
+diff --git a/app/execution_host/frame_delivery.hpp b/app/execution_host/frame_delivery.hpp
+index 3a2da089..9ef769f9 100644
+--- a/app/execution_host/frame_delivery.hpp
++++ b/app/execution_host/frame_delivery.hpp
+@@ -75,6 +75,12 @@ struct DeliveryAdmission final {
+ };
+ class FrameDelivery final {
+   public:
++    [[nodiscard]] static constexpr auto historySlotStorageBytes() noexcept -> std::size_t {
++        return sizeof(std::optional<RequestRecord>);
++    }
++    [[nodiscard]] static constexpr auto consumerSlotStorageBytes() noexcept -> std::size_t {
++        return sizeof(std::optional<Consumer>);
++    }
+     [[nodiscard]] static auto create(DeliveryLimits)
+         -> core::Result<std::shared_ptr<FrameDelivery>>;
+     [[nodiscard]] auto registerConsumer(std::uint64_t operationId, HostContext, ConsumerProfile)
+diff --git a/app/execution_host/frame_observation.hpp b/app/execution_host/frame_observation.hpp
+index a4feb765..9cc3548d 100644
+--- a/app/execution_host/frame_observation.hpp
++++ b/app/execution_host/frame_observation.hpp
+@@ -118,6 +118,9 @@ template <typename Renderer, typename MonotonicNow>
+ }
+ class FrameObservationLedger final {
+   public:
++    [[nodiscard]] static constexpr auto frameSlotStorageBytes() noexcept -> std::size_t {
++        return sizeof(std::optional<FrameRecord>);
++    }
+     struct CoverageInterval final {
+         std::uint64_t first{}, last{};
+     };
+diff --git a/app/execution_host/host_protocol.hpp b/app/execution_host/host_protocol.hpp
+index 7953c89a..d8623d72 100644
+--- a/app/execution_host/host_protocol.hpp
++++ b/app/execution_host/host_protocol.hpp
+@@ -42,6 +42,9 @@ struct FaultSlot final {
+ // Fixed records are allocated at create; fault publication never allocates.
+ class OwnerStepLedger final {
+   public:
++    [[nodiscard]] static constexpr auto slotStorageBytes() noexcept -> std::size_t {
++        return sizeof(std::optional<Record>);
++    }
+     [[nodiscard]] static auto create(std::uint64_t scope, Participant, std::size_t capacity,
+                                      std::size_t controlReserve) -> core::Result<OwnerStepLedger>;
+     OwnerStepLedger(OwnerStepLedger&&) noexcept = default;
+diff --git a/app/execution_host/owner_channel.hpp b/app/execution_host/owner_channel.hpp
+index 85ab2d6d..e43b7d49 100644
+--- a/app/execution_host/owner_channel.hpp
++++ b/app/execution_host/owner_channel.hpp
+@@ -21,6 +21,10 @@ template <typename Command, typename Reply> class OwnerChannel final {
+     static_assert(std::is_nothrow_move_constructible_v<core::Error>);
+ 
+   public:
++    // Compile-time accounting of the actual private slot, including reply and optional storage.
++    [[nodiscard]] static constexpr auto slotStorageBytes() noexcept -> std::size_t {
++        return sizeof(std::optional<Record>);
++    }
+     enum class Fault : std::uint8_t { none, allocation, conflict, exhausted };
+     OwnerChannel(std::size_t capacity, std::size_t reserve) : slots_(capacity), reserve_(reserve) {}
+     OwnerChannel(const OwnerChannel&) = delete;
+@@ -164,6 +168,10 @@ template <typename Command, typename Reply> class OwnerChannel final {
+         ++wakeVersion_;
+         cv_.notify_all();
+     }
++    [[nodiscard]] auto admissionClosed() const -> bool {
++        std::lock_guard lock{mutex_};
++        return closed_;
++    }
+     [[nodiscard]] auto fault() const -> Fault {
+         std::lock_guard lock{mutex_};
+         return fault_;
+diff --git a/app/player/src/execution_host_close.cpp b/app/player/src/execution_host_close.cpp
+index deb4df9e..ef3206b7 100644
+--- a/app/player/src/execution_host_close.cpp
++++ b/app/player/src/execution_host_close.cpp
+@@ -144,6 +144,18 @@ auto ExecutionHost::close() -> core::Result<void> try {
+     }
+     if (closePhase_ == ExecutionClosePhase::prepareControl) {
+         closeBoundary(ExecutionClosePhase::prepareControl);
++        // Startup failure seals admission and drains replies before publishing exit.
++        // Do not bind a participant that can no longer accept its directed Close.
++        // Only the actual exit permits omission; its wait keeps the original Close budget.
++        if (audio_ && audio_->admissionClosed()) {
++            while (!audio_->exited()) {
++                if (closeNow() >= closeDeadline_) {
++                    pump(closeDeadline_);
++                    throw Failure{error("control_pending")};
++                }
++                pump(closeDeadline_);
++            }
++        }
+         prepareControl(ControlKind::close, *closeTarget_,
+                        {bool(capture_), true, bool(audio_ && !audio_->exited()), gpuTouched_},
+                        closeInspectionGeneration_);
+diff --git a/tests/rpa/rpa_b5_seek_host_tests.cpp b/tests/rpa/rpa_b5_seek_host_tests.cpp
+index 6b36d849..aab73f56 100644
+--- a/tests/rpa/rpa_b5_seek_host_tests.cpp
++++ b/tests/rpa/rpa_b5_seek_host_tests.cpp
+@@ -357,6 +357,56 @@ TEST_CASE("B5 main closes after audio factory failure before Load acceptance",
+     CHECK((*host)->state() == HostState::closed);
+ }
+ 
++TEST_CASE("B5 Close waits for a failed audio owner's drained exit before binding participants",
++          "[b5][host][fault][retirement]") {
++    presentation_renderer::TestPresentationRenderer renderer;
++    std::atomic<unsigned> pumps{};
++    std::atomic<bool> exitGate{}, releaseExit{};
++    auto settings = options();
++    settings.sourceMode = PlaybackMode::HostClock;
++    settings.audio.beforeExitForTest = [&] {
++        exitGate.store(true, std::memory_order_release);
++        const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds{3};
++        while (!releaseExit.load(std::memory_order_acquire) &&
++               std::chrono::steady_clock::now() < deadline)
++            std::this_thread::yield();
++    };
++    auto wired = ports(pumps);
++    wired.audioDevice =
++        [](audio::AudioClipStore&) -> core::Result<std::unique_ptr<OwnedAudioDevice>> {
++        return core::unexpected(core::Error{"probe.factory_failure", "Injected startup failure"});
++    };
++    // Hold the failed owner until Close reaches participant binding. Earlier pumps
++    // cannot accidentally complete the exit and hide the race.
++    bool closePreparing{};
++    wired.beforeClosePhase = [&](player::ExecutionClosePhase phase) -> core::Result<void> {
++        if (phase == player::ExecutionClosePhase::prepareControl)
++            closePreparing = true;
++        return {};
++    };
++    wired.pumpMain = [&]() -> core::Result<void> {
++        ++pumps;
++        if (closePreparing && exitGate.load(std::memory_order_acquire))
++            releaseExit.store(true, std::memory_order_release);
++        return {};
++    };
++    auto host = player::ExecutionHost::create(renderer, settings, std::move(wired));
++    REQUIRE(host);
++    auto source = PlaybackSource::fromFilesystemProject(std::filesystem::path{CUEXIS_SOURCE_DIR} /
++                                                        "assets/projects/stage1d_project");
++    REQUIRE(source);
++    REQUIRE_FALSE((*host)->load(std::move(*source)));
++    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds{3};
++    while (!exitGate.load(std::memory_order_acquire) && std::chrono::steady_clock::now() < deadline)
++        std::this_thread::yield();
++    REQUIRE(exitGate.load(std::memory_order_acquire));
++    const auto closed = (*host)->close();
++    INFO((closed ? "" : std::string{closed.error().code()}));
++    REQUIRE(closed);
++    CHECK(releaseExit.load(std::memory_order_acquire));
++    CHECK((*host)->state() == HostState::closed);
++}
++
+ TEST_CASE("R3 CPU host Seek measures first and repeated requests through target present",
+           "[.][b5][redesign-host-perf]") {
+     if (test_support::environmentVariable("CUEXIS_REDESIGN_BARRIER") == "1") {
+diff --git a/tools/verification/run_rpa_acceptance_matrix.py b/tools/verification/run_rpa_acceptance_matrix.py
+index d57905f3..899f6c1e 100644
+--- a/tools/verification/run_rpa_acceptance_matrix.py
++++ b/tools/verification/run_rpa_acceptance_matrix.py
+@@ -65,10 +65,31 @@ def free_bytes(path):
+     return shutil.disk_usage(probe).free
+ 
+ 
++def isolated_build_paths(build_root, invocation, rows, root=ROOT):
++    """Resolve fresh row directories without reconfiguring an existing build tree."""
++    allowed = (root / "out/build").resolve()
++    if not allowed.is_relative_to(root.resolve()):
++        raise ValueError("checkout build directory resolves outside this checkout")
++    build_root = build_root.resolve()
++    if not build_root.is_relative_to(allowed):
++        raise ValueError("isolated build root must be under this checkout's out/build")
++    for ancestor in (build_root, *build_root.parents):
++        if (ancestor / "CMakeCache.txt").exists():
++            raise ValueError("isolated build root must not be inside an existing build tree")
++        if ancestor == allowed:
++            break
++    destination = build_root / invocation
++    if destination.exists():
++        raise ValueError("isolated invocation directory already exists")
++    return {row: destination / row for row in rows}
++
++
+ def main():
+     parser = argparse.ArgumentParser(description=__doc__)
+     parser.add_argument("--rows", nargs="+", choices=ROWS, default=list(ROWS))
+     parser.add_argument("--output", type=Path, default=ROOT / "out/rpa-acceptance")
++    parser.add_argument("--build-root", type=Path,
++                        help="Use fresh per-invocation row trees under out/build")
+     parser.add_argument("--vcvars", type=Path)
+     parser.add_argument("--jobs", type=int, default=4)
+     parser.add_argument("--repeat-measurements", type=int, default=5)
+@@ -78,6 +99,11 @@ def main():
+     if args.vcvars and not args.vcvars.is_file():
+         parser.error("vcvars must name an existing developer shell script")
+     run = args.output.resolve() / (time.strftime("%Y%m%d-%H%M%S") + "-" + uuid.uuid4().hex[:8])
++    try:
++        builds = isolated_build_paths(args.build_root, run.name, args.rows) if args.build_root else {
++            row: ROOT / "out/build" / ROWS[row][0] for row in args.rows}
++    except ValueError as error:
++        parser.error(str(error))
+     available = free_bytes(args.output.resolve())
+     if available < FREE_SPACE_FLOOR:
+         parser.exit(2, f"refusing to start: {available / 1024**3:.2f} GiB free, floor is "
+@@ -86,6 +112,7 @@ def main():
+     manifest = {"source": identity(), "os": platform.platform(), "machine": platform.machine(),
+                 "logical_processors": os.cpu_count(), "test_only": True,
+                 "free_space_floor_bytes": FREE_SPACE_FLOOR, "free_bytes_at_start": available,
++                "isolated_builds": args.build_root is not None,
+                 "final_acceptance": False, "production_thresholds_accepted": False,
+                 "rows": [], "unexecuted": ["physical_keyboard", "listening", "device_loss_recovery",
+                                            "production_calibration", "hosted_same_sha", "owner_acceptance"]}
+@@ -124,7 +151,7 @@ def main():
+ 
+     for row in args.rows:
+         directory, preset, options = ROWS[row]
+-        build = ROOT / "out/build" / directory
++        build = builds[row]
+         environment = os.environ.copy()
+         if row.startswith("mingw"):
+             environment["PATH"] = "C:/msys64/ucrt64/bin;" + environment["PATH"]

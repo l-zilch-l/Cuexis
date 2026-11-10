@@ -201,7 +201,7 @@ CFU-A 现有格式/资产盘点与用例 fixture
 
 CFU-A 已完成仓库内盘点。项目所有者已于 2026-08-14 记录“未提供外部资产”；整包 CFU-D 已关闭。
 兼容窗口不缩短：不得删除 v3 入口，也不得声称全部外部资产已经迁移。证据见
-[CFU-D 关闭报告](../../../stage_reports/chart-format-update/2026-08-14-d-close.md)。
+[CFU-D 关闭报告](../../../stage_reports/stages/chart-format-update/2026-08-14-d-close.md)。
 
 ### CFU-B：合同与 ADR
 
@@ -255,9 +255,9 @@ CFU-C1-C2 不得把动画求值放入 Chart compiler；含动画数据只形成 
 D3 在 CFU-E 关闭后开始。
 
 实施快照（2026-08-14）：Playback FrameSnapshot / FrameDigest v3 / seek-stop 等价已由
-[CFU-D3 报告](../../../stage_reports/chart-format-update/2026-08-14-d3-equivalence.md) 关闭。同日稍后
+[CFU-D3 报告](../../../stage_reports/stages/chart-format-update/2026-08-14-d3-equivalence.md) 关闭。同日稍后
 项目所有者记录“未提供外部资产”，整包 CFU-D 已由
-[CFU-D 关闭报告](../../../stage_reports/chart-format-update/2026-08-14-d-close.md) 关闭。兼容窗口不缩短；
+[CFU-D 关闭报告](../../../stage_reports/stages/chart-format-update/2026-08-14-d-close.md) 关闭。兼容窗口不缩短；
 下一批次为 CFU-F。
 
 ### CFU-E：Runtime/Playback 接入
@@ -269,7 +269,7 @@ Stage 4 前复用 `playback.capability.unsupported` 稳定拒绝。不得在 Cha
 
 实施快照（2026-08-14）：CFU-E0–E4 已由项目所有者接受并关闭。最终 SHA
 `2dc5f6cc1f413132502896705fd46163fec760b2` 的 Linux Quality、Windows MSVC 与 Windows MinGW
-全部成功。证据见 [CFU-E 关闭报告](../../../stage_reports/chart-format-update/2026-08-14-e-close.md)。
+全部成功。证据见 [CFU-E 关闭报告](../../../stage_reports/stages/chart-format-update/2026-08-14-e-close.md)。
 CFU-D3 已随后关闭；下一批次为 CFU-F。
 
 ### CFU-F：消费者与确定性
@@ -317,7 +317,7 @@ CFU-C0 是零功能启动门禁，不产生可加载的新格式。入口条件�
 ### 5.2 CFU-C1：Schema、正式 fixture 与 typed source model
 
 状态：已于 2026-08-11 完成；证据见
-[CFU-C1 Reader 报告](../../../stage_reports/chart-format-update/2026-08-11-c1-reader.md)。
+[CFU-C1 Reader 报告](../../../stage_reports/stages/chart-format-update/2026-08-11-c1-reader.md)。
 
 目标是建立“同一输入由 Schema 和 typed Reader 得出相同接受/拒绝结论”的最小生产格式层，不接入
 Playback 或 Runtime。
@@ -357,7 +357,7 @@ Playback 或 Runtime。
 ### 5.3 CFU-C2：Canonical Writer、参数解析、CXT import 与 deterministic lowering
 
 状态：已于 2026-08-11 完成；证据见
-[CFU-C2 lowering 报告](../../../stage_reports/chart-format-update/2026-08-11-c2-lowering.md)。
+[CFU-C2 lowering 报告](../../../stage_reports/stages/chart-format-update/2026-08-11-c2-lowering.md)。
 
 目标是从 source documents 生成确定的 `ResolvedChartDocument` 和 `AnimationProgramInput`，并形成
 跨 source identity 输入；仍不实现动画采样和混合。
@@ -451,7 +451,7 @@ source。该 target 不成为公共 SDK component。
 实施状态：CFU-C3 已于 2026-08-12 关闭。内部 `cuexis_cxc`、strict ZIP32 Stored Reader/Writer、
 manifest/project closure、owning file/memory package、Asset ContentProvider、独立 project-document
 table、package identity、binary fixtures 和安装泄漏门禁已完成。证据见
-[CFU-C3 报告](../../../stage_reports/chart-format-update/2026-08-12-c3-cxc.md)。该检查点不得描述为完整 CXC、
+[CFU-C3 报告](../../../stage_reports/stages/chart-format-update/2026-08-12-c3-cxc.md)。该检查点不得描述为完整 CXC、
 公共 package API、Playback 支持或 Stage Chart Format Update 完成。
 
 ### 5.5 CFU-C4：CXC 工具、原子输出与 binary golden
@@ -523,13 +523,13 @@ CFU-E 接入后由 D3 关闭。
 
 实施快照（2026-08-13）：`ChartMigrator::migrateToV4`、CLI `--target 3|4`、v3 报告 golden 保持、
 v4 chart golden 与结构性 report 检查已落地。本 worktree Debug 证据见
-[CFU-D1/D2 报告](../../../stage_reports/chart-format-update/2026-08-13-d-migration.md)。D1/D2 已关闭。
+[CFU-D1/D2 报告](../../../stage_reports/stages/chart-format-update/2026-08-13-d-migration.md)。D1/D2 已关闭。
 仓库外旧 Chart 资产当时仍未确认，全部 v1/v2/v3 Reader 与迁移入口保留。
 
 实施快照（2026-08-14）：Playback FrameSnapshot / FrameDigest v3 / seek-stop 等价已由
-[CFU-D3 报告](../../../stage_reports/chart-format-update/2026-08-14-d3-equivalence.md) 关闭。同日稍后
+[CFU-D3 报告](../../../stage_reports/stages/chart-format-update/2026-08-14-d3-equivalence.md) 关闭。同日稍后
 项目所有者记录“未提供外部资产”，整包 CFU-D 已由
-[CFU-D 关闭报告](../../../stage_reports/chart-format-update/2026-08-14-d-close.md) 关闭。兼容窗口不缩短；
+[CFU-D 关闭报告](../../../stage_reports/stages/chart-format-update/2026-08-14-d-close.md) 关闭。兼容窗口不缩短；
 下一批次为 CFU-F。
 
 ### 5.7 CFU-E：PlaybackSource、prepare options 与事务接入
@@ -537,7 +537,7 @@ v4 chart golden 与结构性 report 检查已落地。本 worktree Debug 证据�
 #### CFU-E0：公共 API 与版本门禁
 
 状态：已于 2026-08-14 经项目所有者接受并关闭。冻结的签名、兼容结论和版本目标见
-[CFU-E0 API 评审报告](../../../stage_reports/chart-format-update/2026-08-14-e0-api.md)。CFU-E1 实施前仓库仍保持
+[CFU-E0 API 评审报告](../../../stage_reports/stages/chart-format-update/2026-08-14-e0-api.md)。CFU-E1 实施前仓库仍保持
 SDK API `0.5.0`，安装头和生成头尚未修改。
 
 在修改安装头以前，先提交 API sketch 并单独评审。E0 的评审输入职责如下，确切拼写和签名已由
@@ -582,7 +582,7 @@ file/memory factory 使用 `cuexis_cxc`。ParameterSet 不进入 source state。
 实施状态：CFU-E1 已于 2026-08-14 关闭。公共 owning document/source type、typed/CXC factory、统一
 entry/document/provider/database/package-metadata state、旧 factory 适配、SDK API `0.6.0`、static/shared
 consumer 和 export/import 门禁已完成。证据见
-[CFU-E1 报告](../../../stage_reports/chart-format-update/2026-08-14-e1-source.md)。E1 没有实现 v4 prepare、参数
+[CFU-E1 报告](../../../stage_reports/stages/chart-format-update/2026-08-14-e1-source.md)。E1 没有实现 v4 prepare、参数
 resolution、capability 或 prepared semantic identity；这些边界分别由后续 E2/E3 批次负责。
 
 #### CFU-E2：prepare、capability 与 resolved content
@@ -600,7 +600,7 @@ resolution、capability 或 prepared semantic identity；这些边界分别由�
 CXT lookup、格式 capability preflight、静态/参数化 v4 到既有 Runtime 的投影、options overload 委托和
 失败 reload 回归已完成。非空动画继续在 Runtime/World 发布前稳定拒绝；candidate 只保存 typed
 `AnimationProgramInput`，没有动画采样或混合。证据见
-[CFU-E2 报告](../../../stage_reports/chart-format-update/2026-08-14-e2-prepare.md)。E2 没有实现 prepared semantic
+[CFU-E2 报告](../../../stage_reports/stages/chart-format-update/2026-08-14-e2-prepare.md)。E2 没有实现 prepared semantic
 identity；该边界由 CFU-E3 负责。
 
 #### CFU-E3：identity、reload 与失败原子性
@@ -620,7 +620,7 @@ identity；该边界由 CFU-E3 负责。
 
 实施状态：CFU-E3 已于 2026-08-14 关闭。`cuexis_chart` combiner、Playback candidate/active identity
 observation、跨 source 同一规范内容/参数的 identity 等价，以及失败 reload 保持旧 identity 已完成。
-证据见 [CFU-E3 报告](../../../stage_reports/chart-format-update/2026-08-14-e3-identity.md)。E3 没有关闭全量
+证据见 [CFU-E3 报告](../../../stage_reports/stages/chart-format-update/2026-08-14-e3-identity.md)。E3 没有关闭全量
 Debug/Release/shared consumer 门禁；该边界由 CFU-E4 负责。
 
 #### CFU-E4：E 批次门禁
@@ -634,11 +634,11 @@ Debug/Release/shared consumer 门禁；该边界由 CFU-E4 负责。
 
 实施状态：CFU-E4 已于 2026-08-14 关闭本地门禁。Debug/Release `362/362`、shared-debug
 package/export/import `10/10`、format/docs/version/whitespace 与 Playback-only consumer identity
-观察均通过。证据见 [CFU-E4 报告](../../../stage_reports/chart-format-update/2026-08-14-e4-gates.md)。
+观察均通过。证据见 [CFU-E4 报告](../../../stage_reports/stages/chart-format-update/2026-08-14-e4-gates.md)。
 
 整包 CFU-E 已于 2026-08-14 经项目所有者接受并关闭。最终 SHA
 `2dc5f6cc1f413132502896705fd46163fec760b2` 的 Linux Quality、Windows MSVC 与 Windows MinGW
-全部成功。证据见 [CFU-E 关闭报告](../../../stage_reports/chart-format-update/2026-08-14-e-close.md)。
+全部成功。证据见 [CFU-E 关闭报告](../../../stage_reports/stages/chart-format-update/2026-08-14-e-close.md)。
 该关闭不是完整 CXC 公共产品支持、公共 package API 或 Stage 4。CFU-D 已关闭；下一批次为 CFU-F。
 
 ### 5.8 CFU-F：消费者、确定性、安全与性能
@@ -676,7 +676,7 @@ CFU-F4  limits, sanitizer, allocation and performance evidence
 consumer、保留 Behavior/Step/Stop 且空动画的 static Chart v4 reference project，以及对应 CXC。
 filesystem/CXC file/CXC memory 的 semantic identity 和 FrameDigest v3 trace 一致；capability 与非法
 target reload 均保持完整 active state。Debug、Release 与 adapter-disabled headless 全量门禁通过。
-证据见 [CFU-F1 报告](../../../stage_reports/chart-format-update/2026-08-15-f1-headless.md)。下一批次为 CFU-F2。
+证据见 [CFU-F1 报告](../../../stage_reports/stages/chart-format-update/2026-08-15-f1-headless.md)。下一批次为 CFU-F2。
 
 实施快照（2026-08-15）：CFU-F2 将 Playback-only external consumer 升级为只 include 安装后的
 `cuexis/playback/*.hpp`，并真实覆盖 filesystem、CXC file、CXC memory、typed project-document、
@@ -684,7 +684,7 @@ prepare options、semantic identity 和失败 reload。static/shared、`add_subd
 adapter-disabled headless、公开头泄漏以及 static `Cuexis::InternalCxc` 传递链接闭包门禁均通过。
 Debug、Release、Shared Debug 与 Headless Debug 全量 CTest 分别通过 `368/368`、`368/368`、
 `371/371`、`334/334`。证据见
-[CFU-F2 报告](../../../stage_reports/chart-format-update/2026-08-15-f2-package-consumers.md)。下一批次为 CFU-F3。
+[CFU-F2 报告](../../../stage_reports/stages/chart-format-update/2026-08-15-f2-package-consumers.md)。下一批次为 CFU-F3。
 
 实施快照（2026-08-15）：CFU-F3 新增 LF-only deterministic fingerprint，将 production
 `cuexis_cxc_pack` 输出与 committed CXC byte-compare，将 `cuexis_chart_migrator --target 4` 输出与
@@ -694,7 +694,7 @@ Release 与 Clang Shared Debug 配置显式注入 `${{ github.sha }}` 并上传�
 MSVC Debug/Release 全量均通过 `369/369`，shared Debug 与 adapter-disabled headless Release 聚焦
 门禁通过；Release 首轮的一次既有 CXC unpack 目录提交瞬时失败，在独立复跑与最终全量复跑中均
 通过。证据见
-[CFU-F3 报告](../../../stage_reports/chart-format-update/2026-08-15-f3-determinism.md)。本地结果不替代最终 SHA 的
+[CFU-F3 报告](../../../stage_reports/stages/chart-format-update/2026-08-15-f3-determinism.md)。本地结果不替代最终 SHA 的
 hosted parity。
 
 实施快照（2026-08-15）：CFU-F4 以小型 JSON 构造器和伪 ZIP32 header 覆盖 manifest/package/
@@ -705,14 +705,14 @@ closure、Chart v4 import/resolved animation 的精确上限、边界 +1、整�
 sanitizer 日志、Chart/CXC/Playback clang-tidy、CXC/Chart v4 branch coverage 与 Release 性能 artifact。
 本地 MSVC Debug/Release 全量均通过 `379/379`，F4 聚焦门禁通过 `10/10`，Debug 与 Release 性能
 探针均通过。证据见
-[CFU-F4 报告](../../../stage_reports/chart-format-update/2026-08-15-f4-safety-performance.md)。
+[CFU-F4 报告](../../../stage_reports/stages/chart-format-update/2026-08-15-f4-safety-performance.md)。
 
 关闭快照（2026-08-16）：六份 GCC/Clang/MSVC/MinGW F3 artifact 的 canonical CXC、migration、
 semantic identity、FrameDigest v3 与 diagnostics fingerprint 完全一致；Linux ASan/UBSan 全量与 F4
 聚焦门禁、Chart/CXC/Playback clang-tidy、CXC/Chart v4 branch coverage、64 MiB Release 性能 evidence
 全部绑定上述实现 SHA。Linux 首次 attempt 因 vcpkg 下载 util-linux/libmount 时发生外部 TLS error 35
 失败，同一 SHA 的 failed-job rerun 成功，无代码变更。Windows MSVC/MinGW Debug/Release 首轮成功。
-完整证据见 [CFU-F 关闭报告](../../../stage_reports/chart-format-update/2026-08-16-f-close.md)。退出门禁已满足，
+完整证据见 [CFU-F 关闭报告](../../../stage_reports/stages/chart-format-update/2026-08-16-f-close.md)。退出门禁已满足，
 下一批次为 CFU-G。
 
 ### 5.9 CFU-G：验收、封存与 Stage 4 交接
@@ -734,13 +734,13 @@ semantic identity、FrameDigest v3 与 diagnostics fingerprint 完全一致；Li
 执行状态（2026-08-24）：G0 已完成现行状态校准和文档防回退门禁；G1 已完成 §11 退出条件审计，
 结果为 `15 PASS / 1 RERUN / 2 DOC / 0 BLOCKED`，未发现新的产品代码阻断；G2 已完成 Stage 4 typed
 handoff，冻结 `AnimationProgramInput`、capability、fixture、预算、diagnostics、所有权、验收入口和
-残余风险。证据见 [CFU-G1 审计报告](../../../stage_reports/chart-format-update/2026-08-16-g1-exit-audit.md)
-与 [CFU-G2 交接报告](../../../stage_reports/chart-format-update/2026-08-16-g2-stage4-handoff.md)。G3 已于
+残余风险。证据见 [CFU-G1 审计报告](../../../stage_reports/stages/chart-format-update/2026-08-16-g1-exit-audit.md)
+与 [CFU-G2 交接报告](../../../stage_reports/stages/chart-format-update/2026-08-16-g2-stage4-handoff.md)。G3 已于
 2026-08-19 完成本地候选门禁，最终候选 SHA
 `4371fdcf04f4f89bfddf070cbb15e4c903810a53` 的 hosted Linux/MSVC/MinGW 于 2026-08-24 全部成功。
-证据见 [CFU-G3 验证报告](../../../stage_reports/chart-format-update/2026-08-19-g3-validation.md) 与
-[CFU-G4 hosted 验证报告](../../../stage_reports/chart-format-update/2026-08-24-g4-hosted.md)。G3 hosted 与
-G4 已完成；[G5/G6 completion report](../../../stage_reports/chart-format-update/completion.md)
+证据见 [CFU-G3 验证报告](../../../stage_reports/stages/chart-format-update/2026-08-19-g3-validation.md) 与
+[CFU-G4 hosted 验证报告](../../../stage_reports/stages/chart-format-update/2026-08-24-g4-hosted.md)。G3 hosted 与
+G4 已完成；[G5/G6 completion report](../../../stage_reports/stages/chart-format-update/completion.md)
 已完成 report-SHA hosted revalidation，项目所有者已于 2026-08-24 明确接受。CFU-G 与 Stage Chart
 Format Update 已关闭，Stage 4 已切换为 unblocked / not started。
 

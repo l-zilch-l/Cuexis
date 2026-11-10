@@ -1,0 +1,35 @@
+Filters: "GPU visible entity throughput probe"
+Randomness seeded to: 1
+GPU_THROUGHPUT_READY
+GPU_STARTUP_BEGIN fixture_source
+GPU_STARTUP_END fixture_source 2397.6999999999998
+GPU_STARTUP_BEGIN playback_prepare
+GPU_STARTUP_END playback_prepare 73117.199999999997
+GPU_STARTUP_BEGIN renderer_prepare
+GPU_STARTUP_END renderer_prepare 393.10000000000002
+GPU_STARTUP_BEGIN first_update
+GPU_STARTUP_END first_update 287.39999999999998
+GPU_STARTUP_BEGIN first_extract
+GPU_STARTUP_END first_extract 429
+GPU_STARTUP_BEGIN first_submit
+GPU_STARTUP_END first_submit 2995.9000000000001
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gpu-baseline.exe is a Catch2 v3.15.2 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+GPU visible entity throughput probe
+-------------------------------------------------------------------------------
+D:\Cuexis-redesign\tests\player\gpu_throughput_probe.cpp(148)
+...............................................................................
+
+D:\Cuexis-redesign\tests\player\gpu_throughput_probe.cpp(219): FAILED:
+  {Unknown expression after the reported line}
+due to unexpected exception with message:
+  GPU throughput cancelled by window close or Escape
+
+===============================================================================
+test cases:  1 |  0 passed | 1 failed
+assertions: 13 | 12 passed | 1 failed
+
