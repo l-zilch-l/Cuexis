@@ -30,6 +30,24 @@
 - 结果：exit 0，7.3 s，单进程未替换；分区精确（`exact=true`、`untagged=0`、33 cell、637,027 live），
   总量 365,084,102 B，未分类 21,568,715 B。
 
+## 2.1 归属修正后的同一运行（2026-11-10 晚）
+
+下面 §3 的 7.36× 是**修正前**的记账结果。逐分配追踪证明该域的 160.8 MB 里约 141 MB 是采样/前进期间物化的
+执行内核状态，被 `dispatch()` 的单个命令级标签记到了命令信封名下（见 §4/§5）。把
+`SessionUpdatePresentation` 与 `SessionSeek` 两个分支改为执行域作用域后，**同一份构建、同一用例、同一绑定**
+（总字节数完全不变，仍是 365,084,102 B）得到：
+
+| 域 | 观测 | 声明上限 | 倍率 |
+| --- | ---: | ---: | ---: |
+| `command.session` | 19,762,486 B | 21,854,208 B | **0.90，在声明内** |
+| `execution.retained` | 141,080,535 B | 1,327,497,216 B | 0.11，在声明内 |
+| `state.world` | 33,125,473 B | 163,905,536 B | 0.20 |
+| `state.current` | 26,445,893 B | 81,985,536 B | 0.32 |
+| `state.candidate` | 20,641,094 B | 163,905,536 B | 0.13 |
+| `content.decoded` | 39,168,683 B | 1,319,108,608 B | 0.03 |
+
+即 21 个域**全部在声明内**，`over_declared` 为空。字节没有被移动或减少，只是记到了它所属的域。
+
 ## 3. 结果（profile `r4-reference-n40000-v1`）
 
 | 域 | 观测 | 声明上限 | 倍率 |
@@ -68,17 +86,19 @@
 
 ## 5. 这个超限是什么性质
 
-- 字节是真的：它们确实存活、确实由 `command.session` 记账，且在 `close` 后归零（`after-close` 只剩 5,072 B）。
+- 字节是真的：它们确实存活、确实被记账，并在 `close` 后归零（`after-close` 只剩 5,072 B）。
 - 但归属是粗的：`session_worker_dispatch.cpp` 的 `dispatch()` 用**一个**命令级
-  `ExecutionTagScope{playback-worker, command.session}` 包住所有命令，于是前进/采样期间物化的执行内核状态
+  `ExecutionTagScope{playback-worker, command.session}` 包住所有命令，于是采样/前进期间物化的执行内核状态
   也被记到了“命令信封”名下。
-- 实测验证：把 seek、realtime-start、advance 三个分支各自改成执行域作用域后，只有 seek 分支的
-  15.13 MB 迁移到了 `execution.retained`，另外 125.9 MB 仍留在 `command.session`——说明它来自尚未定位的
-  采样/前进路径，而不是这三个入口。该实验未保留在候选里（三个提交已撤回），只作为归属分析的证据。
+- 定位过程：先按检查点二分——`after-seek` 时该域只有 19.8 MB，`after-sample` 时是 145.7 MB，缺口在
+  `host->sample()` 区间内；再逐分支加执行域作用域验证，`SessionUpdatePresentation` 一次性迁出
+  125,951,111 B，`SessionSeek` 迁出 15,129,424 B，合计 141,080,535 B，余下 19,762,486 B 正是命令槽
+  与保留前进记录本身。中间试过的 realtime-start、advance、request-frame 三个分支都没有迁移任何字节。
+- 结论：`command.session` 的 7.36× 不是“命令信封需要 160 MB”，而是“约 141 MB 的执行内核状态被记在了
+  命令信封名下”。修正后同一运行 21 个域全部在声明内（§2.1）。
 
-因此 `command.session` 的 7.36× 不是“命令信封需要 160 MB”，而是“约 141 MB 的执行内核状态被记在了命令信封
-名下”。修正归属（而不是提高上限）是更合理的方向；在此之前不写新的数值上限，也不修改
-`budget-proposal.v1.json` 或 O1 接受记录。
+因此本批**不写**新的数值上限，也**不修改** `budget-proposal.v1.json` 或 O1 接受记录：修正的是记账归属，
+不是声明额度。是否接受这份归属修正，仍属 owner 的签署范围。
 
 ## 6. 边界
 
