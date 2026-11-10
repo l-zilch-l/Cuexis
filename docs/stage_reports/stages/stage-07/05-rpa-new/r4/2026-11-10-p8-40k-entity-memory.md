@@ -42,29 +42,43 @@
 
 21 个域里只有 `command.session` 超出；World、快照与解码侧都在声明内。
 
-## 4. `command.session` 的构成
+## 4. `command.session` 的构成（逐分配实测）
 
-固定部分是 128 × `SessionChannelSlot`（39,664 B）= 5,076,992 B，与 `main` 观测的 5,077,031 B
-只差 39 B 容器头。
+2026-11-10 给观察器加了按域逐分配输出后（证据在 `out/evidence/r4/mem-trace/index.md`，见
+[内存上限修订提案](2026-11-08-memory-budget-revision.md)），该域只有 118 个存活分配，构成可以直接逐项读出，
+不需要拟合：
 
-`playback-worker` 侧 155,757,167 B ≈ 3,894 B/实体。该量与
-`frameByteBound(objects, resources, members)`（`app/execution_host/frame_delivery.cpp`）同构：
+| 分配 | 大小 | 归属 |
+| --- | ---: | --- |
+| 128 × `SessionChannelSlot`(39,664) + 39 | 5,077,031 B | `main.command-session`，命令信封本身 |
+| 保留的 coherent 前进记录 65,536 × 224 + 39 | 14,680,103 B | `playback-worker.command-session`，实时前进的保留窗口 |
+| 其余小容器/字符串 | 9,616 B | 同上 |
+| **固定合计** | **19,766,750 B** | 与早先的两点拟合（19.83 MB）相差 0.3% |
+| 每实体 7 个连续数组 × (N+1) | **3,524 B/实体** | `playback-worker.command-session`，执行内核状态的物化 |
 
-- `objectBytes = 2·sizeof(ObjectSnapshot) + 4·(2·256 + 32) = 2·320 + 2,176 = 2,816 B`
-  （`ObjectSnapshot` = 320 B，已在 `element-sizes-msvc-release.v1.json` 的 `FrameObject` 行登记）；
-- `memberBytes = 2·sizeof(FeedbackId) + 2·(2·256 + 32) = 192 + 1,088 = 1,280 B`；
-- 合计 **4,096 B/实体**，与观测的 3,894 B/实体同阶。
+每实体的 3,524 B = 3,096 + 200 + 64 + 64 + 48 + 44 + 8；40K 时最大一项是
+`40,001 × 3,096 + 39 = 123,843,135 B`，n2048 时同一项是 `2,049 × 3,096 + 39 = 6,343,743 B`。
+七项在同一次 `sample` 调用区间内出现：`after-seek` 检查点时该域仍是 19.8 MB，`after-sample` 时已是
+145.7 MB。
 
-即交付缓冲按 `maxFrameMembers` 声明容量分配，`command.session` 的声明上限缺了这一项。n2048 观测到的
-约 3.5 KB/实体增长是同一项的线性部分。
+**更正**：本报告早先把这项归因为“交付缓冲按 `maxFrameMembers` 声明容量分配”是错的。
+`FrameStorage` 只记账不分配（`app/execution_host/frame_storage.hpp` 的构造函数只保存 `maxCount_`/
+`maxBytes_` 与 `StorageMetrics`），`frameByteBound` 在整个仓库里只被比较和返回，从未作为缓冲大小使用。
+3,894 B/实体与 4,096 B/实体“同阶”是巧合，不是同源。
 
-## 5. 还没有写进上限的原因
+## 5. 这个超限是什么性质
 
-把 `command.session` 的声明式上限改成“固定槽位 + k·maxFrameMembers”需要先确定 k 的**实例数**
-（同一进程里同时存在几份这样的交付缓冲、在哪个检查点物化）。当前观察器只输出域级总计与世界侧
-分配行，没有 `command.session` 的逐分配记录，因此本批不写新的数值上限，也不修改
-`budget-proposal.v1.json` 或 O1 接受记录。需要的下一步是给该域增加逐分配归因后重跑一次 n2048 与
-40K（同一候选、同一绑定方式）。
+- 字节是真的：它们确实存活、确实由 `command.session` 记账，且在 `close` 后归零（`after-close` 只剩 5,072 B）。
+- 但归属是粗的：`session_worker_dispatch.cpp` 的 `dispatch()` 用**一个**命令级
+  `ExecutionTagScope{playback-worker, command.session}` 包住所有命令，于是前进/采样期间物化的执行内核状态
+  也被记到了“命令信封”名下。
+- 实测验证：把 seek、realtime-start、advance 三个分支各自改成执行域作用域后，只有 seek 分支的
+  15.13 MB 迁移到了 `execution.retained`，另外 125.9 MB 仍留在 `command.session`——说明它来自尚未定位的
+  采样/前进路径，而不是这三个入口。该实验未保留在候选里（三个提交已撤回），只作为归属分析的证据。
+
+因此 `command.session` 的 7.36× 不是“命令信封需要 160 MB”，而是“约 141 MB 的执行内核状态被记在了命令信封
+名下”。修正归属（而不是提高上限）是更合理的方向；在此之前不写新的数值上限，也不修改
+`budget-proposal.v1.json` 或 O1 接受记录。
 
 ## 6. 边界
 
