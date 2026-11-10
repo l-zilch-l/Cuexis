@@ -616,8 +616,8 @@ void checkpoint(const char* label) {
     // domain is chosen by an environment variable so the default log is unchanged;
     // the lookup uses a fixed buffer and the row count is bounded.
     char traceName[64]{};
-    const auto traceLength = ::GetEnvironmentVariableA("CUEXIS_RPA_MEMORY_TRACE_DOMAIN",
-                                                       traceName, sizeof(traceName));
+    const auto traceLength =
+        ::GetEnvironmentVariableA("CUEXIS_RPA_MEMORY_TRACE_DOMAIN", traceName, sizeof(traceName));
     std::size_t traceSlot = budgetCount;
     if (traceLength > 0 && traceLength < sizeof(traceName))
         for (std::size_t index = 0; index < budgetCount; ++index)
