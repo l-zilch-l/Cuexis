@@ -32,14 +32,14 @@
 | R4-5 P1–P4/P6 | 七单元三窗口完成；六个计时组通过重复性，`p4-capture-1` inconclusive | 未接受探针绝对预算；`p4-capture-1` 待裁定 |
 | R4-5 P5 控制 | 未登记 | 需要 controls adapter 与固定请求数 |
 | R4-5 五类 Seek | 本候选未重验 | 需要 device/seek adapter 与真实端点 |
-| R4-5 memory | 逐域精确归因完成；`state.current` 超 proposed 上限 | 提案上限未接受；GPU/驱动与 prepare 峰值未测 |
-| R4-5 P8 | 未准入：40K fixture 触发打包字符串上限 | 内容设计或 caps 裁定 + low/high 各一次 |
-| R4-6 F1 | 仅候选 `24f0a914` 有 11 行矩阵 | 最终候选需同 SHA 重跑 |
-| R4-6 F2 | 仅 `2ec3480e` 有同 SHA hosted | 需恢复推送授权后处理 |
+| R4-5 memory | 逐域精确归因完成；40K 实体实测只有 `command.session` 超（7.36×），`state.world`/`state.current` 在声明内 | 上限修订待逐分配归因；GPU/驱动与 prepare 峰值未测 |
+| R4-5 P8 | 已准入：40K 实体 + 4,096 内容行跑通（exit 0），唯一超出是 `command.session` | 内容口径与上限修订待签署；low 变体未做 |
+| R4-6 F1 | **候选 `2c4e1274` 的 11 行全部 local_pass** | 无；报告见 2026-11-10 批 |
+| R4-6 F2 | **`2c4e1274` 同 SHA hosted 三平台 success** | 无 |
 | R4-7 O2/P7 | 实体清单已准备 | owner 实体参与、仪器与听音 |
 | R4-7 F3/生产 | testOnly | 校准与 owner 接受 |
 | R4-7 O3/PD 退出 | 未接受 | owner 接受带限制移交 |
-| Version Gate | 仍失败（SDK owner 批准无效） | owner 提供针对所选候选的精确批准 |
+| Version Gate | **success（`2c4e1274`）** | 无；批准记录随候选 SHA 变化 |
 
 ## 3. 需要 owner 裁定的事项与推荐方案
 
@@ -104,6 +104,16 @@ owner 于 2026-11-08 明确“允许推送，可以按照推荐方案继续进�
 
 最终候选 C 的选定（决定 F1/F2 绑哪个 SHA）、F2 推送授权、O2/P7 实体参与、F3 校准、
 O3 移交接受、Version Gate 的 SDK owner 批准——这些都需要 owner 参与，代理不自行推进。
+
+
+### 3.7 2026-11-10 收口记录
+
+- 候选冻结点是 `2c4e1274`（`26.11.09-1`）。F1、F2 与 Version Gate 都在这个 SHA 上通过，
+  证据见 [F1/F2 报告](2026-11-10-f1-f2-final-candidate.md)与
+  [P8 40K 报告](2026-11-10-p8-40k-entity-memory.md)。
+- P8 的 40K 实体跑通后，唯一的超出是 `command.session`（160.8 MB vs 21.85 MB）。结构归因指向
+  `frameByteBound` 的 4,096 B/成员交付缓冲，但缺逐分配证据，因此没有写新的数值上限。
+- 本页 §2 的其余行（P5 控制、五类 Seek、device/P3/P7、`read_long`）不变，仍待后续工作。
 
 ## 4. 边界
 

@@ -9,10 +9,11 @@
 ## 当前任务
 
 - **RPA 当前承接为 R4 集成取证**：R1、R2、R3 已退出，O1 方案 B 的 reference 设计预算保持。
-  完整本地矩阵及正式 CPU 取证候选为 `24f0a914`，日期版本为 `26.11.07-1`。
-  已推送 PR #32 的后继提交为 `2ec3480e` / `26.11.07-3`，同 SHA 三平台 hosted 已通过；
-  owner 要求不推送后，本地候选推进到 `b7edc959` / `26.11.09-1`（含探针准入与补救工具），
-  尚无完整矩阵或 hosted。
+  当前候选为 `2c4e1274` / `26.11.09-1`：F1 本地 11 行矩阵全部 `local_pass`，
+  同 SHA 的 Linux Quality、Windows MSVC、Windows MinGW hosted 全部通过，
+  Version Gate 也已 success（当天日期 + build 1 + owner 批准记录）。
+  早前 `24f0a914` / `26.11.07-1` 的矩阵与 `2ec3480e` / `26.11.07-3` 的 hosted 作为历史证据保留。
+  见[最终候选验证](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-10-f1-f2-final-candidate.md)。
   原 128-slot 优化的同子集 71.04% 降幅保留；扩大拥有覆盖后，64/high 与 low 的 active World
   唯一下界均为 119,534 B，完整图仍为 unrated、正式 memory/P8 未准入，未改预算或运行40K。
   首个正式 CPU 三窗九对组已完整结束：RPA validated_trace/playback_only 通过；legacy 对应两项
@@ -31,7 +32,12 @@
   未运行单元在同一候选上全部取得三窗口结果——六个计时组重复性通过（全九 ≤11.1%），
   `p4-capture-1` 全九 16.7% 为 inconclusive。内存逐域归因亦完成：精确分区下
   `state.current` 在 n64/n2048 超出 proposed 上限 2.17×/3.11×，n2048 的
-  `command.session` 超出 1.24×；P8/40K 因 fixture 打包字符串上限（100,000）未取得数据。
+  `command.session` 超出 1.24×。
+  P8 已在 `2c4e1274` 上以 40,000 实体 + 4,096 内容行跑通（exit 0）：总量 365 MB，
+  21 个域里只有 `command.session` 超出（160.8 MB vs 21.85 MB，7.36×），
+  `state.world`（33.1/163.9 MB）与 `state.current`（26.4/82.0 MB）都在声明内；
+  结构上归到 `frameByteBound` 的 4,096 B/成员交付缓冲，但逐分配归因未做，因此未改任何上限。见
+  [P8 报告](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-10-p8-40k-entity-memory.md)。
   继续该批不再由代理决定：需 owner 在“带限制退出 / 豁免第三次登记 / 只改 CPU-only 环境判据 /
   缩短稳态窗口 / 换隔离环境”中选择；未验证的处置不会被写成补救。见
   [探针批报告](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-08-probe-matrix-admission-and-environment-stop.md)
@@ -40,7 +46,7 @@
   本轮按 owner 指示清理了可再生成的旧构建树（磁盘 22.8 GB → 226.7 GB），
   `out/evidence`、来源树、A 基线二进制与 attempt 台账保持；清理不追改历史判定。
   本地最终矩阵和同 SHA hosted 状态见[本轮报告](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-07-owning-and-cpu.md)。
-  Version Gate 仍缺 owner 针对所选候选的有效 SDK 批准，按 owner 要求暂不修、不代签或豁免。
+  Version Gate 在 `2c4e1274` 上已 success；批准记录是 PR #32 上一条未编辑的 owner 评论，候选 SHA 变化时需要重新记录。
   [实施方案](stage_plans/active/stage-07/05-rpa-new/r4/plan.md)及
   [固定运行登记](stage_plans/active/stage-07/05-rpa-new/r4/formal-registration.md)继续持有剩余门。
   实体操作及移交准备见[O2清单](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-07-o2-physical-checklist.md)
