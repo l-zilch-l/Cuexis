@@ -222,6 +222,10 @@ using namespace worker_detail;
                 }
                 return SessionReply{std::monostate{}};
             } else if constexpr (std::is_same_v<T, SessionUpdatePresentation>) {
+                // Updating presentation materialises execution state; bill that work to
+                // the execution domain instead of the command envelope.
+                const internal::pd::memory::ExecutionDomainScope updateDomain{
+                    internal::pd::memory::domainAdvance};
                 return reply(updatePresentation(job));
             } else if constexpr (std::is_same_v<T, SessionDeliveryLayout>) {
                 return reply(layout());
