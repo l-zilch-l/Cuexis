@@ -35,7 +35,11 @@ A/B 重复性本身通过，因此是真实读数成本而非噪声。历史离�
 - `cuexis_runtime_tests`：54 个用例、11,614 条断言全过。
 - `cuexis_playback_tests`：185 个用例、34,750 条断言全过（含曾因"相机每帧清零"被我改动破坏的
   `r2_snapshot_tests` 相机比较；该改动已作为 `8d80ca8d` 撤回）。
-- F1 十一行矩阵在改造候选上重跑（结果见提交后的报告；未通过前不得声称平台通过）。
+- F1 十一行矩阵在改造候选上全部 `local_pass`（11/11，`source_unchanged: true`）：MSVC 八行
+  （on/off × debug/release/shared/headless）与 MinGW 三行（on-debug、on-shared-debug、on-release）。
+  首轮 `msvc-on-release` 与 `msvc-on-shared-debug` 在 `vcpkg z-applocal` 阶段被外部进程占用目标 exe
+  而中断（`The process cannot access the file because it is being used by another process`），
+  原样重跑后通过；两次失败记录保留在各自证据目录的第一份 manifestation 中。
 
 ## 4. 对正式门的含义（预测，不是结果）
 
