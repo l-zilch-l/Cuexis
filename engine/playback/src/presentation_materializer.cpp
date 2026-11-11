@@ -163,13 +163,30 @@ auto fillCamera(const runtime::detail::CameraPresentation& camera, const FrameVi
 
     core::Mat4 viewMatrix{};
     if (camera.hasTransform) {
-        auto inverse = core::inverse(camera.matrix);
-        if (!inverse) {
-            return core::unexpected(core::Error{"playback.snapshot.camera_not_invertible",
-                                                "Active camera transform is not invertible"}
-                                        .withCause(inverse.error()));
+        // The camera transform rarely changes between frames, while a 4x4 inverse costs more than
+        // the rest of this call. The same thread re-reads the same matrix, so the last successful
+        // inverse is cached by exact bit pattern; the inverse itself stays a pure function.
+        struct CachedInverse final {
+            core::Mat4 matrix{};
+            core::Mat4 inverse{};
+            bool valid{};
+        };
+        thread_local CachedInverse cache;
+        const bool same =
+            cache.valid && std::equal(camera.matrix.values.begin(), camera.matrix.values.end(),
+                                      cache.matrix.values.begin());
+        if (!same) {
+            auto inverse = core::inverse(camera.matrix);
+            if (!inverse) {
+                return core::unexpected(core::Error{"playback.snapshot.camera_not_invertible",
+                                                    "Active camera transform is not invertible"}
+                                            .withCause(inverse.error()));
+            }
+            cache.matrix = camera.matrix;
+            cache.inverse = *inverse;
+            cache.valid = true;
         }
-        viewMatrix = *inverse;
+        viewMatrix = cache.inverse;
     }
     copyMatrix(viewMatrix, destination.viewMatrix);
     return {};
