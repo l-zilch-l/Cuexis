@@ -44,12 +44,17 @@ def parse_result(unit, text, exit_code):
         if unit.get("gate") not in PROBE_GATES:
             raise ValueError("probe adapter requires its canonical presentation-matrix gate")
         parsed = measurement.parse_probe(text, exit_code=exit_code)
+    elif unit["adapter"] == "controls":
+        if unit.get("gate") != "p5-controls":
+            raise ValueError("controls adapter requires the canonical scripted-control gate")
+        parsed = measurement.parse_probe(text, exit_code=exit_code)
     else:
         raise ValueError("unimplemented result adapter cannot launch a formal process")
     expected = unit["expected_identity"]
     required = ({"digest", "replay_sha256", "snapshot_sha256", "packed_sha256", "profile"}
                 if unit["adapter"] == "owner" else
                 set(PROBE_IDENTITY) if unit["adapter"] == "probe" else
+                {"mode", "cycles", "rate", "counts"} if unit["adapter"] == "controls" else
                 {"digest", "source", "viewport", "objects", "warmup", "measured", "audio", "gpu"})
     if not required.issubset(expected):
         raise ValueError("incomplete preregistered semantic identity")
@@ -83,7 +88,7 @@ def parse_result(unit, text, exit_code):
 def run(seal_path, output):
     seal_path, output = Path(seal_path).resolve(), Path(output).resolve()
     preparation = read_sealed(seal_path)
-    if any(unit.get("adapter") not in ("owner", "host-common", "probe")
+    if any(unit.get("adapter") not in ("owner", "host-common", "probe", "controls")
            for unit in preparation["units"]):
         raise ValueError("result adapter not admitted; no process started")
     for unit in preparation["units"]:
@@ -92,6 +97,7 @@ def run(seal_path, output):
         if unit["workload"] == "p8" or unit["comparison"] == "P8-single-sided":
             raise ValueError("P8 cannot use the timing group runner")
         if (unit["workload"] != "steady" or
+                (unit["adapter"] == "controls" and unit.get("gate") != "p5-controls") or
                 (unit["adapter"] == "host-common" and unit.get("gate") != "p0-host-common") or
                 (unit["adapter"] == "owner" and
                  unit.get("gate") not in ("p0-legacy", "p0-rpa")) or

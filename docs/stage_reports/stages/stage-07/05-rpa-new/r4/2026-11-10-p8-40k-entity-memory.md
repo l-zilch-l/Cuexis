@@ -104,7 +104,9 @@
 
 - 只覆盖已链接的 C++ `new`/`delete`；直接 malloc、SDL、驱动、GPU 与 OS 堆不在内
   （`gpu` 域为 `device_domain_not_measured`）。
-- 内容行 4,096 是本批的显式选择；把它写成 P8 的正式内容口径需要单独接受。
+- 内容行 4,096 在本批是显式选择；2026-11-11 owner 将 `(40000, 4096)` 定为 **P8 正式内容口径**
+  （[裁定记录](2026-11-11-owner-decisions.md) §3），扩充规则见该记录：二维声明、按系数推算上限、
+  内容行受 `maxPackedStrings` 约束。
 - 未做 low 复用变体；未做 40K 行（会再次触发冻结字符串门）。
 - 数值与 `out/evidence/r4/memory-40k/n40000-r4096-high-3/attribution.json` 逐字节一致；
   同一内容在前一 SHA（`67e905be`）上的复跑结果相同，说明该量可重复。
