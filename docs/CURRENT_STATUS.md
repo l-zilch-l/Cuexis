@@ -36,10 +36,16 @@
   `state.current` 在 n64/n2048 超出 proposed 上限 2.17×/3.11×，n2048 的
   `command.session` 超出 1.24×。
   P8 已在 `2c4e1274` 上以 40,000 实体 + 4,096 内容行跑通（exit 0）：总量 365 MB，
-  21 个域里只有 `command.session` 超出（160.8 MB vs 21.85 MB，7.36×），
-  `state.world`（33.1/163.9 MB）与 `state.current`（26.4/82.0 MB）都在声明内；
-  结构上归到 `frameByteBound` 的 4,096 B/成员交付缓冲，但逐分配归因未做，因此未改任何上限。见
-  [P8 报告](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-10-p8-40k-entity-memory.md)。
+  逐分配追踪（2026-11-10）证明该域只有 118 个分配：固定 19,766,750 B（128 个命令槽 +
+  65,536 条保留前进记录）+ 每实体 3,524 B 的执行内核数组；早先“交付缓冲按 `frameByteBound` 分配”
+  的解释**已撤回**（`FrameStorage` 只记账不分配）。约 141 MB 之所以记在 `command.session`，是
+  `dispatch()` 的单个命令级标签所致；把 `SessionUpdatePresentation` 与 `SessionSeek` 改记到执行域后，
+  同一运行（总字节不变，365,084,102 B）为 `command.session` 19.76/21.85 MB（0.90）、
+  `execution.retained` 141.08/1,327.50 MB（0.11），**21 个域全部在声明内**。
+  该归属修正已由 owner 于 2026-11-11 接受，P8 内容口径同时定为正式的 `(40000, 4096)`
+  （扩充规则按二维系数推算）。见
+  [P8 报告](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-10-p8-40k-entity-memory.md)与
+  [owner 裁定记录](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-11-owner-decisions.md)。
   继续该批不再由代理决定：需 owner 在“带限制退出 / 豁免第三次登记 / 只改 CPU-only 环境判据 /
   缩短稳态窗口 / 换隔离环境”中选择；未验证的处置不会被写成补救。见
   [探针批报告](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-08-probe-matrix-admission-and-environment-stop.md)
@@ -49,6 +55,12 @@
   `out/evidence`、来源树、A 基线二进制与 attempt 台账保持；清理不追改历史判定。
   本地最终矩阵和同 SHA hosted 状态见[本轮报告](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-07-owning-and-cpu.md)。
   Version Gate 在 `2c4e1274` 上已 success；批准记录是 PR #32 上一条未编辑的 owner 评论，候选 SHA 变化时需要重新记录。
+  2026-11-11：归属修正作为 PR #34 合并（`0d9a329e`），F1 11/11、同 SHA 三平台 hosted 与 Version Gate 通过。
+  P5 脚本化控制单元已登记为独立适配器 `controls`（计数由周期数推导，72 条样本/进程），
+  pilot 在安静前台窗口下通过：`PD5_ID` 与声明逐字段一致，pause/resume 中位 194.5/323.5 µs、
+  reset 3.16/2.94 ms、resize 152 µs；同一单元前两次分别因机器预热与 sample 阶段的前台变化停止，
+  记录保留。P5 保留探针形态（探针在该构建下不创建窗口），不做夹具改造。见
+  [控制探针单元](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-11-p5-controls-unit.md)。
   [实施方案](stage_plans/active/stage-07/05-rpa-new/r4/plan.md)及
   [固定运行登记](stage_plans/active/stage-07/05-rpa-new/r4/formal-registration.md)继续持有剩余门。
   实体操作及移交准备见[O2清单](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-07-o2-physical-checklist.md)

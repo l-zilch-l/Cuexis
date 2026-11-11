@@ -67,6 +67,9 @@ owner 选择先完成存储设计；[World component page size 设计](r4/2026-1
 P8/40K 因打包字符串上限未取得数据；[证据包](r4/2026-11-08-memory-attribution-evidence/index.md)
 登记原始字节。内存上限的修订路径（不把观测反填为上限）见[修订提案 v2](r4/2026-11-08-memory-budget-revision.md)。
 候选 `2c4e1274` 的 F1/F2 与 Version Gate 见[最终候选验证](r4/2026-11-10-f1-f2-final-candidate.md)；40K 实体下的内存实测见[P8 报告](r4/2026-11-10-p8-40k-entity-memory.md)。
+2026-11-11 的四项 owner 裁定（P5 保留探针形态、接受内存归属修正、P8 内容口径改为正式口径、
+重开一次 `read_long` 正式组）见[owner 裁定记录](r4/2026-11-11-owner-decisions.md)；
+P5 单元的登记、适配器与通过的 pilot 见[控制探针单元](r4/2026-11-11-p5-controls-unit.md)。
 批后全门汇总、已记录处置与待裁事项见[R4 门账更新](r4/2026-11-08-r4-gate-status.md)。
 后续 R4 附件和阶段结论由本入口继续导航，R3 原始证据保持。
 
