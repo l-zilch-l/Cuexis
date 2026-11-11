@@ -123,7 +123,7 @@ def run(args):
         record = {
             "id": GATE, "stable_protocol_id": STABLE, "workload": "steady", "gate": GATE,
             "config": "Release", "comparison": "B-only", "candidate_binary": "B",
-            "cold_process": False, "requests_per_process": counts()["pause"], "fixture": FIXTURE,
+            "cold_process": False, "requests_per_process": sum(counts().values()), "fixture": FIXTURE,
             "profile": PROFILE, "completion_endpoint": ENDPOINT, "required_metrics": METRICS,
             "adapter": "controls", "measurement_mode": "normal",
             "runtime_monitor_policy": POLICY, "expected_identity": expected,
