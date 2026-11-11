@@ -49,11 +49,21 @@ A/B 重复性本身通过，因此是真实读数成本而非噪声。历史离�
 
 ## 5. 正式组的前置条件
 
-正式三窗九对组需要可验证的 A 侧。本检出中冻结的 pre-PD 基线目录
-（`out/pd0-fresh-bound-baseline-20261018`）**不存在**，因此 A 必须由
-`out/sources/r4/prepd-original`（`d3440882`）在同一工具链下重建并重新绑定，然后按
-`owner_runner` 的 prepare/pilot/register/window 流程登记。该重建与登记属于下一次正式组的前置工作，
-本次诊断不消费额度（`formal_attempts_consumed: 0`）。
+正式三窗九对组需要可验证的 A 侧，而冻结的 pre-PD 基线目录
+（`out/pd0-fresh-bound-baseline-20261018`，`frozen-binaries` + `frozen-evidence-manifest.json`）
+在本机**已经不存在**：主检出、`D:\Cuexis` 与证据归档（`D:\Cuexis-worktree-evidence`）里都查不到，
+与 2026-11-05 的 out 退役记录一致。`owner_runner.prepare` 通过 `old_binding()` 直接读取该目录，
+缺它就拒绝了 A 的绑定。
+
+因此正式组只有两条路，都需要 owner 决定：
+
+1. **重建 A 并重新绑定**：由 `out/sources/r4/prepd-original`（`d3440882`）在同一工具链、同一
+   Release 选项下重建 `cuexis_pd_baseline_probe`，登记为新的 A binding。这是 A 侧的
+   "重新绑定"，不是同一份冻结二进制的复验，需要在报告里显式写明。
+2. **恢复冻结目录**：若该目录在别的备份或机器上仍有留存，按原样放回即可用原流程复验。
+
+在得到选择之前不启动正式组：本次诊断不消费额度（`formal_attempts_consumed: 0`），
+重开的一次正式组额度保持未用。
 
 ## 6. 可回滚点
 
