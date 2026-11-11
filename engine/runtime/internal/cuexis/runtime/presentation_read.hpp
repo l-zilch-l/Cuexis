@@ -54,6 +54,11 @@ class PresentationRead final {
   public:
     auto readObject(std::size_t index) const -> core::Result<ObjectPresentation>;
     // Consume every borrowed field before the enclosing PresentationAccess::read callback ends.
+    // The row is written in place: a per-object return copy is one of the largest remaining
+    // per-frame costs in the read block.
+    auto readSnapshotObject(std::size_t index, ObjectVisualRead& row) const -> core::Result<void>;
+    // Value-returning form for callers that do not keep a reusable row; the snapshot path uses
+    // the in-place form so the hot loop never materializes a second 72-byte row.
     auto readSnapshotObject(std::size_t index) const -> core::Result<ObjectVisualRead>;
     auto readCamera() const -> core::Result<CameraPresentation>;
     auto state() const -> core::Result<PresentationState>;
