@@ -184,6 +184,7 @@ auto materializeSnapshot(const runtime::detail::PresentationRead& view,
     if (state->stamp.owner != layout.runtimeOwner || state->stamp.layout != layout.runtimeLayout)
         return core::unexpected(
             core::Error{"runtime.presentation.layout_stale", "Presentation layout changed"});
+    snapshot.camera = {};
     snapshot.clearRed = 0.055F;
     snapshot.clearGreen = 0.063F;
     snapshot.clearBlue = 0.071F;
@@ -196,8 +197,6 @@ auto materializeSnapshot(const runtime::detail::PresentationRead& view,
     auto camera = view.readCamera();
     if (!camera)
         return core::unexpected(std::move(camera.error()));
-    if (!camera->selected)
-        snapshot.camera = {};
     return fillCamera(*camera, viewport, snapshot.camera);
 }
 } // namespace cuexis::playback::detail
