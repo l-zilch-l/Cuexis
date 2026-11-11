@@ -85,6 +85,14 @@ auto PresentationRead::readSnapshotObject(std::size_t index, ObjectVisualRead& r
     }
     return {};
 }
+auto PresentationRead::readSnapshotObject(std::size_t index) const
+    -> core::Result<ObjectVisualRead> {
+    ObjectVisualRead row;
+    auto result = readSnapshotObject(index, row);
+    if (!result)
+        return core::unexpected(std::move(result.error()));
+    return row;
+}
 auto PresentationRead::readCamera() const -> core::Result<CameraPresentation> {
     if (!available())
         return core::unexpected(availableError());
