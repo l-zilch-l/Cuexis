@@ -54,7 +54,9 @@ class PresentationRead final {
   public:
     auto readObject(std::size_t index) const -> core::Result<ObjectPresentation>;
     // Consume every borrowed field before the enclosing PresentationAccess::read callback ends.
-    auto readSnapshotObject(std::size_t index) const -> core::Result<ObjectVisualRead>;
+    // The row is written in place: a per-object return copy is one of the largest remaining
+    // per-frame costs in the read block.
+    auto readSnapshotObject(std::size_t index, ObjectVisualRead& row) const -> core::Result<void>;
     auto readCamera() const -> core::Result<CameraPresentation>;
     auto state() const -> core::Result<PresentationState>;
 

@@ -56,16 +56,17 @@ auto fillObjects(const runtime::detail::PresentationRead& view, const SnapshotLa
         snapshot.objects.resize(layout.entities.size());
     }
     const core::Mat4 identity;
+    runtime::detail::ObjectVisualRead read;
     for (std::size_t index = 0; index < layout.entities.size(); ++index) {
         const auto& entry = layout.entities[index];
-        auto read = view.readSnapshotObject(entry.runtimeIndex);
-        if (!read)
-            return core::unexpected(std::move(read.error()));
+        auto row = view.readSnapshotObject(entry.runtimeIndex, read);
+        if (!row)
+            return core::unexpected(std::move(row.error()));
         // The layout stamp ties this layout to the runtime layout once per frame; the per-object
         // comparison only guards against a mapping change, so it is exact for the first object and
         // a length comparison afterwards. A full string compare here cost 10% of the read block.
         const bool mappingChanged =
-            index == 0 ? read->id != entry.id.value : read->id.size() != entry.id.value.size();
+            index == 0 ? read.id != entry.id.value : read.id.size() != entry.id.value.size();
         if (mappingChanged)
             return core::unexpected(core::Error{"runtime.presentation.layout_stale",
                                                 "Presentation object mapping changed"});
@@ -81,14 +82,14 @@ auto fillObjects(const runtime::detail::PresentationRead& view, const SnapshotLa
         if (object.id != entry.id.value) {
             object.id = entry.id.value;
         }
-        object.hasTransform = read->matrix != nullptr;
-        if (read->matrix != nullptr) {
-            copyMatrix(*read->matrix, object.worldMatrix);
+        object.hasTransform = read.matrix != nullptr;
+        if (read.matrix != nullptr) {
+            copyMatrix(*read.matrix, object.worldMatrix);
         } else {
             copyMatrix(identity, object.worldMatrix);
         }
-        if (read->hasAppearance) {
-            const auto& appearance = *read;
+        if (read.hasAppearance) {
+            const auto& appearance = read;
             object.visible = appearance.visible;
             if (appearance.material.size() >
                 std::max<std::size_t>(entry.maximumMaterialAssetIdSize, 256))
@@ -183,7 +184,6 @@ auto materializeSnapshot(const runtime::detail::PresentationRead& view,
     if (state->stamp.owner != layout.runtimeOwner || state->stamp.layout != layout.runtimeLayout)
         return core::unexpected(
             core::Error{"runtime.presentation.layout_stale", "Presentation layout changed"});
-    snapshot.camera = {};
     snapshot.clearRed = 0.055F;
     snapshot.clearGreen = 0.063F;
     snapshot.clearBlue = 0.071F;
@@ -196,6 +196,8 @@ auto materializeSnapshot(const runtime::detail::PresentationRead& view,
     auto camera = view.readCamera();
     if (!camera)
         return core::unexpected(std::move(camera.error()));
+    if (!camera->selected)
+        snapshot.camera = {};
     return fillCamera(*camera, viewport, snapshot.camera);
 }
 } // namespace cuexis::playback::detail
