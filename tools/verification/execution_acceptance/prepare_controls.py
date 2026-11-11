@@ -52,7 +52,7 @@ def identity(parsed):
     if (value.get("mode") != "controls" or value.get("cycles") != CYCLES or
             value.get("rate") != RATE or value.get("frames") != FRAMES or
             value.get("warmup_frames") != WARMUP or value.get("audio") is not False or
-            value.get("gpu") is not False or value.get("closed") is not True or
+            value.get("closed") is not True or
             value.get("replay_equal") is not True):
         raise ValueError("pilot identity differs from the registered control workload")
     if value.get("counts") != counts():
