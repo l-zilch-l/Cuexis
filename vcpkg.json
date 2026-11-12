@@ -1,6 +1,6 @@
 {
   "name": "cuexis",
-  "version-string": "26.11.12-4",
+  "version-string": "26.11.13-2",
   "$comment": "Pinned vendored SHA-Intrinsics and FNV sources are built locally; provenance and licenses are in third_party/. No vcpkg port or baseline change.",
   "default-features": [
     "player",
