@@ -26,14 +26,14 @@
 | R4-0 起点 | 完成 | 最终候选仍待选定 |
 | R4-1/2 B3/B4/B5 | 既有机制与反例保留；本轮未改产品代码 | 最终候选完整矩阵另列 |
 | R4-3 O1 | 已接受数值未改 | 无 |
-| R4-4 工具 | 探针与 host 适配完成；mem/device/seek adapter 缺失 | 内存全图、observer 扰动、设备 adapter |
-| R4-5 P0 legacy/RPA | 两 read_long 超界、legacy 两项 inconclusive（2026-11-07） | 读取整改与重开额度保留 |
+| R4-4 工具 | 探针、host、controls 适配完成；mem/device/seek adapter 仍缺 | 内存全图、observer 扰动、设备 adapter |
+| R4-5 P0 legacy/RPA | `read_long` 两单元 **已通过**（legacy 0.91913、RPA 复跑 0.90990，区间上界 0.931/0.953，重复性合格，2026-11-12）；legacy 的 validated_trace/playback_only 仍为 inconclusive | 该两单元重开额度已用于 2026-11-12 组并结案；trace 两项无额度 |
 | R4-5 P0 host | **绝对预算通过（本轮）** | 无；该单元额度用尽 |
 | R4-5 P1–P4/P6 | 七单元三窗口完成；六个计时组通过重复性，`p4-capture-1` inconclusive | 未接受探针绝对预算；`p4-capture-1` 待裁定 |
-| R4-5 P5 控制 | 未登记 | 需要 controls adapter 与固定请求数 |
+| R4-5 P5 控制 | **已登记**（独立 `controls` 适配器，72 样本/进程）并通过 2026-11-11 pilot | 尚无三窗口正式组；该单元无正式额度 |
 | R4-5 五类 Seek | 本候选未重验 | 需要 device/seek adapter 与真实端点 |
-| R4-5 memory | 逐域精确归因完成；40K 实体实测只有 `command.session` 超（7.36×），`state.world`/`state.current` 在声明内 | 上限修订待逐分配归因；GPU/驱动与 prepare 峰值未测 |
-| R4-5 P8 | 已准入：40K 实体 + 4,096 内容行跑通（exit 0），唯一超出是 `command.session` | 内容口径与上限修订待签署；low 变体未做 |
+| R4-5 memory | **归属修正已接受**（2026-11-11）：同一运行 `command.session` 19.76/21.85 MB（0.90）、`execution.retained` 141.08/1,327.50 MB（0.11），21 个域全部在声明内；总字节未变 | GPU/驱动与 prepare 峰值仍未测；上限数值未改 |
+| R4-5 P8 | 已准入并**口径正式化**（2026-11-11：`(40000, 4096)` 为正式内容口径，扩充按二维系数推算）；归属修正后无域超出 | low 变体未做；上限数值未改 |
 | R4-6 F1 | **候选 `2c4e1274` 的 11 行全部 local_pass** | 无；报告见 2026-11-10 批 |
 | R4-6 F2 | **`2c4e1274` 同 SHA hosted 三平台 success** | 无 |
 | R4-7 O2/P7 | 实体清单已准备 | owner 实体参与、仪器与听音 |
@@ -113,7 +113,27 @@ O3 移交接受、Version Gate 的 SDK owner 批准——这些都需要 owner �
   [P8 40K 报告](2026-11-10-p8-40k-entity-memory.md)。
 - P8 的 40K 实体跑通后，唯一的超出是 `command.session`（160.8 MB vs 21.85 MB）。结构归因指向
   `frameByteBound` 的 4,096 B/成员交付缓冲，但缺逐分配证据，因此没有写新的数值上限。
-- 本页 §2 的其余行（P5 控制、五类 Seek、device/P3/P7、`read_long`）不变，仍待后续工作。
+- 本页 §2 的其余行（五类 Seek、device/P3/P7）不变，仍待后续工作。
+
+### 3.8 2026-11-11 / 11-12 收口记录
+
+- **P5 控制**：新增独立 `controls` 适配器（身份键 `mode`/`cycles`/`rate`/`counts`，样本数由周期数推导），
+  pilot 在安静前台窗口下通过；前两次停止都发生在冻结的环境监视策略上（机器预热、sample 阶段前台
+  变化），探针在该构建下不创建窗口，owner 裁定保留探针形态、不做夹具改造。
+- **`read_long` 整改与结案**：根因是每帧一次 `core::inverse(camera.matrix)`；改为按矩阵逐位缓存后，
+  同机诊断 legacy −19.0%、RPA −20.9%。随后 2026-11-12 正式组：legacy 0.91913（区间
+  [0.90916, 0.93081]）通过；RPA 首轮 0.92582 因 B 侧一个受扰动进程重复性 19.25% 判 inconclusive，
+  owner 批准只跑 RPA 复跑，得 0.90990（区间 [0.87034, 0.95326]）通过。
+- **A 侧口径**：原冻结 pre-PD 目录已不在本机，两组均由 `d3440882` 重建并重新绑定；owner 于
+  2026-11-12 接受该口径。两次正式组（2026-11-07 用冻结 A、2026-11-12 用重建 A）不合并统计。
+- **内存归属修正**：`dispatch()` 的命令级标签使执行内核状态被记进 `command.session`；把
+  `SessionUpdatePresentation` 与 `SessionSeek` 改记到执行域后，21 个域全部在声明内，总字节不变。
+  owner 接受该修正；`budget-proposal.v1.json` 与 O1 接受记录未改。
+- **P8 口径**：`(40000, 4096)` 定为正式内容口径，扩充规则为二维声明 + 按系数推算上限 + 抽查确认。
+- 上述裁定的原始记录见 [owner 裁定记录](2026-11-11-owner-decisions.md)、
+  [相机逆矩阵整改](2026-11-11-read-long-camera-inverse.md)、
+  [正式组结果](2026-11-12-read-long-formal-group.md)与
+  [`read_long` 裁定记录](2026-11-12-read-long-ruling.md)。
 
 ## 4. 边界
 
