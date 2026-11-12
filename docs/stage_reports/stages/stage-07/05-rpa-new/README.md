@@ -72,6 +72,7 @@ P8/40K 因打包字符串上限未取得数据；[证据包](r4/2026-11-08-memor
 P5 单元的登记、适配器与通过的 pilot 见[控制探针单元](r4/2026-11-11-p5-controls-unit.md)。
 `read_long` 的两轮单变量诊断（相机逆矩阵缓存带来约 20% 改善）见[相机逆矩阵整改](r4/2026-11-11-read-long-camera-inverse.md)。
 2026-11-12 的正式三窗九对组见[正式组结果](r4/2026-11-12-read-long-formal-group.md)；`legacy` 通过、`RPA` 首轮因重复性 inconclusive、复跑后通过，两项裁定与最终结论见[`read_long` 裁定记录](r4/2026-11-12-read-long-ruling.md)。
+同日复跑 `legacy` 的另两项计时见[P0 legacy 计时复跑](r4/2026-11-12-p0-trace-legacy.md)；P5 控制单元两次停在工具缺陷、第三次需 owner 豁免见[P5 工具缺陷停跑记录](r4/2026-11-13-p5-tooling-stops.md)。
 批后全门汇总、已记录处置与待裁事项见[R4 门账更新](r4/2026-11-08-r4-gate-status.md)。
 后续 R4 附件和阶段结论由本入口继续导航，R3 原始证据保持。
 

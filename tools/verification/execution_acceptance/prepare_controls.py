@@ -46,6 +46,16 @@ def launch(probe, warmup, root, affinity):
                             "CUEXIS_PD5_WARMUP": str(WARMUP), "CUEXIS_PD5_SMOKE": "0"}}
 
 
+def sample_count(cycles=CYCLES):
+    """Samples the probe emits per process: the declared control counts plus one host load.
+
+    The probe writes a single ``load`` sample when it builds the host, and that sample is not part
+    of the control counts the identity declares. Counting only ``counts()`` made the runner reject a
+    correct log with "native request/block count differs from registration".
+    """
+    return sum(counts(cycles).values()) + 1
+
+
 def identity(parsed):
     """The exact identity a formal process must reproduce; the counts are pre-declared."""
     value = parsed["identity"]
@@ -123,7 +133,7 @@ def run(args):
         record = {
             "id": GATE, "stable_protocol_id": STABLE, "workload": "steady", "gate": GATE,
             "config": "Release", "comparison": "B-only", "candidate_binary": "B",
-            "cold_process": False, "requests_per_process": sum(counts().values()), "fixture": FIXTURE,
+            "cold_process": False, "requests_per_process": sample_count(), "fixture": FIXTURE,
             "profile": PROFILE, "completion_endpoint": ENDPOINT, "required_metrics": METRICS,
             "adapter": "controls", "measurement_mode": "normal",
             "runtime_monitor_policy": POLICY, "expected_identity": expected,

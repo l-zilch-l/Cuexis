@@ -85,6 +85,10 @@ def parse_result(unit, text, exit_code):
     return {"medians": values, "parsed": parsed, "absolute_gates": absolute}
 
 
+CONTROLS_IDENTITY = ("mode", "frames", "warmup_frames", "cycles", "rate", "audio",
+                     "closed", "replay_equal", "counts")
+
+
 def run(seal_path, output):
     seal_path, output = Path(seal_path).resolve(), Path(output).resolve()
     preparation = read_sealed(seal_path)
@@ -195,9 +199,21 @@ def run(seal_path, output):
                                                     launch["affinity"], native_settings)
                     parsed = parse_result(unit, log.read_text(encoding="utf-8", errors="strict"), 0)
                     if unit["id"] in semantic_references:
-                        for metric in unit["required_metrics"]:
-                            measurement.require_comparable(semantic_references[unit["id"]],
-                                                           parsed["parsed"], metric)
+                        if unit["adapter"] == "controls":
+                            # The control unit has no presentation-matrix identity to compare; its
+                            # workload semantics are the declared mode, cycle count, rate and the
+                            # per-control counts, checked against every process below.
+                            reference = semantic_references[unit["id"]]["identity"]
+                            current = parsed["parsed"]["identity"]
+                            for key in CONTROLS_IDENTITY:
+                                if reference.get(key) != current.get(key):
+                                    raise ValueError(
+                                        "control workload identity differs from the registration: "
+                                        + key)
+                        else:
+                            for metric in unit["required_metrics"]:
+                                measurement.require_comparable(semantic_references[unit["id"]],
+                                                               parsed["parsed"], metric)
                     else:
                         semantic_references[unit["id"]] = parsed["parsed"]
                     data[unit["id"]][window][pair][side] = parsed["medians"]
