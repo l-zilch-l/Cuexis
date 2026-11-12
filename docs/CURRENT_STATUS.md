@@ -20,11 +20,13 @@
   唯一下界均为 119,534 B，完整图仍为 unrated、正式 memory/P8 未准入，未改预算或运行40K。
   首个正式 CPU 三窗九对组已完整结束：RPA validated_trace/playback_only 通过；legacy 对应两项
   因重复性为 inconclusive；两种 read_long 超出原 1.10 相对门，失败记录保留。
-  2026-11-12 `read_long` 已按 owner 批准的重开额度完成第二次正式组：`legacy` 通过
-  （0.91913，区间 [0.90916, 0.93081]，A/B 波动 11.62%/9.44%），`RPA` 点估计 0.92582、
-  区间 [0.90748, 0.94914]，仅因 B 侧一个受环境扰动的进程使重复性 19.25% 超界而记 inconclusive；
-  该组 A 侧为按 `d3440882` 重建并重新绑定（原冻结目录已不在本机）。见
-  [正式组结果](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-12-read-long-formal-group.md)。
+  2026-11-12 `read_long` 已按 owner 批准的重开额度完成第二次正式组并结案：`legacy` 通过
+  （0.91913，区间 [0.90916, 0.93081]，A/B 波动 11.62%/9.44%）；`RPA` 首轮点估计 0.92582、
+  区间 [0.90748, 0.94914]，因 B 侧一个受环境扰动的进程重复性 19.25% 超界判 inconclusive，
+  owner 批准后只跑 RPA 复跑：几何平均 0.90990、区间 [0.87034, 0.95326]、A/B 波动 10.80%/13.75%，
+  **判通过**。两组的 A 侧均为按 `d3440882` 重建并重新绑定（原冻结目录已不在本机），owner 已接受该口径。
+  见[正式组结果](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-12-read-long-formal-group.md)与
+  [`read_long` 裁定记录](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-12-read-long-ruling.md)。
   隔离读取原型首轮诊断反而变慢（legacy +1.7%、RPA +5.6%），依预注册停止、不采用。
   11行本地矩阵全部通过（13,652项测试注册、0失败、26项显式skip）；同SHA的六个push和三个PR检查通过。
   2026-11-08 新增展示矩阵探针适配：P1-no-consumer、P2-low-delivery、P4-capture-1、P6-sparse
