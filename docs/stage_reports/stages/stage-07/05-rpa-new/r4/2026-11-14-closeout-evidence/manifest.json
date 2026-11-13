@@ -130,6 +130,30 @@
       "source": "D:/Cuexis-worktree/out/evidence/r4/closeout-20261113/hosted-verified-43436185994.json",
       "bytes": 251,
       "sha256": "742a0da4f69c3bc03c2f9323229637f3d1d40b6d6e6450e32170afa97a27246a"
+    },
+    {
+      "path": "p5-attempt4-claim.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/attempt-ledger/p5-controls-release/attempt-4.json",
+      "bytes": 446,
+      "sha256": "35f0a2de09aef4fe168d5dd2724e1e614c5e596ba80e6cb05bacf2aa5b0e1604"
+    },
+    {
+      "path": "p5-attempt4-claim-marker.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/attempt-ledger/p5-controls-release/attempt-4.seal.json",
+      "bytes": 199,
+      "sha256": "206ee712ea78aaec9862c7fd0591795231009fce058af5eca438a0a105e067dc"
+    },
+    {
+      "path": "p5-max5-waiver.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/p5/p5-controls-attempt-waiver-20261113-max5.json",
+      "bytes": 988,
+      "sha256": "a6f5d9323595966ae59d754dabfd0c9b8e30101c50f9c98eac6e2b37c09d3aa3"
+    },
+    {
+      "path": "p5-attempt4-retry-disposition.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/closeout-20261113/p5-attempt4-ce2a9a69/retry-disposition.json",
+      "bytes": 739,
+      "sha256": "6c4c2fb0a4fdbbe4ff2af9efcaeacc9a41ebff1c260b0db9ff6244920f9dbe97"
     }
   ]
 }

@@ -26,6 +26,12 @@ P5、设备组、观察器、容量与 Player 的结论各自绑定该身份；�
 判定批准不适用，不制造无须的 SDK 批准。不开单独报告 PR；唯一集成 PR 的必要性是取得实际 pre-merge 门。
 本报告不授权 merge、release 或阶段退出。
 
+首次后继候选 `51b6a82e` 的 Linux Documentation contracts 发现九处本机 Windows 绝对 Markdown
+链接在 Linux 上不可达；原失败 run `43494090323` 保留，两个 Version Gate 成功也保持原身份。
+为避免继续耗时，首行尚在构建的 F1 被中止，记录为 incomplete，不冒充矩阵通过。
+后继将引用改为仓库内按字节归档，并归档 claim／marker／waiver／retry 小记录；完整日志仍保留原位置。
+修正后的最终候选重新冻结，使用全新十一行目录及同 SHA hosted，不继承这次中止或旧成功。
+
 ## 2. 环境补救采集器修复
 
 原 `environment_stability.verify()` 在 `finally` 中只检查已有样本，采集不足要求时长而被中断后，
