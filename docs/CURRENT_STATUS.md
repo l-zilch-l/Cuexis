@@ -31,6 +31,9 @@
   A/B 波动 11.79%/5.10%）、`playback_only` 0.991082（区间 [0.973358, 1.012269]，11.28%/7.66%），
   两项**均通过**，P0 四个计时单元至此全部结案；同组日志里的 `read_long` 为 0.923907，与专项组一致。见
   [P0 legacy 计时复跑](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-12-p0-trace-legacy.md)。
+  五类 Seek 于 2026-11-13 在 RTX 4060 上重验：`natural`/`hot`/`external` 三类重复性与 20 ms 绝对门
+  全部通过（单进程最大 1,014 µs），`fallback`（20.27%）与 `cold`（39.92%/35.92%）绝对门通过但重复性
+  inconclusive。见[五类 Seek 结果](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-13-seek-five-classes.md)。
   隔离读取原型首轮诊断反而变慢（legacy +1.7%、RPA +5.6%），依预注册停止、不采用。
   11行本地矩阵全部通过（13,652项测试注册、0失败、26项显式skip）；同SHA的六个push和三个PR检查通过。
   2026-11-08 新增展示矩阵探针适配：P1-no-consumer、P2-low-delivery、P4-capture-1、P6-sparse
