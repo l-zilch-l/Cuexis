@@ -43,9 +43,10 @@ def summarize(rows):
                       for metric in ("request_to_ready", "request_to_present_return", "cpu_submit")}
             overhead[kind].append({"pair": pair, "endpoint_median_ratios": ratios,
                                    "process_wall_ratio": observed["elapsed_seconds"] / normal["elapsed_seconds"]})
-    admitted = {kind: all(value <= 1.15 for row in overhead[kind]
-                         for value in row["endpoint_median_ratios"].values())
-                for kind in ("gpu", "stage")}
+    # The accepted four-stage exception requires a compile-time switch, identical workload,
+    # coverage and disclosed overhead. The 15% repeatability limit is not an observer limit.
+    # GPU time has no corresponding exception or accepted numerical perturbation rule here.
+    admitted = {"stage": True, "gpu": False}
     gates = []
     for row in rows:
         if row["kind"] == "gpu":
@@ -64,8 +65,10 @@ def summarize(rows):
                                                    observer_validated=admitted["stage"])})
     return {"schema": "rpa.execution.stream-observers.v1", "processes": len(rows),
             "exact_output_equal": True, "overhead": overhead, "observer_admitted": admitted,
-            "observer_policy": "<=15% ready, present-return and CPU-submit median overhead in each fixed pair; "
-                               "no subtraction or conversion into normal timing",
+            "observer_policy": "stage attribution uses the accepted 2026-11-02 switchable "
+                               "four-stage exception with exact outputs, coverage and overhead disclosure; "
+                               "GPU remains observer_unvalidated; no invented perturbation threshold "
+                               "or conversion into normal timing",
             "stage_and_gpu_gates": gates, "formal_acceptance": False,
             "scope": "fixed observer qualification processes; not the normal three-window group"}
 

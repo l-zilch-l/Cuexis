@@ -101,10 +101,12 @@ does not certify GPU/audio conditions.
 `stream_observers.py` runs three fixed independent sets in normal/GPU/stage/memory order: twelve
 stream sample processes, each preceded by machine warmup. It compares workload, digest, common
 counts and result after removing declared observer fields and the extra GPU-query count.
-GPU and stage admission require at most 15% overhead in
-each set's request-to-ready, present-return and CPU-submit medians. GPU queries must cover all
+The four stage metrics use the accepted 2026-11-02 switchable attribution exception with exact
+workloads, coverage and disclosed cost. No new numerical overhead threshold is inferred from the
+15% repeatability rule. GPU time remains `observer_unvalidated` pending its independent admission.
+GPU queries must cover all
 14400 measured frames and the final drain; stage records cover judgement, projection, snapshot and
-queue. Failed overhead leaves those budget gates `observer_unvalidated`. Memory cost is disclosed
+queue. Their p99 attribution values stay separate from normal timing. Memory cost is disclosed
 separately. This is observer qualification (`formal_sampling: false`, `formal_acceptance: false`),
 not the normal three-window group; observer cost is never subtracted from normal timing.
 

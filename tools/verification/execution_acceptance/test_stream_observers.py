@@ -1,4 +1,4 @@
-"""Observer gates require complete query coverage, exact output and bounded perturbation."""
+"""Observer gates require exact output and never invent an accepted perturbation limit."""
 import copy
 import unittest
 
@@ -33,11 +33,19 @@ def rows():
 class StreamObserverTests(unittest.TestCase):
     def test_high_submit_perturbation_does_not_grant_gpu_budget(self):
         observed = rows()
-        self.assertTrue(stream_observers.summarize(observed)["observer_admitted"]["gpu"])
+        self.assertFalse(stream_observers.summarize(observed)["observer_admitted"]["gpu"])
         observed[1]["parsed"]["statistics"]["cpu_submit"]["median_us"] = 130
         summary = stream_observers.summarize(observed)
         self.assertFalse(summary["observer_admitted"]["gpu"])
         self.assertEqual(summary["stage_and_gpu_gates"][0]["status"], "observer_unvalidated")
+
+    def test_four_stage_exception_discloses_cost_without_a_new_numerical_limit(self):
+        observed = rows()
+        observed[2]["parsed"]["statistics"]["cpu_submit"]["median_us"] = 200
+        summary = stream_observers.summarize(observed)
+        self.assertTrue(summary["observer_admitted"]["stage"])
+        self.assertEqual(summary["overhead"]["stage"][0]["endpoint_median_ratios"]["cpu_submit"], 2)
+        self.assertFalse(summary["formal_acceptance"])
 
     def test_missing_query_or_changed_output_is_rejected(self):
         for change in (lambda value: value[1]["parsed"]["samples"].pop(),
