@@ -1,0 +1,150 @@
+{
+  "execution_state": {
+    "requested": 2147483651,
+    "previous_state": 2147483648
+  },
+  "released": {
+    "requested": 2147483648,
+    "previous_state": 2147483651
+  },
+  "duration_seconds": 8188.283248799999,
+  "nudges": [
+    {
+      "elapsed_seconds": 239.99816809999902,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 480.0054001999997,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 720.0061057999992,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 960.0188294,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 1200.0190842999982,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 1440.0287088999976,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 1680.0384507999988,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 1920.0512774999988,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 2160.0602057999968,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 2400.071182399999,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 2640.071721199998,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 2880.0715108999975,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 3120.0770402999988,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 3360.0820559999993,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 3600.0865548999973,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 3840.0872090999983,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 4080.094031299999,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 4320.104376599997,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 4560.1121545999995,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 4800.121599399998,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 5040.1230061999995,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 5280.124521499998,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 5520.130403899999,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 5760.145235599997,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 6000.159246700001,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 6240.1613554,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 6480.1616173,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 6720.1749291000015,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 6960.181395799998,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 7200.182839299996,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 7440.194091099998,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 7680.1965901,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 7920.2081817,
+      "send_input_events": 2
+    },
+    {
+      "elapsed_seconds": 8160.222872099999,
+      "send_input_events": 2
+    }
+  ],
+  "scope": "bounded system/display hold and one-pixel mouse movement/back; no clicks, keys or window switches"
+}

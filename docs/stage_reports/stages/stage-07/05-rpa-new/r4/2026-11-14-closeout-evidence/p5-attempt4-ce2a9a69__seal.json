@@ -1,0 +1,13 @@
+{
+  "schema": "rpa.execution.seal.v1",
+  "preparation": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\p5-attempt4-ce2a9a69\\preparation.json",
+  "preparation_sha256": "a3bb4f83a1557da6f50dbbda595c94e6175dce7ee724927f72e0427dc063bc7e",
+  "claims": [
+    {
+      "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\attempt-ledger\\p5-controls-release\\attempt-4.json",
+      "sha256": "35f0a2de09aef4fe168d5dd2724e1e614c5e596ba80e6cb05bacf2aa5b0e1604",
+      "marker": "D:\\Cuexis-worktree\\out\\evidence\\r4\\attempt-ledger\\p5-controls-release\\attempt-4.seal.json",
+      "marker_sha256": "206ee712ea78aaec9862c7fd0591795231009fce058af5eca438a0a105e067dc"
+    }
+  ]
+}

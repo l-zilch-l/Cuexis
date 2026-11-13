@@ -1,0 +1,139 @@
+{
+  "schema": "cuexis.r4.closeout.p8-identity-audit.v1",
+  "status": "read_only_historical_identity_audit_not_acceptance",
+  "workspace": "D:/Cuexis-worktree",
+  "closeout_label": "20261113",
+  "checked_out_sha_at_audit": "ce2a9a6952fd4a9a4d82949544f7ef3482e204e6",
+  "scope": {
+    "raw_roots": ["out/evidence/r4/p8-low", "out/evidence/r4/memory-40k", "out/evidence/r4/attempt-ledger"],
+    "method": "Finite immediate directory listings, selected existing JSON/log/controller reads, existing artifact SHA-256 checks, and one historical probe source read via git show. No recursive historical-tree scan.",
+    "new_native_invocations": 0,
+    "builds_tests_measurements_claims_captures_network": 0,
+    "writes": ["out/evidence/r4/closeout-20261113/p8-identity-audit.json", "out/evidence/r4/closeout-20261113/p8-identity-audit.md"],
+    "counts_are_global_exhaustive": false
+  },
+  "authority": [
+    {"path": "docs/stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-10-p8-40k-entity-memory.md", "sha256": "b3fb1aaf9f5ade3f2e6a42c3c866932aa34a7824ad9c2f0abd6be2d55aeb7cf4"},
+    {"path": "docs/stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-13-p8-low.md", "sha256": "4223899a6852ae2152478ea43da8950c46dd180b85b0759848d8d95489f2cdd4"},
+    {"path": "docs/stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-11-owner-decisions.md", "sha256": "865540a91cd1499b88db6d7de9a491c6c7f2b24fb63679671bd3f9ef30099df3"}
+  ],
+  "accepted_and_instructed_boundaries": {
+    "owner_accepted_content": {"entities": 40000, "content_rows": 4096, "authority": "2026-11-11-owner-decisions.md section 3"},
+    "owner_accepted_attribution_correction_only": "2026-11-11-owner-decisions.md section 2; no budget-proposal/O1 ceiling acceptance or numerical ceiling change follows.",
+    "reuse_semantics": "low offsets requirement end ticks by row index; competition keys, entity identities, row count and ownership are unchanged. It is not a cold-cache or no-sharing workload.",
+    "formal_allowance_from_current_instruction": {"low": 1, "high": 1, "extra_invocation_requires_independent_disposition": true, "backend_change_restores_allowance": false},
+    "formal_claim_boundary_from_current_instruction": "The complete semantic graph is not implemented; memory/P8 must not be claimed. This audit does not change that boundary."
+  },
+  "common_native_protocol": {
+    "argv_after_binary": ["PD5 full content Snapshot Seek Replay boundary", "--reporter", "compact", "--rng-seed", "1"],
+    "workload_environment_except_reuse": {"CUEXIS_PD5_ENTITIES": "40000", "CUEXIS_PD5_REQUIREMENTS": "4096", "CUEXIS_PD5_CAPSULE_REVISION": "3"},
+    "profile": "r4-reference-n40000-v1",
+    "maximum_processes_per_registration": 1,
+    "timeout_seconds": 600,
+    "formal_sampling_in_all_five_registrations": false,
+    "p8_in_all_five_registrations": true,
+    "p8_attempts_consumed_in_each_process_result": 1,
+    "all_stderr_bytes": 0,
+    "all_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "process_identity_limit": "The records do not contain PID, OS process creation identity, or wall-clock start timestamp. The controllers call subprocess.run once per packet; there is no independent OS process census here."
+  },
+  "builds": [
+    {
+      "id": "historical-m1", "source_sha": "39ce36476e9bba0c978d25501e7c6a6071fbeb4d", "source_tree": "f00dee766460b89f4db2208d4de19a559a145686",
+      "binding": "out/evidence/r4/memory-40k/build-binding/cuexis_pd_host_probe-build-binding.json", "binding_sha256": "8cbf80b7503f61b71fe177a7e79b74511f9fb2408073769027922bb0ba789bc8",
+      "binary": "D:/Cuexis-worktree/out/build/r4/memory-40k/memory-m1/bin/cuexis_pd_host_probe.exe", "binary_bytes": 5794816, "binary_sha256": "d117a99d7012ed055a2cdf07a500e7c747f272809fb8cd98a6b728ba507dc6c1",
+      "capacity_probe_source_sha256": "f9e67846378cf44e8a1781b2a9b79a53edf1a0396f0fe7499b2147c0534f1844"
+    },
+    {
+      "id": "historical-m2", "source_sha": "67e905beeaa9bc07e277e72ba73ab42ed3c3e1d8", "source_tree": "3da359ddf018060bb7e78d81461b45df189d8fac",
+      "binding": "out/evidence/r4/memory-40k/build-binding-2/cuexis_pd_host_probe-build-binding.json", "binding_sha256": "3abb44fc6bfa4bb6ea3996e6aaee2cd09b236e861572660de0cb3245d386dc52",
+      "binary": "D:/Cuexis-worktree/out/build/r4/memory-40k/memory-m2/bin/cuexis_pd_host_probe.exe", "binary_bytes": 5794816, "binary_sha256": "b5251f0a9dc1acb20a6f5914cb0e8767f0924035c00eeaa12c7447b164b69a68",
+      "capacity_probe_source_sha256": "14e4808eeaa0d2f76e82828b6c39b513dd6cd99b777d17c73134e9c53e0000fd"
+    },
+    {
+      "id": "historical-m3", "source_sha": "2c4e1274b02415c288cc756dcd7dfef5c59a0f01", "source_tree": "ec24db8159c82f383ceb7fede00ba7640042e437",
+      "binding": "out/evidence/r4/memory-40k/build-binding-3/cuexis_pd_host_probe-build-binding.json", "binding_sha256": "d75b0394416ab3317becc1a339dcd4a123070a53e65e7b62cce8f681d9d47045",
+      "binary": "D:/Cuexis-worktree/out/build/r4/memory-40k/memory-m3/bin/cuexis_pd_host_probe.exe", "binary_bytes": 5794816, "binary_sha256": "e354b33a9fc43e0363868aa7d3de4f3ba6509ed1b63bc2f390462bb6cf2bba66",
+      "capacity_probe_source_sha256": "3ecae75062c90dd69cd4d0dbcddcae33b8a66df6d4102c24615247f0e94501e3"
+    },
+    {
+      "id": "low-and-high-control", "source_sha": "f5f919162482b149d3d8d890d10f4704adcefb05", "source_tree": "20d759ca820103d56ab980a1042897ec528307d5",
+      "binding": "out/evidence/r4/p8-low/build/cuexis_pd_host_probe-build-binding.json", "binding_sha256": "6a0a165df7349c1bc212e7201780187b65956f9c88ed991212a2bc3e8b5ce3c8",
+      "binary": "D:/Cuexis-worktree/out/build/r4/p8-low/memory-m1/bin/cuexis_pd_host_probe.exe", "binary_bytes": 5795840, "binary_sha256": "62a25d8eaf905957d89e797be3b6fce8a76d0c421c30265bf5ac45f24a2efe80",
+      "capacity_probe_source_sha256": "3ecae75062c90dd69cd4d0dbcddcae33b8a66df6d4102c24615247f0e94501e3"
+    }
+  ],
+  "recorded_native_invocations": [
+    {
+      "case_dir": "out/evidence/r4/memory-40k/n40000-r4096-high", "build_id": "historical-m1", "reuse": "high", "role": "historical_memory_evidence_failed_not_reclassified_as_diagnostic",
+      "registration_sha256": "2d5fbbb1162ff470e36bee18988d1b705a05316a6671566724a4adf2f4dbcfac", "process_result_sha256": "348060858c69a8c08436dcda37a162940e97bd969b3a43cb10a8aa3587ce1e2e",
+      "exit_code": 42, "timed_out": false, "recorded_elapsed_seconds": 6.339712199998758, "p8_attempts_consumed": 1,
+      "stdout_bytes": 893808, "stdout_sha256": "98ddabbe50de00ec7601c1e3a41317e1510afa60cc9d2be1c7e465ad0e684384",
+      "raw_result": "stdout.log:3948 fails misses == scale: 4096 == 40000; 16 assertions, 15 passed, 1 failed. This is not the separate 40000-row packed-string encoder failure mentioned in the reports.",
+      "controller_binding_limit": "registration expects memory-40k/run-case.py bytes=3178 sha256=4eade66da2608ea1d187c42556102e2af18ce261930907b9a6045aa3ed103c2d; that path now contains bytes=3280 sha256=719283947ad574e9c6e586b3c676b436e6e869deb03b3055cee21dde8e2e3e74. The first controller's exact bytes are not available at its recorded path."
+    },
+    {
+      "case_dir": "out/evidence/r4/memory-40k/n40000-r4096-high-2", "build_id": "historical-m2", "reuse": "high", "role": "historical_memory_evidence_not_formal_sampling",
+      "registration_sha256": "a1853b61a9f2a69dc21d66c8b021d5678c8c210eb67d671234f0850b8f1bd126", "process_result_sha256": "dbbdaec7a0d472dcc7b2aec81fd21d7253d507b48fbe100d2dbb42968cdcb0f6",
+      "exit_code": 0, "timed_out": false, "recorded_elapsed_seconds": 7.086780600002385, "p8_attempts_consumed": 1,
+      "stdout_bytes": 1963257, "stdout_sha256": "4d85872830ae21fb61682aff3c239d6ed41a47570252fac28778c034f8485ce9", "capacity_line": 7088, "result_line": 8019,
+      "raw_result": "PD5_CAPACITY confirms (40000,4096), high, closed=true, formal_acceptance=false; 21 assertions pass."
+    },
+    {
+      "case_dir": "out/evidence/r4/memory-40k/n40000-r4096-high-3", "build_id": "historical-m3", "reuse": "high", "role": "historical_report_candidate_memory_evidence_not_formal_sampling",
+      "registration_sha256": "2bd2d965956c920b1716c1df7bd5d41f25efad1ce61daaba6ca3c6911f6ecd04", "process_result_sha256": "373e6233cb386b77318fd94060649117cf1f0bdb5f290644c83e16987378b54e",
+      "exit_code": 0, "timed_out": false, "recorded_elapsed_seconds": 7.307644799999252, "p8_attempts_consumed": 1,
+      "stdout_bytes": 1963257, "stdout_sha256": "872f4cb6881e25590b3196a2e77b7f8756a4b87077b17cbe1edb561bd143cbf9", "capacity_line": 7088, "result_line": 8019,
+      "raw_result": "PD5_CAPACITY confirms (40000,4096), high, closed=true, formal_acceptance=false; 21 assertions pass."
+    },
+    {
+      "case_dir": "out/evidence/r4/p8-low/n40000-r4096-low", "build_id": "low-and-high-control", "reuse": "low", "role": "single_low_candidate_memory_evidence_not_formal_sampling",
+      "registration_sha256": "2c9088d25f1f3ddb68cc71377b97b476bc00bbf1f9793d32997c8bd368a67a33", "process_result_sha256": "b9af8c7c2d4b7c5a531038c86fd142ac4bd5068800f0f1486c98683f48ad251b",
+      "exit_code": 0, "timed_out": false, "recorded_elapsed_seconds": 7.983041499996034, "p8_attempts_consumed": 1,
+      "stdout_bytes": 1969261, "stdout_sha256": "d3e54ac29cefcf95958dffc049273476d6d0307e78e1e107ed0249aacf5573f4", "capacity_line": 7094, "result_line": 8035,
+      "raw_result": "PD5_CAPACITY confirms (40000,4096), low, closed=true, formal_acceptance=false; 21 assertions pass."
+    },
+    {
+      "case_dir": "out/evidence/r4/p8-low/n40000-r4096-high-control", "build_id": "low-and-high-control", "reuse": "high", "role": "explicit_same_sha_high_control_separate_native_invocation",
+      "registration_sha256": "62b29e885e680a9fd875c89f12958e5ceb906d9c6f41545a404b11cdefa6752b", "process_result_sha256": "50cccc2530c73b0e0f2404acc2730232a7f0e7f49a025112ca3df392af721116",
+      "exit_code": 0, "timed_out": false, "recorded_elapsed_seconds": 7.8831446999975014, "p8_attempts_consumed": 1,
+      "stdout_bytes": 1969262, "stdout_sha256": "5a8c415fe5c26ba6fd9089c6b2f45c61d7f51d35470932a7b7d04f1d0015c2c9", "capacity_line": 7094, "result_line": 8035,
+      "raw_result": "PD5_CAPACITY confirms (40000,4096), high, closed=true, formal_acceptance=false; 21 assertions pass. The control label does not remove the invocation or its recorded attempt."
+    }
+  ],
+  "integrity_checks": {
+    "all_five_registration_build_artifacts_match_recorded_bytes_and_sha256": true,
+    "all_five_stdout_and_stderr_match_process_result_bytes_and_sha256": true,
+    "all_four_existing_binaries_match_binding_bytes_and_sha256": true,
+    "controller_paths_match_registration_for_all_except_first_high": true,
+    "p8_low_manifest": {"path": "out/evidence/r4/p8-low/manifest.json", "sha256": "1ce0606c04a3e5f0ddd365df8688a70be58fff973fe76885d9cad3a230a7c241", "file_count": 24, "missing_or_mismatching_files": []}
+  },
+  "attribution_identity": {
+    "historical_high_2_and_3_attribution_sha256": "1ed71b0f6039e8ca213b56759459bcb834718da50efbd75f4c05d8b724e6432f",
+    "historical_high_raw": {"total_bytes": 365084102, "command.session": 160834198, "execution.retained": 8823, "over_declared_ids": ["command.session"]},
+    "low_attribution_sha256": "9d501cf0744c1c10b5e03867f27583d35d0dbb4bb0ac1f6e6fce599c7daa7259",
+    "high_control_attribution_sha256": "d10dce99c52c7b81c09f1b0cf1ba0f93347fcc8182f09196592adf4e0ccbe56a",
+    "f5f9191_corrected_pair": {"low_total_bytes": 365090162, "high_total_bytes": 365084102, "both_command.session": 19762486, "both_execution.retained": 141080535, "both_over_declared_ids": [], "compared_declared_rows": 23, "nonzero_domain_deltas": [], "total_delta_bytes": 6060, "unclassified_delta_bytes": 6060},
+    "report_raw_binding_limit": "The 2026-11-10 report section 2.1 records an accepted corrected attribution, but section 6's high-3 attribution path still contains the pre-correction split. It cannot itself prove the corrected per-domain values under that historical binding. The f5f9191 high control directly records the corrected split and remains a separate invocation. The mem-trace reference in p8-low/README.md was not audited outside the three requested raw roots."
+  },
+  "ledger": {
+    "root": "out/evidence/r4/attempt-ledger",
+    "immediate_profile_directories": 16,
+    "json_files_read": 54,
+    "rpa_execution_claim_v1_records": 27,
+    "p8_memory_capacity_unit_or_protocol_matches": [],
+    "case_directories_have_no_claim_or_seal_file": true,
+    "recorded_native_invocations_in_scope": {"total": 5, "low": 1, "high": 4, "exit_zero": 4, "exit_42": 1, "sum_recorded_p8_attempts_consumed": 5},
+    "formal_claim_count_conclusion": "No P8 formal claim/seal is found in this bounded ledger and the five case directories. This does not prove zero historical native calls elsewhere or restore any formal allowance.",
+    "additional_invocation_disposition": "The supplied owner decision record accepts content and attribution, but does not adjudicate these additional high invocations against a low=1/high=1 formal allowance. Retain every record; independent owner disposition is required. Do not relabel prior packets, infer replacement permission, or reset the allowance by backend."
+  },
+  "binding_applicability_and_unproven_items": [
+    "All four bindings are rpa.execution.build-binding.v1, static Release, Windows x64 MSVC 19.51.36256.0; allocation lifetime/execution observers are ON, other listed instrumentation is OFF. They identify their own source/tree/binary and registered revision-3 workload only.",
+    "None of the four binding source SHAs equals checked-out ce2a9a6952fd4a9a4d82949544f7ef3482e204e6. The shared capacity-probe hash in high-3 and f5f9191 does not establish whole-product equivalence or current-candidate validity.",
+    "No top-level semantic-graph binding field exists in these v1 artifacts. A source-content file hash map does not establish complete semantic-graph coverage. The current instruction says that graph is unimplemented, so memory/P8 formal claim stays blocked.",
+    "These packets do not cover revision 4, 40000 content rows, GPU/driver/direct malloc/OS heaps, process private commit or working set, prepare-only peaks, observer perturbation, repeatability, cross-machine behavior, or 40000 entities at 240 FPS.",
+    "The report-mentioned original 40000-row encoder failure has no separately identified raw packet within these audited case directories; its identity, count and disposition are not added to the five-packet count.",
+    "Recorded durations are historical fields, not new timing measurements or performance evidence. No pass/acceptance is re-adjudicated here."
+  ],
+  "gate_ledger_sentence_zh": "P8：owner 已接受 (40000 实体,4096 内容行) 及内存归属修正；限定原始证据可核验 low 1 次、high 4 次独立 native 调用（含 exit 42 一次及同 SHA high control 一次，均 formal_sampling=false 且各记 p8_attempts_consumed=1），未见 P8 正式 claim/seal，额外调用仍须独立裁定，完整 semantic graph 绑定未闭合前内存/P8 正式 claim 维持 blocked，换 backend 不恢复额度。"
+}

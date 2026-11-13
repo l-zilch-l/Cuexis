@@ -1,0 +1,337 @@
+{
+  "schema": "rpa.execution.stream-observers.v1",
+  "processes": 12,
+  "exact_output_equal": true,
+  "overhead": {
+    "gpu": [
+      {
+        "pair": 0,
+        "endpoint_median_ratios": {
+          "request_to_ready": 0.8288770053475936,
+          "request_to_present_return": 0.9006410256410257,
+          "cpu_submit": 1.073627844712182
+        },
+        "process_wall_ratio": 0.9999359000285722
+      },
+      {
+        "pair": 1,
+        "endpoint_median_ratios": {
+          "request_to_ready": 0.765,
+          "request_to_present_return": 0.8259587020648967,
+          "cpu_submit": 1.0227272727272727
+        },
+        "process_wall_ratio": 1.0085439775487086
+      },
+      {
+        "pair": 2,
+        "endpoint_median_ratios": {
+          "request_to_ready": 0.8842105263157894,
+          "request_to_present_return": 1.0378548895899053,
+          "cpu_submit": 0.9921156373193167
+        },
+        "process_wall_ratio": 0.9998123573668349
+      }
+    ],
+    "stage": [
+      {
+        "pair": 0,
+        "endpoint_median_ratios": {
+          "request_to_ready": 1.0106951871657754,
+          "request_to_present_return": 13.246794871794872,
+          "cpu_submit": 0.6104417670682731
+        },
+        "process_wall_ratio": 1.0252387613247218
+      },
+      {
+        "pair": 1,
+        "endpoint_median_ratios": {
+          "request_to_ready": 0.885,
+          "request_to_present_return": 12.1976401179941,
+          "cpu_submit": 49.4185606060606
+        },
+        "process_wall_ratio": 1.0095085282964675
+      },
+      {
+        "pair": 2,
+        "endpoint_median_ratios": {
+          "request_to_ready": 0.9263157894736842,
+          "request_to_present_return": 13.053627760252366,
+          "cpu_submit": 51.43889618922471
+        },
+        "process_wall_ratio": 1.0095388696422263
+      }
+    ],
+    "memory": [
+      {
+        "pair": 0,
+        "endpoint_median_ratios": {
+          "request_to_ready": 1.1229946524064172,
+          "request_to_present_return": 1.1057692307692308,
+          "cpu_submit": 1.0455153949129852
+        },
+        "process_wall_ratio": 1.0007249448874513
+      },
+      {
+        "pair": 1,
+        "endpoint_median_ratios": {
+          "request_to_ready": 1.05,
+          "request_to_present_return": 1.0235988200589972,
+          "cpu_submit": 1.0164141414141414
+        },
+        "process_wall_ratio": 1.000524641638576
+      },
+      {
+        "pair": 2,
+        "endpoint_median_ratios": {
+          "request_to_ready": 1.0526315789473684,
+          "request_to_present_return": 1.0441640378548895,
+          "cpu_submit": 1.0144546649145862
+        },
+        "process_wall_ratio": 1.0006391575872644
+      }
+    ]
+  },
+  "observer_admitted": {
+    "stage": true,
+    "gpu": false
+  },
+  "observer_policy": "stage attribution uses the accepted 2026-11-02 switchable four-stage exception with exact outputs, coverage and overhead disclosure; GPU remains observer_unvalidated; no invented perturbation threshold or conversion into normal timing",
+  "stage_and_gpu_gates": [
+    {
+      "pair": 0,
+      "metric": "gpu_render",
+      "statistics": {
+        "n": 14400,
+        "median_us": 9.216,
+        "mean_us": 8.708551111111111,
+        "p95_us": 10.24,
+        "p99_us": 10.24,
+        "min_us": 1.024,
+        "max_us": 24.576
+      },
+      "status": "observer_unvalidated"
+    },
+    {
+      "pair": 0,
+      "metric": "d2",
+      "statistics": {
+        "n": 14400,
+        "median_us": 8.3,
+        "mean_us": 9.434555555555555,
+        "p95_us": 14.9,
+        "p99_us": 21.5,
+        "min_us": 3.6,
+        "max_us": 196.6
+      },
+      "statistic": "p99_us",
+      "limit_us": 1000,
+      "status": "pass"
+    },
+    {
+      "pair": 0,
+      "metric": "d3",
+      "statistics": {
+        "n": 14400,
+        "median_us": 16.4,
+        "mean_us": 18.127472222222224,
+        "p95_us": 27.3,
+        "p99_us": 34.8,
+        "min_us": 11.3,
+        "max_us": 284.9
+      },
+      "statistic": "p99_us",
+      "limit_us": 2000,
+      "status": "pass"
+    },
+    {
+      "pair": 0,
+      "metric": "materialize",
+      "statistics": {
+        "n": 14400,
+        "median_us": 3.3,
+        "mean_us": 3.632923611111111,
+        "p95_us": 5.3,
+        "p99_us": 7,
+        "min_us": 2.1,
+        "max_us": 154.9
+      },
+      "statistic": "p99_us",
+      "limit_us": 2000,
+      "status": "pass"
+    },
+    {
+      "pair": 0,
+      "metric": "queue",
+      "statistics": {
+        "n": 72000,
+        "median_us": 9.8,
+        "mean_us": 10.212293055555556,
+        "p95_us": 16.4,
+        "p99_us": 22,
+        "min_us": 0.4,
+        "max_us": 299.7
+      },
+      "statistic": "p99_us",
+      "limit_us": 1000,
+      "status": "pass"
+    },
+    {
+      "pair": 1,
+      "metric": "gpu_render",
+      "statistics": {
+        "n": 14400,
+        "median_us": 8.192,
+        "mean_us": 7.635697777777778,
+        "p95_us": 9.216,
+        "p99_us": 10.24,
+        "min_us": 1.024,
+        "max_us": 24.576
+      },
+      "status": "observer_unvalidated"
+    },
+    {
+      "pair": 1,
+      "metric": "d2",
+      "statistics": {
+        "n": 14400,
+        "median_us": 7.6,
+        "mean_us": 8.696527777777778,
+        "p95_us": 14.7,
+        "p99_us": 20.6,
+        "min_us": 2.8,
+        "max_us": 139.9
+      },
+      "statistic": "p99_us",
+      "limit_us": 1000,
+      "status": "pass"
+    },
+    {
+      "pair": 1,
+      "metric": "d3",
+      "statistics": {
+        "n": 14400,
+        "median_us": 15.4,
+        "mean_us": 16.745506944444443,
+        "p95_us": 27.1,
+        "p99_us": 36,
+        "min_us": 10.1,
+        "max_us": 280.8
+      },
+      "statistic": "p99_us",
+      "limit_us": 2000,
+      "status": "pass"
+    },
+    {
+      "pair": 1,
+      "metric": "materialize",
+      "statistics": {
+        "n": 14400,
+        "median_us": 2.9,
+        "mean_us": 3.1601180555555555,
+        "p95_us": 4.9,
+        "p99_us": 6.8,
+        "min_us": 1.7,
+        "max_us": 138.7
+      },
+      "statistic": "p99_us",
+      "limit_us": 2000,
+      "status": "pass"
+    },
+    {
+      "pair": 1,
+      "metric": "queue",
+      "statistics": {
+        "n": 72000,
+        "median_us": 8.9,
+        "mean_us": 9.567855555555555,
+        "p95_us": 15.4,
+        "p99_us": 20.1,
+        "min_us": 0.4,
+        "max_us": 249.1
+      },
+      "statistic": "p99_us",
+      "limit_us": 1000,
+      "status": "pass"
+    },
+    {
+      "pair": 2,
+      "metric": "gpu_render",
+      "statistics": {
+        "n": 14400,
+        "median_us": 9.216,
+        "mean_us": 8.787413333333333,
+        "p95_us": 10.24,
+        "p99_us": 10.24,
+        "min_us": 1.024,
+        "max_us": 24.576
+      },
+      "status": "observer_unvalidated"
+    },
+    {
+      "pair": 2,
+      "metric": "d2",
+      "statistics": {
+        "n": 14400,
+        "median_us": 7.3,
+        "mean_us": 8.385895833333333,
+        "p95_us": 14.1,
+        "p99_us": 20,
+        "min_us": 2.9,
+        "max_us": 162.4
+      },
+      "statistic": "p99_us",
+      "limit_us": 1000,
+      "status": "pass"
+    },
+    {
+      "pair": 2,
+      "metric": "d3",
+      "statistics": {
+        "n": 14400,
+        "median_us": 15.3,
+        "mean_us": 16.4785625,
+        "p95_us": 26.1,
+        "p99_us": 35.1,
+        "min_us": 11.2,
+        "max_us": 170.6
+      },
+      "statistic": "p99_us",
+      "limit_us": 2000,
+      "status": "pass"
+    },
+    {
+      "pair": 2,
+      "metric": "materialize",
+      "statistics": {
+        "n": 14400,
+        "median_us": 2.9,
+        "mean_us": 3.166402777777778,
+        "p95_us": 4.8,
+        "p99_us": 6.8,
+        "min_us": 2,
+        "max_us": 77.3
+      },
+      "statistic": "p99_us",
+      "limit_us": 2000,
+      "status": "pass"
+    },
+    {
+      "pair": 2,
+      "metric": "queue",
+      "statistics": {
+        "n": 72000,
+        "median_us": 8.9,
+        "mean_us": 9.596545833333334,
+        "p95_us": 15.7,
+        "p99_us": 20.5,
+        "min_us": 0.4,
+        "max_us": 517.8
+      },
+      "statistic": "p99_us",
+      "limit_us": 1000,
+      "status": "pass"
+    }
+  ],
+  "formal_acceptance": false,
+  "scope": "fixed observer qualification processes; not the normal three-window group"
+}

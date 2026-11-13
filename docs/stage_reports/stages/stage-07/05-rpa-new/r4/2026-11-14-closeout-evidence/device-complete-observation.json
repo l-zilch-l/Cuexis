@@ -1,0 +1,188 @@
+{
+  "schema": "rpa.execution.device-complete-observation.v1",
+  "measurement_source_sha": "ce2a9a6952fd4a9a4d82949544f7ef3482e204e6",
+  "all_native_processes_completed": true,
+  "processes": 36,
+  "units": {
+    "p3-renderer": {
+      "completed_processes": 9,
+      "metrics": {
+        "close": {
+          "repeatability": {
+            "B": {
+              "window_noise": [
+                0.13049530216912192,
+                0.08213755566551212,
+                0.030054156995774566
+              ],
+              "first_six_noise": 0.13469021251122418,
+              "all_nine_noise": 0.1339046598821639,
+              "status": "pass"
+            }
+          },
+          "status": "timing_group_complete_absolute_gates_separate"
+        },
+        "cpu_submit": {
+          "repeatability": {
+            "B": {
+              "window_noise": [
+                49.56967741935484,
+                0.03585397653194263,
+                0.03552631578947354
+              ],
+              "first_six_noise": 49.89483933787731,
+              "all_nine_noise": 50.10886571056062,
+              "status": "inconclusive"
+            }
+          },
+          "status": "inconclusive"
+        },
+        "load_host": {
+          "repeatability": {
+            "B": {
+              "window_noise": [
+                0.002669722142652535,
+                0.012921626600207427,
+                0.04007692808679695
+              ],
+              "first_six_noise": 0.016794450529390288,
+              "all_nine_noise": 0.04096450992169,
+              "status": "pass"
+            }
+          },
+          "status": "timing_group_complete_absolute_gates_separate"
+        },
+        "present_call": {
+          "repeatability": {
+            "B": {
+              "window_noise": [
+                0.20224719101123595,
+                0.040449438202247126,
+                0.04988662131519281
+              ],
+              "first_six_noise": 0.20224719101123595,
+              "all_nine_noise": 0.20224719101123595,
+              "status": "inconclusive"
+            }
+          },
+          "status": "inconclusive"
+        },
+        "request_to_present_return": {
+          "repeatability": {
+            "B": {
+              "window_noise": [
+                11.308605341246292,
+                0.06402439024390244,
+                0.07142857142857142
+              ],
+              "first_six_noise": 11.585476550680786,
+              "all_nine_noise": 11.639817629179332,
+              "status": "inconclusive"
+            }
+          },
+          "status": "inconclusive"
+        },
+        "request_to_ready": {
+          "repeatability": {
+            "B": {
+              "window_noise": [
+                0.116751269035533,
+                0.06217616580310881,
+                0.07106598984771574
+              ],
+              "first_six_noise": 0.11794871794871795,
+              "all_nine_noise": 0.116751269035533,
+              "status": "pass"
+            }
+          },
+          "status": "timing_group_complete_absolute_gates_separate"
+        }
+      },
+      "absolute_processes": 9,
+      "absolute_statuses": {
+        "request_to_ready": [
+          "pass"
+        ],
+        "close": [
+          "pass"
+        ],
+        "load": [
+          "pass"
+        ]
+      }
+    },
+    "p4-capture-1": {
+      "completed_processes": 9,
+      "metrics": {
+        "capture_delivery": {
+          "repeatability": {
+            "B": {
+              "window_noise": [
+                0.018518518518518615,
+                0.018518518518518615,
+                0.07547169811320745
+              ],
+              "first_six_noise": 0.018518518518518615,
+              "all_nine_noise": 0.07407407407407397,
+              "status": "pass"
+            }
+          },
+          "status": "timing_group_complete_absolute_gates_separate"
+        }
+      },
+      "absolute_processes": 9,
+      "absolute_statuses": {}
+    },
+    "p4-capture-2": {
+      "completed_processes": 9,
+      "metrics": {
+        "capture_delivery": {
+          "repeatability": {
+            "B": {
+              "window_noise": [
+                0.021739130434782532,
+                0.04545454545454549,
+                0.06818181818181814
+              ],
+              "first_six_noise": 0.06666666666666662,
+              "all_nine_noise": 0.06666666666666662,
+              "status": "pass"
+            }
+          },
+          "status": "timing_group_complete_absolute_gates_separate"
+        }
+      },
+      "absolute_processes": 9,
+      "absolute_statuses": {}
+    },
+    "p4-capture-4": {
+      "completed_processes": 9,
+      "metrics": {
+        "capture_delivery": {
+          "repeatability": {
+            "B": {
+              "window_noise": [
+                0.0,
+                0.23529411764705876,
+                0.0
+              ],
+              "first_six_noise": 0.23529411764705876,
+              "all_nine_noise": 0.23529411764705876,
+              "status": "inconclusive"
+            }
+          },
+          "status": "inconclusive"
+        }
+      },
+      "absolute_processes": 9,
+      "absolute_statuses": {}
+    }
+  },
+  "result_binding": {
+    "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\device-group-ce2a9a69\\run\\result.json",
+    "bytes": 19326,
+    "sha256": "ecffa82d400b9fd00ae08c7bf7f0e73b46ab2f62df12ae77f59a050c8a850a38"
+  },
+  "acceptance": "per metric only; no overall device/production acceptance implied",
+  "automatic_retry": false
+}

@@ -2,7 +2,7 @@
 
 状态：current index
 
-更新日期：2026-11-07
+更新日期：2026-11-14
 
 性能整改工作线，设计与 R0、R1、R2 分组；停止、失败和后续报告保留在同批目录。
 
@@ -80,6 +80,15 @@ P8 时间去相关变体见[P8 low 取证](r4/2026-11-13-p8-low.md)。
 [2026-11-13 收尾裁定](r4/2026-11-13-closeout-decisions.md)。
 工具实施、有限诊断与内存准入阻断见
 [2026-11-13 收尾实施复核](r4/2026-11-13-closeout-implementation.md)。
+2026-11-14 的自动收尾取证见[P5 第四次完整组](r4/2026-11-14-p5-attempt4.md)、
+[设备后端首个正式组](r4/2026-11-14-device-first-formal-group.md)及
+[容量与 Player 有限证据](r4/2026-11-14-capacity-and-player-bounded-evidence.md)。
+报告分别保留逐指标 pass／inconclusive、容量停止与语义准入缺口、P8 字节来源勘误和原 DFJK 失败；
+当前门状态仍以 [R4 门账](r4/2026-11-08-r4-gate-status.md)及 CURRENT_STATUS 为准。
+独立配对结果见[阶段与 GPU observer](r4/2026-11-14-stage-and-gpu-observer.md)，
+小记录的按字节副本见[本轮证据归档](r4/2026-11-14-closeout-evidence/index.md)。
+最终候选验证的身份边界、工具修复与逐项裁定建议见
+[收尾验证与待裁定移交](r4/2026-11-14-closeout-verification-and-handoff.md)。
 批后全门汇总、已记录处置与待裁事项见[R4 门账更新](r4/2026-11-08-r4-gate-status.md)。
 后续 R4 附件和阶段结论由本入口继续导航，R3 原始证据保持。
 

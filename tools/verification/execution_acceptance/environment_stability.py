@@ -100,6 +100,7 @@ def verify(seconds, interval, output, nudge_seconds=240):
                               "fails this record",
                               "sampling is one probe per interval and can miss sub-interval changes"]}
     record["execution_state"] = hold(True)
+    completed = False
     try:
         while time.monotonic() - started < seconds:
             elapsed = time.monotonic() - started
@@ -110,12 +111,34 @@ def verify(seconds, interval, output, nudge_seconds=240):
                                "samples_before": samples_before})
             samples.append(snapshot())
             time.sleep(interval)
+        completed = True
     finally:
+        # Release/serialization overhead cannot turn a short collection into a full remedy.
+        ended = time.monotonic()
         record["released"] = hold(False)
         record["ended_utc"] = utc()
-        record["duration_seconds"] = time.monotonic() - started
-        record.update(summary(samples))
-        record["passed"] = record["passed"] and all(n["send_input_events"] == 2 for n in nudges)
+        record["duration_seconds"] = ended - started
+        record["completed"] = completed
+        record["sample_span_seconds"] = (samples[-1]["monotonic"] - samples[0]["monotonic"]
+                                         if samples else 0.0)
+        if samples:
+            record.update(summary(samples))
+        else:
+            # Preserve the original collection exception even when the first sample failed.
+            record.update({"distinct_foreground_pids": [], "distinct_power_schemes": [],
+                           "maximum_gap_seconds": 0.0, "errors": ["no environment samples"]})
+        errors = set(record["errors"])
+        if not completed or record["duration_seconds"] < seconds:
+            errors.add("environment collection did not complete requested duration")
+        if samples and (samples[0]["monotonic"] - started > POLICY["maximum_gap_seconds"] or
+                        ended - samples[-1]["monotonic"] > POLICY["maximum_gap_seconds"]):
+            errors.add("incomplete environment sampling coverage")
+        if not record["execution_state"]["previous_state"]:
+            errors.add("system/display hold failed")
+        if any(n["send_input_events"] != 2 for n in nudges):
+            errors.add("idle nudge failed")
+        record["errors"] = sorted(errors)
+        record["passed"] = not errors
         with output.open("x", encoding="utf-8", newline="\n") as stream:
             stream.write(json.dumps(record, ensure_ascii=False, indent=2) + "\n")
     print(("PASSED " if record["passed"] else "FAILED ") + str(output.resolve()), flush=True)

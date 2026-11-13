@@ -1,0 +1,25 @@
+{
+  "schema": "rpa.execution.player-functional-result.v1",
+  "valid": true,
+  "formal_registration": false,
+  "acceptance": false,
+  "formal_attempts_consumed": 0,
+  "exit_code": 0,
+  "elapsed_seconds": 140.47981020000043,
+  "completed_utc": "2026-11-13T14:02:55.026059+00:00",
+  "declaration_binding": {
+    "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\functional-ce2a9a69\\music\\declaration.json",
+    "bytes": 7804,
+    "sha256": "27471b92cab65a9c933b5fcd650d91355287cd2c08589f3facf959bc785b9b30"
+  },
+  "log_binding": {
+    "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\functional-ce2a9a69\\music\\process.log",
+    "bytes": 10570743,
+    "sha256": "90b5d81bc8e367ef01377952993bbefe6f557ff9c32c9b282bf0cc338af22a31"
+  },
+  "parsed_binding": {
+    "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\functional-ce2a9a69\\music\\parsed.json",
+    "bytes": 2292,
+    "sha256": "52311be4a8c21e67662b1126b5bac7440d2bb148e1eef8d20f9266595d1f28ab"
+  }
+}
