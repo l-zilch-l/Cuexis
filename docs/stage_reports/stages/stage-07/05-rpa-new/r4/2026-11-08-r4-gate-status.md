@@ -1,143 +1,108 @@
-# R4 门账更新（2026-11-08 批次后）
+# R4 门账更新（2026-11-13 收尾中）
 
 状态：status ledger；不是退出接受记录，也不替代 CURRENT_STATUS
 
-日期：2026-11-08
+初版日期：2026-11-08；更新日期：2026-11-13
 
-返回 [New RPA 报告索引](../README.md)。本文只汇总 2026-11-08 批次后的 R4 门状态与
-待裁事项，判据与协议仍以 [实施方案](../../../../../stage_plans/active/stage-07/05-rpa-new/r4/plan.md)
-和 [固定运行登记](../../../../../stage_plans/active/stage-07/05-rpa-new/r4/formal-registration.md)
-为准；上一版门账见 [F4/PD 移交门账](2026-11-07-f4-gate-and-handoff.md)。
+返回 [New RPA 报告索引](../README.md)。本文保留原门账路径，按最新裁定更新当前门状态；
+历史原始测量、失败和运行身份保持不改。判据与协议以
+[实施方案](../../../../../stage_plans/active/stage-07/05-rpa-new/r4/plan.md)和
+[固定运行登记](../../../../../stage_plans/active/stage-07/05-rpa-new/r4/formal-registration.md)为准。
+本轮执行边界见[自动收尾裁定](2026-11-13-closeout-decisions.md)，上一版移交准备见
+[F4/PD 移交门账](2026-11-07-f4-gate-and-handoff.md)。
 
-## 1. 本轮新增的裁定与缺口
+## 1. 当前候选与目标
 
-| 单元 | 本轮结果 | 证据与边界 |
-| --- | --- | --- |
-| `p0-host-common` | **已接受绝对预算通过**：三窗口九进程 request→ready p99 = 87.9–99.1 µs（预算 4,166.7 µs），9/9 pass；request→ready 与 request→present-return 重复性通过（全九 7.0%/9.4%）；ready→present-return（约 4 µs）inconclusive | 只覆盖无 GPU/audio 的普通 host 路径；不代替 P1–P7、Seek、设备、内存、F1/F2。见[普通 host 报告](2026-11-08-common-host-unit.md) |
-| 七个探针单元 | owner 豁免额度后全部取得三窗口结果：六个计时组完成（全九 ≤11.1%），`p4-capture-1` 全九 16.7% → inconclusive | 见[探针批报告](2026-11-08-probe-matrix-admission-and-environment-stop.md) |
-| 内存逐域归因 | 精确分区下 n64 与 n2048 的 `state.current` 超出 proposed 上限（2.17×、3.11×），n2048 的 `command.session` 超出 1.24× | 见[内存归因报告](2026-11-08-memory-attribution.md) |
-| P8/40K | 未取得数据：fixture 在 40K 下触发 `packed.budget.strings`（上限 100,000） | 需内容设计或 caps 裁定 |
-| 工具 | 新增展示矩阵探针适配、普通 host 准备、补救验证与 disposition 工具；59 项工具测试通过；停止记录不再丢弃逐进程绝对门 | 仍缺 renderer/capture(device)/controls/Seek/device adapter |
+当前工作树为 D:/Cuexis-worktree，分支 codex/r4-closeout，以 origin/master 的
+85ebf64a 为本轮起点；收尾候选日期构建为 26.11.13-1，SDK API 为 0.9.1。
+当前工具与探针已完成 scratch 编译和有限诊断，尚未冻结新候选或完成正式组。
+DFJK 功能诊断通过；memory/P8 因完整语义图缺失保持拒绝正式准入。见
+[实施复核](2026-11-13-closeout-implementation.md)。
+
+目标是在完成自动实施、取证、落档与最终验证后，只保留 P7 听音、O2 实体操作、
+F3 校准与生产参数接受、O3／PD-5 退出接受。**目前尚未达到该目标**；下表中的自动门
+不能因目标已获授权而删除、改判通过或转写为仅需人工。
 
 ## 2. 全门状态
 
-| 计划单元 | 状态 | 缺少什么 / 恢复条件 |
+| 计划单元 | 当前结果或实施状态 | 剩余门与证据边界 |
 | --- | --- | --- |
-| R4-0 起点 | 完成 | 最终候选仍待选定 |
-| R4-1/2 B3/B4/B5 | 既有机制与反例保留；本轮未改产品代码 | 最终候选完整矩阵另列 |
-| R4-3 O1 | 已接受数值未改 | 无 |
-| R4-4 工具 | 探针、host、controls 适配完成；mem/device/seek adapter 仍缺 | 内存全图、observer 扰动、设备 adapter |
-| R4-5 P0 legacy/RPA | `read_long` 两单元 **已通过**（legacy 0.91913、RPA 复跑 0.90990，区间上界 0.931/0.953，重复性合格，2026-11-12）；legacy 的 validated_trace/playback_only 仍为 inconclusive | 该两单元重开额度已用于 2026-11-12 组并结案；trace 两项无额度 |
-| R4-5 P0 host | **绝对预算通过（本轮）** | 无；该单元额度用尽 |
-| R4-5 P1–P4/P6 | 七单元三窗口完成；六个计时组通过重复性，`p4-capture-1` inconclusive | 未接受探针绝对预算；`p4-capture-1` 待裁定 |
-| R4-5 P5 控制 | **已登记**（独立 `controls` 适配器，72 样本/进程）并通过 2026-11-11 pilot | 尚无三窗口正式组；该单元无正式额度 |
-| R4-5 五类 Seek | **已重验**（2026-11-13，RTX 4060）：五类 20 ms 绝对门全部通过，最差 1,014 µs；`natural`/`hot`/`external` 重复性也通过 | `fallback`（20.27%）与 `cold`（39.92%/35.92%）重复性 inconclusive，各余一次额度 |
-| R4-5 memory | **归属修正已接受**（2026-11-11）：同一运行 `command.session` 19.76/21.85 MB（0.90）、`execution.retained` 141.08/1,327.50 MB（0.11），21 个域全部在声明内；总字节未变 | GPU/驱动与 prepare 峰值仍未测；上限数值未改 |
-| R4-5 P8 | 已准入并**口径正式化**（2026-11-11：`(40000, 4096)` 为正式内容口径，扩充按二维系数推算）；归属修正后无域超出 | low 变体未做；上限数值未改 |
-| R4-6 F1 | **候选 `2c4e1274` 的 11 行全部 local_pass** | 无；报告见 2026-11-10 批 |
-| R4-6 F2 | **`2c4e1274` 同 SHA hosted 三平台 success** | 无 |
-| R4-7 O2/P7 | 实体清单已准备 | owner 实体参与、仪器与听音 |
-| R4-7 F3/生产 | testOnly | 校准与 owner 接受 |
-| R4-7 O3/PD 退出 | 未接受 | owner 接受带限制移交 |
-| Version Gate | **success（`2c4e1274`）** | 无；批准记录随候选 SHA 变化 |
+| R4-0 起点 | 历史起点审计保留；本轮起点为 85ebf64a | 本轮最终候选、源码／工具／fixture／profile／二进制身份仍须冻结 |
+| R4-1/2 B3/B4/B5 | 既有机制与可控反例保留 | 新候选完整矩阵、实际线程／设备适用项仍须核验，旧局部结果不外推 |
+| R4-3 O1 | 方案 B 的 64/2048/40K reference 设计 caps 已接受，原数字保持 | 设计 caps 不是完整堆上界或生产接受；修订数值与生产 profile 尚未接受 |
+| R4-4 工具 | CPU、host、controls、Seek、device capture、P3、容量和 Player 工具已集成；scratch 编译、DFJK 与设备 n64 诊断完成 | 尚未取得干净候选正式组；memory/P8 完整语义准入缺失时阻断，不因原点精确或报告合入而视为通过 |
+| R4-5 P0 legacy/RPA | 固定计时与 read_long 均已结案；legacy 后续 validated_trace／playback_only 也通过 | 只覆盖对应固定 CPU 工作的相对成本／重复性；首组失败、不同来源的 A 与后续组不合并 |
+| R4-5 P0 host | 三窗口九进程 request→ready p99 为 87.9–99.1 µs，9/9 通过 4.167 ms 预算；两条外层腿重复性通过 | ready→present-return（约 4 µs）重复性 inconclusive 保留；无 GPU/audio，不代替 P3/P7；该单元次数已用尽 |
+| R4-5 P1/P2/P4-CPU/P6 | 七个 CPU 探针单元都有三窗口结果；六个计时组重复性通过；p4-capture-1 全九 16.7% 的分辨率受限 inconclusive 已获接受 | 不再重跑 p4-capture-1；探针只报结构计数与重复性，维持无新增绝对预算 |
+| R4-5 P3 renderer | 独立真实 renderer 自动证据仍缺 | 单 renderer、U:F=1:1 的原内容／时间／viewport，实际 request→ready、CPU submit 与 present-return；不能由 P4 的 renderer 加 capture 负载代验 |
+| R4-5 P4-device | device adapter 已准备；真实设备身份包含一个 renderer 与额外计数，backend 独立键已在工作树实现 | capture-1/2/4 的本轮编译、pilot、注册与三窗口正式组尚未完成；设备默认各两次，历史 CPU 键与次数不变 |
+| R4-5 P5 controls | 仍用独立脚本化探针；累计最多五次，前三次已消耗，尚无完整三窗口正式结论 | 第四／五次须有效补救、新 preparation 与 claim/seal；核对 73 条实际样本及控制绝对门，有有效结论后停止，不要求耗尽次数 |
+| R4-5 五类 Seek | 五类 20 ms 绝对门全部通过，最差 1,014 µs；natural／hot／external 重复性通过；fallback 为 20.27%、cold 为 39.92%／35.92%，重复性 inconclusive | 按本轮裁定不再重跑、不放宽判据，两项限制接受留给 O3；只覆盖报告登记的设备与端点范围 |
+| R4-5 阶段／GPU 时间 | D2/D3/Snapshot/queue 的可开关计时例外保持，真实 GPU timer 门仍待本轮证据 | 独立进程的逐进程 p99、同负载开销对照、GPU query 完整性与实际边界仍须核验；CPU submit／VSync／ACK 不冒作 GPU 时间 |
+| R4-5 memory | 已有链接期 C++ 分配精确分区；40K 命令／执行域归属修正已获接受；小 profile 的 state.current 历史超出保留 | n64/n2048 low/high、prepare 峰值、完整生命周期／最终释放、storage／进程口径、GPU backend／driver、observer 扰动仍未闭合；40K 在声明内不能消除小 profile 超出 |
+| R4-5 P8 | 正式内容口径为 (40000, 4096)；已有 high 完整规模结果与 low candidate 单进程报告，归属修正未改总字节或 caps | low 只改变 requirement 结束 tick，不是通用低复用／冷缓存上限；现存运行身份、次数、绑定与适用边界仍须整理，不据此宣告最终接受 |
+| R4-5 P7 自动轨迹 | 真实音乐与独立 DFJK 的本轮自动证据未完成 | 分别绑定实际 renderer／音频端点、脚本、内容、时长、计数与环境；设备枚举或合成无音频探针不能代验 |
+| R4-6 F1 | 历史候选 2c4e1274 的十一行全部 local_pass | 仅认证原 SHA；本轮新工具／探针不继承，最终候选须完成新的十一行矩阵 |
+| R4-6 F2 | 2c4e1274 同 SHA 三平台 hosted success 的历史结果保留 | 本轮最终候选须取得与 F1 同 SHA 的 Linux Quality、Windows MSVC、Windows MinGW 证据 |
+| Version Gate | 2c4e1274 的 success 保持原身份 | 新候选按实际 PR/base/candidate/tree/UTC 日期重新核验；评论授权不等于 gate 已通过 |
+| R4-7 O2／P7 听音 | 实体清单已准备；本轮实体事实尚未接受 | owner 完成听音、实体操作及所需仪器观察，或明确接受限制 |
+| R4-7 F3／生产 | 当前仍为 testOnly；生产参数只获准作为校准目标 | 校准与具体生产 profile／参数接受，不能由 reference 通过代签 |
+| R4-7 F4／O3／PD 退出 | 移交准备存在，最终退出未接受 | 完成自动门账、失败／缺证据和责任清单后，owner 接受最终退出范围及 PD-5 移交 |
 
-## 3. 需要 owner 裁定的事项与推荐方案
+## 3. 已接受的处置
 
-### 3.1 `p4-capture-1` 的重复性（全九 16.7% > 15%）
-
-| 方向 | 利 | 弊 |
+| 事项 | 现行处置 | 记录 |
 | --- | --- | --- |
-| A. 接受 inconclusive（**推荐**） | 遵守冻结判据；绝对值 2.3–2.7 µs 已稳定 | P4 的单消费者单元缺一个重复性门 |
-| B. 豁免后再登记一次，跑前固定“只跑一次”规则 | 可能得到干净的三窗 | 有挑选样本的嫌疑；若再失败仍要回头选 A |
-| C. 把该单元改为结构计数判定 | 不受 0.1 µs 量化限制 | 协议变更，需重新接受判据 |
+| CPU p4-capture-1 | 接受分辨率受限的 inconclusive，不重跑、不改判据 | [探针批报告](2026-11-08-probe-matrix-admission-and-environment-stop.md)、[11/08 waiver](2026-11-08-owner-attempt-waiver.json) |
+| CPU 探针绝对预算 | 维持无新增阈值；B-only 不伪造共同 A | [普通 host 报告](2026-11-08-common-host-unit.md)、本表的对应适用范围 |
+| P5 形态与次数 | 保留探针形态；前三次现场不替换；最多五次，剩余第四／第五次按原规则准备 | [控制探针](2026-11-11-p5-controls-unit.md)、[工具停止记录](2026-11-13-p5-tooling-stops.md)、[本轮收尾裁定](2026-11-13-closeout-decisions.md) |
+| 内存归属与 P8 内容 | 接受命令／执行域归属修正及 (40000, 4096) 内容口径；未修改上限数字 | [owner 裁定](2026-11-11-owner-decisions.md)、[P8 high 报告](2026-11-10-p8-40k-entity-memory.md) |
+| P0 read_long 与共同 A | 具名重开与后续组结案；接受 d3440882 重建 A 的绑定口径，不合并不同组 | [相机逆矩阵整改](2026-11-11-read-long-camera-inverse.md)、[正式组](2026-11-12-read-long-formal-group.md)、[裁定记录](2026-11-12-read-long-ruling.md)、[P0 计时结案](2026-11-12-p0-trace-legacy.md) |
+| Seek fallback/cold、device backend 与容量工具 | 两类 inconclusive 留给 O3；device 独立计次，最小扩展真实 GPU 容量工具 | [五类 Seek 结果](2026-11-13-seek-five-classes.md)、[本轮收尾裁定](2026-11-13-closeout-decisions.md) |
+| PR 与评论 | 尽量集中，仅在推进必需或避免漫长失效重验时新开 PR；评论绑定精确身份 | [本轮收尾裁定](2026-11-13-closeout-decisions.md)；不推导合并、发行或退出接受 |
 
-推荐 A：它的 16.7% 来自 2.4 µs 量级上 0.1 µs 的量化步长（0.4 µs 跨度即 16.7%），不是产品
-回退；把它记成“分辨率受限的 inconclusive”比再跑一次更诚实。
+## 4. 内存、设备与 P8 的接受边界
 
-### 3.2 探针指标是否补绝对预算
+O1 在 2026-11-05 接受的是方案 B 的 reference 设计 caps，不只接受延迟数值。机器表保留
+accepted: null／formal_registration: false，用于区分外部数值裁定与正式注册；不能据此
+反推“reference caps 未接受”。精确接受范围和 artifact hash 见
+[O1 接受记录](2026-11-05-o1-budget-acceptance.json)与
+[caps 裁定包](../../../../../stage_plans/active/stage-07/05-rpa-new/r4/caps-proposal.md)。
+生产 profile 与[内存修订提案](2026-11-08-memory-budget-revision.md)的新增数值尚未接受。
+本轮先补证据，保持既有数字，不从观测高水位反填上限。
 
-| 方向 | 利 | 弊 |
-| --- | --- | --- |
-| A. 保持无绝对预算，只报结构计数与重复性（**推荐**） | 不发明阈值 | 探针单元无法单独证明“够快” |
-| B. 为 P1/P2/P4/P6 各补一个已接受上限 | 可形成完整裁定 | 需要新数值接受；当前没有独立依据 |
-| C. 用相对 A/B 判定 | 有回归含义 | 探针是 B-only，A 无对应 harness |
+[11/08 内存归因](2026-11-08-memory-attribution.md)记录 n64 的 state.current 为
+427,015 B／196,608 B（2.17×），n2048 为 13,249,941 B／4,259,840 B（3.11×）。
+这些历史超出仍需按各自 profile 处理；40K 在较宽 cap 内不构成其恢复证明。
+n2048 的历史 command.session 超出、40K 的归属修正与之后的观测也须分别保留来源，
+不能把后者直接套到未重验的小 profile。早先由 frameByteBound 推测实际交付缓冲分配的
+解释已被逐分配证据撤回，现行解释见 P8 high 报告与 owner 裁定。
 
-### 3.3 内存：`state.current` 与 `command.session` 的超出
+[GPU 内存单例](2026-11-13-device-adapter-and-gpu-memory.md)使用一实体 stream，不能代验
+n2048 容量 profile；链接期 C++ new/delete 分区也不覆盖 GPU／驱动实占。
+后续需用匹配规模、真实 renderer 与独立口径补证据，未观测域保持缺证据，不填实测 0。
+prepare-only 峰值、observer 扰动、各阶段 owning handle 与最终释放亦不能由 active 单点替代。
+原 World 缩页与扩大拥有覆盖的局部证据见
+[缩页效果](2026-11-06-world-storage-effect.md)和[拥有覆盖／CPU 报告](2026-11-07-owning-and-cpu.md)。
 
-观测：n64 `state.current` 427,015 B（上限 196,608，2.17×）；n2048 13,249,941 B（4,259,840，
-3.11×）；n2048 `command.session` 27,049,016 B（21,854,208，1.24×）。
+[P8 low 报告](2026-11-13-p8-low.md)记录 f5f91916 上的一次 low 进程及同构建 high control；
+该 low 变体只使 requirement 结束 tick 去相关。结果保持 candidate 单例范围，不称通用低复用
+上限，不把它与旧 high 拼成重复性，也不据报告中的“在声明内”代替最终预算／设备接受。
+本轮仍须核对原登记、运行绑定、次数与各物理／hash 门的实际适用性，不能把 P8 一项外推为全门。
 
-| 方向 | 利 | 弊 |
-| --- | --- | --- |
-| A. 修正提案系数（`state.current` 约 6.5–8 KiB/实体；`command.session` 增加随 N 的项）后重新接受（**推荐**） | 与实测形状一致；不阻塞其他门 | 需要新的数值接受，且会放宽 M1 语义 |
-| B. 先做存储整改再按原提案判定 | 不放松预算 | 需要产品工作；本候选无此预算 |
-| C. 保持 unrated，把超出写进 O3 缺口 | 不动数值 | 内存门长期无结论 |
+## 5. 最终验证与移交
 
-推荐 A，并以 n2048 观测作为系数依据、n64 作为小尺度固定项依据。
+历史 2c4e1274 的 F1／F2／Version Gate 见
+[最终候选报告](2026-11-10-f1-f2-final-candidate.md)；更早候选与交接见
+[本轮拥有覆盖／CPU 报告](2026-11-07-owning-and-cpu.md)和
+[交接留档](2026-11-07-session-handoff.md)。它们均保持原身份，不认证当前新增或恢复的工具。
+本轮在实现与准入稳定后冻结新候选，完成十一行本地 F1 和同 SHA 三平台 F2，
+再整理全部自动门的通过、超出、inconclusive 或未测量／缺证据。
 
-### 3.4 P8/40K
+最终包继续使用[O2 实体清单](2026-11-07-o2-physical-checklist.md)与
+[F4/PD 移交准备](2026-11-07-f4-gate-and-handoff.md)，逐项列证据身份、未覆盖范围、
+后续责任与恢复条件。P7 听音、O2 实体操作、F3 校准与生产参数、O3／PD-5 退出接受仍由
+owner 完成；自动门尚未完成时，不先把门账压缩成只剩这四项。
 
-观测：40K 进程在内容构造阶段以 `packed.budget.strings` 失败（`maxPackedStrings=100000`）。
-
-| 方向 | 利 | 弊 |
-| --- | --- | --- |
-| A. 让 40K fixture 复用字符串池（**推荐**） | 不改产品上限；仍覆盖 40K 实体 | 改变了 40K 内容设计，需要登记为新 fixture |
-| B. 经 caps 接受提高 `maxPackedStrings` | 不改 fixture | 改动的是产品上限，影响所有内容 |
-| C. 不做 P8，接受“40K 不可认证” | 省事 | 新 P8 门空缺 |
-
-### 3.5 已按 owner 指示记录的处置
-
-owner 于 2026-11-08 明确“允许推送，可以按照推荐方案继续进行剩余工作”。据此记录两条处置，
-其余仍按 §3.1–3.5 的选择项等待签署：
-
-| 事项 | 处置 | 依据 |
-| --- | --- | --- |
-| `p4-capture-1` 重复性 | **接受 inconclusive**：三窗口完成、绝对值 2.3–2.7 µs 稳定，16.7% 来自 0.1 µs 量化步长，记为“分辨率受限”，不再重跑、不改判据 | 推荐方案 3.1 A |
-| 探针指标绝对预算 | **维持无绝对预算**：七个探针单元只报结构计数与重复性，不为探针发明阈值 | 推荐方案 3.2 A |
-| 内存上限修订 | 转为[修订提案 v2](2026-11-08-memory-budget-revision.md)：给出两条解析路径（128 槽页结构 / 固定+线性）与待签署项，**不把观测反填为上限**，接受仍待签署 | 推荐方案 3.3 A 的准备步骤 |
-| P8/40K | 维持“内容设计优先”方向；本批未实现 fixture 变体，原因是 `maxPackedStrings` 属冻结 Foundation 门，内容改造需先确认 40K 实体与需求计数的 1:1 语义 | 推荐方案 3.4 A 的前提 |
-
-推送：`codex/r4-integration` 已推到 origin（`2ec3480e..7e1199e1`），此后新增提交继续推送；
-仍未合并、未发行。
-
-### 3.6 其余
-
-最终候选 C 的选定（决定 F1/F2 绑哪个 SHA）、F2 推送授权、O2/P7 实体参与、F3 校准、
-O3 移交接受、Version Gate 的 SDK owner 批准——这些都需要 owner 参与，代理不自行推进。
-
-
-### 3.7 2026-11-10 收口记录
-
-- 候选冻结点是 `2c4e1274`（`26.11.09-1`）。F1、F2 与 Version Gate 都在这个 SHA 上通过，
-  证据见 [F1/F2 报告](2026-11-10-f1-f2-final-candidate.md)与
-  [P8 40K 报告](2026-11-10-p8-40k-entity-memory.md)。
-- P8 的 40K 实体跑通后，唯一的超出是 `command.session`（160.8 MB vs 21.85 MB）。结构归因指向
-  `frameByteBound` 的 4,096 B/成员交付缓冲，但缺逐分配证据，因此没有写新的数值上限。
-- 本页 §2 的其余行（五类 Seek、device/P3/P7）不变，仍待后续工作。
-
-### 3.8 2026-11-11 / 11-12 收口记录
-
-- **P5 控制**：新增独立 `controls` 适配器（身份键 `mode`/`cycles`/`rate`/`counts`，样本数由周期数推导），
-  pilot 在安静前台窗口下通过；前两次停止都发生在冻结的环境监视策略上（机器预热、sample 阶段前台
-  变化），探针在该构建下不创建窗口，owner 裁定保留探针形态、不做夹具改造。
-- **`read_long` 整改与结案**：根因是每帧一次 `core::inverse(camera.matrix)`；改为按矩阵逐位缓存后，
-  同机诊断 legacy −19.0%、RPA −20.9%。随后 2026-11-12 正式组：legacy 0.91913（区间
-  [0.90916, 0.93081]）通过；RPA 首轮 0.92582 因 B 侧一个受扰动进程重复性 19.25% 判 inconclusive，
-  owner 批准只跑 RPA 复跑，得 0.90990（区间 [0.87034, 0.95326]）通过。
-- **A 侧口径**：原冻结 pre-PD 目录已不在本机，两组均由 `d3440882` 重建并重新绑定；owner 于
-  2026-11-12 接受该口径。两次正式组（2026-11-07 用冻结 A、2026-11-12 用重建 A）不合并统计。
-- **内存归属修正**：`dispatch()` 的命令级标签使执行内核状态被记进 `command.session`；把
-  `SessionUpdatePresentation` 与 `SessionSeek` 改记到执行域后，21 个域全部在声明内，总字节不变。
-  owner 接受该修正；`budget-proposal.v1.json` 与 O1 接受记录未改。
-- **P8 口径**：`(40000, 4096)` 定为正式内容口径，扩充规则为二维声明 + 按系数推算上限 + 抽查确认。
-- 上述裁定的原始记录见 [owner 裁定记录](2026-11-11-owner-decisions.md)、
-  [相机逆矩阵整改](2026-11-11-read-long-camera-inverse.md)、
-  [正式组结果](2026-11-12-read-long-formal-group.md)与
-  [`read_long` 裁定记录](2026-11-12-read-long-ruling.md)。
-
-## 4. 边界
-
-- 本文的“通过”只指该单元、该指标、该协议内的裁定，不外推到 RPA、Stage 7A、Stage 7、
-  设备或生产接受。
-- 两次停止的环境原因与现场字节保持不改；没有样本替换、没有事后改类。
-- 本轮所有提交都在本地，未推送、未合并、未发行。
+本文的“通过”只适用于对应单元、指标、候选与协议；旧失败、慢值和停止现场不替换、
+不事后改类。任何局部结果均不自动关闭 R4、RPA、Stage 7A、PD-5 或 Stage 7。

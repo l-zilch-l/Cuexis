@@ -38,7 +38,12 @@ class Residency:
         class Item(ct.Structure):
             _fields_=[('name',w.LPWSTR),('value',Value)]
         self.check(self.pdh.PdhCollectQueryData(self.query))
-        result={'pid':self.pid,'monotonic_ns':time.monotonic_ns(),'instances':{},'bytes':{}}
+        qpc, frequency = ct.c_int64(), ct.c_int64()
+        kernel = ct.WinDLL('kernel32', use_last_error=True)
+        if not kernel.QueryPerformanceCounter(ct.byref(qpc)) or not kernel.QueryPerformanceFrequency(ct.byref(frequency)):
+            raise ct.WinError(ct.get_last_error())
+        result={'pid':self.pid,'monotonic_ns':time.monotonic_ns(),
+                'qpc':qpc.value,'qpc_frequency':frequency.value,'instances':{},'bytes':{}}
         for name,handle in self.counters.items():
             size,count=w.DWORD(),w.DWORD()
             code=self.pdh.PdhGetFormattedCounterArrayW(handle,0x400,ct.byref(size),ct.byref(count),None)
@@ -73,7 +78,18 @@ def monitor(native, path):
         try:
             observer=Residency(native.pid)
             while native.poll() is None:
-                row=observer.sample()
+                try:
+                    row=observer.sample()
+                except Exception as error:
+                    # The native process may not have a GPU instance before creating its
+                    # context. Preserve that unavailable sample and keep observing later phases.
+                    qpc, frequency = ct.c_int64(), ct.c_int64()
+                    kernel = ct.WinDLL('kernel32')
+                    kernel.QueryPerformanceCounter(ct.byref(qpc))
+                    kernel.QueryPerformanceFrequency(ct.byref(frequency))
+                    row={'pid':native.pid,'monotonic_ns':time.monotonic_ns(),
+                         'qpc':qpc.value,'qpc_frequency':frequency.value,
+                         'status':'unavailable','error':str(error)}
                 stream.write(json.dumps({'schema':'playback.gpu-residency.v1',**row})+'\n')
                 stream.flush()
                 try: native.wait(timeout=.25)

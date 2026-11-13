@@ -371,7 +371,5 @@ TEST_CASE("PD5 presentation workload matrix", "[.][pd][pd5][matrix]") {
     }
     std::cout << "}}\n";
 }
-#if !defined(CUEXIS_PD5_MATRIX_DEVICE)
 #include "pd5_capacity_probe.hpp"
-#endif
 #endif

@@ -18,6 +18,7 @@
 #include <mmdeviceapi.h>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace cuexis::player {
@@ -37,11 +38,15 @@ class ScriptedPlaybackTrace final {
     std::vector<Sample> samples_;
     std::vector<Frame> frames_;
     std::size_t next_{};
-    std::int64_t origin_{}, firstQpc_{};
+    std::int64_t origin_{}, firstQpc_{}, activeFinishedAt_{};
     std::int64_t pendingStart_{}, confirmed_{};
     std::string pending_;
     std::string endpoint_;
     std::uint64_t audioReads_{}, audioSequence_{}, underruns_{}, captured_{};
+    std::int64_t finalScore_{};
+    std::uint64_t finalHits_{}, finalMisses_{};
+    double maximumSourcePositionMs_{};
+    bool audioEnded_{}, terminalExecuted_{}, judgementSeen_{};
     unsigned actions_{};
     bool active_{};
     static auto now() -> std::int64_t {
@@ -51,7 +56,8 @@ class ScriptedPlaybackTrace final {
     }
     static void check(HRESULT value) {
         if (FAILED(value))
-            throw std::runtime_error("PD5 actual audio endpoint query failed");
+            throw std::runtime_error("PD5 actual audio endpoint query failed, HRESULT=" +
+                                     std::to_string(static_cast<long>(value)));
     }
     template <class T> struct Com {
         T* p{};
@@ -65,12 +71,17 @@ class ScriptedPlaybackTrace final {
     };
     static auto endpoint() -> std::string {
         const auto initialized = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-        check(initialized);
+        // SDL may already own an STA on the main thread. Borrow that apartment without
+        // uninitializing it; balance only this function's successful initialization.
+        if (initialized != RPC_E_CHANGED_MODE)
+            check(initialized);
         struct Uninit {
+            bool owned;
             ~Uninit() {
-                CoUninitialize();
+                if (owned)
+                    CoUninitialize();
             }
-        } uninit;
+        } uninit{SUCCEEDED(initialized)};
         Com<IMMDeviceEnumerator> enumerator;
         check(CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL,
                                IID_PPV_ARGS(&enumerator.p)));
@@ -171,6 +182,7 @@ class ScriptedPlaybackTrace final {
         if (e.kind != 3) {
             event.key.windowID = SDL_GetWindowID(window);
             event.key.scancode = static_cast<SDL_Scancode>(e.code);
+            event.key.key = SDL_GetKeyFromScancode(event.key.scancode, SDL_KMOD_NONE, true);
             event.key.down = e.value != 0;
             event.key.repeat = false;
             if (e.kind == 0 && e.value)
@@ -194,8 +206,8 @@ class ScriptedPlaybackTrace final {
             return;
         begin(reload ? (paused ? "reset_paused" : "reset_running") : paused ? "resume" : "pause");
     }
-    void confirmed() {
-        if (active_ && !pending_.empty())
+    void confirmed(std::string_view metric = {}) {
+        if (active_ && !pending_.empty() && (metric.empty() || pending_ == metric))
             confirmed_ = now();
     }
     void captured() noexcept {
@@ -208,6 +220,30 @@ class ScriptedPlaybackTrace final {
             audioSequence_ = std::max(audioSequence_, sequence);
             underruns_ = std::max(underruns_, underruns);
         }
+    }
+    void transport(double positionMs, bool ended) noexcept {
+        if (active_) {
+            maximumSourcePositionMs_ = std::max(maximumSourcePositionMs_, positionMs);
+            audioEnded_ |= ended;
+            if (ended && !activeFinishedAt_)
+                activeFinishedAt_ = now();
+        }
+    }
+    void terminalExecuted() noexcept {
+        terminalExecuted_ = true;
+        if (!activeFinishedAt_)
+            activeFinishedAt_ = now();
+    }
+    void resumed() noexcept {
+        terminalExecuted_ = false;
+        audioEnded_ = false;
+        activeFinishedAt_ = 0;
+    }
+    void judgement(std::int64_t score, std::uint64_t hits, std::uint64_t misses) noexcept {
+        finalScore_ = score;
+        finalHits_ = hits;
+        finalMisses_ = misses;
+        judgementSeen_ = true;
     }
     void firstPresent(bool hasAudio) {
         if (!active_ || origin_)
@@ -223,9 +259,11 @@ class ScriptedPlaybackTrace final {
         if (!active_)
             return;
         const auto at = now();
-        if (frames_.size() == frames_.capacity())
-            throw std::runtime_error("PD5 frame buffer full");
-        frames_.push_back({at, request, ready});
+        if (!activeFinishedAt_) {
+            if (frames_.size() == frames_.capacity())
+                throw std::runtime_error("PD5 frame buffer full");
+            frames_.push_back({at, request, ready});
+        }
         if (confirmed_ && !pending_.empty() && pending_ != "close") {
             if (samples_.size() == samples_.capacity())
                 throw std::runtime_error("PD5 control buffer full");
@@ -265,7 +303,17 @@ class ScriptedPlaybackTrace final {
         std::cout << "PD5_PLAYER {\"script_events\":" << events_.size()
                   << ",\"dispatched\":" << next_ << ",\"actions\":" << actions_
                   << ",\"captured\":" << captured_ << ",\"frames\":" << frames_.size()
-                  << ",\"audio_reads\":" << audioReads_
+                  << ",\"trajectory_duration_us\":" << closed - origin_
+                  << ",\"active_trajectory_duration_us\":"
+                  << (activeFinishedAt_ ? activeFinishedAt_ : closed) - origin_
+                  << ",\"terminal_wait_us\":"
+                  << (activeFinishedAt_ ? closed - activeFinishedAt_ : 0)
+                  << ",\"maximum_source_position_ms\":" << maximumSourcePositionMs_
+                  << ",\"audio_ended\":" << (audioEnded_ ? "true" : "false")
+                  << ",\"terminal_executed\":" << (terminalExecuted_ ? "true" : "false")
+                  << ",\"judgement_seen\":" << (judgementSeen_ ? "true" : "false")
+                  << ",\"score\":" << finalScore_ << ",\"hits\":" << finalHits_
+                  << ",\"misses\":" << finalMisses_ << ",\"audio_reads\":" << audioReads_
                   << ",\"audio_sequence_max\":" << audioSequence_ << ",\"audio_boundary\":\""
                   << (gameplay ? "AudioPublication" : "IAudioTransport.snapshot")
                   << "\",\"underruns\":" << underruns_ << ",\"endpoint_id\":\"" << endpoint_

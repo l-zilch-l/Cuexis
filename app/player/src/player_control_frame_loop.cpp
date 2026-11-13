@@ -3,6 +3,9 @@
 #include "frame_diagnostics.hpp"
 #include "player_log.hpp"
 #include "snapshot_scene.hpp"
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+#include "scripted_playback_trace.hpp"
+#endif
 
 #include <cuexis/render/render_scene.hpp>
 
@@ -183,10 +186,32 @@ auto runPlayerFrameLoop(PlayerFrameLoop& input) -> core::Result<void> {
             }
             auto command = playerCommandForInput(action, controller.state(),
                                                  controller.lastRuntimeFrame().chartTimeMs);
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+            const bool measuredPlay = command.kind == player_support::PlayerCommandKind::Play;
+            if (input.measurementTrace &&
+                (action == PlayerInputAction::PlayPause || action == PlayerInputAction::Reload)) {
+                if (measuredPlay && controller.state() != player_support::PlayerAppState::Paused)
+                    input.measurementTrace->begin("play");
+                else
+                    input.measurementTrace->action(action == PlayerInputAction::Reload,
+                                                   controller.state() ==
+                                                       player_support::PlayerAppState::Paused);
+            }
+#endif
             if (auto applied = controller.apply(std::move(command)); !applied) {
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+                if (input.measurementTrace && input.measurementTrace->active())
+                    return core::unexpected(std::move(applied.error()));
+#endif
                 input.logger.warn("player.command", std::string{"Input action rejected: "} +
                                                         std::string{applied.error().code()});
             } else {
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+                if (input.measurementTrace)
+                    input.measurementTrace->confirmed();
+                if (input.measurementTrace && (measuredPlay || action == PlayerInputAction::Reload))
+                    input.measurementTrace->resumed();
+#endif
                 if (action == PlayerInputAction::Reload)
                     traceReloadFrame = true;
                 input.logger.info("player.input", std::string{"Applied user action: "} +
@@ -283,6 +308,10 @@ auto runPlayerFrameLoop(PlayerFrameLoop& input) -> core::Result<void> {
             return core::unexpected(
                 std::move(resized.error()).withContext("operation", "resize_presentation"));
         }
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+        if (input.measurementTrace)
+            input.measurementTrace->confirmed("resize");
+#endif
         if (auto result =
                 controller.session().extractFrame({.width = width, .height = height}, snapshot);
             !result) {

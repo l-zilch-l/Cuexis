@@ -204,6 +204,8 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
                 value.publicationSequence = publication->sequence;
 #if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
                 pd5Trace.audio(publication->sequence, publication->metrics.underrunCount);
+                pd5Trace.transport(publication->clock.source.positionMs,
+                                   publication->clock.source.state == audio::PlaybackState::Ended);
 #endif
                 value.sampleMonotonicUs = publication->sampleMonotonicUs;
                 value.presented = ClockFramePosition{publication->clock.presentedFrame,
@@ -414,6 +416,7 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
             pausedPositionUs = *cut + app.profile.outputCorrectionUs;
         }
     };
+    bool terminalExecuted{};
     while (!quitting && !faulted && !overflow) {
         take(pumpMain());
         if (faulted || overflow || quitting)
@@ -425,7 +428,7 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
             take(host->resize({static_cast<std::uint32_t>(currentDrawable.width),
                                static_cast<std::uint32_t>(currentDrawable.height)}));
 #if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
-            pd5Trace.confirmed();
+            pd5Trace.confirmed("resize");
 #endif
             drawable = currentDrawable;
         }
@@ -463,6 +466,10 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
                         pausedPositionUs.reset();
                     }
                     take(host->resume(observation));
+                    terminalExecuted = false;
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+                    pd5Trace.resumed();
+#endif
                     captureClock.emplace(take(RealtimeClock::create(
                         scheduling, mapping, "steady.us", host->context().clockSegment)));
                     captureSegment = host->context().clockSegment;
@@ -470,6 +477,10 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
                                 "Resumed segment=" + std::to_string(captureSegment));
                 }
             } else if (action == PlayerInputAction::Reload) {
+                terminalExecuted = false;
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+                pd5Trace.resumed();
+#endif
                 const bool keepPaused = host->state() == HostState::paused;
                 take(host->close());
                 host.reset();
@@ -521,7 +532,7 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
             continue;
         }
         auto ticks = take(host->inputTicks(clock));
-        if (host->state() == HostState::running) {
+        if (host->state() == HostState::running && !terminalExecuted) {
             auto result = host->advance(clock);
             if (!result && result.error().code() == "host.rpa.control_pending" &&
                 host->state() == HostState::running)
@@ -531,7 +542,15 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
                 decision.request.horizon.value >= host->tail()->terminalHorizon) {
                 logger.info("player.execution.tail.complete",
                             "Declared terminal horizon actually executed");
-                break;
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+                // The trace still requires its explicit Close after EOF. Frames while waiting
+                // are frozen redraws and do not certify a longer steady execution trajectory.
+                if (pd5Trace.active()) {
+                    terminalExecuted = true;
+                    pd5Trace.terminalExecuted();
+                } else
+#endif
+                    break;
             }
             if (decision.disposition == GameplayAdvanceDisposition::Failed ||
                 decision.disposition == GameplayAdvanceDisposition::ClockInvalidNotExecuted)
@@ -547,7 +566,7 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
         auto sampled = host->trySample(ticks.presentationTick,
                                        {static_cast<double>(ticks.presentationTick) / 1000.0, delta,
                                         host->context().clockSegment},
-                                       host->state() == HostState::paused);
+                                       host->state() == HostState::paused || terminalExecuted);
         if (!sampled && sampled.error().code() == "host.rpa.control_pending" &&
             host->state() == HostState::running)
             continue;
@@ -596,6 +615,8 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
     bool pd5ReplayEqual = true;
     if (pd5Trace.active()) {
         const auto expected = take(host->queryGameplay());
+        const auto finalScore = take(expected.score());
+        pd5Trace.judgement(finalScore.score, finalScore.hits, finalScore.misses);
         const auto replay = take(host->evaluateReplay(take(host->archive())));
         pd5ReplayEqual = replay.evidenceValid && take(expected.sameResult(replay.result));
     }
@@ -612,6 +633,11 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
     return {};
 } catch (const Failure& failure) {
     return core::unexpected(failure.error);
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+} catch (const std::exception& failure) {
+    return core::unexpected(
+        error((std::string{"Execution Player trace failed: "} + failure.what()).c_str()));
+#endif
 } catch (...) {
     return core::unexpected(error("Execution Player allocation failed"));
 }

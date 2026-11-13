@@ -51,6 +51,11 @@ endif()
 # Offline tool contracts do not launch WPR, ETW roles, or Cuexis measurements.
 if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
     find_package(Python3 COMPONENTS Interpreter REQUIRED)
+    add_test(NAME cuexis_execution_acceptance_tool_tests
+        COMMAND "${Python3_EXECUTABLE}" -B -m unittest discover
+            -s tools/verification/execution_acceptance -t .)
+    set_tests_properties(cuexis_execution_acceptance_tool_tests PROPERTIES
+        WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" LABELS "pd;tools;contract")
     set(pd5_tool_test_tmp "${PROJECT_BINARY_DIR}/pd5-tool-test-tmp")
     file(MAKE_DIRECTORY "${pd5_tool_test_tmp}")
     set(pd5_tool_suites

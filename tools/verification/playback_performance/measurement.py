@@ -201,6 +201,37 @@ def parse_probe(text, exit_code=0, *, instrumented=False, memory_observer=False)
             'acceptance': False}
 
 
+def parse_seek(text, exit_code=0):
+    """Parse the GPU seek probe: one identity, one sample per request, one integrity summary.
+
+    Every timed request must agree with the oracle, otherwise the request measured something other
+    than the class the registration names, and the log is unusable.
+    """
+    ids, rows = records(text, 'PD5_SEEK_ID '), records(text, 'PD5_SEEK ')
+    verify = records(text, 'PD5_SEEK_VERIFY ')
+    if type(exit_code) is not int or exit_code != 0 or len(ids) != 1 or len(verify) != 1:
+        raise ValueError('Failed/incomplete seek probe')
+    identity = ids[0]
+    if identity.get('schema') != 'pd5.seek.v1':
+        raise ValueError('Unexpected seek identity schema')
+    for key in ('records', 'seeks', 'seek_class', 'hints', 'certified_records'):
+        if key not in identity:
+            raise ValueError('Missing seek identity field: ' + key)
+    if len(rows) != positive(identity['seeks']):
+        raise ValueError('Seek request count differs from the declared identity')
+    if verify[0].get('mismatched') != 0 or verify[0].get('verified') != len(rows):
+        raise ValueError('Seek requests did not match the oracle')
+    for row in rows:
+        if row.get('records') != identity['records'] or row.get('seek_class') != identity['seek_class']:
+            raise ValueError('Seek sample does not belong to the declared workload')
+        if row.get('state_matches_oracle') is not True:
+            raise ValueError('Seek sample did not match the oracle')
+    result = {metric: statistics([positive(row[metric]) for row in rows])
+              for metric in ('request_to_ready_us', 'request_to_present_us')}
+    return {'schema': 'pd5.seek.v1', 'identity': identity, 'samples': rows,
+            'verify': verify[0], 'statistics': result}
+
+
 def collect(path, kind, exit_code=0, phase='formal'):
     text = Path(path).read_text(encoding='utf-8-sig', errors='strict')
     if kind == 'owner':

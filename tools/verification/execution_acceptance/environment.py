@@ -1,9 +1,18 @@
 """Read-only runtime environment admission shared with the original CPU topology policy."""
 from pathlib import Path
+import os
 import subprocess
 import sys
 
 from tools.verification.playback_performance import measurement
+
+
+def process_environment(parent=None):
+    """Observers are explicit per invocation and must never leak into a normal child."""
+    prefixes = ("CUEXIS_PD_", "CUEXIS_PD5_", "CUEXIS_RPA_", "CUEXIS_REDESIGN_",
+                "CUEXIS_PROCESS_GPU_", "CUEXIS_ALLOCATION_OBSERVER_")
+    return {key: value for key, value in (os.environ if parent is None else parent).items()
+            if not key.startswith(prefixes)}
 
 
 def original_support():

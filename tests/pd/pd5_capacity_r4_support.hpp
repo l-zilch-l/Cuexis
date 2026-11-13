@@ -4,14 +4,44 @@
 #include "../../engine/gameplay_packed/src/semantic_stream_internal.hpp"
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cuexis_internal/execution_diagnostics.hpp>
 #include <cuexis_internal/sha256.hpp>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <thread>
 #include <type_traits>
 
 namespace pd5_capacity {
+// Separate memory-observer processes may hold a phase long enough for OS residency sampling.
+// QPC intervals bind the OS observations without assuming that two monotonic clocks share epoch.
+// This facility is disabled in normal timing and never changes a formal timing trajectory.
+inline void memoryPhase(const char* label) {
+    const auto text = cuexis::test_support::environmentVariable("CUEXIS_PD5_MEMORY_HOLD_MS");
+    if (text.empty())
+        return;
+#if !defined(CUEXIS_ALLOCATION_LIFETIME_OBSERVER)
+    static_cast<void>(label);
+    throw std::runtime_error("Memory phase holds require the lifetime observer build");
+#else
+    std::size_t consumed{};
+    const auto milliseconds = std::stoul(text, &consumed);
+    if (consumed != text.size() || milliseconds < 500 || milliseconds > 5000)
+        throw std::runtime_error("Memory phase hold must be 500..5000 ms");
+    LARGE_INTEGER begin{}, end{}, frequency{};
+    if (!QueryPerformanceFrequency(&frequency) || !QueryPerformanceCounter(&begin))
+        throw std::runtime_error("Memory phase QPC unavailable");
+    std::this_thread::sleep_for(std::chrono::milliseconds{milliseconds});
+    if (!QueryPerformanceCounter(&end))
+        throw std::runtime_error("Memory phase QPC unavailable");
+    std::cout << "PD5_CAPACITY_PHASE {\"label\":\"" << label
+              << "\",\"pid\":" << GetCurrentProcessId() << ",\"begin_qpc\":" << begin.QuadPart
+              << ",\"end_qpc\":" << end.QuadPart << ",\"frequency\":" << frequency.QuadPart
+              << ",\"formal_measurement\":false}" << std::endl;
+#endif
+}
+
 inline void jsonString(std::ostream& out, std::string_view text) {
     constexpr std::string_view hex = "0123456789abcdef";
     out << '"';

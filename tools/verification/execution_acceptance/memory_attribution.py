@@ -121,8 +121,10 @@ def compare(attribution, profile):
             "domains": rows, "over_declared": [row for row in rows
                                                if row["status"] == "over_declared"],
             "partition": attribution["partition"], "scope": SCOPE,
-            "acceptance": "declared ceilings are proposed, not accepted; an over_declared row is "
-                          "an observed excess against a proposal and needs the owner's ruling"}
+            "acceptance": "comparison alone is not formal acceptance; reference design caps "
+                          "require their exact O1 acceptance binding, workload/observer admission "
+                          "and applicable lifecycle evidence; revised or production caps need "
+                          "a separate owner record"}
 
 
 def load_profile(path, profile_id):
