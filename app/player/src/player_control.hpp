@@ -231,6 +231,10 @@ struct PlayerHooks final {
     std::function<core::Result<void>(const PlayerPresentedFrame& presented)> validatePresented;
 };
 
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+class ScriptedPlaybackTrace;
+#endif
+
 struct PlayerFrameLoop final {
     PlayerController& controller;
     presentation_renderer::IPresentationRenderer& renderer;
@@ -241,6 +245,9 @@ struct PlayerFrameLoop final {
     bool showFps{};
     FrameDiagnostics* diagnostics{};
     PlayerHooks hooks{};
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+    ScriptedPlaybackTrace* measurementTrace{};
+#endif
     PlayerLogger& logger;
 };
 

@@ -2,7 +2,7 @@
 
 状态：current index
 
-更新日期：2026-10-06
+更新日期：2026-11-14
 
 报告保存带日期的实施、审查和验证证据。报告中的“下一步”只代表其快照日期，不能重新定义
 [CURRENT_STATUS.md](../CURRENT_STATUS.md)。
@@ -22,7 +22,9 @@ Standards / Spec 记录），由该专题自己的 `README.md` 承担导航；�
 - [Stage 5](stages/stage-05/README.md)
 - [Chart Format Foundation](stages/chart-format-foundation/README.md)
 - [Stage 6](stages/stage-06/README.md)：[关闭报告](stages/stage-06/completion.md)（2026-09-27 关闭并归档）
-- [Stage 7A / 7B+分类证据索引](stages/stage-07/README.md)：准入基线、裁定记录、设计与实施、验证审计、交接规划。
+- [Stage 7 分类证据索引](stages/stage-07/README.md)：准入基线、裁定记录、设计与实施、验证审计、交接规划。
+
+- [Stage 7.5：Gameplay Evolution](stages/stage-07-5/README.md)：独立能力演进、局部重构与性能稳定。
 
 ## 跨阶段专题
 

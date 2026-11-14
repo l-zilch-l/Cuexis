@@ -124,14 +124,58 @@ class AdmissionTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             admission.read_sealed(sealed)
 
-    def test_p8_has_one_claim_even_when_a_remedy_is_supplied(self):
+    def test_p8_allowance_stays_one_even_when_a_remedy_is_supplied(self):
         unit = self.document["units"][0]
         unit.update(workload="p8", comparison="P8-single-sided", invocations=1, entities=40000,
                     reuse="low", stable_protocol_id="p8-40000-low-release")
-        admission.claim(self.document, self.root / "ledger")
         unit["retry_disposition_binding"] = self.file({"remedy": True})
-        with self.assertRaisesRegex(ValueError, "allowance exhausted"):
-            admission.claim(self.document, self.root / "ledger")
+        self.assertEqual(admission.allowance(unit), 1)
+
+    def test_memory_and_p8_reject_forged_complete_proofs_before_claim_or_seal(self):
+        for workload, entities in (("memory", 64), ("memory", 2048), ("p8", 40000)):
+            for backend in ("cpu", "device"):
+                for reuse in ("low", "high"):
+                    document = copy.deepcopy(self.document)
+                    unit = document["units"][0]
+                    suffix = "-device" if backend == "device" else ""
+                    unit.update(id=f"{workload}-{entities}-{reuse}", workload=workload,
+                                stable_protocol_id=f"{workload}-{entities}-{reuse}{suffix}-release",
+                                entities=entities, rows=4096 if workload == "p8" else entities,
+                                backend=backend, reuse=reuse, adapter="capacity",
+                                measurement_mode="memory", requests_per_process=1, invocations=1,
+                                comparison="P8-single-sided" if workload == "p8" else "B-only",
+                                completion_endpoint="active-close-final-release")
+                    for kind in ("semantic", "pilot", "environment", "observer"):
+                        unit[kind + "_binding"] = self.file({
+                            "schema": "rpa.execution." +
+                                      ("observer-admission" if kind == "observer" else kind) + ".v1",
+                            "passed": True, "complete_semantic_graph": True,
+                            "formal_acceptance": True, "unit": unit["id"], "mode": "memory",
+                            "source_sha": self.source["sha"],
+                            "endpoint": unit["completion_endpoint"],
+                            "candidate_binary_sha256": document["binary_bindings"]["B"]["sha256"],
+                            "raw_bindings": [self.file({"forged_complete": True})]})
+                    metadata = json.loads(Path(document["binary_build_bindings"]["B"]["path"]).read_text())
+                    cache = Path(metadata["cache"]["path"])
+                    text = cache.read_text()
+                    for option in ("CUEXIS_ALLOCATION_LIFETIME_OBSERVER",
+                                   "CUEXIS_EXECUTION_ALLOCATION_OBSERVER"):
+                        metadata["options"][option] = "ON"
+                        text = text.replace(option + ":STRING=OFF", option + ":STRING=ON")
+                    cache.write_text(text)
+                    metadata["cache"] = artifact(cache)
+                    document["binary_build_bindings"]["B"] = self.file(metadata)
+                    preparation = Path(self.file(document)["path"])
+                    ledger, sealed = self.root / "ledger", self.root / "seal.json"
+                    with self.subTest(workload=workload, entities=entities, backend=backend, reuse=reuse):
+                        for operation in (
+                                lambda: admission.validate_preparation(document),
+                                lambda: admission.claim(document, ledger),
+                                lambda: admission.seal(preparation, [], sealed)):
+                            with self.assertRaisesRegex(ValueError, "complete semantic ownership/lifetime graph validator"):
+                                operation()
+                        self.assertFalse(ledger.exists())
+                        self.assertFalse(sealed.exists())
 
     def test_p8_cannot_masquerade_as_another_comparison(self):
         for comparison in ("A/B", "B-only"):

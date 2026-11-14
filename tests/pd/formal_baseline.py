@@ -134,7 +134,12 @@ def topology(machine):
 
 def native_environment(lines):
     records=[json.loads(s[len('PD_ENV '):]) for s in lines if s.startswith('PD_ENV ')]
-    if len(records)!=2 or [r['label'] for r in records]!=['begin','end']:raise ValueError('Missing native environment')
+    # Two anchors must bracket the measured region. A probe may prefix them to mark its own region
+    # ("seek-begin"/"seek-end"); the prefix has to match on both sides.
+    labels=[r.get('label','') for r in records]
+    bracketed=(len(records)==2 and labels[0].endswith('begin') and labels[1].endswith('end')
+               and labels[0][:-len('begin')]==labels[1][:-len('end')])
+    if not bracketed:raise ValueError('Missing native environment')
     # Processor placement is an observation, not a frozen condition. Process
     # affinity and scheduling/power controls remain part of the invariant.
     keys=[k for k in records[0] if k not in ('label','pid','tid','processor_group','processor_number')]

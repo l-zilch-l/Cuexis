@@ -1,17 +1,16 @@
 """Run a sealed fixed group once. No retries, sample replacement or automatic budget changes."""
 import argparse
 import datetime as dt
-import os
 from pathlib import Path
 import time
 
 from tools.verification.playback_performance import measurement, process_control
 
-from . import probe_units
+from . import prepare_stream, probe_units
 from .admission import read_sealed
 from .binding import read, sha256, verify_artifact, write_once
 from .results import verdict
-from .environment import verify_cpu, verify_native, verify_warmup
+from .environment import process_environment, verify_cpu, verify_native, verify_warmup
 from .runtime_monitor import POLICY, RuntimeMonitor
 
 PROBE_GATES = probe_units.GATES
@@ -48,6 +47,14 @@ def parse_result(unit, text, exit_code):
         if unit.get("gate") != "p5-controls":
             raise ValueError("controls adapter requires the canonical scripted-control gate")
         parsed = measurement.parse_probe(text, exit_code=exit_code)
+    elif unit["adapter"] == "stream":
+        prepare_stream.validate_registration(unit)
+        parsed = measurement.parse_probe(text, exit_code=exit_code)
+        prepare_stream.identity(parsed)
+    elif unit["adapter"] == "seek":
+        if unit.get("gate") not in SEEK_GATES:
+            raise ValueError("seek adapter requires a pre-declared Seek gate")
+        parsed = measurement.parse_seek(text, exit_code=exit_code)
     else:
         raise ValueError("unimplemented result adapter cannot launch a formal process")
     expected = unit["expected_identity"]
@@ -55,6 +62,8 @@ def parse_result(unit, text, exit_code):
                 if unit["adapter"] == "owner" else
                 set(PROBE_IDENTITY) if unit["adapter"] == "probe" else
                 {"mode", "cycles", "rate", "counts"} if unit["adapter"] == "controls" else
+                set(prepare_stream.IDENTITY_FIELDS) if unit["adapter"] == "stream" else
+                set(SEEK_IDENTITY) if unit["adapter"] == "seek" else
                 {"digest", "source", "viewport", "objects", "warmup", "measured", "audio", "gpu"})
     if not required.issubset(expected):
         raise ValueError("incomplete preregistered semantic identity")
@@ -76,23 +85,61 @@ def parse_result(unit, text, exit_code):
         samples = [row["request_to_ready_us"] for row in parsed["samples"]]
         absolute["request_to_ready"] = measurement.budget("request_to_ready", samples,
                                                          config=unit["config"])
+    if unit["adapter"] == "seek":
+        samples = parsed["samples"]
+        absolute["seek"] = measurement.budget(
+            "seek", [row["request_to_present_us"] for row in samples], config=unit["config"])
+        absolute["request_to_ready"] = measurement.budget(
+            "request_to_ready", [row["request_to_ready_us"] for row in samples],
+            config=unit["config"])
     if unit["adapter"] == "probe":
         # Only a metric with an accepted absolute budget may carry one; a missing budget stays
         # unjudged instead of borrowing the relative threshold.
         for metric in unit.get("absolute_gate_metrics", []):
             samples = [row["elapsed_us"] for row in parsed["samples"] if row["metric"] == metric]
             absolute[metric] = measurement.budget(metric, samples, config=unit["config"])
+    if unit["adapter"] in ("controls", "stream"):
+        metrics = (("pause", "resume", "resize", "reset_paused", "reset_running", "close", "load")
+                   if unit["adapter"] == "controls" else ("request_to_ready", "close", "load"))
+        for metric in metrics:
+            samples = [row["elapsed_us"] for row in parsed["samples"] if row["metric"] == metric]
+            if not samples:
+                raise ValueError("missing registered absolute endpoint: " + metric)
+            # load_host intentionally has no budget: load uses the native process-start anchor.
+            absolute[metric] = measurement.budget(metric, samples, config=unit["config"])
     return {"medians": values, "parsed": parsed, "absolute_gates": absolute}
 
 
+SEEK_GATES = ("p5-seek-natural", "p5-seek-hot", "p5-seek-external", "p5-seek-fallback",
+              "p5-seek-cold")
+SEEK_IDENTITY = ("schema", "records", "seeks", "seek_class")
 CONTROLS_IDENTITY = ("mode", "frames", "warmup_frames", "cycles", "rate", "audio",
                      "closed", "replay_equal", "counts")
+
+
+def require_same_workload(unit, reference, current):
+    """Every process in a group must have measured the same workload, not merely the same name.
+
+    The control and Seek probes declare their own identities, so comparing them through the
+    presentation-matrix key set would reject correct logs; everything else keeps that comparison.
+    """
+    keys = (CONTROLS_IDENTITY if unit["adapter"] == "controls"
+            else prepare_stream.IDENTITY_FIELDS if unit["adapter"] == "stream"
+            else SEEK_IDENTITY if unit["adapter"] == "seek" else None)
+    if keys is None:
+        for metric in unit["required_metrics"]:
+            measurement.require_comparable(reference, current, metric)
+        return
+    for key in keys:
+        if reference.get("identity", {}).get(key) != current.get("identity", {}).get(key):
+            raise ValueError("workload identity differs from the registered semantics: " + key)
 
 
 def run(seal_path, output):
     seal_path, output = Path(seal_path).resolve(), Path(output).resolve()
     preparation = read_sealed(seal_path)
-    if any(unit.get("adapter") not in ("owner", "host-common", "probe", "controls")
+    adapters = ("owner", "host-common", "probe", "controls", "stream", "seek")
+    if any(unit.get("adapter") not in adapters
            for unit in preparation["units"]):
         raise ValueError("result adapter not admitted; no process started")
     for unit in preparation["units"]:
@@ -100,8 +147,10 @@ def run(seal_path, output):
             raise ValueError("runtime monitoring policy must be frozen before execution")
         if unit["workload"] == "p8" or unit["comparison"] == "P8-single-sided":
             raise ValueError("P8 cannot use the timing group runner")
-        if (unit["workload"] != "steady" or
+        if ((unit["workload"] not in ("steady", "seek")) or
                 (unit["adapter"] == "controls" and unit.get("gate") != "p5-controls") or
+                (unit["adapter"] == "stream" and unit.get("gate") != prepare_stream.GATE) or
+                (unit["adapter"] == "seek" and unit.get("gate") not in SEEK_GATES) or
                 (unit["adapter"] == "host-common" and unit.get("gate") != "p0-host-common") or
                 (unit["adapter"] == "owner" and
                  unit.get("gate") not in ("p0-legacy", "p0-rpa")) or
@@ -111,6 +160,8 @@ def run(seal_path, output):
             raise ValueError("instrumented runs require their dedicated adapter")
         if unit["adapter"] == "probe" and unit.get("comparison") != "B-only":
             raise ValueError("presentation-matrix probes are a B-only structural/timing group")
+        if unit["adapter"] == "stream":
+            prepare_stream.validate_registration(unit)
         for side in (("A", "B") if unit["comparison"] == "A/B" else ("B",)):
             launch = unit["launch"][side]
             key = unit["baseline_binary"] if side == "A" else unit["candidate_binary"]
@@ -161,10 +212,7 @@ def run(seal_path, output):
                     directory = output / unit["id"] / f"window-{window + 1}" / f"pair-{pair + 1}-{side}"
                     directory.mkdir(parents=True, exist_ok=False)
                     write_once(directory / "environment-before.json", before_environment)
-                    env = os.environ.copy()
-                    for key in list(env):
-                        if key.startswith(("CUEXIS_PD_", "CUEXIS_PD5_", "CUEXIS_REDESIGN_")):
-                            del env[key]
+                    env = process_environment()
                     env.update(launch["environment"])
                     for phase, command in (("warmup", launch["warmup_command"]),
                                            ("sample", launch["command"])):
@@ -199,21 +247,8 @@ def run(seal_path, output):
                                                     launch["affinity"], native_settings)
                     parsed = parse_result(unit, log.read_text(encoding="utf-8", errors="strict"), 0)
                     if unit["id"] in semantic_references:
-                        if unit["adapter"] == "controls":
-                            # The control unit has no presentation-matrix identity to compare; its
-                            # workload semantics are the declared mode, cycle count, rate and the
-                            # per-control counts, checked against every process below.
-                            reference = semantic_references[unit["id"]]["identity"]
-                            current = parsed["parsed"]["identity"]
-                            for key in CONTROLS_IDENTITY:
-                                if reference.get(key) != current.get(key):
-                                    raise ValueError(
-                                        "control workload identity differs from the registration: "
-                                        + key)
-                        else:
-                            for metric in unit["required_metrics"]:
-                                measurement.require_comparable(semantic_references[unit["id"]],
-                                                               parsed["parsed"], metric)
+                        require_same_workload(unit, semantic_references[unit["id"]],
+                                              parsed["parsed"])
                     else:
                         semantic_references[unit["id"]] = parsed["parsed"]
                     data[unit["id"]][window][pair][side] = parsed["medians"]

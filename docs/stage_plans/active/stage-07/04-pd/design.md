@@ -746,7 +746,7 @@ PD-5 只有在 PD-0–4 相应证据齐备、没有已知生命周期/正确性�
 | 本轮 S4 多 Renderer | §6.3 首版单端、CPU 多消费者；列明未来协议改动 | PD-4：第二独立 renderer 明确拒绝；截图不改设备绑定；不宣称多窗口已交付 |
 | 复审 S5 注册执行许可 | §6.3.1、§6.4 的 ConsumerId、激活/撤销与执行前核对 | PD-4：普通旧帧、旧激活/确认、撤销先到、同端再注册、Close 和 GPU 仍在途；旧副本拒绝不伪造 NotSubmitted |
 | 自查 S6 响应与请求历史 | §6.1 的 Ready/take、取消/过期顺序和只含元数据的去重记录 | PD-4：最低双载荷连续换帧、take/取消/过期竞争、重复请求及未领取响应；去重记录不保活旧 Snapshot |
-| 跨阶段 X1 能力与发行 | §12.1、§12.7 | PD-2 绑定支持表；7B+/Stage 8 接收实际合同 revision 与迁移证据 |
+| 跨阶段 X1 能力与发行 | §12.1、§12.7 | PD-2 绑定支持表；Stage 7.5/Stage 8 接收实际合同 revision 与迁移证据 |
 | 跨阶段 X2 表现域 | §12.2 | PD-3-b 覆盖全部既有字段；后续能力各自提供 typed 读取、完整性、Digest 和预算证据 |
 | 跨阶段 X3 Studio | §12.3 | PD 不引入作者事务；Stage 10 验证编辑版本、预览失败和拖动时间取消 |
 | 跨阶段 X4 设备与内存 | §12.4 | PD-4 验证保留资格撤销和真实释放；Stage 12 补平台与设备证据 |
@@ -780,7 +780,7 @@ PD-1/2 可以在后续获得实施授权后消费本附件；PD-3/4 同样须先
 
 ## 12. 与后续阶段的兼容与设计约束
 
-本节补齐对 [7B+](../06-b/plan.md)、[Stage 8](../../../future/stage-08/plan.md) 至
+本节补齐对 [Stage 7.5](../../stage-07-5/plan.md)、[Stage 8](../../../future/stage-08/plan.md) 至
 [Stage 14](../../../future/stage-14/plan.md) 的依赖核对；选型理由见
 [跨阶段设计记录](../../../../stage_reports/stages/stage-07/04-pd/design/2026-10-16-pd-cross-stage-design-review.md)。
 这里区分 PD 当前交付义务与未来能力的接入条件，不把未来算法、公共错误名或任务类型写成现有接口。
@@ -798,7 +798,7 @@ prepare 使用所属能力合同的 ID/revision、合法 phase/outcome、绑定 
 projection 提交、保留旧 cursor/状态并报告合同错误；不能跳过后仍声称整个前缀已经消费成功。
 capability 不带表现绑定且合同明确允许无表现时，可以不生成视觉效果，不伪装成不支持判定。
 
-7B+ 每份准入包增加“判定能力是否改变发布记录、FactBinding、聚合、Snapshot/Replay、表现
+Stage 7.5 每份准入包增加“判定能力是否改变发布记录、FactBinding、聚合、Snapshot/Replay、表现
 预算”的影响表。新增判定能力由 Judgement 实现，绑定适配由 Playback 实现；不让 Renderer
 认识新的判定类型。Stage 8 对 Graph/Packed 两种入口恢复同一绑定支持表与来源 identity，
 并验证未知能力拒绝、旧绑定 golden 和 presentation-only effects 不进入判定/Replay identity。
@@ -958,7 +958,7 @@ Seek/Reload 已替换作用域后旧帧不能跨作用域重绑；此时内容�
 
 | 反例 | 必须得到的结果 | 首次提供实施证据的责任 |
 | --- | --- | --- |
-| 新 capability 产生 adapter 不懂的必需 phase | prepare 拒绝；运行不变量破坏则本次不提交，不静默跳过 cursor | PD-2 / 7B+ |
+| 新 capability 产生 adapter 不懂的必需 phase | prepare 拒绝；运行不变量破坏则本次不提交，不静默跳过 cursor | PD-2 / Stage 7.5 |
 | Submesh 数增长但仍用旧单帧字节上界 | prepare/准入预算更新，否则拒绝；不能构帧后越额补账 | Stage 9 |
 | 相机已到目标 T2、粒子候选仍在 T1 | 不发布 T2 完整修订，不混合跨目标数据 | Stage 13 |
 | 拖动 A 的慢编译在 B 已安装后返回 | A 的文档/请求身份失效，丢弃候选，B 保持活动 | Stage 10 |
@@ -981,7 +981,7 @@ PD 退出交接包必须列出实际采用的合同 revision、SDK/安装消费�
 
 | 接收阶段 | 可复用的边界 | 必须增加的工作 / 依赖处置 |
 | --- | --- | --- |
-| 7B+ / Stage 8 | 唯一 Fact 发布源、ProjectionAdapter、共同 Graph/Packed 路径 | 绑定支持表及能力 revision；若所用基线含 PD，须纳入 PD 合同/版本/预算重验，不复用旧 F4 作为新实现证据 |
+| Stage 7.5 / Stage 8 | 唯一 Fact 发布源、ProjectionAdapter、共同 Graph/Packed 路径 | 绑定支持表及能力 revision；若所用基线含 PD，须纳入 PD 合同/版本/预算重验，不复用旧 F4 作为新实现证据 |
 | Stage 9 / 11 | 单一 evaluator、typed read、Snapshot 物化协调入口 | 环境/模型/形变对应域；正式 Snapshot/Digest/capability 与资源闭包。增加类型和调用点，不建通用插件框架 |
 | Stage 10 | Playback prepare/控制/帧协议 | 作者、软件预览与画面来源分开；按未生效/已生效/未知阶段处理失败与取消；多视口按需求另行选择并重测内存/控制成本 |
 | Stage 12 | 数据来源与设备许可分离、独立额度/释放 | Android 压力与后台策略、Context 丢失、后端恢复及设备实测；更换后端不改逻辑 identity |
@@ -990,7 +990,7 @@ PD 退出交接包必须列出实际采用的合同 revision、SDK/安装消费�
 
 RPA-F4 与 PD 不建立互相等待的环：若 PD 在 F4 之前进入最终基线，F4 消费该基线重测并交接；
 若 F4 已接受后再集成 PD，则保留旧报告并补新 SHA 的受影响矩阵/预算和 owner 接受记录。
-7B+ 对受影响接口的产品集成、Stage 8 对该基线的正式发行，必须消费完整补充交接，不能以
+Stage 7.5 对受影响接口的产品集成、Stage 8 对该基线的正式发行，必须消费完整补充交接，不能以
 “内部优化”豁免；研究和未受影响的设计准备不新增全局串行依赖。PD 不以 Stage 8–14 实现为
 退出条件，后续能力也不得反过来要求 PD 预先实现它们。
 

@@ -9,7 +9,7 @@
 ```text
 Stage 8 Chart v5 / CXT v2 / Packed Chart production baseline
 Portable Presentation v1 and Material/Shader v1
-Stage 7A core contract and selected 7B+ capability only when a presentation batch needs it
+Stage 7A core contract and selected Stage 7.5 capability only when a presentation batch needs it
 ```
 
 本阶段吸收原 `chart-format-update-for-v6` 延期计划，并把原 Stage 9 的环境/模型目标收敛为

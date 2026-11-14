@@ -81,7 +81,35 @@ TEST_CASE("PD5 full content Snapshot Seek Replay boundary", "[.][pd][pd5][capaci
         const memory::TagScope tag{memory::ownerProbe, memory::domainDecode};
         return trace.take(GameplayContent::fromPacked(packed, fixture->config));
     });
+    memory::checkpoint("after-content-prepare");
+    pd5_capacity::memoryPhase("before-device");
+#if defined(CUEXIS_PD5_MATRIX_DEVICE)
+    auto sdl = trace.take(platform_sdl::SdlRuntime::create());
+    render_opengl::OpenGlConfig gl;
+    gl.vsync = true;
+    auto configuration = trace.take(render_opengl::configureOpenGlContext(sdl, gl));
+    platform_sdl::WindowConfig wc;
+    wc.width = 1280;
+    wc.height = 720;
+    wc.title = "Cuexis PD5 device capacity";
+    auto window = trace.take(platform_sdl::SdlWindow::create(sdl, wc));
+    if (test_support::environmentVariable("CUEXIS_PD5_SMOKE") == "1")
+        REQUIRE(SDL_HideWindow(static_cast<SDL_Window*>(window.lease().nativeHandle())));
+    auto backend =
+        trace.take(render_opengl::OpenGlBackend::create(window, std::move(configuration)));
+    std::cout << "PD5_CAPACITY_DEVICE {\"vendor\":";
+    pd5_capacity::jsonString(std::cout, backend.info().vendor);
+    std::cout << ",\"renderer\":";
+    pd5_capacity::jsonString(std::cout, backend.info().renderer);
+    std::cout << ",\"version\":";
+    pd5_capacity::jsonString(std::cout, backend.info().version);
+    std::cout << '}' << std::endl;
+    // Capacity evidence uses the real renderer without GPU timing instrumentation.
+    Pd5GpuRenderer renderer{std::move(backend), false};
+#else
     presentation_renderer::TestPresentationRenderer renderer;
+#endif
+    pd5_capacity::memoryPhase("empty-device");
     // This profile has exactly scale objects and at most one feedback member per content row.
     // Derive its finite storage declaration from that workload, including two portable resources.
     // A reduced plumbing check must not reserve the 40k profile's membership capacity.
@@ -112,6 +140,9 @@ TEST_CASE("PD5 full content Snapshot Seek Replay boundary", "[.][pd][pd5][capaci
         const memory::TagScope tag{memory::ownerProbe, memory::domainLoad};
         trace.take(host->load(sparseSource(scale), content));
     });
+    // A fresh-process checkpoint preserves the allocator's sticky transient peaks, including
+    // allocations already released by prepare. It is not a subtraction of cumulative peaks.
+    memory::checkpoint("after-host-load-prepare");
     std::int64_t tick = 100000;
     std::uint64_t sequence{};
     auto clock = [&](const HostContext& context) -> core::Result<ClockObservation> {
@@ -220,6 +251,7 @@ TEST_CASE("PD5 full content Snapshot Seek Replay boundary", "[.][pd][pd5][capaci
               [&] { REQUIRE(trace.take(expected.sameResult(trace.take(host->queryGameplay())))); });
     trace.run("after-seek-same-result-memory",
               [&] { memory::checkpoint("after-seek-same-result"); });
+    pd5_capacity::memoryPhase("active");
     trace.run("active-memory", [&] { memory::checkpoint("active"); });
     frame = {};
     trace.run("close", [&] {
@@ -227,9 +259,12 @@ TEST_CASE("PD5 full content Snapshot Seek Replay boundary", "[.][pd][pd5][capaci
         host.reset();
     });
     trace.run("after-close-memory", [&] { memory::checkpoint("after-close"); });
+    pd5_capacity::memoryPhase("after-close");
     std::cout << "PD5_CAPACITY {\"schema\":\"pd5.capacity.v1\",\"reuse\":\"" << reuse
               << "\",\"entities\":" << scale << ",\"requirements\":" << requirements
               << ",\"packed_bytes\":" << packed.size() << ",\"snapshot_bytes\":" << bytes.size()
+              << ",\"packed_sha256\":\"" << core::detail::sha256Hex(std::span{packed})
+              << "\",\"snapshot_sha256\":\"" << core::detail::sha256Hex(std::span{bytes}) << '"'
               << ",\"snapshot_valid\":" << (snapshot.valid() ? "true" : "false")
               << ",\"decoded_snapshot_valid\":" << (decodedSnapshot.valid() ? "true" : "false")
               << ",\"advance_executed\":"
@@ -239,8 +274,13 @@ TEST_CASE("PD5 full content Snapshot Seek Replay boundary", "[.][pd][pd5][capaci
               << ",\"global_payloads\":2,\"global_payload_bytes\":" << frameBound * 2
               << ",\"replay_equal\":true,\"seek_start_us\":" << started
               << ",\"seek_confirmed_us\":" << confirmed << ",\"seek_present_us\":" << end
-              << ",\"seek_us\":" << end - started
-              << ",\"closed\":true,\"formal_acceptance\":false}\n";
+              << ",\"seek_us\":" << end - started << ",\"closed\":true,\"gpu\":"
+#if defined(CUEXIS_PD5_MATRIX_DEVICE)
+              << "true"
+#else
+              << "false"
+#endif
+              << ",\"formal_acceptance\":false}\n";
     // Diagnostic-only release ladder. Each owner is destroyed before its checkpoint, so the
     // next line reads exactly the bytes that owner retained. This attributes the process
     // envelope to owners; it accepts no per-domain budget and is never acceptance input.
@@ -267,5 +307,6 @@ TEST_CASE("PD5 full content Snapshot Seek Replay boundary", "[.][pd][pd5][capaci
     memory::checkpoint("after-packed-release");
     fixture.reset();
     memory::checkpoint("after-fixture-release");
+    pd5_capacity::memoryPhase("after-fixture-release");
 }
 #endif

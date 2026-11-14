@@ -1,0 +1,93 @@
+{
+  "schema": "rpa.execution.player-functional.v1",
+  "kind": "music",
+  "valid": true,
+  "evidence_class": "single-process scripted Player functional evidence",
+  "formal_registration": false,
+  "acceptance": false,
+  "formal_attempts_consumed": 0,
+  "normal_timing_acceptance": false,
+  "retention_600_seconds": false,
+  "physical_input_observed": false,
+  "listening_observed": false,
+  "identity": {
+    "schema": "pd5.probe.v1",
+    "harness": "player",
+    "mode": "script",
+    "metrics_compile_enabled": false,
+    "allocator": "normal",
+    "smoke": false,
+    "gpu": true,
+    "audio": true,
+    "gameplay": false,
+    "closed": true,
+    "replay_equal": null,
+    "counts": {
+      "close": 1,
+      "frame_interval": 30960,
+      "request_to_ready": 30961
+    }
+  },
+  "player": {
+    "script_events": 1,
+    "dispatched": 1,
+    "actions": 0,
+    "captured": 0,
+    "frames": 30961,
+    "trajectory_duration_us": 130864264,
+    "active_trajectory_duration_us": 129044984,
+    "terminal_wait_us": 1819280,
+    "maximum_source_position_ms": 129032,
+    "audio_ended": true,
+    "terminal_executed": false,
+    "judgement_seen": false,
+    "score": 0,
+    "hits": 0,
+    "misses": 0,
+    "audio_reads": 31191,
+    "audio_sequence_max": 0,
+    "audio_boundary": "IAudioTransport.snapshot",
+    "underruns": 0,
+    "endpoint_id": "{0.0.0.00000000}.{0218a919-eb31-46ab-bba3-4b6beabe528c}",
+    "endpoint_method": "CoreAudio active render session matching native PID",
+    "foreground_checked": true
+  },
+  "statistics": {
+    "close": {
+      "n": 1,
+      "median_us": 860784,
+      "mean_us": 860784,
+      "p95_us": null,
+      "p99_us": null,
+      "min_us": 860784,
+      "max_us": 860784
+    },
+    "frame_interval": {
+      "n": 30960,
+      "median_us": 4161.0,
+      "mean_us": 4167.860497416021,
+      "p95_us": 4348,
+      "p99_us": 4504,
+      "min_us": 606,
+      "max_us": 54396
+    },
+    "request_to_ready": {
+      "n": 30961,
+      "median_us": 28,
+      "mean_us": 28.44397790769032,
+      "p95_us": 47,
+      "p99_us": 66,
+      "min_us": 14,
+      "max_us": 248
+    },
+    "load": {
+      "n": 1,
+      "median_us": 2869231.6,
+      "mean_us": 2869231.6,
+      "p95_us": null,
+      "p99_us": null,
+      "min_us": 2869231.6,
+      "max_us": 2869231.6
+    }
+  }
+}

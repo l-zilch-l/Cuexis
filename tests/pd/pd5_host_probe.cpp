@@ -489,9 +489,13 @@ TEST_CASE("PD5 scripted host timing probe", "[.][pd][pd5][timing-probe]") {
               << ",\"payload_peak_count\":" << storageBeforeClose.peakCount
               << ",\"payload_peak_bytes\":" << storageBeforeClose.peakBytes
               << ",\"payload_after_close\":" << storageAfterClose.liveCount
-              << ",\"journal_peak_bytes\":" << history.peakBytes
-              << ",\"audio\":false,\"closed\":true,\"replay_equal\":true,\"digest\":" << digest
-              << ",\"counts\":{";
+              << ",\"journal_peak_bytes\":" << history.peakBytes << ",\"audio\":false,\"gpu\":"
+#if defined(CUEXIS_PD5_DEVICE)
+              << "true"
+#else
+              << "false"
+#endif
+              << ",\"closed\":true,\"replay_equal\":true,\"digest\":" << digest << ",\"counts\":{";
     bool comma = false;
     for (const auto& [metric, count] : pd5Counts) {
         if (comma)
@@ -705,6 +709,7 @@ TEST_CASE("PD5 scripted seek timing probe", "[.][pd][pd5][seek-gate]") {
     }
     std::cout << "PD5_SEEK_VERIFY {\"records\":" << recordCount << ",\"seek_class\":\"" << seekClass
               << "\",\"verified\":" << verified << ",\"mismatched\":" << mismatched << "}\n";
+    pd_measure::environmentJson("seek-end");
     pd5Take(host->close());
 }
 #endif

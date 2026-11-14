@@ -5,7 +5,7 @@ Note 表现或渲染后端提升为核心玩法语义。判定域、动作、有
 可分离，以便未来接入不同输入设备与 Presentation。
 
 状态：active；跨阶段 Chart v5 总工作包；不是当前下一实施阶段。Foundation、Stage 6、
-Stage 7A、RPA、Stage 7B+和Stage 8分别按各自计划执行；正式发行门禁归 Stage 8
+Stage 7A、RPA、Stage 7.5和Stage 8分别按各自计划执行；正式发行门禁归 Stage 8
 
 更新日期：2026-10-10
 
@@ -20,7 +20,7 @@ SDK 版本遵循 [版本规范](../../../guides/VERSIONING.md)。本文“v5 发
 
 2026-10-10路线补充：诊断码审计与正式化归[独立前置N0–N3](../stage-07/02-diagnostics/plan.md)；
 [Stage 7-RPA子阶段](../stage-07/03-rpa-legacy/plan.md)承接实时架构、实体设备/同步及原S7A-9的矩阵、预算、交接和关闭。
-实施顺序为7A既有成果 → 诊断独立前置N3退出 → RPA完整退出 → [Stage 7B+](../stage-07/06-b/plan.md)实施与验收
+实施顺序为7A既有成果 → 诊断独立前置N3退出 → RPA 受限退出及明确交接 → [Stage 7.5](../stage-07-5/plan.md)实施与验收
 → Stage 8发行收敛。本跨阶段工作包不复制分册计划，也不因归属调整接受生产预算。
 
 ## 计划定位
@@ -36,7 +36,7 @@ Chart Format Foundation
   -> Stage 6
   -> Stage 7A既有成果
   -> Stage 7-RPA（含原S7A-9统一收尾）
-  -> Stage 7B+（当前计划范围完成并接受）
+  -> Stage 7.5（当前计划范围完成并接受）
   -> Stage 8
 ```
 
@@ -98,7 +98,7 @@ accepted 后，本计划可以为 v5 Core/Packed candidate path 实施必要的 
 
 ### 2.1 当前基线
 
-原计划开工时仓库事实如下，保留为迁移起点，不代表当前SDK版本。当前分支SDK API为`0.7.5`，
+原计划开工时仓库事实如下，保留为迁移起点，不代表当前SDK版本。当前分支 SDK API 为 `0.9.1`，
 状态与证据归[CURRENT_STATUS](../../../CURRENT_STATUS.md)。关闭后的后续开发基线是 Chart v5；二者不得混用。
 
 ```text
@@ -131,7 +131,7 @@ Additive opacity        已拒绝
   candidate path；Stage 6
   同时保留 Chart v4、CXT v1 和 CXC v1 的兼容回退。
 - Stage 7A 必须冻结 Chart v5 所需的 JudgementRequirement、InputEvent、JudgementResult 和
-  Replay identity；原7A剩余关闭工作归RPA。RPA完成后实施Stage 7B+，其当前计划范围
+  Replay identity；原7A剩余关闭工作归RPA。RPA完成后实施Stage 7.5，其当前计划范围
   完成并接受后才进入Stage 8；能力是否默认发行由Stage 8矩阵决定。
 - Stage 8 关闭并经 owner acceptance 后，后续新增能力以 v5 typed/portable/Packed 谱面作为基线。
   兼容窗口内 Playback 仍直接求值未迁移的 v1–v4；默认写出与正式发行入口只在 Stage 8 关闭后切换到 v5。
@@ -586,7 +586,7 @@ H06/H08 继续标记为“未来开发，现不支持”；H01-H05/H07 继续是
 
 ### V5-A：基线和作者用例
 
-- 盘点第 2.1 节历史基线与开工实际差异：格式、Runtime、默认 Writer（v3）、当前SDK（现为`0.7.5`）、Studio 预期和迁移输入。
+- 盘点第 2.1 节历史基线与开工实际差异：格式、Runtime、默认 Writer（v3）、当前 SDK（`0.9.1`，实际交付状态归 CURRENT_STATUS）、Studio 预期和迁移输入。
 - 建立高复用、低复用、动画密集、身份密集和资源闭包密集的容量 profile，至少包含
   40,000 个展开语义实体；分别记录 JSON source bytes、Packed candidate bytes、IDN0
   bytes、decoded bytes、对象/事件数量和 prepare 峰值，作为 V5-0A 的容量基线。

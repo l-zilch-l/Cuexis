@@ -1,0 +1,15 @@
+{
+  "schema": "rpa.execution.attempt-waiver.v1",
+  "granted_by": "owner",
+  "date": "2026-11-13",
+  "timezone": "Asia/Shanghai",
+  "stable_protocol_ids": ["p5-controls-release"],
+  "maximum_attempts": 5,
+  "additional_attempts_authorized": 2,
+  "attempts_consumed_at_authorization": 3,
+  "owner_instruction": "P5我再给你豁免两次。",
+  "transcribed_by": "agent",
+  "reason": "The owner authorized two additional attempts after attempts 1 and 2 stopped on tool defects and attempt 3 stopped on a foreground-window change. This authorizes attempts 4 and 5; it does not reset the ledger or alter previous outcomes.",
+  "previous_waiver": "out/evidence/r4/p5/p5-controls-attempt-waiver.json",
+  "execution_conditions": "Existing registration, verified-remedy, source/build binding, environment, claim, seal and frozen decision rules remain applicable. No attempt is claimed by recording this waiver. Stop after a conclusive complete group; the allowance does not require two runs."
+}

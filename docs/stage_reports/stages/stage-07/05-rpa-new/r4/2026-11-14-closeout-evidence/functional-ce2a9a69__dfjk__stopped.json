@@ -1,0 +1,14 @@
+{
+  "error": "Player trajectory summary differs: score",
+  "valid": false,
+  "formal_registration": false,
+  "acceptance": false,
+  "formal_attempts_consumed": 0,
+  "automatic_retry": false,
+  "exit_code": 0,
+  "log_binding": {
+    "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\functional-ce2a9a69\\dfjk\\process.log",
+    "bytes": 2667667,
+    "sha256": "905e097f3155d0e2b75f7a66f07e52c08abb3c1b941fc2d774c1623a389dd001"
+  }
+}

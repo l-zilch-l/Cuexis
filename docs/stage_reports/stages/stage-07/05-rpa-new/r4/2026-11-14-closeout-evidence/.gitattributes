@@ -1,0 +1,2 @@
+*.json -text
+index.md text eol=lf

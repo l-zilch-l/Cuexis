@@ -1,0 +1,13 @@
+{
+  "schema": "rpa.execution.claim.v1",
+  "unit": "p5-controls",
+  "source_sha": "ce2a9a6952fd4a9a4d82949544f7ef3482e204e6",
+  "comparison": "B-only",
+  "attempt": 4,
+  "stable_protocol_id": "p5-controls-release",
+  "waiver_binding": {
+    "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\p5\\p5-controls-attempt-waiver-20261113-max5.json",
+    "bytes": 988,
+    "sha256": "a6f5d9323595966ae59d754dabfd0c9b8e30101c50f9c98eac6e2b37c09d3aa3"
+  }
+}

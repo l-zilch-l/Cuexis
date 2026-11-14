@@ -1,8 +1,10 @@
 # Cuexis Stage 7-RPA R4 实施与验证方案
 
-状态：active；O1方案B已接受；P0首组完成且read_long超界，11行F1及同SHA hosted已完成；P0 host 绝对预算通过；七个探针单元三窗口完成；内存逐域归因完成，其余接受未完成
+状态：completed；owner 接受带已知缺陷及未认证范围退出，F3 生产延期，保持 testOnly；原门判定不改。
 
-更新日期：2026-11-07
+更新日期：2026-11-14
+
+关闭范围、责任与恢复条件见[受限退出与缺陷交接](../../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-14-limited-exit-and-defect-handoff.md)。以下批次与历次准备记录保留，不自动重开采样或整改。
 
 返回 [New RPA 计划索引](../README.md)。当前进度只见
 [CURRENT_STATUS](../../../../../CURRENT_STATUS.md)。本方案消费

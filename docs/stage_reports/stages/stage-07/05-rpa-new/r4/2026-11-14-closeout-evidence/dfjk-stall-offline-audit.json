@@ -1,0 +1,151 @@
+{
+  "schema": "rpa.execution.player-failed-trace-offline-audit.v1",
+  "source_sha": "ce2a9a6952fd4a9a4d82949544f7ef3482e204e6",
+  "evidence_class": "offline analysis of existing opt-in Player functional trace",
+  "new_native_invocations": 0,
+  "formal_attempts_consumed": 0,
+  "formal_acceptance": false,
+  "normal_timing_acceptance": false,
+  "player": {
+    "script_events": 39,
+    "dispatched": 39,
+    "actions": 19,
+    "captured": 38,
+    "frames": 7808,
+    "trajectory_duration_us": 35409508,
+    "active_trajectory_duration_us": 34980515,
+    "terminal_wait_us": 428993,
+    "maximum_source_position_ms": 35000,
+    "audio_ended": true,
+    "terminal_executed": true,
+    "judgement_seen": true,
+    "score": 40,
+    "hits": 19,
+    "misses": 2,
+    "audio_reads": 7848,
+    "audio_sequence_max": 12707,
+    "audio_boundary": "AudioPublication",
+    "underruns": 0,
+    "endpoint_id": "{0.0.0.00000000}.{0218a919-eb31-46ab-bba3-4b6beabe528c}",
+    "endpoint_method": "CoreAudio active render session matching native PID",
+    "foreground_checked": true
+  },
+  "replay_equal": true,
+  "expected": {
+    "score": 46,
+    "hits": 21,
+    "misses": 0,
+    "captured": 38
+  },
+  "request_samples": 7808,
+  "interval_samples": 7807,
+  "origin_us_inferred_from_exact_native_close_relation": 15848344993,
+  "ordinal_and_interval_continuity_valid": true,
+  "largest_gaps": [
+    {
+      "current_frame_ordinal": 2052,
+      "previous_present_relative_us": 8542768,
+      "current_present_relative_us": 11011616,
+      "frame_interval_us": 2468848,
+      "request_to_ready_us": 391,
+      "ready_to_present_observation_us": 2468168,
+      "script_events_due_inside_gap": [
+        [
+          10000000,
+          0,
+          7,
+          1
+        ],
+        [
+          10000000,
+          0,
+          13,
+          1
+        ],
+        [
+          10030000,
+          0,
+          7,
+          0
+        ],
+        [
+          10030000,
+          0,
+          13,
+          0
+        ],
+        [
+          11000000,
+          0,
+          9,
+          1
+        ],
+        [
+          11000000,
+          0,
+          14,
+          1
+        ]
+      ]
+    },
+    {
+      "current_frame_ordinal": 3804,
+      "previous_present_relative_us": 18296754,
+      "current_present_relative_us": 18302546,
+      "frame_interval_us": 5792,
+      "request_to_ready_us": 307,
+      "ready_to_present_observation_us": 5273,
+      "script_events_due_inside_gap": []
+    },
+    {
+      "current_frame_ordinal": 7144,
+      "previous_present_relative_us": 32213490,
+      "current_present_relative_us": 32219233,
+      "frame_interval_us": 5743,
+      "request_to_ready_us": 349,
+      "ready_to_present_observation_us": 5149,
+      "script_events_due_inside_gap": []
+    },
+    {
+      "current_frame_ordinal": 7375,
+      "previous_present_relative_us": 33175939,
+      "current_present_relative_us": 33181590,
+      "frame_interval_us": 5651,
+      "request_to_ready_us": 354,
+      "ready_to_present_observation_us": 5066,
+      "script_events_due_inside_gap": []
+    },
+    {
+      "current_frame_ordinal": 478,
+      "previous_present_relative_us": 1984199,
+      "current_present_relative_us": 1989846,
+      "frame_interval_us": 5647,
+      "request_to_ready_us": 280,
+      "ready_to_present_observation_us": 5263,
+      "script_events_due_inside_gap": []
+    }
+  ],
+  "interpretation": "The largest gap covers scripted 10-second inputs, and most of that interval is after the current request became ready and before the present observation. This is consistent with late dispatch and two misses; per-input actual dispatch timestamps are absent, so this does not prove a specific driver/GPU cause or a script timebase defect.",
+  "failed_invocation_preserved": {
+    "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\functional-ce2a9a69\\dfjk\\stopped.json",
+    "bytes": 450,
+    "sha256": "ed3f6fd8c5fdc70a6fadd297ab5707f773d1982dd747a7a793f3c1c3b2f6beb8"
+  },
+  "inputs": {
+    "process.log": {
+      "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\functional-ce2a9a69\\dfjk\\process.log",
+      "bytes": 2667667,
+      "sha256": "905e097f3155d0e2b75f7a66f07e52c08abb3c1b941fc2d774c1623a389dd001"
+    },
+    "script.txt": {
+      "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\functional-ce2a9a69\\dfjk\\script.txt",
+      "bytes": 589,
+      "sha256": "68934a941cb428c08f2e032a48fda20e30502c6ad4fc5abc92f21b0316aa0d5b"
+    },
+    "source.json": {
+      "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\functional-ce2a9a69\\dfjk\\source.json",
+      "bytes": 1874932,
+      "sha256": "eacf200f82b5676eb843247e5827f58226b5466db406c3224a5aa18abf3f3ea0"
+    }
+  }
+}

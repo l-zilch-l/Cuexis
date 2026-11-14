@@ -110,3 +110,17 @@
 - 未做 low 复用变体；未做 40K 行（会再次触发冻结字符串门）。
 - 数值与 `out/evidence/r4/memory-40k/n40000-r4096-high-3/attribution.json` 逐字节一致；
   同一内容在前一 SHA（`67e905be`）上的复跑结果相同，说明该量可重复。
+
+## 2026-11-14 字节来源勘误
+
+本节修正归属修正数字的证据引用，不撤销 2026-11-11 owner 已接受的命令／执行域归属修正及
+P8 (40000,4096) 内容口径，也不修改设计 caps。旧 high-2/high-3 的 attribution.json 字节相同，
+仍记录修正前 command.session=160,834,198 B、execution.retained=8,823 B、total=365,084,102 B；
+high-3 绑定不能直接证明正文中的修正后数字。修正后 command.session=19,762,486 B、
+execution.retained=141,080,535 B 的直接原始来源为独立同 SHA f5f91916 的 low/high-control 对，
+其 23 个声明行差值为零，总差 6,060 B 归于 unclassified fixture。详见
+[容量与 Player 有限证据](2026-11-14-capacity-and-player-bounded-evidence.md)。
+
+最早 high 的 controller 原注册 3178 B，现路径为 3280 B 且哈希不同，原注册字节未从该路径恢复；
+最早可识别失败 packet 的 exit 42 对应 misses == scale 断言，与另述 packed-string 失败分开。
+历史五份 invocation packet 及额外 high 调用次数处置保持各自身份，不因本勘误恢复额度或取得正式准入。

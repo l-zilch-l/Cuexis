@@ -2,11 +2,13 @@
 
 状态：current index
 
-更新日期：2026-11-07
+更新日期：2026-11-14
 
 性能整改工作线，设计与 R0、R1、R2 分组；停止、失败和后续报告保留在同批目录。
 
 当前状态只以 [CURRENT_STATUS](../../../../CURRENT_STATUS.md) 为准；本页只负责定位，不新增实施、测量或阶段接受结论。
+
+本轮最终裁定及后续遗留责任集中见[2026-11-14 受限退出与缺陷交接](r4/2026-11-14-limited-exit-and-defect-handoff.md)。
 
 先按下表定位批次；同批报告与附件放在同一目录。完整原始路径直接查 [证据清单](evidence-catalog.md)，无须逐篇翻阅。
 
@@ -74,6 +76,21 @@ P5 单元的登记、适配器与通过的 pilot 见[控制探针单元](r4/2026
 2026-11-12 的正式三窗九对组见[正式组结果](r4/2026-11-12-read-long-formal-group.md)；`legacy` 通过、`RPA` 首轮因重复性 inconclusive、复跑后通过，两项裁定与最终结论见[`read_long` 裁定记录](r4/2026-11-12-read-long-ruling.md)。
 同日复跑 `legacy` 的另两项计时见[P0 legacy 计时复跑](r4/2026-11-12-p0-trace-legacy.md)；P5 控制单元两次停在工具缺陷、第三次需 owner 豁免见[P5 工具缺陷停跑记录](r4/2026-11-13-p5-tooling-stops.md)。
 五类 Seek 的正式组见[五类 Seek 结果](r4/2026-11-13-seek-five-classes.md)。
+设备 adapter 与 GPU 内存单例见[设备与内存取证](r4/2026-11-13-device-adapter-and-gpu-memory.md)，
+P8 时间去相关变体见[P8 low 取证](r4/2026-11-13-p8-low.md)。
+本次自动收尾范围、P5 新额度、backend 台账及 PR 评论授权见
+[2026-11-13 收尾裁定](r4/2026-11-13-closeout-decisions.md)。
+工具实施、有限诊断与内存准入阻断见
+[2026-11-13 收尾实施复核](r4/2026-11-13-closeout-implementation.md)。
+2026-11-14 的自动收尾取证见[P5 第四次完整组](r4/2026-11-14-p5-attempt4.md)、
+[设备后端首个正式组](r4/2026-11-14-device-first-formal-group.md)及
+[容量与 Player 有限证据](r4/2026-11-14-capacity-and-player-bounded-evidence.md)。
+报告分别保留逐指标 pass／inconclusive、容量停止与语义准入缺口、P8 字节来源勘误和原 DFJK 失败；
+[R4 门账](r4/2026-11-08-r4-gate-status.md)保留冻结前快照；后续实际验证与退出裁定见上方关闭记录，当前摘要归 CURRENT_STATUS。
+独立配对结果见[阶段与 GPU observer](r4/2026-11-14-stage-and-gpu-observer.md)，
+小记录的按字节副本见[本轮证据归档](r4/2026-11-14-closeout-evidence/index.md)。
+最终候选验证的身份边界、工具修复与逐项裁定建议见
+[收尾验证与待裁定移交](r4/2026-11-14-closeout-verification-and-handoff.md)。
 批后全门汇总、已记录处置与待裁事项见[R4 门账更新](r4/2026-11-08-r4-gate-status.md)。
 后续 R4 附件和阶段结论由本入口继续导航，R3 原始证据保持。
 

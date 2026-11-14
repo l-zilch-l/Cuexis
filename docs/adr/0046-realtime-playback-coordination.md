@@ -69,9 +69,9 @@ A1减少半完成Resume的状态与重试分支，代价是这类故障后不能
 
 字段/语义的唯一落点是 [RPA补充Spec](../formats/rpa-execution-contract.md) 和
 [宿主边界](../api/realtime-host-boundary.md)；批次、测量与验收归 [RPA计划](../stage_plans/active/stage-07/03-rpa-legacy/plan.md)。
-新 execution/Fact token、Recovery rev3 和下一 SDK minor 是实施设计；当前 API 仍是 0.7.5。
+新 execution/Fact token、Recovery rev3 和下一 SDK minor 是实施设计；本 ADR 制定时 API 为 0.7.5，当前交付版本归 [CURRENT_STATUS](../CURRENT_STATUS.md)。
 不修改 Chart/CXC/CXT 内容格式，不安装内部 Kernel/Recovery，不引入脚本或第二判定路径。
 
 本决定接受架构设计，不是产品实施授权、生产参数接受、owner API/release approval 或阶段关闭。
 独立诊断 N3 基线必须核对，新增错误/载体需要增量复验；B5 负责实体设备和实时同步验收。
-最终 F1–F4 完整退出并获 owner 接受后转 Stage 7B+，其完成后进入 Stage 8。
+最终 F1–F4 的实际接受范围和遗留责任按 owner 受限退出裁定交接给独立 Stage 7.5：Gameplay Evolution；其完成并获接受后进入 Stage 8。

@@ -1,71 +1,42 @@
-# Stage 7 Implementation Plan: Gameplay Foundation and Judgement Evolution
+# Stage 7 Implementation Plan: Gameplay Foundation and Realtime Playback
 
-状态：active；Stage 7A 分批实施，Stage 7-RPA 为实时架构与设备验收子阶段，Stage 7B+ 在RPA完成后实施并验收，随后进入Stage 8；本计划不构成阶段关闭或发行记录
+状态：completed；按拆分后的既有范围受限收束，未认证范围与 testOnly 保留。
 
-更新日期：2026-10-16（补 PD 跨阶段交接）
+更新日期：2026-11-14
 
-归档来源：[旧版 PROJECT_GUIDE](../../../archive/PROJECT_GUIDE_LEGACY_2026-08-10.md)、
-[SDK transition plan 快照](../../../archive/CUEXIS_SDK_TRANSITION_PLAN_2026-08-10.md) 和
-原 Stage 11 Judgement 计划；当前候选字段与语义输入见本文列出的 Gameplay V2 研究目录，以及
-由 S7A-0 产生并接受的 V2 ADR、Spec、ABI、Schema 和 Replay 合同。
+owner 已接受 R4／RPA／PD-5 受限退出及原 7A 收尾交接，随后要求将尚未实施的 Stage 7B+ 完整独立。
+后续能力、局部重构及性能稳定归[Stage 7.5：Gameplay Evolution](../stage-07-5/plan.md)，
+Stage 8–14 编号不变。Stage 7 不再等待原 7B+ 的产品实现，也不因迁出而把那些能力记为已完成。
 
-本计划只定义阶段目标、批次、依赖、交付物和验收门禁。现有 [Gameplay Judgement Spec](../../../formats/GAMEPLAY_JUDGEMENT_SPEC.md)、
-[Gameplay Judgement ABI](../../../api/GAMEPLAY_JUDGEMENT_ABI.md) 和 [ADR 0043](../../../adr/0043-gameplay-judgement-ruleset-convergence.md)
-是 Gameplay I 的历史候选基线；V2 的字段与运行语义以 [Gameplay V2 redesign research](../../../proposals/research/gameplay-v2/README.md)
-为实施前输入，并必须在 S7A-0 中修订或 supersede 这三份合同后才能冻结。本文不把研究 spike、
-候选 ABI 或本计划本身解释为已经实施的产品能力。
-
-前置是 [Stage 6](../../completed/stage-06/plan.md) 的交接边界和已接受的剩余事项；主要内容
-输入为 Chart v5 Core/Packed candidate，Chart v4 / CXT v1 / CXC v1 作为兼容与回退输入。共同
-模型见 [音乐游戏玩法抽象模型](../../../architecture/GAMEPLAY_ABSTRACTION_MODEL.md)。
-
-Stage 7A 是 Stage 8 的硬前置，只交付最小可玩的 Input / Judgement / Score / Replay kernel。
-本路线以 Chart v5 `gameplay.version = 2` 为 Gameplay semantic 基线，并允许 CXC v1 内独立的
-Canonical Gameplay Graph Playback entry。Graph entry 与 Packed Chart entry 必须进入同一 typed
-prepare、Judgement、Ruleset、Snapshot 和 Replay 路径；不得形成第二套判定实现。
-实施顺序为Stage 7A既有成果 → RPA（含原S7A-9收尾）→ Stage 7B+ → Stage 8。
-Stage 7B+当前计划范围完成并经owner接受后，才能进入Stage 8；发行选入另由明确矩阵决定。任意运行时脚本、逐帧脚本回调、宿主字节码和通用 Script VM 始终不在 Stage 7 范围内。
-
-定位入口：[Stage 7 分阶段文档位置表](README.md)；报告、批次与原始证据从该表直接进入。
-
-## 分册与子阶段
-
-Stage 7包含以下子阶段，统一遵守本总计划的边界和交接规则：
-
-| 子阶段 | 分册 | 职责 |
-| --- | --- | --- |
-| Stage 7A | [plan-a](01-a/plan.md) | 既有内核、7/8集成与证据；原S7A-9剩余收尾已移交RPA，不再独立排期 |
-| 独立诊断前置 | [diagnostics](02-diagnostics/plan.md) | N0–N3，先于新架构原型及 A4–A6 产品实施；不作为新增项目阶段编号 |
-| Stage 7-RPA | [plan-rpa](03-rpa-legacy/plan.md) | 实时架构、实体设备/同步及原S7A-9矩阵/预算/交接统一收尾；消费独立诊断前置退出记录 |
-| Stage 7-PD | [plan-presentation-decoupling](04-pd/plan.md) / [内部设计细则](04-pd/design.md) | 单一状态源、修订读取、独立交付绑定与观察历史；事务、扩展成本及合同迁移门禁；独立于 7A 和 RPA |
-| 新 RPA 性能整改 | [remediation](05-rpa-new/plan.md) / [R1](05-rpa-new/r1/plan.md) | PD 后的性能整改实施线，R0/R1/R2 报告按批次导航；原 RPA 验收范围和接受边界继续适用 |
-| Stage 7B+ | [plan-b](06-b/plan.md) | RPA完成后实施高级能力；本分册范围验收关闭后交给Stage 8 |
-
-RPA独立管理批次与验收，归属Stage 7；不归入S7A-7/8新增任务，也不替代7B+。
-Stage 7-PD 独立管理判定到表现的架构重构；它不改变 7A 的 Gameplay 语义、不接管 RPA 的实时控制合同，也不因列入 Stage 7 就表示产品代码已实施。其候选架构比较、推荐基线、后续 owner 拆分触发条件、实施批次和复用评估见[独立计划](04-pd/plan.md)。
-PD 与后续 7B+/Stage 8–14 的设计边界、实际集成基线交接及条件性门禁见该计划 §12；
-若 F4 接受后再集成 PD，须补新 SHA 的受影响矩阵/预算及 owner 接受记录，不能沿用旧 F4
-作为新实现证据。PD 不等待后续能力实现，研究准备也不因此新增全局串行前置。
-2026-10-10规划修订：维护性优先，再比较性能与扩展性；多方案筛选和有限验证先于架构选型。
-owner同日最新要求将诊断码正式化N0–N3剥离为[独立前置工作包](02-diagnostics/plan.md)，
-不新增编号阶段，不计RPA内部进度；其N3必须在新架构原型和A4–A6产品实施前退出。
-RPA纸面规划、既有行为只读基线盘点与测量设计可并行；架构顺序归[plan-rpa](03-rpa-legacy/plan.md)，
-诊断合同收敛/迁移/验证归独立前置计划，各自维护唯一批次入口。
-owner同日将剩余S7A-9.1–9.4全部划入RPA-F1–F4；原7A关闭包在RPA退出前一并接受，
-Stage8消费统一交接，不再安排RPA完成后返回7A收尾。迁移不等于已完成最终验收。
-本轮只调整规划，产品实施授权与各子阶段退出证据仍分别管理。
+本阶段保留 Input／Judgement／Score／Replay 内核、独立诊断前置、实时宿主、PD 和 RPA 整改的历史范围及受限结果。
+受限关闭范围与未认证责任见[已接受交接](../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-14-limited-exit-and-defect-handoff.md)。
+该记录在拆分前写明整体 Stage 7 未关闭，本次范围迁移补充其后续状态；原记录和封存包不回写。
+当前状态归[CURRENT_STATUS](../../../CURRENT_STATUS.md)，拆分前全文见
+[归档快照](../../../archive/stage-07-planning/2026-11-14-stage-07-before-gameplay-evolution-split.md)。
+为避免已封存引用大规模迁移，本阶段保留既有 `active/stage-07` 路径，不再在此启动新实施批次。
 
 ## 阶段目标
 
-Stage 7A 的目标是冻结并交付一个可由 Chart v5 candidate、CXC Graph/Packed Playback entry、Player、
-Headless consumer、Reference Host 和后续 Studio 共同消费的最小判定闭环：输入规范化、要求准备、
-Tap/Hold/Release/tail 求值、单一 capacity=1 exclusive resource、Ruleset 折叠、Score/Combo/Statistics、
-Replay identity、无损 Snapshot/Seek，以及基于 FactBinding 的 early/exact/late/Miss 表现桥接。Stage 7A 关闭
-必须同时收口 Stage 6 登记的四项前置，并把可核验的合同、golden、拒绝路径和预算证据交给 Stage 8。
+形成可嵌入 SDK 的最小玩法闭环、四层语义边界、单一 typed prepare／Judgement／Ruleset／Snapshot／Replay 路径，
+以及 realtime host 和表现观察边界。Chart v5／Canonical Graph／Packed 仍是显式 candidate；
+Chart v4／CXT v1／CXC v1 兼容路径保持，正式发行收敛归 Stage 8。
+当前受限退出不等于全部性能、内存、GPU、设备仪器或生产参数已通过。
 
-Stage 7B+ 的目标是以独立 capability 扩展连续输入、方向动作、多接触点、复杂持续约束、校准和
-Ruleset 演进。每项能力都有自己的版本、identity、Replay、预算、稳定拒绝和发行选入决策，不能
-通过修改 7A 已冻结字段含义来获得隐式支持。
+## 分册与子阶段
+
+| Stage 7 范围 | 入口 | 交接 |
+| --- | --- | --- |
+| Stage 7A | [内核与集成](01-a/plan.md) | 原 S7A-9 随 RPA 受限交接接受 |
+| 独立诊断前置 | [N0–N3](02-diagnostics/plan.md) | 正式码及兼容合同，N3 已退出 |
+| Legacy RPA | [原范围兼容入口](03-rpa-legacy/plan.md) | realtime host／设备及原 S7A-9 历史范围 |
+| Stage 7-PD | [PD](04-pd/plan.md) | 带限制退出，PD-5“未通过但定案”保留 |
+| New RPA | [R0–R4](05-rpa-new/plan.md) | 已知缺陷及未认证范围交给独立 Stage 7.5 |
+
+原 Stage 7B+ 已从子阶段集合移出；S7B/S7C 是 Stage 7.5 的历史批次 ID。
+本计划只保留既有边界和交接，字段／语义的权威仍是 ADR／Spec／ABI，带日期报告保存原始结果。
+归档来源：[Stage 6 交接](../../completed/stage-06/plan.md)、
+[旧 PROJECT_GUIDE](../../../archive/PROJECT_GUIDE_LEGACY_2026-08-10.md)和
+[SDK transition plan](../../../archive/CUEXIS_SDK_TRANSITION_PLAN_2026-08-10.md)。
 
 ## 1. 产品边界和不变量
 
@@ -140,7 +111,7 @@ Pattern 原语、仲裁顺序或拒绝策略，必须先更新 ADR/Spec，再重
 
 ### 1.2 Stage 6 交接前置
 
-下列SDK 0.7.1为Stage 6交接和S7A-8.4历史增量基线；当前分支SDK已为0.7.5，
+下列SDK 0.7.1为Stage 6交接和S7A-8.4历史增量基线；当前分支 SDK 为 0.9.1，
 诊断独立前置及当前交付状态见[CURRENT_STATUS](../../../CURRENT_STATUS.md)，不沿用旧审批。
 
 Stage 6 关闭后由 Stage 7A 承接四项未完成内容。它们是关闭前置，不是“以后再补”的 backlog：
@@ -155,88 +126,24 @@ Stage 6 关闭后由 Stage 7A 承接四项未完成内容。它们是关闭前�
 四项中任一项既未实现也没有被 ADR 或所属 Spec 明示接受的例外，Stage 7A 不得关闭。Stage 6
 的关闭事实不被改写；只把剩余证据归入当前阶段。
 
-2026-10-06 逐项源码与门禁核对及实施建议见
-[四项交接复核](../../../stage_reports/stages/stage-07/01-a/stage-06-handover/2026-10-07-stage6-handover-implementation.md)。
-该报告更新旧台账事实，记录 S7A-8.1–8.4 的建议顺序与退出证据；不表示已实施 S7A-7/8/9、
-接受生产预算或批准新的版本/门禁合同。
 
-**2026-10-07 owner 实施授权补充：** 四项在现有 `stage-7` 实施并提交 PR #32，审批由项目
-所有者本人完成。S7A-8.1 使用 ON/OFF binary flavor、显式 consumer 许可和安装前缀 stamp；
-S7A-8.2 沿用 `candidate.static-tap-lanes4-v1` 的 typed Foundation assembler，实际 CLI 输出
-Packed、project/CXC entry metadata 和原子嵌入的 closure report，发布前运行真实 Playback prepare。
-此 versioned Foundation profile 不取代 Gameplay v2 authored/derived closure，不接受旧 Gameplay
-语义进入当前 Judgement；Judgement/Playback bridge 仍属 S7A-7，本批不将其声称为已完成。
-S7A-8.3 对安装后的宿主运行既有七动词及显式 candidate entry。S7A-8.4 准备兼容的 SDK
-`0.7.1`，通过可信 base owner registry 与精确 API 审批记录验证；同作者 PR 的本人审批路径
-按 [VERSIONING](../../../guides/VERSIONING.md#s7a-84-owner-approval-record) 与 ADR 0042 补充实施。
-代码交付、hosted 证据、保护启用和 owner 审批分别记录；缺可信 bootstrap 不自动放行或关闭
-S7A-8.4，不扩张至 S7A-7 产品集成、S7A-9 预算/阶段关闭。
+详细实施授权、旧版本与历次工具门保留在[拆分前快照](../../../archive/stage-07-planning/2026-11-14-stage-07-before-gameplay-evolution-split.md#12-stage-6-交接前置)
+及各批次报告；不据历史准备文字重新启动实施。
 
 ## 2. 总体依赖和发布路线
 
 ```text
-S7A-0 基线和合同准入
-  -> S7A-1 类型/模块边界
-  -> S7A-2 输入规范化和映射
-  -> S7A-3 Requirement prepare / typed assembler
-  -> S7A-4 Kernel lifecycle、Tap/Hold/Release、仲裁
-  -> S7A-5 Fold、Score、Combo、Statistics
-  -> S7A-6 Identity、Replay、Snapshot、Seek
-  -> S7A-7 Playback/Chart candidate/Player/Headless 集成
-  -> S7A-8 四项 Stage 6 交接收口
-  -> Stage 7-RPA（含原S7A-9的F1-F4收尾）
-
-RPA-F4统一交接与owner接受
-  -> S7B-0 capability registry / extension harness
-RPA-F4已接受的原7A typed handoff + S7B-0
-      +-> S7B-1 连续输入和 Slide/handoff
-      +-> S7B-2 Flick / direction / velocity
-      +-> S7B-3 多接触点、和弦和资源占用
-      +-> S7B-4 复杂 Hold、尾判、Roll/Count/Spinner 类约束
-      +-> S7C-1 calibration / device policy
-      +-> S7C-2 ruleset package / module / replay evolution
-
-S7A-7/8既有受限基线 -> 独立诊断码正式化前置N0-N3
-独立N3退出 + A1首用合同/A2测量设计/A3纸面实验准入 -> RPA新架构原型
-  -> A3最终选型裁定 -> 架构实施A4-A6 -> F3预算裁定
-  -> A7/F1/F2最终设备与内核/消费者矩阵 -> F4统一交接与关闭
-
-Stage 7-RPA完整交接（含7A既有成果与原9收尾）
-  -> Stage 7B+（S7B-0–4、S7C-1/2逐项验收及阶段接受）
-  -> Stage 8（按发行矩阵明确选入能力）
+Stage 7A 内核／集成
+  -> 独立诊断前置 N0–N3
+  -> RPA／PD／RPA 整改及原 S7A-9 统一收尾
+  -> Stage 7 受限关闭交接
+  -> Stage 7.5：Gameplay Evolution（独立阶段）
+  -> Stage 8：Chart v5 正式发行收敛
 ```
 
-允许并行：S7A-2 的设备适配研究、S7A-3 的 typed prepare 表征、S7B-0 的 capability 目录可以
-在合同准入后并行准备。涉及同一公共头、CMake target、安装导出、Replay 版本或 identity 算法的
-集成必须串行；下游 golden 通过不能替代上游合同、失败路径和架构检查。
-
-Stage 8 的发行矩阵必须在其启动前写出：对每项 7B+ capability 标注 `included`、`candidate`
-或 `rejected/deferred`，并附 capability、Packed/CXC 表达、Replay/identity、预算和拒绝测试
-入口。未写入矩阵的 7B+ 能力不得被 v5 默认 Writer 或 Player 默认入口隐式启用。
-
-S7B-0及后续7B+产品实施均以RPA-F4退出和owner接受为前置，消费其typed handoff、
-拒绝矩阵、预算与实时边界。可以提前准备研究proposal与reference model；研究不构成实施
-或阶段退出证据，不改变RPA → 7B+ → Stage 8的顺序。
-
-### 2.1 7B+ 能力依赖细化
-
-RPA-F4是所有7B+产品实施的共同前置；其余依赖按capability子项计算。
-无关研究可以提前准备，能力间仅在消费相应输入/运行时状态时继承额外依赖。
-
-| Capability 线 | 最低依赖 | 边界说明 |
-| --- | --- | --- |
-| S7B-0 | RPA-F4退出；S7A-1/2/3 typed contract 准入 | 可先建静态 registry、拒绝表和测试 harness；不得加运行时入口或改动 V2 合同 |
-| S7B-1 region/continuous sampling | RPA-F4 + S7B-0 | 连续事件规范化、重采样和 Snapshot 集成须等 7A handoff；区域谓词 reference model 可先独立研究 |
-| S7B-1 handoff/Slider continuity | RPA-F4 + S7B-0；连续 Slider 另依赖 continuous sampling | `resource.handoff.v1`、Gap 状态与恢复仲裁单独接受；handoff 不自动要求 Slider 能力 |
-| S7B-2 Flick | RPA-F4 + S7B-0；若使用连续 motion 样本则依赖 S7B-1 continuous sampling | 基于离散 press/release 的 Flick 子集可单独提案；不能假设连续轨迹已支持 |
-| S7B-3 multi-contact | RPA-F4 + S7B-0 + 明确的 contact identity/input projection | 静态多输入聚合与多接触轨迹拆分；轨迹子项另依赖 S7B-1，不能因支持键盘多键就暗示支持多触点 |
-| S7B-4 action families | RPA-F4 + S7B-0；仅依其实际消费的 S7B-1/2/3 子 capability | 每个动作族独立依赖和 capability；7A Release/tail 无需重新实现或等待本批次 |
-| S7C-1 calibration/device policy | RPA-F4 + S7B-0 | 在Stage 7B+内完成、Stage 8前交付；只能通过明确 profile transaction 扩展，不能改写已冻结的默认 InputMapping |
-| S7C-2 Ruleset package | RPA-F4 + S7B-0 + accepted Ruleset Interface | 只扩展静态注册模块/常量包；不能把包支持解释为允许脚本/字节码或动态插件 |
-
-Stage 7B+当前计划范围完成并接受是Stage 8启动前置；发行矩阵另对实际选中capability
-核验依赖闭包及发行证据。比如只选入一个不依赖连续
-输入的 Flick 子能力，不因此隐式选入 Slider、handoff 或多接触点。
+本阶段只交接已实际接受的 typed contract、实现及限制。
+原高级能力依赖表、capability 准入、W 类缺口、S7B/S7C 验收和局部重构属于
+[Stage 7.5 独立计划](../stage-07-5/plan.md)，不再作为本阶段关闭前置。
 
 ## 3. Stage 7A 交付批次
 
@@ -327,8 +234,8 @@ S7A 的详细目标、执行卡、实施决策和关闭标准拆至[Stage 7A 分
 [Stage 7-RPA](03-rpa-legacy/plan.md)。S7A-7/8保留原有集成收口，
 不再计入RT78/DN78新增工作。实体设备/实时同步实施和最终验收整体归RPA，旧失败随交接保留；
 2026-10-10后续将原S7A-9整体移入RPA-F1–F4，不再保留独立7A收尾队列。
-后续顺序为RPA完整退出 → Stage7B+实施与验收 → Stage8发行收敛；
-范围迁移不构成Stage7A关闭或Stage8发行许可。原plan-a §3.4.18/19保留兼容索引。
+上述为当时实施范围迁移记录。现行后续顺序为 Stage 7 受限关闭交接 → 独立 Stage 7.5 → Stage 8；
+原 plan-a §3.4.18/19 保留兼容索引，历史迁移不单独构成发行许可。
 
 #### 3.4.1 已定边界与仍然待办的区分
 
@@ -364,69 +271,22 @@ S7A 的详细目标、执行卡、实施决策和关闭标准拆至[Stage 7A 分
 
 ## 5. Stage 7B+ 能力线的统一规则
 
-S7B/S7C 的完整准入包、实现退出门禁和 W 类缺口规则见[Stage 7B+ 分册](06-b/plan.md)。下列标题保留为导航锚点。
-
-
-
-
-详见 [plan-b.md：5. Stage 7B+ 能力线的统一规则](06-b/plan.md).
-
-### 5.1 新能力准入包
-
-详见 [plan-b.md：5.1 新能力准入包](06-b/plan.md).
-
-### 5.2 统一实现和退出门禁
-
-详见 [plan-b.md：5.2 统一实现和退出门禁](06-b/plan.md).
-
-### 5.3 W 类缺口记录（W-class gap record）
-
-详见 [plan-b.md：5.3 W 类缺口记录（W-class gap record）](06-b/plan.md).
+本节已迁出至[Stage 7.5 规则](../stage-07-5/plan.md#5-stage-75-能力线的统一规则)。
+旧标题仅供历史定位；新工作不在此维护。
 
 ## 6. Stage 7B+ 分批规划
 
-详见 [plan-b.md：6. Stage 7B+ 分批规划](06-b/plan.md).
-
-### S7B-0：Capability registry、版本和扩展测试骨架
-
-详见 [plan-b.md：S7B-0：Capability registry、版本和扩展测试骨架](06-b/plan.md).
-
-### S7B-1：连续输入、区域采样、Slide 和 handoff continuity（新增 capability）
-
-详见 [plan-b.md：S7B-1：连续输入、区域采样、Slide 和 handoff continuity（新增 capability）](06-b/plan.md).
-
-### S7B-2：Flick、方向、速度和位移约束
-
-详见 [plan-b.md：S7B-2：Flick、方向、速度和位移约束](06-b/plan.md).
-
-### S7B-3：多接触点、和弦、资源占用和跨 requirement 聚合（新增 capability）
-
-详见 [plan-b.md：S7B-3：多接触点、和弦、资源占用和跨 requirement 聚合（新增 capability）](06-b/plan.md).
-
-### S7B-4：高级尾判、Lift、计数和连续动作族（新增 capability）
-
-详见 [plan-b.md：S7B-4：高级尾判、Lift、计数和连续动作族（新增 capability）](06-b/plan.md).
-
-### S7C-1：校准、设备延迟和 Judgement Policy
-
-详见 [plan-b.md：S7C-1：校准、设备延迟和 Judgement Policy](06-b/plan.md).
-
-### S7C-2：Ruleset package、模块扩展和 Replay 演进
-
-详见 [plan-b.md：S7C-2：Ruleset package、模块扩展和 Replay 演进](06-b/plan.md).
-
-### 6.1 Stage 7B+ 小目标核验台账
-
-详见 [plan-b.md：6.1 Stage 7B+ 小目标核验台账](06-b/plan.md).
+批次及原 S7B/S7C ID 见[Stage 7.5 批次](../stage-07-5/plan.md#6-stage-75-分批规划)。
 
 ## 7. 7B+ 与 Stage 8 的选入规则
 
-详见 [plan-b.md：7. 7B+ 与 Stage 8 的选入规则](06-b/plan.md).
-
+独立阶段的退出与发行关系见[Stage 7.5 交接](../stage-07-5/plan.md#9-ge-f独立验收与-stage-8-交接)。
 
 ## 验收标准
 
-Stage 7整体验收包含RPA对既有7A及原S7A-9的统一收尾，以及随后7B+当前计划范围的逐项退出与owner接受。S7A 详细关闭标准见[plan-a §4](01-a/plan.md#4-stage-7a-关闭标准)；7B+准入与 Stage 8 选入标准见[plan-b §7](06-b/plan.md#7-7b-与-stage-8-的选入规则)。研究 spike、单平台结果、只测正例的 golden 或历史报告均不能替代当前实现证据。
+本阶段按拆分后的既有范围收束；R4／RPA、PD-5 及原 7A 收尾包已有 owner 受限接受，
+N3 退出沿既有记录。全部未认证项、原失败、额度和 testOnly 不变。
+Stage 7.5 的未实施能力不回写为 Stage 7 已交付，后续生产接受仍须对应证据与 owner 裁定。
 
 ## 8. 统一验收矩阵和证据要求
 
@@ -464,39 +324,18 @@ Stage 7整体验收包含RPA对既有7A及原S7A-9的统一收尾，以及随后
 
 ## 10. 交接物和后续阶段关系
 
-### 交给 Stage 8
+交给[Stage 7.5](../stage-07-5/plan.md)的内容包括：7A typed Input／Requirement／Judgement／Score／Replay、
+Tap/Hold/Release／prepared-grace、InputMapping 与 identity、已有 headless／Snapshot／Seek／消费者证据、
+v4 fallback／v5 candidate 隔离，以及受限退出表中的失败、复制／保活缺陷、未认证范围、责任和恢复条件。
+Stage 7.5 自行维护高级 capability、拒绝表、预算、GE-R 及 GE-F，不再回挂 Stage 7 整改。
 
-```text
-Stage 7A typed Input / Requirement / Judgement / Score / Replay contract
-Tap/Hold/Release and prepared-grace semantics
-InputMapping and four-part judgement identity
-Headless golden, replay fixtures, snapshot/seek guarantees
-v4 fallback and v5 candidate consumption map
-candidate/production isolation and offline assembler evidence
-capability/rejection table for all 7B+ items
-selected 7B+ release matrix, if any
-measured gameplay budgets and unresolved W-class gaps (§5.3)
-```
-
-Stage 8 不得重新发明输入、判定、Replay 或 Score 模型；只把已选 capability 编入 Chart v5/CXT
-v2/Packed/CXC 正式发行，并保留未选能力的拒绝路径。
-
-### 交给 Stage 9/10/12/14
-
-- Stage 9 只消费稳定的 Judgement/Presentation 观察面；模型、环境和几何表现不得改变判定事实。
-- Stage 10 只消费已冻结的 typed authoring/prepare/capability 合同；Studio 不能成为新的判定实现。
-- Stage 12 消费真实内容的 gameplay、Replay、Seek 和设备 profile 测量，不修改单一设备的判定语义。
-- Stage 14 再决定稳定 C ABI；Stage 7 的 C++ typed preview 不等于稳定 ABI。
+Stage 8 消费 Stage 7 的既有语义及 Stage 7.5 的实际接受结果；不得重新发明判定或隐式启用未选能力。
+Stage 9 只消费稳定 Judgement／Presentation 观察面；Stage 10 不另造判定实现；Stage 12 消费真实 profile，
+不改判定语义；Stage 14 再决定稳定 C ABI，当前 C++ preview 不等于稳定 ABI。
 
 ## 11. 明确不包含
 
-Stage 7A 不包含完整 Slide、复杂 Flick、多指、旋转、3D 方向斩、连续音高、Studio 编辑器、
-运行时脚本、通用状态机、宿主回调、稳定 C ABI 或 Chart v5 默认 Writer。
-
-Stage 7B+ 仍不包含任意 Script VM、逐帧脚本 callback、宿主字节码、无限 Pattern、运行时随机、
-IO、动态对象/Requirement 生成或未版本化的插件执行权。超出当前 2D/离散和声明式模型的能力必须
-另立 ADR、威胁模型、预算、ABI 和阶段计划。
-
-压测中的 H 类支持政策在 Stage 7 继承并锁定：H01-H05、H07 是能力边界，不会再开发，不受支持；
-H06（三维物理斩击）和 H08（任意自由体感传感器融合）是未来开发，现不支持。它们不能通过
-7B+ 的 capability registry 预留隐式入口。
+本阶段不实现完整 Slide／复杂 Flick／多触点／高级校准／Ruleset 包，也不承担后续重构与新性能认证；
+这些已归独立 Stage 7.5。Studio、Chart v5 默认 Writer、稳定 C ABI、任意脚本、逐帧 callback、
+宿主字节码、动态 Requirement、IO／随机和未版本化插件执行权不因阶段拆分获得授权。
+H 类支持政策与既有稳定拒绝保持，不能借新阶段 registry 预留隐式执行入口。

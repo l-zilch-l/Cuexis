@@ -198,6 +198,7 @@ if(BUILD_TESTING AND CUEXIS_BUILD_TESTS AND CUEXIS_ENABLE_CHART_V5_CANDIDATE
         "${PROJECT_SOURCE_DIR}/engine/render_opengl/internal")
     target_compile_definitions(cuexis_execution_device_probe PRIVATE
         CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+        CUEXIS_PD5_CAPACITY_SOURCE_SHA="${CUEXIS_IMPLEMENTATION_SHA}"
     )
     target_link_libraries(cuexis_execution_device_probe PRIVATE
         cuexis::execution_host_support

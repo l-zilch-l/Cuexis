@@ -31,9 +31,14 @@ def run(args):
     options = {key: "OFF" for key in INSTRUMENTATION_OPTIONS}
     if args.mode == "memory":
         options.update(CUEXIS_ALLOCATION_LIFETIME_OBSERVER="ON", CUEXIS_EXECUTION_ALLOCATION_OBSERVER="ON")
+    elif args.mode == "stage-timing":
+        options["CUEXIS_PD_METRICS_TEST_ONLY"] = "ON"
+    elif args.mode == "player-trace":
+        options["CUEXIS_PLAYBACK_TRACE_HARNESS"] = "ON"
     commands = [
         ("configure", ["cmake", "--preset", args.config.lower(), "-B", str(build), "--fresh",
                        "-DCUEXIS_LIBRARY_TYPE=STATIC", "-DCUEXIS_ENABLE_CHART_V5_CANDIDATE=ON",
+                       "-DCUEXIS_IMPLEMENTATION_SHA=" + identity["sha"],
                        "-DCUEXIS_WARNINGS_AS_ERRORS=ON", *[f"-D{key}={value}" for key, value in options.items()]]),
         ("build", ["cmake", "--build", str(build), "--clean-first", "--parallel", str(args.jobs),
                    "--target", *args.targets])]
@@ -68,7 +73,7 @@ def main():
     for field in ("source", "build", "output"):
         parser.add_argument("--" + field, type=Path, required=True)
     parser.add_argument("--config", choices=("Release", "Debug"), required=True)
-    parser.add_argument("--mode", choices=("normal", "memory"), default="normal")
+    parser.add_argument("--mode", choices=("normal", "memory", "stage-timing", "player-trace"), default="normal")
     parser.add_argument("--targets", nargs="+", required=True)
     parser.add_argument("--jobs", type=int, default=4)
     parser.add_argument("--vcvars", type=Path, default=Path("D:/Program Files/Microsoft Visual Studio/18/Community/VC/Auxiliary/Build/vcvars64.bat"))

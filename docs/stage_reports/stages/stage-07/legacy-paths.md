@@ -220,3 +220,8 @@
 | `docs/stage_reports/stages/stage-07/rpa-new/` | [当前目录入口](05-rpa-new/README.md) |
 | `docs/stage_reports/stages/stage-07/b/` | [当前目录入口](06-b/README.md) |
 | `docs/stage_reports/stages/stage-07/shared/` | [当前目录入口](90-shared/README.md) |
+
+## 2026-11-14 独立 Stage 7.5
+
+原 `06-b/` 为未实施的占位目录，新报告入口为[Stage 7.5：Gameplay Evolution](../stage-07-5/README.md)。
+Stage 7 原始报告与封存证据保持原位置。

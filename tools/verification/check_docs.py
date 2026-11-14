@@ -37,7 +37,8 @@ STAGE_PLAN_REQUIREMENTS = (
     ("stage_plans/completed/chart-format-foundation/plan.md", ("completed",)),
     ("stage_plans/completed/chart-format-foundation-hardening/plan.md", ("completed",)),
     ("stage_plans/completed/stage-06/plan.md", ("completed",)),
-    ("stage_plans/active/stage-07/plan.md", ("active",)),
+    ("stage_plans/active/stage-07/plan.md", ("completed",)),
+    ("stage_plans/active/stage-07-5/plan.md", ("active",)),
     ("stage_plans/future/stage-08/plan.md", ("future",)),
     ("stage_plans/future/stage-11/plan.md", ("future",)),
     ("stage_plans/future/stage-12/plan.md", ("future",)),
@@ -63,10 +64,12 @@ DIRECTORY_INDEXES = (
     "stage_reports/stages/chart-format-foundation/README.md",
     "stage_reports/stages/stage-06/README.md",
     "stage_reports/stages/stage-07/README.md",
+    "stage_reports/stages/stage-07-5/README.md",
     "stage_reports/stages/stage-07/01-a/README.md",
     "stage_reports/stages/stage-07/06-b/README.md",
     "stage_reports/stages/stage-07/05-rpa-new/README.md",
     "stage_plans/active/stage-07/README.md",
+    "stage_plans/active/stage-07-5/README.md",
     "stage_reports/stages/stage-07/03-rpa-legacy/README.md",
     "stage_reports/stages/stage-07/04-pd/README.md",
     "stage_reports/stages/stage-07/90-shared/README.md",
@@ -74,6 +77,7 @@ DIRECTORY_INDEXES = (
 STAGE_NAVIGATION_INDEXES = {
     "stage_plans/README.md",
     "stage_plans/active/stage-07/README.md",
+    "stage_plans/active/stage-07-5/README.md",
     "stage_plans/active/stage-07/01-a/README.md",
     "stage_plans/active/stage-07/06-b/README.md",
     "stage_plans/active/stage-07/02-diagnostics/README.md",
@@ -89,6 +93,7 @@ STAGE_NAVIGATION_INDEXES = {
     "stage_reports/stages/stage-05/README.md",
     "stage_reports/stages/stage-06/README.md",
     "stage_reports/stages/stage-07/README.md",
+    "stage_reports/stages/stage-07-5/README.md",
     "stage_reports/stages/stage-07/01-a/README.md",
     "stage_reports/stages/stage-07/01-a/s7a-0/README.md",
     "stage_reports/stages/stage-07/01-a/s7a-2/README.md",
@@ -163,6 +168,7 @@ REQUIRED_STAGE_LABELS = (
     "Stage 5",
     "Stage 6",
     "Stage 7",
+    "Stage 7.5",
     "Stage 8",
     "Stage 9A",
     "Stage 9B",
@@ -275,25 +281,48 @@ def heading_anchors(text: str) -> set[str]:
 
 
 def check_stage7_section_links(files: list[Path], failures: list[CheckFailure], root: Path = ROOT) -> None:
-    """Check live contract links to the split Stage 7 plans, without rewriting dated evidence."""
-    stage = (root / "docs/stage_plans/active/stage-07").resolve()
-    owners = {"1.1": "plan.md", "5.3": "06-b/plan.md", "10": "plan.md"}
-    plan_paths = {"plan.md", "01-a/plan.md", "06-b/plan.md"}
+    """Check live Stage 7 and 7.5 owners and anchors while preserving dated evidence."""
+    plans = (root / "docs/stage_plans/active").resolve()
+    owners = {
+        "1.1": ("stage-07/plan.md", "11-"),
+        "5.3": ("stage-07-5/plan.md", "53-"),
+        "10": ("stage-07/plan.md", "10-"),
+    }
+    plan_paths = {
+        plans / name for name in (
+            "stage-07/plan.md", "stage-07/01-a/plan.md", "stage-07/06-b/plan.md",
+            "stage-07-5/plan.md",
+        )
+    }
     for path in files:
         relative = path.resolve().relative_to(root.resolve()).as_posix()
         if not relative.startswith(("docs/api/", "docs/formats/", "docs/stage_plans/active/")):
             continue
-        for label, target in re.findall(r"\[([^\]]*)\]\(([^)]+)\)", "\n".join(lines_outside_fences(path.read_text(encoding="utf-8")))):
+        text = "\n".join(lines_outside_fences(path.read_text(encoding="utf-8")))
+        for label, target in re.findall(r"\[([^\]]*)\]\(([^)]+)\)", text):
             destination, _, fragment = target.partition("#")
             resolved = (path.parent / destination).resolve()
-            if not resolved.is_relative_to(stage) or resolved.relative_to(stage).as_posix() not in plan_paths or not resolved.is_file():
+            if resolved not in plan_paths or not resolved.is_file():
                 continue
-            if fragment and unquote(fragment) not in heading_anchors(resolved.read_text(encoding="utf-8")):
-                failures.append(CheckFailure(path, f"Stage 7 section link: missing anchor {target}"))
-            section = re.search(r"§\s*(\d+(?:\.\d+)*)", label)
-            expected = owners.get(section[1]) if section else None
-            if expected and resolved.relative_to(stage).as_posix() != expected:
-                failures.append(CheckFailure(path, f"Stage 7 section link: section {section[1]} belongs to {expected}, found {resolved.relative_to(stage).as_posix()}"))
+            fragment = unquote(fragment)
+            if fragment and fragment not in heading_anchors(resolved.read_text(encoding="utf-8")):
+                failures.append(CheckFailure(
+                    path, f"Stage 7 / 7.5 section link: missing anchor {target}"
+                ))
+            sections = set(re.findall(r"§\s*(\d+(?:\.\d+)*)", label))
+            # Contract links can place the section reference outside the link label.
+            sections.update(
+                section for section, (_, prefix) in owners.items() if fragment.startswith(prefix)
+            )
+            relative_plan = resolved.relative_to(plans).as_posix()
+            for section in sorted(sections):
+                owner = owners.get(section)
+                if owner and relative_plan != owner[0]:
+                    failures.append(CheckFailure(
+                        path,
+                        f"Stage 7 / 7.5 section link: section {section} "
+                        f"belongs to {owner[0]}, found {relative_plan}",
+                    ))
 
 
 def normalize_whitespace(text: str) -> str:

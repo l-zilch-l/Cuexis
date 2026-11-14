@@ -1,0 +1,159 @@
+{
+  "schema": "rpa.execution.closeout-archive.v1",
+  "measurement_source_sha": "ce2a9a6952fd4a9a4d82949544f7ef3482e204e6",
+  "measurement_tree": "f2ec992cd94aa32c838d5ee863bdbca0b37033d2",
+  "scope": "Byte-preserved small records. Derived audits remain distinct from raw records; full logs, environment, build maps and historical failures remain at original roots.",
+  "formal_or_exit_acceptance": false,
+  "files": [
+    {
+      "path": "p5-attempt4-ce2a9a69__run__result.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/closeout-20261113/p5-attempt4-ce2a9a69/run/result.json",
+      "bytes": 28419,
+      "sha256": "d25c848513560a83cf15d6e2a971299c48dea7bcca0cc1c9e8361a649a81543d"
+    },
+    {
+      "path": "p5-attempt4-complete-audit.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/closeout-20261113/p5-attempt4-complete-audit.json",
+      "bytes": 7591,
+      "sha256": "901df4bf8ed1a80c19b945763d4aa649e9ff8d7a67398250914eb76118daa4f7"
+    },
+    {
+      "path": "p5-attempt4-ce2a9a69__preparation.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/closeout-20261113/p5-attempt4-ce2a9a69/preparation.json",
+      "bytes": 1955778,
+      "sha256": "a3bb4f83a1557da6f50dbbda595c94e6175dce7ee724927f72e0427dc063bc7e"
+    },
+    {
+      "path": "p5-attempt4-ce2a9a69__seal.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/closeout-20261113/p5-attempt4-ce2a9a69/seal.json",
+      "bytes": 680,
+      "sha256": "fc84f1793a9f720be61439bafbcc1124785e9e1ccba2aab9a633ef61b10d9f3f"
+    },
+    {
+      "path": "device-group-ce2a9a69__run__result.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/closeout-20261113/device-group-ce2a9a69/run/result.json",
+      "bytes": 19326,
+      "sha256": "ecffa82d400b9fd00ae08c7bf7f0e73b46ab2f62df12ae77f59a050c8a850a38"
+    },
+    {
+      "path": "device-complete-observation.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/closeout-20261113/device-complete-observation.json",
+      "bytes": 5489,
+      "sha256": "9ed7ef7051c4c7a4083fa6e895265878af5717dbe1bd826bdab4c4c9cf2d4281"
+    },
+    {
+      "path": "device-group-ce2a9a69__preparation.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/closeout-20261113/device-group-ce2a9a69/preparation.json",
+      "bytes": 1969187,
+      "sha256": "aefbcd6d7126580ca005b48b3a657d30354c6856e0111f704bf05d168383d4f5"
+    },
+    {
+      "path": "device-group-ce2a9a69__seal.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/closeout-20261113/device-group-ce2a9a69/seal.json",
+      "bytes": 1979,
+      "sha256": "8223ec0d007da218bf4efac9660210b3b69629f387415689d0584c763651e618"
+    },
+    {
+      "path": "capacity-audit-ce2a9a69.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/closeout-20261113/capacity-audit-ce2a9a69.json",
+      "bytes": 93322,
+      "sha256": "ca80a2168fa423b49ee972b29f784bd75cc54331f0c76ba4514c259d2c2588e3"
+    },
+    {
+      "path": "p8-identity-audit.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/closeout-20261113/p8-identity-audit.json",
+      "bytes": 15091,
+      "sha256": "27e75f84e1cfc32d2f30e42d9149afa253db41788cd9951e7a3d077ef6fc070f"
+    },
+    {
+      "path": "dfjk-stall-offline-audit.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/closeout-20261113/dfjk-stall-offline-audit.json",
+      "bytes": 4741,
+      "sha256": "13a528f2dbc18b4aabab5ec2b5cd07a5fbf61b6b6e40828a8d22fdb8657fb91e"
+    },
+    {
+      "path": "functional-ce2a9a69__music__parsed.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/closeout-20261113/functional-ce2a9a69/music/parsed.json",
+      "bytes": 2292,
+      "sha256": "52311be4a8c21e67662b1126b5bac7440d2bb148e1eef8d20f9266595d1f28ab"
+    },
+    {
+      "path": "functional-ce2a9a69__music__result.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/closeout-20261113/functional-ce2a9a69/music/result.json",
+      "bytes": 1013,
+      "sha256": "7aa4352c504b9cf457134c43d902ca608db6119df5c5d7326e28f05c2e7a16b0"
+    },
+    {
+      "path": "functional-ce2a9a69__dfjk__stopped.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/closeout-20261113/functional-ce2a9a69/dfjk/stopped.json",
+      "bytes": 450,
+      "sha256": "ed3f6fd8c5fdc70a6fadd297ab5707f773d1982dd747a7a793f3c1c3b2f6beb8"
+    },
+    {
+      "path": "stream-observers-ce2a9a69__summary.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/closeout-20261113/stream-observers-ce2a9a69/summary.json",
+      "bytes": 8192,
+      "sha256": "e1972d27b245d8b675d661abea1dec61b563acc5584545d25edb2f625ac30491"
+    },
+    {
+      "path": "stream-observers-ce2a9a69__declaration.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/closeout-20261113/stream-observers-ce2a9a69/declaration.json",
+      "bytes": 1806,
+      "sha256": "8118b9206e8005d9c8a071a18e4cb47403a66a526036a9f55fa9ba78d74d7682"
+    },
+    {
+      "path": "formal-sequence-ce2a9a69__awake-hold.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/closeout-20261113/formal-sequence-ce2a9a69/awake-hold.json",
+      "bytes": 3259,
+      "sha256": "7b60d4be7938b0d149788d0af13fab9b4f88964e6638c4b2237162d9e76f3f5c"
+    },
+    {
+      "path": "resumed-preflight-ce2a9a69__complete.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/closeout-20261113/resumed-preflight-ce2a9a69/complete.json",
+      "bytes": 264,
+      "sha256": "1a37f55d6d4e77263cbb47cb6744a07f8eea6686c5420d5b94b67ec6126c78b0"
+    },
+    {
+      "path": "hosted-verified-43436185901.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/closeout-20261113/hosted-verified-43436185901.json",
+      "bytes": 251,
+      "sha256": "e5a7d79e08dfb133d00e9c3b788f9a84a1338777a09c00ccb30c8f83e3ae4b91"
+    },
+    {
+      "path": "hosted-verified-43436186054.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/closeout-20261113/hosted-verified-43436186054.json",
+      "bytes": 250,
+      "sha256": "32933ccdfec280336fc9a720b8e98fb761969d6779d63220d4cf92955de3ca88"
+    },
+    {
+      "path": "hosted-verified-43436185994.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/closeout-20261113/hosted-verified-43436185994.json",
+      "bytes": 251,
+      "sha256": "742a0da4f69c3bc03c2f9323229637f3d1d40b6d6e6450e32170afa97a27246a"
+    },
+    {
+      "path": "p5-attempt4-claim.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/attempt-ledger/p5-controls-release/attempt-4.json",
+      "bytes": 446,
+      "sha256": "35f0a2de09aef4fe168d5dd2724e1e614c5e596ba80e6cb05bacf2aa5b0e1604"
+    },
+    {
+      "path": "p5-attempt4-claim-marker.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/attempt-ledger/p5-controls-release/attempt-4.seal.json",
+      "bytes": 199,
+      "sha256": "206ee712ea78aaec9862c7fd0591795231009fce058af5eca438a0a105e067dc"
+    },
+    {
+      "path": "p5-max5-waiver.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/p5/p5-controls-attempt-waiver-20261113-max5.json",
+      "bytes": 988,
+      "sha256": "a6f5d9323595966ae59d754dabfd0c9b8e30101c50f9c98eac6e2b37c09d3aa3"
+    },
+    {
+      "path": "p5-attempt4-retry-disposition.json",
+      "source": "D:/Cuexis-worktree/out/evidence/r4/closeout-20261113/p5-attempt4-ce2a9a69/retry-disposition.json",
+      "bytes": 739,
+      "sha256": "6c4c2fb0a4fdbbe4ff2af9efcaeacc9a41ebff1c260b0db9ff6244920f9dbe97"
+    }
+  ]
+}

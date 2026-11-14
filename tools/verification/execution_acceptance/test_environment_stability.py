@@ -81,5 +81,124 @@ class RetryDispositionTests(unittest.TestCase):
             admission.retry_disposition(self.ledger, "not a unit id", {"path": "x"})
 
 
+class StabilityCollectionTests(unittest.TestCase):
+    class Clock:
+        def __init__(self, interrupt_at=None, trailing_gap=False):
+            self.value = 0.0
+            self.interrupt_at = interrupt_at
+            self.trailing_gap = trailing_gap
+
+        def monotonic(self):
+            return self.value
+
+        def sleep(self, interval):
+            self.value += 3 if self.trailing_gap and self.value == 59 else interval
+            if self.interrupt_at is not None and self.value >= self.interrupt_at:
+                raise KeyboardInterrupt("interrupted virtual collection")
+
+    def collect(self, clock, *, seconds=60, failing_snapshot=False, hold_ok=True,
+                first_delay=0, nudge_events=2, failing_after=None):
+        from contextlib import ExitStack
+        import tempfile
+        from pathlib import Path
+        from unittest.mock import patch
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.output = Path(self.temporary.name) / "remedy.json"
+        snapshots = 0
+
+        def snapshot():
+            nonlocal snapshots
+            if failing_snapshot:
+                raise RuntimeError("snapshot failed before first sample")
+            if failing_after is not None and snapshots >= failing_after:
+                raise RuntimeError("snapshot failed after existing samples")
+            if snapshots == 0:
+                clock.value += first_delay
+            snapshots += 1
+            return row(clock.value)
+
+        with ExitStack() as stack:
+            stack.enter_context(patch.object(environment_stability, "time", clock))
+            stack.enter_context(patch.object(environment_stability, "WindowsSnapshot",
+                                             return_value=snapshot))
+            self.hold = stack.enter_context(patch.object(environment_stability, "hold",
+                return_value={"requested": 1, "previous_state": int(hold_ok)}))
+            stack.enter_context(patch.object(environment_stability, "nudge",
+                                             return_value=nudge_events))
+            return environment_stability.verify(seconds, 1, self.output)
+
+    def result(self):
+        from tools.verification.execution_acceptance.binding import read
+        return read(self.output)
+
+    def test_complete_requested_duration_and_coverage_pass(self):
+        self.assertTrue(self.collect(self.Clock()))
+        result = self.result()
+        self.assertTrue(result["completed"])
+        self.assertEqual(result["duration_seconds"], 60)
+        self.assertEqual(result["sample_span_seconds"], 59)
+        self.assertEqual(result["errors"], [])
+        self.hold.assert_any_call(False)
+
+    def test_interruption_after_three_nudges_cannot_pass(self):
+        with self.assertRaisesRegex(KeyboardInterrupt, "interrupted virtual collection"):
+            self.collect(self.Clock(interrupt_at=725), seconds=900)
+        result = self.result()
+        self.assertEqual(len(result["nudges"]), 3)
+        self.assertEqual(result["requested_seconds"], 900)
+        self.assertEqual(result["duration_seconds"], 725)
+        self.assertFalse(result["passed"])
+        self.assertFalse(result["completed"])
+        self.hold.assert_any_call(False)
+
+    def test_first_snapshot_failure_keeps_original_error_and_failed_record(self):
+        with self.assertRaisesRegex(RuntimeError, "snapshot failed before first sample"):
+            self.collect(self.Clock(), failing_snapshot=True)
+        result = self.result()
+        self.assertEqual(result["samples"], [])
+        self.assertFalse(result["passed"])
+        self.assertIn("no environment samples", result["errors"])
+        self.hold.assert_any_call(False)
+
+    def test_unsampled_trailing_time_cannot_complete_coverage(self):
+        self.assertFalse(self.collect(self.Clock(trailing_gap=True)))
+        result = self.result()
+        self.assertTrue(result["completed"])
+        self.assertGreaterEqual(result["duration_seconds"], 60)
+        self.assertIn("incomplete environment sampling coverage", result["errors"])
+
+    def test_failed_awake_hold_cannot_pass(self):
+        self.assertFalse(self.collect(self.Clock(), hold_ok=False))
+        self.assertIn("system/display hold failed", self.result()["errors"])
+
+    def test_complete_900_seconds_keeps_three_successful_nudges(self):
+        self.assertTrue(self.collect(self.Clock(), seconds=900))
+        result = self.result()
+        self.assertEqual(result["duration_seconds"], 900)
+        self.assertEqual(result["sample_span_seconds"], 899)
+        self.assertEqual([n["elapsed_seconds"] for n in result["nudges"]], [240, 480, 720])
+        self.assertTrue(all(n["send_input_events"] == 2 for n in result["nudges"]))
+
+    def test_unsampled_initial_time_cannot_complete_coverage(self):
+        self.assertFalse(self.collect(self.Clock(), first_delay=3))
+        result = self.result()
+        self.assertTrue(result["completed"])
+        self.assertGreaterEqual(result["duration_seconds"], 60)
+        self.assertIn("incomplete environment sampling coverage", result["errors"])
+
+    def test_nudge_failure_is_recorded_as_an_error(self):
+        self.assertFalse(self.collect(self.Clock(), seconds=900, nudge_events=0))
+        self.assertIn("idle nudge failed", self.result()["errors"])
+
+    def test_later_snapshot_failure_keeps_samples_and_original_error(self):
+        with self.assertRaisesRegex(RuntimeError, "snapshot failed after existing samples"):
+            self.collect(self.Clock(), failing_after=2)
+        result = self.result()
+        self.assertEqual(len(result["samples"]), 2)
+        self.assertFalse(result["passed"])
+        self.hold.assert_any_call(False)
+
+
 if __name__ == "__main__":
     unittest.main()

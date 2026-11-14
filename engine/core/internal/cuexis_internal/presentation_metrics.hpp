@@ -92,8 +92,10 @@ inline constexpr std::array names{"judgement",
 struct Samples final {
     // A separate observer process owns this bounded storage. The largest declared
     // trajectory has 115200 updates; omissions are rejected by the collector.
-    std::array<double, 131072> exclusiveUs{}, inclusiveUs{};
-    std::array<std::uint64_t, 131072> correlations{};
+    // Only [0, count) is read, and observe writes all three entries before incrementing
+    // count. Avoid expanding millions of unused zero initializers in every MSVC TU.
+    std::array<double, 131072> exclusiveUs, inclusiveUs;
+    std::array<std::uint64_t, 131072> correlations;
     std::size_t count{}, omitted{};
     std::uint64_t items{};
     std::uint64_t allocationCount{}, requestedAllocationBytes{}, releasedAllocationBytes{};
@@ -103,7 +105,7 @@ struct Metrics final {
     std::array<char, 2048> pathStorage{};
     const char* path{};
     bool recording{true};
-    std::array<Samples, static_cast<unsigned>(Stage::count)> stages{};
+    std::array<Samples, static_cast<unsigned>(Stage::count)> stages;
     Metrics() noexcept {
 #ifdef _MSC_VER
         std::size_t size{};

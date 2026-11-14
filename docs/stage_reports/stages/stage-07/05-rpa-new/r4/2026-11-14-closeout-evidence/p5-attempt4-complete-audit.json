@@ -1,0 +1,274 @@
+{
+  "schema": "rpa.execution.p5-complete-audit.v1",
+  "candidate_sha": "ce2a9a6952fd4a9a4d82949544f7ef3482e204e6",
+  "attempt": 4,
+  "group_executed": true,
+  "processes": 9,
+  "samples_total": 657,
+  "rows": [
+    {
+      "window": 1,
+      "pair": 1,
+      "samples": 73,
+      "runtime": {
+        "warmup": true,
+        "sample": true
+      },
+      "parsed": {
+        "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\p5-attempt4-ce2a9a69\\run\\p5-controls\\window-1\\pair-1-B\\parsed.json",
+        "bytes": 21517,
+        "sha256": "3cdb7b1d9ad2c123dac35b3e2148cf1670142eeaa24a8533987c7cba7d55e8ac"
+      }
+    },
+    {
+      "window": 1,
+      "pair": 2,
+      "samples": 73,
+      "runtime": {
+        "warmup": true,
+        "sample": true
+      },
+      "parsed": {
+        "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\p5-attempt4-ce2a9a69\\run\\p5-controls\\window-1\\pair-2-B\\parsed.json",
+        "bytes": 21515,
+        "sha256": "27f54e8d47ed5a9df6ccbd38523bf1f9e6dca9289e75c532ddd69baea9183caf"
+      }
+    },
+    {
+      "window": 1,
+      "pair": 3,
+      "samples": 73,
+      "runtime": {
+        "warmup": true,
+        "sample": true
+      },
+      "parsed": {
+        "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\p5-attempt4-ce2a9a69\\run\\p5-controls\\window-1\\pair-3-B\\parsed.json",
+        "bytes": 21515,
+        "sha256": "345e24eba9465b1d2c74ad24bba4a82590ee48032e972645c794403ca47ca9d2"
+      }
+    },
+    {
+      "window": 2,
+      "pair": 1,
+      "samples": 73,
+      "runtime": {
+        "warmup": true,
+        "sample": true
+      },
+      "parsed": {
+        "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\p5-attempt4-ce2a9a69\\run\\p5-controls\\window-2\\pair-1-B\\parsed.json",
+        "bytes": 21515,
+        "sha256": "0427cdd6d898109900d75df536140f1c76b1ae91e31c7c85b5294c0bb422d948"
+      }
+    },
+    {
+      "window": 2,
+      "pair": 2,
+      "samples": 73,
+      "runtime": {
+        "warmup": true,
+        "sample": true
+      },
+      "parsed": {
+        "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\p5-attempt4-ce2a9a69\\run\\p5-controls\\window-2\\pair-2-B\\parsed.json",
+        "bytes": 21509,
+        "sha256": "7d8da8256737001470478de09cb19756dafeebdcf5a99eeaa8839e71d6f1cfda"
+      }
+    },
+    {
+      "window": 2,
+      "pair": 3,
+      "samples": 73,
+      "runtime": {
+        "warmup": true,
+        "sample": true
+      },
+      "parsed": {
+        "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\p5-attempt4-ce2a9a69\\run\\p5-controls\\window-2\\pair-3-B\\parsed.json",
+        "bytes": 21515,
+        "sha256": "1bade0561b06734871100826540ff7de4c041b81a42f0a0b091bed1ac2d62015"
+      }
+    },
+    {
+      "window": 3,
+      "pair": 1,
+      "samples": 73,
+      "runtime": {
+        "warmup": true,
+        "sample": true
+      },
+      "parsed": {
+        "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\p5-attempt4-ce2a9a69\\run\\p5-controls\\window-3\\pair-1-B\\parsed.json",
+        "bytes": 21515,
+        "sha256": "0e0ee2a369a793a25ec965e67bdad86ea500ade73e679568a82927a2c2b983da"
+      }
+    },
+    {
+      "window": 3,
+      "pair": 2,
+      "samples": 73,
+      "runtime": {
+        "warmup": true,
+        "sample": true
+      },
+      "parsed": {
+        "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\p5-attempt4-ce2a9a69\\run\\p5-controls\\window-3\\pair-2-B\\parsed.json",
+        "bytes": 21515,
+        "sha256": "7a26628f2482773e7d28526744a6a850f4ffc2e695e4c9552ca3b1cb24fc45ac"
+      }
+    },
+    {
+      "window": 3,
+      "pair": 3,
+      "samples": 73,
+      "runtime": {
+        "warmup": true,
+        "sample": true
+      },
+      "parsed": {
+        "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\p5-attempt4-ce2a9a69\\run\\p5-controls\\window-3\\pair-3-B\\parsed.json",
+        "bytes": 21507,
+        "sha256": "a4192e1d013848d2e422034242f7d4847f54f6ba3c418b8c8a9acdb92fbf3e91"
+      }
+    }
+  ],
+  "metrics": {
+    "close": {
+      "repeatability": {
+        "B": {
+          "window_noise": [
+            0.12258064516129032,
+            0.20535714285714285,
+            0.1469387755102041
+          ],
+          "first_six_noise": 0.2,
+          "all_nine_noise": 0.1978494623655914,
+          "status": "inconclusive"
+        }
+      },
+      "status": "inconclusive"
+    },
+    "load_host": {
+      "repeatability": {
+        "B": {
+          "window_noise": [
+            0.05511160099200882,
+            0.1644518272425249,
+            0.031777277840269964
+          ],
+          "first_six_noise": 0.16406573677668831,
+          "all_nine_noise": 0.16694772344013492,
+          "status": "inconclusive"
+        }
+      },
+      "status": "inconclusive"
+    },
+    "pause": {
+      "repeatability": {
+        "B": {
+          "window_noise": [
+            0.09523809523809523,
+            0.0906515580736544,
+            0.11271676300578035
+          ],
+          "first_six_noise": 0.10704225352112676,
+          "all_nine_noise": 0.11048158640226628,
+          "status": "pass"
+        }
+      },
+      "status": "timing_group_complete_absolute_gates_separate"
+    },
+    "reset_paused": {
+      "repeatability": {
+        "B": {
+          "window_noise": [
+            0.017887087758524316,
+            0.09868421052631579,
+            0.04620343839541547
+          ],
+          "first_six_noise": 0.09787472035794184,
+          "all_nine_noise": 0.10940076965365586,
+          "status": "pass"
+        }
+      },
+      "status": "timing_group_complete_absolute_gates_separate"
+    },
+    "reset_running": {
+      "repeatability": {
+        "B": {
+          "window_noise": [
+            0.04010798303123795,
+            0.0293488824101069,
+            0.0257781172426962
+          ],
+          "first_six_noise": 0.04911534371072223,
+          "all_nine_noise": 0.04897801774006942,
+          "status": "pass"
+        }
+      },
+      "status": "timing_group_complete_absolute_gates_separate"
+    },
+    "resize": {
+      "repeatability": {
+        "B": {
+          "window_noise": [
+            0.033582089552238806,
+            0.08487084870848709,
+            0.09701492537313433
+          ],
+          "first_six_noise": 0.08534322820037106,
+          "all_nine_noise": 0.1044776119402985,
+          "status": "pass"
+        }
+      },
+      "status": "timing_group_complete_absolute_gates_separate"
+    },
+    "resume": {
+      "repeatability": {
+        "B": {
+          "window_noise": [
+            0.08718861209964412,
+            0.08646616541353383,
+            0.01838235294117647
+          ],
+          "first_six_noise": 0.10603290676416818,
+          "all_nine_noise": 0.10661764705882353,
+          "status": "pass"
+        }
+      },
+      "status": "timing_group_complete_absolute_gates_separate"
+    }
+  },
+  "absolute_statuses": {
+    "pause": [
+      "pass"
+    ],
+    "resume": [
+      "pass"
+    ],
+    "resize": [
+      "pass"
+    ],
+    "reset_paused": [
+      "pass"
+    ],
+    "reset_running": [
+      "pass"
+    ],
+    "close": [
+      "pass"
+    ],
+    "load": [
+      "pass"
+    ]
+  },
+  "result_binding": {
+    "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\p5-attempt4-ce2a9a69\\run\\result.json",
+    "bytes": 28419,
+    "sha256": "d25c848513560a83cf15d6e2a971299c48dea7bcca0cc1c9e8361a649a81543d"
+  },
+  "overall_acceptance": "requires_all_registered_absolute_and_other_gates",
+  "automatic_retry": false,
+  "attempt5_consumed": false
+}

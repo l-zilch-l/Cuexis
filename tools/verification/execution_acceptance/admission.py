@@ -9,6 +9,9 @@ from . import build_binding, probe_units
 
 PRE_PD = "d344088236ae589c0b49a4994ef0fbddd6567ce2"
 ORDERS = ["AB/BA/AB", "BA/AB/BA", "AB/BA/AB"]
+CAPACITY_ADMISSION_BLOCKER = (
+    "memory/P8 formal admission blocked: complete semantic ownership/lifetime graph validator "
+    "is not implemented; allocation origins and World lower bounds cannot grant admission")
 
 
 def unit_id(value):
@@ -23,23 +26,35 @@ def stable_id(unit):
     config = unit.get("config")
     if config not in ("Release", "Debug"):
         raise ValueError("explicit protocol configuration required")
+    backend = unit.get("backend", "cpu")
+    if backend not in ("cpu", "device"):
+        raise ValueError("unknown protocol backend")
+    # Keep every historical CPU key. A device workload has its own finite allowance;
+    # changing a candidate or a display name still cannot restore either allowance.
+    suffix = ("-device" if backend == "device" else "") + "-" + config.lower()
     if workload == "seek":
-        if unit.get("entities") not in (64, 2048, 40000):
+        # Record-scaled Seek and historical entity-scaled units retain distinct declarations.
+        records, entities = unit.get("seek_records"), unit.get("entities")
+        if records in (129, 1024) and entities is None:
+            scale = records
+        elif entities in (64, 2048, 40000) and records is None:
+            scale = entities
+        else:
             raise ValueError("unknown Seek scale")
-        expected = f"seek-{unit['seek_class']}-{unit['entities']}-{config.lower()}"
+        expected = f"seek-{unit['seek_class']}-{scale}{suffix}"
     elif workload in ("memory", "p8"):
         entities, reuse = unit.get("entities"), unit.get("reuse")
         if (entities not in (64, 2048, 40000) or reuse not in ("low", "high") or
                 (workload == "p8" and entities != 40000)):
             raise ValueError("unknown memory/P8 protocol")
-        expected = f"{workload}-{entities}-{reuse}-{config.lower()}"
+        expected = f"{workload}-{entities}-{reuse}{suffix}"
     else:
         gates = ("p0-legacy", "p0-rpa", "p0-read", "p0-host-common", "p1-no-consumer",
                  "p2-low-delivery", "p3-renderer", "p4-capture-1", "p4-capture-2",
                  "p4-capture-4", "p5-controls", "p6-sparse", "p6-topology", "p7-music", "p7-dfjk")
         if unit.get("gate") not in gates:
             raise ValueError("unknown fixed workload gate")
-        expected = unit["gate"] + "-" + config.lower()
+        expected = unit["gate"] + suffix
     if unit_id(unit["stable_protocol_id"]) != expected:
         raise ValueError("stable protocol id differs from canonical workload identity")
     return expected
@@ -52,6 +67,10 @@ def validate_preparation(document, *, source_verifier=verify_source):
         raise ValueError("preparation cannot declare itself formally registered")
     draft = dict(document, schema="rpa.r4.registration-draft.v1", formal_registration=False)
     validate_draft(draft)
+    # No artifact boolean can replace the missing complete semantic graph validator.
+    # claim, seal and sealed execution all re-enter this gate before creating state.
+    if any(unit["workload"] in ("memory", "p8") for unit in document["units"]):
+        raise ValueError(CAPACITY_ADMISSION_BLOCKER)
     source_verifier(document["source_binding"])
     budgets = accepted_budget(document["acceptance_binding"], document["budget_binding"])
     profiles = {profile["id"] for profile in budgets["profiles"]}
@@ -106,7 +125,7 @@ def validate_preparation(document, *, source_verifier=verify_source):
         if mode not in ("normal", "stage-timing", "memory", "device"):
             raise ValueError("explicit measurement mode required")
         if unit.get("adapter") == "probe":
-            # The presentation-matrix harness has no pre-PD counterpart and no device endpoint.
+            # Each backend declares its own exact workload and has no pre-PD counterpart.
             probe_units.validate_registration(unit)
         builds = [(unit["candidate_binary"], document["source_binding"])]
         if unit["comparison"] == "A/B":

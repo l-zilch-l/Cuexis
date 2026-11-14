@@ -12,7 +12,7 @@
 
 ```text
 Stage 7A Gameplay Foundation
-Stage 7B+ capabilities selected for the first Studio release
+Stage 7.5 capabilities selected for the first Studio release
 Stage 8 Chart v5 / CXT v2 / Packed Chart
 Stage 9 Presentation extensions needed by the first Studio release
 ```

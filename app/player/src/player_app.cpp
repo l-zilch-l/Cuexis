@@ -389,6 +389,8 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                 const auto clock = audio->transport().snapshot();
                 if (clock.sampleRate)
                     measurementTrace.audio(0, audio->transport().metrics().underrunCount);
+                measurementTrace.transport(clock.source.positionMs,
+                                           clock.source.state == audio::PlaybackState::Ended);
             }
             return {};
         };
@@ -428,6 +430,9 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                          .showFps = options.showFps,
                          .diagnostics = frameDiagnostics ? &*frameDiagnostics : nullptr,
                          .hooks = std::move(hooks),
+#if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
+                         .measurementTrace = &measurementTrace,
+#endif
                          .logger = logger};
     if (auto ran = runPlayerFrameLoop(loop); !ran) {
         return core::unexpected(std::move(ran.error()));

@@ -157,4 +157,12 @@ def verify(document, source_binding, mode):
     if mode == "memory" and (options["CUEXIS_ALLOCATION_LIFETIME_OBSERVER"] != "ON" or
                              options["CUEXIS_EXECUTION_ALLOCATION_OBSERVER"] != "ON"):
         raise ValueError("memory build lacks extended lifetime attribution")
+    if mode == "stage-timing" and (options["CUEXIS_PD_METRICS_TEST_ONLY"] != "ON" or
+            any(options[key] != "OFF" for key in INSTRUMENTATION_OPTIONS
+                if key != "CUEXIS_PD_METRICS_TEST_ONLY")):
+        raise ValueError("stage timing requires only its dedicated metrics instrumentation")
+    if mode == "player-trace" and (options["CUEXIS_PLAYBACK_TRACE_HARNESS"] != "ON" or
+            any(options[key] != "OFF" for key in INSTRUMENTATION_OPTIONS
+                if key != "CUEXIS_PLAYBACK_TRACE_HARNESS")):
+        raise ValueError("Player trace requires only its dedicated test harness")
     return document

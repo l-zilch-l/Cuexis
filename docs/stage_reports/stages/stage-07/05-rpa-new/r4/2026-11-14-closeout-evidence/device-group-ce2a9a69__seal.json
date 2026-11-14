@@ -1,0 +1,31 @@
+{
+  "schema": "rpa.execution.seal.v1",
+  "preparation": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\device-group-ce2a9a69\\preparation.json",
+  "preparation_sha256": "aefbcd6d7126580ca005b48b3a657d30354c6856e0111f704bf05d168383d4f5",
+  "claims": [
+    {
+      "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\attempt-ledger\\p3-renderer-device-release\\attempt-1.json",
+      "sha256": "1ae9ef663d60174665ff57f5c41908db8a2dc63940e3c73623eaeaca8ded9fc2",
+      "marker": "D:\\Cuexis-worktree\\out\\evidence\\r4\\attempt-ledger\\p3-renderer-device-release\\attempt-1.seal.json",
+      "marker_sha256": "d08e703a5753d6cc769ee3ca54d6e9f58f3b1b6c95b62070e93286a564209d46"
+    },
+    {
+      "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\attempt-ledger\\p4-capture-1-device-release\\attempt-1.json",
+      "sha256": "6bd0d215fc18c8329b7224236c353f6aabe667ce9a7865f073f18bc635b00f54",
+      "marker": "D:\\Cuexis-worktree\\out\\evidence\\r4\\attempt-ledger\\p4-capture-1-device-release\\attempt-1.seal.json",
+      "marker_sha256": "d08e703a5753d6cc769ee3ca54d6e9f58f3b1b6c95b62070e93286a564209d46"
+    },
+    {
+      "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\attempt-ledger\\p4-capture-2-device-release\\attempt-1.json",
+      "sha256": "212532ee4f38328f466bd99b5a1b829cd7b9e9abf5afc2f9ccae9d764892db4a",
+      "marker": "D:\\Cuexis-worktree\\out\\evidence\\r4\\attempt-ledger\\p4-capture-2-device-release\\attempt-1.seal.json",
+      "marker_sha256": "d08e703a5753d6cc769ee3ca54d6e9f58f3b1b6c95b62070e93286a564209d46"
+    },
+    {
+      "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\attempt-ledger\\p4-capture-4-device-release\\attempt-1.json",
+      "sha256": "31df552e8c523c0fbd3d5b887834ba2bf4a14e63e699b13adac87d260fae3126",
+      "marker": "D:\\Cuexis-worktree\\out\\evidence\\r4\\attempt-ledger\\p4-capture-4-device-release\\attempt-1.seal.json",
+      "marker_sha256": "d08e703a5753d6cc769ee3ca54d6e9f58f3b1b6c95b62070e93286a564209d46"
+    }
+  ]
+}

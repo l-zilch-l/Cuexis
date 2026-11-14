@@ -1,0 +1,12 @@
+{
+  "schema": "rpa.execution.retry-disposition.v1",
+  "stable_protocol_id": "p5-controls-release",
+  "previous_claim_sha256": "5eb36fe7fead8a816db080a053b4c9ba4cb2f0063b11bbbd2cc333fb9aa5b4a4",
+  "verified_remedy_binding": {
+    "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\p5-remedy-isolated-20261114.json",
+    "bytes": 214468,
+    "sha256": "7a384a72fc4fdbf39c4c0d51ea1b9543d7121275ea661a029b3de78706ba009c"
+  },
+  "scope": "Remedy verified before this registration; no sample replacement and no merging with the failed attempt's readings.",
+  "remedy_scope": "attempt 3 foreground change: bounded display/system hold plus verified idle nudge and stable foreground/AC/power sampling; historical samples remain"
+}

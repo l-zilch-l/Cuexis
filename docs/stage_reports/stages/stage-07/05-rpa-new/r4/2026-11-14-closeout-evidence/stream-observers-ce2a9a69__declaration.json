@@ -1,0 +1,43 @@
+{
+  "schema": "rpa.execution.stream-observer-declaration.v1",
+  "formal_sampling": false,
+  "source_sha": "ce2a9a6952fd4a9a4d82949544f7ef3482e204e6",
+  "pairs": 3,
+  "order": [
+    "normal",
+    "gpu",
+    "stage",
+    "memory"
+  ],
+  "frames": 14400,
+  "warmup_frames": 2400,
+  "builds": {
+    "normal": {
+      "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\candidate-ce2a9a69\\normal\\cuexis_execution_device_probe-build-binding.json",
+      "bytes": 903186,
+      "sha256": "e38dd995ace09b3367be105c438c73dca322c3a2551f399351bd014fdbbea498"
+    },
+    "gpu": {
+      "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\candidate-ce2a9a69\\normal\\cuexis_execution_device_probe-build-binding.json",
+      "bytes": 903186,
+      "sha256": "e38dd995ace09b3367be105c438c73dca322c3a2551f399351bd014fdbbea498"
+    },
+    "stage": {
+      "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\candidate-ce2a9a69\\stage-timing\\cuexis_execution_device_probe-build-binding.json",
+      "bytes": 903229,
+      "sha256": "0771e2d48e263c6ff2c2a5827032d381379c939da1bbda403bfb9ed51042fc8b"
+    },
+    "memory": {
+      "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\candidate-ce2a9a69\\memory\\cuexis_execution_device_probe-build-binding.json",
+      "bytes": 903184,
+      "sha256": "bcfdcc6fb022e16dd3620ab5be8dc2aaba7f7b35e4aebfa60a9946d6777eb663"
+    }
+  },
+  "warmup": {
+    "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\candidate-ce2a9a69\\normal\\cuexis_pd_baseline_probe-build-binding.json",
+    "bytes": 903171,
+    "sha256": "0180ea2288cc83927f25f602c06704f3e052e84379a688d51e2a51f0811357cb"
+  },
+  "maximum_processes": 12,
+  "stop": "first failed process/identity/environment/coverage check; no replacement"
+}
