@@ -2,7 +2,7 @@
 
 状态：future；未开始
 
-更新日期：2026-10-16（补 PD 基线发行交接）
+更新日期：2026-11-14（消费独立 Stage 7.5 的退出与发行交接）
 
 归档来源：[Chart v5 格式计划](../../active/chart-format-update-for-v5/plan.md)、
 [Stage Chart Format Update 完成计划](../../completed/chart-format-update/plan.md)、
@@ -18,18 +18,21 @@ Gameplay v2 (`gameplay.version = 2`) Canonical Gameplay Graph、Release/tail、s
 capacity=1 exclusive resource、early/late Presentation bridge、TimebaseProfile 和 Ruleset
 fault transaction 合同冻结
 诊断码正式化独立前置N0–N3退出
-Stage 7-RPA完整退出（实时/设备及原S7A-9矩阵/预算/关闭）
-随后Stage 7B+当前计划范围完成、owner接受及Stage 8交接
+Stage 7 受限关闭及 RPA／PD／原 S7A-9 交接（原未认证范围保留）
+随后独立 Stage 7.5 当前计划范围完成、owner 接受及 Stage 8 交接
 ```
+
+独立高级能力及局部重构／性能稳定的范围见[Stage 7.5 计划](../../active/stage-07-5/plan.md)。
+Stage 7 的受限关闭不代替本阶段发行所需的具体生产准入。
 
 详细格式工作包见 [Chart v5 format plan](../../active/chart-format-update-for-v5/plan.md)。
 本阶段负责把 Foundation 和 Stage 6 已验证的 v5 candidate path 收敛为正式发行合同，
-而不是首次开始设计 Chart v5。Stage 7B+当前计划范围完成并接受是本阶段启动前置；
+而不是首次开始设计 Chart v5。Stage 7.5当前计划范围完成并接受是本阶段启动前置；
 能力是否默认发行，另由本阶段的发行矩阵明确决定。
 
 [诊断独立前置](../../active/stage-07/02-diagnostics/plan.md)承接正式命名迁移，
 [Stage 7-RPA子阶段](../../active/stage-07/03-rpa-legacy/plan.md)承接实时架构与实体设备/实时同步验收，
-本阶段验证发行兼容。实施顺序为诊断独立前置 → RPA → Stage 7B+ → Stage 8；
+本阶段验证发行兼容。实施顺序为诊断独立前置 → RPA → Stage 7.5 → Stage 8；
 规划登记不表示这些前置已完成。
 
 ### PD 集成基线的发行准入
@@ -39,7 +42,7 @@ Stage 7-RPA完整退出（实时/设备及原S7A-9矩阵/预算/关闭）
 proposal 不能作为发行行为。Graph/Packed 两入口须恢复同一能力/FactBinding 支持表，未知必需
 phase/outcome/聚合稳定拒绝，旧绑定和 presentation-only identity 回归保持一致。
 见[PD 细则 §12.1、§12.7](../../active/stage-07/04-pd/design.md)。
-该要求约束实际采用的实现，不要求提前实现 Stage 9–14 能力，也不改变 RPA → 7B+ → Stage 8 顺序。
+该要求约束实际采用的实现，不要求提前实现 Stage 9–14 能力，也不改变 RPA → Stage 7.5 → Stage 8 顺序。
 
 ## 1. 阶段目标
 
@@ -102,7 +105,7 @@ single capacity=1 exclusive resource lifecycle
 TimebaseProfile and causal Fact order
 Ruleset transaction failure -> faulted session behavior
 early/exact/late/Miss FactBinding presentation bridge
-仅限本阶段发行矩阵明确选入的持续、释放、组合和顺序约束 capability；未选入的 7B+ 能力
+仅限本阶段发行矩阵明确选入的持续、释放、组合和顺序约束 capability；未选入的 Stage 7.5 能力
 必须继续走稳定拒绝路径，不得因为出现在候选格式字段中而获得默认支持
 有限 Effect Schedule
   Chart v5 与 Stage 7A Judgement 的 typed 边界
@@ -113,7 +116,7 @@ Chart v5 不绑定轨道、Note 模型或渲染后端。v4 到 v5 的迁移必�
 不能由 Playback 隐式升级。
 Chart v5 outer `version = 5` 与 `gameplay.version = 2` 是不同版本层；不得以字段存在与否猜测
 Gameplay semantics。Stage 8 只发行 V2 graph；旧 Gameplay revision 必须显式迁移或稳定拒绝。
-Stage 7B+ 尚未纳入发行矩阵的 RequirementKind 必须保留稳定拒绝路径，不能为了关闭
+Stage 7.5 尚未纳入发行矩阵的 RequirementKind 必须保留稳定拒绝路径，不能为了关闭
 Stage 8 而伪装成已支持能力。
 
 ### S8-B：CXT v2 Core
@@ -400,7 +403,7 @@ Replay identity
   faulted session 的 Snapshot/Seek/Replay 行为有负例证据。
 - 超展开数量、超 decoded bytes、超 Packed bytes、递归、溢出和非法引用均稳定失败。
 - Stage 7A的core external consumer、Headless判定和Replay golden全部通过，RPA和
-  Stage 7B+当前计划范围均有完成与owner接受记录；本阶段对发行矩阵明确纳入的能力
+  Stage 7.5当前计划范围均有完成与owner接受记录；本阶段对发行矩阵明确纳入的能力
   另行提供发行集成证据，未选入能力的默认入口稳定拒绝。
 
 ## 8. 交接
@@ -422,8 +425,8 @@ SDK 版本遵循 [版本规范](../../../guides/VERSIONING.md)，不与 Stage �
 将该版本落实到安装包、consumer 最低要求、版本拒绝测试及关闭报告；未落实不得关闭。
 
 Stage 8 关闭前，Chart v5 只能称为 candidate，不能被 Player 默认作为发行格式加载。
-Stage 7B+当前计划范围须在Stage 8启动前完成并接受；未来新增能力另行立项，
-通过版本化capability演进，不自动延后本轮7B+任务。
+Stage 7.5当前计划范围须在Stage 8启动前完成并接受；未来新增能力另行立项，
+通过版本化capability演进，不自动延后本轮Stage 7.5任务。
 
 ## 9. 明确不包含
 

@@ -8,6 +8,8 @@
 
 当前状态只以 [CURRENT_STATUS](../../../../CURRENT_STATUS.md) 为准；本页只负责定位，不新增实施、测量或阶段接受结论。
 
+本轮最终裁定及后续遗留责任集中见[2026-11-14 受限退出与缺陷交接](r4/2026-11-14-limited-exit-and-defect-handoff.md)。
+
 先按下表定位批次；同批报告与附件放在同一目录。完整原始路径直接查 [证据清单](evidence-catalog.md)，无须逐篇翻阅。
 
 表内数字是 `Markdown 文件数 / 非 Markdown 文件数`，按目录递归统计、含证据目录自带的 `index.md` 与
@@ -84,7 +86,7 @@ P8 时间去相关变体见[P8 low 取证](r4/2026-11-13-p8-low.md)。
 [设备后端首个正式组](r4/2026-11-14-device-first-formal-group.md)及
 [容量与 Player 有限证据](r4/2026-11-14-capacity-and-player-bounded-evidence.md)。
 报告分别保留逐指标 pass／inconclusive、容量停止与语义准入缺口、P8 字节来源勘误和原 DFJK 失败；
-当前门状态仍以 [R4 门账](r4/2026-11-08-r4-gate-status.md)及 CURRENT_STATUS 为准。
+[R4 门账](r4/2026-11-08-r4-gate-status.md)保留冻结前快照；后续实际验证与退出裁定见上方关闭记录，当前摘要归 CURRENT_STATUS。
 独立配对结果见[阶段与 GPU observer](r4/2026-11-14-stage-and-gpu-observer.md)，
 小记录的按字节副本见[本轮证据归档](r4/2026-11-14-closeout-evidence/index.md)。
 最终候选验证的身份边界、工具修复与逐项裁定建议见

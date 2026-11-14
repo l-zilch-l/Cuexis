@@ -1,10 +1,13 @@
-# R4 门账更新（2026-11-14 收尾中）
+# R4 门账（2026-11-14 冻结前快照）
 
-状态：status ledger；不是退出接受记录，也不替代 CURRENT_STATUS
+状态：historical；冻结前门账快照，不是退出接受记录，也不替代 CURRENT_STATUS
+
+后续 d195 最终验证、owner 退出裁定及新增缺陷见
+[受限退出与缺陷交接](2026-11-14-limited-exit-and-defect-handoff.md)。以下 pending／待裁状态保留冻结时点语境。
 
 初版日期：2026-11-08；更新日期：2026-11-14
 
-返回 [New RPA 报告索引](../README.md)。本文保留原门账路径，按最新裁定更新当前门状态；
+返回 [New RPA 报告索引](../README.md)。本文保留原门账路径及冻结时点逐门状态；
 历史原始测量、失败和运行身份保持不改。判据与协议以
 [实施方案](../../../../../stage_plans/active/stage-07/05-rpa-new/r4/plan.md)和
 [固定运行登记](../../../../../stage_plans/active/stage-07/05-rpa-new/r4/formal-registration.md)为准。

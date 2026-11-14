@@ -14,7 +14,7 @@
 ## 2. 前置条件
 
 - Stage 7A Input/Judgement/Replay 公共生命周期、external consumer 和确定性回放门禁完成。
-- Stage 8 Chart v5 正式发行合同完成；纳入 v1 的 Stage 7B+ capability 已明确。
+- Stage 8 Chart v5 正式发行合同完成；纳入 v1 的 Stage 7.5 capability 已明确。
 - Stage 9、Stage 11、Stage 12 交付的 Presentation、性能和目标平台矩阵已被接受。
 - 公共 FrameSnapshot、JudgementResult、ReplayData、ContentProvider 和错误生命周期无开放语义问题。
 

@@ -122,7 +122,7 @@ identity 判定一律以准备值为准，不以作者源表达形式为准。**
 | 决策、备选方案、威胁模型、接受门禁 | [ADR 0044](../adr/0044-gameplay-v2-semantic-kernel.md) |
 | typed 内部/preview C++ 边界：类型、命名、整数宽度、所有权、异常边界、生命周期、序列化布局 | [Gameplay V2 ABI](../api/GAMEPLAY_V2_ABI.md) |
 | 阶段目标、批次、依赖、门禁、冻结顺序 | [Stage 7A 实施计划](../stage_plans/active/stage-07/01-a/plan.md) |
-| W 类缺口的编号规则与登记位置 | [Stage 7B+计划](../stage_plans/active/stage-07/06-b/plan.md#53-w-类缺口记录w-class-gap-record) §5.3（登记与引用规则） |
+| W 类缺口的编号规则与登记位置 | [Stage 7.5计划](../stage_plans/active/stage-07-5/plan.md#53-w-类缺口记录w-class-gap-record) §5.3（登记与引用规则） |
 | W 类缺口的字段定义与具体登记项 | [支持 / 拒绝矩阵](../proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md) §6（D-3 落地的分工；见 §1.3） |
 | Packed 已冻结物理预算表 | [Packed 候选物理合同 §3.3](PACKED_CHART_FORMAT.md) |
 | S7A-3 首次 Packed 消费的 candidate 物理字段、REF0 子域与结构 hash | [Gameplay Capsule v2 format](GAMEPLAY_CAPSULE_V2_FORMAT.md) |
@@ -134,7 +134,7 @@ W 类缺口（W-class gap）的编号规则、字段定义与登记位置**不�
 （2026-10-03 第 3 轮裁定，见 [RULING_WORKSHEET.md](../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md) §3 与
 [CONTRACT_MATRIX.md](../proposals/gameplay-v2-acceptance/CONTRACT_MATRIX.md) §12）：**字段定义与具体登记项**的
 权威在 [SUPPORT_AND_REJECTION_MATRIX.md](../proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md) §6；
-**定义、登记与引用规则**在 [Stage 7B+计划](../stage_plans/active/stage-07/06-b/plan.md#53-w-类缺口记录w-class-gap-record) §5.3（该计划现存正文引用
+**定义、登记与引用规则**在 [Stage 7.5计划](../stage_plans/active/stage-07-5/plan.md#53-w-类缺口记录w-class-gap-record) §5.3（该计划现存正文引用
 均显式指向 §5.3）。本 Spec 只做两件事：
 
 1. 声明 W 类缺口不构成 capability，不得据此冻结任何 gameplay 字段；
@@ -2692,7 +2692,7 @@ S7A-3…S7A-9 仍未完成。**（第 1 轮、第 1 轮补充、第 2 轮、第 
 
 - [ADR 0044：Gameplay V2 语义内核](../adr/0044-gameplay-v2-semantic-kernel.md)：决策、备选方案、威胁模型与接受门禁
 - [Gameplay V2 ABI](../api/GAMEPLAY_V2_ABI.md)：typed 内部 / preview C++ 边界
-- [Stage 7A分册](../stage_plans/active/stage-07/01-a/plan.md)：批次与首用门禁；[总计划](../stage_plans/active/stage-07/plan.md)：依赖与冻结顺序；[Stage 7B+分册](../stage_plans/active/stage-07/06-b/plan.md)：W类缺口定义
+- [Stage 7A分册](../stage_plans/active/stage-07/01-a/plan.md)：批次与首用门禁；[总计划](../stage_plans/active/stage-07/plan.md)：依赖与冻结顺序；[Stage 7.5计划](../stage_plans/active/stage-07-5/plan.md)：W类缺口定义
 - [Gameplay V2 acceptance package](../proposals/gameplay-v2-acceptance/README.md)：准入包与接受清单
 - [S7A-0.2 合同逐项台账](../proposals/gameplay-v2-acceptance/CONTRACT_MATRIX.md)：114 项合同项与 `open` 清单
 - [支持 / 拒绝矩阵](../proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md)：支持集合、19 条拒绝、capability registry 草案

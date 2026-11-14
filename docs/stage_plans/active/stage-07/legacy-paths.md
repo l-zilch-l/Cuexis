@@ -65,3 +65,8 @@ future不再维护RPA阶段计划。RPA早期单文件迁移的
 | `docs/stage_plans/active/stage-07/pd/` | [当前目录入口](04-pd/README.md) |
 | `docs/stage_plans/active/stage-07/rpa-new/` | [当前目录入口](05-rpa-new/README.md) |
 | `docs/stage_plans/active/stage-07/b/` | [当前目录入口](06-b/README.md) |
+
+## 2026-11-14 独立 Stage 7.5
+
+原 `06-b/` 与 `plan-b.md` 的活计划现为[Stage 7.5：Gameplay Evolution](../stage-07-5/plan.md)；
+旧兼容路径保留一轮，S7B/S7C 标识不改。

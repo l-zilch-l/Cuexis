@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-10-26
+更新日期：2026-11-14
 
 阶段计划定义目标、范围、批次、门禁和交接。当前实现状态只以
 [CURRENT_STATUS.md](../CURRENT_STATUS.md) 为准；完成证据只以
@@ -27,14 +27,17 @@ reviews
   某次复核的整改计划；复核记录与其证据仍在 stage_reports/reviews/<review>/
 ```
 
-当前 `active` 目录中有两个计划：
+当前 `active` 目录的入口如下；已收束的 Stage 7 暂保留原路径，避免历史引用重排：
 
 ```text
 chart-format-update-for-v5
   Chart v5 跨阶段总工作包，负责维护 Foundation、Stage 6、Stage 7A 和 Stage 8 的总体设计与交接
 
 stage-07
-  Stage 7A 最小内核、Stage 7-RPA 实时架构与设备验收、Stage 7B+ 高级判定能力
+  Stage 7 既有范围的受限关闭计划，保留原路径作历史导航
+
+stage-07-5
+  独立 Stage 7.5：Gameplay Evolution，能力演进、局部重构及性能稳定
 ```
 
 当前 `reviews` 目录中有两个复核整改计划：
@@ -91,22 +94,16 @@ CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块�
   八项关键决策已在 [ADR 0042](../adr/0042-stage-6-productization-boundaries.md) 冻结；A1 至 F1
   全部批次退出，关闭报告、三个核验问题处置与 Stage 7A / Stage 8 交接清单经 owner 接受
   （见 [关闭报告](../stage_reports/stages/stage-06/completion.md)）。Stage 6 关闭本身**不**
-  实现或授权 Stage 7A；Stage 7A 现已进入实施准备，但仍不构成合并或发布授权。Stage 8
-  尚未启动。
-- [Stage 7 总计划](active/stage-07/plan.md)：全局边界、依赖路线、统一证据和跨阶段交接。
-  - [Stage 7A 分册](active/stage-07/01-a/plan.md)：S7A-0–9批次、核验台账、实施记录与接手决策。
-  - [诊断码正式化独立前置](active/stage-07/02-diagnostics/plan.md)：沿用原RPA-N0–N3追溯编号，独立完成审计、合同、迁移、验收；不是新增编号阶段，N3退出先于RPA新架构原型和A4–A6。
-  - [Stage 7-RPA 性能整改候选设计](active/stage-07/05-rpa-new/plan.md)：读取、Seek 准备/存储/恢复、Close 清理许可与续行的候选机制、成本门与证据计划；2026-10-25 R1 已退出；R2 前两候选局部收益未确认，第三候选 direct borrowed Result 于 2026-10-25 23:03:54 +08:00 停止并原样迁入主树；本次整合构建/正确性验证进行中，无第三候选性能结论，R2/R4 未退出。R3/R4、40k、ETW、正式测量与设备接受未因此获授权，不改变 RPA 批次与验收标准。
-  - [Stage 7-RPA R1 实施与验证计划](active/stage-07/05-rpa-new/r1/plan.md)：按先补文档后实施完成许可/身份、四类续行、获批时钟/生命周期与后续 Debug 栈修复；首错修复后五构建适用本地门及新登记同范围三项 pilot 通过，按用户本次授权核验后 R1 退出。全仓五条 PD 格式失败与导出 noIndependentContract 限定保留，RPA/PD/Stage 7 未关闭。
-  - [Stage 7-RPA 历史范围计划（2026-10-11，已归档）](../archive/stage-07-planning/03-rpa-legacy/2026-10-11-rpa-plan.md)：实时架构、实体设备/同步及原S7A-9矩阵、预算、交接的历史快照；旧路径保留兼容入口，供既有引用追溯。
-  - [Stage 7 RPA 性能修改方案（2026-10-14，已归档）](../archive/stage-07-planning/03-rpa-legacy/2026-10-14-rpa-performance-modification-plan.md)：当时的分阶段等待、通道、历史存储、事务复制与验证proposal；已由当前性能整改方案逐项归属，不代表已实施或F3/B5已关闭。
-  - [Stage 7-PD 判定/表现解耦计划](active/stage-07/04-pd/plan.md)：候选架构、单一状态源/修订读取/独立交付绑定、迁移与维护成本、后续 owner 拆分条件；独立于7A和RPA，不代表已实施。
-  - [PD-5 读取归因与分域内存计划](active/stage-07/04-pd/pd-5/pd5-read-candidate-and-memory-domains-plan.md)：R0-a/b 已结案为已量化超界，B0 已接受、B1 静态工具完成；B2/B3 未授权采数，PD-5「未通过但定案」及子阶段退出待 owner 批准。
-  - [Stage 7-PD 内部设计与验收细则](active/stage-07/04-pd/design.md)：发布视图、投影、事务 prepare/apply、按需物化、消费者注册/撤销、响应移交与显式寿命、receipt/Close、合同差异、性能判据及 7B+/Stage 8–14 接入条件；配套设计，不是实施授权。
-  - [Stage 7B+ 分册](active/stage-07/06-b/plan.md)：RPA完成后实施S7B-0–4、S7C-1/2；当前计划范围验收并接受后进入Stage 8。
-  - 历史路径见[legacy-paths](active/stage-07/legacy-paths.md)；当前实现状态以CURRENT_STATUS为准。
+  实现或授权后续阶段；Stage 7 既有范围现按受限接受收束，后续能力与性能工作归独立 Stage 7.5，
+  不构成合并或发布授权。Stage 8 尚未启动。
+- [Stage 7 总计划](active/stage-07/plan.md)：既有内核、诊断、RPA／PD 的受限关闭与历史边界；高级能力已迁出。
+  - [Stage 7A](active/stage-07/01-a/plan.md)、[独立诊断 N0–N3](active/stage-07/02-diagnostics/plan.md)。
+  - [PD](active/stage-07/04-pd/plan.md)、[RPA 整改](active/stage-07/05-rpa-new/plan.md)。
+  - [历史范围及批次导航](active/stage-07/README.md)、[旧路径映射](active/stage-07/legacy-paths.md)。
+- [Stage 7.5：Gameplay Evolution](active/stage-07-5/plan.md)：独立高级输入／判定能力、局部重构和性能稳定；
+  保留 S7B/S7C 批次追溯 ID，以受限 Stage 7 交接入场，独立验收后交给 Stage 8。
 - [Stage 8](future/stage-08/plan.md)：Chart v5 正式语义、CXT v2、Packed Chart 和 CXC 发行收敛；
-  依赖RPA完整退出后的Stage 7B+完成与owner接受，发行选入另按明确矩阵。
+  依赖 Stage 7 受限关闭交接后，独立 Stage 7.5 的完成与 owner 接受，发行选入另按明确矩阵。
 - [Stage 9](future/stage-09/plan.md)：Presentation Foundation 与 Chart v6 / Model v1。
 - [Stage 10](future/stage-10/plan.md)：Studio 和完整创作/打包工作流。
 - [Stage 11](future/stage-11/plan.md)：Chart v7 单轴几何表现与 shader.json 声明接口。

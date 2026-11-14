@@ -1,6 +1,6 @@
 set(CUEXIS_VERSION_YEAR 26)
 set(CUEXIS_VERSION_MONTH 11)
-set(CUEXIS_VERSION_DAY 13)
+set(CUEXIS_VERSION_DAY 14)
 set(CUEXIS_VERSION_BUILD 1)
 
 # Source-compatibility version of the installable C++ Playback preview.

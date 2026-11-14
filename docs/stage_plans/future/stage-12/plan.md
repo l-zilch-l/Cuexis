@@ -12,7 +12,7 @@
 前置：
 
 ```text
-Stage 7A Gameplay Foundation and selected 7B+ capabilities
+Stage 7A Gameplay Foundation and selected Stage 7.5 capabilities
 Stage 8 Chart v5 / CXT v2 / Packed Chart
 Stage 9 Presentation Foundation
 Stage 10 Studio workflows needed by the measured scenarios

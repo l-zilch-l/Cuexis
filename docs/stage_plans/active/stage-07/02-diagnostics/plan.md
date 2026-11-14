@@ -1,6 +1,6 @@
 # Diagnostic Formalization Prerequisite Plan: N0–N3
 
-状态：active；所属Stage7未关闭；独立诊断前置N0–N3已退出，SDK0.7.5已在本地分支提交；交付状态归CURRENT_STATUS
+状态：completed；独立诊断前置 N0–N3 已退出；所属 Stage 7 按拆分后的受限范围收束，后续能力归独立 Stage 7.5；交付状态归 CURRENT_STATUS
 
 更新日期：2026-10-11
 
@@ -18,7 +18,7 @@
 Stage 7A既有内核与S7A-7/8受限集成基线
   -> 诊断码正式化独立前置：N0 -> N1 -> N2 -> N3
   -> RPA新架构原型及A4–A6 -> A7/F1–F4完整验收与接受
-  -> Stage 7B+实施、验收与接受 -> Stage 8
+  -> 独立 Stage 7.5 实施、验收与接受 -> Stage 8
 ```
 
 RPA A1–A3纸面设计、既有行为的只读基线盘点及测量设计可与本工作包并行。
@@ -362,7 +362,7 @@ N3.3记录每项要求的pass/fail/not_run/not_applicable及日志入口，独�
 
 ## 排除项与停止条件
 
-不实施RPA架构/线程/音频调度、同Tick/Resume规则变化、预算接受、F线关闭、7B+或Stage8发行。
+本诊断工作包不实施 RPA 架构／线程／音频调度、同 Tick／Resume 规则变化、预算接受、F 线关闭、独立 Stage 7.5 或 Stage 8 发行。
 不引入稳定诊断数值ID、公开通用registry、旧格式永久执行层、离线迁移工具或新算法版本。
 N0对`playback.override.mask`仅提出可选弱命名建议，本包不迁移该码；若另行处理需独立范围与公共影响说明。
 需要改变原类别、公开承载、判定语义、body布局或既有不变量时，登记反例、被替换条款及影响；

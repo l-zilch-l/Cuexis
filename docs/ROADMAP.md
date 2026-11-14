@@ -2,7 +2,7 @@
 
 状态：现行路线图
 
-更新日期：2026-10-10
+更新日期：2026-11-14
 
 产品边界由 [ADR 0027](adr/0027-playback-sdk-product-boundary.md) 冻结。
 本文只维护阶段顺序、依赖关系、格式演进和交接规则，不记录当前实现状态、逐批次证据或
@@ -21,11 +21,11 @@ Cuexis 的路线围绕两个相互约束的目标展开：
 
 ```text
 Playback SDK 基线与 Chart v4 兼容边界
-  -> Stage 7（按顺序完成三个子阶段）
+  -> Stage 7（内核、诊断、RPA／PD 及统一收尾）
       Stage 7A：既有Gameplay内核与7/8集成
         -> 诊断码正式化独立前置N0–N3（不新增阶段编号）
         -> Stage 7-RPA：实时架构、设备验收及原S7A-9统一收尾
-        -> Stage 7B+：S7B-0–4、S7C-1/2实施、验收与阶段接受
+  -> Stage 7.5：Gameplay Evolution（独立能力演进、局部重构与性能稳定）
   -> Stage 8：Chart v5正式发行与语义收敛
           -> Stage 9：Presentation Foundation 与 Chart v6 / Model v1
           -> Stage 10：Studio 创作与发行工作流
@@ -35,9 +35,9 @@ Playback SDK 基线与 Chart v4 兼容边界
           -> Stage 14：稳定 ABI 与 Playback SDK v1
 ```
 
-Stage 7B+当前计划范围须在Stage 8前完成并接受；Stage 13 是可选的高级表现线，Stage 14 不必
+Stage 7.5当前计划范围须在Stage 8前完成并接受；Stage 13 是可选的高级表现线，Stage 14 不必
 等待 Stage 13 的全部能力。运行时脚本、逐帧脚本回调和任意宿主字节码不在这条路线中。
-**稳定 C ABI 的唯一归属阶段是 Stage 14**：Stage 7A/7B/8 只交付 C++ typed preview，稳定 C ABI 不在
+**稳定 C ABI 的唯一归属阶段是 Stage 14**：Stage 7A／7.5／8 只交付 C++ typed preview，稳定 C ABI 不在
 Stage 12 落地（`AGENTS.md` 把稳定 C ABI 写作 Stage 12 的表述是孤例，由 owner 择时订正，见缺陷 `D-11`；
 阶段号以 [Stage 14 计划](stage_plans/future/stage-14/plan.md) 与 [CURRENT_STATUS.md](CURRENT_STATUS.md) 为准）。
 
@@ -47,8 +47,8 @@ Stage 12 落地（`AGENTS.md` 把稳定 C ABI 写作 Stage 12 的表述是孤例
 | --- | --- | --- | --- |
 | [Stage 7A](stage_plans/active/stage-07/01-a/plan.md) | 冻结 Gameplay v2 最小可玩闭环和 Judgement Kernel | Stage 6 交接边界；Gameplay v2 contract | Input、Judgement、Score、Replay、Tap/Hold/Release-tail、单一 capacity=1 exclusive resource、early/late bridge、Graph/Packed 双入口，以及四项 Stage 6 遗留收口 |
 | [Stage 7-RPA](stage_plans/active/stage-07/03-rpa-legacy/plan.md) | 实时架构及原S7A-9统一收尾 | S7A-7/8受限基线；独立诊断前置N3退出先于新原型/A4–A6；首用合同裁定 | 时间/输入/音频/判定/表现解耦、资源与快照协议、设备与平台验收 |
-| [Stage 7B+](stage_plans/active/stage-07/06-b/plan.md) | 扩展高级输入与判定并完成阶段验收 | RPA-F4完整退出与owner接受；7A身份、生命周期和capability合同 | Slide、Flick、方向、连续轨迹、多指、校准和高级判定 |
-| [Stage 8](stage_plans/future/stage-08/plan.md) | Chart v5 正式发行和语义收敛 | RPA完整退出后，Stage 7B+完成并接受 | v5/Gameplay v2 Spec、CXT v2、Canonical Graph、Packed Chart、CXC Graph/Packed playback entries、迁移和默认 Writer |
+| [Stage 7.5：Gameplay Evolution](stage_plans/active/stage-07-5/plan.md) | 高级输入／判定、局部重构与性能稳定的独立验收 | Stage 7 受限关闭交接与 owner 接受；7A 身份／生命周期合同 | Slide、Flick、方向、连续轨迹、多指、校准、高级判定及复制／保活成本整改 |
+| [Stage 8](stage_plans/future/stage-08/plan.md) | Chart v5 正式发行和语义收敛 | Stage 7 受限交接后，Stage 7.5 完成并接受 | v5/Gameplay v2 Spec、CXT v2、Canonical Graph、Packed Chart、CXC Graph/Packed playback entries、迁移和默认 Writer |
 | [Stage 9](stage_plans/future/stage-09/plan.md) | Presentation Foundation 与 Chart v6 | Chart v5 语义和资源边界 | Environment、静态 glTF、Model v1、内置网格和 submesh |
 | [Stage 10](stage_plans/future/stage-10/plan.md) | Studio 创作与发行工作流 | Stage 9 的模型/表现边界 | 编辑、预览、编译、打包和资源闭包 |
 | [Stage 11](stage_plans/future/stage-11/plan.md) | Chart v7 几何表现 | Chart v6 / Model v1 | 单轴 Bézier、line 和 `shader.json` 声明接口 |
@@ -56,6 +56,7 @@ Stage 12 落地（`AGENTS.md` 把稳定 C ABI 写作 Stage 12 的表述是孤例
 | [Stage 13](stage_plans/future/stage-13/plan.md) | Chart v8 与高级表现 | Chart v7 能力和独立表现合同 | 双轴 Bézier、模型动画、内置后处理和确定性粒子 |
 | [Stage 14](stage_plans/future/stage-14/plan.md) | 稳定 SDK v1 | 已接受的核心与平台边界 | 稳定 C ABI、公共生命周期和发布政策 |
 
+Stage 7.5 的小数编号仅表达顺序，其计划与报告目录均与 Stage 7 同级；旧 7B+ 名称及 S7B/S7C ID 只作追溯。
 阶段计划索引同时列出已完成计划、复核整改计划和历史输入；路线图不复制它们的关闭证据。
 
 ## 阶段依赖
@@ -65,7 +66,7 @@ Stage 6 交接
   -> Stage 7A既有成果
   -> 诊断码正式化独立前置N0–N3
   -> Stage 7-RPA（实时架构/设备及原S7A-9收尾）
-  -> Stage 7B+（当前计划范围逐项验收、关闭交接）
+  -> Stage 7.5（当前计划范围逐项验收、关闭交接）
   -> Stage 8（发行矩阵与正式格式收敛）
             -> Stage 9 -> Stage 10
             -> Stage 11 -> Stage 12
@@ -77,14 +78,14 @@ Stage 7-RPA属于Stage 7，基于7A既有内核和7/8受限集成基线实施。
 由[独立前置N0–N3](stage_plans/active/stage-07/02-diagnostics/plan.md)管理，
 不再属于RPA内部工作线，其N3在新架构原型及A4–A6前退出；原S7A-9全部剩余矩阵、预算、交接和关闭
 归RPA-F1–F4，不再安排RPA结束后返回7A。实体设备与实时同步的整改和最终验收也归RPA。
-RPA完整退出并接受后实施Stage 7B+；7B+当前计划范围完成并接受后进入Stage 8。
-发行矩阵决定正式选入哪些能力，不替代7B+阶段验收。
+Stage 7 受限关闭交接获接受后，由独立 Stage 7.5 实施能力与集中整改；本阶段范围完成并接受后进入 Stage 8。
+发行矩阵决定正式选入哪些能力，不替代Stage 7.5 阶段验收。
 范围迁移不将旧设备失败标通过；它们作为RPA待办和基线证据保留。
 
 允许并行研究，但不得越过主链直接形成生产承诺：
 
 - Stage 7A 的最小 Judgement 合同和实现准备。
-- Stage 7B+ 的高级判定设计。
+- Stage 7.5 的高级判定设计。
 - Stage 8 发行格式的候选验证。
 - Stage 12/13 的性能和高级表现研究。
 

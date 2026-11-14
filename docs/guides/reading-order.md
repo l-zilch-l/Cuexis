@@ -51,7 +51,7 @@
 2. [Gameplay V2 Spec](../formats/GAMEPLAY_V2_SPEC.md)（现行候选权威：字段与运行语义）
 3. [Gameplay V2 ABI](../api/GAMEPLAY_V2_ABI.md)（typed 内部 / preview 边界）
 4. [ADR 0044：Gameplay V2 语义内核](../adr/0044-gameplay-v2-semantic-kernel.md)（决策与威胁模型）
-5. [Stage 7 计划](../stage_plans/active/stage-07/plan.md)
+5. [Stage 7 既有范围与交接](../stage_plans/active/stage-07/plan.md) → [独立 Stage 7.5：Gameplay Evolution](../stage_plans/active/stage-07-5/plan.md)
 6. [Gameplay 提案索引](../proposals/README.md) → [Gameplay research](../proposals/research/gameplay/README.md)（历史输入）
 
 Gameplay I 的 [Gameplay Judgement Spec](../formats/GAMEPLAY_JUDGEMENT_SPEC.md)、
@@ -62,7 +62,7 @@ Gameplay I 的 [Gameplay Judgement Spec](../formats/GAMEPLAY_JUDGEMENT_SPEC.md)�
 与[第 7 轮收尾裁定记录](../stage_reports/stages/stage-07/01-a/s7a-7-8/2026-10-03-s7a-7-wrapup-rulings.md)；
 **裁定完成不等于实现完成**，实现状态以[CURRENT_STATUS](../CURRENT_STATUS.md)为准。
 原S7A-9收尾现由[RPA-F1–F4](../stage_plans/active/stage-07/03-rpa-legacy/plan.md#综合收尾工作线原s7a-9)承接；
-RPA完成后依次实施Stage 7B+、Stage 8。审查材料本身不构成已实施API证据。
+RPA完成后依次实施Stage 7.5、Stage 8。审查材料本身不构成已实施API证据。
 研究稿用于追溯推导、压测和取舍，不是第二份规范。
 
 ### 做诊断码正式化或接手RPA

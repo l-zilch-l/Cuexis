@@ -1,6 +1,8 @@
 # Stage 7-PD: Judgement/Presentation Decoupling Plan
 
-状态：active；PD-0–4 内部实施及适用门禁完成，SDK 0.9.0 已获接受。PD-5 原 40k 功能已核验，内存仍未测量、正式性能未通过；判定报告提出「未通过但定案」及子阶段退出清单，尚待 owner 批准。B0 已接受，B1 静态工具完成，B2/B3 未授权采数；当前实施仅在主树，R2/R4 未退出，Stage 7-PD、RPA、生产与 Stage 7 均未关闭。
+状态：completed；owner 于 2026-11-14 接受 Stage 7-PD／PD-5 带限制退出及遗留责任交接；PD-5 历史“未通过但定案”保持，完整性能／内存及生产保证未获接受。
+
+更新日期：2026-11-14。退出范围见[受限退出与缺陷交接](../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-14-limited-exit-and-defect-handoff.md)。以下实施授权与批次结果保留历史语境。
 
 2026-10-16 历史实施授权：owner 要求“阅读接手文档并阅读相关文档，本次任务是完成PD计划”，随后要求先提交当前状态存档、后续显示 todolist。此前设计阶段关于不得启动实施的限制不再适用于本次已授权工作；正式合同接受、公共版本、逐批验收与发行门禁仍分别成立。内部接口名仍须以实际实现与证据核对。
 
@@ -478,13 +480,13 @@ Stage 7-PD 退出需要：
 首版保证；未具备正式合同、实现和验收的项目保持不支持或未交付。
 
 RPA-F4 接受前若集成 PD，其最终矩阵/预算直接覆盖该实现；F4 接受后再集成 PD，则在原报告
-之外补受影响路径的新 SHA 验证和 owner 接受记录。7B+ 产品集成、Stage 8 发行消费实际基线的
+之外补受影响路径的新 SHA 验证和 owner 接受记录。独立 Stage 7.5 产品集成、Stage 8 发行消费实际基线的
 补充交接；不反向要求 PD 等待未来阶段完成，也不允许使用旧 F4 证据关闭新实现门禁。
-这些规则只约束受影响的集成与发行，不改变 RPA → 7B+ → Stage 8 的既定产品顺序。
+这些规则只约束受影响的集成与发行，不改变 RPA 受限交接 → Stage 7.5 → Stage 8 的既定产品顺序。
 
 ## 13. 实施待办与进度
 
-此清单追踪本轮实施批次；当前实现状态总入口仍为 [CURRENT_STATUS](../../../../CURRENT_STATUS.md)。
+此清单保留 PD 历史实施结果并补受限退出处置；当前实现状态总入口仍为 [CURRENT_STATUS](../../../../CURRENT_STATUS.md)。
 勾选表示相应交付及验证完成，进行中不等于退出。每批记录结果后更新清单并在对话中同步。
 
 - [x] 读取接手、核对分支/HEAD/脏文件，保留既有设计和证据。
@@ -496,8 +498,8 @@ RPA-F4 接受前若集成 PD，其最终矩阵/预算直接覆盖该实现；F4 
 - [x] PD-3-b——状态修订、中性 PresentationRead、唯一物化器与内部 ExactVersion；本地四配置回归、static/shared 包消费者及 GPT-6-Luna 独立复审通过，见 [PD-3-b 报告](../../../../stage_reports/stages/stage-07/04-pd/pd-3/b/2026-10-19-pd3b-state-read-and-materialization.md)。不表示控制绑定、按额度交付或设备验收完成。
 - [x] PD-3-c——正式宿主差异、确认绑定与保留画面来源；已形成[来源查询和版本决策方案](../../../../stage_reports/stages/stage-07/04-pd/pd-3/c/2026-10-19-pd3c-contract-and-version-decision.md)，owner 已接受，控制/保留路径已接入，适用本地门禁已完成，新建无上下文 GPT-6-Luna 独立审核通过。
 - [x] PD-4——消费注册、按需交付、显式反馈寿命、紧凑 journal 与真实回收；三项合同/SDK 0.9.0 已获接受，内部实施、本地适用门禁与新的无上下文独立复审完成；[实施与验证](../../../../stage_reports/stages/stage-07/04-pd/pd-4/2026-10-19-pd4-delivery-retirement-and-observation.md)。实体设备、正式预算与子阶段退出另行验收。
-- [ ] PD-5——原两窗、40k 功能与读取归因证据已登记；判定报告为「未通过但定案」，定案与 Stage 7-PD 退出清单仍待 owner 批准。B0 静态账本已接受，B1 静态工具完成且未运行；B2/B3 未授权采数，内存仍未测量，正常分配器正式性能未通过；见 [CURRENT_STATUS](../../../../CURRENT_STATUS.md)。
-- [ ] 最终回归、适用消费者/版本门禁、迁移路径清理与交接。
+- [x] PD-5 判定及受限退出——历史结论「未通过但定案」保持；owner 于 2026-11-14 接受 Stage 7-PD 退出及遗留责任交接。后续 RPA 结果和内存／GPU／生产未认证范围见[已接受交接](../../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-14-limited-exit-and-defect-handoff.md)；不将旧失败或未测量项改为通过。
+- [x] 最终回归及受限交接——d195 最终 F1/F2 与适用消费者结果已封存，owner 接受准确限制；后继关闭／阶段拆分／日期版本候选独立验证，不外推旧 SHA 或生产保证。
 
 当前快照证据见[PD 设计演进记录](../../../../stage_reports/stages/stage-07/04-pd/design/2026-10-16-design-evolution.md)。
 
