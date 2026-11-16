@@ -3,6 +3,7 @@
 /.codex/
 /cmake-build-*/
 /out/
+/backups/
 /vcpkg_installed/
 
 CMakeUserPresets.json
