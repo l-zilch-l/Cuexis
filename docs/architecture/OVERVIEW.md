@@ -129,6 +129,7 @@ pack、prepare 或 Playback 隐式执行。
 - [Player 应用结构](PLAYER_APPLICATION.md)
 - [RuntimeSession](RUNTIME_SESSION.md)
 - [执行状态、恢复与准备路径](execution-state-and-recovery.md)
+- [Chart 表示与转换点](CHART_REPRESENTATIONS.md)
 - [配置所有权 ADR](../adr/0024-configuration-ownership-and-staged-formats.md)
 - [Chart/Runtime/World ADR](../adr/0007-chart-runtime-world-boundary.md)
 - [属性求值 ADR](../adr/0009-property-evaluation-and-conflicts.md)

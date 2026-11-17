@@ -66,17 +66,13 @@ Canonical Semantic Chart 是内部逻辑合同，不是新增的 JSON 顶层分�
 
 ```text
 CanonicalSemanticChart {
-  semanticVersion: 5
-  chartId: UUID
-  timing: { offsetMs, defaultBpm, tempoEvents[], stops[] }
-  defaultCamera: resolved CameraData
+  chartId: ChartId
   mainMusic: AssetId | none
-  requiredFeatures: sorted (id, version)[]
-  resourceRequirements: sorted typed references[]
-  entities: sorted ConcreteEntity[]
-  behaviorDefinitions: sorted typed definitions[]
-  animationDefinitions: sorted typed clips and bindings[]
-  effectDefinitions: sorted finite typed schedules[]
+  features: sorted CanonicalFeature[]
+  timing: ChartTiming
+  defaultCamera: CameraData
+  resourceClosure: CanonicalResourceClosure
+  entities: sorted CanonicalEntity[]
 }
 
 ConcreteEntity {
@@ -86,6 +82,10 @@ ConcreteEntity {
   requirements: sorted (localId, kind, interval, domain, action, constraints, effects)[]
 }
 ```
+
+字段以 `engine/chart/include/cuexis/chart/canonical_semantic_chart.hpp:180-188` 为准；本页不新增
+`semanticVersion`、`behaviorDefinitions`、`animationDefinitions` 或 `effectDefinitions` 这类
+当前类型中不存在的字段。
 
 所有 CXT 槽位、参数、局部 Beat 偏移和父引用必须已冻结；所有 Component 默认值必须
 已按语义 Schema 补齐。Requirement 列表只是单实体的逻辑数据，不新增作者层 `notes`、

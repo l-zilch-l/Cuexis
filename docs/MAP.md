@@ -52,6 +52,7 @@ authority: index
 | [api/playback-session.md](api/playback-session.md) | active | owns | `PlaybackSession` 生命周期 |
 | [api/presentation-and-capabilities.md](api/presentation-and-capabilities.md) | active | owns | 表现资源与能力预检 |
 | [api/sources-and-content.md](api/sources-and-content.md) | active | owns | `PlaybackSource` 与 `ContentProvider` |
+| [architecture/CHART_REPRESENTATIONS.md](architecture/CHART_REPRESENTATIONS.md) | active | none | Chart 表示与转换点 |
 | [architecture/GAMEPLAY_ABSTRACTION_MODEL.md](architecture/GAMEPLAY_ABSTRACTION_MODEL.md) | active | owns | 音乐游戏玩法抽象模型 |
 | [architecture/MODULE_BOUNDARIES.md](architecture/MODULE_BOUNDARIES.md) | active | owns | Cuexis Module Boundaries |
 | [architecture/OVERVIEW.md](architecture/OVERVIEW.md) | active | owns | Cuexis Architecture Overview |

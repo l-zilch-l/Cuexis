@@ -23,14 +23,13 @@ authority: owns
 
 ## 当前任务
 
-D1/D3–D9 已按 owner 决策落地：版本漂移归零、证据 meta 检查、particles 清理、tools 清单校验、
-测试迁移与 RR-3 路线登记。Chart 表示与转换点页由子代理并行编写，完成后并入本批。
+本轮文档工作已完成：D1/D3–D9、Chart 表示与转换点页、格式文档两处失真修正，构建身份推进到
+`26.11.18-1`。当前没有进行中的文档批次。
 
 ## 下一步
 
-1. 合并 Chart 表示页并提交到 PR #46。
-2. 等 owner 决定开始“架构精简决策表”（只读盘点版）。
-3. 等 CI 结果；Version Gate 需在当天构建上通过。
+1. 等 owner 决定开始“架构精简决策表”（只读盘点版）。
+2. 等 CI 结果；Version Gate 需在当天构建上通过。
 
 ## 阻塞与待决
 
@@ -38,7 +37,7 @@ D1/D3–D9 已按 owner 决策落地：版本漂移归零、证据 meta 检查�
 
 ## 验证状态
 
-- `check_docs.py`：0（738 篇）；`check_docs_facts.py`：0（版本漂移 0）。
+- `check_docs.py`：0（739 篇）；`check_docs_facts.py`：0（版本漂移 0）。
 - `gen_docs_map.py --check`：0；`check_tools_inventory.py`：0（30 scripts）。
 - `test_measurement_seek.py` 迁移后 6 tests OK；`git diff --check`：0。
 
@@ -47,6 +46,8 @@ D1/D3–D9 已按 owner 决策落地：版本漂移归零、证据 meta 检查�
 - 新增：`docs/HANDOFF.md`、`docs/templates/`、`.github/pull_request_template.md`
 - 计划体系：active 用详细模板、future 用提纲模板；Stage 7-RR 计划重写；7 份 future plan 提纲化
 - 文档收尾：版本漂移策略 D（按状态限定 + 示例/引用块豁免）、证据 meta 检查、seek 按 candidate 收口
+- 新增 `docs/architecture/CHART_REPRESENTATIONS.md`：7 个内容型表示、6 个载体、3 类编码、三条输入族；
+  修正 CHART_V4 §1.1 占位类型名与 PACKED §2 不存在的字段
 - 工具：`check_tools_inventory.py`、`practice/README.md`、`test_measurement_seek.py` 迁到 playback_performance
 - 清理：删除 `engine/particles`；`cuexis_debug` 标 test-only
 - 版本：构建身份推进到 `26.11.18-1`

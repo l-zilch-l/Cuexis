@@ -15,7 +15,8 @@ authority: index
 所有 Chart 格式都遵守
 [音乐游戏玩法抽象模型](../architecture/GAMEPLAY_ABSTRACTION_MODEL.md)定义的语义边界：
 格式版本可以改变字段合同和物理编码，但不得把某一种轨道、Note 或渲染方式误认为
-音游的核心语义。
+音游的核心语义。同一谱面在代码中的表示与转换点见
+[Chart 表示与转换点](../architecture/CHART_REPRESENTATIONS.md)。
 
 ```text
 Source Project
