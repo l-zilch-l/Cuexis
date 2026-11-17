@@ -15,7 +15,7 @@ authority: index
 
 | 模板 | 用途 |
 | --- | --- |
-| [plan.md](plan.md) | `docs/stage_plans/active/<stage>/plan.md` |
+| [plan.md](plan.md) | `docs/stage_plans/active/<stage>/plan.md`；项目开始时由规划模型一次填细（任务看板、门禁、验收矩阵、回滚条件），执行期只更新批次状态与变更记录 |
 | [report.md](report.md) | `docs/stage_reports/stages/<stage>/YYYY-MM-DD-<topic>.md` |
 | [handoff.md](handoff.md) | `docs/HANDOFF.md`（对话级交接） |
 
