@@ -10,32 +10,20 @@ status: future
 authority: none
 -->
 
-本文件是**未启动阶段的提纲**，不是执行计划。启动本阶段时，用
-[plan.md](../../../templates/plan.md)（详细规划协议）重写，并在变更记录里注明替换关系。
+本文件是**未启动阶段的提纲**，不是执行计划。启动本阶段时，用 [plan.md](../../../templates/plan.md)（详细规划协议）重写，并在变更记录里注明替换关系。
 
-归档来源：[Chart v6 历史设计输入](../../historical-inputs/chart-format-update-for-v6/plan.md)、
-[Portable Presentation v1](../../../formats/PORTABLE_PRESENTATION.md) 与
-[Material/Shader v1](../../../formats/MATERIAL_SHADER.md)。原 Stage 9 的环境/模型目标已收敛为
-同一条 Presentation Foundation。
+归档来源：[Chart v6 历史设计输入](../../historical-inputs/chart-format-update-for-v6/plan.md)、[Portable Presentation v1](../../../formats/PORTABLE_PRESENTATION.md) 与 [Material/Shader v1](../../../formats/MATERIAL_SHADER.md)。原 Stage 9 的环境/模型目标已收敛为同一条 Presentation Foundation。
 
 ## 阶段目标
 
-候选，未承诺：以一条 Presentation Foundation 承载三项交付：Presentation Environment
-（solid/equirectangular/cubemap skybox、fog、环境参数）、Model v1（静态 glTF 2.0 离线导入为
-portable Model/Mesh/Material/Texture）和 Chart v6（内置基础网格、默认扁平片、submesh 材质槽）。
-Chart v6 是模型与默认网格的承载版本，不改变 Judgement、Score 或 Replay 语义；Stage 10 Studio
-只依赖本阶段已交付的稳定子集。
+候选，未承诺：以一条 Presentation Foundation 承载三项交付——Presentation Environment（solid/equirectangular/cubemap skybox、fog、环境参数）、Model v1（静态 glTF 2.0 离线导入为 portable Model/Mesh/Material/Texture）和 Chart v6（内置基础网格、默认扁平片、submesh 材质槽）。Chart v6 是模型与默认网格的承载版本，不改变 Judgement、Score 或 Replay 语义；Stage 10 Studio 只依赖本阶段已交付的稳定子集。
 
 ## 范围与边界
 
-- 前置基线为 Stage 8 的 Chart v5 / CXT v2 / Packed Chart production baseline，以及
-  Portable Presentation v1 与 Material/Shader v1。
-- Stage 7A core 合同是本阶段基础；只有在某个表现批次确实需要时才纳入已接受的 Stage 7.5
-  capability，本阶段不重新验收 Stage 7.5。
-- 环境是独立 Presentation 资源，不是普通 Chart Object 或 Renderable Mesh；Model/Submesh 资源
-  进入 CXC closure，能力缺失时稳定拒绝。
-- 与 Stage 11 的边界：曲线形变、line 和 shader 执行不在本阶段；Stage 11 仅在本阶段关闭后接收
-  曲线表现扩展。与 Stage 10 的边界：本阶段不交付 Studio 产品，只交付 Studio 可消费的稳定子集。
+- 前置基线为 Stage 8 的 Chart v5 / CXT v2 / Packed Chart production baseline，以及 Portable Presentation v1 与 Material/Shader v1。
+- Stage 7A core 合同是本阶段基础；只有在某个表现批次确实需要时才纳入已接受的 Stage 7.5 capability，本阶段不重新验收 Stage 7.5。
+- 环境是独立 Presentation 资源，不是普通 Chart Object 或 Renderable Mesh；Model/Submesh 资源进入 CXC closure，能力缺失时稳定拒绝。
+- 与 Stage 11 的边界：曲线形变、line 和 shader 执行不在本阶段，Stage 11 仅在本阶段关闭后接收曲线表现扩展；与 Stage 10 的边界：本阶段只交付 Studio 可消费的稳定子集，不交付 Studio 产品。
 
 ## 入口条件
 
@@ -47,32 +35,22 @@ Chart v6 是模型与默认网格的承载版本，不改变 Judgement、Score �
 ## 已确认约束
 
 - Chart v6 是模型与默认网格的承载版本，不改变 Judgement、Score 或 Replay 语义。
-- 只接受静态 glTF 2.0；拒绝 animation、skin、morph target、camera、light 和运行时扩展。离线
-  importer 生成 portable Model v1，Playback/prepare 不解析 glTF；CXC 只打包 portable payload，
-  source glTF 只能保留为 Source Project/source entry。
+- 只接受静态 glTF 2.0；拒绝 animation、skin、morph target、camera、light 和运行时扩展。离线 importer 生成 portable Model v1，Playback/prepare 不解析 glTF；CXC 只打包 portable payload，source glTF 只能保留为 Source Project/source entry。
 - 环境是独立 Presentation 资源，不是普通 Chart Object 或 Renderable Mesh。
 - 非相机、带 renderable 且省略 mesh 的对象默认使用 sheet；相机永不获得默认网格。
 - 沿用 `transform.scale` 与既有 Behavior/AnimationClip 白名单，不建立 morph/骨骼系统。
-- 合法 v4/v5 输入的既有 FrameDigest 保持不变；FrameSnapshot、FrameDigest、capability 与预算变化
-  必须独立版本化。
-- 采用 PD 基线时，Environment 与 Model/Submesh 接入
-  [PD 有类型表现域边界](../../completed/stage-07/04-pd/design.md) §12.2，复用单一求值与 Snapshot
-  物化协调入口；环境不能被硬塞成普通对象，也不建立动态 provider 或另一套 Renderer 求值。
-  新增 submesh/资源字段同步更新 Snapshot/Digest/capability 与单帧/峰值预算，不沿用旧对象数上界。
+- 合法 v4/v5 输入的既有 FrameDigest 保持不变；FrameSnapshot、FrameDigest、capability 与预算变化必须独立版本化。
+- 采用 PD 基线时，Environment 与 Model/Submesh 接入 [PD 有类型表现域边界](../../completed/stage-07/04-pd/design.md) §12.2，复用单一求值与 Snapshot 物化协调入口；环境不能被硬塞成普通对象，也不建立动态 provider 或另一套 Renderer 求值；新增 submesh/资源字段同步更新 Snapshot/Digest/capability 与单帧/峰值预算。
 - Stage 11 仅在本阶段关闭后接收曲线表现扩展。
 
 ## 候选方向（非承诺）
 
 启动时可能按以下工作线细化，均未承诺：
 
-- Presentation Environment：solid/equirectangular/cubemap skybox、fog 与环境参数；冻结相机平移、
-  时间驱动、有限 Behavior、纹理/内存预算、移动端降级和 Snapshot/Digest 影响。
-- Model v1 与导入：节点 TRS 在导入阶段处理为 portable submesh 数据；importer 只产出 portable
-  payload，不把 glTF 语义带入 Playback。
-- 内置网格与 Chart v6：triangle、quad、sheet、cube、uv-sphere、prism、cylinder 的 bytes、
-  identity 和分段常数；默认网格规则与对象/相机区别。
-- Submesh 与观察面：有序 submesh 槽和静态材质覆盖，未覆盖槽使用 Model 默认材质；digest、
-  capability 与预算随字段扩展同步版本化。
+- Presentation Environment：solid/equirectangular/cubemap skybox、fog 与环境参数；冻结相机平移、时间驱动、有限 Behavior、纹理/内存预算、移动端降级和 Snapshot/Digest 影响。
+- Model v1 与导入：节点 TRS 在导入阶段处理为 portable submesh 数据；importer 只产出 portable payload，不把 glTF 语义带入 Playback。
+- 内置网格与 Chart v6：triangle、quad、sheet、cube、uv-sphere、prism、cylinder 的 bytes、identity 和分段常数；默认网格规则与对象/相机区别。
+- Submesh 与观察面：有序 submesh 槽和静态材质覆盖，未覆盖槽使用 Model 默认材质；digest、capability 与预算随字段扩展同步版本化。
 
 ## 待决问题（启动前必须回答）
 
