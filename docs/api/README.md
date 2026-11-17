@@ -33,7 +33,8 @@ authority: index
 | 检查表现资源、renderer capability | [表现资源与能力预检](presentation-and-capabilities.md) |
 | 处理错误、diagnostics、identity 和兼容性 | [诊断、身份与兼容性](diagnostics-identity-and-compatibility.md) |
 | 判断实现应落在哪个内部模块 | [内部模块速查](internal-module-catalog.md) |
-| 设计 Gameplay Judgement typed preview 边界 | [Gameplay Judgement ABI（候选）](GAMEPLAY_JUDGEMENT_ABI.md) |
+| 设计 Gameplay Judgement typed preview 边界 | [Gameplay Judgement ABI（已 superseded）](GAMEPLAY_JUDGEMENT_ABI.md)；当前 seek 见下条 |
+| 判断 Judgement seek 的当前状态 | [Gameplay V2 Spec §3.19](../formats/GAMEPLAY_V2_SPEC.md) + [Gameplay V2 ABI](GAMEPLAY_V2_ABI.md)（candidate；仅在 `CUEXIS_ENABLE_CHART_V5_CANDIDATE=ON` 编译，默认安装面不暴露） |
 | 设计 Gameplay V2 typed preview 边界 | [Gameplay V2 ABI（候选）](GAMEPLAY_V2_ABI.md)（语义权威在 [Gameplay V2 Spec](../formats/GAMEPLAY_V2_SPEC.md)，决策在 [ADR 0044](../adr/0044-gameplay-v2-semantic-kernel.md)） |
 | 查阅 S7A-3/4 首次执行字段基线 | [Execution typed supplement](gameplay-v2-execution-types.md)（内部 candidate 基线；后续 RPA 字段见实时合同，不安装为宿主 API） |
 | 接入实际输入、音频时钟与发布协调 | [实时宿主边界合同](realtime-host-boundary.md)（candidate 已有分支实施；区分安装版入口和非安装 Host 实现，接受状态见 CURRENT_STATUS） |

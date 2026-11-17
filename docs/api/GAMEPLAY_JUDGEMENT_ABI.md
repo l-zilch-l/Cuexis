@@ -10,6 +10,11 @@ authority: owns
 
 日期：2026-10-01
 
+> **Seek 的当前入口（candidate）**：语义见 [GAMEPLAY_V2_SPEC](../formats/GAMEPLAY_V2_SPEC.md) §3.19
+> 与控制矩阵，接口边界见 [GAMEPLAY_V2_ABI](GAMEPLAY_V2_ABI.md)；`PlaybackSession::seekGameplay`
+> 仅在 `CUEXIS_ENABLE_CHART_V5_CANDIDATE=ON` 时编译，默认构建与安装面不暴露。
+> 本文的 seek 设计仅作历史对照，不构成当前合同。
+
 本文定义 Stage 7A 可实现的 C++ typed preview 边界，不改变当前 SDK API `0.7.1`，也不宣称
 已有安装包暴露这些类型。稳定 C ABI 仍属于 Stage 14。
 
