@@ -233,6 +233,7 @@ authority: index
 
 | 文档 | 状态 | 权限 | 标题 |
 | --- | --- | --- | --- |
+| [HANDOFF.md](HANDOFF.md) | active | owns | 当前交接 |
 | [PROJECT_GUIDE.md](PROJECT_GUIDE.md) | active | owns | Cuexis Project Guide |
 | [README.md](README.md) | active | index | Cuexis Documentation |
 | [ROADMAP.md](ROADMAP.md) | active | owns | Cuexis Roadmap |

@@ -13,6 +13,8 @@ current_register: stage_plans/active/stage-07-rr/findings.md
 
 更新日期：2026-11-17
 
+当前任务、下一步与阻塞见 [交接页](HANDOFF.md)。
+
 本文只维护当前阶段、正在进行的任务和未解决的问题。实施与测量细节见带日期的阶段报告。
 
 ## 当前任务

@@ -15,11 +15,15 @@ from __future__ import annotations
 import importlib.util
 import re
 import sys
+from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 DOCS = ROOT / "docs"
 VERSION_CMAKE = ROOT / "cmake" / "CuexisVersion.cmake"
+HANDOFF = DOCS / "HANDOFF.md"
+HANDOFF_SECTIONS = ("当前任务", "下一步", "阻塞与待决", "验证状态", "最近改动")
+HANDOFF_PLACEHOLDERS = ("TODO", "TBD", "待填", "（待补）")
 
 CONTRACT_DIRS = ("adr", "api", "architecture", "formats", "guides", "stage_plans")
 TOP_LEVEL = ("CURRENT_STATUS.md", "PROJECT_GUIDE.md", "ROADMAP.md", "DOCUMENTATION_POLICY.md", "README.md")
@@ -141,6 +145,41 @@ def player_options_are_current() -> bool:
     return module.TARGET.read_text(encoding="utf-8") == expected
 
 
+def handoff_issues() -> tuple[list[str], list[str]]:
+    """Validate docs/HANDOFF.md structure and report staleness as a warning."""
+    if not HANDOFF.is_file():
+        return (["docs/HANDOFF.md is missing"], [])
+    errors: list[str] = []
+    warnings: list[str] = []
+    text = HANDOFF.read_text(encoding="utf-8")
+    if "cuexis-meta" not in text:
+        errors.append("docs/HANDOFF.md is missing its cuexis-meta block")
+    updated = None
+    match = re.search(r"更新日期：(\d{4}-\d{2}-\d{2})", text)
+    if not match:
+        errors.append("docs/HANDOFF.md is missing 更新日期：YYYY-MM-DD")
+    else:
+        try:
+            updated = date.fromisoformat(match.group(1))
+        except ValueError:
+            errors.append("docs/HANDOFF.md 更新日期 is not a valid date")
+    headings = "\n".join(line for line in text.splitlines() if line.startswith("## "))
+    missing = [section for section in HANDOFF_SECTIONS if section not in headings]
+    if missing:
+        errors.append("docs/HANDOFF.md is missing sections: " + ", ".join(missing))
+    for placeholder in HANDOFF_PLACEHOLDERS:
+        if placeholder in text:
+            errors.append(f"docs/HANDOFF.md still contains placeholder {placeholder}")
+    next_block = text.split("## 下一步", 1)[-1].split("\n## ", 1)[0]
+    if not re.search(r"^\s*\d+\.\s+\S", next_block, re.MULTILINE):
+        errors.append("docs/HANDOFF.md 下一步 must contain at least one numbered step")
+    if updated is not None:
+        age = (date.today() - updated).days
+        if age > 7:
+            warnings.append(f"docs/HANDOFF.md 已 {age} 天未更新（active 阶段建议 7 天内更新）")
+    return errors, warnings
+
+
 def main(argv: list[str]) -> int:
     sdk, build = version_info()
     failures: list[str] = []
@@ -155,6 +194,10 @@ def main(argv: list[str]) -> int:
             "docs/guides/PLAYER_OPTIONS.md is stale or the option table is out of sync; "
             "run python -B tools/verification/gen_player_options.py"
         )
+    handoff_errors, handoff_warnings = handoff_issues()
+    failures.extend(handoff_errors)
+    for warning in handoff_warnings:
+        print("WARNING: " + warning)
 
     findings = scan(candidate_files(), sdk, build)
     if "--list" in argv:

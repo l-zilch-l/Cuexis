@@ -67,6 +67,7 @@ ADR 还要写决策状态；Spec 还要写实现状态；Report 还要写快照�
 ## 目录和命名
 
 稳定入口保持在 `docs/` 根目录：`README.md`、`CURRENT_STATUS.md`、`PROJECT_GUIDE.md`、
+`HANDOFF.md`、
 `ROADMAP.md` 和本文。根目录不承载格式、阶段计划、阶段报告或 API 正文。其余现行文档按角色归档到
 以下目录：
 
@@ -122,6 +123,10 @@ README 只用于稳定入口、顶层文档角色或包含多份需要独立导�
 总报告索引只链接阶段入口；不在总索引复制完整裁定计数和测试矩阵。
 这些目录不改变报告的历史角色，现行决策归ADR/Spec、当前范围归plan、当前进度归CURRENT_STATUS。
 分类目录不是每个阶段的必建模板；少量报告仍由最近索引直接导航。
+
+写作模板在 [templates/](templates/README.md)：新 plan / 报告复制对应模板，模板中的固定 H2 标题
+是 `check_docs.py` 的检查对象。`docs/HANDOFF.md` 是**对话级交接**，记录当前任务、下一步、阻塞与
+验证状态，不是阶段权威；active 阶段超过 7 天未更新时 `check_docs_facts.py` 只给警告。
 
 `docs/api/` 以发布的 Playback SDK 为首要对象，说明入口、生命周期、线程、资源、帧观察、诊断、
 capability 和兼容边界。内部模块资料必须显式标为 internal，不能把 Runtime、World、EnTT、SDL、

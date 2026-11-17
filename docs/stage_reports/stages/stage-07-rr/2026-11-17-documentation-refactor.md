@@ -99,6 +99,11 @@
      行与应用层依赖原则、更新日期。
    - E 修复清单：`findings.md` 新增 §9，把 RR-F427–F438 与 S1 项分成 P0/P1/P2 三批，
      每项给出触发条件、修复动作、验证方式与“是否需构建”。
+17. **工作规则落地（2026-11-17）**：新增 `docs/HANDOFF.md`（对话级交接）、`docs/templates/`
+    （plan/report/handoff）与 `.github/pull_request_template.md`；`check_docs.py` 增加 active plan
+    与新报告固定章节检查，`check_docs_facts.py` 检查交接页字段与 7 天新鲜度；`AGENTS.md`、
+    `CURRENT_STATUS.md`、`DOCUMENTATION_POLICY.md` 增加指针与规则。阴性对照：删掉交接页
+    “下一步”章节后 facts 检查失败。
 
 ## 证据
 

@@ -4,6 +4,7 @@
 > 本块由 `tools/verification/gen_docs_map.py` 生成，勿手改；由 `check_docs_facts.py` 在预推送校验。
 
 - 当前阶段：**Stage 7-RR**；当前工作项：[stage_plans/active/stage-07-rr/plan.md](docs/stage_plans/active/stage-07-rr/plan.md)；当前登记册：[stage_plans/active/stage-07-rr/findings.md](docs/stage_plans/active/stage-07-rr/findings.md)；进度以 [CURRENT_STATUS](docs/CURRENT_STATUS.md) 为准。
+- 交接：[docs/HANDOFF.md](docs/HANDOFF.md)（当前任务、下一步、阻塞与验证状态）。
 - SDK API：`0.9.1`；日期构建：`26.11.17-1`；权威定义在 `cmake/CuexisVersion.cmake`。
 - 文档入口：[docs/MAP.md](docs/MAP.md)（先读它，再按任务打开 1–3 篇）。
 - 权威规则：事实以代码/schema/CMake 为准；`docs/stage_reports/**` 与 `docs/archive/**` 是证据，不是权威；`candidate`/`future`/`deferred` 不代表已实现。
@@ -45,6 +46,16 @@
   `python -B tools/verification/check_docs_facts.py`（生成器清单见 DOCUMENTATION_POLICY）。
 - 长任务（完整构建、容量/内存探针、hosted 重跑）先说明范围、能否做、预计耗时，等 owner 选定后执行。
 - PR 纪律（owner 要求）：一条 PR 尽量承载多件事；只有“不开新 PR 就进行不下去”或“已有证据会作废”才另开。
+
+## 工作规则
+
+- 新 plan / 报告先复制 [docs/templates/](docs/templates/README.md) 对应模板；active plan 与
+  2026-11-17 之后的新报告必须保留模板的固定 H2 标题（`check_docs.py` 会检查）。
+- 改公共头、`schemas/`、CLI 选项、预算常量或格式 wire 时，**同一提交**更新对应合同文档；
+  PR 的 `Docs impact` 字段必须写明更新了哪篇，确实不需要时写理由。
+- 开工先读 [docs/HANDOFF.md](docs/HANDOFF.md)；收尾或暂停时更新其任务、下一步、阻塞与验证状态
+  （`check_docs_facts.py` 检查字段，active 阶段超过 7 天未更新会警告）。
+- 报告结论只写“成立 / 部分成立 / 不成立 / 无法核实”；没有验证证据不得写“已修复”。
 
 ## 不要
 

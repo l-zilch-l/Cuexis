@@ -150,6 +150,7 @@ ROOT_DOCUMENTATION_FILES = {
     "DOCUMENTATION_POLICY.md",
     "legacy-paths.md",
     "MAP.md",
+    "HANDOFF.md",
 }
 API_REFERENCE_FILES = (
     "README.md",
@@ -960,6 +961,55 @@ def check_candidate_examples(failures: list[CheckFailure]) -> int:
     return len(candidates)
 
 
+ACTIVE_PLAN_SECTIONS = (
+    ("阶段目标",),
+    ("验收标准",),
+    ("排除", "不包含"),
+    ("前置基线", "前置条件", "前置"),
+    ("交接", "进展记录", "当前状态"),
+)
+REPORT_FORMAT_MIN_DATE = "2026-11-17"
+
+
+def _has_any(headings: str, words: tuple[str, ...]) -> bool:
+    return any(word in headings for word in words)
+
+
+def check_active_plan_sections(failures: list[CheckFailure]) -> None:
+    for path in sorted((DOCS / "stage_plans" / "active").rglob("plan.md")):
+        headings = "\n".join(
+            line for line in lines_outside_fences(path.read_text(encoding="utf-8"))
+            if line.startswith("## ")
+        )
+        for group in ACTIVE_PLAN_SECTIONS:
+            if not _has_any(headings, group):
+                failures.append(CheckFailure(
+                    path,
+                    "active plan is missing a section containing one of: " + " / ".join(group),
+                ))
+
+
+def check_recent_report_sections(failures: list[CheckFailure]) -> None:
+    for path in sorted((DOCS / "stage_reports" / "stages").rglob("*.md")):
+        match = re.match(r"(\d{4}-\d{2}-\d{2})-", path.name)
+        if match is None or match.group(1) < REPORT_FORMAT_MIN_DATE:
+            continue
+        text = path.read_text(encoding="utf-8")
+        if "cuexis-report-format-exempt" in text:
+            continue
+        headings = "\n".join(
+            line for line in lines_outside_fences(text) if line.startswith("## ")
+        )
+        if not _has_any(headings, ("证据", "验证", "复核")):
+            failures.append(CheckFailure(
+                path, "report is missing an evidence/verification section"
+            ))
+        if not _has_any(headings, ("限制", "未做", "未覆盖", "未复核", "边界")):
+            failures.append(CheckFailure(
+                path, "report is missing a limits/not-done section"
+            ))
+
+
 def main() -> int:
     failures: list[CheckFailure] = []
     files = markdown_files()
@@ -971,6 +1021,8 @@ def main() -> int:
     check_sdk_api_contract(failures)
     check_script_policy(failures)
     check_future_stage_plans(failures)
+    check_active_plan_sections(failures)
+    check_recent_report_sections(failures)
     check_stage_directory_layout(failures)
     check_root_document_layout(failures)
     check_api_reference_style(failures)

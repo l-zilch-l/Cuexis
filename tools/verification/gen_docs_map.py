@@ -209,6 +209,7 @@ def build_state(sdk: str, build: str, stage: str, item: str, register: str) -> l
         "",
         f"- 当前阶段：**{stage}**；当前工作项：{item_link}；当前登记册：{register_link}；"
         "进度以 [CURRENT_STATUS](docs/CURRENT_STATUS.md) 为准。",
+        "- 交接：[docs/HANDOFF.md](docs/HANDOFF.md)（当前任务、下一步、阻塞与验证状态）。",
         f"- SDK API：`{sdk}`；日期构建：`{build}`；权威定义在 `cmake/CuexisVersion.cmake`。",
         "- 文档入口：[docs/MAP.md](docs/MAP.md)（先读它，再按任务打开 1–3 篇）。",
         "- 权威规则：事实以代码/schema/CMake 为准；`docs/stage_reports/**` 与 `docs/archive/**` 是证据，不是权威；"

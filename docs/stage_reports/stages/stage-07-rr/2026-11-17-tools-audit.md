@@ -69,6 +69,14 @@ CI 配置与文档，未运行任何脚本或构建，未读取 `out/`。
 
 待 owner 决定：无（本批四项均已闭合）。
 
+## 5. 其余三目录
+
+`tools/research/` 19 个文件全部属于 2026-10-01 的 fold spike（`gameplay_fold_spike/`）：无 CMake
+target、无代码 import、只被一份 `evidence` 报告与两处散文按路径提及，设计链已被 ADR 0043 → 0044
+取代 → **整体 archive 候选**。`tools/practice/` 6 个文件全部是维护者脚本，其中
+`make_judgement_practice.py` 的产物仍是 R4 `player_evidence` 的输入，保留。`tools/common/` 9 个
+文件是活库 `cuexis_asset_publish`（3 个工具可执行 + 2 个测试 TU 依赖，CI 覆盖），保留。
+
 ## 6. 验证
 
 本报告落盘时执行的本地检查：
@@ -87,18 +95,7 @@ CI 与 CTest 的实际执行结果需在推送后由 hosted run 确认；本报�
 
 ## 7. 未做
 
-`compare_read_candidates.py` 归档后其 README 说明仍可运行（路径已改）；`tools/research/` 的 19 个文件
-保持原内容，未改写任何证据报告。证据 manifest 仍按 2026-10-08 的原路径记录，不再回溯更新。
-
-## 5. 其余三目录
-
-`tools/research/` 19 个文件全部属于 2026-10-01 的 fold spike（`gameplay_fold_spike/`）：无 CMake
-target、无代码 import、只被一份 `evidence` 报告与两处散文按路径提及，设计链已被 ADR 0043 → 0044
-取代 → **整体 archive 候选**。`tools/practice/` 6 个文件全部是维护者脚本，其中
-`make_judgement_practice.py` 的产物仍是 R4 `player_evidence` 的输入，保留。`tools/common/` 9 个
-文件是活库 `cuexis_asset_publish`（3 个工具可执行 + 2 个测试 TU 依赖，CI 覆盖），保留。
-
-## 6. 未做
-
 本报告未执行任何移动或删除：`research` 归档会改动 R4 evidence manifest 记录的文件路径，
-`compare_read_candidates.py` 归档会改变同目录 README 的引用。两项都留给 owner 决定后单独提交。
+`compare_read_candidates.py` 归档会改变同目录 README 的引用。两项都在 owner 确认后单独提交；
+`tools/research/` 的 19 个文件保持原内容，未改写任何证据报告，证据 manifest 仍按 2026-10-08 的
+原路径记录，不再回溯更新。
