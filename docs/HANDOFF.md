@@ -19,7 +19,7 @@ authority: owns
 - 阶段：Stage 7-RR
 - 工作项：`stage_plans/active/stage-07-rr/plan.md`
 - 登记册：`stage_plans/active/stage-07-rr/findings.md`
-- 分支/PR：`stage-7.5` / PR #46；SDK API `0.9.1`；构建 `26.11.18-1`
+- 分支/PR：`stage-7.5` / PR #46；SDK API `0.9.1`；构建 `26.11.17-1`
 - 当前状态：文档重构与整理已收口，门禁全绿；**没有进行中的实现批次**
 
 ## 当前任务
@@ -71,7 +71,7 @@ authority: owns
 - 文档门禁：`check_docs.py` 0（739 篇）、`check_docs_facts.py` 0（版本漂移 0）、
   `gen_docs_map.py --check` 0、`check_tools_inventory.py` 0（30 scripts）。
 - 合同测试：status / target / section 三个 contract tests 全 OK；schema `--check` OK；
-  `update_version.py --check` 一致（`26.11.18-1`）；`git diff --check` 0。
+  `update_version.py --check` 一致（`26.11.17-1`）；`git diff --check` 0。
 - 本轮没有启动构建/CTest；CI 结果未等。
 
 ## 最近改动
@@ -80,4 +80,4 @@ authority: owns
 - 计划：Stage 7-RR 计划重写；7 份 future plan 改为提纲；登记 D-04/D-05（RR-3 先 R1+R5+R6）。
 - 文档事实：版本漂移归零；证据 meta 检查；Chart 表示与转换点页；`CHART_V4`/`PACKED` 两处失真修正。
 - 代码/工具：Judgement seek 按 candidate 收口；删除 `engine/particles`；`cuexis_debug` 标 test-only；
-  `check_tools_inventory.py`；`test_measurement_seek.py` 迁移；构建身份 `26.11.18-1`。
+  `check_tools_inventory.py`；`test_measurement_seek.py` 迁移；构建身份 `26.11.17-1`。
