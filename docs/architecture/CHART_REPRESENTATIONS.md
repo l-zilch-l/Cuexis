@@ -39,7 +39,7 @@ authority: none
 | `ChartV4SourceDocument` | v4 未解析源 | `chart_v4_document.hpp:194` | v4 Loader → Resolver | `chart_v4_loader.cpp:197` | v4 canonical JSON | 类型内部已是 typed + `canonicalSource` 原文双表示 |
 | `ResolvedChartDocument` | v4 解析结果的具体 chart + 参数 | `chart_v4_resolver.hpp:42` | Resolver → 编译/投影 | `chart_v4_resolver.cpp:405` | 随所属 artifact | 同层冗余包装，只含 `ChartDocument` + 参数数组 |
 | `ChartV4ResolvedArtifact` | v4 解析产物 | `chart_v4_resolver.hpp:65` | Resolver → Prepare/Playback | `chart_v4_resolver.cpp:342` | v4 canonical JSON | 捆绑图 + 动画程序 + 4 类 identity + 资源/能力闭包 |
-| `ChartRuntime` | 编译结果 | `chart_runtime.hpp:76` | Compiler / candidate lowerer → Runtime、Playback | `chart_runtime.cpp:540` | 由所属来源决定 | 不含 JSON/未解析参数；`renderableOpacity` 仅此表示有 |
+| `ChartRuntime` | 编译结果 | `chart_runtime.hpp:76` | Compiler / candidate lowerer → Runtime、Playback | `chart_runtime.cpp:540` | 由所属来源决定 | 不含 JSON/未解析参数；`renderableOpacity` 在此与 candidate metadata 都有 |
 | `CandidateRuntimeArtifact` | candidate 运行时 | `candidate_lowering.hpp:49` | candidate lowerer → Prepare | `candidate_lowering.cpp:326` | candidate preimage | `ChartRuntime` + `CandidateRuntimeMetadata` 的包装 |
 | `CanonicalSemanticChart` | 族 C 语义图 | `canonical_semantic_chart.hpp:180` | Packed 解码 / CXT v2 展开 / candidate / gameplay → lowerer | `cxt_v2_loader.cpp:28`、`packed_chart_tables_decoder.cpp:76` | Packed typed preimage、prepared | 与 v4 族不相邻；字段见 §3 修正后的合同 |
 
@@ -50,7 +50,7 @@ authority: none
 | `ChartDispatchResult` | `detail/chart_dispatch_internal.hpp:17` | 入口分派结果 |
 | `ChartMigrationArtifact` | `chart_migrator.hpp:52` | 迁移中间结果 |
 | `PrepareArtifact` | `playback_session_prepare_internal.hpp:50` | 同时持有 `ChartDocument`、v4 源、v4 解析产物、`AnimationProgramInput` 与 candidate metadata |
-| `PreparedRuntimeSession` | `runtime_session.hpp:129` | 按值再存一份 `ChartRuntime` |
+| `PreparedRuntimeSession` | `runtime_session.hpp:106`（`chartRuntime_` 在 `:129`） | 按值再存一份 `ChartRuntime` |
 | `PreparedCapsule` | `gameplay_capsule.hpp:54` | gameplay capsule 准备结果 |
 | `CandidateChart` | `cxc_candidate.hpp:45` | `CanonicalSemanticChart` + Packed bytes + 可选 `CandidateRuntimeArtifact` |
 
@@ -81,15 +81,19 @@ authority: none
 | CXT v2 JSON → `CanonicalSemanticChart` | `cxt_v2_loader.cpp:28` |
 | 各表示 → identity | 见 §6 |
 
-## 6. 五套 identity（preimage 各不相同）
+## 6. identity 来源（五类，candidate 内部有分支）
 
 | identity | preimage | 位置 |
 | --- | --- | --- |
 | v4 | canonical v4 JSON 的 sha256 | `chart_v4_resolver.cpp:348` / `:397` |
 | legacy v1–v3 | canonical v3 JSON | `playback_session_prepare_stages.cpp:104` |
-| Packed | typed preimage | `packed_semantic_identity.cpp:594` / `:605` |
-| candidate | candidate preimage | `candidate_lowering.cpp:140` |
-| prepared | prepared preimage | `prepared_semantic_identity.cpp:58` |
+| Packed | typed preimage（`packed::semanticIdentity`） | `packed_semantic_identity.cpp:594` / `:605` |
+| candidate（static） | **复用 Packed 的 typed preimage** | `candidate_lowering.cpp:140` |
+| candidate（behavior-source） | canonical bytes 的 sha256 | `behavior_candidate.cpp:127` |
+| prepared | 在 candidate preimage 外再封装的 prepared 域 | `candidate_lowering.cpp:343` / `:371`（`cuexis.prepared-semantic.v5.candidate.1`） |
+
+注意：candidate 不是永远独立的一套；static candidate 与 Packed 共用 preimage，behavior-source
+candidate 才有独立 preimage，prepared 再包一层。因此“同一内容多种 identity”不能按表示数量直接推断。
 
 ## 7. 已知漏转与重复（登记，不在本页修复）
 
