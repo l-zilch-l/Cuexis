@@ -1,8 +1,15 @@
 # Cuexis Chart Format v4
 
 状态：accepted contract；CFU-C Reader/Writer/lowering、CFU-D migration/equivalence 与 CFU-E
+
 prepare/identity 已实现或关闭；CFU-F consumer/determinism/safety gates 已关闭；G3 hosted、G4、
 G5 report-SHA hosted revalidation 与 G6 owner acceptance 已完成；非空动画执行已由 Stage 4 关闭
+
+<!-- cuexis-meta
+id: FORMAT-CHART_V4_FORMAT
+status: accepted
+authority: owns
+-->
 
 更新日期：2026-09-01
 

@@ -1,5 +1,12 @@
 # Playback 测量工具与内部观测实现的功能命名修正
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.preparation.2026-10-20-performance-tool-functional-naming
+status: evidence
+authority: none
+date: 2026-10-20
+-->
+
 日期：2026-10-20。范围：文件与目录命名、调用引用、文档导航及迁移验证。
 当前实施进度仍以 [CURRENT_STATUS](../../../../../../CURRENT_STATUS.md) 为准；本次修正不表示测量准备或正式验收完成。
 

@@ -1,5 +1,11 @@
 # ADR 0002：使用 vcpkg manifest mode
 
+<!-- cuexis-meta
+id: ADR-0002
+status: accepted
+authority: owns
+-->
+
 日期：2026-07-17
 
 状态：已接受

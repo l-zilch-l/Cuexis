@@ -2,6 +2,12 @@
 
 状态：superseded as field contract；retained as design-input history。Gameplay I 的字段与运行语义候选基线，未实施；字段与运行语义的唯一权威现为 [GAMEPLAY_V2_SPEC.md](GAMEPLAY_V2_SPEC.md)，其决策依据为 [ADR 0044](../adr/0044-gameplay-v2-semantic-kernel.md)。本文件保留为历史候选基线与差异对照，不删除、不再更新结论。
 
+<!-- cuexis-meta
+id: FORMAT-GAMEPLAY_JUDGEMENT_SPEC
+status: historical
+authority: owns
+-->
+
 日期：2026-10-01
 
 本文是 Gameplay 判定字段和运行语义的单一候选权威。研究背景、案例推演和缺陷发现保留在

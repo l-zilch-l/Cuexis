@@ -1,5 +1,11 @@
 # 1080p 容量前缘阶梯证据（2026-11-01）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-capacity-frontier-evidence.index
+status: evidence
+authority: none
+-->
+
 本目录保存一次**预注册**的 1080p p99 预算交叉阶梯的全部字节：预注册、驱动与汇总脚本、每个实体数
 两种模式的逐进程日志、逐点登记，以及判定结果。它回答的问题只有一个——HEAD 上 p99 第一次越过
 4.166667 ms 的区间在哪里；它**不是**容量接受、性能门通过或 R3/R4 接受。

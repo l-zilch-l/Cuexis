@@ -4,6 +4,12 @@
 
 更新日期：2026-08-28
 
+<!-- cuexis-meta
+id: GUIDE-DEPENDENCY_POLICY
+status: accepted
+authority: owns
+-->
+
 ## 项目许可
 
 Cuexis 采用 Apache License 2.0。维护者不以商业盈利为目标，但许可证不限制下游的商业使用；再分发者必须遵守 Apache-2.0 的版权、许可证、NOTICE 和修改声明要求。

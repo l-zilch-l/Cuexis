@@ -2,6 +2,12 @@
 
 状态：accepted contract；S5-A 至 S5-H 已完成；Stage 5 已于 2026-08-28 关闭并合并至 `master`
 
+<!-- cuexis-meta
+id: FORMAT-MATERIAL_SHADER
+status: completed
+authority: owns
+-->
+
 日期：2026-08-28
 
 依据：[ADR 0040](../adr/0040-stage-5-material-shader-contracts.md)、[ADR 0021](../adr/0021-spirv-centered-shader-pipeline.md)
@@ -507,8 +513,9 @@ enableShaderHotReload   default false; optional like Debug
 显式 prepare 路径（Studio/开发用）。headless Validation Sink 忽略这两项。
 
 `EffectivePresentationSettings` version 2 报告实际 `shaderCompileEnabled` 与
-`shaderHotReloadEnabled`。Request 开启但 adapter 不支持时：compile 是错误；hot reload 是
-warning `playback.presentation.shader_hot_reload_unavailable` 且 effective false。
+`shaderHotReloadEnabled`。Request 开启但 adapter 不支持时 compile 是错误；hot reload 目前
+没有 warning 或生效保证（`shaderHotReloadEnabled` 只由 capability 推导，适配器不消费
+`activate()`）。
 
 ## 10. 编译、缓存与热重载（S5A-10）
 
@@ -597,7 +604,7 @@ Portable v1 已有 presentation code 保持含义。Stage 5 新增 code 不得�
 | Code | Meaning |
 | --- | --- |
 | `playback.presentation.shader.source_encoding_invalid` | BOM, CR, or non-UTF-8 shader source |
-| `playback.presentation.shader.stage_unsupported` | Stage other than vertex/fragment |
+| `playback.presentation.shader.stage_unsupported` | Stage other than vertex/fragment（当前实现尚未产出该码：v1 没有 stage 选择器，见 Stage 7-RR RR-F210） |
 | `playback.presentation.shader.subset_invalid` | Portable GLSL subset violation or `#include` |
 | `playback.presentation.shader.entry_invalid` | Entry name empty, too long, or not ASCII identifier |
 | `playback.presentation.shader.keyword_invalid` | Duplicate, too many, or illegal keyword |
@@ -623,7 +630,7 @@ Portable v1 已有 presentation code 保持含义。Stage 5 新增 code 不得�
 
 ## 13. SDK、Digest 与 package（S5A-12）
 
-下表SDK版本记录S5-C公开类型引入时的历史基线；当前分支为0.7.5，见[CURRENT_STATUS](../CURRENT_STATUS.md)。
+下表 SDK 版本记录 S5-C 公开类型引入时的历史基线；当前 SDK API 为 0.9.1，见 [CURRENT_STATUS](../CURRENT_STATUS.md)。
 
 ```text
 CUEXIS_SDK_API_VERSION: 0.7.0            public types landed in S5-C

@@ -4,6 +4,12 @@
 
 更新日期：2026-10-16（补 PD 保留画面与设备恢复）
 
+<!-- cuexis-meta
+id: PLAN-future.stage-12.plan
+status: future
+authority: owns
+-->
+
 归档来源：[旧 Stage 9A 性能计划](../../historical-inputs/stage-09a/plan.md)、
 [Android 历史输入](../../historical-inputs/stage-09b/plan.md)、
 [Vulkan 历史输入](../../historical-inputs/stage-10/plan.md) 和
@@ -32,8 +38,8 @@ Chart、Input、Judgement、Replay 或 FrameSnapshot 语义。
 
 ### S12-A：桌面性能与大谱面
 
-基础实时架构归[Stage 7-RPA子阶段](../../active/stage-07/03-rpa-legacy/plan.md)，
-正式命名迁移归[独立诊断前置](../../active/stage-07/02-diagnostics/plan.md)。
+基础实时架构归[Stage 7-RPA子阶段](../../completed/stage-07/03-rpa-legacy/plan.md)，
+正式命名迁移归[独立诊断前置](../../completed/stage-07/02-diagnostics/plan.md)。
 S12-A在已验收的时间/所有权/发布合同上做规模与平台优化，RPA不预先接受本批数值阈值。
 
 - 测量 Packed/CXC load、CXT expansion、prepare 峰值、Runtime 内存、Judgement query、Replay、
@@ -50,7 +56,7 @@ S12-A在已验收的时间/所有权/发布合同上做规模与平台优化，R
   记录 source hash、importer、profile 和压缩参数。
 - 只验证原始输入时间戳和延迟链路；InputProfile/CalibrationProfile 只有在另行批准后持久化。
 
-采用 PD 基线时，平台策略须覆盖[细则 §12.4](../../active/stage-07/04-pd/design.md)
+采用 PD 基线时，平台策略须覆盖[细则 §12.4](../../completed/stage-07/04-pd/design.md)
 的保留资格撤销、真实 CPU 释放与 GPU fence 分离。内存压力不能强制回收外部 lease；Context/
 资源换代不能把旧暂停图直接贴成新许可。旧图丢失且仍暂停时明确无可重绘图，不能用当前
 较新修订替代或执行 frozen update。跨代精确暂停图恢复若成为产品要求，另行接受 portable

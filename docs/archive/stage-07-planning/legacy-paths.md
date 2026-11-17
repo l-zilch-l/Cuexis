@@ -1,5 +1,11 @@
 # Stage 7 Archive Legacy Paths
 
+<!-- cuexis-meta
+id: ARCHIVE-stage-07-planning.legacy-paths
+status: historical
+authority: none
+-->
+
 状态：compatibility entry
 
 更新日期：2026-10-26

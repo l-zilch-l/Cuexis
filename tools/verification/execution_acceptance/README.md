@@ -186,6 +186,6 @@ reported as completed R4/device/production acceptance; current delivery status r
 [CURRENT_STATUS](../../../docs/CURRENT_STATUS.md).
 
 Scope, numbers, owner decisions and formal admission requirements are maintained in
-[the R4 plan](../../../docs/stage_plans/active/stage-07/05-rpa-new/r4/plan.md),
-[O1 proposal](../../../docs/stage_plans/active/stage-07/05-rpa-new/r4/caps-proposal.md) and
-[registration draft](../../../docs/stage_plans/active/stage-07/05-rpa-new/r4/formal-registration.md).
+[the R4 plan](../../../docs/stage_plans/completed/stage-07/05-rpa-new/r4/plan.md),
+[O1 proposal](../../../docs/stage_plans/completed/stage-07/05-rpa-new/r4/caps-proposal.md) and
+[registration draft](../../../docs/stage_plans/completed/stage-07/05-rpa-new/r4/formal-registration.md).

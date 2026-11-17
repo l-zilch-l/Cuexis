@@ -2,6 +2,12 @@
 
 状态：accepted design；2026-10-11 按 owner 授权选定设计；当前分支已有 candidate 实施，未发行
 
+<!-- cuexis-meta
+id: ADR-0046
+status: accepted
+authority: owns
+-->
+
 日期：2026-10-09；决定更新：2026-10-11；实施状态注释更新：2026-10-28
 
 本 ADR 保留原决定及授权背景；实施/接受状态以 [CURRENT_STATUS](../CURRENT_STATUS.md) 为准。
@@ -68,7 +74,7 @@ A1减少半完成Resume的状态与重试分支，代价是这类故障后不能
 ## 合同、实施与后果
 
 字段/语义的唯一落点是 [RPA补充Spec](../formats/rpa-execution-contract.md) 和
-[宿主边界](../api/realtime-host-boundary.md)；批次、测量与验收归 [RPA计划](../stage_plans/active/stage-07/03-rpa-legacy/plan.md)。
+[宿主边界](../api/realtime-host-boundary.md)；批次、测量与验收归 [RPA计划](../stage_plans/completed/stage-07/03-rpa-legacy/plan.md)。
 新 execution/Fact token、Recovery rev3 和下一 SDK minor 是实施设计；本 ADR 制定时 API 为 0.7.5，当前交付版本归 [CURRENT_STATUS](../CURRENT_STATUS.md)。
 不修改 Chart/CXC/CXT 内容格式，不安装内部 Kernel/Recovery，不引入脚本或第二判定路径。
 

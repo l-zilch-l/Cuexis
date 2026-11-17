@@ -1,11 +1,18 @@
 # S7A-2 准入门禁：第 2 轮（时间域与迟到策略）裁定落地记录
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.01-a.s7a-2.2026-10-03-s7a-2-gate-rulings
+status: evidence
+authority: none
+date: 2026-10-03
+-->
+
 状态：dated implementation record（第 2 轮裁定的文档落地证据；不是阶段关闭、不是 owner acceptance、
 不是实施证据）
 
 更新日期：2026-10-03
 
-上级文档：[Stage 7A 实施计划](../../../../../stage_plans/active/stage-07/plan.md) §S7A-2 ·
+上级文档：[Stage 7A 实施计划](../../../../../stage_plans/completed/stage-07/plan.md) §S7A-2 ·
 [Gameplay V2 acceptance package](../../../../../proposals/gameplay-v2-acceptance/README.md) ·
 [未决语义分轮裁决清单](../../../../../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md) §2、§9
 
@@ -179,7 +186,7 @@ README / 本文）逐行扫描**行尾空白**（含 `\t`）：**0 处**。
 
 ## 7. 相关索引
 
-- [Stage 7A 实施计划](../../../../../stage_plans/active/stage-07/plan.md)：§S7A-2 的目的、工作内容与验证要求
+- [Stage 7A 实施计划](../../../../../stage_plans/completed/stage-07/plan.md)：§S7A-2 的目的、工作内容与验证要求
 - [未决语义分轮裁决清单](../../../../../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md)：第 2 轮裁定列与 §9 裁定登记
 - [S7A-0.2 合同逐项台账](../../../../../proposals/gameplay-v2-acceptance/CONTRACT_MATRIX.md)：114 项与 18 项 `open`
 - [未决问题与 owner 决策请求](../../../../../proposals/gameplay-v2-acceptance/OPEN_QUESTIONS.md)：§2.1 第 2 轮裁定登记

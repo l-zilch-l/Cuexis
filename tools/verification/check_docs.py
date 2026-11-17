@@ -37,7 +37,8 @@ STAGE_PLAN_REQUIREMENTS = (
     ("stage_plans/completed/chart-format-foundation/plan.md", ("completed",)),
     ("stage_plans/completed/chart-format-foundation-hardening/plan.md", ("completed",)),
     ("stage_plans/completed/stage-06/plan.md", ("completed",)),
-    ("stage_plans/active/stage-07/plan.md", ("completed",)),
+    ("stage_plans/completed/stage-07/plan.md", ("completed",)),
+    ("stage_plans/active/stage-07-rr/plan.md", ("active",)),
     ("stage_plans/active/stage-07-5/plan.md", ("active",)),
     ("stage_plans/future/stage-08/plan.md", ("future",)),
     ("stage_plans/future/stage-11/plan.md", ("future",)),
@@ -65,10 +66,12 @@ DIRECTORY_INDEXES = (
     "stage_reports/stages/stage-06/README.md",
     "stage_reports/stages/stage-07/README.md",
     "stage_reports/stages/stage-07-5/README.md",
+    "stage_reports/stages/stage-07-rr/README.md",
     "stage_reports/stages/stage-07/01-a/README.md",
     "stage_reports/stages/stage-07/06-b/README.md",
     "stage_reports/stages/stage-07/05-rpa-new/README.md",
-    "stage_plans/active/stage-07/README.md",
+    "stage_plans/completed/stage-07/README.md",
+    "stage_plans/active/stage-07-rr/README.md",
     "stage_plans/active/stage-07-5/README.md",
     "stage_reports/stages/stage-07/03-rpa-legacy/README.md",
     "stage_reports/stages/stage-07/04-pd/README.md",
@@ -76,14 +79,15 @@ DIRECTORY_INDEXES = (
 )
 STAGE_NAVIGATION_INDEXES = {
     "stage_plans/README.md",
-    "stage_plans/active/stage-07/README.md",
+    "stage_plans/completed/stage-07/README.md",
+    "stage_plans/active/stage-07-rr/README.md",
     "stage_plans/active/stage-07-5/README.md",
-    "stage_plans/active/stage-07/01-a/README.md",
-    "stage_plans/active/stage-07/06-b/README.md",
-    "stage_plans/active/stage-07/02-diagnostics/README.md",
-    "stage_plans/active/stage-07/04-pd/README.md",
-    "stage_plans/active/stage-07/03-rpa-legacy/README.md",
-    "stage_plans/active/stage-07/05-rpa-new/README.md",
+    "stage_plans/completed/stage-07/01-a/README.md",
+    "stage_plans/completed/stage-07/06-b/README.md",
+    "stage_plans/completed/stage-07/02-diagnostics/README.md",
+    "stage_plans/completed/stage-07/04-pd/README.md",
+    "stage_plans/completed/stage-07/03-rpa-legacy/README.md",
+    "stage_plans/completed/stage-07/05-rpa-new/README.md",
     "stage_reports/README.md",
     "stage_reports/stages/chart-format-update/README.md",
     "stage_reports/reviews/full-review-2026-08/README.md",
@@ -94,6 +98,7 @@ STAGE_NAVIGATION_INDEXES = {
     "stage_reports/stages/stage-06/README.md",
     "stage_reports/stages/stage-07/README.md",
     "stage_reports/stages/stage-07-5/README.md",
+    "stage_reports/stages/stage-07-rr/README.md",
     "stage_reports/stages/stage-07/01-a/README.md",
     "stage_reports/stages/stage-07/01-a/s7a-0/README.md",
     "stage_reports/stages/stage-07/01-a/s7a-2/README.md",
@@ -144,6 +149,7 @@ ROOT_DOCUMENTATION_FILES = {
     "ROADMAP.md",
     "DOCUMENTATION_POLICY.md",
     "legacy-paths.md",
+    "MAP.md",
 }
 API_REFERENCE_FILES = (
     "README.md",
@@ -282,21 +288,25 @@ def heading_anchors(text: str) -> set[str]:
 
 def check_stage7_section_links(files: list[Path], failures: list[CheckFailure], root: Path = ROOT) -> None:
     """Check live Stage 7 and 7.5 owners and anchors while preserving dated evidence."""
-    plans = (root / "docs/stage_plans/active").resolve()
+    plans = (root / "docs/stage_plans").resolve()
     owners = {
-        "1.1": ("stage-07/plan.md", "11-"),
-        "5.3": ("stage-07-5/plan.md", "53-"),
-        "10": ("stage-07/plan.md", "10-"),
+        "1.1": ("completed/stage-07/plan.md", "11-"),
+        "5.3": ("active/stage-07-5/plan.md", "53-"),
+        "10": ("completed/stage-07/plan.md", "10-"),
     }
     plan_paths = {
         plans / name for name in (
-            "stage-07/plan.md", "stage-07/01-a/plan.md", "stage-07/06-b/plan.md",
-            "stage-07-5/plan.md",
+            "completed/stage-07/plan.md",
+            "completed/stage-07/01-a/plan.md",
+            "completed/stage-07/06-b/plan.md",
+            "active/stage-07-5/plan.md",
         )
     }
     for path in files:
         relative = path.resolve().relative_to(root.resolve()).as_posix()
-        if not relative.startswith(("docs/api/", "docs/formats/", "docs/stage_plans/active/")):
+        if not relative.startswith(
+            ("docs/api/", "docs/formats/", "docs/stage_plans/active/", "docs/stage_plans/completed/")
+        ):
             continue
         text = "\n".join(lines_outside_fences(path.read_text(encoding="utf-8")))
         for label, target in re.findall(r"\[([^\]]*)\]\(([^)]+)\)", text):
@@ -710,17 +720,14 @@ def check_agents_guide(failures: list[CheckFailure]) -> None:
         return
 
     text = AGENTS.read_text(encoding="utf-8")
+
+    text = AGENTS.read_text(encoding="utf-8")
     required_fragments = (
-        "SDK API `0.6.0`",
-        "Stage Chart Format Update",
+        "docs/MAP.md",
+        "docs/CURRENT_STATUS.md",
+        "docs/DOCUMENTATION_POLICY.md",
         "python -B tools/check_docs.py",
-        "python -B tools/update_version.py",
-        "Format: `yy.mm.dd-v[-suffix]`",
-        "`docs/README.md`",
-        "`docs/CURRENT_STATUS.md`",
-        "`docs/guides/README.md`",
-        "`docs/stage_plans/completed/stage-04/plan.md`",
-        "`docs/stage_plans/future/stage-12/plan.md`",
+        "python -B tools/verification/check_docs_facts.py",
     )
     for fragment in required_fragments:
         if fragment not in text:
@@ -736,6 +743,23 @@ def check_agents_guide(failures: list[CheckFailure]) -> None:
     for fragment in stale_fragments:
         if fragment.casefold() in folded:
             failures.append(CheckFailure(AGENTS, f"contains stale baseline wording: {fragment}"))
+
+
+def check_agents_links(failures: list[CheckFailure]) -> None:
+    """AGENTS.md is repository-root relative; every local link must resolve."""
+    if not AGENTS.is_file():
+        return
+    text = AGENTS.read_text(encoding="utf-8")
+    for match in re.finditer(r"\]\(([^)\s]+)\)", text):
+        target = match.group(1)
+        if target.startswith(("http://", "https://", "mailto:", "#")):
+            continue
+        destination = target.partition("#")[0]
+        if not destination:
+            continue
+        resolved = (AGENTS.parent / destination).resolve()
+        if not resolved.exists():
+            failures.append(CheckFailure(AGENTS, f"broken relative link: {target}"))
 
 
 def find_keys(value: Any) -> list[str]:
@@ -952,6 +976,7 @@ def main() -> int:
     check_api_reference_style(failures)
     check_navigation_indexes(failures)
     check_agents_guide(failures)
+    check_agents_links(failures)
     candidate_count = check_candidate_examples(failures)
     if failures:
         print("Documentation checks failed:")

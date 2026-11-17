@@ -4,6 +4,12 @@
 
 更新日期：2026-10-28
 
+<!-- cuexis-meta
+id: GUIDE-VERSIONING
+status: accepted
+authority: owns
+-->
+
 ## 格式
 
 规范版本：
@@ -304,7 +310,7 @@ Stage 14 必须另行冻结 `1.x` 的 API/ABI 兼容、弃用和版本递增政�
 
 ### 2026-10-10诊断正式化版本裁定
 
-owner明确指定[独立诊断正式化工作包](../stage_plans/active/stage-07/02-diagnostics/plan.md)
+owner明确指定[独立诊断正式化工作包](../stage_plans/completed/stage-07/02-diagnostics/plan.md)
 目标SDK API为`0.7.5`，同时保留此前已接受的新Recovery版本拒绝旧版本方向。
 这是本工作包的具体版本裁定；版本文件与消费者已在N2集成，N1/N3已退出，
 诊断基线为0.7.5；当前分支为0.9.1。具体证据与交付状态归[CURRENT_STATUS](../CURRENT_STATUS.md)。

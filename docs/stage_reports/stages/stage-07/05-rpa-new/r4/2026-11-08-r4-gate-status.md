@@ -1,5 +1,12 @@
 # R4 门账（2026-11-14 冻结前快照）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-08-r4-gate-status
+status: evidence
+authority: none
+date: 2026-11-08
+-->
+
 状态：historical；冻结前门账快照，不是退出接受记录，也不替代 CURRENT_STATUS
 
 后续 d195 最终验证、owner 退出裁定及新增缺陷见
@@ -9,8 +16,8 @@
 
 返回 [New RPA 报告索引](../README.md)。本文保留原门账路径及冻结时点逐门状态；
 历史原始测量、失败和运行身份保持不改。判据与协议以
-[实施方案](../../../../../stage_plans/active/stage-07/05-rpa-new/r4/plan.md)和
-[固定运行登记](../../../../../stage_plans/active/stage-07/05-rpa-new/r4/formal-registration.md)为准。
+[实施方案](../../../../../stage_plans/completed/stage-07/05-rpa-new/r4/plan.md)和
+[固定运行登记](../../../../../stage_plans/completed/stage-07/05-rpa-new/r4/formal-registration.md)为准。
 本轮执行边界见[自动收尾裁定](2026-11-13-closeout-decisions.md)，上一版移交准备见
 [F4/PD 移交门账](2026-11-07-f4-gate-and-handoff.md)。
 
@@ -73,7 +80,7 @@ O1 在 2026-11-05 接受的是方案 B 的 reference 设计 caps，不只接受�
 accepted: null／formal_registration: false，用于区分外部数值裁定与正式注册；不能据此
 反推“reference caps 未接受”。精确接受范围和 artifact hash 见
 [O1 接受记录](2026-11-05-o1-budget-acceptance.json)与
-[caps 裁定包](../../../../../stage_plans/active/stage-07/05-rpa-new/r4/caps-proposal.md)。
+[caps 裁定包](../../../../../stage_plans/completed/stage-07/05-rpa-new/r4/caps-proposal.md)。
 生产 profile 与[内存修订提案](2026-11-08-memory-budget-revision.md)的新增数值尚未接受。
 本轮先补证据，保持既有数字，不从观测高水位反填上限。
 

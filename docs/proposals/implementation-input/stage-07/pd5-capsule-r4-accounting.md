@@ -1,10 +1,16 @@
 # PD-5 Capsule revision 4 与 hash 工作量会计草案
 
+<!-- cuexis-meta
+id: PROPOSALS-implementation-input.stage-07.pd5-capsule-r4-accounting
+status: candidate
+authority: none
+-->
+
 状态：candidate
 
 更新日期：2026-10-21
 
-本文件是[准入阶段 A 计划](../../../stage_plans/active/stage-07/04-pd/pd-5/pd5-gameplay-admission.md)的交回输入。
+本文件是[准入阶段 A 计划](../../../stage_plans/completed/stage-07/04-pd/pd-5/pd5-gameplay-admission.md)的交回输入。
 尚未接受新格式或预算，没有 Reader/Writer revision 4 实现。现行合同仍归
 [Capsule](../../../formats/GAMEPLAY_CAPSULE_V2_FORMAT.md)、
 [Packed](../../../formats/PACKED_CHART_FORMAT.md)和 [Gameplay Spec](../../../formats/GAMEPLAY_V2_SPEC.md)。

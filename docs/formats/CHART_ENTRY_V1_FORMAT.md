@@ -4,6 +4,12 @@
 
 更新日期：2026-10-22
 
+<!-- cuexis-meta
+id: FORMAT-CHART_ENTRY_V1_FORMAT
+status: completed
+authority: owns
+-->
+
 Status: Stage 6 candidate contract recorded by S6-A2. Explicit entry factories and static
 candidate Playback are implemented. The additional Behavior source profile below is a
 limited candidate implementation, not full Chart v5 release support.
@@ -135,8 +141,6 @@ The minimum stable diagnostic set is:
 | cxc.candidate.source_invalid | Behavior source JSON parsing or typed compilation failed |
 | cxc.candidate.artifact_identity_mismatch | Exact entry bytes do not match artifactIdentity |
 | cxc.candidate.compiled_identity_mismatch | Recomputed semantic identity does not match metadata |
-| cxc.candidate.resource_closure_invalid | A required resource is missing, duplicated or mismatched |
-| cxc.candidate.partial_publish_forbidden | A failure attempted to publish a partial candidate |
 
 Profile rejection precedes semantic identity mismatch. A structurally valid but unsupported
 artifact must not be made to look like a hash failure.

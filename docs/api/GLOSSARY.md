@@ -3,6 +3,12 @@
 状态：current glossary
 更新日期：2026-10-16
 
+<!-- cuexis-meta
+id: API-GLOSSARY
+status: active
+authority: owns
+-->
+
 本页只解释领域词义；语义合同见 [RPA 补充](../formats/rpa-execution-contract.md)。
 
 | 术语 | 含义 |
@@ -21,7 +27,7 @@
 
 ## 表现与交付
 
-以下词义用于 [PD 设计](../stage_plans/active/stage-07/04-pd/design.md)讨论，
+以下词义用于 [PD 设计](../stage_plans/completed/stage-07/04-pd/design.md)讨论，
 不表示新的 SDK 接口已经实现。
 
 **已提交表现状态**：一次已完成操作所确定的画面内容及其来源；交付请求不会重新推进它。

@@ -1,5 +1,11 @@
 # ADR 0034：Chart v3 Tempo Event 与 Behavior Event
 
+<!-- cuexis-meta
+id: ADR-0034
+status: accepted
+authority: owns
+-->
+
 日期：2026-08-03；边界复核：2026-08-04；实现更新：2026-08-06
 
 状态：已接受并实现

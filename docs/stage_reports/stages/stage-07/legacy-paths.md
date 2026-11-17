@@ -1,5 +1,11 @@
 # Stage 7 Evidence Legacy Paths
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.legacy-paths
+status: evidence
+authority: none
+-->
+
 状态：compatibility entry
 
 更新日期：2026-10-10

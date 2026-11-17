@@ -1,5 +1,11 @@
 # Cuexis 技术开发文档
 
+<!-- cuexis-meta
+id: ARCHIVE-PROJECT_GUIDE_LEGACY_2026-08-10
+status: historical
+authority: none
+-->
+
 状态：historical snapshot；已由 `docs/PROJECT_GUIDE.md`、`docs/CURRENT_STATUS.md`、
 `docs/architecture/` 和 `docs/ROADMAP.md` 拆分取代
 

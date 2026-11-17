@@ -1,5 +1,12 @@
 # 回复等待与请求退役回收方案复审
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.performance.2026-10-17-wait-and-retirement-design-review
+status: evidence
+authority: none
+date: 2026-10-17
+-->
+
 状态：design review / candidate refinement；本报告提出改进，未实施下述新增方案。
 日期：2026-10-17（Asia/Shanghai）。当前分支 `stage-7`，HEAD `ef7fa30d5b578896ccc165622fe256c553a5641c` 加工作区修改。
 
@@ -138,8 +145,8 @@ Judgement 也不能因此依赖 Playback、音频或宿主类型。首版保留�
 依据为 [ADR 0046](../../../../../adr/0046-realtime-playback-coordination.md)、
 [RPA 合同](../../../../../formats/rpa-execution-contract.md)、
 [宿主边界](../../../../../api/realtime-host-boundary.md)、
-[PD 计划](../../../../../stage_plans/active/stage-07/04-pd/plan.md)和
-[PD 细则](../../../../../stage_plans/active/stage-07/04-pd/design.md)。
+[PD 计划](../../../../../stage_plans/completed/stage-07/04-pd/plan.md)和
+[PD 细则](../../../../../stage_plans/completed/stage-07/04-pd/design.md)。
 这里不建议把 OwnerChannel ACK、advance retire、present receipt、CPU 最后引用或设备 fence 合并成一种确认。
 
 ## 5. 后续实施与验证建议

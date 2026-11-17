@@ -1,5 +1,11 @@
 # ADR 0010：规范谱面格式与简易导入格式
 
+<!-- cuexis-meta
+id: ADR-0010
+status: historical
+authority: owns
+-->
+
 日期：2026-07-16
 
 状态：历史决策；方案 B 保留部分已被 ADR 0035 取代

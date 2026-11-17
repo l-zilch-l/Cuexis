@@ -1,5 +1,11 @@
 # ADR 0041: Legacy Format Exit Policy
 
+<!-- cuexis-meta
+id: ADR-0041
+status: accepted
+authority: owns
+-->
+
 日期：2026-08-30
 
 状态：已接受

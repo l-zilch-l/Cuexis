@@ -1,5 +1,12 @@
 # S6-E1/E2 媒体导入实现
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-06.2026-09-25-s6-e1-e2-media-importer
+status: evidence
+authority: none
+date: 2026-09-25
+-->
+
 状态：implemented（本地实现、单变量根因实验与四平台 hosted 证据；不是批次退出、Stage 6 关闭或
 owner acceptance）
 

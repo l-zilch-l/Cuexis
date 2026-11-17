@@ -1,5 +1,12 @@
 # R4 设备后端首个正式组（2026-11-14）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-14-device-first-formal-group
+status: evidence
+authority: none
+date: 2026-11-14
+-->
+
 状态：completed fixed group，保留逐 metric 结论；不是设备、GPU 时间或生产整体接受。
 
 返回 [New RPA 报告索引](../README.md)。授权与准入边界见 [11/13 收尾裁定](2026-11-13-closeout-decisions.md)及 [工具实施报告](2026-11-13-closeout-implementation.md)。

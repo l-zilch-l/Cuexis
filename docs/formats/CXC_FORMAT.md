@@ -1,8 +1,15 @@
 # Cuexis CXC v1
 
 状态：accepted contract；CFU-C3/C4 内部 archive/tools 与 CFU-E Playback source/prepare/identity
+
 已实现；CFU-F hosted consumer/determinism/safety gates 已关闭；G3 hosted、G4、G5 report-SHA
 revalidation 与 G6 owner acceptance 已完成；最终产品封存已记录
+
+<!-- cuexis-meta
+id: FORMAT-CXC_FORMAT
+status: accepted
+authority: owns
+-->
 
 更新日期：2026-10-22
 
@@ -251,6 +258,10 @@ Foundation revision 1 使用已登记的 `extensions["cuexis.chart-entry.v1"]` �
 `compiledSemanticIdentity` 是展开语义的 typed identity；它不能由 source path、CXT
 参数文本或包 identity 代替。`source` entry 可以保留供审查和复现，但永远不是
 Foundation Playback 入口。
+
+注意：`CHART_ENTRY_V1_FORMAT.md:333-334` 对 `candidate.behavior-v2-v1` 的 playback entry
+允许 `source-json`，与本节的 `packed-chart` 要求冲突，实现按前者。差异登记为 RR-F114，
+裁定前不要按本节实现。
 
 `cxc_pack` 与 `cxc_validate` 不读取、冻结或展开 CXT v2。需要从 CXT 生成 Packed bytes
 时，必须先运行显式 compile/prepare 步骤，再把已生成的 Packed entry 交给 CXC tooling。

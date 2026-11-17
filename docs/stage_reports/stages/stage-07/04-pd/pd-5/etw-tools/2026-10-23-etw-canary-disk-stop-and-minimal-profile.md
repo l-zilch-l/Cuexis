@@ -1,5 +1,12 @@
 # PD-5 管理员 canary 磁盘阈值中断与最小验证 profile
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.etw-tools.2026-10-23-etw-canary-disk-stop-and-minimal-profile
+status: evidence
+authority: none
+date: 2026-10-23
+-->
+
 日期：2026-10-23。结论：原 Power normal 用例失败，紧急回收证据通过；第二项未运行。新最小生命周期工具包完成源码修正、只读解析与 41 项验证，尚未执行管理员记录。正式性能、PD-5 和 Stage 7-PD 均未接受。
 
 ## 原始执行与独立裁决

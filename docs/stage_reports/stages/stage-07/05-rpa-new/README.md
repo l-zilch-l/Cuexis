@@ -20,7 +20,7 @@
 先例 `9c392af` 同样被报 61 处。同一批 2026-11-01 追问的两份附件（[第四次矩阵](r3/2026-11-01-rpa-acceptance-matrix-run4-evidence/index.md)、[前缘重推](r3/2026-11-01-capacity-frontier-rederive-evidence/index.md)）由提交 `d0c35b4` 发布，那次被报 131 个文件、131 处（120 处是日志末尾空行、11 处真实尾随空格），性质相同，统计记在各自证据目录 `validation.json` 的 `diff_over_commit` 字段里。
 该检查是源码洁净门，不是证据门；裁掉这些字节会破坏每份文件的 `sha256` 绑定，因此这里只记录事实，不把它当成通过项。
 
-返回 [Stage 7 阶段总表](../README.md)。计划入口：[对应阶段计划](../../../../stage_plans/active/stage-07/05-rpa-new/README.md)。
+返回 [Stage 7 阶段总表](../README.md)。计划入口：[对应阶段计划](../../../../stage_plans/completed/stage-07/05-rpa-new/README.md)。
 
 工作树整合与本次文档整理记录见 [共享材料](../90-shared/README.md)。
 

@@ -1,5 +1,12 @@
 # R3 已冻结输入的 prepare 复制消除
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-28-r3-resolved-prepare-copy
+status: evidence
+authority: none
+date: 2026-10-28
+-->
+
 状态：local candidate retained；R3 未退出，R4 正式、设备与生产接受不变
 
 日期：2026-10-28，Asia/Shanghai
@@ -11,7 +18,7 @@ owner 在阅读桌面接手材料后要求接手 R3 重构优化。本轮只在 
 使用 SDK 0.9.1 的 `out/verification-20261028/sdk-091/static-build/`，不是旧 0.9.0 性能 exe。
 所有构建串行、`--parallel 1`、BelowNormal、affinity mask 3；测试、构建和性能进程不重叠。
 
-工作范围为[整改计划](../../../../../stage_plans/active/stage-07/05-rpa-new/plan.md) §8.1
+工作范围为[整改计划](../../../../../stage_plans/completed/stage-07/05-rpa-new/plan.md) §8.1
 的准备重复工作；没有进入 R3c、正式测量、分域内存采数或设备接受。
 
 ## 2. 根因、实现与维护边界

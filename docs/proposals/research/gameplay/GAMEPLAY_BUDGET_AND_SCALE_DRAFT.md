@@ -1,5 +1,11 @@
 # Gameplay 预算与规模上界草案
 
+<!-- cuexis-meta
+id: PROPOSALS-research.gameplay.GAMEPLAY_BUDGET_AND_SCALE_DRAFT
+status: candidate
+authority: none
+-->
+
 > 目录状态：Gameplay research input。测量值均为候选证据，不构成生产 ABI 或冻结限额；预算原则已由 ADR 0043 / Spec 承接。
 
 状态：candidate（设计草案，未接受，未实施）

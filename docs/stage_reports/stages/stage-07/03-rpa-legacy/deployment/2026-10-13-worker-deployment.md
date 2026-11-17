@@ -1,5 +1,12 @@
 # B5 线程部署与自动验证记录
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.deployment.2026-10-13-worker-deployment
+status: evidence
+authority: none
+date: 2026-10-13
+-->
+
 日期：2026-10-13。状态：非实体设备实施与本地自动验证完成（testOnly）；不是 B5 退出或 F1–F4 接受记录。
 
 ## 范围与实现

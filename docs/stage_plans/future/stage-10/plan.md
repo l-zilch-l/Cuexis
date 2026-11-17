@@ -4,7 +4,13 @@
 
 更新日期：2026-10-16（按实际提交阶段收窄 PD 预览失败保证）
 
-归档来源：[旧 Stage 7 Studio 计划](../../active/stage-07/plan.md)、
+<!-- cuexis-meta
+id: PLAN-future.stage-10.plan
+status: future
+authority: owns
+-->
+
+归档来源：[旧 Stage 7 Studio 计划](../../completed/stage-07/plan.md)、
 [Chart v5 计划](../../active/chart-format-update-for-v5/plan.md) 和
 [Stage 8 发行计划](../stage-08/plan.md)。
 
@@ -57,7 +63,7 @@ Studio 的判定结果必须与 Player 和 external consumer 一致。
 
 ### 作者版本与活动预览版本
 
-采用 PD 基线时遵守[细则 §12.3](../../active/stage-07/04-pd/design.md)：作者
+采用 PD 基线时遵守[细则 §12.3](../../completed/stage-07/04-pd/design.md)：作者
 文档的 Undo/Redo 不使用 Runtime mutation guard 实现。编辑后沿共同 compile/prepare 构建
 带文档 revision/请求身份的候选；编译/prepare 失败不替换旧软件预览。已进入控制的候选，
 只有在所有相关 owner 确认终态未生效且没有其他控制副作用时，才可保证旧组合保持。

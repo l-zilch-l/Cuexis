@@ -13,9 +13,12 @@ if(CUEXIS_BUILD_DEVELOPER_TOOLS)
     add_subdirectory(chart/chart_candidate)
     add_subdirectory(chart/chart_validator)
     add_subdirectory(chart/chart_migrator)
-    if(TARGET cuexis_shader)
-        add_subdirectory(shader/asset_importer)
-    endif()
+endif()
+
+# The shader tool is reachable with CUEXIS_BUILD_SHADER_TOOLS alone; requiring
+# DEVELOPER_TOOLS made the importer test unreachable in hosted shader-tools jobs.
+if(CUEXIS_BUILD_SHADER_TOOLS AND TARGET cuexis_shader)
+    add_subdirectory(shader/asset_importer)
 endif()
 
 if(CUEXIS_BUILD_MEDIA_TOOLS)

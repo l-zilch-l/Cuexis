@@ -1,5 +1,12 @@
 # Gameplay Ruleset：I 收敛前置审查
 
+<!-- cuexis-meta
+id: EVIDENCE-reviews.gameplay-ruleset-2026-10.2026-10-01-i-entry-readiness
+status: evidence
+authority: none
+date: 2026-10-01
+-->
+
 状态：dated review（I 收敛前置门，非实施报告）
 
 更新日期：2026-10-01

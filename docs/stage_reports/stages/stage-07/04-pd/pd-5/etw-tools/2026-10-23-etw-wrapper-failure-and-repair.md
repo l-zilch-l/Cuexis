@@ -1,5 +1,12 @@
 # PD-5 ETW 启动包装器失败与独立修正版
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.etw-tools.2026-10-23-etw-wrapper-failure-and-repair
+status: evidence
+authority: none
+date: 2026-10-23
+-->
+
 状态：exit-code repair verified，cleanup review HOLD；elevated capture / PD-5 acceptance：not passed。
 
 更新日期：2026-10-23，Asia/Shanghai。此前诊断见

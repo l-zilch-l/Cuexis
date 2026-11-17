@@ -10,7 +10,7 @@ S7A 内核与产品集成，按 S7A 批次集中报告、裁定、交接和附�
 
 先按下表定位批次；同批报告与附件放在同一目录。完整原始路径直接查 [证据清单](evidence-catalog.md)，无须逐篇翻阅。
 
-返回 [Stage 7 阶段总表](../README.md)。计划入口：[对应阶段计划](../../../../stage_plans/active/stage-07/01-a/README.md)。
+返回 [Stage 7 阶段总表](../README.md)。计划入口：[对应阶段计划](../../../../stage_plans/completed/stage-07/01-a/README.md)。
 
 跨批 CI 与发布记录见 [共享材料](../90-shared/README.md)；原 S7A-9 后续设备/矩阵证据见 [旧 RPA](../03-rpa-legacy/README.md)。
 

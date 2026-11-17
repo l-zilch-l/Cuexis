@@ -1,5 +1,11 @@
 # Cuexis SDK 转型验证报告
 
+<!-- cuexis-meta
+id: ARCHIVE-SDK_TRANSITION_VERIFICATION
+status: historical
+authority: none
+-->
+
 状态：历史验证快照；已被 ADR 0029、阶段 1C 完成报告和 260722 全量审查补充/取代
 报告日期：2026-07-20
 测试版本：`26.07.18.18-1-dev`（stage 1B 基线 + SDK 转型改造）

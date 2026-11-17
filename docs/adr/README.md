@@ -4,6 +4,12 @@
 
 更新日期：2026-10-28
 
+<!-- cuexis-meta
+id: INDEX-adr
+status: active
+authority: index
+-->
+
 ADR 是决策理由的权威来源。字段级合同和实施证据分别见 [格式索引](../formats/README.md)
 与 [阶段报告索引](../stage_reports/README.md)。
 

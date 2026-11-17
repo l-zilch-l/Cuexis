@@ -4,6 +4,12 @@
 
 更新日期：2026-10-28
 
+<!-- cuexis-meta
+id: INDEX-architecture
+status: active
+authority: index
+-->
+
 按架构问题检索 Cuexis 文档：
 
 - [架构总览](OVERVIEW.md)：产品结构、宿主边界、内容流和时间确定性。

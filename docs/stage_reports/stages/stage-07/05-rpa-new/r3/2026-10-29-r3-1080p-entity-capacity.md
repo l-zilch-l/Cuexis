@@ -1,5 +1,12 @@
 # 1080P 入镜实体容量与 240 FPS 边界
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-29-r3-1080p-entity-capacity
+status: evidence
+authority: none
+date: 2026-10-29
+-->
+
 状态：有限本地容量诊断；不是 R3/R4 或生产接受
 
 日期：2026-10-29

@@ -1,5 +1,11 @@
 # Gameplay Program IR 原语草案
 
+<!-- cuexis-meta
+id: PROPOSALS-research.gameplay.GAMEPLAY_PROGRAM_IR_DRAFT
+status: candidate
+authority: none
+-->
+
 > 目录状态：Gameplay research input。部分语义已被 Fold Calculus 和 Gameplay Judgement Spec 取代；本文保留推导和证据追溯。
 
 状态：candidate（部分被取代，见「取代关系」；未接受，未实施）

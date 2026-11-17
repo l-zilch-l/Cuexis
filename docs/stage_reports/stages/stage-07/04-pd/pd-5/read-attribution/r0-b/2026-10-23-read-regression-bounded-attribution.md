@@ -1,10 +1,17 @@
 # PD-5 读取回归的有界归因实验（R0-b）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.read-attribution.r0-b.2026-10-23-read-regression-bounded-attribution
+status: evidence
+authority: none
+date: 2026-10-23
+-->
+
 状态：诊断报告。证据只在独立临时 worktree 中产生，变体不进主树、不登记、不产生 A/B 结论；不构成性能、内存或阶段接受，也不改变任何已接受判据。门 G2 未通过，读取候选不提名。
 
 日期：2026-10-23
 
-归属：Stage 7-PD / PD-5。执行[读取候选与分域内存观测实施方案](../../../../../../../stage_plans/active/stage-07/04-pd/pd-5/pd5-read-candidate-and-memory-domains-plan.md) §2.2 的 R0-b 有界归因实验，并按 §2.2 的门 G2 判定是否提名读取候选。上游为[静态指令归因（R0-a）](../r0-a/2026-10-23-read-regression-static-attribution.md)的灰区判定与[C2 结果](../../read-candidate/2026-10-21-c2-read-result-candidate.md)的 1.0214（未采用）。
+归属：Stage 7-PD / PD-5。执行[读取候选与分域内存观测实施方案](../../../../../../../stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-candidate-and-memory-domains-plan.md) §2.2 的 R0-b 有界归因实验，并按 §2.2 的门 G2 判定是否提名读取候选。上游为[静态指令归因（R0-a）](../r0-a/2026-10-23-read-regression-static-attribution.md)的灰区判定与[C2 结果](../../read-candidate/2026-10-21-c2-read-result-candidate.md)的 1.0214（未采用）。
 
 结论摘要：边界批量物化（RB 的机制与其真实消费者采用方式）**不能**把读取回归压到 1.10 以内。5 个可执行、3 轮交错、18 次运行全部通过，有效性门成立（`V0/A` = 1.4140，相对存储的 1.3742 偏差 +2.90%，在 ±10% 内），候选上界直接取同机 `V1/A` = **1.3728，95% 区间 [1.3579, 1.3878]**：点估计、上界、乃至下界都高于 1.10，按 G2 记“上界不足”，进入 R3 未通过分支，R1（RB 实现）与 R2（A′ 对 RB 诊断）均不启动。归因上，批量只回收每帧 131.1 ns（N=64），占 F1 超出 A 的 1175.1 ns 的 11.2%；折成拟合量即边际 −1.92 ns/对象（目标 −12.32，完成 15.6%）与固定 −2.89 ns/次（目标 −6.01，完成 48.1%）。残余集中在逐对象提取块本身（组件检索 + 136 字节 DTO 重建 + 快照字段与矩阵写入），该块在 N=64 时占 V0 的 80.1%，且 F1 的该块是 A 的 1.58 倍。要够到 1.10，该块还须再降 24.7%；R0-b 的变体只做了“删除”而非“改写”，因此本报告只能断言边界批量化不可达，不能断言改写检索形态不可达。
 

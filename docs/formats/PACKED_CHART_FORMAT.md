@@ -4,6 +4,12 @@
 
 更新日期：2026-09-05
 
+<!-- cuexis-meta
+id: FORMAT-PACKED_CHART_FORMAT
+status: candidate
+authority: owns
+-->
+
 2026-10-04 补充：本文继续拥有 Foundation `candidateRevision=1` 的合同。
 Gameplay 的显式 revision 2 扩展由 [Gameplay Capsule v2 format](GAMEPLAY_CAPSULE_V2_FORMAT.md)
 唯一拥有，复用本文 Header/directory/静态流/预算，并明确 REQ0/CNS0、Header requirementCount、
@@ -198,16 +204,11 @@ alignment 添加 padding。所有索引从 0 起；`IndexPlusOne` 的 0 表示 n
 | mode | Descriptor | Atom |
 | --- | --- | --- |
 | 0：Rational | `u8(0)` | `numerator: sv, denominator: uv64`，每条绝对值 |
-| 1：GridDelta | `u8(1), D: uv64` | `scaledNumeratorDelta: sv` |
 
-Rational atom 必须约分，零为 `0/1`。GridDelta 的前一个 scaled numerator 初值为 0，
-累加使用 checked int64，值为 `N/D`，解码后约分。每个逻辑字段有独立状态，例如
-startBeat 和 endBeat 不能共用前值；不出现的 endBeat 不推进该流。
+其他 descriptor 值非法：当前 Reader 对非 0 mode 报 `packed.time.invalid`，REQ0 非 0 报
+`packed.requirements.codec`。
 
-Writer 尝试该流约分后分母的最小公倍数 D；只在 D、所有 scaled numerator 和相邻
-delta 均可表示，且总编码 bytes 小于 Rational mode 时选择 GridDelta。否则使用
-Rational mode，长度相等也选 Rational。空流使用 mode 0。不能为适应 grid 舍入 Beat，
-也不能因可选 grid 的 LCM 溢出而拒绝可由 Rational 合法表示的谱面。
+Rational atom 必须约分，零为 `0/1`。不能为适应 grid 舍入 Beat。
 
 ### 4.3 规范顺序
 

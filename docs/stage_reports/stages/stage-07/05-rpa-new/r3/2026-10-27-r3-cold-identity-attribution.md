@@ -1,5 +1,12 @@
 # R3 首次 Seek 身份计算与归档体积归因
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-27-r3-cold-identity-attribution
+status: evidence
+authority: none
+date: 2026-10-27
+-->
+
 状态：诊断完成；未修改产品代码，未实施进一步优化。首次 20 ms 门仍未通过，R3 未退出。
 
 日期：2026-10-27。实施工作区为 `D:/Cuexis-redesign`，分支 `Cuexis-redesign`，HEAD

@@ -1,11 +1,18 @@
 # S7A-3 第二半 part 1：主控独立复验的带日期证据
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.01-a.s7a-3.2026-10-03-s7a-3-independent-verification
+status: evidence
+authority: none
+date: 2026-10-03
+-->
+
 状态：dated evidence record（主控对实现交付的**两次独立复跑**的带日期证据；**不是**实施证据、
 **不是** owner acceptance、**不是** S7A-3 完成声明、**也不是** Stage 7A 完成声明）
 
 更新日期：2026-10-03
 
-上级文档：[Stage 7A 实施计划](../../../../../stage_plans/active/stage-07/plan.md) ·
+上级文档：[Stage 7A 实施计划](../../../../../stage_plans/completed/stage-07/plan.md) ·
 [S7A-3 第二半 part 1 实现裁定落地记录](2026-10-03-s7a-3-implementation-rulings.md) ·
 [Gameplay V2 acceptance package](../../../../../proposals/gameplay-v2-acceptance/README.md) ·
 [批次门禁](../../../../../proposals/gameplay-v2-acceptance/BATCH_GATES.md)

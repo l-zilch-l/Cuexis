@@ -4,6 +4,12 @@
 
 更新日期：2026-11-14（消费独立 Stage 7.5 的退出与发行交接）
 
+<!-- cuexis-meta
+id: PLAN-future.stage-08.plan
+status: future
+authority: owns
+-->
+
 归档来源：[Chart v5 格式计划](../../active/chart-format-update-for-v5/plan.md)、
 [Stage Chart Format Update 完成计划](../../completed/chart-format-update/plan.md)、
 [CXT v1 格式合同](../../../formats/CXT_FORMAT.md) 和 [CXC v1 格式合同](../../../formats/CXC_FORMAT.md)。
@@ -30,18 +36,18 @@ Stage 7 的受限关闭不代替本阶段发行所需的具体生产准入。
 而不是首次开始设计 Chart v5。Stage 7.5当前计划范围完成并接受是本阶段启动前置；
 能力是否默认发行，另由本阶段的发行矩阵明确决定。
 
-[诊断独立前置](../../active/stage-07/02-diagnostics/plan.md)承接正式命名迁移，
-[Stage 7-RPA子阶段](../../active/stage-07/03-rpa-legacy/plan.md)承接实时架构与实体设备/实时同步验收，
+[诊断独立前置](../../completed/stage-07/02-diagnostics/plan.md)承接正式命名迁移，
+[Stage 7-RPA子阶段](../../completed/stage-07/03-rpa-legacy/plan.md)承接实时架构与实体设备/实时同步验收，
 本阶段验证发行兼容。实施顺序为诊断独立前置 → RPA → Stage 7.5 → Stage 8；
 规划登记不表示这些前置已完成。
 
 ### PD 集成基线的发行准入
 
-发行基线若包含 [Stage 7-PD](../../active/stage-07/04-pd/plan.md)，须消费其
+发行基线若包含 [Stage 7-PD](../../completed/stage-07/04-pd/plan.md)，须消费其
 已接受的宿主/反馈寿命合同、实际 SDK 版本、安装消费者矩阵与新 SHA 预算交接；未接受的
 proposal 不能作为发行行为。Graph/Packed 两入口须恢复同一能力/FactBinding 支持表，未知必需
 phase/outcome/聚合稳定拒绝，旧绑定和 presentation-only identity 回归保持一致。
-见[PD 细则 §12.1、§12.7](../../active/stage-07/04-pd/design.md)。
+见[PD 细则 §12.1、§12.7](../../completed/stage-07/04-pd/design.md)。
 该要求约束实际采用的实现，不要求提前实现 Stage 9–14 能力，也不改变 RPA → Stage 7.5 → Stage 8 顺序。
 
 ## 1. 阶段目标

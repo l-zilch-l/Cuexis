@@ -1,5 +1,12 @@
 # R2 direct borrowed Result 续接与固定诊断
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r2.2026-10-26-r2-direct-result-continuation
+status: evidence
+authority: none
+date: 2026-10-26
+-->
+
 状态：local verification complete；候选未接受，R2/R4 未退出。
 
 日期：2026-10-26（Asia/Shanghai）。
@@ -7,7 +14,7 @@
 用户本次请求“阅读接手文档，继续实施RPA-R2”，续接的是已实现并整合的第三候选。
 本轮完成剩余核验和唯一固定局部诊断；没有增加第四机制。当前状态以
 [CURRENT_STATUS](../../../../../CURRENT_STATUS.md) 为准，设计和停止门由
-[整改计划](../../../../../stage_plans/active/stage-07/05-rpa-new/plan.md) 持有。
+[整改计划](../../../../../stage_plans/completed/stage-07/05-rpa-new/plan.md) 持有。
 
 ## 1. 源码与对照身份
 

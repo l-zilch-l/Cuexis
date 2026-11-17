@@ -1,5 +1,12 @@
 # PD-5 40k 内存包络的 owner 归因与"需求还是设计缺陷"判定
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.memory-attribution.2026-10-23-40k-memory-envelope-attribution
+status: evidence
+authority: none
+date: 2026-10-23
+-->
+
 状态：completed（有界诊断与归因）；PD-5 acceptance：not passed。40k 完整内存项仍**没有有效测量**，
 既不判通过也不判超界。本报告不修改任何已接受的预算、统计协议或历史运行结果。
 

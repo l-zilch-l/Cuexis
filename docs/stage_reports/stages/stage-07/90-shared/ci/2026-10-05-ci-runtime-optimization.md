@@ -1,5 +1,12 @@
 # Stage 7 CI runtime optimization
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.90-shared.ci.2026-10-05-ci-runtime-optimization
+status: evidence
+authority: none
+date: 2026-10-05
+-->
+
 状态：implemented；语法、覆盖保持和三工具链本地缓存验证通过，Windows media 全量991项复验通过；hosted 尚未测量；owner 已授权提交/推送且不等待 CI 完成
 
 日期：2026-10-05

@@ -1,5 +1,12 @@
 # Chart Format Foundation Hardening R3：预算表与 checked arithmetic
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.chart-format-foundation.2026-09-17-r3-budgets-and-arithmetic
+status: evidence
+authority: none
+date: 2026-09-17
+-->
+
 日期：2026-09-17
 
 状态：R3 完成；Spec §3.3 冻结预算表，`maxPackedSectionBytes` 与逐字段预算在所有支持入口生效

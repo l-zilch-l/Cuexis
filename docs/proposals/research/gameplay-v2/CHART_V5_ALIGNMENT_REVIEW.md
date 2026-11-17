@@ -1,5 +1,11 @@
 # Chart v5 与 Gameplay V2 对齐审查
 
+<!-- cuexis-meta
+id: PROPOSALS-research.gameplay-v2.CHART_V5_ALIGNMENT_REVIEW
+status: candidate
+authority: none
+-->
+
 状态：candidate；研究审查，未接受，未实施
 
 日期：2026-10-02

@@ -1,5 +1,12 @@
 # PD-5 最小 ETW 生命周期工具两项实机验收
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.etw-tools.2026-10-23-etw-minimal-lifecycle-acceptance
+status: evidence
+authority: none
+date: 2026-10-23
+-->
+
 日期：2026-10-23。结论：用户完成新封包的一次固定两项管理员运行，主代理按原始记录独立核验通过。验收限于最小 profile 的正常停止与 controller-death 回收，不包含 Power 性能诊断、F1 采样、正式性能或 PD-5/Stage 7-PD 退出。本批不再需要管理员脚本。
 
 ## 实际运行与绑定

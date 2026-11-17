@@ -1,5 +1,12 @@
 # R3 相对读取门：材料化器两处裁剪后通过（2026-11-01）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-r3-read-gate-materializer-trims
+status: evidence
+authority: none
+date: 2026-11-01
+-->
+
 状态：local gate reading；test-only。**相对读取门从超界变为通过**，判据、范围与阈值都没有改动。
 
 日期：2026-11-01　源码：`09a5b53a` + 本报告的裁剪（工作树提交为本次提交）

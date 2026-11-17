@@ -1,5 +1,11 @@
 # ADR 0028：相机投影模型、ECS 组件归属与 FrameSnapshot 契约
 
+<!-- cuexis-meta
+id: ADR-0028
+status: accepted
+authority: owns
+-->
+
 日期：2026-07-20
 
 状态：已接受

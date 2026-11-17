@@ -5,6 +5,12 @@
 决策依据：[ADR 0037](../../../adr/0037-stage-3-portable-presentation-contracts.md)。总体阶段边界见
 [SDK 改造与阶段路线调整方案](../../historical/sdk-transition/plan.md)。
 
+<!-- cuexis-meta
+id: PLAN-completed.stage-03.plan
+status: completed
+authority: owns
+-->
+
 阶段 2 的 Windows/MSVC、MinGW、GPU 和 external consumer 本地门禁，以及 Stage 3 3G 的本地
 Windows/MSVC、WSL GCC/Clang、sanitizer、package consumer 验收均已完成。Stage 3 commit
 `b71ef23b2f258d88e274a9b4b13665ef10a39845` 的 hosted Linux Quality run 已全部通过，Stage 2

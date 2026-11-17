@@ -1,5 +1,12 @@
 # PD-0 三轮补充复测与测量记录归档
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-0.2026-10-17-pd0-supplemental-retests-and-archive
+status: evidence
+authority: none
+date: 2026-10-17
+-->
+
 状态：三轮完成；单 owner 与宿主补充组均 inconclusive，PD-0 退出结论待重新核验
 
 日期：2026-10-17

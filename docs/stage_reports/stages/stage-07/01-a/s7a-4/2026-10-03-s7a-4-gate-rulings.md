@@ -1,11 +1,18 @@
 # S7A-4 准入门禁：第 4 轮（仲裁、资源与事实序）裁定落地记录
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.01-a.s7a-4.2026-10-03-s7a-4-gate-rulings
+status: evidence
+authority: none
+date: 2026-10-03
+-->
+
 状态：dated implementation record（第 4 轮裁定的文档落地证据；不是阶段关闭、不是 owner acceptance、
 不是实施证据）
 
 更新日期：2026-10-03
 
-上级文档：[Stage 7A 实施计划](../../../../../stage_plans/active/stage-07/plan.md) §S7A-4 ·
+上级文档：[Stage 7A 实施计划](../../../../../stage_plans/completed/stage-07/plan.md) §S7A-4 ·
 [Gameplay V2 acceptance package](../../../../../proposals/gameplay-v2-acceptance/README.md) ·
 [未决语义分轮裁决清单](../../../../../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md) §4、§8、§9 ·
 [批次门禁](../../../../../proposals/gameplay-v2-acceptance/BATCH_GATES.md) §1
@@ -173,7 +180,7 @@ bounded backtracking；`capacity > 1`；Chord / `binding`；`gap` / handoff；`s
 | [SUPPORT_AND_REJECTION_MATRIX.md](../../../../../proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md) | §2 资源行备注（冻结子集指针）；§3 `R-04` 行补入**非零 grace**；§3 后的第 4 轮最小同步说明（**条数仍 19**） |
 | [SEMANTIC_KERNEL.md](../../../../../proposals/research/gameplay-v2/SEMANTIC_KERNEL.md) | §4.2 的"非权威推导、已被取代"标注块（正文不改） |
 | [ADR 0044](../../../../../adr/0044-gameplay-v2-semantic-kernel.md) | "仍待裁定的部分"段（第 5 至第 7 轮 **44 行 / 49 项**与算式）、第 4 轮表行、威胁 5（`SolverProfile` 数值预算）、威胁 6（`CM-C04` 分支与后续语义）、未决与后续第 2 项、证据边界第 7 项 |
-| [plan.md](../../../../../stage_plans/active/stage-07/plan.md) | §1.1 未授权项改为"第 5 至第 7 轮"；§S7A-4 的"第 4 轮裁定后的范围收窄（2026-10-03）"段（拒绝面由"不属于 7A"升级为稳定拒绝，新增非零 grace / owner 集合 / 并列 slot；**不新增工作项**） |
+| [plan.md](../../../../../stage_plans/completed/stage-07/plan.md) | §1.1 未授权项改为"第 5 至第 7 轮"；§S7A-4 的"第 4 轮裁定后的范围收窄（2026-10-03）"段（拒绝面由"不属于 7A"升级为稳定拒绝，新增非零 grace / owner 集合 / 并列 slot；**不新增工作项**） |
 | [stage_reports/README.md](../../../../README.md) | Stage 7A 清单追加本文条目 |
 | 本文（新增） | 第 4 轮裁定的带日期落地证据 |
 
@@ -280,7 +287,7 @@ TOTAL 126 frozen 96 pending 30
 - [S7A-0.2 合同逐项台账](../../../../../proposals/gameplay-v2-acceptance/CONTRACT_MATRIX.md)：114 项与 14 项 `open`
 - [支持 / 拒绝矩阵](../../../../../proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md)：19 条稳定拒绝
 - [批次门禁](../../../../../proposals/gameplay-v2-acceptance/BATCH_GATES.md)：S7A-4 门禁
-- [Stage 7A 实施计划](../../../../../stage_plans/active/stage-07/plan.md)：§S7A-4
+- [Stage 7A 实施计划](../../../../../stage_plans/completed/stage-07/plan.md)：§S7A-4
 - [第 3 轮门禁报告](../s7a-3/2026-10-03-s7a-3-gate-rulings.md) · [第 2 轮门禁报告](../s7a-2/2026-10-03-s7a-2-gate-rulings.md) ·
   [S7A-0 接受记录](../s7a-0/2026-10-02-s7a-0-acceptance.md)
 - [V2 语义内核](../../../../../proposals/research/gameplay-v2/SEMANTIC_KERNEL.md)：§4.2 的非权威推导标注

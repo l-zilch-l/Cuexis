@@ -8,6 +8,12 @@
 
 文档角色：内部技术参考，不是宿主 API
 
+<!-- cuexis-meta
+id: API-internal-module-catalog
+status: active
+authority: owns
+-->
+
 权威边界：[Module Boundaries](../architecture/MODULE_BOUNDARIES.md)
 
 ## 快速结论

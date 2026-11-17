@@ -1,5 +1,12 @@
 # R4 内存归因：逐域精确分区与 proposals 的落差
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-08-memory-attribution
+status: evidence
+authority: none
+date: 2026-11-08
+-->
+
 状态：candidate measurement；逐域归因已完成，声明的上限仍是 proposed（未接受），因此不是接受裁定
 
 日期：2026-11-08
@@ -34,7 +41,7 @@ observer 构建、600 秒超时、不接受也不修改任何上限。
 
 分区是“全部已链接的 C++ new/delete”，因此每个域的和就是该域在 `active` 检查点的全部 C++
 请求字节（不含直接 malloc、SDL、驱动、GPU 与 OS 堆）。对照的是
-[预算提案](../../../../../stage_plans/active/stage-07/04-pd/pd-5/pd5-measurement-proposal.md)
+[预算提案](../../../../../stage_plans/completed/stage-07/04-pd/pd-5/pd5-measurement-proposal.md)
 里 `r4-reference-nN-v1` 的 proposed 上限。
 
 ### 3.1 n64（high 与 low 一致）

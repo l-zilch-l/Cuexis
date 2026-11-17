@@ -1,12 +1,18 @@
 # S7A-5 / S7A-6 Joint Implementation Handoff
 
+<!-- cuexis-meta
+id: ARCHIVE-stage-07-planning.01-a.s7a-5-6-implementation-handoff
+status: historical
+authority: none
+-->
+
 状态：historical planning snapshot；原S7A-5/6联合接手正文，当前执行安排已归入主计划
 
 日期：2026-10-06
 
 > 归档日期：2026-10-06；来源为b5594cf保存的规划正文，链接随目录迁移修正。
 > 本文保留当时的九项方案、执行卡和指令；当前十项残余细节与实施安排以
-> [主计划§3.2](../../../stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入) 为准。
+> [主计划§3.2](../../../stage_plans/completed/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入) 为准。
 > 当前接手文档导出到owner桌面；下文的旧接手指令不再作为独立维护入口。
 
 ## 1. 目标、基线与阅读顺序
@@ -28,7 +34,7 @@ SDK仍0.7.0。阶段状态只由 [CURRENT_STATUS](../../../CURRENT_STATUS.md) �
 
 阅读顺序：
 
-1. AGENTS、CURRENT_STATUS、[总计划](../../../stage_plans/active/stage-07/plan.md) 的5/6与小目标台账、
+1. AGENTS、CURRENT_STATUS、[总计划](../../../stage_plans/completed/stage-07/plan.md) 的5/6与小目标台账、
    [五批交付评估](s7a-5-9-delivery-plan.md)。
 2. [方案选择](../../../proposals/implementation-input/stage-07/s7a-5-6-design-selection.md) 的组合B与九项推荐；不要重做已裁定语义选择。
 3. [V2 Spec](../../../formats/GAMEPLAY_V2_SPEC.md) §3.14–3.22/§3.25/§5/§8，

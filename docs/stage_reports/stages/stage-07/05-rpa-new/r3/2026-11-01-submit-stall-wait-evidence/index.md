@@ -1,5 +1,11 @@
 # R3 提交路径停顿归因证据（2026-11-01）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-submit-stall-wait-evidence.index
+status: evidence
+authority: none
+-->
+
 本目录保存一次**诊断性**采样的全部字节：预注册、采样器与分析脚本、七个登记进程的原始样本流与逐帧
 日志、四次栈回溯、以及 GPU 计时器那台独立仪器的原始数据。它回答的问题是——2800 静态点每帧那
 5–6 ms 到底在等什么、等多久，以及这份等待是随实体数变长还是变多。它**不是**容量点、不是矩阵行、

@@ -1,10 +1,17 @@
 # Stage 7-RPA 自动矩阵、预算测量与生产验收准备
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.f1-f2.2026-10-14-final-matrix-and-budget-progress
+status: evidence
+authority: none
+date: 2026-10-14
+-->
+
 证据日期：2026-10-14。状态：实施与验收推进记录；B5/F1–F4 尚未退出。
 
 ## 范围与源码身份
 
-本轮按 owner 请求继续 [RPA 剩余验收](../../../../../stage_plans/active/stage-07/03-rpa-legacy/plan.md)。
+本轮按 owner 请求继续 [RPA 剩余验收](../../../../../stage_plans/completed/stage-07/03-rpa-legacy/plan.md)。
 owner 随后明确本轮暂不配合实体操作，先推进自动矩阵和预算测量；因此实体键盘、人工
 听音和设备切换观察保留待执行。本轮不实施 PD，不接受生产限额，不进行远端发布或关闭。
 

@@ -1,5 +1,11 @@
 # 中立路径 CPU 杠杆附件
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-neutral-path-lever-evidence.index
+status: evidence
+authority: none
+-->
+
 状态：局部选用证据。返回 [报告](../2026-11-01-r3-neutral-path-cpu-lever.md)。
 
 - [选用、边界与门结果](selection.json)

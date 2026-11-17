@@ -24,5 +24,8 @@ CMakeUserPresets.json
 # repository content. Each developer installs their own copy.
 /.dsh/
 
+# Mnemon runtime memory and local agent state (machine-local, not repository content).
+/.mnemon/
+
 # Compiler object files (MSVC .obj pick up the same name on every platform).
 *.obj

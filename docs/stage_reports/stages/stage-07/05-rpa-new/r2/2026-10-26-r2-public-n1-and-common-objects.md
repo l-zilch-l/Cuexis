@@ -1,9 +1,16 @@
 # R2 公开 N1 归因与共用目标文件对照
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r2.2026-10-26-r2-public-n1-and-common-objects
+status: evidence
+authority: none
+date: 2026-10-26
+-->
+
 状态：本机 HighQoS / 共用未变目标文件配置的局部收益及不退化门通过，提交 R2 退出评审核对；未据此记 owner 接受或 R4 正式通过。
 
 日期：2026-10-26（Asia/Shanghai）。当前总状态见 [CURRENT_STATUS](../../../../../CURRENT_STATUS.md)，
-设计与接受边界见[整改计划](../../../../../stage_plans/active/stage-07/05-rpa-new/plan.md)。
+设计与接受边界见[整改计划](../../../../../stage_plans/completed/stage-07/05-rpa-new/plan.md)。
 承接[上一轮 HighQoS 对照](2026-10-26-r2-high-qos-local-benefit.md)。
 
 ## 1. 本轮问题与源码范围

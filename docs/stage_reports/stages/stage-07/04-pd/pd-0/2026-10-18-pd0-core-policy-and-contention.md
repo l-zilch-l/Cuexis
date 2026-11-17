@@ -1,5 +1,12 @@
 # PD-0 固定核心正式组与 SMT 竞争诊断
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-0.2026-10-18-pd0-core-policy-and-contention
+status: evidence
+authority: none
+date: 2026-10-18
+-->
+
 状态：历史正式组 inconclusive；本组不作为 PD-0 退出证据
 
 日期：2026-10-18（Asia/Shanghai）

@@ -1,5 +1,11 @@
 # Gameplay 设计压测与缺陷登记
 
+<!-- cuexis-meta
+id: PROPOSALS-research.gameplay.GAMEPLAY_STRESS_TEST_DRAFT
+status: candidate
+authority: none
+-->
+
 > 目录状态：Gameplay research evidence。本文记录案例、缺陷和跨实现压测；不冻结实现、ABI 或生产预算。
 
 状态：candidate（审查记录，未接受，未实施）

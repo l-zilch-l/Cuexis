@@ -1,5 +1,11 @@
 # Cuexis Particle Timeline 规范
 
+<!-- cuexis-meta
+id: PROPOSALS-deferred.PARTICLE_TIMELINE
+status: candidate
+authority: none
+-->
+
 状态：deferred proposal；Stage 8 设计方向已接受，尚未进入实施
 
 更新日期：2026-08-10

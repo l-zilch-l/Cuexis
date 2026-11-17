@@ -1,5 +1,11 @@
 # S7A-7/8 Review Options and Recommendations
 
+<!-- cuexis-meta
+id: PROPOSALS-implementation-input.stage-07.s7a-7-8-review-options
+status: candidate
+authority: none
+-->
+
 状态：candidate；方案比较与推荐组合，待对应合同首用落定
 
 更新日期：2026-10-07
@@ -7,7 +13,7 @@
 ## 范围与选优依据
 
 本文件消费[10组重审问题](../../../stage_reports/stages/stage-07/01-a/s7a-7-8/2026-10-07-s7a-7-8-plan-review.md)，
-推荐与首用门禁登记在[plan-a §3.4](../../../stage_plans/active/stage-07/01-a/plan.md)。
+推荐与首用门禁登记在[plan-a §3.4](../../../stage_plans/completed/stage-07/01-a/plan.md)。
 实际基线为stage-7、55fc8e6920e7ddb4b34a56bd0b9c27d07d60b833，保留未提交规划/拆分/审查改动。
 R78-09拆为发布/版本，R78-10拆为文档引用/公共状态，共12项选择、每项5方案，总计60个方向。
 后缀a/b只是这两组的子问题，不新增capability、码表类别、ABI角色或原R78组数。

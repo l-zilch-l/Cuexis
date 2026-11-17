@@ -1,10 +1,17 @@
 # R2 HighQoS 局部收益与 N1 同进程消融
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r2.2026-10-26-r2-high-qos-local-benefit
+status: evidence
+authority: none
+date: 2026-10-26
+-->
+
 状态：local benefit confirmed for N8/N64/N256 under the registered HighQoS profile；
 N1 公开读取不退化区间仍 inconclusive，R2/R4 未退出。
 
 日期：2026-10-26（Asia/Shanghai）。当前状态见 [CURRENT_STATUS](../../../../../CURRENT_STATUS.md)，
-设计/门禁见[整改计划](../../../../../stage_plans/active/stage-07/05-rpa-new/plan.md)。
+设计/门禁见[整改计划](../../../../../stage_plans/completed/stage-07/05-rpa-new/plan.md)。
 
 ## 1. 用户背景、确认结果与实验顺序
 

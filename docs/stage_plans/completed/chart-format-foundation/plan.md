@@ -4,6 +4,12 @@
 
 更新日期：2026-09-16
 
+<!-- cuexis-meta
+id: PLAN-completed.chart-format-foundation.plan
+status: completed
+authority: owns
+-->
+
 归档来源：[Chart v5 格式计划](../../active/chart-format-update-for-v5/plan.md)、
 [Stage 5 计划](../../completed/stage-05/plan.md)、[CXT v1 格式合同](../../../formats/CXT_FORMAT.md)、
 [CXC v1 格式合同](../../../formats/CXC_FORMAT.md)。

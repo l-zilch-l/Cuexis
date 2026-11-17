@@ -1,9 +1,16 @@
 # Chart Format Foundation Hardening：交接加固实施计划
 
 状态：completed；R0-R5 全部完成（D1-D10 已裁定，A19/A20/A21/A22 已修复），本地回归矩阵、
+
 容量复跑与同 SHA hosted 三平台验证（报告 SHA `e0ca9ff`，docs-only 复验 `c24f34e`）全绿，
 owner 于 2026-09-17 接受 [R5 交接清单](../../../stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)；
 Stage 6 已恢复 active
+
+<!-- cuexis-meta
+id: PLAN-completed.chart-format-foundation-hardening.plan
+status: completed
+authority: owns
+-->
 
 更新日期：2026-09-17
 

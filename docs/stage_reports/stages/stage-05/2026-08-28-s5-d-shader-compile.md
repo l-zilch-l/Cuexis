@@ -1,5 +1,12 @@
 # Stage 5 S5-D ShaderAsset Compile and Reflection
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-05.2026-08-28-s5-d-shader-compile
+status: evidence
+authority: none
+date: 2026-08-28
+-->
+
 状态：S5-D local checkpoint；S5-E 尚未开始；默认 Playback 仍只保证 Unlit v1
 
 报告日期：2026-08-28

@@ -1,5 +1,11 @@
 # ADR 0023：编码、错误与线程政策
 
+<!-- cuexis-meta
+id: ADR-0023
+status: accepted
+authority: owns
+-->
+
 日期：2026-07-17
 
 状态：已接受

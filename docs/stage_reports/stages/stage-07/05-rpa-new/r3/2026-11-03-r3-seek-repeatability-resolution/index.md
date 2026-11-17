@@ -1,5 +1,11 @@
 # R3 Seek 重复性：口径归位、v4 复算与同二进制九进程分辨率（2026-11-03）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-03-r3-seek-repeatability-resolution.index
+status: evidence
+authority: none
+-->
+
 状态：local measurement；test-only。本记录**不采用任何候选**、不改任何判据、不关闭 R3、不替代
 R4 / 设备 / 生产接受。
 

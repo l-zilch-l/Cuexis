@@ -1,9 +1,16 @@
 # PD-5 window protocol and matrix preparation
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.preparation.2026-10-19-pd5-window-and-matrix-preparation
+status: evidence
+authority: none
+date: 2026-10-19
+-->
+
 日期：2026-10-19。状态：**本轮工具扩展与本地验证完成；完整测量准备未完成，pilot/正式采样未开始**。
 当前状态唯一见 [CURRENT_STATUS](../../../../../../CURRENT_STATUS.md)。本报告接续
 [首批工具准备](2026-10-19-pd5-tools-and-profile-preparation.md)，消费
-[已接受的范围、阈值与协议](../../../../../../stage_plans/active/stage-07/04-pd/pd-5/pd5-measurement-proposal.md)。
+[已接受的范围、阈值与协议](../../../../../../stage_plans/completed/stage-07/04-pd/pd-5/pd5-measurement-proposal.md)。
 没有改变阈值、公共 API、SDK 版本、产品 owner 或线程划分。
 
 后续目录整理已将 Python 工具和 profile 迁到

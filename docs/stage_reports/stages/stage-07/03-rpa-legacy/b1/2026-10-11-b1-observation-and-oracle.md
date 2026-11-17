@@ -1,5 +1,12 @@
 # B1.1/B1.2 观测身份与独立验证设施
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.b1.2026-10-11-b1-observation-and-oracle
+status: evidence
+authority: none
+date: 2026-10-11
+-->
+
 状态：implementation evidence；B1.1/B1.2基础设施已实施，RPA产品协议未完成
 
 证据日期：2026-10-11（Asia/Shanghai）。本记录只覆盖测试设施和其定向验证，不把

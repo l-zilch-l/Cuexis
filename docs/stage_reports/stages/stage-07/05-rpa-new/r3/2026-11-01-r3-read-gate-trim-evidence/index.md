@@ -1,5 +1,11 @@
 # R3 相对读取门裁剪证据（2026-11-01）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-r3-read-gate-trim-evidence.index
+status: evidence
+authority: none
+-->
+
 本目录保存"材料化器两处裁剪后相对读取门重测"的全部字节：预注册、驱动器、9 对进程日志与派生结果。
 
 - [返回裁剪报告](../2026-11-01-r3-read-gate-materializer-trims.md)

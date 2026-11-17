@@ -4,6 +4,12 @@
 
 更新日期：2026-08-06
 
+<!-- cuexis-meta
+id: FORMAT-TIMING_MODEL
+status: active
+authority: owns
+-->
+
 ## 时间域
 
 ```text
@@ -43,7 +49,7 @@ raw设备时间直接或回溯进入判定的依据。实际宿主时钟首用�
 
 `arrivalTime` 和记录时的 `frameIndex` 只用于诊断、延迟分析和来源审计，不参与判定窗口或回放调度。相同事件时间的稳定顺序由 sequence 和阶段 11 冻结的明确冲突规则决定。
 
-startRecording 记录的 InputEvent 时间戳使用 chartTimeMs 域，不使用宿主源时间或挂钟时间；loadReplay 注入的事件时间戳在同一 chartTimeMs 域匹配。
+`startRecording`/`loadReplay` 是**旧概念名**：当前实现不提供同名入口（见 `docs/architecture/RUNTIME_SESSION.md` 的旧概念说明），现行 Replay/Seek 走 candidate 的 gameplay replay/seek 入口（见 `docs/api/GAMEPLAY_V2_ABI.md`）。旧语义下：startRecording 记录的 InputEvent 时间戳使用 chartTimeMs 域，不使用宿主源时间或挂钟时间；loadReplay 注入的事件时间戳在同一 chartTimeMs 域匹配。
 
 HostClock 与 CuexisAudio 模式对相同的规范化 SourceClockSample/control script、InputEvent
 序列和 ResolvedSessionConfig 必须生成相同 RuntimeFrame，并产生相同表现、判定、计分和回放

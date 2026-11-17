@@ -1,11 +1,18 @@
 # S7A-5 / S7A-6 准入门禁：第 5 轮（Ruleset、事实序、Score 与 Snapshot）裁定落地记录
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.01-a.s7a-5-6.2026-10-03-s7a-5-6-gate-rulings
+status: evidence
+authority: none
+date: 2026-10-03
+-->
+
 状态：dated implementation record（第 5 轮裁定的文档落地证据；不是阶段关闭、不是 owner acceptance、
 不是实施证据）
 
 更新日期：2026-10-03
 
-上级文档：[Stage 7A 实施计划](../../../../../stage_plans/active/stage-07/plan.md) §S7A-4 / §S7A-5 / §S7A-6 ·
+上级文档：[Stage 7A 实施计划](../../../../../stage_plans/completed/stage-07/plan.md) §S7A-4 / §S7A-5 / §S7A-6 ·
 [Gameplay V2 acceptance package](../../../../../proposals/gameplay-v2-acceptance/README.md) ·
 [未决语义分轮裁决清单](../../../../../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md) §5、§8、§9 ·
 [批次门禁](../../../../../proposals/gameplay-v2-acceptance/BATCH_GATES.md) §1
@@ -329,7 +336,7 @@ S7A-6 门禁"段：两批的**停止条件**都包含"消费清单任一项"与"
 | [README.md](../../../../../proposals/gameplay-v2-acceptance/README.md) | §1 `RULING_WORKSHEET` 行（14 项 → **10 项**、§2/§3/§4/**§5**/§9）；§2 A4 行（第 1–5 轮已裁定、第 6–7 轮待裁定）；§4.3 新增第 5 轮段（13 行、4 项 `open`→`accept`、`open` 14→10 / `accept` 38→42、`P1-14` 不阻塞、`CM-S02`/`CM-K01` 不变） |
 | [BATCH_GATES.md](../../../../../proposals/gameplay-v2-acceptance/BATCH_GATES.md) | §1 S7A-5 行（正例 / 负例 / 诊断 / golden / 停止条件全面扩写，负例含**不得消费清单 8 项**）；§1 S7A-6 行（同上，负例含**13 项**）；新增"**第 5 轮裁定后的 S7A-5 / S7A-6 门禁（2026-10-03）**"段（3 卡 provenance + 两批正例 / 负例 / golden / 停止条件表 + 共同判定口径 4 条） |
 | [ADR 0044](../../../../../adr/0044-gameplay-v2-semantic-kernel.md) | "仍待裁定的部分"标题与正文（"第 5 至第 7 轮 44 行 / 49 项" → "**第 6 至第 7 轮 31 行 / 35 项**"，算式 `76 − 14 − 6 − 6 − 6 − 13 = 31`、`84 − 15 − 7 − 7 − 6 − 14 = 35`）；第 5 轮表行改为**已裁定**并列出十三项落点；未决与后续第 2 项；证据边界第 7 项（追加第 5 轮三卡） |
-| [plan.md](../../../../../stage_plans/active/stage-07/plan.md) | §1.1（第 5 至第 7 轮 → 第 6 至第 7 轮、第 2/3/4/5 轮已裁定）；§S7A-4 **第 5 步**替换为规范总序（见 §3）；§S7A-5 第 5 条与验证段（三阶段 / `faulted` / `RegisterKind` / package / Life / 不得消费清单）；§S7A-6 第 2、4、5、6 条与验证段（两套 header、闭包、`SeekLatencyCommitment`、faulted 不可新建 snapshot、不得保存清单）；§3.1 台账 S7A-5.1…5.5 与 S7A-6.2 / 6.3 / 6.4 行的验收文字（**不新增工作项**） |
+| [plan.md](../../../../../stage_plans/completed/stage-07/plan.md) | §1.1（第 5 至第 7 轮 → 第 6 至第 7 轮、第 2/3/4/5 轮已裁定）；§S7A-4 **第 5 步**替换为规范总序（见 §3）；§S7A-5 第 5 条与验证段（三阶段 / `faulted` / `RegisterKind` / package / Life / 不得消费清单）；§S7A-6 第 2、4、5、6 条与验证段（两套 header、闭包、`SeekLatencyCommitment`、faulted 不可新建 snapshot、不得保存清单）；§3.1 台账 S7A-5.1…5.5 与 S7A-6.2 / 6.3 / 6.4 行的验收文字（**不新增工作项**） |
 | [CURRENT_STATUS.md](../../../../../CURRENT_STATUS.md) | L241 "第 5-7 轮语义仍**不授权**" → "第 6-7 轮…（第 2、3、4、5 轮已裁定的语义由各自小节授权）" |
 | [reading-order.md](../../../../../guides/reading-order.md) | L61 "仍待第 5-7 轮语义裁定（第 1、2、3、4 轮已裁定…§3、§9）" → "仍待第 **6-7** 轮…（第 1、2、3、4、**5** 轮已裁定…§3、**§5**、§9）" |
 | [stage_reports/README.md](../../../../README.md) | Stage 7A 清单追加本文条目 |
@@ -480,7 +487,7 @@ PowerShell 统计，工作区未新增任何工具文件）。
 - [未决问题与 owner 决策请求](../../../../../proposals/gameplay-v2-acceptance/OPEN_QUESTIONS.md)：§4.2 第 5 轮登记
 - [支持 / 拒绝矩阵](../../../../../proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md)：19 条稳定拒绝
 - [批次门禁](../../../../../proposals/gameplay-v2-acceptance/BATCH_GATES.md)：第 5 轮裁定后的 S7A-5 / S7A-6 门禁
-- [Stage 7A 实施计划](../../../../../stage_plans/active/stage-07/plan.md)：§S7A-4 第 5 步、§S7A-5、§S7A-6
+- [Stage 7A 实施计划](../../../../../stage_plans/completed/stage-07/plan.md)：§S7A-4 第 5 步、§S7A-5、§S7A-6
 - [第 4 轮门禁报告](../s7a-4/2026-10-03-s7a-4-gate-rulings.md) · [第 3 轮门禁报告](../s7a-3/2026-10-03-s7a-3-gate-rulings.md) ·
   [第 2 轮门禁报告](../s7a-2/2026-10-03-s7a-2-gate-rulings.md) ·
   [第 2 轮实现裁定记录](../s7a-2/2026-10-03-s7a-2-implementation-rulings.md) ·

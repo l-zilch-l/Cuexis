@@ -1,5 +1,11 @@
 # 最终 R3 同源本地验收矩阵证据（2026-11-04）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-04-rpa-acceptance-matrix-final-evidence.index
+status: evidence
+authority: none
+-->
+
 状态：local matrix evidence；test-only；**不是** R3/R4 退出、设备验证、hosted 验证或生产接受。
 
 2026-11-04 补记：hosted 口径与 R3 关闭由 owner 同日裁定解决，见

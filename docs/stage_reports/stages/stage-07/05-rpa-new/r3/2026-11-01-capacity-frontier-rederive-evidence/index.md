@@ -1,5 +1,11 @@
 # 1080p 容量前缘重新推导证据（2026-11-01）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-capacity-frontier-rederive-evidence.index
+status: evidence
+authority: none
+-->
+
 本目录保存**同一份源码**上重新推导 240 FPS 前缘的全部字节：预注册、登记补记、驱动与汇总脚本、
 十个实体数两种模式的逐进程日志、逐点登记，以及判定结果。它回答的问题只有一个——HEAD 上 p99 第一次
 越过 4.166667 ms 的区间在哪里；它**不是**容量接受、性能门通过或 R3/R4 接受。

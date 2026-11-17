@@ -1,5 +1,12 @@
 # PD-5 管理员只读预检：已有 WPR 会话拦截
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.etw-tools.2026-10-23-etw-existing-session-preflight-stop
+status: evidence
+authority: none
+date: 2026-10-23
+-->
+
 状态：preflight stopped；会话归属待查；capture 与 PD-5 acceptance 未通过。
 
 更新日期：2026-10-23，Asia/Shanghai。前序准备与边界见

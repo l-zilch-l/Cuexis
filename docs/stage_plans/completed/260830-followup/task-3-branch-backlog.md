@@ -4,6 +4,12 @@
 
 更新日期：2026-08-31
 
+<!-- cuexis-meta
+id: PLAN-completed.260830-followup.task-3-branch-backlog
+status: completed
+authority: owns
+-->
+
 所属计划：[任务 3 关键模块分支覆盖率](task-3-critical-branch-coverage.md)
 
 本清单记录任务 2 当前实现上的函数级测试 backlog 和最终 hosted 覆盖率。`current hit` 使用各 lane

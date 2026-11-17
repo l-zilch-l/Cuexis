@@ -4,6 +4,12 @@
 
 更新日期：2026-10-11
 
+<!-- cuexis-meta
+id: GUIDE-BUILDING
+status: active
+authority: owns
+-->
+
 ## 当前仓库说明
 
 当前仓库提供阶段 0 工程基础、阶段 1A-1E Playback Core 闭环、阶段 2 的 Chart/Behavior/迁移

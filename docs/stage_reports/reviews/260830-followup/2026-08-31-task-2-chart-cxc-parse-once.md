@@ -1,5 +1,12 @@
 # 260830-followup 任务 2：Chart/CXC parse-once
 
+<!-- cuexis-meta
+id: EVIDENCE-reviews.260830-followup.2026-08-31-task-2-chart-cxc-parse-once
+status: evidence
+authority: none
+date: 2026-08-31
+-->
+
 状态：completed
 
 更新日期：2026-08-31

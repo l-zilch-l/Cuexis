@@ -1,12 +1,19 @@
 # Stage 7 document and evidence reorganization
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.90-shared.documentation.2026-10-26-stage7-document-reorganization
+status: evidence
+authority: none
+date: 2026-10-26
+-->
+
 状态：completed documentation maintenance
 
 日期：2026-10-26
 
 ## 范围与入口
 
-先完整备份 docs，再按 A、B、旧 RPA、新 RPA、PD 及独立诊断、共享材料整理。[计划位置总表](../../../../../stage_plans/active/stage-07/README.md)与[报告总表](../../README.md)按阶段和批次定位。阶段与批次目录使用英文；同批报告、审查、交接和附件集中保存。各阶段 evidence-catalog.md 列出原文证据路径，不表示这些历史路径目前已逐个验证存在。B 阶段现有材料没有独立报告，索引明确说明。
+先完整备份 docs，再按 A、B、旧 RPA、新 RPA、PD 及独立诊断、共享材料整理。[计划位置总表](../../../../../stage_plans/completed/stage-07/README.md)与[报告总表](../../README.md)按阶段和批次定位。阶段与批次目录使用英文；同批报告、审查、交接和附件集中保存。各阶段 evidence-catalog.md 列出原文证据路径，不表示这些历史路径目前已逐个验证存在。B 阶段现有材料没有独立报告，索引明确说明。
 
 ## 备份与保全
 

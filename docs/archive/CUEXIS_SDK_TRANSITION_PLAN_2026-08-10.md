@@ -1,5 +1,11 @@
 # Cuexis SDK 改造与阶段路线调整方案
 
+<!-- cuexis-meta
+id: ARCHIVE-CUEXIS_SDK_TRANSITION_PLAN_2026-08-10
+status: historical
+authority: none
+-->
+
 状态：historical snapshot；当前路线见 `docs/ROADMAP.md`，产品边界见 ADR 0027
 
 归档日期：2026-08-10

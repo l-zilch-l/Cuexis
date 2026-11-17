@@ -1,5 +1,11 @@
 # ADR 0004：使用时间型版本号
 
+<!-- cuexis-meta
+id: ADR-0004
+status: historical
+authority: owns
+-->
+
 日期：2026-07-17
 
 状态：已由 [ADR 0039](0039-remove-hour-from-build-version.md) 取代

@@ -1,5 +1,11 @@
 # Independent audit of the source-split safety net
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.90-shared.source-split-audit.AUDIT_REPORT
+status: evidence
+authority: none
+-->
+
 Repository: `D:\Cuexis-redesign`, branch `Cuexis-redesign`, HEAD `562f54d3`.
 Every check below was written for this audit. Nothing under `out/` was read or executed
 except writing these logs; no repository helper script was used. All temporary edits were

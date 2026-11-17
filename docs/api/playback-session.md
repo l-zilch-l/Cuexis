@@ -8,6 +8,12 @@
 
 文档角色：公共 API 参考
 
+<!-- cuexis-meta
+id: API-playback-session
+status: active
+authority: owns
+-->
+
 权威头文件：[playback_session.hpp](../../engine/playback/include/cuexis/playback/playback_session.hpp)
 
 ## 快速结论
@@ -53,7 +59,7 @@
 | `Empty` | 没有 active 内容。 |
 | `Ready` | 内容已提交，可以开始更新。 |
 | `Running` | 已执行播放更新。 |
-| `Failed` | Session 本身进入不可继续状态；普通 prepare/reload 失败不应破坏 active 内容。 |
+| `Failed` | 保留的枚举值，当前实现从不进入（RR-F412）；失败统一通过 `core::Result` 返回，active 内容保持不变。 |
 
 `PreparedPlayback` 只表示候选内容。只有 `commit` 会替换 active 状态。prepare 或 reload 失败时，既有
 FrameSnapshot、semantic identity、active diagnostics 和 presentation 必须保持不变。

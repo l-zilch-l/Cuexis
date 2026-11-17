@@ -4,6 +4,12 @@
 
 决策状态：已接受（owner 于 2026-10-02 接受[未决语义分轮裁决清单](../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md)第 1 轮经 Codex 修订后的 14 行文本）；本 ADR 保留当时限定冻结的授权范围，不定义字段集合或冻结公共头。后续分批实施已发生，当前状态只见 [CURRENT_STATUS](../CURRENT_STATUS.md)，不能由本 ADR 的原始授权推断后续验收。
 
+<!-- cuexis-meta
+id: ADR-0044
+status: candidate
+authority: owns
+-->
+
 决策日期：2026-10-02
 
 更新日期：2026-10-28（实施状态注释订正；原决定与授权范围保留）
@@ -14,7 +20,7 @@
 
 Stage 7A 以 Gameplay V2 为实施基线，而不是以 Gameplay I 的候选合同为基线。[Gameplay V2 acceptance package](../proposals/gameplay-v2-acceptance/README.md) 已被 owner 于 2026-10-02 整包接受（见 [S7A-0 接受记录](../stage_reports/stages/stage-07/01-a/s7a-0/2026-10-02-s7a-0-acceptance.md)），其第 1 轮 14 行语义裁决也已被 owner 接受，接受对象是经 Codex 修订后的文本（[RULING_WORKSHEET.md](../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md) §0.2、§1、§9）。第 1 轮覆盖 Q-01、Q-02、Q-10、Q-14 四项语义未决点，以及合同项 CM-V06、CM-V07、CM-V13、CM-I06、CM-X06 与缺陷 D-3、D-4、D-10。
 
-接受并**不**等于可以实施。计划 §1.1 规定了冻结顺序：先建立并冻结 V2 的 ADR / Spec / ABI，之后才允许把 Gameplay I 的 ADR 0043、Gameplay Judgement Spec 与 Gameplay Judgement ABI 标注为 `superseded` / `historical`（[plan.md](../stage_plans/active/stage-07/plan.md) §1.1、[接受记录](../stage_reports/stages/stage-07/01-a/s7a-0/2026-10-02-s7a-0-acceptance.md) §4）。冻结顺序的存在理由与 Schema / Replay / Snapshot / diagnostics 无关：后者属独立契约工件，不是建立替代关系的最低前置（RULING_WORKSHEET.md "执行顺序裁决"）。先 supersede 再补替代文件会产生"已取代但替代不完整"的窗口，实施者可能同时解释两套字段。
+接受并**不**等于可以实施。计划 §1.1 规定了冻结顺序：先建立并冻结 V2 的 ADR / Spec / ABI，之后才允许把 Gameplay I 的 ADR 0043、Gameplay Judgement Spec 与 Gameplay Judgement ABI 标注为 `superseded` / `historical`（[plan.md](../stage_plans/completed/stage-07/plan.md) §1.1、[接受记录](../stage_reports/stages/stage-07/01-a/s7a-0/2026-10-02-s7a-0-acceptance.md) §4）。冻结顺序的存在理由与 Schema / Replay / Snapshot / diagnostics 无关：后者属独立契约工件，不是建立替代关系的最低前置（RULING_WORKSHEET.md "执行顺序裁决"）。先 supersede 再补替代文件会产生"已取代但替代不完整"的窗口，实施者可能同时解释两套字段。
 
 第 1 轮的四项裁决不是字段细节，而是横跨 Chart v5、Packed、CXC、离线装配、Session 与 Replay 的结构性决策：它们分别决定"哪些版本组合被接受""同一内容存在几种语义""什么算作同一判定""谁有权决定 capability 闭包"。在任何一项未定时，S7A-1 的公共类型与 identity 算法没有可比对基准（RULING_WORKSHEET.md 第 1 轮"不决定的后果"列）。
 
@@ -46,7 +52,7 @@ Stage 7A 以 Gameplay V2 为实施基线，而不是以 Gameplay I 的候选合�
 
 **理由。** 接受面必须先于类型冻结确定：只要"哪些版本组合合法"未定，Chart v5、Packed、CXC 三处就无法确定各自接受到哪一层，S7A-1 的公共类型与 identity 算法没有基准（RULING_WORKSHEET.md 第 1 轮 Q-01 行"不决定的后果"）。禁止 Reader 通过字段存在性猜版本，是为了不让"未知必需内容"被解释成旧语义（CONTRACT_MATRIX.md §1 CM-V04；[CHART_V5_ALIGNMENT_REVIEW.md](../proposals/research/gameplay-v2/CHART_V5_ALIGNMENT_REVIEW.md) P0-01）。把 `candidateRevision` 排除在 `compiledSemanticIdentity` 之外、同时纳入 artifact compatibility，是为了区分两种不同问题："这是不是同一判定语义"与"这两个产物能不能互换"；只回答前者会造成错误等价，只回答后者会造成错误不等价。
 
-**边界。** 本决策不写 Packed header 字段布局、不写兼容矩阵的行与列、不写 `compiledSemanticIdentity` 的字节构成；那些属 V2 Spec 与 Packed 候选 wire revision 工作。研究切片数值不进入本 ADR，也不得据此成为 ABI 常量（[plan.md](../stage_plans/active/stage-07/plan.md) §S7A-0 工作内容 3）。
+**边界。** 本决策不写 Packed header 字段布局、不写兼容矩阵的行与列、不写 `compiledSemanticIdentity` 的字节构成；那些属 V2 Spec 与 Packed 候选 wire revision 工作。研究切片数值不进入本 ADR，也不得据此成为 ABI 常量（[plan.md](../stage_plans/completed/stage-07/plan.md) §S7A-0 工作内容 3）。
 
 **对应 Spec 章节。** [Gameplay V2 Spec](../formats/GAMEPLAY_V2_SPEC.md) §2「版本层级与兼容」（§2.1 唯一合法版本组合、§2.2 旧 `v1` 处置、§2.3 三种 identity 判定与互换性、§2.4 兼容矩阵、§2.5 稳定失败）。兼容矩阵的可互换性最小充分条件仍由该 Spec 登记为未决。
 
@@ -86,7 +92,7 @@ Stage 7A 以 Gameplay V2 为实施基线，而不是以 Gameplay I 的候选合�
 2. **对格式工作。** 本 ADR 是输入而非字段合同：Chart v5 的 gameplay 修订、CXC 的 `entryKind` 与 manifest closure、Packed 的候选 wire revision、CXT v2 的 `effects` 降级都属 acceptance package §2.1 列出的修订动作，其字段正文在 V2 Spec 与各自格式文档中落定（[acceptance README](../proposals/gameplay-v2-acceptance/README.md) §2.1）。
 3. **对 Replay 与 Snapshot。** 三条 identity 判定与"实际生效的 prepared value"基准会直接影响 Replay header 与 Snapshot header 的可比较字段；互换性判定必须失败关闭（fail closed），不能仅凭 semantic identity 接受一个不可互换的产物。
 4. **对 capability 与拒绝路径。** source 声明成为下界而非事实；派生闭包与拒绝码必须一致；7B+ 新能力仍须带独立 capability ID / revision、稳定拒绝与 identity 影响说明（[Stage 7.5计划](../stage_plans/active/stage-07-5/plan.md) §5.1）。
-5. **对文档状态。** 本 ADR 与 V2 Spec、V2 ABI 三份文档冻结且互链校验通过后，Gameplay I 的三份合同才能加 `superseded` / `historical` 标注；在此之前旧文档保持原状态，不得零散改动（[acceptance README](../proposals/gameplay-v2-acceptance/README.md) §3）。**实际执行偏差（2026-10-02 如实记录）：** 标注已先于限定冻结发生；不倒填冻结时间，纠正记录见 [plan.md](../stage_plans/active/stage-07/plan.md) §1.1 与[接受记录](../stage_reports/stages/stage-07/01-a/s7a-0/2026-10-02-s7a-0-acceptance.md) §4.2。
+5. **对文档状态。** 本 ADR 与 V2 Spec、V2 ABI 三份文档冻结且互链校验通过后，Gameplay I 的三份合同才能加 `superseded` / `historical` 标注；在此之前旧文档保持原状态，不得零散改动（[acceptance README](../proposals/gameplay-v2-acceptance/README.md) §3）。**实际执行偏差（2026-10-02 如实记录）：** 标注已先于限定冻结发生；不倒填冻结时间，纠正记录见 [plan.md](../stage_plans/completed/stage-07/plan.md) §1.1 与[接受记录](../stage_reports/stages/stage-07/01-a/s7a-0/2026-10-02-s7a-0-acceptance.md) §4.2。
 6. **不影响的内容。** 不修改 `engine/`、CMake、公共安装头或 SDK API 版本；不构成 Stage 8 发行矩阵的选入；不解除四项 Stage 6 交接的关闭前置；不把任何研究切片测量值变成生产限额——仓库唯一已冻结的生产预算表是 [PACKED_CHART_FORMAT.md](../formats/PACKED_CHART_FORMAT.md) §3.3 的 7 项上限，其余预算保持"只登记上界、不冻结限额"，口径见 [BUDGET_AND_EVIDENCE_PLAN.md](../proposals/gameplay-v2-acceptance/BUDGET_AND_EVIDENCE_PLAN.md)。
 7. **不实施的成本。** 上述四项决策在实现前保持"已接受、未实施"；任何消费者不得据本 ADR 声称字段、ABI 或预算已经冻结。
 
@@ -100,7 +106,7 @@ Gameplay 内容、Packed / CXC 载体、Ruleset 与 Replay 都可能来自不可
 
 ### 威胁 2：非确定性数值与浮点
 
-决策域必须使用 prepare 期冻结的整数投影；不得在判定路径读取未声明的浮点或宿主数学库；每个判定域必须声明量程并证明不等式不溢出。跨编译器或跨平台出现差异按阻塞处理，不得以"整数运算应当确定"解释（[plan.md](../stage_plans/active/stage-07/plan.md) §5.2；[ADR 0043](0043-gameplay-judgement-ruleset-convergence.md) §5 的整数域与量程证明属保留部分）。身份判定若依赖未声明的数值路径，会同时破坏决策 1 的语义等价与决策 3 的 judgement identity。
+决策域必须使用 prepare 期冻结的整数投影；不得在判定路径读取未声明的浮点或宿主数学库；每个判定域必须声明量程并证明不等式不溢出。跨编译器或跨平台出现差异按阻塞处理，不得以"整数运算应当确定"解释（[plan.md](../stage_plans/completed/stage-07/plan.md) §5.2；[ADR 0043](0043-gameplay-judgement-ruleset-convergence.md) §5 的整数域与量程证明属保留部分）。身份判定若依赖未声明的数值路径，会同时破坏决策 1 的语义等价与决策 3 的 judgement identity。
 
 ### 威胁 3：能力伪造与降级欺骗
 
@@ -185,5 +191,5 @@ Replay 与 Snapshot 也是不可信输入：截断、乱序、时间回退、重
 3. **兼容矩阵尚未定义。** 决策 1 要求覆盖工具链与载体差异的兼容矩阵；其轴、判定算法与失败码由 V2 Spec 设计，本 ADR 只固定"必须存在且必须失败关闭"。
 4. **`compiledSemanticIdentity` 的字节构成与互换性判定算法未冻结**，且两者必须分离；分离方式需在 Packed 候选 wire revision 工作中确认（第 6 轮已冻结 `compiledSemanticIdentity` 与完整 capability closure **必须同时携带且可比较**及其逐字段 identity 归属，见"接受门禁"表第 6 轮行）。
 5. **W 类缺口的登记位置已按第 1 轮裁决落定，但字段定义与登记规则分处两份文档。** 字段定义（唯一权威）在 [SUPPORT_AND_REJECTION_MATRIX.md](../proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md) §6；登记与引用规则在 [Stage 7.5计划](../stage_plans/active/stage-07-5/plan.md) §5.3，原四处 W 类缺口引用已改为指向该节（[Gameplay V2 Spec](../formats/GAMEPLAY_V2_SPEC.md) §1.3 声明不在 Spec 内重新定义）。本 ADR 沿用该落点，不在 V2 Spec 附录重复定义字段；冻结复核时应确认计划正文的四处引用与 §5.3 一致。
-6. **本 ADR 未覆盖的相邻边界**：Chart v4 / CXT v1 回退行为、ADR 0042 的 candidate 隔离、四项 Stage 6 交接收口、SDK API 版本门禁均不由本 ADR 改变；它们的实施与证据要求仍以 [Stage 7A 实施计划](../stage_plans/active/stage-07/plan.md) 为准。
+6. **本 ADR 未覆盖的相邻边界**：Chart v4 / CXT v1 回退行为、ADR 0042 的 candidate 隔离、四项 Stage 6 交接收口、SDK API 版本门禁均不由本 ADR 改变；它们的实施与证据要求仍以 [Stage 7A 实施计划](../stage_plans/completed/stage-07/plan.md) 为准。
 7. **证据边界。** 本 ADR 的唯一证据来源是 2026-10-02 的 owner 接受记录、第 1 轮裁决文本、S7A-0 准入包，以及 2026-10-03 的第 2 轮裁定（thread `s7a1-freeze-bindings`，verdict `adopt`，confidence 0.99，落点见 [S7A-2 准入门禁记录](../stage_reports/stages/stage-07/01-a/s7a-2/2026-10-03-s7a-2-gate-rulings.md)，其 `stop` 语义另经同日**实现复核**由同 thread 两张续裁卡修订为**精确累计函数**表述，verdict 均 `adopt`、confidence 0.98 / 0.99，落点见 [第 2 轮实现裁定记录](../stage_reports/stages/stage-07/01-a/s7a-2/2026-10-03-s7a-2-implementation-rulings.md)）、第 3 轮裁定（thread `s7a3-prepare-rulings`，三卡 verdict `need_info` 0.8 / `reject` 0.88 / `adopt` 0.99，落点见 [S7A-3 准入门禁记录](../stage_reports/stages/stage-07/01-a/s7a-3/2026-10-03-s7a-3-gate-rulings.md)）与第 4 轮裁定（thread `s7a4-arbitration-rulings`，主裁定卡 verdict `adopt`、confidence 0.97 / 处置词与计数确认卡 verdict `adopt`、confidence 0.99，落点见 [S7A-4 准入门禁记录](../stage_reports/stages/stage-07/01-a/s7a-4/2026-10-03-s7a-4-gate-rulings.md)）、第 5 轮裁定（thread `01a0fe49-cfe5-7933-8d03-3d0a65d34c8b`，三卡 verdict 均 `adopt`、confidence 0.95 / 0.99 / 0.98——主裁定卡给出 `S7A5-R01…R11`，处置词与计数确认卡把 `CM-F06`、`CM-S08`、`CM-S10`、`CM-K07` 由 `open` 改为 `accept`（最终 `open` 10 / `accept` 42，总数仍 114），ABI 状态格首词与追踪计数追问卡确认 9 行首词仍为 `待冻结`、**126 = 96 + 30** 不变且不新增 §未决项 / §类型清单条目；落点见 [S7A-5 / S7A-6 准入门禁记录](../stage_reports/stages/stage-07/01-a/s7a-5-6/2026-10-03-s7a-5-6-gate-rulings.md)）、**第 6 轮裁定**（thread `01a0fe61-3476-7882-9674-5f6b05035237`，单卡 verdict `adopt`、confidence **0.97**——给出 `S7A6-R01…R12`，把 `CM-P04`、`CM-P06`、`CM-P08`、`CM-D04`、`CM-X01` 由 `open` 改为 `accept`（最终 `open` 5 / `accept` 47，总数仍 114），并冻结 `Q-06`、`Q-09`、`Q-15`、`Q-19` 与 `P1-08`、`P2-04`…`P2-09`；落点见 [S7A-6 / S7A-7 准入门禁记录](../stage_reports/stages/stage-07/01-a/s7a-6-7/2026-10-03-s7a-6-gate-rulings.md)）、**第 7 轮裁定**（主卡 thread `01a0fe61-b7a3-7853-a380-0793fee14e14`，verdict `adopt`、confidence **0.96**；口径确认卡 thread `01a0fe61-3476-7882-9674-5f6b05035237`，verdict `adopt`、confidence **0.99**——给出 `S7A7-R01…R16`（16 行 / 18 项），把残余 `CM-V06`、`CM-V07`、`CM-V13`、`CM-I06`、`CM-X06` 按第 1 轮裁定补齐为 `accept`（最终 `open` 0 / `accept` 52，总数仍 114），并处置 `D-2` / `D-5` / `D-6` / `D-7` / `D-11` / `D-13` / `D-14`；落点见 [第 7 轮收尾裁定与缺陷处置记录](../stage_reports/stages/stage-07/01-a/s7a-7-8/2026-10-03-s7a-7-wrapup-rulings.md)）与第 7 轮 D-13 / D-14 的 owner 与 Codex 处置；**`D-9` 仍为 owner-only、`D-12` 仍待 owner 确认**，不得据本 ADR 声称这两项已闭合；hosted、GPU、真实设备与音频证据均未运行，不得据本 ADR 推断其通过。

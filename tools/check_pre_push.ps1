@@ -199,6 +199,18 @@ function Invoke-QuickChecks {
     Invoke-ExternalCommand -Label "Documentation contracts" -Executable $python -Arguments @(
         "-B", "tools/check_docs.py"
     )
+    Invoke-ExternalCommand -Label "Documentation facts" -Executable $python -Arguments @(
+        "-B", "tools/verification/check_docs_facts.py"
+    )
+    Invoke-ExternalCommand -Label "Documentation status contract" -Executable $python -Arguments @(
+        "-B", "tools/verification/check_docs_status_contract_tests.py"
+    )
+    Invoke-ExternalCommand -Label "Documentation target contract" -Executable $python -Arguments @(
+        "-B", "tools/verification/check_docs_target_contract_tests.py"
+    )
+    Invoke-ExternalCommand -Label "Documentation section contract" -Executable $python -Arguments @(
+        "-B", "tools/verification/check_docs_section_contract_tests.py"
+    )
     Invoke-ExternalCommand -Label "Staged whitespace check" -Executable "git" -Arguments @(
         "diff", "--cached", "--check"
     )

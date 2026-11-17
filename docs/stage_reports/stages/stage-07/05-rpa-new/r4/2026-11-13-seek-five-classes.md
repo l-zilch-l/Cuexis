@@ -1,5 +1,12 @@
 # 五类 Seek 正式组（2026-11-13）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-13-seek-five-classes
+status: evidence
+authority: none
+date: 2026-11-13
+-->
+
 状态：formal result；五类的 20 ms 绝对门全部通过，三类重复性通过、两类 inconclusive
 
 日期：2026-11-13

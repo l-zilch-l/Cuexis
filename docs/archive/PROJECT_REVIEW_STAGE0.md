@@ -1,5 +1,11 @@
 # Cuexis 项目文档审视报告（阶段 0 历史快照）
 
+<!-- cuexis-meta
+id: ARCHIVE-PROJECT_REVIEW_STAGE0
+status: historical
+authority: none
+-->
+
 状态：historical review；产品方向由 [ADR 0027](../adr/0027-playback-sdk-product-boundary.md) 与
 [SDK 转型方案](../stage_plans/historical/sdk-transition/plan.md) 更新
 

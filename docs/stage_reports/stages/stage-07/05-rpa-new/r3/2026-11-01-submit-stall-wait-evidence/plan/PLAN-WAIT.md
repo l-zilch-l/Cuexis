@@ -1,5 +1,11 @@
 # 提交路径停顿的等待归因采样：预注册计划
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-submit-stall-wait-evidence.plan.PLAN-WAIT
+status: evidence
+authority: none
+-->
+
 - 日期：2026-11-01
 - 位置：`out/verification-20261101/r3-stall-mechanism-v1/`（临时验证输出，不是阶段报告，不是验收证据）
 - 状态：诊断（diagnostic）。本计划在开始测量之前写成。

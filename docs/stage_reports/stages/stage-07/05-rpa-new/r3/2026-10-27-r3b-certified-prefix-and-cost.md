@@ -1,8 +1,15 @@
 # R3b certified prefix implementation and bounded cost verification
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-27-r3b-certified-prefix-and-cost
+status: evidence
+authority: none
+date: 2026-10-27
+-->
+
 状态：in progress，2026-10-27；本候选功能/兼容核验通过，当前成本不满足 Seek 预算，R3 未退出，进入总计划 §12.2 裁定门。
-返回 [New RPA 报告索引](../README.md)。范围来自[总计划 §8](../../../../../stage_plans/active/stage-07/05-rpa-new/plan.md)，
-实现选择见[受控候选](../../../../../stage_plans/active/stage-07/05-rpa-new/r3/trusted-restore-candidate.md)。
+返回 [New RPA 报告索引](../README.md)。范围来自[总计划 §8](../../../../../stage_plans/completed/stage-07/05-rpa-new/plan.md)，
+实现选择见[受控候选](../../../../../stage_plans/completed/stage-07/05-rpa-new/r3/trusted-restore-candidate.md)。
 [R3a 报告](2026-10-27-r3a-recovery-and-prepare.md)的冻结构建与成本不换标为本候选。
 
 ## 1. 实际实施范围

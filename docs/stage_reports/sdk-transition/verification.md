@@ -1,5 +1,11 @@
 # Cuexis SDK Transition Verification Compatibility Entry
 
+<!-- cuexis-meta
+id: EVIDENCE-sdk-transition.verification
+status: evidence
+authority: none
+-->
+
 状态：superseded compatibility entry
 
 更新日期：2026-08-10

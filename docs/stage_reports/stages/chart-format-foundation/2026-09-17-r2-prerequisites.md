@@ -1,5 +1,12 @@
 # Chart Format Foundation Hardening R2 前置：负例基础设施与拒绝行为盘点
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.chart-format-foundation.2026-09-17-r2-prerequisites
+status: evidence
+authority: none
+date: 2026-09-17
+-->
+
 日期：2026-09-17
 
 状态：R2 前置完成；R2 本体未实施（本轮不改变任何拒绝行为）

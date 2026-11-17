@@ -1,5 +1,11 @@
 # Gameplay V2 字段与运行语义规范
 
+<!-- cuexis-meta
+id: FORMAT-GAMEPLAY_V2_SPEC
+status: candidate
+authority: owns
+-->
+
 2026-10-11 RPA合同修订：owner已选择capture-time、T2/O1/I1/C1/L1、G1/Q1/K1、TB-05和R2，
 并授权其余普通设计由代理收敛。正常输入顺序/身份沿execution profile，控制cut、R2 Fact、
 连续前缀/时钟观察、Replay/Seek及新profile/Recovery版本归
@@ -49,7 +55,7 @@ filesystem 多产物使用内容派生 immutable generation、现有 manifest �
 旧限定冻结中的“首次消费时补齐”在这些明确覆盖字段上已有落点；不表示产品实现或整批验收。
 局部实现与整批验收须区分，当前进度只由 [CURRENT_STATUS](../CURRENT_STATUS.md) 拥有。
 
-上级文档：[Stage 7A 实施计划](../stage_plans/active/stage-07/01-a/plan.md) ·
+上级文档：[Stage 7A 实施计划](../stage_plans/completed/stage-07/01-a/plan.md) ·
 [Gameplay V2 研究索引](../proposals/research/gameplay-v2/README.md) ·
 [Gameplay V2 acceptance package](../proposals/gameplay-v2-acceptance/README.md)
 
@@ -57,7 +63,7 @@ filesystem 多产物使用内容派生 immutable generation、现有 manifest �
 兼容、预算口径与错误合同。它不承载决策理由、备选方案与威胁模型（属
 [ADR 0044](../adr/0044-gameplay-v2-semantic-kernel.md)），不复述 typed C++ 边界、类型宽度、
 所有权与生命周期（属 [Gameplay V2 ABI](../api/GAMEPLAY_V2_ABI.md)），不承载阶段进度与
-批次门禁（属 [Stage 7A 实施计划](../stage_plans/active/stage-07/01-a/plan.md)）。
+批次门禁（属 [Stage 7A 实施计划](../stage_plans/completed/stage-07/01-a/plan.md)）。
 
 ## 0. 术语与缩写
 
@@ -121,7 +127,7 @@ identity 判定一律以准备值为准，不以作者源表达形式为准。**
 | --- | --- |
 | 决策、备选方案、威胁模型、接受门禁 | [ADR 0044](../adr/0044-gameplay-v2-semantic-kernel.md) |
 | typed 内部/preview C++ 边界：类型、命名、整数宽度、所有权、异常边界、生命周期、序列化布局 | [Gameplay V2 ABI](../api/GAMEPLAY_V2_ABI.md) |
-| 阶段目标、批次、依赖、门禁、冻结顺序 | [Stage 7A 实施计划](../stage_plans/active/stage-07/01-a/plan.md) |
+| 阶段目标、批次、依赖、门禁、冻结顺序 | [Stage 7A 实施计划](../stage_plans/completed/stage-07/01-a/plan.md) |
 | W 类缺口的编号规则与登记位置 | [Stage 7.5计划](../stage_plans/active/stage-07-5/plan.md#53-w-类缺口记录w-class-gap-record) §5.3（登记与引用规则） |
 | W 类缺口的字段定义与具体登记项 | [支持 / 拒绝矩阵](../proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md) §6（D-3 落地的分工；见 §1.3） |
 | Packed 已冻结物理预算表 | [Packed 候选物理合同 §3.3](PACKED_CHART_FORMAT.md) |
@@ -2161,7 +2167,7 @@ ABI §数值域与量程的"判定顺序：可表示性先于范围"段。**两�
 ## S7A-1 限定冻结范围与登记规则（2026-10-02）
 
 **顶层状态仍为 `candidate`。** 本 Spec 不改为 `frozen` / `active`：授权来自**范围精确的限定冻结**，
-不来自状态词。按 [Stage 7总计划](../stage_plans/active/stage-07/plan.md#11-权威输入和冻结顺序) §1.1 冻结顺序第 2 步的
+不来自状态词。按 [Stage 7总计划](../stage_plans/completed/stage-07/plan.md#11-权威输入和冻结顺序) §1.1 冻结顺序第 2 步的
 **分批冻结**口径（2026-10-02 owner 接受第 1 轮补充 S1-01…S1-05，登记见 [RULING_WORKSHEET.md](../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md) §7A；
 该次准入咨询 thread `s7a1-admission-rulings` 记入 [S7A-0 接受记录](../stage_reports/stages/stage-07/01-a/s7a-0/2026-10-02-s7a-0-acceptance.md) §4.2），
 本 Spec 只在下列四项范围内为 S7A-1 骨架提供依据：①权威来源与版本层级；②类型角色与边界；③模块与
@@ -2187,7 +2193,7 @@ ABI §数值域与量程的"判定顺序：可表示性先于范围"段。**两�
 ## S7A-2 限定冻结范围与登记规则（2026-10-03）
 
 **顶层状态仍为 `candidate`。** 本 Spec 不改为 `frozen` / `active`：授权来自**范围精确的限定冻结**，
-不来自状态词。按 [Stage 7总计划](../stage_plans/active/stage-07/plan.md#11-权威输入和冻结顺序) §1.1 冻结顺序第 2 步的**分批冻结**
+不来自状态词。按 [Stage 7总计划](../stage_plans/completed/stage-07/plan.md#11-权威输入和冻结顺序) §1.1 冻结顺序第 2 步的**分批冻结**
 口径，第 2 轮（时间域与迟到策略）在 2026-10-03 由 Codex 裁定并经 owner 落进本文；该轮是进入 S7A-2 的
 **准入门禁**，其语义正文见 §0.1、§3.7 与 §7.2 的映射段。
 
@@ -2268,7 +2274,7 @@ minimumRate / reconstruction / discontinuity 表示；S7C-1 扩展字段；研�
 ## S7A-3 限定冻结范围与登记规则（2026-10-04 更新）
 
 **顶层状态仍为 `candidate`。** 本 Spec 不改为 `frozen` / `active`：授权来自**范围精确的限定冻结**，
-不来自状态词。按 [Stage 7总计划](../stage_plans/active/stage-07/plan.md#11-权威输入和冻结顺序) §1.1 冻结顺序第 2 步的**分批冻结**
+不来自状态词。按 [Stage 7总计划](../stage_plans/completed/stage-07/plan.md#11-权威输入和冻结顺序) §1.1 冻结顺序第 2 步的**分批冻结**
 口径，第 3 轮（prepare、装配与 entry）于 2026-10-03 由 Codex 裁定并经 owner 落进本文；该轮是进入 S7A-3 的
 **准入门禁**，其语义正文见 §1.3、§2.5 第 1 条、§3.3、§3.8 与 §5.5，拒绝面映射见 §7.2 的第 3 轮段。
 
@@ -2343,7 +2349,7 @@ minimumRate / reconstruction / discontinuity 表示；S7C-1 扩展字段；研�
 ## S7A-4 限定冻结范围与登记规则（2026-10-03）
 
 **顶层状态仍为 `candidate`。** 本 Spec 不改为 `frozen` / `active`：授权来自**范围精确的限定冻结**，
-不来自状态词。按 [Stage 7总计划](../stage_plans/active/stage-07/plan.md#11-权威输入和冻结顺序) §1.1 冻结顺序第 2 步的**分批冻结**
+不来自状态词。按 [Stage 7总计划](../stage_plans/completed/stage-07/plan.md#11-权威输入和冻结顺序) §1.1 冻结顺序第 2 步的**分批冻结**
 口径，第 4 轮（仲裁、资源与事实序）于 2026-10-03 由 Codex 裁定并经 owner 落进本文；该轮是进入 S7A-4 的
 **准入门禁**，其语义正文见 §3.9（六步 / 八阶段唯一映射）、§3.10（7A 资源子集与身份规则）、§3.11（早 / 晚
 判定与 error 记录）、§3.12（solver / coordinator 边界与 `SolverProfile` 语义）、§3.13（不得消费清单），
@@ -2405,7 +2411,7 @@ S7A-5 的**文档准入门禁**，并明确本批次**授权什么、不授权�
 §9 第 5 轮行在 Spec 侧的对应节，与 `## S7A-4` 同构。
 
 **顶层状态仍为 `candidate`。** 本 Spec 不改为 `frozen` / `active`：授权来自**范围精确的限定冻结**，不来自
-状态词。按 [Stage 7总计划](../stage_plans/active/stage-07/plan.md#11-权威输入和冻结顺序) §1.1 冻结顺序第 2 步的**分批冻结**
+状态词。按 [Stage 7总计划](../stage_plans/completed/stage-07/plan.md#11-权威输入和冻结顺序) §1.1 冻结顺序第 2 步的**分批冻结**
 口径，第 5 轮于 2026-10-03 由 Codex 裁定并经 owner 落进本文；该轮与 `## S7A-6` 共为进入 S7A-5 的
 **准入门禁**。语义正文见 §3.14（Ruleset Tick 三阶段与 `faulted` 行为矩阵）、§3.15（`RegisterKind` 三类与
 冲突策略）、§3.16（Ruleset 输入边界）、§3.17（Fact 身份、commit 分配与 revision 归属）、§3.20（Outcome /
@@ -2584,11 +2590,11 @@ confidence **0.99**）裁定；文件名时间戳为 2026-10-02T20:52:37.188Z �
 | `S7A7-R08` | `P2-07` 三项命名统一 | §5.1.1、§5.2 `sourceMap` 行、§6.5 | S7A-3 |
 | `S7A7-R09` | `D-2` / `D-7` 六动词命名（合并行，2 项） | 文档订正（plan；ADR 0042 与实现不改） | — |
 | `S7A7-R10` | `D-5` 编号引用纪律 | 文档订正（工作表与本轮报告） | — |
-| `S7A7-R11` | `D-6` `tools/check_stage6_a2.py` 行号 `:259` | 文档订正（引用处注记，不改历史报告正文） | — |
+| `S7A7-R11` | `D-6` `tools/verification/check_stage6_a2.py` 行号 `:259` | 文档订正（引用处注记，不改历史报告正文） | — |
 | `S7A7-R12` | `D-9` 版本门禁 shell 守卫 | **owner-only**；候选补丁未提交，须 owner 按 ADR 0042 具名复核后落 `master` | S7A-8 |
-| `S7A7-R13` | `D-11` 稳定 C ABI 阶段归属 | **Stage 14 为唯一阶段号**；`AGENTS.md` 的 Stage 12 为孤例、由 owner 择时订正 | — |
+| `S7A7-R13` | `D-11` 稳定 C ABI 阶段归属 | **Stage 14 为唯一阶段号**；`AGENTS.md` 的 Stage 12 表述已于 2026-11-17 随 AGENTS 精简删除 | — |
 | `S7A7-R14` | `D-12` 研究稿指向行 | **待 owner 确认**；本轮只登记、不编辑指向行 | — |
-| `S7A7-R15` | `D-13` 格式门禁（含 `AGENTS.md`:110 glob 描述附带子项，2 项） | 已处置：`cuexis_format_check` 156 → 0；`AGENTS.md`:110 描述已订正 | — |
+| `S7A7-R15` | `D-13` 格式门禁（含 `AGENTS.md`:110 glob 描述附带子项，2 项） | 已处置：`cuexis_format_check` 156 → 0；glob 描述已订正（2026-11-17 AGENTS 重写后该行号不再适用） | — |
 | `S7A7-R16` | `D-14` `CM-X01` 台账冲突 | 已按方案 (a) 绑到第 6 轮；`CONTRACT_MATRIX` 处置词 `accept` | — |
 
 **行 / 项口径（16 行 / 18 项）。** 上表为 **16 行**；按"合并行与附带子项各记 2 项"计为 **18 项**：
@@ -2692,7 +2698,7 @@ S7A-3…S7A-9 仍未完成。**（第 1 轮、第 1 轮补充、第 2 轮、第 
 
 - [ADR 0044：Gameplay V2 语义内核](../adr/0044-gameplay-v2-semantic-kernel.md)：决策、备选方案、威胁模型与接受门禁
 - [Gameplay V2 ABI](../api/GAMEPLAY_V2_ABI.md)：typed 内部 / preview C++ 边界
-- [Stage 7A分册](../stage_plans/active/stage-07/01-a/plan.md)：批次与首用门禁；[总计划](../stage_plans/active/stage-07/plan.md)：依赖与冻结顺序；[Stage 7.5计划](../stage_plans/active/stage-07-5/plan.md)：W类缺口定义
+- [Stage 7A分册](../stage_plans/completed/stage-07/01-a/plan.md)：批次与首用门禁；[总计划](../stage_plans/completed/stage-07/plan.md)：依赖与冻结顺序；[Stage 7.5计划](../stage_plans/active/stage-07-5/plan.md)：W类缺口定义
 - [Gameplay V2 acceptance package](../proposals/gameplay-v2-acceptance/README.md)：准入包与接受清单
 - [S7A-0.2 合同逐项台账](../proposals/gameplay-v2-acceptance/CONTRACT_MATRIX.md)：114 项合同项与 `open` 清单
 - [支持 / 拒绝矩阵](../proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md)：支持集合、19 条拒绝、capability registry 草案

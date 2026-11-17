@@ -1,5 +1,11 @@
 # 四项 Stage 6 交接收口台账
 
+<!-- cuexis-meta
+id: PROPOSALS-gameplay-v2-acceptance.STAGE6_HANDOVER_LEDGER
+status: candidate
+authority: none
+-->
+
 2026-10-07 更新：四项实施及本轮证据见
 [实施报告](../../stage_reports/stages/stage-07/01-a/stage-06-handover/2026-10-07-stage6-handover-implementation.md)。
 owner 本人在 PR #32 审批；可信基线/平台保护和 hosted 证据仍为独立退出门禁。
@@ -10,7 +16,7 @@ owner 本人在 PR #32 审批；可信基线/平台保护和 hosted 证据仍为
 更新日期：2026-10-02
 
 上级文档：[Gameplay V2 acceptance package](README.md) ·
-[Stage 7A 实施计划](../../stage_plans/active/stage-07/plan.md) 的 §1.2
+[Stage 7A 实施计划](../../stage_plans/completed/stage-07/plan.md) 的 §1.2
 
 文档角色：交接台账。它记录四项 Stage 6 遗留内容的**当前**实现状态、缺口、阻塞与最小关闭证据。
 它不重开 Stage 6，也不把历史报告当作当前证据。

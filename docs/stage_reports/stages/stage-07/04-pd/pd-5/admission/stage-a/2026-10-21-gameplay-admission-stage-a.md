@@ -1,10 +1,17 @@
 # PD-5 40k Gameplay-host 准入阶段 A
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.admission.stage-a.2026-10-21-gameplay-admission-stage-a
+status: evidence
+authority: none
+date: 2026-10-21
+-->
+
 状态：completed
 
 更新日期：2026-10-21
 
-快照日期：2026-10-21。本报告记录[阶段 A 计划](../../../../../../../stage_plans/active/stage-07/04-pd/pd-5/pd5-gameplay-admission.md)
+快照日期：2026-10-21。本报告记录[阶段 A 计划](../../../../../../../stage_plans/completed/stage-07/04-pd/pd-5/pd5-gameplay-admission.md)
 的定量证据；当前状态由 [CURRENT_STATUS](../../../../../../../CURRENT_STATUS.md) 汇总。
 [revision 4/hash 会计草案](../../../../../../../proposals/implementation-input/stage-07/pd5-capsule-r4-accounting.md)
 尚未接受，本轮不进入 B/C，不声称原样 40k 已获准入。

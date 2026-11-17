@@ -1,5 +1,12 @@
 # R3 Seek 发布归因与批量 Fact 候选处置
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-30-r3-publication-attribution
+status: evidence
+authority: none
+date: 2026-10-30
+-->
+
 状态：批量候选未选用，继续定位 H5；不是接受结果
 
 日期：2026-10-30

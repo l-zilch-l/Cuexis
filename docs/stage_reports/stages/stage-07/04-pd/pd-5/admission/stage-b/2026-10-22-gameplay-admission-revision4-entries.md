@@ -1,5 +1,12 @@
 # Capsule revision 4 入口接入与阶段 B 交回
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.admission.stage-b.2026-10-22-gameplay-admission-revision4-entries
+status: evidence
+authority: none
+date: 2026-10-22
+-->
+
 日期：2026-10-22。状态：本轮实现及适用本地核验完成，停止交回 owner 核验；未接受阶段 C。
 
 ## 范围与起点

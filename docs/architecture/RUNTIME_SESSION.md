@@ -4,6 +4,12 @@
 
 更新日期：2026-10-28
 
+<!-- cuexis-meta
+id: ARCH-RUNTIME_SESSION
+status: active
+authority: owns
+-->
+
 ## 职责与所有权
 
 一次 RuntimeSession 对应一次播放、Studio 预览或 headless SDK 会话的内部 Runtime 实例。它不是宿主直接集成的公共门面；ADR 0027 规定宿主、Player 和 Studio 统一通过 PlaybackSession 使用它。
@@ -80,16 +86,13 @@ callback 不得重入同一 Session，不得在返回后保留 World/Registry �
 
 ## 状态
 
-```text
-Empty -> Preparing -> Ready -> Running
-Ready/Running -> Reloading -> 原活动状态
-任意活动状态 -> Closing -> Empty
-运行期不可恢复错误 -> Failed
-```
+RuntimeSession 不持有持久状态枚举：prepare/close 是事务阶段，不落成可查询状态。
+
+对外可见的状态只在 `PlaybackSession::SessionState`：`Empty`、`Ready`、`Running`
+（`Failed` 从未赋值，见 RR-F412）。Playback 的 SessionState 不包含 Paused；暂停属于
+SourceClockSample/AudioTransport，并通过 `simulationDeltaTimeMs = 0` 的 RuntimeFrame 表达。
 
 首次准备失败不发布半初始化 Session，只返回 Diagnostics。
-Playback 的 SessionState 不包含 Paused；暂停属于 SourceClockSample/AudioTransport，并通过
-`simulationDeltaTimeMs = 0` 的 RuntimeFrame 表达。
 
 ## PreparedRuntimeSession
 
@@ -137,7 +140,7 @@ struct RuntimeFrame {
 };
 ```
 
-ID 未变化时执行普通帧更新。ID 改变时，Behavior 绝对重采样，PropertyResolver 从初始值重算，状态型 System 接收 `onTimeDiscontinuity`。任何 System 不得继续累计跳转前的 delta。
+ID 未变化时执行普通帧更新。ID 改变时，Behavior 绝对重采样，PropertyResolver 从初始值重算；当前实现没有 `onTimeDiscontinuity` 回调，状态型 System 通过比较 `RuntimeFrame.timeDiscontinuityId` 自行处理。任何 System 不得继续累计跳转前的 delta。
 
 暂停、Stopped 或时间不连续后的首帧由 RuntimeTimeline 传入
 `simulationDeltaTimeMs = 0`。Session 不自行控制 AudioTransport。ChartClock、HostClock 与

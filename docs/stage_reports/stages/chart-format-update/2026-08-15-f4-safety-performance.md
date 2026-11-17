@@ -1,5 +1,12 @@
 # Stage Chart Format Update CFU-F4 Safety and Performance
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.chart-format-update.2026-08-15-f4-safety-performance
+status: evidence
+authority: none
+date: 2026-08-15
+-->
+
 状态：completed locally
 
 快照日期：2026-08-15

@@ -1,5 +1,12 @@
 # 单人维护仓库的workflow来源例外接受
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.90-shared.release-gates.2026-10-10-single-maintainer-workflow-source-exception
+status: evidence
+authority: none
+date: 2026-10-10
+-->
+
 状态：accepted decision record；治理修订，非阶段关闭
 
 证据日期：2026-10-10（Asia/Shanghai）
@@ -13,7 +20,7 @@ workflow来源吧”。据此修订VERSIONING及plan-a，取代10-09“保留来
 ## 范围与补偿核对
 
 合同归[VERSIONING](../../../../../guides/VERSIONING.md#单人维护仓库的检查来源例外2026-10-10)，
-执行卡归[plan-a §3.4.21](../../../../../stage_plans/active/stage-07/01-a/plan.md#3421-单人维护来源要求修订2026-10-10)。
+执行卡归[plan-a §3.4.21](../../../../../stage_plans/completed/stage-07/01-a/plan.md#3421-单人维护来源要求修订2026-10-10)。
 只针对当前个人单人仓库和普通PR。新增维护者、改变检查服务或仓库归属、启用queue时重审。
 不安装新服务、不迁移仓库、不关闭真实版本校验、不增加bypass、不代合并/发行。
 

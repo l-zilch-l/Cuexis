@@ -4,6 +4,12 @@
 
 更新日期：2026-10-28（当前状态导航订正）
 
+<!-- cuexis-meta
+id: FORMAT-gameplay-v2-execution-profile
+status: candidate
+authority: owns
+-->
+
 实现状态：分批实现与受限功能验收只由 [CURRENT_STATUS](../CURRENT_STATUS.md) 汇总；
 本候选合同的状态不等同于Stage 7A关闭或容量证明。
 RPA T2 及 AD06-G1/Q1/K1 的后续分批实施不由本基线文档汇总；控制/Fact/版本合同由
@@ -13,7 +19,7 @@ RPA T2 及 AD06-G1/Q1/K1 的后续分批实施不由本基线文档汇总；控�
 本文件是 [Gameplay V2 Spec](GAMEPLAY_V2_SPEC.md) 的补充 Spec。选择理由由
 [ADR 0045](../adr/0045-gameplay-v2-execution-profile.md) 拥有；字段所有权与接口由
 [typed 补充](../api/gameplay-v2-execution-types.md) 拥有；实施顺序由
-[Stage 7计划](../stage_plans/active/stage-07/plan.md) 拥有；原3/4执行卡见
+[Stage 7计划](../stage_plans/completed/stage-07/plan.md) 拥有；原3/4执行卡见
 [历史交接](../archive/stage-07-planning/01-a/s7a-3-4-implementation-handoff.md)。
 本文件补齐首次运行消费的空白，不重开 T4/K4、19 条拒绝面或已有第 1–7 轮裁定。
 引用“待首次消费冻结”的历史文字时，本文件在明确覆盖的字段上给出本轮选择；不冒充旧裁定。

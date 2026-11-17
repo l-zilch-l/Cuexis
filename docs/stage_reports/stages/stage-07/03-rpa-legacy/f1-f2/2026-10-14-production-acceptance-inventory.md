@@ -1,5 +1,12 @@
 # Stage 7-RPA production acceptance and handoff draft
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.f1-f2.2026-10-14-production-acceptance-inventory
+status: evidence
+authority: none
+date: 2026-10-14
+-->
+
 Date: 2026-10-14. Status: preparation; B5/F1-F4 remain open.
 
 ## Source and authorization
@@ -12,7 +19,7 @@ PD implementation is outside this run. No production profile, public field, wire
 ruleset, Replay or clock semantics is changed by this batch.
 
 Canonical entry is [CURRENT_STATUS](../../../../../CURRENT_STATUS.md), followed by the
-[RPA plan](../../../../../stage_plans/active/stage-07/03-rpa-legacy/plan.md),
+[RPA plan](../../../../../stage_plans/completed/stage-07/03-rpa-legacy/plan.md),
 [execution contract](../../../../../formats/rpa-execution-contract.md),
 [host boundary](../../../../../api/realtime-host-boundary.md),
 [ADR 0046](../../../../../adr/0046-realtime-playback-coordination.md),

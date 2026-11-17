@@ -8,6 +8,12 @@
 
 文档角色：公共 API 参考
 
+<!-- cuexis-meta
+id: API-presentation-and-capabilities
+status: active
+authority: owns
+-->
+
 权威头文件：[presentation.hpp](../../engine/playback/include/cuexis/playback/presentation.hpp)、
 [playback_session.hpp](../../engine/playback/include/cuexis/playback/playback_session.hpp)
 

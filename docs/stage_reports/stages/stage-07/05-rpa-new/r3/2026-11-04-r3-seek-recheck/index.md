@@ -1,5 +1,11 @@
 # R3 适用 Seek 机会性复核证据（2026-11-04）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-04-r3-seek-recheck.index
+status: evidence
+authority: none
+-->
+
 状态：current evidence index；独立复核读数；test-only；不单独构成 R3 退出或生产接受。
 
 本目录保存 2026-11-03 适用 Seek 余下三类读数的独立复核输出。原报告与原始 36 份日志保持原字节，

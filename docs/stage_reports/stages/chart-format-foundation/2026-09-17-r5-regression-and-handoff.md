@@ -1,5 +1,12 @@
 # Chart Format Foundation Hardening R5：回归、Hosted 与交接
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.chart-format-foundation.2026-09-17-r5-regression-and-handoff
+status: evidence
+authority: none
+date: 2026-09-17
+-->
+
 - 批次：R5（回归矩阵、同 SHA hosted 记录、关闭报告）
 - 起始 SHA：`eeda4e4`（R4 提交；开工前工作区干净、无未提交修改）
 - 本轮实现 SHA：`9314646`（三个修复提交：`25e546d` headless 生成阻断 A19；

@@ -1,5 +1,11 @@
 # Proposal Index
 
+<!-- cuexis-meta
+id: PROPOSALS-README
+status: candidate
+authority: none
+-->
+
 状态：现行提案索引
 
 更新日期：2026-10-06
@@ -30,6 +36,9 @@ Gameplay I 工作稿是**已被取代**的历史研究基线：取舍见 [ADR 00
 | Gameplay V2 acceptance package | `gameplay-v2-acceptance/` | 由 S7A-0 产出的准入包：合同台账、支持/拒绝矩阵、预算计划、批次门禁、交接台账与 owner 决策请求 |
 | Deferred inputs | `deferred/` | 尚未进入当前实施阶段的专题设计 |
 
+- [Chart v5 CXT invocation](deferred/cxt-chart-v5-invocation.md)：2026-11-17 从
+  [CXT v2 格式合同](../formats/CXT_V2_FORMAT.md) §6 移出的候选设计；实现前不得据此宣称能力。
+
 Gameplay 文件不是生产 API、已接受 Spec 或当前实现声明；旧研究文件以本索引顶部列出的 I 工作稿为准，
 Gameplay v2 目录则记录新的候选路线及其尚未闭合的实施合同。
 
@@ -43,7 +52,7 @@ Gameplay v2 目录则记录新的候选路线及其尚未闭合的实施合同�
 
 ## Stage 7 实施输入
 
-- [S7A-5/6方案比较和选优](implementation-input/stage-07/s7a-5-6-design-selection.md)：45套方向方案、残余细节备选及推荐理由；当前目标和准入见 [Stage 7主计划§3.2](../stage_plans/active/stage-07/01-a/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)。
+- [S7A-5/6方案比较和选优](implementation-input/stage-07/s7a-5-6-design-selection.md)：45套方向方案、残余细节备选及推荐理由；当前目标和准入见 [Stage 7主计划§3.2](../stage_plans/completed/stage-07/01-a/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)。
 
 ## 当前候选格式提案
 

@@ -2,7 +2,13 @@
 
 状态：current
 
-更新日期：2026-11-14
+更新日期：2026-11-17
+
+<!-- cuexis-meta
+id: INDEX-stage_plans
+status: active
+authority: index
+-->
 
 阶段计划定义目标、范围、批次、门禁和交接。当前实现状态只以
 [CURRENT_STATUS.md](../CURRENT_STATUS.md) 为准；完成证据只以
@@ -27,14 +33,15 @@ reviews
   某次复核的整改计划；复核记录与其证据仍在 stage_reports/reviews/<review>/
 ```
 
-当前 `active` 目录的入口如下；已收束的 Stage 7 暂保留原路径，避免历史引用重排：
+当前 `active` 目录的入口如下：
 
 ```text
 chart-format-update-for-v5
   Chart v5 跨阶段总工作包，负责维护 Foundation、Stage 6、Stage 7A 和 Stage 8 的总体设计与交接
 
-stage-07
-  Stage 7 既有范围的受限关闭计划，保留原路径作历史导航
+stage-07-rr
+  独立 Stage 7-RR：Review and Refactoring After Stage-7，Stage 7 与 Stage 7.5 之间的
+  复核发现登记、合同漂移修正与重构批次
 
 stage-07-5
   独立 Stage 7.5：Gameplay Evolution，能力演进、局部重构及性能稳定
@@ -58,7 +65,7 @@ stage-06-review-remediation
 Stage 6 已于 2026-09-27 关闭并归档到 `completed/stage-06/`，见
 [关闭报告](../stage_reports/stages/stage-06/completion.md)。
 
-定位入口：[Stage 7 分阶段与批次导航](active/stage-07/README.md)；报告、批次与原始证据从该表直接进入。
+定位入口：[Stage 7 分阶段与批次导航](completed/stage-07/README.md)；报告、批次与原始证据从该表直接进入。
 
 ## 已完成计划
 
@@ -78,29 +85,23 @@ Stage 6 已于 2026-09-27 关闭并归档到 `completed/stage-06/`，见
   完成证据见 [R5 报告](../stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)
 - Stage 6：[plan](completed/stage-06/plan.md)，关闭于 2026-09-27，
   完成证据见 [关闭报告](../stage_reports/stages/stage-06/completion.md)
+- Stage 7：[plan](completed/stage-07/plan.md)，2026-11-14 受限退出（R4 交接），
+  完成证据见 [R4 受限退出与缺陷交接](../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-14-limited-exit-and-defect-handoff.md)
 - 260830 follow-up：[plan](completed/260830-followup/plan.md)
 
 CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块分支覆盖率已完成，
 具体证据仍以 [260830-followup plan](completed/260830-followup/plan.md) 为准。
 
-## 当前主路线
+## 阶段路线
 
-- Stage 6（已关闭并归档）：[plan](completed/stage-06/plan.md)，2026-09-17 启动（首批 S6-A）、
-  2026-09-27 关闭，以 Chart v5 Core/Packed 为主要开发基线的 Playback/Player/CXC candidate
-  path；Chart v4 保留为兼容回退。前置的
-  [Foundation 交接加固](completed/chart-format-foundation-hardening/plan.md) 已于 2026-09-17
-  关闭并经 owner 接受，允许/禁止消费边界见其
-  [R5 报告](../stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)。
-  八项关键决策已在 [ADR 0042](../adr/0042-stage-6-productization-boundaries.md) 冻结；A1 至 F1
-  全部批次退出，关闭报告、三个核验问题处置与 Stage 7A / Stage 8 交接清单经 owner 接受
-  （见 [关闭报告](../stage_reports/stages/stage-06/completion.md)）。Stage 6 关闭本身**不**
-  实现或授权后续阶段；Stage 7 既有范围现按受限接受收束，后续能力与性能工作归独立 Stage 7.5，
-  不构成合并或发布授权。Stage 8 尚未启动。
-- [Stage 7 总计划](active/stage-07/plan.md)：既有内核、诊断、RPA／PD 的受限关闭与历史边界；高级能力已迁出。
-  - [Stage 7A](active/stage-07/01-a/plan.md)、[独立诊断 N0–N3](active/stage-07/02-diagnostics/plan.md)。
-  - [PD](active/stage-07/04-pd/plan.md)、[RPA 整改](active/stage-07/05-rpa-new/plan.md)。
-  - [历史范围及批次导航](active/stage-07/README.md)、[旧路径映射](active/stage-07/legacy-paths.md)。
-- [Stage 7.5：Gameplay Evolution](active/stage-07-5/plan.md)：独立高级输入／判定能力、局部重构和性能稳定；
+当前阶段是 [Stage 7-RR](active/stage-07-rr/plan.md)。列表按“当前 → 未启动 → 已关闭背景”排序；
+标 **[已关闭]** 的条目只说明背景与交接，不代表正在进行的工作。
+
+- **[当前]** [Stage 7-RR：Review and Refactoring After Stage-7](active/stage-07-rr/plan.md)：位于 Stage 7 与
+  Stage 7.5 之间的独立复核与重构阶段（[目录入口](active/stage-07-rr/README.md)），登记 2026-11-17
+  全项目复核发现（[发现登记册](active/stage-07-rr/findings.md)），按 RR-0–RR-6 处置文档漂移、
+  格式互操作、诊断一致性与源码拆分预算；不承接 Stage 7.5 的能力演进与性能整改。
+- **[未启动]** [Stage 7.5：Gameplay Evolution](active/stage-07-5/plan.md)：独立高级输入／判定能力、局部重构和性能稳定；
   保留 S7B/S7C 批次追溯 ID，以受限 Stage 7 交接入场，独立验收后交给 Stage 8。
 - [Stage 8](future/stage-08/plan.md)：Chart v5 正式语义、CXT v2、Packed Chart 和 CXC 发行收敛；
   依赖 Stage 7 受限关闭交接后，独立 Stage 7.5 的完成与 owner 接受，发行选入另按明确矩阵。
@@ -110,6 +111,24 @@ CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块�
 - [Stage 12](future/stage-12/plan.md)：规模化、桌面性能、Android 与 Vulkan。
 - [Stage 13](future/stage-13/plan.md)：Chart v8、内置后处理与确定性粒子。
 - [Stage 14](future/stage-14/plan.md)：稳定 ABI 与 Playback SDK v1。
+
+### 已关闭背景
+
+- **[已关闭]** Stage 6：[plan](completed/stage-06/plan.md)，2026-09-17 启动（首批 S6-A）、
+  2026-09-27 关闭；当时以 Chart v5 Core/Packed 为开发基线的 Playback/Player/CXC candidate
+  path，Chart v4 保留为兼容回退。前置的
+  [Foundation 交接加固](completed/chart-format-foundation-hardening/plan.md) 已于 2026-09-17
+  关闭并经 owner 接受，允许/禁止消费边界见其
+  [R5 报告](../stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)。
+  八项关键决策已在 [ADR 0042](../adr/0042-stage-6-productization-boundaries.md) 冻结；A1 至 F1
+  全部批次退出，关闭报告、三个核验问题处置与 Stage 7A / Stage 8 交接清单经 owner 接受
+  （见 [关闭报告](../stage_reports/stages/stage-06/completion.md)）。Stage 6 关闭本身**不**
+  实现或授权后续阶段。
+- **[已关闭]** [Stage 7 总计划](completed/stage-07/plan.md)：既有内核、诊断、RPA／PD 的受限关闭与历史边界，
+  2026-11-14 受限退出；高级能力已迁出到独立 Stage 7.5。
+  - [Stage 7A](completed/stage-07/01-a/plan.md)、[独立诊断 N0–N3](completed/stage-07/02-diagnostics/plan.md)。
+  - [PD](completed/stage-07/04-pd/plan.md)、[RPA 整改](completed/stage-07/05-rpa-new/plan.md)。
+  - [历史范围及批次导航](completed/stage-07/README.md)、[旧路径映射](completed/stage-07/legacy-paths.md)。
 
 历史编号专题（内容已并入新主阶段）：
 

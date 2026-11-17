@@ -1,11 +1,18 @@
 # R4 World Component Page Storage Remediation Design
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-05-world-storage-remediation-design
+status: evidence
+authority: none
+date: 2026-11-05
+-->
+
 状态：design implemented under owner approval; correctness verified; memory/P8 re-admission is pending separate authorization
 
 日期：2026-11-05
 
 返回 [R4 语义内存失败报告](2026-11-05-semantic-memory-remediation.md)。本设计消费
-[R4 计划 §4](../../../../../stage_plans/active/stage-07/05-rpa-new/r4/plan.md#4-独立修复重开与停止规则)
+[R4 计划 §4](../../../../../stage_plans/completed/stage-07/05-rpa-new/r4/plan.md#4-独立修复重开与停止规则)
 和[语义整改原始证据](2026-11-05-semantic-memory-evidence/index.md)。本轮只检查既有源码、
 配置和归档日志；没有产品代码修改、构建、workload、正式样本或新增内存诊断。
 

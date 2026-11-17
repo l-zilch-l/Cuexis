@@ -1,5 +1,12 @@
 # R3 Pause 与适用 Seek：预热交换链与首个 seek 门（2026-11-01）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-r3-pause-prime-and-seek-gate
+status: evidence
+authority: none
+date: 2026-11-01
+-->
+
 状态：local gate readings；test-only。本轮把 **Pause 门从超界变为通过**，并把**适用 Seek 门在已覆盖的场景
 上测出通过**；D2/D3/Snapshot/排队仍然未判定，原因写在 §4。
 

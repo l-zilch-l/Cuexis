@@ -4,6 +4,12 @@
 
 更新日期：2026-10-16（补 PD 表现域接入）
 
+<!-- cuexis-meta
+id: PLAN-future.stage-09.plan
+status: future
+authority: owns
+-->
+
 前置：
 
 ```text
@@ -55,7 +61,7 @@ Chart v6
 - 合法 v4/v5 输入的既有 digest 保持不变。
 
 若采用 PD 基线，Environment 与 Model/Submesh 接入
-[PD 有类型表现域边界](../../active/stage-07/04-pd/design.md) §12.2，复用单一
+[PD 有类型表现域边界](../../completed/stage-07/04-pd/design.md) §12.2，复用单一
 求值与 Snapshot 物化协调入口；环境不能被硬塞成普通对象，也不建立动态 provider 或另一套
 Renderer 求值。必需域须共同完成一个逻辑采样点才可交付；新增 submesh/资源字段同步更新
 Snapshot/Digest/capability 与单帧/峰值预算，不沿用旧对象数上界。实际合同迁移与证据见该细则 §12.7。

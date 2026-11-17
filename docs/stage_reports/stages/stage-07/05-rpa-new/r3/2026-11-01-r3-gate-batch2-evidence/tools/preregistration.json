@@ -7,7 +7,7 @@
     "instrument": "out/build/rpa-candidate-release/bin/cuexis_execution_device_probe.exe",
     "instrument_sha256": "6b01a30f8b01b79cf7d2314be989e89cd42dc63cb9694e5c2794dc5d3af9c790",
     "why_this_instrument": "tests/pd/pd5_device_probe.cpp defines CUEXIS_PD5_DEVICE and includes pd5_host_probe.cpp, so the same scripted host harness runs against OpenGlBackend with the GPU timer query enabled; the plain cuexis_pd_host_probe target compiles the CPU TestPresentationRenderer instead and cannot produce gpu_render at all.",
-    "authority": "docs/stage_plans/active/stage-07/05-rpa-new/plan.md 9.2-9.4; pd5-measurement-proposal.md section 4"
+    "authority": "docs/stage_plans/completed/stage-07/05-rpa-new/plan.md 9.2-9.4; pd5-measurement-proposal.md section 4"
   },
   "groups": [
     {

@@ -4,6 +4,12 @@
 
 更新日期：2026-10-01
 
+<!-- cuexis-meta
+id: FORMAT-STAGE6_CONFIG_AND_MEDIA
+status: completed
+authority: owns
+-->
+
 Status: S6-A2 contract record. This document freezes the fields needed by the Stage 6
 implementation batches; it does not claim that the Player support library or media importer
 exists. The owning decision is ADR 0042.

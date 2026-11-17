@@ -1,5 +1,12 @@
 # B1.3/B1.4 原路径基线与初始测量
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.b1.2026-10-11-b1-baseline-and-measurements
+status: evidence
+authority: none
+date: 2026-10-11
+-->
+
 状态：implementation evidence；B1 观测、基线和测量设计已完成，RPA 产品协议仍未完成
 
 证据日期：2026-10-11（Asia/Shanghai）。本记录承接

@@ -1,5 +1,12 @@
 # PD-5 正式测量前工具修复与方案准备
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.preparation.2026-10-23-preformal-tool-repair-and-readiness
+status: evidence
+authority: none
+date: 2026-10-23
+-->
+
 日期：2026-10-23。范围：测量前工具、故障验证与方案；没有启动 ETW、Cuexis、F1、40k、pilot 或正式窗口，没有正式 preparation/registration。主树 F1 不变；这不是 PD-5 或 Stage 7-PD 退出报告。
 
 后续声明：本记录描述的是**该批**只含两项空载 canary 的状态（36 项测试）。同一日的后续工作已把 F1 collector 并入同一封包，并由管理员在 r2、r3 各真实运行一次、以 r4 修复缺陷重新封包（121 项测试）；那部分状态与证据以[F1 工具包合并封包与三用例验收准备](../etw-tools/2026-10-23-f1-tool-package-and-acceptance-preparation.md)与 `docs/CURRENT_STATUS.md` 为准，本记录的数字不回填。
@@ -80,7 +87,7 @@
 
 manifest 逐项写输入 hash、timeline、viewport、U/F/R、entity/requirement/binding 数、consumer request policy、所有容量/retention/deadline、时长/次数/EOF、精确端点、source/build/toolchain/options；未知项写 missing。对实际变化模块列 Debug/Release、MSVC/MinGW、static/shared、candidate ON/OFF、headless、Player/reference-host、clean installed consumer 的 required/N/A-reason/not-run 状态。最终 SHA 的平台构建证据不当作本机计时。
 
-顺序：候选与采集方法验证 → 完整有限 profile/输入/工具清单 → 新正常分配器 build 身份 → 新 pilot（一次）→ 新注册及 claim/seal 独立核查 → 预声明三窗。保留三窗每窗三对、至少 600 秒间隔、固定 AB/BA、30 秒 warmup、逐窗/首六/全部九进程 15% 检查，以及共同成本配对 95% 区间的 1.10 判定。七项物理预算、四项 hash ceilings 和 runtime reply deadline 30 秒均不变，详见[已接受方案](../../../../../../stage_plans/active/stage-07/04-pd/pd-5/pd5-measurement-proposal.md)。
+顺序：候选与采集方法验证 → 完整有限 profile/输入/工具清单 → 新正常分配器 build 身份 → 新 pilot（一次）→ 新注册及 claim/seal 独立核查 → 预声明三窗。保留三窗每窗三对、至少 600 秒间隔、固定 AB/BA、30 秒 warmup、逐窗/首六/全部九进程 15% 检查，以及共同成本配对 95% 区间的 1.10 判定。七项物理预算、四项 hash ceilings 和 runtime reply deadline 30 秒均不变，详见[已接受方案](../../../../../../stage_plans/completed/stage-07/04-pd/pd-5/pd5-measurement-proposal.md)。
 
 ETW canary 只约束可选 ETW 归因工具；正式正常分配器 profile 本来就无 ETW，不能让可选采集器成为所有正式准备的前置。大型公开停止接口仍暂停。主 F1、old golden、C2、历史失败/中断证据保护；没有 merge/push，Stage 7-PD、整个 RPA、生产与 Stage 7 均未在本批关闭。
 

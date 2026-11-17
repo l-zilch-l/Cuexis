@@ -1,5 +1,12 @@
 # PD-4 独立音乐与实体 DFJK 观察
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-4.2026-10-19-pd4-physical-music-and-keyboard-observations
+status: evidence
+authority: none
+date: 2026-10-19
+-->
+
 日期：2026-10-19（Asia/Shanghai）。状态：受限听音、DFJK 完整课程及控制观察完成；控制附近 FPS 波动待量化，正式性能与完整设备验收未完成。
 当前状态归 [CURRENT_STATUS](../../../../../CURRENT_STATUS.md)，PD-4 内部实施见 [实施报告](2026-10-19-pd4-delivery-retirement-and-observation.md)。
 

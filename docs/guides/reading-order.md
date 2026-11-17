@@ -4,6 +4,12 @@
 
 更新日期：2026-10-10
 
+<!-- cuexis-meta
+id: GUIDE-reading-order
+status: active
+authority: owns
+-->
+
 本文给第一次接触 Cuexis 的 AI 代理、新成员和文档维护者一条可执行的阅读路线。
 它只说明先读什么、每份文档回答什么问题、什么时候应停止下钻；合同、状态和证据仍由
 各自的权威文档负责。
@@ -51,7 +57,7 @@
 2. [Gameplay V2 Spec](../formats/GAMEPLAY_V2_SPEC.md)（现行候选权威：字段与运行语义）
 3. [Gameplay V2 ABI](../api/GAMEPLAY_V2_ABI.md)（typed 内部 / preview 边界）
 4. [ADR 0044：Gameplay V2 语义内核](../adr/0044-gameplay-v2-semantic-kernel.md)（决策与威胁模型）
-5. [Stage 7 既有范围与交接](../stage_plans/active/stage-07/plan.md) → [独立 Stage 7.5：Gameplay Evolution](../stage_plans/active/stage-07-5/plan.md)
+5. [Stage 7 既有范围与交接](../stage_plans/completed/stage-07/plan.md) → [独立 Stage 7.5：Gameplay Evolution](../stage_plans/active/stage-07-5/plan.md)
 6. [Gameplay 提案索引](../proposals/README.md) → [Gameplay research](../proposals/research/gameplay/README.md)（历史输入）
 
 Gameplay I 的 [Gameplay Judgement Spec](../formats/GAMEPLAY_JUDGEMENT_SPEC.md)、
@@ -61,16 +67,16 @@ Gameplay I 的 [Gameplay Judgement Spec](../formats/GAMEPLAY_JUDGEMENT_SPEC.md)�
 **第 1–7 轮已全部裁定（无待裁定轮次）**，见[裁决清单](../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md) §3、§5、§7、§9
 与[第 7 轮收尾裁定记录](../stage_reports/stages/stage-07/01-a/s7a-7-8/2026-10-03-s7a-7-wrapup-rulings.md)；
 **裁定完成不等于实现完成**，实现状态以[CURRENT_STATUS](../CURRENT_STATUS.md)为准。
-原S7A-9收尾现由[RPA-F1–F4](../stage_plans/active/stage-07/03-rpa-legacy/plan.md#综合收尾工作线原s7a-9)承接；
+原S7A-9收尾现由[RPA-F1–F4](../stage_plans/completed/stage-07/03-rpa-legacy/plan.md#综合收尾工作线原s7a-9)承接；
 RPA完成后依次实施Stage 7.5、Stage 8。审查材料本身不构成已实施API证据。
 研究稿用于追溯推导、压测和取舍，不是第二份规范。
 
 ### 做诊断码正式化或接手RPA
 
-先读[独立诊断前置计划](../stage_plans/active/stage-07/02-diagnostics/plan.md)，
+先读[独立诊断前置计划](../stage_plans/completed/stage-07/02-diagnostics/plan.md)，
 再读其链接的N0复核报告、现行V2 Spec/ABI及集中码表；逐分支映射、投影和恢复兼容合同的收敛仍属N1待执行工作。
 原RPA-N0–N3编号仅供追溯，不是RPA内部工作线。
-随后读[RPA计划](../stage_plans/active/stage-07/03-rpa-legacy/plan.md)：N3退出是新架构原型及A4–A6的硬前置，
+随后读[RPA计划](../stage_plans/completed/stage-07/03-rpa-legacy/plan.md)：N3退出是新架构原型及A4–A6的硬前置，
 纸面方案设计和既有行为的只读盘点可并行。历史审计和本次规划都不证明迁移或N3验收已经完成。
 
 ### 做格式、谱面或打包链

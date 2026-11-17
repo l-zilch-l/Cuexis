@@ -1,5 +1,12 @@
 # R4 展示矩阵探针准入、pilot 与环境阻断的固定组
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-08-probe-matrix-admission-and-environment-stop
+status: evidence
+authority: none
+date: 2026-11-08
+-->
+
 状态：candidate；owner 豁免额度后七个探针单元全部取得三窗口结果，六个计时组完成、p4-capture-1 为 inconclusive
 
 日期：2026-11-08

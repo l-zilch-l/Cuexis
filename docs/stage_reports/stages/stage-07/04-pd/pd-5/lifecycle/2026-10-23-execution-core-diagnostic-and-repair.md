@@ -1,5 +1,12 @@
 # PD-5 执行内核受控诊断、修复与关闭合同阻塞交回
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.lifecycle.2026-10-23-execution-core-diagnostic-and-repair
+status: evidence
+authority: none
+date: 2026-10-23
+-->
+
 状态：kernel repair verified locally / lifecycle blocked / owner verification pending
 
 快照日期：2026-10-23

@@ -1,5 +1,12 @@
 # PD-5 40k Gameplay-host B0 预算裁决交回
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.admission.stage-b.2026-10-22-gameplay-admission-b0-budget-ruling
+status: evidence
+authority: none
+date: 2026-10-22
+-->
+
 状态：completed
 
 更新日期：2026-10-22

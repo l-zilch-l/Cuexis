@@ -1,5 +1,11 @@
 # Demo：20 秒旋转逼近示例（demo20s）
 
+<!-- cuexis-meta
+id: EXAMPLES-demo20s
+status: candidate
+authority: none
+-->
+
 状态：active（运行示例）
 
 更新日期：2026-09-01

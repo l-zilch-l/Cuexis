@@ -1,5 +1,12 @@
 # Chart Format Foundation F9: Handoff Readiness
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.chart-format-foundation.2026-09-07-f9-handoff-readiness
+status: evidence
+authority: none
+date: 2026-09-07
+-->
+
 日期：2026-09-07  
 状态：pending owner acceptance and hosted verification
 

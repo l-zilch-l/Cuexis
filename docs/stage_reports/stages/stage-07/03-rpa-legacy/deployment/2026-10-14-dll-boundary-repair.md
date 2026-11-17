@@ -1,5 +1,12 @@
 # RPA DLL 边界方案 A 修复与验证
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.deployment.2026-10-14-dll-boundary-repair
+status: evidence
+authority: none
+date: 2026-10-14
+-->
+
 证据日期：2026-10-14。状态：本次局部修复和验证完成；按 owner 要求停止，不继续其它 RPA 任务。
 
 ## 范围与身份

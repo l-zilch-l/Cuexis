@@ -1,5 +1,12 @@
 # Stage 4 S4-H Local Validation
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-04.2026-08-27-s4-h-local-validation
+status: evidence
+authority: none
+date: 2026-08-27
+-->
+
 状态：S4-H 未关闭；本地 Debug/Release 门禁通过，最终 SHA 未发布，hosted 未跑；Stage 4 仍为 unblocked / not started
 
 后续关闭证据：[Cuexis 阶段 4 验收报告](completion.md)。本文件是 hosted 发布前的本地快照，不代表最终 SHA。

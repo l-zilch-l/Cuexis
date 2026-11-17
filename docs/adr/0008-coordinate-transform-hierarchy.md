@@ -1,5 +1,11 @@
 # ADR 0008：坐标、Transform 与父子层级语义
 
+<!-- cuexis-meta
+id: ADR-0008
+status: accepted
+authority: owns
+-->
+
 日期：2026-07-16
 
 状态：已接受

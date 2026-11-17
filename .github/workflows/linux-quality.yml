@@ -278,6 +278,7 @@ jobs:
           CUEXIS_TARGETS_FILE: out/build/debug/generated/cuexis-targets.txt
         run: |
           python3 -B tools/check_docs.py
+          python3 -B tools/verification/check_docs_facts.py
           python3 -B tools/update_version.py --check
           python3 -B tools/ci/gnu_asset_mirror_tests.py
 

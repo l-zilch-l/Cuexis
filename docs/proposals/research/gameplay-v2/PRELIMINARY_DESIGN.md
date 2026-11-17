@@ -1,5 +1,11 @@
 # Gameplay V2 初步设计方案
 
+<!-- cuexis-meta
+id: PROPOSALS-research.gameplay-v2.PRELIMINARY_DESIGN
+status: candidate
+authority: none
+-->
+
 状态：candidate；研究提案，未接受，未实施
 
 更新日期：2026-10-02

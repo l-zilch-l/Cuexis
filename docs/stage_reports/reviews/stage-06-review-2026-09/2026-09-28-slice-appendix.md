@@ -1,5 +1,12 @@
 # Stage 6 复核：切片与子代理原文附录
 
+<!-- cuexis-meta
+id: EVIDENCE-reviews.stage-06-review-2026-09.2026-09-28-slice-appendix
+status: evidence
+authority: none
+date: 2026-09-28
+-->
+
 状态：historical review snapshot
 快照日期：2026-09-28
 更新日期：2026-09-28

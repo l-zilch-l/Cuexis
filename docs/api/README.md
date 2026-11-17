@@ -8,6 +8,12 @@
 
 文档角色：公共 API 导航
 
+<!-- cuexis-meta
+id: INDEX-api
+status: active
+authority: index
+-->
+
 ## 先记住这五条
 
 1. 宿主播放入口只有 `cuexis::playback::PlaybackSession`。

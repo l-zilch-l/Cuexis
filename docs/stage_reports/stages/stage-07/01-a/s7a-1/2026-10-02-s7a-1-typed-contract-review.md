@@ -1,5 +1,12 @@
 # Stage 7A typed contract review（S7A-1 冻结顺序第 4 步）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.01-a.s7a-1.2026-10-02-s7a-1-typed-contract-review
+status: evidence
+authority: none
+date: 2026-10-02
+-->
+
 状态：completed
 
 快照日期：2026-10-02
@@ -7,13 +14,13 @@
 后续关闭证据：本报告 §7 的门禁结论与 §8 的逐项关闭证据；本报告不改变任何 V2 文档、Gameplay I
 文档或计划正文的状态与内容，只登记审查结论与未决点。
 
-上级文档：[Stage 7A 实施计划](../../../../../stage_plans/active/stage-07/plan.md) ·
+上级文档：[Stage 7A 实施计划](../../../../../stage_plans/completed/stage-07/plan.md) ·
 [S7A-0 owner 接受记录](../s7a-0/2026-10-02-s7a-0-acceptance.md)
 
 ## 1. 审查对象与依据
 
 **审查对象。** 冻结顺序的第 4 步"Stage 7A typed contract review"（计划 §1.1 的冻结顺序块第 4 行，
-[plan.md:86](../../../../../stage_plans/active/stage-07/plan.md)；执行时点表见
+[plan.md:86](../../../../../stage_plans/completed/stage-07/plan.md)；执行时点表见
 [S7A-0 接受记录 §4](../s7a-0/2026-10-02-s7a-0-acceptance.md) 第 78 行）。该步的目标是把计划 §S7A-1 的
 "必须冻结的对象"清单与其在 V2 文档中的实际落点逐项对齐，并预检模块/target 边界与头文件约束，
 **不是**新合同、不是字段定值。
@@ -22,7 +29,7 @@
 
 | 角色 | 文档 |
 | --- | --- |
-| 阶段计划（冻结顺序、S7A-1 范围与验证） | [plan.md](../../../../../stage_plans/active/stage-07/plan.md) §1.1（73-109）、§S7A-1（216-264）、§5.3（614）、204、878 |
+| 阶段计划（冻结顺序、S7A-1 范围与验证） | [plan.md](../../../../../stage_plans/completed/stage-07/plan.md) §1.1（73-109）、§S7A-1（216-264）、§5.3（614）、204、878 |
 | V2 决策 | [ADR 0044](../../../../../adr/0044-gameplay-v2-semantic-kernel.md) |
 | V2 字段与运行语义（唯一权威 Spec） | [GAMEPLAY_V2_SPEC.md](../../../../../formats/GAMEPLAY_V2_SPEC.md) |
 | V2 typed 边界（类型清单、所有权、单位、诊断） | [GAMEPLAY_V2_ABI.md](../../../../../api/GAMEPLAY_V2_ABI.md) |
@@ -39,8 +46,8 @@
 ## 2. 冻结对象逐项映射
 
 计划 §S7A-1 的"必须冻结的对象"在
-[plan.md:220-227](../../../../../stage_plans/active/stage-07/plan.md) 一行式列出，
-[plan.md:228](../../../../../stage_plans/active/stage-07/plan.md) 说明这五类细化值由实现批次与 ABI
+[plan.md:220-227](../../../../../stage_plans/completed/stage-07/plan.md) 一行式列出，
+[plan.md:228](../../../../../stage_plans/completed/stage-07/plan.md) 说明这五类细化值由实现批次与 ABI
 一起冻结。下表把该清单**逐项展开为 17 项**（不合并、不省略），并给出 V2 ABI 类型清单条目、
 V2 Spec 章节与处置。
 
@@ -89,7 +96,7 @@ V2 Spec 章节与处置。
    候选类型/字段逐字对应（`Tick observationTime`、`Action action`、`ChannelOrPosition position`、
    `Amount amount`、`SourceIdentity source`、`uint64_t sequence`、`GripPolicy grip`、
    `JudgementFact`、`JudgementResult`、`JudgementIdentity`）。而同一计划
-   [75-78 行](../../../../../stage_plans/active/stage-07/plan.md) 写明 Gameplay I 三份文档"仅作为历史
+   [75-78 行](../../../../../stage_plans/completed/stage-07/plan.md) 写明 Gameplay I 三份文档"仅作为历史
    候选基线和差异对照"，实施授权必须来自 V2；ADR 0044:15 同旨。即 S7A-1 的冻结清单文本仍是
    Gameplay I 词汇（见 F-01）。
 2. **`GripPolicy`（plan:226）** 已被 [ABI:120-121](../../../../../api/GAMEPLAY_V2_ABI.md) 与字段映射
@@ -142,7 +149,7 @@ V2 Spec 章节与处置。
 
 - 计划要求 S7A-1"选择模块位置和 target 方向"，使 Input/Judgement/Replay 不依赖 SDL、OpenGL、
   Audio、World、EnTT 或 JSON DOM，公共头只出现 Cuexis 类型与已批准的 `Result`
-  （[plan.md:253-254](../../../../../stage_plans/active/stage-07/plan.md)）。
+  （[plan.md:253-254](../../../../../stage_plans/completed/stage-07/plan.md)）。
 - 现状：`engine/gameplay/` 是 INTERFACE stub，只有 `tags.hpp` 与 `CMakeLists.txt`，无 `src/`；
   仓库不存在 `cuexis_judgement` / `cuexis_input`
   （[TARGETS:27](../../../../../proposals/gameplay-v2-acceptance/TARGETS_AND_DEPENDENCIES.md)）。
@@ -230,18 +237,18 @@ V2 Spec 章节与处置。
 
 | ID | 分类 | 位置 | 证据与说明 |
 | --- | --- | --- | --- |
-| F-01 | 缺陷 | [plan.md:220-227](../../../../../stage_plans/active/stage-07/plan.md) vs [GAMEPLAY_JUDGEMENT_ABI.md:27-68](../../../../../api/GAMEPLAY_JUDGEMENT_ABI.md) | S7A-1 的"必须冻结的对象"清单逐字来自 Gameplay I 候选类型/字段（`Tick observationTime`、`Action`、`ChannelOrPosition`、`Amount`、`SourceIdentity`、`sequence`、`GripPolicy grip`、`JudgementFact`、`JudgementResult`、`JudgementIdentity`），与本计划 75-78 行"Gameplay I 仅作历史基线"及 ADR 0044:15 冲突。这是 plan 文本与 V2 文档不一致，不是语义未决 |
-| F-02 | 缺陷 | [plan.md:226](../../../../../stage_plans/active/stage-07/plan.md) vs [ABI:120-121](../../../../../api/GAMEPLAY_V2_ABI.md)、[ABI:558](../../../../../api/GAMEPLAY_V2_ABI.md) | `GripPolicy` 已被 `PreparedGrace` + `GraceResolutionPolicy` + `ResourceClaimIntent` 取代（一拆三），plan 清单未反映 |
-| F-03 | 缺陷 | [plan.md:228](../../../../../stage_plans/active/stage-07/plan.md) vs [ABI:573](../../../../../api/GAMEPLAY_V2_ABI.md)、[ABI:424-440](../../../../../api/GAMEPLAY_V2_ABI.md) | plan:228 列出五类待冻结（命名/整数宽度/所有权/异常边界/序列化）；ABI 未决 #3（573）只列四类（命名/宽度/字段集/序列化），"仍待冻结"表（424-440）未登记所有权与异常边界——ABI 反而把它们写成了 7A 硬承诺（300-321、357-358、408-409）。两侧文本对"哪些仍需冻结"不一致 |
+| F-01 | 缺陷 | [plan.md:220-227](../../../../../stage_plans/completed/stage-07/plan.md) vs [GAMEPLAY_JUDGEMENT_ABI.md:27-68](../../../../../api/GAMEPLAY_JUDGEMENT_ABI.md) | S7A-1 的"必须冻结的对象"清单逐字来自 Gameplay I 候选类型/字段（`Tick observationTime`、`Action`、`ChannelOrPosition`、`Amount`、`SourceIdentity`、`sequence`、`GripPolicy grip`、`JudgementFact`、`JudgementResult`、`JudgementIdentity`），与本计划 75-78 行"Gameplay I 仅作历史基线"及 ADR 0044:15 冲突。这是 plan 文本与 V2 文档不一致，不是语义未决 |
+| F-02 | 缺陷 | [plan.md:226](../../../../../stage_plans/completed/stage-07/plan.md) vs [ABI:120-121](../../../../../api/GAMEPLAY_V2_ABI.md)、[ABI:558](../../../../../api/GAMEPLAY_V2_ABI.md) | `GripPolicy` 已被 `PreparedGrace` + `GraceResolutionPolicy` + `ResourceClaimIntent` 取代（一拆三），plan 清单未反映 |
+| F-03 | 缺陷 | [plan.md:228](../../../../../stage_plans/completed/stage-07/plan.md) vs [ABI:573](../../../../../api/GAMEPLAY_V2_ABI.md)、[ABI:424-440](../../../../../api/GAMEPLAY_V2_ABI.md) | plan:228 列出五类待冻结（命名/整数宽度/所有权/异常边界/序列化）；ABI 未决 #3（573）只列四类（命名/宽度/字段集/序列化），"仍待冻结"表（424-440）未登记所有权与异常边界——ABI 反而把它们写成了 7A 硬承诺（300-321、357-358、408-409）。两侧文本对"哪些仍需冻结"不一致 |
 | F-04 | 缺陷 | [ABI:552-562](../../../../../api/GAMEPLAY_V2_ABI.md) vs [GAMEPLAY_JUDGEMENT_ABI.md:34](../../../../../api/GAMEPLAY_JUDGEMENT_ABI.md) | ABI 的字段级映射表登记了 `observationTime`/`sequence`/`grip`/`measures`/`JudgementFact` 四字段/`eventSequence`/四分量，但**未登记 `InputEvent.source`（Gameplay I 的 `SourceIdentity`）的去向**；V2 侧对应字段为 `SourceClass`（ABI:87）与 `sourceClass`（CONTRACT_MATRIX:91）。替代关系不完整 |
 | F-05 | 缺陷 | [Spec:46](../../../../../formats/GAMEPLAY_V2_SPEC.md) vs Spec 章节体（20-596） | Spec §1.1 第 2 项声明拥有"运行语义：时间域、Tick 阶段、仲裁、资源、Fact Ledger、Ruleset 事务、表现桥接"，但文档没有任何对应章节（各 `##`/`###` 标题见 20、41、89、149、226、247、321、380、435、478、517、574、596）；最近覆盖为 §9.3/§9.4（494-510）与 §10（517-547）。Spec:584 还把"Tick 阶段对应"列为第 4 轮受影响部分，指向不存在的章节。ABI 的域 1/3/4/5/6 类型因此缺少 Spec 章节可对 |
 | F-06 | 缺陷 | [CMakeLists.txt:226-228](../../../../../../CMakeLists.txt)、[tests/media_import/CMakeLists.txt:10-15](../../../../../../tests/media_import/CMakeLists.txt)、[CMakePresets.json:56-61](../../../../../../CMakePresets.json) | D-8 成立：media-tools 配置下 `cuexis_media_import_tests` 激活但无 allowlist 登记（全仓零命中；对照 954-961 的 `cuexis_asset_publish_tests`）。按 [RULING_WORKSHEET:51、96](../../../../../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md) 并入 S7A-1 allowlist 批次 |
-| F-07 | 未裁定 | [RULING_WORKSHEET:180](../../../../../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md)、[plan.md:878](../../../../../stage_plans/active/stage-07/plan.md) | D-11 稳定 C ABI 阶段归属不一致（Stage 12 vs Stage 14）仍为第 7 轮登记项；本次只核实 plan:878 写 Stage 14 与该登记行的存在，未核实 AGENTS.md 侧行号 |
-| F-08 | 未裁定 | [plan.md:220-227](../../../../../stage_plans/active/stage-07/plan.md) vs [ABI:57-279](../../../../../api/GAMEPLAY_V2_ABI.md) | S7A-1 的冻结范围未界定：plan 列 17 项，ABI 类型清单 9 域（ABI 类型清单 9 域、126 条目；接受记录原称 144，已订正为 126）。是"只冻结这 17 项"还是"冻结 ABI 清单"，直接决定 S7A-1 的验收口径；RULING_WORKSHEET 的 7 轮均未登记该问题 |
+| F-07 | 未裁定 | [RULING_WORKSHEET:180](../../../../../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md)、[plan.md:878](../../../../../stage_plans/completed/stage-07/plan.md) | D-11 稳定 C ABI 阶段归属不一致（Stage 12 vs Stage 14）仍为第 7 轮登记项；本次只核实 plan:878 写 Stage 14 与该登记行的存在，未核实 AGENTS.md 侧行号 |
+| F-08 | 未裁定 | [plan.md:220-227](../../../../../stage_plans/completed/stage-07/plan.md) vs [ABI:57-279](../../../../../api/GAMEPLAY_V2_ABI.md) | S7A-1 的冻结范围未界定：plan 列 17 项，ABI 类型清单 9 域（ABI 类型清单 9 域、126 条目；接受记录原称 144，已订正为 126）。是"只冻结这 17 项"还是"冻结 ABI 清单"，直接决定 S7A-1 的验收口径；RULING_WORKSHEET 的 7 轮均未登记该问题 |
 | F-09 | 未裁定 | [ABI:82](../../../../../api/GAMEPLAY_V2_ABI.md)、[RULING_WORKSHEET:159](../../../../../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md)、Spec:586 | `InputDomain` 枚举集待冻结，其裁定项 P2-05 在第 6 轮（进入 S7A-7 前），而 plan:220-227 要求 S7A-1 冻结 `InputDomain`。需 owner 明确 S7A-1 是否只冻结类型存在与角色 |
 | F-10 | 未裁定 | [ABI:61、575](../../../../../api/GAMEPLAY_V2_ABI.md)、[RULING_WORKSHEET:104-105](../../../../../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md)、[CONTRACT_MATRIX:89-90](../../../../../proposals/gameplay-v2-acceptance/CONTRACT_MATRIX.md) | `Tick` 宽度与 `ChartTick`↔`ObservationTick` 转换边界/ tie rule 属第 2 轮（S7A-2 前），而 plan:220-227 要求 S7A-1 冻结 `Tick` / 时间区间。同 F-09 的时点冲突 |
-| F-11 | 未裁定 | [plan.md:84-85](../../../../../stage_plans/active/stage-07/plan.md)、[ADR 0044:3、158、163](../../../../../adr/0044-gameplay-v2-semantic-kernel.md)、[RULING_WORKSHEET:259](../../../../../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md)、[接受记录:88-94](../s7a-0/2026-10-02-s7a-0-acceptance.md)、Spec:3-8、578 | 冻结顺序第 2 步的"冻结"缺完成判据：三份 V2 文档仍是 `candidate` 且自我声明"冻结前只作为冻结目标、不作为实施授权"（ADR 0044:3；ABI:41-44），但第 3 步（标注 Gameplay I 为 `superseded`）已执行（接受记录:93），而 ADR 0044:158 把"标注必须晚于冻结"写成门禁；接受记录:94 又记"前置 2 与 3 已满足"。两种读法给出相反的 S7A-1 授权结论，需 owner 裁定 |
-| F-12 | 未裁定 | [TARGETS:182-189](../../../../../proposals/gameplay-v2-acceptance/TARGETS_AND_DEPENDENCIES.md)、[plan.md:253-254](../../../../../stage_plans/active/stage-07/plan.md) | 模块位置（方案 A/B）、是否拆 `cuexis_input`、判定类型是否进安装公共头（含是否触发 SDK API `0.7.1`）、是否进 `CUEXIS_STATIC_IMPLEMENTATION_TARGETS`、工具目录命名五项仍是待 owner 决策，未登记到任何裁定轮次 |
+| F-11 | 未裁定 | [plan.md:84-85](../../../../../stage_plans/completed/stage-07/plan.md)、[ADR 0044:3、158、163](../../../../../adr/0044-gameplay-v2-semantic-kernel.md)、[RULING_WORKSHEET:259](../../../../../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md)、[接受记录:88-94](../s7a-0/2026-10-02-s7a-0-acceptance.md)、Spec:3-8、578 | 冻结顺序第 2 步的"冻结"缺完成判据：三份 V2 文档仍是 `candidate` 且自我声明"冻结前只作为冻结目标、不作为实施授权"（ADR 0044:3；ABI:41-44），但第 3 步（标注 Gameplay I 为 `superseded`）已执行（接受记录:93），而 ADR 0044:158 把"标注必须晚于冻结"写成门禁；接受记录:94 又记"前置 2 与 3 已满足"。两种读法给出相反的 S7A-1 授权结论，需 owner 裁定 |
+| F-12 | 未裁定 | [TARGETS:182-189](../../../../../proposals/gameplay-v2-acceptance/TARGETS_AND_DEPENDENCIES.md)、[plan.md:253-254](../../../../../stage_plans/completed/stage-07/plan.md) | 模块位置（方案 A/B）、是否拆 `cuexis_input`、判定类型是否进安装公共头（含是否触发 SDK API `0.7.1`）、是否进 `CUEXIS_STATIC_IMPLEMENTATION_TARGETS`、工具目录命名五项仍是待 owner 决策，未登记到任何裁定轮次 |
 | F-13 | 无问题 | [ABI:543-550](../../../../../api/GAMEPLAY_V2_ABI.md)、[ABI:552-562](../../../../../api/GAMEPLAY_V2_ABI.md) | ABI §与 Gameplay I ABI 的关系中，§1-§6 处置行与字段级映射行（除 F-04 缺口）逐条可核实；`GripPolicy`、`JudgementFact` 四字段、`eventSequence`、四分量 identity 的替代方向明确 |
 | F-14 | 无问题 | [CONTRACT_MATRIX:239-252](../../../../../proposals/gameplay-v2-acceptance/CONTRACT_MATRIX.md)、[RULING_WORKSHEET:33、88-92、259](../../../../../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md) | S7A-1 前必须裁定的 5 项 `open`（CM-V06/V07/V13/I06/X06）已由第 1 轮全部裁定，语义前置无遗留；第 2-7 轮登记仍为"待填"（RULING_WORKSHEET:260-265） |
 | F-15 | 无问题 | [VerifyArchitecture.cmake:245-273、288-324](../../../../../../cmake/VerifyArchitecture.cmake) | 两道门禁本身有效：target 集合相等校验与直接依赖子集校验均会 `FATAL_ERROR`；D-8 属"某 target 缺登记"，不是门禁失效 |
@@ -307,7 +314,7 @@ Markdown 链接两种写法（链接目标一律不变，只有标签内的行�
 | --- | --- | --- |
 | F-01 | **已修复** | plan §S7A-1 的冻结对象清单已改为以 V2 ABI 类型清单为权威来源，并逐项给出 V2 候选名 |
 | F-02 | **已修复** | 同处已用 `PreparedGrace` / `GraceResolutionPolicy` / `ResourceClaimIntent` 取代 `GripPolicy` |
-| F-03 | **已修复** | ABI"仍待冻结"表已补"所有权与生命周期、异常边界"一行，并注明 [plan.md §S7A-1](../../../../../stage_plans/active/stage-07/plan.md) 列五类 |
+| F-03 | **已修复** | ABI"仍待冻结"表已补"所有权与生命周期、异常边界"一行，并注明 [plan.md §S7A-1](../../../../../stage_plans/completed/stage-07/plan.md) 列五类 |
 | F-04 | **未闭合** | ABI 字段级映射仍缺 `InputEvent.source` 的去向；需要一个归属判断，留待第 2 轮输入域合同 |
 | F-05 | **已修复** | Spec §1.1 第 2 项已标明七项运行语义尚未写成章节并按轮次归属；§11 第 4 轮行改为指向该项 |
 | F-06（=D-8） | **登记为批次内项** | 按 S1-04 并入 S7A-1 allowlist 实施与退出验收，不提前落地 |
@@ -327,7 +334,7 @@ S1-04 裁定）。**F-04 的前提没有变化**，仍是开放缺陷。
 
 ## 10. 相关索引
 
-- [Stage 7A 实施计划](../../../../../stage_plans/active/stage-07/plan.md)：冻结顺序、S7A-1 范围与验证
+- [Stage 7A 实施计划](../../../../../stage_plans/completed/stage-07/plan.md)：冻结顺序、S7A-1 范围与验证
 - [S7A-0 owner 接受记录](../s7a-0/2026-10-02-s7a-0-acceptance.md)：本步的前置与执行时点表
 - [S7A-0 执行基线与合同表征](../s7a-0/2026-10-02-s7a-0-baseline.md)：同批次基线证据
 - [ADR 0044：Gameplay V2 语义内核与冻结边界](../../../../../adr/0044-gameplay-v2-semantic-kernel.md)

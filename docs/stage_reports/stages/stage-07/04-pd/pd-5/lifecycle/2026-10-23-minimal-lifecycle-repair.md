@@ -1,5 +1,12 @@
 # PD-5 现有生命周期最小修复与有界关闭验证
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.lifecycle.2026-10-23-minimal-lifecycle-repair
+status: evidence
+authority: none
+date: 2026-10-23
+-->
+
 状态：local regression passed / original 40k shutdown unresolved
 
 日期：2026-10-23。起点为隔离分支 `codex/pd5-gameplay-40k-admission` 的干净

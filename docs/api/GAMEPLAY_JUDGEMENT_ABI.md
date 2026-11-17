@@ -2,6 +2,12 @@
 
 状态：superseded as typed preview input；retained as design-input history。Gameplay I 的候选 typed 输入，未实施，从未冻结为稳定 C ABI；typed 内部 / preview 边界现为 [GAMEPLAY_V2_ABI.md](GAMEPLAY_V2_ABI.md)，其语义权威为 [GAMEPLAY_V2_SPEC.md](../formats/GAMEPLAY_V2_SPEC.md)、决策依据为 [ADR 0044](../adr/0044-gameplay-v2-semantic-kernel.md)。本文件保留为历史候选输入与字段级差异对照，不删除、不再更新结论。
 
+<!-- cuexis-meta
+id: API-GAMEPLAY_JUDGEMENT_ABI
+status: historical
+authority: owns
+-->
+
 日期：2026-10-01
 
 本文定义 Stage 7A 可实现的 C++ typed preview 边界，不改变当前 SDK API `0.7.1`，也不宣称

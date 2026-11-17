@@ -8,6 +8,12 @@
 
 文档角色：公共 API 参考
 
+<!-- cuexis-meta
+id: API-frames-digests-and-timelines
+status: active
+authority: owns
+-->
+
 权威头文件：[playback_session.hpp](../../engine/playback/include/cuexis/playback/playback_session.hpp)、
 [frame_digest.hpp](../../engine/playback/include/cuexis/playback/frame_digest.hpp)、
 [runtime_timeline.hpp](../../engine/playback/include/cuexis/playback/runtime_timeline.hpp)
@@ -53,12 +59,12 @@ snapshot 是独立值，不包含 entity、World、GLM 或 GPU handle。
 
 ## `FrameDigest` 合同
 
-`computeFrameDigest` 以 `RuntimeFrame`、`FrameSnapshot` 和 digest version 为输入。FrameDigest v1-v3、
+`computeFrameDigest` 以 `RuntimeFrame` 与 `FrameSnapshot` 为输入，返回结果里的 `algorithmVersion` 标明所用 digest version；公开 API 不接受版本入参（可指定版本的入口只在内部实现，不安装）。FrameDigest v1-v3、
 canonical bytes/order 和合法输入结果是兼容合同。
 
 - 新实现不得改变已有 digest version 的结果。
 - digest 用于确定性验证，不替代 snapshot 本身。
-- 跨 source parity 应同时比较 semantic identity、关键帧 snapshot 和指定版本 digest。
+- 跨 source parity 应同时比较 semantic identity、关键帧 snapshot 和 digest；需要指定 digest version 时由内部实现与测试承担，公开 API 不暴露版本入参。
 
 ## 时间线速查
 

@@ -1,5 +1,11 @@
 # ADR 0005：使用 EnTT 管理运行时 Entity
 
+<!-- cuexis-meta
+id: ADR-0005
+status: accepted
+authority: owns
+-->
+
 日期：2026-07-17
 
 状态：已接受

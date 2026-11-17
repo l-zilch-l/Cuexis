@@ -1,5 +1,12 @@
 # R2 退出评审报告与证据汇总
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r2.2026-10-26-r2-exit-report
+status: evidence
+authority: none
+date: 2026-10-26
+-->
+
 状态：historical review snapshot / superseded status classification。
 
 本报告形成时将历史限制统称为退出缺口。后续[技术收尾复核与退出范围](2026-10-26-r2-technical-closure-review.md)
@@ -8,7 +15,7 @@
 
 快照日期：2026-10-26（Asia/Shanghai）。本报告依据用户“编写 R2 退出报告并整理证据和文档”的请求编制，
 该请求不记录为 R2 退出接受。当前任务状态以 [CURRENT_STATUS](../../../../../CURRENT_STATUS.md) 为准；
-范围和门槛以[整改计划 §7、§9、§12](../../../../../stage_plans/active/stage-07/05-rpa-new/plan.md)为准。
+范围和门槛以[整改计划 §7、§9、§12](../../../../../stage_plans/completed/stage-07/05-rpa-new/plan.md)为准。
 
 ## 1. 提交结论
 

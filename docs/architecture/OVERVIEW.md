@@ -4,6 +4,12 @@
 
 更新日期：2026-10-28
 
+<!-- cuexis-meta
+id: ARCH-OVERVIEW
+status: active
+authority: owns
+-->
+
 依据：[ADR 0027](../adr/0027-playback-sdk-product-boundary.md)
 
 ## 产品结构

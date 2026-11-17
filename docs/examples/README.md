@@ -1,5 +1,11 @@
 # Example Index
 
+<!-- cuexis-meta
+id: EXAMPLES-README
+status: candidate
+authority: none
+-->
+
 状态：现行示例索引
 
 更新日期：2026-08-10

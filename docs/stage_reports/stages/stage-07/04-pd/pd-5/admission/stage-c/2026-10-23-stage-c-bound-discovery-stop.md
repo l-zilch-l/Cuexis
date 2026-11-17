@@ -1,5 +1,12 @@
 # PD-5 bound Stage C discovery stop
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.admission.stage-c.2026-10-23-stage-c-bound-discovery-stop
+status: evidence
+authority: none
+date: 2026-10-23
+-->
+
 Status: binding and new immutable inventory passed / discovery CLI failed /
 native test not started / low and high not run / Stage C not passed.
 

@@ -3,6 +3,13 @@
 状态：现行 v5 候选作者指南；不是正式发行 Schema 或实现完成声明。
 
 更新日期：2026-10-14。按 owner 要求由原 v4 指南更新；
+
+<!-- cuexis-meta
+id: GUIDE-CHART_V5_AUTHORING
+status: candidate
+authority: owns
+-->
+
 [v4 原文](../archive/CHART_V4_AUTHORING_2026-09-02.md)保留供旧格式使用。
 
 本指南说明如何把轨道、文字、判定线和音符写进内容实体，使用包内资源及明确的编译入口。

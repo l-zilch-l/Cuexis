@@ -1,5 +1,12 @@
 # PD-5 阶段 B：R4 metadata 拒绝顺序修复
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.admission.stage-b.2026-10-22-gameplay-admission-r4-metadata-order
+status: evidence
+authority: none
+date: 2026-10-22
+-->
+
 状态：本轮实施与本地验证完成，交回 owner 核验；阶段 C 未开始。
 
 R4 原先在 shared prepare 之后才比较 metadata，后段错误会遮住 metadata 错误。

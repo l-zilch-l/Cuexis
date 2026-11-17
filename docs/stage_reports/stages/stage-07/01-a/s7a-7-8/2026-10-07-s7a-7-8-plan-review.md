@@ -1,12 +1,19 @@
 # S7A-7/8 Plan and Contract Review
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.01-a.s7a-7-8.2026-10-07-s7a-7-8-plan-review
+status: evidence
+authority: none
+date: 2026-10-07
+-->
+
 状态：reviewed planning snapshot；引用已修正，消费者合同待首用冻结
 
 审查日期：2026-10-07
 
 ## 范围与证据口径
 
-审查 [Stage 7A计划](../../../../../stage_plans/active/stage-07/01-a/plan.md) 的S7A-7/8、§3.1/§3.4，
+审查 [Stage 7A计划](../../../../../stage_plans/completed/stage-07/01-a/plan.md) 的S7A-7/8、§3.1/§3.4，
 总计划、V2 Spec/ABI与execution补充、Playback/Presentation/Animation合同、Entry/Capsule格式、
 版本政策、四项交接报告及桌面接手。实际分支stage-7，HEAD为
 `55fc8e6920e7ddb4b34a56bd0b9c27d07d60b833`；保留未提交的规划、分册与索引修改。

@@ -1,5 +1,12 @@
 # R3 第二批正式门测量（2026-11-01）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-r3-second-gate-batch
+status: evidence
+authority: none
+date: 2026-11-01
+-->
+
 状态：test-only 测量；不改任何判据、范围或阈值。它**不是** R3 技术接受、设备验证或生产接受。
 
 日期：2026-11-01　源码：`6256af8b7d349b14a6d5b006d7632711152e96fa`
