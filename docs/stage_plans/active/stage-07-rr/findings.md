@@ -36,7 +36,7 @@ authority: owns
 
 | ID | 位置 | 问题 | 证据状态 |
 | --- | --- | --- | --- |
-| RR-F001 | `docs/CURRENT_STATUS.md:5`、`:80` | 自称日期版本 `26.11.14-1`，实际 `cmake/CuexisVersion.cmake:1-4` 与 `vcpkg.json:3` 均为 `26.11.16-1`（2026-11-16 提升后未回写） | 已核实 |
+| RR-F001 | `docs/CURRENT_STATUS.md:5`、`:80` | 自称日期版本 `26.11.14-1`（历史记录），实际 `cmake/CuexisVersion.cmake:1-4` 与 `vcpkg.json:3` 均为 `26.11.16-1`（2026-11-16 提升后未回写） | 已核实 |
 | RR-F002 | `docs/CURRENT_STATUS.md:26` | 自称"执行分支 `codex/r4-closeout`；唯一集成 PR 为 #44，Ready for review"；实际分支 `stage-7.5`，PR #44（`564e0d90`，2026-11-14）与 #45（`aac83e5e`，2026-11-16）均已合并 | 已核实 |
 
 两条都与同文件 `:22` 的"当前为 Stage 7.5"自相矛盾，属"唯一状态权威失效"，因此列 P0。
@@ -342,7 +342,7 @@ D-08 的计数、DOC-02 的表格行数。
 | A-04 | 部分成立 | 81 个公共方法正确；`PlaybackSession::State` 是 44 个字段（25 生产 + 19 候选），不是“30 多个” |
 | A-05 | 部分成立 | 计数精确（717 篇 127,323 行；代码 108,626 行）；“维护文档时间超过写代码”无仓库证据，属判断 |
 | A-06 | 成立 | observer/ETW 平台限制、24 个 preset、hosted/本地差异均有据 |
-| A-07 | 部分成立 | 版本门禁对全部 PR 生效、无 paths 过滤；但引用版本已过期，当前为 `26.11.16-1` |
+| A-07 | 部分成立 | 版本门禁对全部 PR 生效、无 paths 过滤；但引用版本已过期，当前为 `26.11.16-1`（历史记录） |
 | A-08 | 部分成立 | `OVERVIEW.md`（136 行）已是现成总览，“缺架构快照”过强；缺的是按阶段刷新（更新日期 2026-10-28） |
 | A-09 | 不成立（已处置） | `MODULE_BOUNDARIES.md:18` 已有约束；ADR 0027 本轮已补 Judgement 边界句；`judgement/CMakeLists.txt:63-66` 仅链 core |
 | A-10 | 无法核实 | 数字均可核（10.8 万/12.7 万/24 preset/4 workflow）；“单人产能配平台级验收”属人力判断，仓库无数据 |
@@ -459,5 +459,5 @@ R4 / PD-5 套件的相对路径已进入验收哈希账本（`binding.py:73`、�
 
 | ID | 位置 | 事实 | 结论 |
 | --- | --- | --- | --- |
-| RR-F521 | `engine/particles/`（仅 `CMakeLists.txt:1-3`） | 空 INTERFACE 库，`engine/CMakeLists.txt` 从不 `add_subdirectory` | 已核实（清理候选） |
-| RR-F522 | `engine/debug/`（87 行） | 唯一链接方是 `cuexis_debug_tests`；`DebugDraw` 生产 0 引用 | 已核实（清理候选） |
+| RR-F521 | `engine/particles/`（仅 `CMakeLists.txt:1-3`） | 空 INTERFACE 库，`engine/CMakeLists.txt` 从不 `add_subdirectory` | 已修（2026-11-17 删除目录；无构建引用） |
+| RR-F522 | `engine/debug/`（87 行） | 唯一链接方是 `cuexis_debug_tests`；`DebugDraw` 生产 0 引用 | 已处置（保留并标 test-only；删除留待 RR-3） |

@@ -30,7 +30,8 @@ TOP_LEVEL = ("CURRENT_STATUS.md", "PROJECT_GUIDE.md", "ROADMAP.md", "DOCUMENTATI
 
 BUILD_LITERAL = re.compile(r"\b\d{2}\.\d{2}\.\d{2}-\d+\b")
 SDK_LITERAL = re.compile(r"SDK API\s*`?(\d+\.\d+\.\d+)`?")
-HISTORICAL_MARKERS = ("历史", "归档", "historical", "已被取代", "旧", "基线", "baseline", "此前", "不外推", "不作为当前")
+HISTORICAL_MARKERS = ("历史", "归档", "historical", "已被取代", "旧", "基线", "baseline", "此前", "不外推", "不作为当前", "示例")
+FACTS_SKIP_STATUSES = {"historical", "evidence", "completed", "superseded", "archived", "deferred"}
 
 
 def version_info() -> tuple[str, str]:
@@ -81,14 +82,33 @@ def candidate_files() -> list[Path]:
     return files
 
 
+def document_status(path: Path) -> str:
+    """Read the machine status from the cuexis-meta block, if present."""
+    head = "\n".join(path.read_text(encoding="utf-8").splitlines()[:40])
+    match = re.search(r"(?m)^status:\s*([A-Za-z_-]+)\s*$", head)
+    return match.group(1).lower() if match else ""
+
+
 def scan(files: list[Path], sdk: str, build: str) -> list[tuple[str, int, str, str]]:
     findings: list[tuple[str, int, str, str]] = []
     for path in files:
         relative = path.relative_to(ROOT).as_posix()
         if relative.startswith("docs/stage_reports/") or relative.startswith("docs/archive/"):
             continue
+        if relative.startswith("docs/adr/"):
+            continue
+        if document_status(path) in FACTS_SKIP_STATUSES:
+            continue
+        in_fence = False
         for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+            if line.strip().startswith("```"):
+                in_fence = not in_fence
+                continue
+            if in_fence:
+                continue
             lowered = line.lower()
+            if "cuexis-facts-exempt" in line:
+                continue
             if any(marker in lowered or marker in line for marker in HISTORICAL_MARKERS):
                 continue
             for literal in BUILD_LITERAL.findall(line):
@@ -145,6 +165,19 @@ def player_options_are_current() -> bool:
     return module.TARGET.read_text(encoding="utf-8") == expected
 
 
+def frame_digest_is_current() -> bool:
+    """Keep the documented FrameDigest version range aligned with the public header default."""
+    header = ROOT / "engine" / "playback" / "include" / "cuexis" / "playback" / "frame_digest.hpp"
+    page = DOCS / "api" / "frames-digests-and-timelines.md"
+    if not header.is_file() or not page.is_file():
+        return False
+    match = re.search(r"algorithmVersion\{(\d+)\}", header.read_text(encoding="utf-8"))
+    if match is None:
+        return False
+    text = page.read_text(encoding="utf-8")
+    return re.search(rf"FrameDigest v1-v{int(match.group(1))}\b", text) is not None
+
+
 def handoff_issues() -> tuple[list[str], list[str]]:
     """Validate docs/HANDOFF.md structure and report staleness as a warning."""
     if not HANDOFF.is_file():
@@ -193,6 +226,11 @@ def main(argv: list[str]) -> int:
         failures.append(
             "docs/guides/PLAYER_OPTIONS.md is stale or the option table is out of sync; "
             "run python -B tools/verification/gen_player_options.py"
+        )
+    if not frame_digest_is_current():
+        failures.append(
+            "docs/api/frames-digests-and-timelines.md does not match the FrameDigest version in "
+            "engine/playback/include/cuexis/playback/frame_digest.hpp"
         )
     handoff_errors, handoff_warnings = handoff_issues()
     failures.extend(handoff_errors)

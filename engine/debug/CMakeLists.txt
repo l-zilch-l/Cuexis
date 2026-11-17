@@ -1,3 +1,4 @@
+# Test-only: linked exclusively by cuexis_debug_tests; no production target consumes it.
 add_library(cuexis_debug STATIC)
 add_library(cuexis::debug ALIAS cuexis_debug)
 

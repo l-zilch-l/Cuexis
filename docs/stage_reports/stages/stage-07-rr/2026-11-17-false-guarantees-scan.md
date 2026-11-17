@@ -4,6 +4,12 @@
 
 更新日期：2026-11-17
 
+<!-- cuexis-meta
+id: REPORT-FALSE-GUARANTEES-2026-11-17
+status: evidence
+authority: none
+-->
+
 ## 结论
 
 7 个无上下文子代理按模块扫描了「注释/合同承诺」与「代码实际行为」的差距，合并去重后得到

@@ -99,6 +99,9 @@ cuexis_player_dist
 ```
 <!-- CUEXIS_ACTIVE_TARGETS_END -->
 
+`cuexis_debug` 只被 `cuexis_debug_tests` 链接，是测试专用库，不是生产依赖。
+`cuexis_gameplay_assemble` 只在 candidate 构建中存在（`if(TARGET ...)`），因此不出现在默认 active 列表。
+
 ## C++ toolchain and Catch2 ABI
 
 All C++ dependencies, including Catch2, must be built by the same toolchain as Cuexis. The

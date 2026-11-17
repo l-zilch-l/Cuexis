@@ -82,7 +82,7 @@ SHA `4371fdcf04f4f89bfddf070cbb15e4c903810a53` 的 hosted Linux/MSVC/MinGW 验�
 2026-08-24 明确接受报告，CFU-G 与 Stage Chart Format Update 已关闭。Stage 4 已完成；
 最终 SHA `3df92747e575e97b3606aa4a2030a04643c46473` 的 hosted Linux/MSVC/MinGW 已于
 2026-08-27 全部通过，项目所有者已接受完成报告。Stage 5 的 S5-A 合同已冻结；S5-B 已接线可选
-shader 工具；S5-C 已完成公开 Presentation 类型、kind 4/5 解析与 SDK API `0.7.0`；S5-D 已完成
+shader 工具；S5-C 已完成公开 Presentation 类型、kind 4/5 解析与 SDK API `0.7.0`（历史）；S5-D 已完成
 可选 GLSL 450 编译与 reflection；S5-E 已完成 profile 与 presentation capability 预检；S5-F 已完成
 `CXSCCH01` 缓存；S5-G 已完成 OpenGL/Player/Validation Sink 消费与默认 shader/parameterized
 capability；S5-H 已完成关闭门禁。Stage 5 已于 2026-08-28 通过 PR #20 合并至 `master`；其后

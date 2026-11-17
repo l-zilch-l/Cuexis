@@ -15,11 +15,14 @@
 | `tools/check_docs.py` | 包装 `verification/check_docs.py`；预推送 + CI `documentation-contracts` |
 | `tools/verification/check_docs.py` | 文档总门禁（链接/H1/可达性/状态合同） |
 | `tools/verification/check_docs_facts.py` | 预推送：生成物新鲜度与版本漂移；CI `documentation-contracts` 同步运行 |
-| `tools/verification/gen_docs_{map,limits,codes}.py` / `gen_player_options.py` | 不是独立门禁；由 `check_docs_facts.py` 导入校验，没有外部 `--check` 调用 |
-| `tools/check_version_gate.py` / `check_version_gate_tests.py` | CI `version-gate`；CTest `cuexis_contract_version_gate` |
+| `tools/verification/gen_docs_map.py` / `tools/verification/gen_docs_limits.py` / `tools/verification/gen_docs_codes.py` / `tools/verification/gen_player_options.py` | 不是独立门禁；由 `check_docs_facts.py` 导入校验，没有外部 `--check` 调用 |
+| `tools/check_version_gate.py` / `tools/check_version_gate_tests.py` | CI `version-gate`；CTest `cuexis_contract_version_gate` |
 | `tools/update_version.py` | CI Linux 与预推送的 `--check` |
 | `tools/check_pre_push.ps1` | 预推送编排入口（Quick/Linux/Full） |
-| `tools/ci/gnu_asset_mirror.py` / `gnu_asset_mirror_tests.py` | CI Linux |
+| `tools/ci/gnu_asset_mirror.py` / `tools/ci/gnu_asset_mirror_tests.py` | CI Linux |
+| `tools/verification/check_docs_status_contract_tests.py` / `tools/verification/check_docs_target_contract_tests.py` / `tools/verification/check_docs_section_contract_tests.py` | 预推送 Quick：文档合同回归测试 |
+| `tools/verification/check_header_self_containment.py` | 安装头自包含检查（CMake/预推送调用方见 BUILDING） |
+| `tools/verification/run_rpa_acceptance_matrix.py` / `tools/run_rpa_acceptance_matrix.py` | RPA 验收矩阵复现（人工） |
 | `tools/verification/check_pe_export_gate.py` | CTest `cuexis_pe_export_gate_negatives` |
 | `tools/verification/check_gameplay_assembler_tests.py` | CTest `cuexis_gameplay_assembler_cli`（candidate） |
 | `tools/verification/check_gameplay_diagnostic_formalization.py` | CTest `cuexis_gameplay_diagnostic_residuals/negatives` |
@@ -40,6 +43,16 @@ cuexis_asset_importer                    VerifyAssetImporter.cmake（shader-tool
 
 按用途放在 `verification/`、`cxc/`、`chart/`、`gameplay/`、`practice/`、`shader/`、`media/`、
 `research/` 下。它们可以依赖仓库内的构建产物，但不得被 CI 依赖。
+
+常用维护者入口：
+
+| 脚本 | 用途 |
+| --- | --- |
+| `tools/prepare_sdk_approval.ps1` / `tools/prepare_sdk_approval.cmd` | 生成并发布 SDK owner 批准评论（只在需要 SDK API 变更时） |
+| `tools/check_sdk_approval_assistant_tests.ps1` | 批准助手回归测试 |
+| `tools/measure_playback_method.py` | 播放方法耗时测量（人工） |
+| `tools/gameplay/gameplay_assembler/generate_author_schema.py` | 生成 gameplay author schema；带 `--check` |
+| `tools/practice/` | v5 练习 fixture 与设备验收包（见 `practice/README.md`） |
 
 ## 3. 冻结的证据工具（只用于复现历史报告）
 
@@ -69,4 +82,5 @@ OFF 的 `CUEXIS_ENABLE_CHART_V5_CANDIDATE` 包住、CI 与预推送都不打开�
 - 不再使用的脚本先移到 `tools/archive/` 并保留原相对路径，不要直接删除；删除需要 owner 明确同意。
   但第 3 节的哈希绑定套件例外——它们只原位冻结，不搬家。
 - 文档链接到工具时用仓库相对路径，移动脚本必须同步更新引用（`check_docs.py` 会检查 Markdown 链接）。
-- 本表由人维护；`check_docs.py` 不校验它，表漂移不会被门禁发现（RR-F515）。
+- 本表由 `tools/verification/check_tools_inventory.py` 在预推送校验：`tools/` 下每个脚本都必须在
+  本表登记，或被第 3 节/`practice/`/`archive/` 的目录说明覆盖；登记项指向不存在的文件也会失败。

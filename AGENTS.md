@@ -5,7 +5,7 @@
 
 - 当前阶段：**Stage 7-RR**；当前工作项：[stage_plans/active/stage-07-rr/plan.md](docs/stage_plans/active/stage-07-rr/plan.md)；当前登记册：[stage_plans/active/stage-07-rr/findings.md](docs/stage_plans/active/stage-07-rr/findings.md)；进度以 [CURRENT_STATUS](docs/CURRENT_STATUS.md) 为准。
 - 交接：[docs/HANDOFF.md](docs/HANDOFF.md)（当前任务、下一步、阻塞与验证状态）。
-- SDK API：`0.9.1`；日期构建：`26.11.17-1`；权威定义在 `cmake/CuexisVersion.cmake`。
+- SDK API：`0.9.1`；日期构建：`26.11.18-1`；权威定义在 `cmake/CuexisVersion.cmake`。
 - 文档入口：[docs/MAP.md](docs/MAP.md)（先读它，再按任务打开 1–3 篇）。
 - 权威规则：事实以代码/schema/CMake 为准；`docs/stage_reports/**` 与 `docs/archive/**` 是证据，不是权威；`candidate`/`future`/`deferred` 不代表已实现。
 - 本文件正文只写路由与硬约束，不复述事实；冲突时以上块、`docs/MAP.md` 与 `docs/CURRENT_STATUS.md` 为准。

@@ -23,33 +23,30 @@ authority: owns
 
 ## 当前任务
 
-模板与计划体系已收口：详细 plan 模板用于 active 阶段，`stage_plans/future/**` 只用提纲模板；
-Stage 7-RR 的计划已按详细模板重写。当前没有进行中的实现批次，下一步回到文档遗留。
+D1/D3–D9 已按 owner 决策落地：版本漂移归零、证据 meta 检查、particles 清理、tools 清单校验、
+测试迁移与 RR-3 路线登记。Chart 表示与转换点页由子代理并行编写，完成后并入本批。
 
 ## 下一步
 
-1. 继续文档遗留：53 篇证据缺 meta、35 条版本漂移、Chart 表示与转换点表。
-2. 等 CI 结果；Version Gate 已在 `b34e6eb3` 通过。
-3. 开工新的代码/架构批次前，先更新本页的当前任务与下一步。
+1. 合并 Chart 表示页并提交到 PR #46。
+2. 等 owner 决定开始“架构精简决策表”（只读盘点版）。
+3. 等 CI 结果；Version Gate 需在当天构建上通过。
 
 ## 阻塞与待决
 
-- RR-F510（Judgement seek 无 active 权威入口）：需要 owner 决策。
-- 版本漂移是否加“历史豁免”标记：需要 owner 决策。
-- `engine/particles` 空壳、`cuexis_debug`（仅测试）是否清理：需要 owner 决策。
+- 无阻塞；架构精简方向等 owner 确认后启动。
 
 ## 验证状态
 
-- `check_docs.py`：0（737 篇）。
-- `check_docs_facts.py`：0；交接页阴性对照（删掉“下一步”章节）会失败。
-- `gen_docs_map.py --check`：0；`git diff --check`：0。
+- `check_docs.py`：0（738 篇）；`check_docs_facts.py`：0（版本漂移 0）。
+- `gen_docs_map.py --check`：0；`check_tools_inventory.py`：0（30 scripts）。
+- `test_measurement_seek.py` 迁移后 6 tests OK；`git diff --check`：0。
 
 ## 最近改动
 
 - 新增：`docs/HANDOFF.md`、`docs/templates/`、`.github/pull_request_template.md`
-- `docs/templates/plan.md`：扩展为项目起始的详细规划协议（规划问题清单、任务看板、入场门禁、
-  验收矩阵、回滚/变更控制），对齐现有 plan 的实际写法
-- 新增 `docs/templates/plan-outline.md`：未来阶段只写提纲，启动时再细化
-- `docs/stage_plans/active/stage-07-rr/plan.md`：按详细模板重写（218 行，RR-0–RR-6 语义不变）
-- 修改：`tools/verification/check_docs.py`、`tools/verification/check_docs_facts.py`、
-  `tools/verification/gen_docs_map.py`、`AGENTS.md`、`docs/CURRENT_STATUS.md`
+- 计划体系：active 用详细模板、future 用提纲模板；Stage 7-RR 计划重写；7 份 future plan 提纲化
+- 文档收尾：版本漂移策略 D（按状态限定 + 示例/引用块豁免）、证据 meta 检查、seek 按 candidate 收口
+- 工具：`check_tools_inventory.py`、`practice/README.md`、`test_measurement_seek.py` 迁到 playback_performance
+- 清理：删除 `engine/particles`；`cuexis_debug` 标 test-only
+- 版本：构建身份推进到 `26.11.18-1`

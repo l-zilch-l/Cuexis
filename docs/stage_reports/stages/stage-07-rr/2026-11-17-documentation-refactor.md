@@ -4,6 +4,12 @@
 
 更新日期：2026-11-17
 
+<!-- cuexis-meta
+id: REPORT-DOCUMENTATION-REFACTOR-2026-11-17
+status: evidence
+authority: none
+-->
+
 ## 结论
 
 在不改任何产品代码、不移动证据目录的前提下，完成了文档治理的机械层：

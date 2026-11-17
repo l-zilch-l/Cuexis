@@ -50,7 +50,7 @@ Stage 7（受限退出） -> Stage 7-RR（本阶段） -> Stage 7.5（Gameplay E
 | --- | --- | --- | --- |
 | 代码/合同复核基线 `aac83e5e`（2026-11-16） | 已固定 | [CURRENT_STATUS](../../../CURRENT_STATUS.md)、[架构研究](../../../stage_reports/stages/stage-07-rr/2026-11-17-architecture-research.md) | 代码/schema/CMake 变动后重跑证据命令；旧报告标为历史，不把旧结论外推到新基线 |
 | SDK API `0.9.1` | 已固定 | [CuexisVersion.cmake](../../../../cmake/CuexisVersion.cmake) | 停止安装面/ABI 批次，先取得版本决定 |
-| 日期构建 `26.11.17-1` | 当前权威 | 同上；旧报告中的 `26.11.16-1` 是历史写作时点 | 以版本文件为准，不回写旧报告 |
+| 日期构建 `26.11.18-1` | 当前权威 | 同上；早期报告中的构建字面量是历史写作时点 | 以版本文件为准，不回写旧报告 |
 | Stage 7 受限退出交接 | 已接受 | [R4 交接](../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-14-limited-exit-and-defect-handoff.md) | 不重开判定；受影响批次改为只登记、不改写 |
 | Stage 7.5 入场前置 | 待本阶段接受 | [Stage 7.5 计划](../stage-07-5/plan.md) | 本阶段未取得 owner 接受前，7.5 不开始产品实施 |
 | 文档门禁与证据 | 已接入 | [BUILDING](../../../guides/BUILDING.md)、[发现登记册](findings.md)、[报告索引](../../../stage_reports/stages/stage-07-rr/README.md) | 门禁失败即停该批；条目未复核或报告缺失时，不据此删代码、不改合同 |
@@ -68,7 +68,7 @@ Stage 7（受限退出） -> Stage 7-RR（本阶段） -> Stage 7.5（Gameplay E
 - RR-0 已完成：8 份专题结论见[研究](../../../stage_reports/stages/stage-07-rr/2026-11-17-architecture-research.md)与[证据](../../../stage_reports/stages/stage-07-rr/2026-11-17-architecture-evidence.md)，6 个减重选项 R1–R6 与建议路线已登记；选项未被 owner 选定，RR-3 未开始。
 - RR-1/RR-5 的文档治理机械层已完成（[报告](../../../stage_reports/stages/stage-07-rr/2026-11-17-documentation-refactor.md)）：170 篇合同/计划补元数据、生成 MAP/AGENTS 块、424 篇证据报告加统一头、计划状态纠偏、7 处假断言订正、`check_docs_facts.py` 接入；合同语义重写与 R3/R4/R5 相关正文仍未开始。
 - 假保证扫描与登记册全量核查已完成：前者 48 条候选、26 条经 owner 复核确认（4 条文档过期已就地修正），最高危的 `ChartWriter` 保存丢数据（RR-F401）与三个常量诊断字段（RR-F419/F420）未开始修复，处置顺序见扫描报告末节；后者条目全部有结论，复核中推翻或收窄了若干断言，未复核项已清零；具体计数与分级以 findings 为准。
-- tools/ 审计完成（[报告](../../../stage_reports/stages/stage-07-rr/2026-11-17-tools-audit.md)）：120 个脚本审计完成，证据套件原位冻结、门禁修补、报告来源登记，RR-F511–RR-F520 的已确认缺陷已修或登记；日期构建已推进到 `26.11.17-1`，本阶段早期报告的构建字面量是历史值，以版本文件为准。
+- tools/ 审计完成（[报告](../../../stage_reports/stages/stage-07-rr/2026-11-17-tools-audit.md)）：120 个脚本审计完成，证据套件原位冻结、门禁修补、报告来源登记，RR-F511–RR-F520 的已确认缺陷已修或登记；日期构建以版本文件为准，本阶段早期报告的构建字面量是历史值。
 ## 4. 已确认方向与决策台账
 
 | 决策 ID | 决策 | 日期 | owner | 影响 |
@@ -76,16 +76,14 @@ Stage 7（受限退出） -> Stage 7-RR（本阶段） -> Stage 7.5（Gameplay E
 | D-01 | Stage 7-RR 是 Stage 7 与 Stage 7.5 之间的独立阶段；`RR` 只表达路线位置，不改变 Stage 8–14 编号 | 2026-11-17 | owner | 全计划；与 Stage 7-RPA 区分 |
 | D-02 | 本阶段以架构减重重构为主；文档与代码注释纳入减重范围 | 2026-11-17 | owner | RR-3、RR-5 |
 | D-03 | 取消文件拆分工作；行数预算只作为事实记录保留在 findings §4 | 2026-11-17 | owner | 第 13 节排除项；RR-3/RR-4 不做拆分 |
+| D-04 | 合同先于实现：改变 wire、接受集合或稳定码语义前，先取得对应 ADR/Spec 接受 | 2026-11-17 | owner | RR-2、RR-3、RR-4 |
+| D-05 | RR-3 减重路线：先做 R1 构建隔离、R5 渲染收敛、R6 文档减重；R2/R3/R4 记入 deferral，待本轮退出后再评估 | 2026-11-17 | owner | RR-3 范围；RR-6 交接需列出 deferred 项与恢复条件 |
 
-以上只列有证据的已决项；RR-3 选项、RR-F510、版本漂移豁免与清理候选不在其中。
+以上只列有证据的已决项。RR-F510、版本漂移策略与 particles/debug 清理已在 2026-11-17 按 owner 决定处置，见变更记录与 findings。
+
 ### 待 owner 决策
 
-| 决策项 | 问题 | 选项 | 推荐 | 不做决定会阻塞什么 |
-| --- | --- | --- | --- | --- |
-| RR-3 减重选项与路线 | 研究给出 R1 构建隔离、R2 候选面降级、R3 会话收敛、R4 时间收敛、R5 渲染收敛、R6 文档减重，建议 `R1 → R5 → R2 → R3 → R4 → R6` | 按建议路线；只接受 R1+R5+R6 低风险集；暂不选、只做 RR-2 | 先接受 R1（研究认定必须最先做），其余逐项裁定 | RR-3 的任何删除/合并；RR-6 无法收口 |
-| RR-F510 Judgement seek 权威入口 | 实现存在，但 [ADR 0043](../../../adr/0043-gameplay-judgement-ruleset-convergence.md)、`api/GAMEPLAY_JUDGEMENT_ABI.md`、`formats/GAMEPLAY_JUDGEMENT_SPEC.md` 均为 historical，[MAP](../../../MAP.md)无 active 权威入口 | 新建 active 合同页；在现有 active 页登记；标为未接线候选；保留路由盲区 | 新建或在现有 active 页登记，再决定实现去留 | RR-2 合同收敛；RR-6 的 MAP/交接完整性 |
-| 版本漂移是否加历史豁免 | `check_docs_facts.py` 对 ADR/计划中的历史版本字面量持续告警 | 保持警告；增加显式“历史豁免”标记并在检查器中支持；逐条改写为历史基线 | 加显式豁免，不改写历史叙述，只改写真正过期的当前陈述 | RR-1 无法定义“门禁通过” |
-| `engine/particles` / `cuexis_debug` 清理 | RR-F521 为空 INTERFACE 库且从未 `add_subdirectory`；RR-F522 仅被 `cuexis_debug_tests` 链接、生产 0 引用 | 删除；保留并登记为清理候选；移入归档 | 保留为清理候选，待 RR-3 选项与 RR-4 安装面决定后一并处置 | RR-3 删除清单；RR-6 最终交接 |
+当前无待决项。RR-3 路线按 D-05 执行；若 R2/R3/R4 需要重启，另立决定并更新本表。
 
 ## 5. 假设、约束与风险
 
@@ -204,6 +202,7 @@ Known gaps and next-task handoff
 | 日期 | 变更 | 原因 | 决策依据 |
 | --- | --- | --- | --- |
 | 2026-11-17 | 按[详细规划模板](../../../templates/plan.md)重写本计划：新增规划问题、任务看板、分批细化、验收矩阵、回滚与变更控制；保留 RR-0–RR-6 语义、目标、排除项与归档来源 | 模板升级为详细规划协议；原计划缺少任务级交付与验收矩阵 | owner 2026-11-17 的模板与工作规则 |
+| 2026-11-17 | 登记 D-04/D-05；关闭 RR-F510、版本漂移、particles/debug 三项待决；RR-3 只做 R1/R5/R6，R2/R3/R4 defer | owner 2026-11-17 统一决策 | owner |
 
 ## 13. 排除项与旧路径
 - **不做纯行数拆分**：owner 已取消；行数预算只作为 findings §4 的事实记录，不为凑预算拆文件。

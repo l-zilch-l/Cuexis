@@ -1010,6 +1010,21 @@ def check_recent_report_sections(failures: list[CheckFailure]) -> None:
             ))
 
 
+def check_evidence_metadata(failures: list[CheckFailure]) -> None:
+    """Reports need machine metadata; README indexes are routing and stay exempt."""
+    for path in sorted((DOCS / "stage_reports").rglob("*.md")):
+        if path.name == "README.md":
+            continue
+        text = path.read_text(encoding="utf-8")
+        if "<!-- cuexis-meta" not in text:
+            failures.append(CheckFailure(path, "evidence report is missing its cuexis-meta block"))
+            continue
+        if not re.search(r"(?m)^status:\s*evidence\s*$", text):
+            failures.append(CheckFailure(path, "evidence report must declare status: evidence"))
+        if not re.search(r"(?m)^authority:\s*none\s*$", text):
+            failures.append(CheckFailure(path, "evidence report must declare authority: none"))
+
+
 def main() -> int:
     failures: list[CheckFailure] = []
     files = markdown_files()
@@ -1023,6 +1038,7 @@ def main() -> int:
     check_future_stage_plans(failures)
     check_active_plan_sections(failures)
     check_recent_report_sections(failures)
+    check_evidence_metadata(failures)
     check_stage_directory_layout(failures)
     check_root_document_layout(failures)
     check_api_reference_style(failures)

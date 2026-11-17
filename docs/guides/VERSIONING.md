@@ -35,9 +35,9 @@ yy.mm.dd-v
 `cmake/CuexisVersion.cmake` 保存年、月、日和 build。其他 CMakeLists 不重复手写版本。
 `tools/update_version.py` 是人工更新入口，负责在一次事务中同步该文件与 `vcpkg.json`。
 
-CMake `project(VERSION)` 使用无前导零的三段数字，例如 `26.8.1`。完整显示版本单独生成，例如 `26.08.01-1-dev`。
+CMake `project(VERSION)` 使用无前导零的三段数字，例如 `26.8.1`。完整显示版本单独生成，例如 `26.08.01-1-dev`（格式示例）。
 
-`vcpkg.json` 的 `version-string` 保存不带构建类型后缀的规范版本，例如 `26.08.01-1`，因为同一源码可以同时构建 Debug 和 Release。
+`vcpkg.json` 的 `version-string` 保存不带构建类型后缀的规范版本，例如 `26.08.01-1`（格式示例），因为同一源码可以同时构建 Debug 和 Release。
 
 ## 更新流程
 
@@ -438,4 +438,4 @@ canonical SHA 绑定仍可选择，Seek 必须恰好选择一种绑定；没有�
 `SameMinorVersion` 仍是 package/source 请求策略：新包可接受较低的 `0.9.0` 请求，不证明旧包提供
 新字段或旧 shared binary 可混用。所有 candidate consumer 使用同一套新头/库干净重建；
 依赖公开结构大小、聚合分解等假设的源码须重新检查。不支持仅替换 DLL。
-本次只改独立 SDK API 版本，日期构建身份和 vcpkg `version-string` 保持 `26.10.19-1`。
+本次只改独立 SDK API 版本，日期构建身份和 vcpkg `version-string` 保持 `26.10.19-1`（历史）。

@@ -1,10 +1,10 @@
 # tools/ 目录审计（2026-11-17）
 
-状态：historical
+状态：evidence（历史审计记录，结论按当时基线）
 
 <!-- cuexis-meta
 id: REPORT-TOOLS-AUDIT-2026-11-17
-status: historical
+status: evidence
 authority: none
 -->
 
