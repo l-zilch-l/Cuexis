@@ -49,8 +49,9 @@
 
 ## 工作规则
 
-- 新 plan / 报告先复制 [docs/templates/](docs/templates/README.md) 对应模板；active plan 与
-  2026-11-17 之后的新报告必须保留模板的固定 H2 标题（`check_docs.py` 会检查）。
+- 新 plan / 报告先复制 [docs/templates/](docs/templates/README.md) 对应模板；active plan 用详细模板，
+  `stage_plans/future/**` 只用提纲模板（启动时再细化）；active plan 与 2026-11-17 之后的新报告
+  必须保留模板的固定 H2 标题（`check_docs.py` 会检查）。
 - 改公共头、`schemas/`、CLI 选项、预算常量或格式 wire 时，**同一提交**更新对应合同文档；
   PR 的 `Docs impact` 字段必须写明更新了哪篇，确实不需要时写理由。
 - 开工先读 [docs/HANDOFF.md](docs/HANDOFF.md)；收尾或暂停时更新其任务、下一步、阻塞与验证状态

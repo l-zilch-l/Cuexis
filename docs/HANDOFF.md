@@ -23,8 +23,8 @@ authority: owns
 
 ## 当前任务
 
-本批 agent 工作规则已落地并推送（`bde3e02b`）：交接页、三份模板、PR 模板与两处门禁。
-当前没有进行中的实现批次；下一步处理文档遗留。
+模板与计划体系已收口：详细 plan 模板用于 active 阶段，`stage_plans/future/**` 只用提纲模板；
+Stage 7-RR 的计划已按详细模板重写。当前没有进行中的实现批次，下一步回到文档遗留。
 
 ## 下一步
 
@@ -49,5 +49,7 @@ authority: owns
 - 新增：`docs/HANDOFF.md`、`docs/templates/`、`.github/pull_request_template.md`
 - `docs/templates/plan.md`：扩展为项目起始的详细规划协议（规划问题清单、任务看板、入场门禁、
   验收矩阵、回滚/变更控制），对齐现有 plan 的实际写法
+- 新增 `docs/templates/plan-outline.md`：未来阶段只写提纲，启动时再细化
+- `docs/stage_plans/active/stage-07-rr/plan.md`：按详细模板重写（218 行，RR-0–RR-6 语义不变）
 - 修改：`tools/verification/check_docs.py`、`tools/verification/check_docs_facts.py`、
   `tools/verification/gen_docs_map.py`、`AGENTS.md`、`docs/CURRENT_STATUS.md`

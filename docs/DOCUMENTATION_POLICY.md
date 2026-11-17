@@ -128,6 +128,10 @@ README 只用于稳定入口、顶层文档角色或包含多份需要独立导�
 是 `check_docs.py` 的检查对象。`docs/HANDOFF.md` 是**对话级交接**，记录当前任务、下一步、阻塞与
 验证状态，不是阶段权威；active 阶段超过 7 天未更新时 `check_docs_facts.py` 只给警告。
 
+计划分两级：`stage_plans/active/**` 用详细模板（任务看板、入场门禁、验收矩阵、回滚条件）；
+`stage_plans/future/**` 只用提纲模板（目标、边界、入口条件、待决问题），启动时再重写为详细计划，
+避免提前写下会过期的批次与数值。
+
 `docs/api/` 以发布的 Playback SDK 为首要对象，说明入口、生命周期、线程、资源、帧观察、诊断、
 capability 和兼容边界。内部模块资料必须显式标为 internal，不能把 Runtime、World、EnTT、SDL、
 OpenGL 或 JSON DOM 写成宿主可依赖的 API。
