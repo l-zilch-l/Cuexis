@@ -1,3 +1,4 @@
+# Reproduction mapping: tools/verification/execution_acceptance/README.md (R4 evidence).
 """Build an explicit clean source in a fresh tree; preserve configure/build and input identities."""
 import argparse
 import ctypes
@@ -76,9 +77,11 @@ def main():
     parser.add_argument("--mode", choices=("normal", "memory", "stage-timing", "player-trace"), default="normal")
     parser.add_argument("--targets", nargs="+", required=True)
     parser.add_argument("--jobs", type=int, default=4)
-    parser.add_argument("--vcvars", type=Path, default=Path("D:/Program Files/Microsoft Visual Studio/18/Community/VC/Auxiliary/Build/vcvars64.bat"))
-    parser.add_argument("--vcpkg", type=Path, default=Path("D:/vcpkg"))
+    parser.add_argument("--vcvars", type=Path, default=Path(os.environ["CUEXIS_VCVARS"]) if "CUEXIS_VCVARS" in os.environ else None)
+    parser.add_argument("--vcpkg", type=Path, default=Path(os.environ["CUEXIS_VCPKG"]) if "CUEXIS_VCPKG" in os.environ else None)
     args = parser.parse_args()
+    if args.vcvars is None or args.vcpkg is None:
+        parser.error("--vcvars and --vcpkg are required (or set CUEXIS_VCVARS/CUEXIS_VCPKG)")
     if args.jobs < 1:
         parser.error("positive build concurrency required")
     run(args)

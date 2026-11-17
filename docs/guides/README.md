@@ -18,6 +18,7 @@ authority: index
 
 - [阅读顺序](reading-order.md)：从零理解本仓库的带注解推荐路线
 - [Chart 与 Packed 预算上限](LIMITS.md)：由 `limits.hpp` 生成，引用预算时指向本页而非复述数字
+- [Player 命令行选项](PLAYER_OPTIONS.md)：由 `player_options.cpp` 生成，选项名与构建门控以本页为准
 - [诊断码与类别](DIAGNOSTIC_CODES.md)：由 `schemas/*.codes.json` 生成的可读视图，类别语义仍归 Spec §9.2
 - [构建、安装和质量门禁](BUILDING.md)
 - [Chart v5 谱面编写指南](CHART_V5_AUTHORING.md)

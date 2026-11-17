@@ -65,6 +65,7 @@ authority: index
 | [guides/CHART_V4_AUTHORING.md](guides/CHART_V4_AUTHORING.md) | active | owns | Chart v4 谱面编写指南（兼容入口） |
 | [guides/DIAGNOSTIC_CODES.md](guides/DIAGNOSTIC_CODES.md) | current | references | 诊断码与类别（可读视图） |
 | [guides/LIMITS.md](guides/LIMITS.md) | current | references | Chart 与 Packed 预算上限 |
+| [guides/PLAYER_OPTIONS.md](guides/PLAYER_OPTIONS.md) | current | references | Player 命令行选项 |
 | [guides/README.md](guides/README.md) | active | index | Cuexis Guides |
 | [guides/reading-order.md](guides/reading-order.md) | active | owns | Cuexis 阅读顺序 |
 | [adr/0001-project-name-cuexis.md](adr/0001-project-name-cuexis.md) | accepted | owns | ADR 0001：项目命名为 Cuexis |

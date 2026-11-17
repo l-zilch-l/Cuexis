@@ -124,6 +124,23 @@ def codes_are_current() -> bool:
     return module.TARGET.read_text(encoding="utf-8") == expected
 
 
+def player_options_are_current() -> bool:
+    spec = importlib.util.spec_from_file_location(
+        "gen_player_options", ROOT / "tools" / "verification" / "gen_player_options.py"
+    )
+    if spec is None or spec.loader is None:
+        return False
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    try:
+        expected = module.build()
+    except SystemExit:
+        return False
+    if not module.TARGET.is_file():
+        return False
+    return module.TARGET.read_text(encoding="utf-8") == expected
+
+
 def main(argv: list[str]) -> int:
     sdk, build = version_info()
     failures: list[str] = []
@@ -133,6 +150,11 @@ def main(argv: list[str]) -> int:
         failures.append("docs/guides/LIMITS.md is stale; run python -B tools/verification/gen_docs_limits.py")
     if not codes_are_current():
         failures.append("docs/guides/DIAGNOSTIC_CODES.md is stale; run python -B tools/verification/gen_docs_codes.py")
+    if not player_options_are_current():
+        failures.append(
+            "docs/guides/PLAYER_OPTIONS.md is stale or the option table is out of sync; "
+            "run python -B tools/verification/gen_player_options.py"
+        )
 
     findings = scan(candidate_files(), sdk, build)
     if "--list" in argv:

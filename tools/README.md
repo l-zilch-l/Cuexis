@@ -15,7 +15,7 @@
 | `tools/check_docs.py` | 包装 `verification/check_docs.py`；预推送 + CI `documentation-contracts` |
 | `tools/verification/check_docs.py` | 文档总门禁（链接/H1/可达性/状态合同） |
 | `tools/verification/check_docs_facts.py` | 预推送：生成物新鲜度与版本漂移；CI `documentation-contracts` 同步运行 |
-| `tools/verification/gen_docs_{map,limits,codes}.py` | 不是独立门禁；由 `check_docs_facts.py` 导入校验，没有外部 `--check` 调用 |
+| `tools/verification/gen_docs_{map,limits,codes}.py` / `gen_player_options.py` | 不是独立门禁；由 `check_docs_facts.py` 导入校验，没有外部 `--check` 调用 |
 | `tools/check_version_gate.py` / `check_version_gate_tests.py` | CI `version-gate`；CTest `cuexis_contract_version_gate` |
 | `tools/update_version.py` | CI Linux 与预推送的 `--check` |
 | `tools/check_pre_push.ps1` | 预推送编排入口（Quick/Linux/Full） |

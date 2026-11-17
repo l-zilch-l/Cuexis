@@ -1,3 +1,4 @@
+# Reproduction mapping: tools/verification/execution_acceptance/README.md (R4 evidence).
 """Bounded pilot, proofs and preparation for admitted presentation-matrix probe units.
 
 No formal attempt is claimed here. Every count comes from `probe_units`; the pilot only proves

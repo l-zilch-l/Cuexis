@@ -1,3 +1,4 @@
+# Reproduction mapping: tools/verification/execution_acceptance/README.md (R4 evidence).
 """One Player functional capture and strict offline trace validation.
 
 The opt-in player-trace build is bound separately from normal performance evidence. The collector

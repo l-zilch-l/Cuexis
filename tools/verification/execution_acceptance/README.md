@@ -189,3 +189,27 @@ Scope, numbers, owner decisions and formal admission requirements are maintained
 [the R4 plan](../../../docs/stage_plans/completed/stage-07/05-rpa-new/r4/plan.md),
 [O1 proposal](../../../docs/stage_plans/completed/stage-07/05-rpa-new/r4/caps-proposal.md) and
 [registration draft](../../../docs/stage_plans/completed/stage-07/05-rpa-new/r4/formal-registration.md).
+
+## Reproduction mapping (2026-11-17)
+
+Each frozen collector states which report it reproduces.
+
+| Tool | Report |
+| --- | --- |
+| `audit_layout.py` | `docs/stage_reports/stages/stage-07/04-pd/pd-5/memory-attribution/2026-10-24-b0-memory-cap-ledger.md` |
+| `build.py` | `docs/stage_plans/completed/stage-07/05-rpa-new/r4/plan.md`（build binding 条款） |
+| `formalize.py` | `docs/stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-08-probe-matrix-admission-and-environment-stop.md` |
+| `runner.py` | `docs/stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-13-p5-tooling-stops.md` |
+| `prepare_probe.py` | `docs/stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-08-probe-matrix-admission-and-environment-stop.md` |
+| `prepare_host.py` | `docs/stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-08-probe-matrix-admission-and-environment-stop.md` |
+| `prepare_cpu.py` | `docs/stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-05-post-o1-tool-admission.md` |
+| `prepare_seek.py` | `docs/stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-13-seek-five-classes.md` |
+| `prepare_stream.py` | `docs/stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-13-device-adapter-and-gpu-memory.md` |
+| `prepare_controls.py` | `docs/stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-13-p5-tooling-stops.md` |
+| `capacity_evidence.py` | `docs/stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-13-device-adapter-and-gpu-memory.md` |
+| `prepare_capacity.py` | `docs/stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-10-p8-40k-entity-memory-evidence/index.md` |
+| `player_evidence.py` | `docs/stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-14-closeout-verification-and-handoff.md` |
+| `stream_observers.py` | `docs/stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-13-device-adapter-and-gpu-memory.md` |
+
+`--vcvars` / `--vcpkg` no longer embed machine paths: pass them explicitly or set
+`CUEXIS_VCVARS` / `CUEXIS_VCPKG`.

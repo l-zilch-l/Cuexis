@@ -119,31 +119,8 @@ Player，并要求 `--bogus`、缺失 chart 参数与不可读 chart 分别返�
 
 只解析命令行，不读取工程，也不包含 SDL。
 
-| 选项 | 含义 |
-| --- | --- |
-| `--smoke-test` | 六帧后退出，并安装表现 smoke hook；与 `--audio-smoke-test` 互斥 |
-| `--audio-smoke-test` | 九十帧后退出，并安装音频 smoke hook |
-| `--mode <chart\|host\|audio>` | 启动 Load 使用的时钟；只可给一次 |
-| `--chart <path>` | Chart 文本；与 `--project`、`--cxc` 互斥 |
-| `--project <path>` | 文件系统工程或 `cuexis.project.json`；与 `--chart`、`--cxc` 互斥 |
-| `--cxc <path>` | CXC 包定位；与 chart/project 互斥 |
-| `--shader-cache-dir <path>` | OpenGL shader cache 目录 |
-| `--frame-stats <prefix>` | 帧诊断导出前缀 |
-| `--show-fps` | 显示 FPS（布尔开关） |
-| `--debug-axes` | 绘制调试轴（布尔开关） |
-| `--candidate-entry <path>` | 实验构建下的候选入口；需要 project 或 CXC |
-| `--gameplay-packed <path>` | 独立 Gameplay Packed 文件；仅 `--execution-test-only` 下可用（候选） |
-| `--execution-test-only` | 运行执行测试播放器；与 smoke 互斥、与 H/T step 冲突（候选） |
-| `--gameplay-configuration <path>` | Gameplay 配置（候选） |
-| `--gameplay-config-budget <value>` | Gameplay 配置预算（候选） |
-| `--gameplay-h-step <value>` | Gameplay H 步长（候选） |
-| `--gameplay-presentation-step <value>` | Gameplay 表现步长（候选） |
-| `--gameplay-key <value>` | Gameplay 键位；可重复（候选） |
-| `--execution-tail-input-deadline <value>` | tail 输入截止；仅 execution test 模式（候选） |
-
-带值选项重复、缺值、未知参数、来源互斥（chart/project/cxc）、两种 smoke 同时给出，返回
-`player.arguments.*`；候选专用选项在非候选构建返回 `player.candidate.disabled`；
-`--show-fps`、`--debug-axes`、`--smoke-test`、`--audio-smoke-test` 是布尔开关，不做重复检查。
+完整选项表（19 项，含构建门控、重复规则与校验规则）见生成页
+[PLAYER_OPTIONS](../guides/PLAYER_OPTIONS.md)；本页不再复述选项。
 
 ### 3.3 `player_assembly.cpp`
 

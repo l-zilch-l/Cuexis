@@ -50,7 +50,7 @@ authority: owns
 | RR-F101 | `AGENTS.md`（2026-11-17 前版本） | 已修：AGENTS 精简后原句与 `:261` 均不存在；`ROADMAP.md:48`、`GAMEPLAY_V2_SPEC.md:2595` 仍称“AGENTS 写 Stage 12”，本轮同日订正 | 已核实（已修） |
 | RR-F102 | `AGENTS.md`（2026-11-17 前版本） | 已修：AGENTS 精简后“Stage 7A 是当前实施准备线”“Stage 4-12 都是 future/deferred”均已删除 | 已核实（已修） |
 | RR-F103 | `docs/api/diagnostics-identity-and-compatibility.md:22`、`:64`；`docs/api/GAMEPLAY_V2_ABI.md:69` | 仍写"当前分支 SDK API 为 `0.8.0`"；实际 `cmake/CuexisVersion.cmake:8` 为 `0.9.1`，同目录其他页已写 0.9.1 | 已核实 |
-| RR-F104 | `docs/formats/MATERIAL_SHADER.md:632` | 仍写“当前分支为 0.7.5”，实际 `CuexisVersion.cmake:8` 为 0.9.1（`CURRENT_STATUS.md:115` 同） | 已核实（未修） |
+| RR-F104 | `docs/formats/MATERIAL_SHADER.md:632` | 仍写“当前分支为 0.7.5”，实际 `CuexisVersion.cmake:8` 为 0.9.1（`CURRENT_STATUS.md:115` 同） | 已修（文档：改为 0.9.1） |
 | RR-F105 | `docs/formats/README.md:40` | 权威矩阵把 Packed Chart v1 标为"未实现"；实际 Header/目录、字典/身份、ARCH/ENT0、TRN0/REN0/CAM0、REQ0/CNS0、语义 hash、Reader/Writer 与 40k 测试均已实现并接入 CMake | 已核实 |
 
 ### 2.2 格式互操作与接受集
@@ -58,11 +58,11 @@ authority: owns
 | ID | 位置 | 问题 | 证据状态 |
 | --- | --- | --- | --- |
 | RR-F111 | `docs/formats/PACKED_CHART_FORMAT.md:246`；`engine/chart/src/packed_chart_tables_writer.cpp:557`；`packed_chart_tables_inspect.cpp:73` | 文档要求对 96 字节 Header 计算 CRC 且 CRC 字段临时置零；实现只对前 92 字节求值（完全不含 CRC 字段）。按文档实现的外部写入器与仓库 Reader 互不接受 | 已核实 |
-| RR-F112 | `packed_chart_tables_sections.cpp:55-57,489-490`；`decoder_tables.cpp:195-197`；`decoder_model.cpp:340-344` | Writer 硬写 descriptor 0；Reader 把 TIME mode 1 判 `packed.time.invalid`、REQ0 判 `packed.requirements.codec`。`writeBeatDescriptor/readBeatDescriptor` 全仓 0 调用者；GridDelta codec 仅测试调用 | 已核实 |
+| RR-F112 | `packed_chart_tables_sections.cpp:55-57,489-490`；`decoder_tables.cpp:195-197`；`decoder_model.cpp:340-344` | Writer 硬写 descriptor 0；Reader 把 TIME mode 1 判 `packed.time.invalid`、REQ0 判 `packed.requirements.codec`。`writeBeatDescriptor/readBeatDescriptor` 全仓 0 调用者；GridDelta codec 仅测试调用 | 已修（文档：删除 mode 1 与 Writer 选择段） |
 | RR-F113 | `limits.hpp:58-59`；`canonical_chart_loader_primitives.cpp:325-330`；`CHART_FORMAT.md:159-167` | v1/v2/v3 生产 Reader 额外拒绝 `|分子| > 1e12`、`分母 > 1e9`（`chart.beat.limit_exceeded`）；`chart.beat.out_of_range` 来自 v4 reader 与 `rational_beat.cpp` 算术，不是这两个上限。两个上限已由 `guides/LIMITS.md:62-63` 生成登记，但未进格式合同 | 已核实（“未在任何文档声明”收窄为“未在格式合同声明”） |
-| RR-F114 | `CXC_FORMAT.md:254-255`；`cxc_candidate.cpp:434-440`；`CHART_ENTRY_V1_FORMAT.md:333-334` | 两份格式合同互相冲突：CXC 要求 playback entry 必须是 `packed-chart`，Chart Entry 合同允许 `candidate.behavior-v2-v1` + `source-json`；实现按后者 | 已核实（冲突在合同之间，不只是实现偏离） |
-| RR-F115 | `CXT_V2_FORMAT.md:317,323,326,690` | `cxtImports`/`cxtInstances` 全仓 0 命中；§6 写成合同未标未实现；§12:690 的“Chart invocation”同样过度声明。展开只由工具显式传参触发 | 已核实（补充 §12:690） |
-| RR-F116 | `CHART_ENTRY_V1_FORMAT.md:126-145`；`cxc_candidate.cpp` | 文档声明 16 码中 2 个零产出（`resource_closure_invalid` 只有异命名空间的 `playback.candidate.*`）；实现另发 **12 个**未登记码（原文写 5 个，计数订正）。文档写“minimum stable set”，额外码本身不违约 | 已核实（计数订正） |
+| RR-F114 | `CXC_FORMAT.md:254-255`；`cxc_candidate.cpp:434-440`；`CHART_ENTRY_V1_FORMAT.md:333-334` | 两份格式合同互相冲突：CXC 要求 playback entry 必须是 `packed-chart`，Chart Entry 合同允许 `candidate.behavior-v2-v1` + `source-json`；实现按后者 | 已修（文档：两份合同均加冲突标注，实现未改） |
+| RR-F115 | `CXT_V2_FORMAT.md:317,323,326,690` | `cxtImports`/`cxtInstances` 全仓 0 命中；§6 写成合同未标未实现；§12:690 的“Chart invocation”同样过度声明。展开只由工具显式传参触发 | 已修（文档：§6 移入 proposals，§12 收窄） |
+| RR-F116 | `CHART_ENTRY_V1_FORMAT.md:126-145`；`cxc_candidate.cpp` | 文档声明 16 码中 2 个零产出（`resource_closure_invalid` 只有异命名空间的 `playback.candidate.*`）；实现另发 **12 个**未登记码（原文写 5 个，计数订正）。文档写“minimum stable set”，额外码本身不违约 | 已修（文档：删除 2 个零产出码） |
 
 ### 2.3 SDK 与表现合同
 
@@ -72,8 +72,8 @@ authority: owns
 | RR-F122 | `include/cuexis/playback/playback_session.hpp:250-254` | `materializePresentation` 无 `#if CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE` 门；production 构建的安装头暴露 RPA candidate 入口，错误码命名空间 `host.rpa.*` 也随之出现在 OFF 构建 | 已核实 |
 | RR-F123 | `docs/formats/MATERIAL_SHADER.md` §9；`engine/render_opengl/src/open_gl_presentation.cpp:105` | `builtInRendererProfileVersion` 只有写入点与测试读取，无任何生产读取点；`requiredRendererProfile` 与 adapter profile 不匹配时不构成失败，合同项静默通过 | 已核实 |
 | RR-F124 | `docs/formats/MATERIAL_SHADER.md` §5；`engine/playback/src/presentation_parse.cpp:404-414` | 实现额外要求 host-extension profile 必须出现在 `requiredHostExtensions` 中（文档无此规则）；同时 profile ID 走 `isUserIdentifier`，禁止 `.` 与 `cuexis` 前缀，与 §9 带点 ID 风格、`profileByteCount [1,64]` 三处互相矛盾 | 已核实 |
-| RR-F125 | `MATERIAL_SHADER.md` §5、§12；`shader_compiler_sources.cpp:113-138` | 子集预检只覆盖大小/BOM-CR/`#version 450`/`#include`；geometry/tess/compute 等子集项落到 shaderc → `shader.compile.failed`。但 `playback.presentation.shader.subset_invalid` **并非零产出**：`shader_compiler_sources.cpp:128,133`、`presentation_reader.cpp:549,563`、`presentation_parse.cpp:198,204` | 已核实（原“专属码零产出”被推翻） |
-| RR-F126 | `MATERIAL_SHADER.md` §9；`playback_session_prepared.cpp:322-347`；`shader_pipeline_cache.cpp:148-153` | `shaderHotReloadEnabled` 由四个 capability 标志（version==2 且三份源码）推导；`render_opengl` 只调 `prepareCandidate()`/`candidate()`，全目录 0 处 `activate()`/`active()`，candidate 永不换入 active | 已核实（“三份源码”改为“四个 capability 标志”；“零调用”限定为 activate/active） |
+| RR-F125 | `MATERIAL_SHADER.md` §5、§12；`shader_compiler_sources.cpp:113-138` | 子集预检只覆盖大小/BOM-CR/`#version 450`/`#include`；geometry/tess/compute 等子集项落到 shaderc → `shader.compile.failed`。但 `playback.presentation.shader.subset_invalid` **并非零产出**：`shader_compiler_sources.cpp:128,133`、`presentation_reader.cpp:549,563`、`presentation_parse.cpp:198,204` | 部分修（文档不再承诺“完整预检”；实现仍只做部分预检） |
+| RR-F126 | `MATERIAL_SHADER.md` §9；`playback_session_prepared.cpp:322-347`；`shader_pipeline_cache.cpp:148-153` | `shaderHotReloadEnabled` 由四个 capability 标志（version==2 且三份源码）推导；`render_opengl` 只调 `prepareCandidate()`/`candidate()`，全目录 0 处 `activate()`/`active()`，candidate 永不换入 active | 已修（文档：删除 warning/effective false 承诺） |
 
 ### 2.4 运行时、判定与失败语义
 
@@ -90,7 +90,7 @@ authority: owns
 
 | ID | 位置 | 问题 | 证据状态 |
 | --- | --- | --- | --- |
-| RR-F141 | `PLAYER_APPLICATION.md:83-89,115-122,124` | 源文件清单只列 3 个；实际另有 4 个基础 .cpp + 条件编译的 `player_execution.cpp` + 5 个 `execution_host*.cpp`。选项表 6 项 vs 19 个 flag。`:124` 的“重复都返回 `player.arguments.*`”不成立：4 个布尔选项无重复检查，`:53/:93/:125` 返回 `player.candidate.disabled` | 已核实（计数订正） |
+| RR-F141 | `PLAYER_APPLICATION.md:83-89,115-122,124` | 源文件清单只列 3 个；实际另有 4 个基础 .cpp + 条件编译的 `player_execution.cpp` + 5 个 `execution_host*.cpp`。选项表 6 项 vs 19 个 flag。`:124` 的“重复都返回 `player.arguments.*`”不成立：4 个布尔选项无重复检查，`:53/:93/:125` 返回 `player.candidate.disabled` | 已修（文档：选项表 19 项、源文件 13 个） |
 | RR-F142 | `player_execution.cpp:36-38` 及 `:110,115,120,139,608,630,632,642` | 该 `error()` 辅助的 9 类失败统一为 `player.execution.test_only`；文件另有 7 个 `player.execution.*` 码，`:632` 在 fault 自带码时透传 | 已核实（“统一”限定为这 9 类） |
 | RR-F143 | `check_docs.py`、`check_pe_export_gate.py`、`gnu_asset_mirror.py`；`worker_process.cpp:22-31,49,76,83` | `check_docs.py` 在 docs 有 251 处引用，“零引用”不成立；真正零/极少引用的是 `check_pe_export_gate.py`（仅 findings）与 `gnu_asset_mirror.py`。worker 逐字节 `static_cast<wchar_t>`，任何非 ASCII narrow 路径都会 mojibake | 已核实（“零引用”收窄） |
 
@@ -99,14 +99,14 @@ authority: owns
 | ID | 位置 | 问题 | 证据状态 |
 | --- | --- | --- | --- |
 | RR-F201 | `docs/architecture/OVERVIEW.md:97-106` | 属性求值顺序漏掉 `GameplayOverride`（代码在 Animation 与 HostOverride 之间插入该层；`ANIMATION_MIXING.md` 正确） | 已核实 |
-| RR-F202 | `RUNTIME_SESSION.md:89-94`；`runtime_frame.hpp:10`；`runtime_session_evaluation.cpp:666` | 文档 7 态机在代码中不存在；`RuntimeSession` 无 state 枚举，`onTimeDiscontinuity` 全仓 0 命中，`ResourceState::Reloading` 从未赋值。但 `timeDiscontinuityId` 存在并在 evaluation 比较；`PlaybackSession::SessionState` 只有 4 态且无 Preparing/Reloading/Closing 迁移 | 已核实（删“timeDiscontinuityId 不存在”） |
+| RR-F202 | `RUNTIME_SESSION.md:89-94`；`runtime_frame.hpp:10`；`runtime_session_evaluation.cpp:666` | 文档 7 态机在代码中不存在；`RuntimeSession` 无 state 枚举，`onTimeDiscontinuity` 全仓 0 命中，`ResourceState::Reloading` 从未赋值。但 `timeDiscontinuityId` 存在并在 evaluation 比较；`PlaybackSession::SessionState` 只有 4 态且无 Preparing/Reloading/Closing 迁移 | 已修（文档：删除 7 态机与回调描述） |
 | RR-F203 | `runtime_session_overrides.cpp:41-102`；`runtime_session.cpp:404-431` | `acquireOverride` 只校验线程/reentry/world/kind/空 writes/对象/mask，不校验 `PropertyValue` 值域；应用点在 `runtime_session.cpp:404-431`，失败即返回且 token 仍在 `evaluation_->hostOverrides`；只能靠 `releaseOverride` 恢复，错误不指出 token | 已核实（改为“无自动回滚、错误不定位 token”） |
 | RR-F204 | `property.hpp:63-70`；`GAMEPLAY_V2_SPEC.md:31`；`property_helpers.hpp:31-33` | 层域优先级是 Initial<Behavior<Animation<Gameplay<Host<Preview，枚举值只有 Gameplay 错位，不是“相反”；`seenLayers` 仅作同层重复写检测与 layerValue，不参与排序；实际顺序靠 `runtime_session.cpp:372-431` 显式调用序 | 已核实（“相反”改为“Gameplay 枚举值与优先级位置不符”） |
 | RR-F205 | `diagnostic.hpp:63,66`；`diagnostic.cpp:56-60,104-106` | `add/append` 返回 bool 但未标 `[[nodiscard]]`；engine+app 135 处调用中 88 处裸丢弃。但截断有兜底：达上限插入 limit diagnostic 且 `limitReached()` 公开（20 处调用）。CODE_POLICY 引用有误 | 已核实（删“无从得知”；修正引用） |
 | RR-F206 | `content_provider.cpp:144-145,213,241`、`:197` | 三处 `shared_ptr<X>{new X{...}}`，同文件已有 `make_shared<Data>`；但标准保证控制块分配失败会 delete 指针，不是“非异常安全”；真实问题是多一次控制块分配，且构造函数私有使 make_shared 不能直接替换 | 已核实（改为“多一次分配”，删除异常安全断言） |
 | RR-F207 | `resource_scope.cpp:79-472` | `request()` 394 行；五类 acquire 分支 `:218-307` 与五段 fallback `:332-465` 除 handle 类型外近乎逐字重复；小组件 `requestMesh` 等只是薄包装 | 已核实（补重复行数） |
 | RR-F208 | `playback_session_prepare.cpp:270-279,292-297,352-358`；`playback_session_prepare_stages.cpp:443-467` | capability 预检先于 chart 预算（compile 内 `chart_runtime.cpp:546-552`）与 presentation 预算；presentation 解析后还有第二次 capability 检查，文档阶段顺序未分列 | 已核实（位置与分列说明） |
-| RR-F209 | `playback_session.hpp:170-175`；`playback_session.cpp:165,347`；`docs/api/playback-session.md:55-62` | `sessionState` 只有 Running/Empty/Ready 写入点，无 Failed 赋值；文档赋予“不可继续”语义；参考宿主存在等待 Failed 的死分支 | 已核实（补参考宿主死分支） |
+| RR-F209 | `playback_session.hpp:170-175`；`playback_session.cpp:165,347`；`docs/api/playback-session.md:55-62` | `sessionState` 只有 Running/Empty/Ready 写入点，无 Failed 赋值；文档赋予“不可继续”语义；参考宿主存在等待 Failed 的死分支 | 已修（文档：Failed 标为从不进入；宿主死分支待代码修） |
 | RR-F210 | `presentation.hpp:41-44,208` | `ShaderStage`、`shaderGlslEs300` 全仓仅声明处命中；`playback.presentation.shader.stage_unsupported` 在 C++ 0 命中，仅 `MATERIAL_SHADER.md:606` 说明未产出 | 已核实 |
 | RR-F211 | `sdl_audio_transport.cpp:371-399`、`:425-426`；`audio_transport.cpp:70-71` | `snapshot()` 的 `for(;;)` 无尝试上限，同类实现用 8 次；但 `publish()` 为 noexcept 且奇偶 sequence 间无可抛调用，正常路径不会永久停在奇序号，风险限于发布线程被永久挂起 | 已核实（收窄自旋条件） |
 | RR-F212 | `audio_transport.cpp:29-31,59-89`；`sdl_audio_transport.cpp:291,297,392-393` | validator 拒绝 Empty，但 transport unload 会发布 Empty 且 snapshot 原样返回；公共头未写清二者关系。`HostClock::snapshot` 的 thread_local 缓存以 `this` 为键，地址复用且 8 次全失败时返回旧对象 | 已核实（收窄“接口声明不得 Empty”） |
@@ -405,12 +405,13 @@ R4 / PD-5 套件的相对路径已进入验收哈希账本（`binding.py:73`、�
 | RR-F511 | `tests/pd/CMakeLists.txt:54-58`；`CMakeLists.txt:44-45`；`CMakePresets.json` | `execution_acceptance` 的 22 个测试注册为 CTest，但整块被默认 OFF 的 `CUEXIS_ENABLE_CHART_V5_CANDIDATE` 包住；CI 的 `debug`/`release` 不打开，预推送只跑 `debug`/`release` → 实际生效数为 **0**；而 `tools/README.md` 又把它标为“冻结证据工具，不进 CI” | 已修（owner 2026-11-17 决定移除注册；复现改用人工 `unittest discover`） |
 | RR-F512 | `CMakePresets.json:527-555` | candidate preset 的测试过滤为 `[Cc]andidate\|reference_host`，`cuexis_gameplay_assembler_cli` 与 `cuexis_gameplay_installed_consumer` 的名字不匹配 → 候选构建里也不跑 | 已修（三个 candidate preset 的过滤加入 `assembler_cli\|installed_consumer`） |
 | RR-F513 | `tools/CMakeLists.txt`；`CMakeLists.txt:173`；shader-tools presets；`BUILDING.md:139-140` | `cuexis_asset_importer_tool_tests` 需要 `DEVELOPER_TOOLS` + `SHADER_TOOLS`，但 hosted shader-tools preset 显式 `DEVELOPER_TOOLS=OFF` → 仅本地可达；BUILDING 漏写该前提 | 已修（顶层与 `tools/CMakeLists.txt` 改为 `SHADER_TOOLS` 单独可进；importer 测试随 preset 可达） |
-| RR-F514 | `tools/gameplay/generate_author_schema.py` | 生成 `schemas/candidate/*.schema.json` 合同产物，但无生成器新鲜度检查 | 已核实 |
+| RR-F514 | `tools/gameplay/gameplay_assembler/generate_author_schema.py` | 生成 `schemas/candidate/*.schema.json` 合同产物，但无生成器新鲜度检查 | 已修（新增 `--check` 并接入预推送） |
 | RR-F515 | `tools/README.md`；`BUILDING.md:52-59` | README 只登记 Python 门禁；C++ 门禁 target（cxc/chart/media/gameplay）未登记，`cuexis_gameplay_assemble` 也不在 BUILDING 的 target 清单 | 已修（README 重写并补 C++ target） |
 | RR-F516 | `tools/verification/playback_performance/compare_read_candidates.py` | 无测试、无 `docs/` 引用、只服务已关闭的 C2 候选 → 唯一 archive 候选 | 已归档到 `tools/archive/verification/playback_performance/`（2026-11-17） |
-| RR-F517 | R4 套件 14 个归档文件；`audit_layout.py:9`、`build.py:79-80` | 文件头无“复现哪份报告”；两处硬编码本机 VS/vcpkg 路径，违反 `tools/README.md` 自有规则 | 已核实 |
+| RR-F517 | R4 套件 14 个归档文件；`audit_layout.py`、`build.py` | 文件头无“复现哪份报告”；两处硬编码本机 VS/vcpkg 路径，违反 `tools/README.md` 自有规则 | 已修（14 个文件加复现映射头；`--vcvars/--vcpkg` 改为参数或环境变量） |
 | RR-F518 | `linux-quality.yml:279-282`；`gen_docs_map.py:208` | CI 的 `documentation-contracts` 只跑 `check_docs.py`、`update_version.py --check`、`gnu_asset_mirror_tests.py`，**不跑** `check_docs_facts.py`；生成块却写“`--check` 会在 CI/预推送校验” | 已修（CI 加跑 `check_docs_facts.py`；生成文案改为“由 `check_docs_facts.py` 在预推送校验”） |
 | RR-F519 | `check_docs_{status,target,section}_contract_tests.py` | 三个活门禁的回归测试没有任何 CI/CTest/预推送入口，只能人工运行；其中 section 测试已因 stage-07 迁移漂移出 11 个失败 | 已修（接入预推送 Quick；section 测试路径同步 `completed/stage-07`） |
+| RR-F520 | `generate_author_schema.py:91`；`schemas/candidate/*.schema.json`；`execution-coordination.md:12` | 生成器把 `executionProfile` 写成单个 `const`，但已提交 schema 与合同允许 `gameplay.execution.t4-k4.rpa.v1`；直接重新生成会删掉该 enum（真实漂移，被新加的 `--check` 首次运行抓到） | 已修（生成器改为两项 enum；`--check` 进预推送） |
 
 ### 10.2 分类统计
 
@@ -422,3 +423,41 @@ R4 / PD-5 套件的相对路径已进入验收哈希账本（`binding.py:73`、�
 
 “delete-candidate”为 0 的直接原因：每个脚本都至少被一份证据报告按路径引用；但引用不等于需要，
 真正可退役的是 `compare_read_candidates.py`（RR-F516）。
+
+## 11. S-06 / S-07 独立核查（2026-11-17）
+
+两个无上下文子代理只读核查外部报告的两条架构断言。结论均为**部分成立**。
+
+### 11.1 S-06 “Chart 有五种表示”
+
+- 被点名的 5 个类型全部存在，定义集中在 `engine/chart/include/cuexis/chart/`；`ChartRuntime`
+  是编译结果、`CanonicalSemanticChart` 是另一输入族的语义图，职责对得上。
+- “五种”是低估：实际 **7 个内容型表示**（另有 `ResolvedChartDocument`、`CandidateRuntimeArtifact`）、
+  **6 个载体**（`PrepareArtifact` 同时持有 ChartDocument/v4 源/v4 解析产物）、**3 类物理编码**。
+- 五者不是一条流水线：**三条输入族**（v1–v3 JSON / v4 JSON / Packed-CXT-candidate）共用
+  `ChartDocument` 与 `ChartRuntime` 两个节点。
+- “容易漏转”有实证：v4→v3 投影逻辑写了两份（`chart_v4_loader_projection.cpp:197-201` 与
+  `chart_v4_resolver_patching.cpp:256-260`）；`ChartWriter::write` 丢 timing/templates/behavior tracks
+  （RR-F401）。
+- 文档缺口：**没有**“表示与转换点”表；`CHART_V4_FORMAT.md:36-49` 用占位名
+  `SourceChartDocument`；`PACKED_CHART_FORMAT.md:68-80` 列出的 `semanticVersion` /
+  `behaviorDefinitions` 等字段在 `canonical_semantic_chart.hpp:180-188` 不存在。
+- 处置：新增“Chart 表示与转换点”表（文档）；F401 仍按 §9 P0 修代码。
+
+### 11.2 S-07 “只加不减”
+
+- 四个对象都还在：`cuexis_render`、Chart v1/v2/v3 wire、Packed（CXPk5 rev1）、旧 loader。
+- “Stage 7 没有删除任何模块”**成立**：模块级 0 删除/合并，反而新增 3 个
+  （judgement、gameplay_packed、execution_host）。
+- 但“只有加”不准确：代码路径删除 19 个文件（6 个真删、13 个拆分替换），另有 15 个文件跨模块
+  搬到 `app/execution_host`。
+- 把 `render` 当遗留物是误判：它是生产 ECS 数据面（runtime/playback/opengl/player 都链接）；
+  真正零生产消费者的是 `engine/particles`（空壳）与 `cuexis_debug`（仅测试）。
+- “没有删除清单”成立；但限制不是散注释，而是 **ADR 0041** 的明确决策（Chart v1–v3 保留、
+  `RenderFrame` 标 legacy 暂不删）。
+- 处置：阶段收尾把“删除/合并清单”列为交付物（文档政策）；空壳与测试专用模块登记为清理候选。
+
+| ID | 位置 | 事实 | 结论 |
+| --- | --- | --- | --- |
+| RR-F521 | `engine/particles/`（仅 `CMakeLists.txt:1-3`） | 空 INTERFACE 库，`engine/CMakeLists.txt` 从不 `add_subdirectory` | 已核实（清理候选） |
+| RR-F522 | `engine/debug/`（87 行） | 唯一链接方是 `cuexis_debug_tests`；`DebugDraw` 生产 0 引用 | 已核实（清理候选） |

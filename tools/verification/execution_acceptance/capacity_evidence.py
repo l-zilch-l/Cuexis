@@ -1,3 +1,4 @@
+# Reproduction mapping: tools/verification/execution_acceptance/README.md (R4 evidence).
 """One bound capacity process and independent CPU, logical GPU and residency evidence.
 
 This collector never widens an allowance or grants acceptance. A formal invocation must be

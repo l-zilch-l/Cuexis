@@ -1,6 +1,6 @@
 # Cuexis Packed Chart v1
 
-状态：candidate；Chart v5 Foundation 的物理存储提案；未实现、未冻结生产 wire format
+状态：candidate；Chart v5 Foundation 的物理存储提案；v1 wire 已实现（Reader/Writer 仅 mode 0），尚未冻结为生产 wire format
 
 更新日期：2026-09-05
 

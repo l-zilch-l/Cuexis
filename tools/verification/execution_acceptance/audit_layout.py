@@ -1,19 +1,24 @@
 """Compile sizeof-only probes; no gameplay, device access, or formal sampling."""
+# Reproduction mapping: tools/verification/execution_acceptance/README.md (R4 evidence).
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[3]
-VCVARS = Path("D:/Program Files/Microsoft Visual Studio/18/Community/VC/Auxiliary/Build/vcvars64.bat")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--build", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--vcvars", type=Path, default=Path(os.environ["CUEXIS_VCVARS"]) if "CUEXIS_VCVARS" in os.environ else None,
+                        help="vcvars64.bat path (or set CUEXIS_VCVARS)")
     args = parser.parse_args()
+    if args.vcvars is None:
+        parser.error("--vcvars is required (or set CUEXIS_VCVARS)")
     build = args.build.resolve()
     destination = args.output.resolve()
     destination.mkdir(parents=True, exist_ok=False)
@@ -33,7 +38,7 @@ def main():
                *["/I" + str(path) for path in includes],
                "/Fo" + str(destination / "element-sizes.obj"), "/Fe" + str(executable), str(source)]
     batch = destination / "compile.cmd"
-    batch.write_text('@echo off\ncall "' + str(VCVARS) +
+    batch.write_text('@echo off\ncall "' + str(args.vcvars) +
                      '" >nul\nif errorlevel 1 exit /b %errorlevel%\n' +
                      subprocess.list2cmdline(command) + "\nexit /b %errorlevel%\n", encoding="utf-8")
     with (destination / "compile.log").open("wb") as log:

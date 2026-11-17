@@ -1,3 +1,4 @@
+# Reproduction mapping: tools/verification/execution_acceptance/README.md (R4 evidence).
 """Fixed independent P3 observer checks; never substitutes instrumented time for normal time."""
 import argparse
 import copy
