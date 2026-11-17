@@ -2,7 +2,7 @@
 
 状态：active
 
-更新日期：2026-11-17
+更新日期：2026-11-18
 
 <!-- cuexis-meta
 id: STATUS-HANDOFF
@@ -19,35 +19,65 @@ authority: owns
 - 阶段：Stage 7-RR
 - 工作项：`stage_plans/active/stage-07-rr/plan.md`
 - 登记册：`stage_plans/active/stage-07-rr/findings.md`
-- 分支/PR：`stage-7.5` / PR #46
+- 分支/PR：`stage-7.5` / PR #46；SDK API `0.9.1`；构建 `26.11.18-1`
+- 当前状态：文档重构与整理已收口，门禁全绿；**没有进行中的实现批次**
 
 ## 当前任务
 
-本轮文档工作已完成：D1/D3–D9、Chart 表示与转换点页、格式文档两处失真修正，构建身份推进到
-`26.11.18-1`。当前没有进行中的文档批次。
+下一对话承担**项目架构的精简设计与后续阶段计划调整**，只做设计与计划，**不实施代码**：
+确定哪些产品线/格式线/时间基/渲染路径/会话层保留、合并或退役，并把结论写成未来阶段计划可以
+消费的语义（范围、约束、待决问题、验收方向），但不写实现批次、不改生产代码。
+
+## 已知架构事实（下一轮起点）
+
+- 默认主线 A：`Player -> PlaybackSession -> Chart v1–v4 + CXC v1 -> Runtime/OpenGL`。
+- candidate 链 B：`Player --execution-test-only -> ExecutionHost -> Judgement + gameplay_packed`；
+  它有自己的所有权线程、时钟（`RealtimeClock`）、提交门与帧循环。
+- 默认不可达但默认编译：`cuexis_chart` 的 packed/cxt_v2/candidate 约 **40.9%**（7,302/17,864 行）；
+  `gameplay_packed` 4,821 行；`judgement` 20,518 行无默认生产消费者。
+- 时间：`PlayerClock`、`RealtimeClock`、`HostClock`、`CuexisAudio` 四个实现；A/B 链 offset 语义不等价，
+  `tickScale` 未被 playback 读取。
+- 渲染：B 链（presentation_renderer）是生产路径；A 链 `renderFrame` 只剩“清一帧”，
+  `renderPresentationFrame` 是绕过校验的半入口。
+- 会话：`RuntimeSession` 只被 `PlaybackSession` 调用 9 个方法；`ExecutionHost` 与 Playback 有 11 项
+  重复职责；公共头随 `CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE` 给出 39/51 两条声明面。
+- Chart v1–v3 Reader、v1/v2→v4 迁移受 **ADR 0041** 保护，不能当死代码删；CXC v1 是 **accepted**
+  当前容器；Packed/CXT v2/Chart v5 是 candidate，默认零入口。
 
 ## 下一步
 
-1. 等 owner 决定开始“架构精简决策表”（只读盘点版）。
-2. 等 CI 结果；Version Gate 需在当天构建上通过。
+1. 读 [架构研究](stage_reports/stages/stage-07-rr/2026-11-17-architecture-research.md)、
+   [架构证据](stage_reports/stages/stage-07-rr/2026-11-17-architecture-evidence.md)、
+   [Chart 表示与转换点](architecture/CHART_REPRESENTATIONS.md)、本阶段 plan/findings 与 ADR 0041/0042。
+2. 产出**只读盘点版“精简决策表”**：模块 × 产品线/格式/时间/渲染维度 × 当前状态
+   （production/candidate/test-only/dead）× 消费者 × 合同指针 × 删除/合并成本 × 阻塞项。
+3. 把精简结论写成未来阶段计划的**新增语义**（范围、约束、待决问题、验收方向），future 计划仍用
+   提纲模板；不写批次、数值矩阵或实现落点。
+4. 涉及格式/合同退出的，先立/改 ADR 或 proposal，取得 owner 接受；本轮不改生产代码。
+5. 结束时更新本页；owner 未决定前不得进入实现。
 
 ## 阻塞与待决
 
-- 无阻塞；架构精简方向等 owner 确认后启动。
+- **B 链去留**：`ExecutionHost + judgement` 是否作为产品保留？决定 Packed/CXT v2/Chart v5 的去向。
+- **候选格式**：Packed、CXT v2、Chart v5 是提升为 active、继续 candidate，还是删除/归档？
+- **时间语义**：是否统一 A/B 的 offset 与时钟抽象；`tickScale` 是否进入合同。
+- **渲染**：是否删除 legacy `renderFrame` 与 `renderPresentationFrame` 半入口。
+- **公开面**：是否消除 `CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE` 造成的 39/51 双声明面（ADR 0042 冲突）。
+- **RR-3 路线**：已定 R1+R5+R6；R2/R3/R4 deferred，是否在本轮重启。
+- 以上都需要 owner 决策；未决定前只做盘点与选项，不落实现。
 
 ## 验证状态
 
-- `check_docs.py`：0（739 篇）；`check_docs_facts.py`：0（版本漂移 0）。
-- `gen_docs_map.py --check`：0；`check_tools_inventory.py`：0（30 scripts）。
-- `test_measurement_seek.py` 迁移后 6 tests OK；`git diff --check`：0。
+- 文档门禁：`check_docs.py` 0（739 篇）、`check_docs_facts.py` 0（版本漂移 0）、
+  `gen_docs_map.py --check` 0、`check_tools_inventory.py` 0（30 scripts）。
+- 合同测试：status / target / section 三个 contract tests 全 OK；schema `--check` OK；
+  `update_version.py --check` 一致（`26.11.18-1`）；`git diff --check` 0。
+- 本轮没有启动构建/CTest；CI 结果未等。
 
 ## 最近改动
 
-- 新增：`docs/HANDOFF.md`、`docs/templates/`、`.github/pull_request_template.md`
-- 计划体系：active 用详细模板、future 用提纲模板；Stage 7-RR 计划重写；7 份 future plan 提纲化
-- 文档收尾：版本漂移策略 D（按状态限定 + 示例/引用块豁免）、证据 meta 检查、seek 按 candidate 收口
-- 新增 `docs/architecture/CHART_REPRESENTATIONS.md`：7 个内容型表示、6 个载体、3 类编码、三条输入族；
-  修正 CHART_V4 §1.1 占位类型名与 PACKED §2 不存在的字段
-- 工具：`check_tools_inventory.py`、`practice/README.md`、`test_measurement_seek.py` 迁到 playback_performance
-- 清理：删除 `engine/particles`；`cuexis_debug` 标 test-only
-- 版本：构建身份推进到 `26.11.18-1`
+- 文档体系：HANDOFF、plan/report/handoff 模板、PR 模板；active/future 两级 plan 规则。
+- 计划：Stage 7-RR 计划重写；7 份 future plan 改为提纲；登记 D-04/D-05（RR-3 先 R1+R5+R6）。
+- 文档事实：版本漂移归零；证据 meta 检查；Chart 表示与转换点页；`CHART_V4`/`PACKED` 两处失真修正。
+- 代码/工具：Judgement seek 按 candidate 收口；删除 `engine/particles`；`cuexis_debug` 标 test-only；
+  `check_tools_inventory.py`；`test_measurement_seek.py` 迁移；构建身份 `26.11.18-1`。
