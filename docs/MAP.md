@@ -163,13 +163,13 @@ authority: index
 | [stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-result-candidate.md](stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-result-candidate.md) | candidate | owns | PD-5 C2: caller-owned neutral read result candidate |
 | [stage_plans/completed/stage-07/05-rpa-new/r3/trusted-restore-candidate.md](stage_plans/completed/stage-07/05-rpa-new/r3/trusted-restore-candidate.md) | candidate | owns | R3b explicit trusted restore candidate |
 | [stage_plans/future/realtime-playback-foundation/plan.md](stage_plans/future/realtime-playback-foundation/plan.md) | future | owns | Stage 7-RPA 计划迁移入口 |
-| [stage_plans/future/stage-08/plan.md](stage_plans/future/stage-08/plan.md) | future | owns | Stage 8 Implementation Plan: Chart v5 Formal Release and Semantic Convergence |
-| [stage_plans/future/stage-09/plan.md](stage_plans/future/stage-09/plan.md) | future | owns | Stage 9 Implementation Plan: Presentation Foundation and Chart v6 |
-| [stage_plans/future/stage-10/plan.md](stage_plans/future/stage-10/plan.md) | future | owns | Stage 10 Implementation Plan: Studio and Authoring Workflow |
-| [stage_plans/future/stage-11/plan.md](stage_plans/future/stage-11/plan.md) | future | owns | Stage 11 Implementation Plan: Presentation Geometry and Chart v7 |
-| [stage_plans/future/stage-12/plan.md](stage_plans/future/stage-12/plan.md) | future | owns | Stage 12 Implementation Plan: Scale, Desktop Performance and Target Platforms |
-| [stage_plans/future/stage-13/plan.md](stage_plans/future/stage-13/plan.md) | future | owns | Stage 13 Implementation Plan: Advanced Presentation and Chart v8 |
-| [stage_plans/future/stage-14/plan.md](stage_plans/future/stage-14/plan.md) | future | owns | Stage 14 Implementation Plan: Stable ABI and Playback SDK v1 |
+| [stage_plans/future/stage-08/plan.md](stage_plans/future/stage-08/plan.md) | future | none | Stage 8 计划（提纲）：Chart v5 正式发行与语义收敛 |
+| [stage_plans/future/stage-09/plan.md](stage_plans/future/stage-09/plan.md) | future | none | Stage 9 计划（提纲）：Presentation Foundation 与 Chart v6 |
+| [stage_plans/future/stage-10/plan.md](stage_plans/future/stage-10/plan.md) | future | none | Stage 10 计划（提纲）：Studio 与创作/发行工作流 |
+| [stage_plans/future/stage-11/plan.md](stage_plans/future/stage-11/plan.md) | future | none | Stage 11 计划（提纲）：Chart v7 几何表现 |
+| [stage_plans/future/stage-12/plan.md](stage_plans/future/stage-12/plan.md) | future | none | Stage 12 计划（提纲）：规模化、桌面性能与目标平台 |
+| [stage_plans/future/stage-13/plan.md](stage_plans/future/stage-13/plan.md) | future | none | Stage 13 计划（提纲）：高级表现与 Chart v8 |
+| [stage_plans/future/stage-14/plan.md](stage_plans/future/stage-14/plan.md) | future | none | Stage 14 计划（提纲）：稳定 ABI 与 Playback SDK v1 |
 | [stage_plans/completed/260830-followup/plan.md](stage_plans/completed/260830-followup/plan.md) | completed | owns | 260830-followup 维护计划 |
 | [stage_plans/completed/260830-followup/task-2-chart-cxc-parse-once.md](stage_plans/completed/260830-followup/task-2-chart-cxc-parse-once.md) | completed | owns | 任务 2：Chart/CXC parse-once 实施计划 |
 | [stage_plans/completed/260830-followup/task-3-branch-backlog.md](stage_plans/completed/260830-followup/task-3-branch-backlog.md) | completed | owns | 任务 3 分支 backlog |
