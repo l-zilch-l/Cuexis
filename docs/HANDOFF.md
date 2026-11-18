@@ -19,7 +19,9 @@ authority: owns
 - 阶段：Stage 7-RR
 - 工作项：`stage_plans/active/stage-07-rr/plan.md`
 - 登记册：`stage_plans/active/stage-07-rr/findings.md`
+- 仓库：`E:\Cuexis-worktree`（已从 D: 迁移；DSH 工作区已绑定 E）
 - 分支/PR：`stage-7.5` / PR #46；SDK API `0.9.1`；构建 `26.11.18-1`
+- 本地/远程：本地 `stage-7.5` ahead 1（路径更新 commit 未推送）；远程 PR #46 head `9d923fd4`
 - 当前状态：文档重构与整理已收口，门禁全绿；**没有进行中的实现批次**
 
 ## 当前任务
@@ -95,11 +97,12 @@ stage_plans/active/<stage>/
 
 ## 验证状态
 
-- 文档门禁：`check_docs.py` 0（739 篇）、`check_docs_facts.py` 0（版本漂移 0）、
+- 文档门禁：`check_docs.py` 0（740 篇）、`check_docs_facts.py` 0（版本漂移 0）、
   `gen_docs_map.py --check` 0、`check_tools_inventory.py` 0（30 scripts）。
 - 合同测试：status / target / section 三个 contract tests 全 OK；schema `--check` OK；
   `update_version.py --check` 一致（`26.11.18-1`）；`git diff --check` 0。
 - CI：`e1059507` 的 8 个 run 全 success；PR #46 为 40 pass / 4 skipped。
+- 远程 head `9d923fd4` 的 CI 未核实：GitHub API 当前 TLS 超时；本地路径更新 commit 未推送。
 - 构建已按 UTC 2026-11-18 推进到 `26.11.18-1`；本地日期与 UTC 跨日时，先检查 UTC 再推。
 
 ## 最近改动
@@ -108,4 +111,4 @@ stage_plans/active/<stage>/
 - 计划：Stage 7-RR 计划重写；7 份 future plan 改为提纲；登记 D-04/D-05（RR-3 先 R1+R5+R6）。
 - 文档事实：版本漂移归零；证据 meta 检查；Chart 表示与转换点页；`CHART_V4`/`PACKED` 两处失真修正。
 - 代码/工具：Judgement seek 按 candidate 收口；删除 `engine/particles`；`cuexis_debug` 标 test-only；
-  `check_tools_inventory.py`；`test_measurement_seek.py` 迁移；构建身份 `26.11.17-1`。
+  `check_tools_inventory.py`；`test_measurement_seek.py` 迁移；构建身份 `26.11.18-1`。

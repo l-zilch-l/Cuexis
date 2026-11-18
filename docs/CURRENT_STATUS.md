@@ -57,7 +57,7 @@ current_register: stage_plans/active/stage-07-rr/findings.md
   `stage-07-5`。能力实施、局部重构与性能稳定独立管理，产品实施未开始；入场前置增加
   “Stage 7-RR 当前计划范围完成并取得 owner 接受”。
 
-当前工作树为 `D:/Cuexis-worktree`，分支为 `stage-7.5`，HEAD `aac83e5e`（2026-11-16）。
+当前工作树为 `E:/Cuexis-worktree`，分支为 `stage-7.5`；HEAD 以 `git rev-parse --short HEAD` 为准，不在此页固化。
 PR #44 已于 2026-11-14（`564e0d90`）合并，PR #45 已于 2026-11-16（`aac83e5e`）合并；
 `codex/r4-closeout` 只作历史分支保留。本轮只做文档登记与索引接入，未取得 merge／release 授权。
 Stage 7 的历史发布证据与评论回读仍保存在 `out/evidence/stage7-publication-20261114/`，

@@ -28,7 +28,7 @@ authority: index
 - 查高级判定、局部重构及性能稳定：[Stage 7.5：Gameplay Evolution](stage_plans/active/stage-07-5/plan.md)；实时架构、命名及实体设备/同步验收：[RPA计划（2026-10-11，已归档）](archive/stage-07-planning/03-rpa-legacy/2026-10-11-rpa-plan.md)；判定/表现解耦重构：[Stage 7-PD计划](stage_plans/completed/stage-07/04-pd/plan.md)。
 - 查已受限退出的 RPA R1–R4 历史整改与限制：[RPA性能整改候选设计](stage_plans/completed/stage-07/05-rpa-new/plan.md)、[R1实施计划](stage_plans/completed/stage-07/05-rpa-new/r1/plan.md)；历史性能修改方案：[2026-10-14 已归档](archive/stage-07-planning/03-rpa-legacy/2026-10-14-rpa-performance-modification-plan.md)。
 - 查方案与反例：[5/6候选实施输入](proposals/implementation-input/stage-07/s7a-5-6-design-selection.md)。
-- 当前实施只在 `D:/Cuexis-worktree`；准入树只读保留，迁移验证与授权边界见[两树整合记录](stage_reports/stages/stage-07/90-shared/worktree-consolidation/2026-10-26-worktree-consolidation.md)。
+- 当前实施只在 `E:/Cuexis-worktree`；准入树只读保留，迁移验证与授权边界见[两树整合记录](stage_reports/stages/stage-07/90-shared/worktree-consolidation/2026-10-26-worktree-consolidation.md)。
 - 查已有证据：[Stage 7分类报告索引](stage_reports/stages/stage-07/README.md)。
 
 ## 按用途查找
