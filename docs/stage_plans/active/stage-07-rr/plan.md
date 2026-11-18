@@ -50,7 +50,7 @@ Stage 7（受限退出） -> Stage 7-RR（本阶段） -> Stage 7.5（Gameplay E
 | --- | --- | --- | --- |
 | 代码/合同复核基线 `aac83e5e`（2026-11-16） | 已固定 | [CURRENT_STATUS](../../../CURRENT_STATUS.md)、[架构研究](../../../stage_reports/stages/stage-07-rr/2026-11-17-architecture-research.md) | 代码/schema/CMake 变动后重跑证据命令；旧报告标为历史，不把旧结论外推到新基线 |
 | SDK API `0.9.1` | 已固定 | [CuexisVersion.cmake](../../../../cmake/CuexisVersion.cmake) | 停止安装面/ABI 批次，先取得版本决定 |
-| 日期构建 `26.11.17-1` | 当前权威 | 同上；早期报告中的构建字面量是历史写作时点 | 以版本文件为准，不回写旧报告 |
+| 日期构建 `26.11.18-1` | 当前权威 | 同上；早期报告中的构建字面量是历史写作时点 | 以版本文件为准，不回写旧报告 |
 | Stage 7 受限退出交接 | 已接受 | [R4 交接](../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-14-limited-exit-and-defect-handoff.md) | 不重开判定；受影响批次改为只登记、不改写 |
 | Stage 7.5 入场前置 | 待本阶段接受 | [Stage 7.5 计划](../stage-07-5/plan.md) | 本阶段未取得 owner 接受前，7.5 不开始产品实施 |
 | 文档门禁与证据 | 已接入 | [BUILDING](../../../guides/BUILDING.md)、[发现登记册](findings.md)、[报告索引](../../../stage_reports/stages/stage-07-rr/README.md) | 门禁失败即停该批；条目未复核或报告缺失时，不据此删代码、不改合同 |
