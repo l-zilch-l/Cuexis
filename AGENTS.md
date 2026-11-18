@@ -57,8 +57,7 @@
 - 开工先读 [docs/HANDOFF.md](docs/HANDOFF.md)；收尾或暂停时更新其任务、下一步、阻塞与验证状态
   （`check_docs_facts.py` 检查字段，active 阶段超过 7 天未更新会警告）。
 - 报告结论只写“成立 / 部分成立 / 不成立 / 无法核实”；没有验证证据不得写“已修复”。
-- 提交 / PR 标题：用 [提交与 PR 标题约定](docs/guides/COMMIT_AND_PR_CONVENTION.md) 的模板；
-  commit subject 用 `<type>(<scope>): <summary>`，PR title 用 `<Area>: <summary>`。
+- 提交 / PR 标题：遵循 [提交与 PR 标题约定](docs/guides/COMMIT_AND_PR_CONVENTION.md)。
 - 委派：适合委派的工作优先用 no-context 子代理；派发时把任务所需上下文写全，不依赖父对话。
 - 方案：给 owner 建议/方案时至少 5 个不同选项，写清优劣，并给出推荐与理由。
 
