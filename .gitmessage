@@ -1,0 +1,9 @@
+# <type>(<scope>): <summary>
+#
+# type: feat | fix | docs | test | build | ci | refactor | perf | chore | revert
+# scope: optional, e.g. chart, playback, docs, tools, ci
+# summary: imperative, lowercase start, <= 72 chars, no trailing period
+#
+# Why:
+#
+# Refs:

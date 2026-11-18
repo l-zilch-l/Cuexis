@@ -1,3 +1,6 @@
+<!-- PR 标题：<Area>: <summary>，见 docs/guides/COMMIT_AND_PR_CONVENTION.md。
+     GitHub 不会从本模板生成标题，创建 PR 时请手动按格式填写。 -->
+
 ## Summary
 
 <!-- 一段话说明这个 PR 做了什么、为什么现在做。 -->

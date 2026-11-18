@@ -25,6 +25,7 @@ authority: index
 - [编码、错误和线程政策](CODE_POLICY.md)
 - [依赖政策](DEPENDENCY_POLICY.md)
 - [版本政策](VERSIONING.md)
+- [提交与 PR 标题约定](COMMIT_AND_PR_CONVENTION.md)：commit subject 与 PR title 的模板、示例和配置方式
 
 工程指南描述构建、编码、依赖和版本操作规则；格式编写指南提供面向作者的字段速查和手写示例，
 不替代 `docs/formats/` 下的格式合同，也不复制一次性验证证据。阅读顺序只给出"读什么、按什么

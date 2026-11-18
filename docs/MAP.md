@@ -64,6 +64,7 @@ authority: index
 | [formats/TIMING_MODEL.md](formats/TIMING_MODEL.md) | active | owns | Cuexis TimingMap 规范 |
 | [guides/BUILDING.md](guides/BUILDING.md) | active | owns | Building Cuexis |
 | [guides/CHART_V4_AUTHORING.md](guides/CHART_V4_AUTHORING.md) | active | owns | Chart v4 谱面编写指南（兼容入口） |
+| [guides/COMMIT_AND_PR_CONVENTION.md](guides/COMMIT_AND_PR_CONVENTION.md) | active | owns | 提交与 PR 标题约定 |
 | [guides/DIAGNOSTIC_CODES.md](guides/DIAGNOSTIC_CODES.md) | current | references | 诊断码与类别（可读视图） |
 | [guides/LIMITS.md](guides/LIMITS.md) | current | references | Chart 与 Packed 预算上限 |
 | [guides/PLAYER_OPTIONS.md](guides/PLAYER_OPTIONS.md) | current | references | Player 命令行选项 |
