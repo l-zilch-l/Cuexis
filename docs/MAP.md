@@ -156,6 +156,7 @@ authority: index
 | [stage_plans/active/stage-07-5/README.md](stage_plans/active/stage-07-5/README.md) | active | index | Stage 7.5: Gameplay Evolution Plans |
 | [stage_plans/active/stage-07-5/plan.md](stage_plans/active/stage-07-5/plan.md) | active | owns | Stage 7.5 Plan: Gameplay Evolution |
 | [stage_plans/active/stage-07-rr/README.md](stage_plans/active/stage-07-rr/README.md) | active | index | Stage 7-RR：Review and Refactoring After Stage-7 |
+| [stage_plans/active/stage-07-rr/architecture-design.md](stage_plans/active/stage-07-rr/architecture-design.md) | active | none | Stage 7-RR 架构设计附页：Player 实时执行与普通播放收敛 |
 | [stage_plans/active/stage-07-rr/findings.md](stage_plans/active/stage-07-rr/findings.md) | active | owns | Stage 7-RR 发现登记册（2026-11-17） |
 | [stage_plans/active/stage-07-rr/plan.md](stage_plans/active/stage-07-rr/plan.md) | active | owns | Stage 7-RR Plan: Review and Refactoring After Stage-7 |
 | [stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-candidate-and-memory-domains-plan.md](stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-candidate-and-memory-domains-plan.md) | accepted | owns | PD-5 读取候选与分域内存观测实施方案 |
