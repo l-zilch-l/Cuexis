@@ -79,7 +79,7 @@ authority: owns
 
 | ID | 位置 | 问题 | 证据状态 |
 | --- | --- | --- | --- |
-| RR-F131 | `docs/formats/GAMEPLAY_V2_SPEC.md:467-473`；`engine/judgement/src/input.cpp:182-184,191-205` | 同一 canonical 身份在同一 Tick 再次入场，Spec 要求 `judgement.input.same_tick_collision` / `invalid_relation`，实现返回 `late.duplicate_queue_entry` / `late_policy_incomplete`；同 Tick 不同身份又被报成 `same_tick_collision`。两个稳定码被互换，且被 `tests/judgement/execution_profile_tests.cpp:276-285` 固化 | 已核实 |
+| RR-F131 | `docs/formats/GAMEPLAY_V2_SPEC.md:467-473`；`engine/judgement/src/input.cpp:182-184,191-205` | 同一 canonical 身份在同一 Tick 再次入场，Spec 要求 `judgement.input.same_tick_collision` / `invalid_relation`，实现返回 `late.duplicate_queue_entry` / `late_policy_incomplete`；同 Tick 不同身份又被报成 `same_tick_collision`。两个稳定码被互换，且被 `tests/judgement/execution_profile_tests.cpp:276-285` 固化 | 首次登记；入口与首错判断已在 [§15](#astra-九项设计修订) 纠正 |
 | RR-F132 | `gameplay-v2-execution-types.md:77-85`；`execution_kernel_prepare.cpp:61,77,92-93` | 实现把 `;gameplay.fold.finite.v1` 追加到 `judgementSemanticRevision`、`;grade.signed-interval.v1` 追加到 `factSemanticRevision`；Spec 规定前者应进 ruleset/session identity，后者写作 `signed-interval/1`（拼写不同） | 已核实（补充第一条位置偏差） |
 | RR-F133 | `CHART_FORMAT.md:483,496-497`；`behavior_system.cpp:174-177,210-238` | 旧 `chartTimeMs` 重载 `beat` 保持 0，含 v3 event/step track 的程序经该重载求值会按 Beat 0 采样。仅当全部事件 `startBeat>0` 时才是“基准值”；`startBeat≤0` 的事件会在 Beat 0 返回其值。头文件无限制声明、测试不覆盖 track | 已核实（“一律基准值”收窄） |
 | RR-F134 | `execution-coordination.md:39-44`；`sdl_audio_transport.cpp:490-518` | `activateReplacement()` 只 close/open，不重置 `clockAnchorUs/presentedSampleUs/clockErrorUs`，也不推进 discontinuity；`presentedClockObservation()` 在 Playing 下直接返回旧样本，`min(*clockAnchorUs, observedAnchor)` 让旧锚持续胜出 | 已核实（补充未推进 discontinuity） |
@@ -464,6 +464,8 @@ R4 / PD-5 套件的相对路径已进入验收哈希账本（`binding.py:73`、�
 
 ## 12. 提案复核记录（2026-11-21）
 
+本节保留上一轮文档处置的原有结论；本轮收敛与验收状态见 §13。
+
 本轮以 `ed1537fd` 为文档修订依据，核对本地 `Cuexis-Stage-7-RR-PR47-审查报告-2026-11-21.md` 与源码、台账和 owner 已接受共识。该外部报告是待验材料；P1–P6 是提案编号，与本册严重度编号无关。按 owner 本轮补设计授权，P1–P5 五项设计缺口均已有待审推荐；下表只记录核对判断，详细设计见链接。
 
 | 项 | 结论 | 核对与文档处置 | 证据与详细设计 |
@@ -478,3 +480,34 @@ R4 / PD-5 套件的相对路径已进入验收哈希账本（`binding.py:73`、�
 历史研究继续绑定 `aac83e5e`。本轮实跑 `git diff --name-status aac83e5e..ed1537fd -- engine app tests CMakeLists.txt CMakePresets.json cmake/CuexisVersion.cmake vcpkg.json`，列出变化仅为根 CMake、Presets、版本、`engine/debug/CMakeLists.txt`、删除 `engine/particles/CMakeLists.txt`、`tests/pd/CMakeLists.txt` 与 `vcpkg.json`；该范围内 `engine/chart`、`engine/judgement`、`engine/playback` 及 `app/player` 实现源码无差异。这是有限差异核对，未重跑历史证据命令，不证明当前构建、安装面或运行验收通过。
 
 本轮修正状态为文档订正与待审设计补齐，实现未验；详细提案由[附页](architecture-design.md)和[提案](simplification-proposal.md)维护，新增 P1–P6 技术推荐仍待审。本轮统一文档校验状态与结果以 [HANDOFF](../../../HANDOFF.md) 为准。
+
+## 13. 可实施性审查处置（2026-11-21）
+
+输入为本地 `pr47-stage-07-rr-plan-review-2026-11-21.md`（PR #47，`9623efa321fe488e9c6b8549f7059283020c1861`）。报告指出合同缺口及拆分未落地，**成立**；对照落点逐项登记在[可实施性索引](design-readiness.md#缺口追踪)。本轮推荐已具体化为候选合同，拆分已落盘；owner 已接受方向继续由[附页](architecture-design.md)维护。采用和实施证据分别见[计划](plan.md#唯一派单授权入口)、[验收](acceptance.md)。不改写 §12 的历史裁定。
+
+历史研究绑定 `aac83e5e`；`ed1537fd` 是上一轮文档对照。当前设计核对使用 `9623efa3`。本轮静态比较 `git diff --name-status aac83e5e..9623efa3 -- engine app tests CMakeLists.txt CMakePresets.json cmake tools vcpkg.json`，可见根 CMake、候选 preset、版本及清单、debug CMake、`engine/particles/CMakeLists.txt` 删除、PD 测试 CMake、`tools/CMakeLists.txt` 与验证工具变化；其中工具构建登记含 `cuexis_asset_importer`。该范围内 Chart/Judgement/Playback/Player 实现源码无差异。此核对不沿用旧安装、运行或构建证据。实施核验按 [T-01](tasks/T-01.md) 记录实际 SHA、变化对象及需重跑用例。
+
+本轮验证以 [HANDOFF](../../../HANDOFF.md#验证状态) 为准。新增技术实现、安装和运行验收未开始；延期与范围不随设计补齐而变化。
+
+## 14. 自主技术收敛与任务对齐（2026-11-22）
+
+本轮承接 §13 的审查基线，在 owner 已授权自主细化设计的范围内收敛合同、对齐任务并开展独立冷启动审查。已有共识由[架构附页](architecture-design.md)保留；本轮补充的技术细节由代理按该边界形成，不记为 owner 逐字接受，不改变历史审查及受限退出结论。
+
+架构附页已接入运行、时间与判定，画幅、Player 与写回，以及后继成品和 CXC 源包的候选合同。任务与证据要求见[架构附页](architecture-design.md#6-已接受的行为边界与候选合同入口)、[可实施性索引](design-readiness.md)及[验收](acceptance.md)。
+
+三合同与 16 卡已对齐；四组无父上下文首轮审查发现、作者补全及原审查者最终复验记录在[本轮可实施性报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md)。设计判断为**成立**：Huygens、Epicurus、Bacon、Nash 全部成立，无本轮未决合同项。Epicurus 三处 fixture 与原六项规则均闭合；Bacon 定义体 typed span／stable merge 及关联 fixture 阻断关闭。报告转录四组 tool 回执作为耐久记录，并列出每卡首改、测试、正反例和停止条件的冷启动定位证据。
+
+Einstein 独立调度阴性与集成路由核对在其快照内成立；主代理 18 项独立 Fraction/整数算例成立，位宽为 160/128 位。主代理本批链接／标题锚、尾空白与保护段检查成立，证据路径、哈希与限制见报告。主代理已生成 MAP／AGENTS 并完成最终组合文档检查，文档、正式事实检查、16 卡调度、17 项检查器测试及 diff 全部 exit 0；实际日志位于 `out/review/stage-07-rr/T-01/main-final-20261122/`。本次唯一补录已完成，设计收敛及本单元文档工作收尾并停止修改。Einstein 随后 `--capture` 封存最终文件及独立再验，固定证据目录 `out/review/stage-07-rr/T-01/final-20261122/` 的读取口径见报告，不再回写本批文件。本轮生产实现未开始，文档门禁、算术复算和设计审查不替代运行验收或阶段采用；D-05 与 NEXT 采用规则不变。验证路由见 [HANDOFF](../../../HANDOFF.md#验证状态)。
+
+## 15. Astra 执行者复审（2026-11-22）
+
+首次复审时，合并结论为**部分成立**。[当期报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-executor-review.md#结果与证据)列出逐项证据、触发、最小修正和两项撤回记录。以下九项在首次登记时均待收敛。
+
+- P1：AX-01 默认 shared 帧调用；AX-02 裸 Reader 身份参照；AX-03 RPA 作者测试依赖；AX-04 Retry 生产命令前置。
+- P2：AX-05 同 tick 接纳与提交；AX-06 成功窗阶段序号；AX-07 Graph 相机键；AX-08 迁移 CLI 验收配置；AX-09 其他打包工具帮助归属。
+
+### Astra 九项设计修订
+
+AX-01 至 AX-09 均已写入候选合同或任务卡；逐项落点、实施时的正反例及交叉复验回执见[修订报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md)。生产未实施。
+
+AX-05 / RR-F131：首次登记把两个入口的稳定码判作互换；首次复审又误以为同一原 tick 的不同 subject 能在旧 submit 触发 dispatch collision。普通规范化 (`false`) 与旧执行 (`true`) 各有既定首错；后者在路由前已拒绝同原 tick 的不同 subject。用原 tick 900/901 汇到 901 才触发本例的 dispatch collision。保留旧 profile §8 与既有生产输入逻辑，RPA occurrence 分开验收。见 [T-03](tasks/T-03.md#任务级验收)和[纠正依据](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md#结果与证据)。

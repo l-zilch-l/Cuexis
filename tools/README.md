@@ -14,6 +14,7 @@
 | --- | --- |
 | `tools/check_docs.py` | 包装 `verification/check_docs.py`；预推送 + CI `documentation-contracts` |
 | `tools/verification/check_docs.py` | 文档总门禁（链接/H1/可达性/状态合同） |
+| `tools/verification/check_plan_schedule.py` | 文档总门禁调用的 Stage 7-RR 调度检查；独立运行 `python -B tools/verification/check_plan_schedule.py [--stage-dir PATH]` |
 | `tools/verification/check_docs_facts.py` | 预推送：生成物新鲜度与版本漂移；CI `documentation-contracts` 同步运行 |
 | `tools/verification/gen_docs_map.py` / `tools/verification/gen_docs_limits.py` / `tools/verification/gen_docs_codes.py` / `tools/verification/gen_player_options.py` | 不是独立门禁；由 `check_docs_facts.py` 导入校验，没有外部 `--check` 调用 |
 | `tools/check_version_gate.py` / `tools/check_version_gate_tests.py` | CI `version-gate`；CTest `cuexis_contract_version_gate` |
@@ -51,6 +52,7 @@ cuexis_asset_importer                    VerifyAssetImporter.cmake（shader-tool
 | `tools/prepare_sdk_approval.ps1` / `tools/prepare_sdk_approval.cmd` | 生成并发布 SDK owner 批准评论（只在需要 SDK API 变更时） |
 | `tools/check_sdk_approval_assistant_tests.ps1` | 批准助手回归测试 |
 | `tools/measure_playback_method.py` | 播放方法耗时测量（人工） |
+| `tools/verification/test_check_plan_schedule.py` | 调度门禁的临时 fixture 正反回归；运行 `python -B tools/verification/test_check_plan_schedule.py` |
 | `tools/gameplay/gameplay_assembler/generate_author_schema.py` | 生成 gameplay author schema；带 `--check` |
 | `tools/practice/` | v5 练习 fixture 与设备验收包（见 `practice/README.md`） |
 

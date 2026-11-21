@@ -156,14 +156,36 @@ authority: index
 | [stage_plans/active/stage-07-5/README.md](stage_plans/active/stage-07-5/README.md) | active | index | Stage 7.5: Gameplay Evolution Plans |
 | [stage_plans/active/stage-07-5/plan.md](stage_plans/active/stage-07-5/plan.md) | active | owns | Stage 7.5 Plan: Gameplay Evolution |
 | [stage_plans/active/stage-07-rr/README.md](stage_plans/active/stage-07-rr/README.md) | active | index | Stage 7-RR：Review and Refactoring After Stage-7 |
+| [stage_plans/active/stage-07-rr/acceptance.md](stage_plans/active/stage-07-rr/acceptance.md) | active | owns | Stage 7-RR 阶段验收 |
 | [stage_plans/active/stage-07-rr/architecture-design.md](stage_plans/active/stage-07-rr/architecture-design.md) | active | none | Stage 7-RR 架构设计附页：Player 实时执行与普通播放收敛 |
 | [stage_plans/active/stage-07-rr/findings.md](stage_plans/active/stage-07-rr/findings.md) | active | owns | Stage 7-RR 发现登记册（2026-11-17） |
 | [stage_plans/active/stage-07-rr/plan.md](stage_plans/active/stage-07-rr/plan.md) | active | owns | Stage 7-RR Plan: Review and Refactoring After Stage-7 |
+| [stage_plans/active/stage-07-rr/schedule.md](stage_plans/active/stage-07-rr/schedule.md) | active | owns | Stage 7-RR 调度 |
+| [stage_plans/active/stage-07-rr/tasks/T-01.md](stage_plans/active/stage-07-rr/tasks/T-01.md) | active | owns | T-01 基线、派单包与冷启动 |
+| [stage_plans/active/stage-07-rr/tasks/T-02.md](stage_plans/active/stage-07-rr/tasks/T-02.md) | active | owns | T-02 RR-1 状态事实对齐 |
+| [stage_plans/active/stage-07-rr/tasks/T-03.md](stage_plans/active/stage-07-rr/tasks/T-03.md) | active | owns | T-03 RR-2 既有合同与诊断 |
+| [stage_plans/active/stage-07-rr/tasks/T-04.md](stage_plans/active/stage-07-rr/tasks/T-04.md) | active | owns | T-04 RR-3/R1 构建隔离 |
+| [stage_plans/active/stage-07-rr/tasks/T-05.md](stage_plans/active/stage-07-rr/tasks/T-05.md) | active | owns | T-05 RR-3/R5 像素几何与 GL 边界 |
+| [stage_plans/active/stage-07-rr/tasks/T-06.md](stage_plans/active/stage-07-rr/tasks/T-06.md) | active | owns | T-06 RR-3/R5 帧链路与旧调用替换 |
+| [stage_plans/active/stage-07-rr/tasks/T-07.md](stage_plans/active/stage-07-rr/tasks/T-07.md) | active | owns | T-07 RR-3/R6 与 RR-5 文档、注释减重 |
+| [stage_plans/active/stage-07-rr/tasks/T-08.md](stage_plans/active/stage-07-rr/tasks/T-08.md) | active | owns | T-08 独立 RR-4 公共面 |
+| [stage_plans/active/stage-07-rr/tasks/T-09.md](stage_plans/active/stage-07-rr/tasks/T-09.md) | active | owns | T-09 RR-6 退出与交接 |
 | [stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-candidate-and-memory-domains-plan.md](stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-candidate-and-memory-domains-plan.md) | accepted | owns | PD-5 读取候选与分域内存观测实施方案 |
 | [stage_plans/completed/stage-07/05-rpa-new/r4/caps-proposal.md](stage_plans/completed/stage-07/05-rpa-new/r4/caps-proposal.md) | accepted | owns | R4 O1 预算与生产参数裁定包 |
 | [stage_plans/completed/stage-07/05-rpa-new/r4/decision-proposal.md](stage_plans/completed/stage-07/05-rpa-new/r4/decision-proposal.md) | accepted | owns | R4 独立推进与 owner 裁定方案 |
 | [stage_plans/completed/stage-07/05-rpa-new/r4/formal-registration.md](stage_plans/completed/stage-07/05-rpa-new/r4/formal-registration.md) | accepted | owns | R4 固定取证登记与剩余预注册 |
-| [stage_plans/active/stage-07-rr/simplification-proposal.md](stage_plans/active/stage-07-rr/simplification-proposal.md) | candidate | references | Stage 7-RR 架构精简方案（待审阅） |
+| [stage_plans/active/stage-07-rr/contracts/prepared-artifact.md](stage_plans/active/stage-07-rr/contracts/prepared-artifact.md) | candidate | owns | P3：后继准备内容、成品与 CXC 源包 |
+| [stage_plans/active/stage-07-rr/contracts/render-player-writer.md](stage_plans/active/stage-07-rr/contracts/render-player-writer.md) | candidate | owns | Stage 7-RR 候选合同：渲染、Player 与写回 |
+| [stage_plans/active/stage-07-rr/contracts/runtime-timing.md](stage_plans/active/stage-07-rr/contracts/runtime-timing.md) | candidate | references | P1 / P3：运行内核、谱面时间与成品合同 |
+| [stage_plans/active/stage-07-rr/design-readiness.md](stage_plans/active/stage-07-rr/design-readiness.md) | candidate | index | Stage 7-RR 可实施性索引 |
+| [stage_plans/active/stage-07-rr/simplification-proposal.md](stage_plans/active/stage-07-rr/simplification-proposal.md) | candidate | summarizes | Stage 7-RR 架构精简方案导读 |
+| [stage_plans/active/stage-07-rr/tasks/T-10.md](stage_plans/active/stage-07-rr/tasks/T-10.md) | candidate | owns | T-10 候选运行内核与当次输出 |
+| [stage_plans/active/stage-07-rr/tasks/T-11.md](stage_plans/active/stage-07-rr/tasks/T-11.md) | candidate | owns | T-11 候选格式、诊断与作者比例 |
+| [stage_plans/active/stage-07-rr/tasks/T-12.md](stage_plans/active/stage-07-rr/tasks/T-12.md) | candidate | owns | T-12 候选时间映射与作者编译 |
+| [stage_plans/active/stage-07-rr/tasks/T-13.md](stage_plans/active/stage-07-rr/tasks/T-13.md) | candidate | owns | T-13 候选成品装载 |
+| [stage_plans/active/stage-07-rr/tasks/T-14.md](stage_plans/active/stage-07-rr/tasks/T-14.md) | candidate | owns | T-14 候选会话控制与时钟 |
+| [stage_plans/active/stage-07-rr/tasks/T-15.md](stage_plans/active/stage-07-rr/tasks/T-15.md) | candidate | owns | T-15 候选 Player 启动与交互 |
+| [stage_plans/active/stage-07-rr/tasks/T-16.md](stage_plans/active/stage-07-rr/tasks/T-16.md) | candidate | owns | T-16 候选 Writer 与损失报告 |
 | [stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-result-candidate.md](stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-result-candidate.md) | candidate | owns | PD-5 C2: caller-owned neutral read result candidate |
 | [stage_plans/completed/stage-07/05-rpa-new/r3/trusted-restore-candidate.md](stage_plans/completed/stage-07/05-rpa-new/r3/trusted-restore-candidate.md) | candidate | owns | R3b explicit trusted restore candidate |
 | [stage_plans/future/realtime-playback-foundation/plan.md](stage_plans/future/realtime-playback-foundation/plan.md) | future | owns | Stage 7-RPA 计划迁移入口 |

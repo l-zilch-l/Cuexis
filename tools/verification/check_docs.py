@@ -6,6 +6,7 @@ pretend that candidate Chart/CXC/CXT files are production schemas.
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import re
@@ -196,6 +197,21 @@ class CheckFailure:
 
     def __str__(self) -> str:
         return f"{self.path.relative_to(ROOT)}: {self.message}"
+
+
+def check_stage7_rr_plan_schedule(
+    failures: list[CheckFailure], docs_dir: Path = DOCS
+) -> None:
+    checker_path = ROOT / "tools" / "verification" / "check_plan_schedule.py"
+    spec = importlib.util.spec_from_file_location("cuexis_check_plan_schedule", checker_path)
+    if spec is None or spec.loader is None:
+        failures.append(CheckFailure(checker_path, "cannot load plan schedule checker"))
+        return
+    checker = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(checker)
+    stage_dir = docs_dir / "stage_plans" / "active" / "stage-07-rr"
+    for path, message in checker.validate_stage_dir(stage_dir):
+        failures.append(CheckFailure(path, message))
 
 
 def markdown_files() -> list[Path]:
@@ -1037,6 +1053,7 @@ def main() -> int:
     check_script_policy(failures)
     check_future_stage_plans(failures)
     check_active_plan_sections(failures)
+    check_stage7_rr_plan_schedule(failures)
     check_recent_report_sections(failures)
     check_evidence_metadata(failures)
     check_stage_directory_layout(failures)

@@ -2,7 +2,7 @@
 
 状态：active
 
-更新日期：2026-11-21
+更新日期：2026-11-22
 
 <!-- cuexis-meta
 id: STATUS-HANDOFF
@@ -14,15 +14,13 @@ authority: owns
 
 ## 当前阶段与工作项
 
-- 计划：[Stage 7-RR plan](stage_plans/active/stage-07-rr/plan.md)；登记册：[findings](stage_plans/active/stage-07-rr/findings.md)。
-- 设计：[architecture-design](stage_plans/active/stage-07-rr/architecture-design.md)；提案：[simplification-proposal](stage_plans/active/stage-07-rr/simplification-proposal.md)。
-- 文档路由与阶段状态：[MAP](MAP.md)、[CURRENT_STATUS](CURRENT_STATUS.md)。
+- [计划](stage_plans/active/stage-07-rr/plan.md)、[登记册](stage_plans/active/stage-07-rr/findings.md)、[可实施性索引](stage_plans/active/stage-07-rr/design-readiness.md)。
 
 ## 当前任务
 
-本轮已按 owner 授权补齐[提案](stage_plans/active/stage-07-rr/simplification-proposal.md)中 P1–P5 五项设计缺口的待审方案并同步台账。新增 P1–P6 技术推荐仍待逐项审阅；已接受设计见[附页](stage_plans/active/stage-07-rr/architecture-design.md)，本轮记录见[计划](stage_plans/active/stage-07-rr/plan.md)和[提案复核记录](stage_plans/active/stage-07-rr/findings.md#12-提案复核记录2026-11-21)。
+下一次对话从 [T-01：基线、派单包与冷启动](stage_plans/active/stage-07-rr/tasks/T-01.md)开始，按[现行实施范围](stage_plans/active/stage-07-rr/plan.md#唯一派单授权入口)执行。
 
-## Plan 文档拆分（下一轮并行工作）
+## Plan 文档拆分（长期约定）
 
 目标：把 active plan 拆成四类文档；先在 Stage 7-RR 试点，不一次性迁移全部计划。
 
@@ -48,16 +46,17 @@ stage_plans/active/<stage>/
 
 ## 下一步
 
-1. 逐项审阅[提案](stage_plans/active/stage-07-rr/simplification-proposal.md)新增的 P1–P6 技术推荐；实施仍须满足[计划](stage_plans/active/stage-07-rr/plan.md)的范围、前置与授权门禁。
+1. 按[本次启动授权](stage_plans/active/stage-07-rr/plan.md#12-交接与变更控制)执行 [T-01](stage_plans/active/stage-07-rr/tasks/T-01.md#步骤)：核验当前提交和[已完成的证据](stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md#执行记录)，绑定实施基线与合同修订，登记采用。
+2. T-01 验收后按[调度表](stage_plans/active/stage-07-rr/schedule.md)派发现行 T-01–T-09 图中的后续任务；各卡按[阶段验收](stage_plans/active/stage-07-rr/acceptance.md)取证。
 
 ## 阻塞与待决
 
-待审推荐：[架构精简提案](stage_plans/active/stage-07-rr/simplification-proposal.md)；已接受设计：[设计附页](stage_plans/active/stage-07-rr/architecture-design.md)；阶段范围：[计划](stage_plans/active/stage-07-rr/plan.md)；发现：[登记册](stage_plans/active/stage-07-rr/findings.md)。
+[T-01 停止条件](stage_plans/active/stage-07-rr/tasks/T-01.md#停止条件)、[阶段停止条件](stage_plans/active/stage-07-rr/plan.md#10-回滚阻塞与停止条件)、[后继采用边界](stage_plans/active/stage-07-rr/plan.md#唯一派单授权入口)。
 
 ## 验证状态
 
-主代理本轮实跑 `check_docs.py`、`gen_docs_map.py --check`、`check_docs_facts.py` 与 `git diff --check`，四项均通过（退出码 0）。实现与运行验收：未开始。
+[文档检查与复验记录](stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md#执行记录)、[逐项验收入口](stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md#结果与证据)。
 
 ## 最近改动
 
-- 本轮共识订正、台账同步与有限基线差异核对见[计划](stage_plans/active/stage-07-rr/plan.md)和[提案复核记录](stage_plans/active/stage-07-rr/findings.md#12-提案复核记录2026-11-21)。
+- [实施启动交接记录](stage_plans/active/stage-07-rr/plan.md#12-交接与变更控制)。
