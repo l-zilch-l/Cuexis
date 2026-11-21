@@ -2,7 +2,7 @@
 
 状态：candidate（Stage 6 候选格式合同，阶段已关闭）
 
-更新日期：2026-10-22
+更新日期：2026-11-20
 
 <!-- cuexis-meta
 id: FORMAT-CHART_ENTRY_V1_FORMAT
@@ -26,7 +26,8 @@ source factories.
 The extension maps a portable relative path to a typed chart entry. It is metadata, not a
 second chart format and not a public representation of the Packed semantic model.
 
-The Stage 6 candidate path is deliberately narrow:
+The Stage 6 static candidate path is deliberately narrow and uses
+`compilerProfile=candidate.static-tap-lanes4-v1` with `encoding=packed-chart`:
 
 - Packed flags must be 1 and candidateRevision must be 1.
 - The registered feature is cuexis.gameplay.candidate.lanes4, version 1.
@@ -42,7 +43,7 @@ This contract is candidate-only. It does not enable a default Writer, a formal C
 capability, a stable C ABI, or a new SDK version.
 
 Gameplay V2 的独立 `gameplay-graph` Playback entry 不属于本 Stage 6 extension。现有
-candidate factory 只接受上文的 `packed-chart` tap profile；遇到带有 V2 Graph entry kind
+Stage 6 static candidate factory 只接受上文的 Packed tap profile；遇到带有 V2 Graph entry kind
 的未来扩展必须稳定拒绝，不能按 Packed Chart、source entry 或空表现路径解释。该扩展只有
 在 Stage 7A/Stage 8 的 manifest、Graph round-trip、prepared identity 和同一 Judgement
 kernel 证据全部接受后，才可加入新的 entry contract。
@@ -71,6 +72,11 @@ true; source records may omit them.
 | compilerProfile | string | Required for playback; registered static or Behavior profile below |
 | expandedEntityCount | unsigned integer | Required for playback; maximum 40,000 |
 | expandedRequirementCount | unsigned integer | Required for playback; maximum 40,000 |
+
+`playback=true` 时 encoding 必须匹配具名 profile：`candidate.static-tap-lanes4-v1` 必须为
+`packed-chart`；`candidate.behavior-v2-v1` 必须为 `source-json`。Behavior profile 不接受
+Packed encoding，也不把其他 source-json 条目自动提升为 Playback entry。所有候选入口均须由调用方
+显式选择；普通 CXC v1 默认路径仍使用 v1–v4 Project entry，不探测或隐式选择此扩展。
 
 The entry schema rejects unknown fields. Packed flags, candidateRevision, section registration,
 CRC, decoded byte counts and eventCount are checked from the selected Packed bytes; they are not
@@ -109,7 +115,8 @@ Packed bytes, or depend on a tools target.
 
 ## 4. Candidate Validation Order
 
-The order below is observable through the first stable diagnostic and is part of the contract:
+The order below applies to the static Packed profile. It is observable through the first stable
+diagnostic and is part of that profile's contract. The Behavior source profile follows section 7.
 
 1. Validate the extension object, entry array, path syntax, ordering and duplicate conflicts.
 2. Validate the explicit path and require one matching playback record.
@@ -328,8 +335,9 @@ CLI 首用拓扑按原 P78-05 A：`cuexis_chart_candidate --gameplay` 为既有 
 
 ## 7. Behavior Source Candidate Profile
 
-The explicit `candidate.behavior-v2-v1` profile selects `kind=chart`, `encoding=source-json`,
-`playback=true`. It does not extend the static Packed profile or register Packed Behavior sections.
+The explicit `candidate.behavior-v2-v1` profile requires `kind=chart`, `encoding=source-json`,
+`playback=true`. `source-json` is mandatory for this profile, not an interchangeable encoding. It
+does not extend the static Packed profile or register Packed Behavior sections.
 Its source is `cuexis.chart` version 5 with UUID Objects and `behavior.event` version 2.
 The component structure follows the existing typed Object representation; Renderable alpha and
 `render.alpha` event endpoints are exact integers in [0,255], normalized once at compile.

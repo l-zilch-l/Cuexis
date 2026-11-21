@@ -2,7 +2,7 @@
 
 状态：candidate；Chart v5 Foundation 的物理存储提案；v1 wire 已实现（Reader/Writer 仅 mode 0），尚未冻结为生产 wire format
 
-更新日期：2026-09-05
+更新日期：2026-11-20
 
 <!-- cuexis-meta
 id: FORMAT-PACKED_CHART_FORMAT
@@ -244,7 +244,7 @@ ARCH 按 mask 升序、REQ0 按 `(entity ordinal, localId)`、CNS0 按 set paylo
 | 80 | `stringCount` | u32 | STR0 字符串数 |
 | 84 | `referenceCount` | u32 | REF0 行总数（全部 typed reference kind） |
 | 88 | `candidateRevision` | u32 | 本草案为 `1`；正式发行时为 `0` |
-| 92 | `headerCrc32` | u32 | 对 96 bytes Header 计算，本字段临时填零 |
+| 92 | `headerCrc32` | u32 | 对 Header bytes `[0,92)` 计算；结果以 little-endian u32 存于 `[92,96)` |
 
 本草案对应的 Foundation/Stage 6 Header 必须为 `flags=1, candidateRevision=1`，并通过
 显式 candidate path 加载。Schema/wire 合同发生不兼容候选修改必须递增 revision；
@@ -255,6 +255,12 @@ CRC 使用 CRC-32/ISO-HDLC：reflected polynomial `0xEDB88320`、init 和 xorout
 `0xffffffff`，对 bytes 顺序计算，结果 u32 little-endian；`123456789` 的检查值为
 `0xcbf43926`。CRC 用于损坏检测，不是认证。整文件 SHA-256 属于外部 artifact identity，
 不能把它直接写进被自身覆盖的 Header。
+
+本节按现行 Reader/Writer 更正文档：Header 总长仍为 96 bytes，计算范围排除保存结果的
+`[92,96)`，其余 Header 信息均参与 CRC。此处仅澄清合同，不改变现有文件字节、CRC 算法或
+artifact identity，现有 Reader/Writer 产物无需重写。按本节更正前的旧文字采用“96 bytes
+且 CRC 字段置零”实现的工具或文件，与现行实现不兼容；若需迁移，须显式转换并更新受影响
+entry 的 artifact SHA-256，不自动尝试两种算法。
 
 `referenceCount` 是 REF0 的**全部行数**，也就是 Reader 逐行读取并校验
 `maxPackedReferences` 的那个计数（R3 裁定 A13：旧文字「asset 类引用数」与 Writer/Reader

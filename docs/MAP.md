@@ -163,6 +163,7 @@ authority: index
 | [stage_plans/completed/stage-07/05-rpa-new/r4/caps-proposal.md](stage_plans/completed/stage-07/05-rpa-new/r4/caps-proposal.md) | accepted | owns | R4 O1 预算与生产参数裁定包 |
 | [stage_plans/completed/stage-07/05-rpa-new/r4/decision-proposal.md](stage_plans/completed/stage-07/05-rpa-new/r4/decision-proposal.md) | accepted | owns | R4 独立推进与 owner 裁定方案 |
 | [stage_plans/completed/stage-07/05-rpa-new/r4/formal-registration.md](stage_plans/completed/stage-07/05-rpa-new/r4/formal-registration.md) | accepted | owns | R4 固定取证登记与剩余预注册 |
+| [stage_plans/active/stage-07-rr/simplification-proposal.md](stage_plans/active/stage-07-rr/simplification-proposal.md) | candidate | references | Stage 7-RR 架构精简方案（待审阅） |
 | [stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-result-candidate.md](stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-result-candidate.md) | candidate | owns | PD-5 C2: caller-owned neutral read result candidate |
 | [stage_plans/completed/stage-07/05-rpa-new/r3/trusted-restore-candidate.md](stage_plans/completed/stage-07/05-rpa-new/r3/trusted-restore-candidate.md) | candidate | owns | R3b explicit trusted restore candidate |
 | [stage_plans/future/realtime-playback-foundation/plan.md](stage_plans/future/realtime-playback-foundation/plan.md) | future | owns | Stage 7-RPA 计划迁移入口 |

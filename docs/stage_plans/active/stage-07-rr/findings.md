@@ -2,7 +2,7 @@
 
 状态：active；只登记复核发现，不包含任何修复结论
 
-更新日期：2026-11-17
+更新日期：2026-11-20
 
 <!-- cuexis-meta
 id: PLAN-active.stage-07-rr.findings
@@ -57,10 +57,10 @@ authority: owns
 
 | ID | 位置 | 问题 | 证据状态 |
 | --- | --- | --- | --- |
-| RR-F111 | `docs/formats/PACKED_CHART_FORMAT.md:246`；`engine/chart/src/packed_chart_tables_writer.cpp:557`；`packed_chart_tables_inspect.cpp:73` | 文档要求对 96 字节 Header 计算 CRC 且 CRC 字段临时置零；实现只对前 92 字节求值（完全不含 CRC 字段）。按文档实现的外部写入器与仓库 Reader 互不接受 | 已核实 |
+| RR-F111 | [Packed §5.1](../../../formats/PACKED_CHART_FORMAT.md#51-fixed-header96-bytes)；`packed_chart_tables_writer.cpp` / `packed_chart_tables_inspect.cpp` | 原文规定完整 Header 置零计算，与 Reader/Writer 的前 92 字节算法不一致。owner 已接受按现行实现更正合同，Header 总长仍为 96 字节；兼容后果见 [D-25](architecture-design.md#d-25-兼容入口与格式合同收敛)。 | 合同更正已完成；实现未变；真实外部消费者及互操作情况未核实 |
 | RR-F112 | `packed_chart_tables_sections.cpp:55-57,489-490`；`decoder_tables.cpp:195-197`；`decoder_model.cpp:340-344` | Writer 硬写 descriptor 0；Reader 把 TIME mode 1 判 `packed.time.invalid`、REQ0 判 `packed.requirements.codec`。`writeBeatDescriptor/readBeatDescriptor` 全仓 0 调用者；GridDelta codec 仅测试调用 | 已修（文档：删除 mode 1 与 Writer 选择段） |
 | RR-F113 | `limits.hpp:58-59`；`canonical_chart_loader_primitives.cpp:325-330`；`CHART_FORMAT.md:159-167` | v1/v2/v3 生产 Reader 额外拒绝 `|分子| > 1e12`、`分母 > 1e9`（`chart.beat.limit_exceeded`）；`chart.beat.out_of_range` 来自 v4 reader 与 `rational_beat.cpp` 算术，不是这两个上限。两个上限已由 `guides/LIMITS.md:62-63` 生成登记，但未进格式合同 | 已核实（“未在任何文档声明”收窄为“未在格式合同声明”） |
-| RR-F114 | `CXC_FORMAT.md:254-255`；`cxc_candidate.cpp:434-440`；`CHART_ENTRY_V1_FORMAT.md:333-334` | 两份格式合同互相冲突：CXC 要求 playback entry 必须是 `packed-chart`，Chart Entry 合同允许 `candidate.behavior-v2-v1` + `source-json`；实现按后者 | 已修（文档：两份合同均加冲突标注，实现未改） |
+| RR-F114 | [CXC](../../../formats/CXC_FORMAT.md)；[Chart Entry §7](../../../formats/CHART_ENTRY_V1_FORMAT.md#7-behavior-source-candidate-profile)；`cxc_candidate.cpp` | 原合同对 candidate playback encoding 的范围不一致。owner 已接受按具名 profile 对齐：静态 profile 必须为 `packed-chart`，Behavior profile 必须为 `source-json`；普通 CXC v1 默认入口继续沿用原路径。 | 两份合同已对齐并移除冲突提示；实现未变；本轮未重跑候选播放验收 |
 | RR-F115 | `CXT_V2_FORMAT.md:317,323,326,690` | `cxtImports`/`cxtInstances` 全仓 0 命中；§6 写成合同未标未实现；§12:690 的“Chart invocation”同样过度声明。展开只由工具显式传参触发 | 已修（文档：§6 移入 proposals，§12 收窄） |
 | RR-F116 | `CHART_ENTRY_V1_FORMAT.md:126-145`；`cxc_candidate.cpp` | 文档声明 16 码中 2 个零产出（`resource_closure_invalid` 只有异命名空间的 `playback.candidate.*`）；实现另发 **12 个**未登记码（原文写 5 个，计数订正）。文档写“minimum stable set”，额外码本身不违约 | 已修（文档：删除 2 个零产出码） |
 
