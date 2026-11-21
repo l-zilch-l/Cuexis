@@ -1,5 +1,12 @@
 # R3 40K 启动可观测性与 prepare 成本
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-r3-40k-startup-observability-and-cost
+status: evidence
+authority: none
+date: 2026-11-01
+-->
+
 状态：有限本地诊断；两项实现已进入根树，附件已归档并自校验。这不是 R3 / R4 或 Stage 7 接受，
 也不是 40K、240 FPS、首次加载门槛或全配置矩阵的通过。
 

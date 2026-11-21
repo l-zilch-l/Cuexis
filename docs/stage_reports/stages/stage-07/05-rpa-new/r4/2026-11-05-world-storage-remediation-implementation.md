@@ -1,5 +1,12 @@
 # R4 World Component Page Storage Remediation Implementation
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-05-world-storage-remediation-implementation
+status: evidence
+authority: none
+date: 2026-11-05
+-->
+
 状态：implemented; correctness verified; no memory re-admission
 
 日期：2026-11-05

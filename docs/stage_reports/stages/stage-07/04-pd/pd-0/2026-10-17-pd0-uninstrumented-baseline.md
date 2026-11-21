@@ -1,5 +1,12 @@
 # PD-0 无编译插桩正式基线协议与实施
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-0.2026-10-17-pd0-uninstrumented-baseline
+status: evidence
+authority: none
+date: 2026-10-17
+-->
+
 状态：原正式组通过；后续补充复测未通过，当前 PD-0 退出待重新核验
 
 后续证据见[三轮补充复测与归档](2026-10-17-pd0-supplemental-retests-and-archive.md)。
@@ -9,7 +16,7 @@
 
 ## 范围
 
-采用[设计细则 §9.2](../../../../../stage_plans/active/stage-07/04-pd/design.md#92-基线与对照方法)
+采用[设计细则 §9.2](../../../../../stage_plans/completed/stage-07/04-pd/design.md#92-基线与对照方法)
 更新后的三类证据边界。历史失败及[块级诊断](2026-10-17-measurement-method-history.md)保留，
 本轮不解释为测量算法缺陷已消失或历史根因已解决，不引入新 owner 或修改账本容量。
 

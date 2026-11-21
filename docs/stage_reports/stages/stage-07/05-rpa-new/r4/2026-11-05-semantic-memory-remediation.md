@@ -1,12 +1,19 @@
 # R4 语义内存整改：两轮诊断与 World 下界失败
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-05-semantic-memory-remediation
+status: evidence
+authority: none
+date: 2026-11-05
+-->
+
 状态：dated evidence；本批停止，memory/P8 未准入；未修改 O1 预算
 
 日期：2026-11-05
 
 返回 [New RPA 报告索引](../README.md)。当前进度以
 [CURRENT_STATUS](../../../../../CURRENT_STATUS.md) 为准；执行范围消费
-[R4 计划 §4](../../../../../stage_plans/active/stage-07/05-rpa-new/r4/plan.md#4-独立修复重开与停止规则)。
+[R4 计划 §4](../../../../../stage_plans/completed/stage-07/05-rpa-new/r4/plan.md#4-独立修复重开与停止规则)。
 原两轮 origin 工具诊断和缺口见[O1 后工具准入](2026-11-05-post-o1-tool-admission.md)，
 本报告不覆盖其原始记录。
 

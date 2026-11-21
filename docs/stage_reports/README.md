@@ -7,6 +7,11 @@
 报告保存带日期的实施、审查和验证证据。报告中的“下一步”只代表其快照日期，不能重新定义
 [CURRENT_STATUS.md](../CURRENT_STATUS.md)。
 
+**证据不是权威。** `docs/stage_reports/**` 与 `docs/archive/**` 只回答“当时做了什么、结果如何”，
+不得据其推断当前实现或当前阶段；事实以代码、`schemas/`、`cmake/CuexisVersion.cmake` 与合同文档为准。
+每份报告头部带 `cuexis-meta` 块（`status: evidence`、`authority: none`，文件名带日期时另有 `date`），
+每个阶段目录的 README 标注该阶段证据整体是 `closed` 还是 `active`。结构按阶段/批次组织，不迁移、不合并。
+
 `reviews/<topic>/` 保存跨阶段专题复核。一篇复核可以包含多份正文（例如按审查轴拆分的
 Standards / Spec 记录），由该专题自己的 `README.md` 承担导航；轴与轴之间保持独立，
 不合并成一张表，也不跨轴重排。
@@ -23,6 +28,8 @@ Standards / Spec 记录），由该专题自己的 `README.md` 承担导航；�
 - [Chart Format Foundation](stages/chart-format-foundation/README.md)
 - [Stage 6](stages/stage-06/README.md)：[关闭报告](stages/stage-06/completion.md)（2026-09-27 关闭并归档）
 - [Stage 7 分类证据索引](stages/stage-07/README.md)：准入基线、裁定记录、设计与实施、验证审计、交接规划。
+
+- [Stage 7-RR：Review and Refactoring After Stage-7](stages/stage-07-rr/README.md)：复核发现处置与重构证据；当前尚无报告。
 
 - [Stage 7.5：Gameplay Evolution](stages/stage-07-5/README.md)：独立能力演进、局部重构与性能稳定。
 

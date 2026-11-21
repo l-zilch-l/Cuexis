@@ -1,5 +1,12 @@
 # Real device retest: same Tick collision
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.device.2026-10-09-device-retest-same-tick-collision
+status: evidence
+authority: none
+date: 2026-10-09
+-->
+
 状态：设备复测失败；部分真实输入路径已取得证据，非完整验收通过
 
 证据日期：2026-10-09（Asia/Shanghai）

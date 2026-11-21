@@ -1,23 +1,34 @@
 # Cuexis Documentation
 
+<!-- cuexis-meta
+id: INDEX-README
+status: active
+authority: index
+-->
+
 状态：现行文档入口
 
-更新日期：2026-11-14
+更新日期：2026-11-17
 
 本文档是 Cuexis 文档的导航页，不复制产品合同、阶段证据或完整字段定义。当前项目状态只
 以 [CURRENT_STATUS.md](CURRENT_STATUS.md) 为准。
 
-定位入口：[Stage 7 阶段、计划与材料一览](stage_plans/active/stage-07/README.md)；报告、批次与原始证据从该表直接进入。
+定位入口：[Stage 7 阶段、计划与材料一览](stage_plans/completed/stage-07/README.md)；报告、批次与原始证据从该表直接进入。
 
 ## 当前工作入口
 
+- **先读 [Documentation Map](MAP.md)**：它按状态列出全部合同与计划，并给出一条阅读规则；不要全仓 grep `docs/`。
 - 查RPA领域词义：[Glossary](api/GLOSSARY.md)。
 - 查当前进度：[CURRENT_STATUS](CURRENT_STATUS.md)。
-- 查 Stage 7A 历史实施与已接受交接：[plan-a S7A-7/8接手与决策](stage_plans/active/stage-07/01-a/plan.md#34-s7a-78-下一轮决策首用合同与接手2026-10-07)；全局路线见[Stage 7总计划](stage_plans/active/stage-07/plan.md)。
-- 查高级判定、局部重构及性能稳定：[Stage 7.5：Gameplay Evolution](stage_plans/active/stage-07-5/plan.md)；实时架构、命名及实体设备/同步验收：[RPA计划（2026-10-11，已归档）](archive/stage-07-planning/03-rpa-legacy/2026-10-11-rpa-plan.md)；判定/表现解耦重构：[Stage 7-PD计划](stage_plans/active/stage-07/04-pd/plan.md)。
-- 查已受限退出的 RPA R1–R4 历史整改与限制：[RPA性能整改候选设计](stage_plans/active/stage-07/05-rpa-new/plan.md)、[R1实施计划](stage_plans/active/stage-07/05-rpa-new/r1/plan.md)；历史性能修改方案：[2026-10-14 已归档](archive/stage-07-planning/03-rpa-legacy/2026-10-14-rpa-performance-modification-plan.md)。
+- 新对话先读[交接页](HANDOFF.md)：当前任务、下一步、阻塞与验证状态。
+- 写作模板：[templates/](templates/README.md)（plan / report / handoff）。
+- 查 Stage 7 后的复核发现与重构批次：[Stage 7-RR 计划](stage_plans/active/stage-07-rr/plan.md)；
+  逐条问题、证据状态与拆分预算事实见[发现登记册](stage_plans/active/stage-07-rr/findings.md)。
+- 查 Stage 7A 历史实施与已接受交接：[plan-a S7A-7/8接手与决策](stage_plans/completed/stage-07/01-a/plan.md#34-s7a-78-下一轮决策首用合同与接手2026-10-07)；全局路线见[Stage 7总计划](stage_plans/completed/stage-07/plan.md)。
+- 查高级判定、局部重构及性能稳定：[Stage 7.5：Gameplay Evolution](stage_plans/active/stage-07-5/plan.md)；实时架构、命名及实体设备/同步验收：[RPA计划（2026-10-11，已归档）](archive/stage-07-planning/03-rpa-legacy/2026-10-11-rpa-plan.md)；判定/表现解耦重构：[Stage 7-PD计划](stage_plans/completed/stage-07/04-pd/plan.md)。
+- 查已受限退出的 RPA R1–R4 历史整改与限制：[RPA性能整改候选设计](stage_plans/completed/stage-07/05-rpa-new/plan.md)、[R1实施计划](stage_plans/completed/stage-07/05-rpa-new/r1/plan.md)；历史性能修改方案：[2026-10-14 已归档](archive/stage-07-planning/03-rpa-legacy/2026-10-14-rpa-performance-modification-plan.md)。
 - 查方案与反例：[5/6候选实施输入](proposals/implementation-input/stage-07/s7a-5-6-design-selection.md)。
-- 当前实施只在 `D:/Cuexis-worktree`；准入树只读保留，迁移验证与授权边界见[两树整合记录](stage_reports/stages/stage-07/90-shared/worktree-consolidation/2026-10-26-worktree-consolidation.md)。
+- 当前实施只在 `E:/Cuexis-worktree`；准入树只读保留，迁移验证与授权边界见[两树整合记录](stage_reports/stages/stage-07/90-shared/worktree-consolidation/2026-10-26-worktree-consolidation.md)。
 - 查已有证据：[Stage 7分类报告索引](stage_reports/stages/stage-07/README.md)。
 
 ## 按用途查找

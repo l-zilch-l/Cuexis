@@ -1,5 +1,12 @@
 # R3 prepare 声明查找细分与优化
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-27-r3-prepare-declaration-optimization
+status: evidence
+authority: none
+date: 2026-10-27
+-->
+
 日期：2026-10-27。状态：已实施并完成本地核验；R3 未退出。
 
 承接用户继续细分和优化 prepare 的授权，以及[上一轮 Packed 索引优化](2026-10-27-r3-packed-index-optimization.md)。

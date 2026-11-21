@@ -1,5 +1,12 @@
 # Chart Format Foundation F1/F3：语义模型与 Packed 编码原语
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.chart-format-foundation.2026-09-05-f1-f3-semantic-model-and-codecs
+status: evidence
+authority: none
+date: 2026-09-05
+-->
+
 状态：completed task evidence；Foundation 仍为 active
 
 日期：2026-09-05

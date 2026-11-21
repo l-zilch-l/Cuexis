@@ -4,6 +4,12 @@
 
 更新日期：2026-11-14
 
+<!-- cuexis-meta
+id: INDEX-stage_plans.active.stage-07-5
+status: active
+authority: index
+-->
+
 Stage 7.5 是位于 Stage 7 与 Stage 8 之间的独立阶段，独立承接高级玩法能力、局部重构和性能稳定。
 
 - [独立阶段计划](plan.md)：范围、依赖、原 S7B/S7C 批次、GE-R 与 GE-F 验收。

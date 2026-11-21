@@ -4,6 +4,12 @@
 
 更新日期：2026-08-10
 
+<!-- cuexis-meta
+id: PLAN-historical.sdk-transition.plan
+status: historical
+authority: owns
+-->
+
 本文路径保留用于兼容旧链接。整理前的完整内容已归档到
 [CUEXIS_SDK_TRANSITION_PLAN_2026-08-10.md](../../../archive/CUEXIS_SDK_TRANSITION_PLAN_2026-08-10.md)。
 

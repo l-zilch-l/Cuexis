@@ -1,5 +1,11 @@
 # ADR 0021：以 SPIR-V 为中心的 Shader 管线
 
+<!-- cuexis-meta
+id: ADR-0021
+status: accepted
+authority: owns
+-->
+
 日期：2026-07-17
 
 状态：已接受

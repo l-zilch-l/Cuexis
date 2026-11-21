@@ -1,5 +1,12 @@
 # Cuexis Documentation Reorganization Report
 
+<!-- cuexis-meta
+id: EVIDENCE-reviews.documentation-reorganization-2026-08.2026-08-30-reorganization
+status: evidence
+authority: none
+date: 2026-08-30
+-->
+
 状态：completed
 
 快照日期：2026-08-30

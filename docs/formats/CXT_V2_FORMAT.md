@@ -4,6 +4,12 @@
 
 更新日期：2026-09-07
 
+<!-- cuexis-meta
+id: FORMAT-CXT_V2_FORMAT
+status: candidate
+authority: owns
+-->
+
 依据：[玩法抽象模型](../architecture/GAMEPLAY_ABSTRACTION_MODEL.md)、
 [Chart v5 计划](../stage_plans/active/chart-format-update-for-v5/plan.md)、
 [Packed Chart](PACKED_CHART_FORMAT.md) 和 [CXT v1](CXT_FORMAT.md)。
@@ -308,50 +314,11 @@ index 是 `0..count-1` 的只读整数，lexical scope 限于 body；Repeat 深�
 表达式。数组输入顺序不具语义，展开器按 nodeId canonical bytes 遍历；
 同时刻冲突由 typed semantic validator 处理，不能以“后写覆盖先写”解决。
 
-## 6. Chart v5 调用合同
+## 6. Chart v5 调用合同（未实现）
 
-以下是 Chart v5 新的**候选 Core 集成字段片段**，不是完整合法 Chart：
-
-```json
-{
-  "cxtImports": [
-    { "id": "pattern.stair", "source": "templates/stair.cxt" }
-  ],
-  "cxtInstances": [
-    {
-      "bindingId": "intro-stair",
-      "module": "pattern.stair",
-      "export": { "kind": "pattern", "id": "stair" },
-      "startBeat": { "numerator": 16, "denominator": 1 },
-      "parent": null,
-      "parameters": [
-        { "id": "groups", "value": 4 }
-      ],
-      "slotBindings": []
-    }
-  ]
-}
-```
-
-import 的 ID/source 均唯一，source 遵守 project-relative portable path 和小写 `.cxt`
-规则，并与 CXT moduleId 匹配。CXT 不伪装成 Asset record。bindingId 在整个 Chart 内
-唯一；module/export 必须解析且类型一致。未绑定 Parameter 使用 default，未知参数、
-重复参数和错误类型拒绝。parent 只允许显式 Chart object reference 或 null。
-
-`startBeat` 是 rational literal，作为统一 invocation 时间平移，**只在生成
-Requirement start/end Beat 时加一次**；不平移资源、Transform 或全局 Timing。
-Prototype/Pattern 的 Beat 都是 invocation-local，负值可用但须符合最终 Chart 范围。
-duration 值若未来开放不加 startBeat，必须注册为不同的时间单位。
-
-Core cxtInstances 的 export kind 只接受 prototype/pattern。prototype invocation
-生成一个实体，`slotBindings` 使用 `{ "slot": "...", "value": typed literal }`；
-pattern invocation 的 slotBindings 必须为空，Pattern 自己完成 emit bindings。
-这是一套新字段，不把 v4 `animationTemplateImports` 或 Animator Template Binding
-误用为实体生成入口。Animation 模块依旧由版本化 Animator binding 集成，详见第 9 节。
-
-生成实体与显式实体最终合并到同一 Canonical Semantic Chart；不新增作者层 notes
-数组。首版不允许 Chart 字段用字符串猜测 generated ID 并跨 invocation 绑定它；
-这种目标选择能力需要独立 typed reference 合同。
+本节的候选设计已移入
+[proposals/deferred/cxt-chart-v5-invocation.md](../proposals/deferred/cxt-chart-v5-invocation.md)；
+当前没有 `cxtImports` / `cxtInstances` 的 reader、writer 或 validator，Playback 默认路径不消费。
 
 ## 7. 生成身份和确定性
 
@@ -681,7 +648,7 @@ kind 和 budget exceeded。保留 moduleId、bindingId、node path、字段路�
 
 | 阶段 | 交付 |
 | --- | --- |
-| Foundation | 本文 Core grammar、Chart invocation、候选 tap/point 展开、稳定 identity、正反例和容量原型 |
+| Foundation | 本文 Core grammar、Chart invocation（候选设计，未实现，见 §6）、候选 tap/point 展开、稳定 identity、正反例和容量原型 |
 | Stage 6 | 显式 candidate source compile/Packed consume；仅使用已接受 subset，必要动画组合先补候选合同 |
 | Stage 7A | 最小 Input/Judgement/Replay 规则，替代候选演示 profile |
 | Stage 8 | Chart v5 正式 Schema、CXT Core 与 Animation Extension、Packed/CXC 发行及迁移 |

@@ -4,6 +4,12 @@
 
 更新日期：2026-08-31
 
+<!-- cuexis-meta
+id: PLAN-completed.260830-followup.task-2-chart-cxc-parse-once
+status: completed
+authority: owns
+-->
+
 所属计划：[260830-followup 维护计划](plan.md)
 
 完成报告：[2026-08-31 任务 2 完成报告](../../../stage_reports/reviews/260830-followup/2026-08-31-task-2-chart-cxc-parse-once.md)

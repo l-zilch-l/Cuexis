@@ -1,5 +1,12 @@
 # R4 自动收尾范围与 owner 裁定（2026-11-13）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-13-closeout-decisions
+status: evidence
+authority: none
+date: 2026-11-13
+-->
+
 状态：accepted execution decisions；不是性能、预算或退出接受记录
 
 日期：2026-11-13（Asia/Shanghai）

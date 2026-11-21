@@ -1,7 +1,14 @@
 # Gameplay Capsule v2 candidate format
 
 状态：candidate；2026-10-04 按 owner 的文档设计授权闭合 S7A-3 首次消费合同；
+
 不是生产 wire、Reader/Writer 实现证据或 S7A-3 整批关闭证明。
+
+<!-- cuexis-meta
+id: FORMAT-GAMEPLAY_CAPSULE_V2_FORMAT
+status: candidate
+authority: owns
+-->
 
 更新日期：2026-10-22
 

@@ -1,5 +1,12 @@
 # Player discrete device input repair
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.device.2026-10-09-player-discrete-device-repair
+status: evidence
+authority: none
+date: 2026-10-09
+-->
+
 状态：实际设备失败复核与实施验证；修复后真实设备结果待回填
 
 证据日期：2026-10-09

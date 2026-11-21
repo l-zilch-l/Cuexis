@@ -6,7 +6,7 @@
     "head": "6256af8b7d349b14a6d5b006d7632711152e96fa",
     "worktree": "clean at registration; no tracked file may be edited while a group runs",
     "authority": {
-      "gates": "docs/stage_plans/active/stage-07/05-rpa-new/plan.md 9.2-9.4",
+      "gates": "docs/stage_plans/completed/stage-07/05-rpa-new/plan.md 9.2-9.4",
       "load_and_seek_boundaries": "same plan, section 9.3 rows 'chu ci load' and 'shi yong Seek'; pd5-measurement-proposal.md section 4 restates them",
       "relative_read_rule": "plan 9.2 row 'du qu cai ding': whole-group upper bound <= 1.10 passes, lower bound > 1.10 is over, straddling is inconclusive; windows and raw paired ratios are disclosed",
       "repeatability_rule": "plan 9.2 row 'chong fu xing': (max-min)/median <= 15% per declared window; slow values are kept"

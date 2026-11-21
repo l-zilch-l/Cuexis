@@ -1,5 +1,12 @@
 # Runtime 本帧触及集合的平方扫描消除
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-29-r3-runtime-touched-membership
+status: evidence
+authority: none
+date: 2026-10-29
+-->
+
 状态：保留局部优化；R3、正式与设备接受保持独立
 
 日期：2026-10-29

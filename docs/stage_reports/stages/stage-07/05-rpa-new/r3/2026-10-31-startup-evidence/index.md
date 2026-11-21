@@ -1,5 +1,11 @@
 # 启动响应与渲染归因附件
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-31-startup-evidence.index
+status: evidence
+authority: none
+-->
+
 状态：冻结证据索引。返回 [批次报告](../2026-10-31-r3-startup-and-render-attribution.md)。
 
 - [复制来源、原始字节及哈希](manifest.json)

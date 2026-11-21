@@ -1,5 +1,12 @@
 # S7A-3/4 limited functional acceptance
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.01-a.s7a-3-4.2026-10-05-s7a-3-4-functional-acceptance
+status: evidence
+authority: none
+date: 2026-10-05
+-->
+
 状态：受限功能验收完成，容量整体证明未完成；S7A-9 保持 INCOMPLETE GATE
 
 日期：2026-10-05

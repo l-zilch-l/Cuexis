@@ -1,5 +1,12 @@
 # 2026-10-24 PD-5 判定报告与 Stage 7-PD 退出清单
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.exit.2026-10-24-pd5-verdict-and-stage-7-pd-exit
+status: evidence
+authority: none
+date: 2026-10-24
+-->
+
 **状态**：PD-5 判定完成，结论为**未通过但定案**；Stage 7-PD 退出清单待 owner 接受。**运行**：本报告不含任何新运行，全部数字引自已登记证据。**PD-5 acceptance**：not passed。**Stage 7-PD exit**：未批准。
 
 ## 1 判定

@@ -1,5 +1,12 @@
 # S7A-7/8 Graph、Entry 与 assembler 集成证据
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.01-a.s7a-7-8.2026-10-08-s7a-7-8-entry-assembler-progress
+status: evidence
+authority: none
+date: 2026-10-08
+-->
+
 状态：dated implementation evidence；受限验收进行中，未提交/推送
 
 证据日期：2026-10-08

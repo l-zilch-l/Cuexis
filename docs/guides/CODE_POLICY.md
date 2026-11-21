@@ -4,6 +4,12 @@
 
 更新日期：2026-10-20
 
+<!-- cuexis-meta
+id: GUIDE-CODE_POLICY
+status: accepted
+authority: owns
+-->
+
 ## 文件与命名
 
 ```text

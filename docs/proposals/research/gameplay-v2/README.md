@@ -1,5 +1,11 @@
 # Gameplay V2 研究重构
 
+<!-- cuexis-meta
+id: PROPOSALS-research.gameplay-v2.README
+status: candidate
+authority: none
+-->
+
 状态：candidate；研究稿，未接受，未实施
 
 更新日期：2026-10-02

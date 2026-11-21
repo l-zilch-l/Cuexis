@@ -1,8 +1,15 @@
 # PD-5 measurement readiness inspection
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.preparation.2026-10-19-pd5-measurement-readiness
+status: evidence
+authority: none
+date: 2026-10-19
+-->
+
 日期：2026-10-19。状态：**就绪检查及阈值提案已完成；正式采样未就绪、未启动**。
 owner 本次授权“PD-5 测量就绪检查和阈值方案”。未接受新增性能阈值、生产 profile 或 owner 拆分。
-本报告拥有现场证据；未来协议/候选阈值见[测量方案](../../../../../../stage_plans/active/stage-07/04-pd/pd-5/pd5-measurement-proposal.md)，
+本报告拥有现场证据；未来协议/候选阈值见[测量方案](../../../../../../stage_plans/completed/stage-07/04-pd/pd-5/pd5-measurement-proposal.md)，
 当前任务见 [CURRENT_STATUS](../../../../../../CURRENT_STATUS.md)。
 
 ## 1. 已现场核验
@@ -51,7 +58,7 @@ collector/runner，显式 schema 与 A/B 端点映射，保留旧脚本的原用
 
 15% 是进程重复性的原门槛，不是回归容忍线。当前方案另外提出本机 testOnly 的 10% CPU 回归容忍、
 240 Hz 参考下的分段/请求/GPU 预算、50 ms 控制和 1 秒 Reset 等交互目标；均待 owner 接受。
-具体端点、样本限制、三窗口协议、区间算法、内存完整性和拆分规则只在[方案](../../../../../../stage_plans/active/stage-07/04-pd/pd-5/pd5-measurement-proposal.md)维护。
+具体端点、样本限制、三窗口协议、区间算法、内存完整性和拆分规则只在[方案](../../../../../../stage_plans/completed/stage-07/04-pd/pd-5/pd5-measurement-proposal.md)维护。
 
 就绪结论：**可以进入测量工具与 profile 准备；现在不能直接启动具有接受效力的正式窗口。**
 方案接受后仍须关闭工具/边界/身份/profile 阻塞；此后才可生成正式 registration。

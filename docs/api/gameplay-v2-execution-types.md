@@ -4,6 +4,12 @@
 
 更新日期：2026-10-28
 
+<!-- cuexis-meta
+id: API-gameplay-v2-execution-types
+status: candidate
+authority: owns
+-->
+
 本文件补充 [Gameplay V2 ABI](GAMEPLAY_V2_ABI.md)，只拥有表示、所有权和接口。
 运行语义以[执行 Spec](../formats/gameplay-v2-execution-profile.md) 为准。
 所有类型属于内部 `cuexis::judgement`，不安装 judgement headers、不增加 SDK API、
@@ -48,7 +54,7 @@ Tick/Span/Delta 继续用现有 strong types；phase/action 继续用现有 enum
 | `InputReceiptPending` | owning observationKey、Tick dispatchTick、bool wasForwarded、optional<Tick> admissionFrontier/admissionHorizon；只 admission 确认 |
 | `ObservationRecord` | E、originKey、CommitTick、optional<CanonicalObservationKey>、bool progressed/accepted；observer inspection，非 Ledger |
 | `InputReceipt` | u64 consideredCount、optional<E> consumedBy、dispatchTick；无输入 receipt 不能假造原 observation |
-| `CoordinationCommit` | const-owned origin、phase/resource/contact/matcher patches 与 Fact descriptors；创建后只读 |
+| `CoordinationCommit` | const-owned origin、phase/resource/contact/matcher patches 与 Fact descriptors；创建后只读（**设计名**：当前 C++ 代码中没有该类型，现有对应物是 `kernel_types.hpp` 的 `CoordinationOrigin`） |
 | `KernelProjection` | owning immutable phase/resource/contact/observer/receipt/Fact prefix、optional<Tick> processedFrontier/lastAdvanceHorizon、KernelSessionState、optional fault diagnostic、optional failedTick/requestedHorizon、opaque self-owned runScope anchor；generation 不进入 identity |
 
 grade 字段不在 S7A-4 outcome 中编造值，S7A-5 首次消费再增加真实计算结果。

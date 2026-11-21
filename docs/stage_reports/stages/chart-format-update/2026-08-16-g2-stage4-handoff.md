@@ -1,5 +1,12 @@
 # Stage Chart Format Update CFU-G2 Stage 4 Typed Handoff
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.chart-format-update.2026-08-16-g2-stage4-handoff
+status: evidence
+authority: none
+date: 2026-08-16
+-->
+
 状态：CFU-G2 complete；Stage 4 typed handoff 已冻结，Stage Chart Format Update 仍为 active
 
 快照日期：2026-08-16

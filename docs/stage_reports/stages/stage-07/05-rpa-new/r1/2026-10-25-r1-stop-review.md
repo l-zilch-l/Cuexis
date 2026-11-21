@@ -1,12 +1,19 @@
 # R1 观测拆分、C6 与 failed Close 停审证据
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r1.2026-10-25-r1-stop-review
+status: evidence
+authority: none
+date: 2026-10-25
+-->
+
 日期：2026-10-25。
 
 状态：R1 已进入实施，**停在 C7/C7a 最小变更审查，尚未完成或退出**。本轮先补齐工作区文档并通过检查，再修改准入树观测与测试；生产许可判断未改。候选拒绝 patch 已生成并通过只读 apply check，尚未应用、编译或验证该候选修复。
 
 ## 1. 范围与起点
 
-执行依据：[R1 实施与验证计划](../../../../../stage_plans/active/stage-07/05-rpa-new/r1/plan.md)、[整改总计划 §6](../../../../../stage_plans/active/stage-07/05-rpa-new/plan.md)；R0 保持[带残余关闭](../r0/2026-10-24-r0-observation-and-anchor.md)。
+执行依据：[R1 实施与验证计划](../../../../../stage_plans/completed/stage-07/05-rpa-new/r1/plan.md)、[整改总计划 §6](../../../../../stage_plans/completed/stage-07/05-rpa-new/plan.md)；R0 保持[带残余关闭](../r0/2026-10-24-r0-observation-and-anchor.md)。
 
 主树 `D:\Cuexis-worktree` / `stage-7` / HEAD `0157486800f8f40a4121ef0d5ab26bd041a08304`；准入树 `D:\Cuexis-pd5-40k-admission` / `codex/pd5-gameplay-40k-admission` / HEAD `3e5837f63f76397429c9f7603fd7450d3ce9855d`。主树原四条文档 dirty 保留；准入树原 64 条（22 modified + 42 untracked）全部保存起始字节，另保存 6 个预计触碰干净文件、4 个候选新增路径的 absent 记录及构建身份。未 reset/clean、提交、推送或合入主树。
 

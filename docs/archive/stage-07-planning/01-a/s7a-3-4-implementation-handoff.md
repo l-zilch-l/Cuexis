@@ -1,15 +1,21 @@
 # S7A-3 remaining work and S7A-4 implementation handoff
 
+<!-- cuexis-meta
+id: ARCHIVE-stage-07-planning.01-a.s7a-3-4-implementation-handoff
+status: historical
+authority: none
+-->
+
 状态：historical planning snapshot；原S7A-3/4实施接手，现已归档
 
 更新日期：2026-10-05
 
 > 归档日期：2026-10-06；来源为b5594cf保存的规划正文，链接随目录迁移修正。
 > S7A-3/4当前受限功能验收已完成，容量整体证明仍属S7A-9；本文保留当时的基线与实施指令。
-> 当前排期和决策以 [主计划§3.2](../../../stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)
+> 当前排期和决策以 [主计划§3.2](../../../stage_plans/completed/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)
 > 及 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 为准，不按本文历史指令重做3/4。
 
-上级：[Stage 7 计划](../../../stage_plans/active/stage-07/plan.md)；当前状态唯一入口：[CURRENT_STATUS](../../../CURRENT_STATUS.md)。
+上级：[Stage 7 计划](../../../stage_plans/completed/stage-07/plan.md)；当前状态唯一入口：[CURRENT_STATUS](../../../CURRENT_STATUS.md)。
 设计依据：[ADR 0045](../../../adr/0045-gameplay-v2-execution-profile.md)、
 [execution Spec](../../../formats/gameplay-v2-execution-profile.md)、
 [author profile](../../../formats/gameplay-v2-author-profile.md)、

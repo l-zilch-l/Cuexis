@@ -1,8 +1,15 @@
 # R2 单行借用候选续做与父代理核验
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r2.2026-10-25-r2-single-row-continuation
+status: evidence
+authority: none
+date: 2026-10-25
+-->
+
 日期：2026-10-25（Asia/Shanghai）。状态：第二候选已实施，父代理完成正确性/包边界与固定局部诊断核验；全部收益区间仍 inconclusive，候选未接受，R2/R4 未退出。
 
-前一候选和失败窗口保留在[首版报告](2026-10-25-r2-borrowed-presentation.md)；当前范围与门禁由[整改计划](../../../../../stage_plans/active/stage-07/05-rpa-new/plan.md)持有。本报告不改写前一候选的 25.3% 单对象退化或未确认的 N64 收益。
+前一候选和失败窗口保留在[首版报告](2026-10-25-r2-borrowed-presentation.md)；当前范围与门禁由[整改计划](../../../../../stage_plans/completed/stage-07/05-rpa-new/plan.md)持有。本报告不改写前一候选的 25.3% 单对象退化或未确认的 N64 收益。
 
 ## 1. 本次决定与授权
 

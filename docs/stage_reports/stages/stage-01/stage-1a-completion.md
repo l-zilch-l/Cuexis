@@ -1,5 +1,11 @@
 # Cuexis 阶段 1A 完成报告
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-01.stage-1a-completion
+status: evidence
+authority: none
+-->
+
 状态：已完成  
 报告日期：2026-07-18  
 完成版本：`26.07.18.14-1`  

@@ -1,5 +1,12 @@
 # R2 技术收尾复核与退出范围
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r2.2026-10-26-r2-technical-closure-review
+status: evidence
+authority: none
+date: 2026-10-26
+-->
+
 状态：completed / owner accepted R2 exit on 2026-10-26。
 
 日期：2026-10-26（Asia/Shanghai）。本轮依据用户“R2 你能继续做完吗”继续完成技术收尾。
@@ -9,7 +16,7 @@
 
 ## 1. 退出评审结论
 
-按[整改计划 §4.1、§5.3、§7](../../../../../stage_plans/active/stage-07/05-rpa-new/plan.md)，
+按[整改计划 §4.1、§5.3、§7](../../../../../stage_plans/completed/stage-07/05-rpa-new/plan.md)，
 R2 的实现、适用正确性/架构/包边界、实际布局、限定回滚，以及新身份候选局部收益证据已齐备；
 技术工作完成，owner 已于 2026-10-26 明确接受 R2 按原计划退出。原正式读取验收仍在 R4。
 

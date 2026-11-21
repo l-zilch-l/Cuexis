@@ -1,5 +1,12 @@
 # R4-6 F1 本地矩阵与 F2 hosted 验证（最终候选）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-10-f1-f2-final-candidate
+status: evidence
+authority: none
+date: 2026-11-10
+-->
+
 状态：evidence；F1/F2 已在同一 SHA 通过，不含接受裁定
 
 日期：2026-11-10

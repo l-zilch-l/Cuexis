@@ -4,6 +4,12 @@
 
 更新日期：2026-09-03
 
+<!-- cuexis-meta
+id: PLAN-historical-inputs.chart-format-update-for-v7.plan
+status: historical
+authority: owns
+-->
+
 归档来源：[Chart v6 历史输入](../chart-format-update-for-v6/plan.md)、
 [Chart v5 格式计划](../../active/chart-format-update-for-v5/plan.md)、
 [CXC v1](../../../formats/CXC_FORMAT.md)、

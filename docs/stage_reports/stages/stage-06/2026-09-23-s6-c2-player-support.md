@@ -1,5 +1,12 @@
 # S6-C2 Player support 配置
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-06.2026-09-23-s6-c2-player-support
+status: evidence
+authority: none
+date: 2026-09-23
+-->
+
 状态：in_progress（本地无 SDL 测试已通过；本报告不是 C2 退出证据）
 
 日期：2026-09-23

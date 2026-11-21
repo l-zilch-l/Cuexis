@@ -1,5 +1,11 @@
 # R3 legacy parse-once：机制已在产品中，补正式读数与记录更正（2026-11-03）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-03-r3-parse-once-product-reading.index
+status: evidence
+authority: none
+-->
+
 状态：local measurement；test-only。本记录不采用任何新候选、不改判据、不关闭 R3、不替代 R4 /
 设备 / 生产接受。
 

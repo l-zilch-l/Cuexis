@@ -4,7 +4,15 @@
 
 更新日期：2026-10-01
 
+<!-- cuexis-meta
+id: PLAN-legacy-paths
+status: historical
+authority: owns
+-->
+
 以下旧逻辑路径已迁入 canonical 目录。映射供历史引用迁移使用，不保留逐文件 compatibility stub。
+
+- `stage_plans/active/stage-07/` -> [canonical](completed/stage-07/README.md)（2026-11-17 由 `active/` 迁入 `completed/`；Stage 7 已受限退出）
 
 - `260829-full-review-remediation-plan.md` -> [canonical](reviews/full-review-2026-08/remediation-plan.md)
 - `cuexis_sdk_transition_plan.md` -> [canonical](historical/sdk-transition/plan.md)
@@ -20,7 +28,7 @@
 - `stage_4_implementation_plan.md` -> [canonical](completed/stage-04/plan.md)
 - `stage_5_implementation_plan.md` -> [canonical](completed/stage-05/plan.md)
 - `stage_6_implementation_plan.md` -> [canonical](completed/stage-06/plan.md)
-- `stage_7_implementation_plan.md` -> [canonical](active/stage-07/plan.md)
+- `stage_7_implementation_plan.md` -> [canonical](completed/stage-07/plan.md)
 - `stage_8_implementation_plan.md` -> [canonical](future/stage-08/plan.md)
 - `stage_9a_implementation_plan.md` -> [historical input](historical-inputs/stage-09a/plan.md); scope is now [Stage 12](future/stage-12/plan.md)
 - `stage_9b_implementation_plan.md` -> [historical input](historical-inputs/stage-09b/plan.md); scope is now [Stage 12](future/stage-12/plan.md)

@@ -1,5 +1,12 @@
 # Stage 6 复核修正：R5 发布事务修正
 
+<!-- cuexis-meta
+id: EVIDENCE-reviews.stage-06-review-2026-09.2026-09-28-w3-publication-transaction
+status: evidence
+authority: none
+date: 2026-09-28
+-->
+
 状态：completed
 快照日期：2026-09-28
 更新日期：2026-09-28

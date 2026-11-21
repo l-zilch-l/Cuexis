@@ -1,11 +1,18 @@
 # R4 O1 后工具准入与覆盖核验
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-05-post-o1-tool-admission
+status: evidence
+authority: none
+date: 2026-11-05
+-->
+
 状态：candidate；自动实施进行中，内存与 P8 尚未准入，非 R4 接受报告
 
 快照日期：2026-11-05
 
 返回 [New RPA 报告索引](../README.md)。范围与限次规则见
-[R4 实施方案](../../../../../stage_plans/active/stage-07/05-rpa-new/r4/plan.md)。
+[R4 实施方案](../../../../../stage_plans/completed/stage-07/05-rpa-new/r4/plan.md)。
 [O1 接受记录](2026-11-05-o1-budget-acceptance.json)接受方案 B 的 reference 设计预算；
 owner 后续“那么你继续完成”的授权见[执行授权记录](2026-11-05-execution-authorization.json)。
 历史 O1 前结论保留在[前次审计](2026-11-05-pre-o1-integration-and-budget-audit.md)。

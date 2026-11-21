@@ -1,5 +1,11 @@
 # R9 gate policy impact table
 
+<!-- cuexis-meta
+id: PLAN-reviews.stage-06-review-remediation.R9-gate-policy-impact-table
+status: historical
+authority: owns
+-->
+
 Static audit of the two reference host gate scripts, closing the audit items left
 open by section 4 of [R9-gate-policy-audit-decisions.md](R9-gate-policy-audit-decisions.md)
 (D11, D14, D15).

@@ -1,5 +1,11 @@
 # ADR 0033: C++ Shared Library Preview Boundary
 
+<!-- cuexis-meta
+id: ADR-0033
+status: accepted
+authority: owns
+-->
+
 Status: Accepted
 
 Date: 2026-07-28

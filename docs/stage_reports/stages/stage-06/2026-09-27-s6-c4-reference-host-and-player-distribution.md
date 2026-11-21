@@ -1,5 +1,12 @@
 # S6-C4 参考宿主与 Player 分发
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-06.2026-09-27-s6-c4-reference-host-and-player-distribution
+status: evidence
+authority: none
+date: 2026-09-27
+-->
+
 状态：进行中（实现与本地门禁证据；批次退出结论、本地 shared 分发目录与 hosted 复验尚未完成）
 
 日期：2026-09-27

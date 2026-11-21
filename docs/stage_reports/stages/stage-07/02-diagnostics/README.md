@@ -10,7 +10,7 @@
 
 先按下表定位批次；同批报告与附件放在同一目录。完整原始路径直接查 [证据清单](evidence-catalog.md)，无须逐篇翻阅。
 
-返回 [Stage 7 阶段总表](../README.md)。计划入口：[对应阶段计划](../../../../stage_plans/active/stage-07/02-diagnostics/README.md)。
+返回 [Stage 7 阶段总表](../README.md)。计划入口：[对应阶段计划](../../../../stage_plans/completed/stage-07/02-diagnostics/README.md)。
 
 ## 批次定位（实施推进顺序）
 

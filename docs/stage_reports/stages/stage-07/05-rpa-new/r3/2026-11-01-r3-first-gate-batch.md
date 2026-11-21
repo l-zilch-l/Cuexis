@@ -1,5 +1,12 @@
 # R3 第一批正式门测量（2026-11-01）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-r3-first-gate-batch
+status: evidence
+authority: none
+date: 2026-11-01
+-->
+
 状态：test-only 测量；本批**没有**修改任何门的判据、范围或阈值，只登记测到的读数，以及仍然不可测的门。
 它**不是** R3 技术接受、设备验证或生产接受。
 
@@ -13,7 +20,7 @@
 
 ## 本批测了什么、决定了什么
 
-判据逐字取自 [R3 计划](../../../../../stage_plans/active/stage-07/05-rpa-new/plan.md) §9.2–9.4；预注册在任何测量之前写定。
+判据逐字取自 [R3 计划](../../../../../stage_plans/completed/stage-07/05-rpa-new/plan.md) §9.2–9.4；预注册在任何测量之前写定。
 
 | 门 | 判据 | 本批读数 | 结论 |
 | --- | --- | --- | --- |

@@ -1,5 +1,12 @@
 # AD-02 判定说明：执行与表现拆分阈值
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.design.2026-10-11-ad02-split-threshold-brief
+status: evidence
+authority: none
+date: 2026-10-11
+-->
+
 状态：historical decision brief；保存早期选项依据，后续已选方向，未实施
 
 日期：2026-10-11（Asia/Shanghai）
@@ -9,7 +16,7 @@
 本文只界定判据的形式、所需数据与依赖顺序。
 
 **后续决定（2026-10-11）：** owner授权剩余普通方案自行收敛；最终选择和测量gate归
-[RPA计划](../../../../../stage_plans/active/stage-07/03-rpa-legacy/plan.md)及
+[RPA计划](../../../../../stage_plans/completed/stage-07/03-rpa-legacy/plan.md)及
 [RPA补充Spec](../../../../../formats/rpa-execution-contract.md)。下文选项为当时比较输入，不再等待逐项点选。
 
 ## 0. 结论摘要

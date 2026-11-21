@@ -1,5 +1,12 @@
 # PD-5 F1 工具包合并封包与三用例验收准备
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.etw-tools.2026-10-23-f1-tool-package-and-acceptance-preparation
+status: evidence
+authority: none
+date: 2026-10-23
+-->
+
 日期：2026-10-23。分支：`codex/pd5-gameplay-40k-admission`（HEAD `3e5837f`）。主工作树
 `D:/Cuexis-worktree`（`stage-7`，HEAD `eed3664`）保持干净，未参与本轮改动。
 

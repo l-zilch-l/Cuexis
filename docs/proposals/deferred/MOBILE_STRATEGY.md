@@ -1,5 +1,11 @@
 # Cuexis Android 与移动端策略
 
+<!-- cuexis-meta
+id: PROPOSALS-deferred.MOBILE_STRATEGY
+status: candidate
+authority: none
+-->
+
 状态：deferred proposal；Stage 9B SDK 与宿主适配方向已接受，尚未进入实施
 
 更新日期：2026-08-10

@@ -1,5 +1,11 @@
 # 适用 Seek 余下三类：外部归档首次认证、自然 checkpoint 首次使用、无合法 checkpoint 回退（2026-11-03）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-03-r3-seek-remaining-classes.index
+status: evidence
+authority: none
+-->
+
 状态：local measurement；test-only 探针；只对这三类登记 20 ms 判据，**不关闭 R3**，不替代 R4 /
 设备 / 生产接受。
 

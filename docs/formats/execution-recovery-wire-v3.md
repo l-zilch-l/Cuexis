@@ -4,6 +4,12 @@
 
 更新日期：2026-10-12
 
+<!-- cuexis-meta
+id: FORMAT-execution-recovery-wire-v3
+status: candidate
+authority: owns
+-->
+
 语义权威为 [执行控制合同](rpa-execution-contract.md)。本表定义实现字段顺序，
 不改变 Chart/CXC/CXT 格式；内部 Kernel/Recovery 头不安装。旧 profile 保持 revision2。
 
@@ -64,7 +70,7 @@ owning 结果可以越过 Session Close/析构；最后释放不要求 Session/w
 
 ## Golden 与边界
 
-`tests/rpa/rpa_b3_tests.cpp` 固定 occurrence golden：Tick=-1、domain=d、source=s、channel=c、
+`tests/rpa/rpa_b3_control_tests.cpp` 固定 occurrence golden：Tick=-1、domain=d、source=s、channel=c、
 press、amount absent、sourceLocalPosition=UINT64_MAX。
 完整 hex 为
 `ffffffffffffffff010000000000000064010000000000000073010000000000000063000001ffffffffffffffff`。

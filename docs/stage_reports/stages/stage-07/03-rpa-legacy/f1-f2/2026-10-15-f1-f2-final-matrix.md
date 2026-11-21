@@ -1,5 +1,12 @@
 # RPA F1/F2 Matrix Evidence
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.f1-f2.2026-10-15-f1-f2-final-matrix
+status: evidence
+authority: none
+date: 2026-10-15
+-->
+
 Date: 2026-10-15
 
 ## Scope

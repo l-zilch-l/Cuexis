@@ -1,5 +1,11 @@
 # R3 修复尝试证据（2026-11-01）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-r3-gate-repair-attempt-evidence.index
+status: evidence
+authority: none
+-->
+
 本目录保存一次**没有留下代码改动**的修复尝试的全部字节。它回答两个问题：读取路径的逐对象成本是否
 来自"每对象构造 `Result` + 重复验证读窗口"（否），以及首次 Pause 的 179 ms 落在哪个阶段（落在第一次
 冻结绘制）。

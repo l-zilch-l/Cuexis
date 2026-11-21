@@ -4,11 +4,17 @@
 
 更新日期：2026-10-28
 
+<!-- cuexis-meta
+id: FORMAT-rpa-execution-contract
+status: candidate
+authority: owns
+-->
+
 本文补充 [Gameplay V2 Spec](GAMEPLAY_V2_SPEC.md) 和 [execution profile](gameplay-v2-execution-profile.md)。
 只在下述明确列出的 RPA profile 中替代旧条款；SDK 0.7.5 是历史诊断基线，当前实施状态见
 [CURRENT_STATUS](../CURRENT_STATUS.md)。选择理由归 [ADR 0046](../adr/0046-realtime-playback-coordination.md)，
 载体/所有权归 [实时宿主边界](../api/realtime-host-boundary.md)，实施门禁归
-[RPA 整改计划](../stage_plans/active/stage-07/05-rpa-new/plan.md)。术语见 [Glossary](../api/GLOSSARY.md)。
+[RPA 整改计划](../stage_plans/completed/stage-07/05-rpa-new/plan.md)。术语见 [Glossary](../api/GLOSSARY.md)。
 当前内部分页状态、准备/锚点复用与编码缓存见
 [架构参考](../architecture/execution-state-and-recovery.md)，不另定义执行语义或 wire。
 

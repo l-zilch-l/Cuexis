@@ -1,11 +1,18 @@
 # 阶段 1D 实施计划：主音乐内容与可选音频适配器闭环
 
 状态：1D-0 至 1D-6 已完成；自动化最终验收、GPU 与物理默认音频设备脚本门禁已于 2026-07-27 完成，主观听感仍需人工观察
+
 规划日期：2026-07-18；SDK 调整：2026-07-20；一致性修订与实现完成：2026-07-27
 强制前置：[阶段 1C 实施计划](stage-1c-plan.md)  
 并行 packaging 与最终验收：[阶段 1E 实施计划](stage-1e-plan.md)
 完成证据：[阶段 1D 完成报告](../../../stage_reports/stages/stage-01/stage-1d-completion.md)
 现有决策：[ADR 0012](../../../adr/0012-use-sdl3-audio-backend.md)、[ADR 0027](../../../adr/0027-playback-sdk-product-boundary.md)、[ADR 0031](../../../adr/0031-main-music-content-format-v2.md)、[ADR 0032](../../../adr/0032-playback-clock-and-prepared-audio-transaction.md)
+
+<!-- cuexis-meta
+id: PLAN-completed.stage-01.stage-1d-plan
+status: completed
+authority: owns
+-->
 
 后续取代说明：本文涉及的 Simple Chart 回归路径已由 ADR 0035 在阶段 2A.1 移除；相关内容仅是阶段 1D 历史事实。
 

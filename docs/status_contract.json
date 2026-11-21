@@ -2,17 +2,8 @@
   "snapshotDate": "2026-09-01",
   "requiredFragments": {
     "AGENTS.md": [
-      "CFU-F closed after final-SHA hosted verification",
-      "CFU-G closed after explicit owner acceptance on August 24, 2026",
-      "G0 status calibration, G1 exit audit, and G2 Stage 4 typed handoff are complete",
-      "G3 local candidate gates passed on August 19, 2026",
-      "passed same-SHA hosted Linux Quality, Windows MSVC",
-      "G3 hosted validation and G4 are complete",
-      "G5 report-SHA hosted revalidation passed",
-      "G6 owner acceptance is recorded",
-      "Stage Chart Format Update is complete",
-      "Stage 4 is complete",
-      "Stage 5 S5-A through S5-H closed and merged into `master`"
+      "docs/MAP.md",
+      "docs/CURRENT_STATUS.md"
     ],
     "docs/CURRENT_STATUS.md": [
       "Stage 7A",

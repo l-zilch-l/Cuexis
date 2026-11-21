@@ -1,5 +1,12 @@
 # Stage 5 S5-A 合同冻结
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-05.2026-08-28-s5-a-contracts
+status: evidence
+authority: none
+date: 2026-08-28
+-->
+
 状态：S5-A contract freeze written；生产代码未改；S5-B 尚未开始
 
 报告日期：2026-08-28

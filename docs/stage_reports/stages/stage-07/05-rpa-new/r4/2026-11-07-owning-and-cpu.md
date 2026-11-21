@@ -1,12 +1,19 @@
 # R4 扩展 owning 覆盖、固定 CPU 组与平台核验
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-07-owning-and-cpu
+status: evidence
+authority: none
+date: 2026-11-07
+-->
+
 状态：candidate；完整 memory/P8、设备与最终接受仍未闭合
 
 日期：2026-11-07
 
 返回 [New RPA 报告索引](../README.md)。本报告承接
 [缩页效果验证](2026-11-06-world-storage-effect.md)和
-[R4 实施方案](../../../../../stage_plans/active/stage-07/05-rpa-new/r4/plan.md)。
+[R4 实施方案](../../../../../stage_plans/completed/stage-07/05-rpa-new/r4/plan.md)。
 原始输出、不可变登记、失败及只读复算见
 [本轮证据](2026-11-07-owning-and-cpu-evidence/index.md)。
 

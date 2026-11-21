@@ -1,5 +1,11 @@
 # Gameplay Research
 
+<!-- cuexis-meta
+id: PROPOSALS-research.gameplay.README
+status: candidate
+authority: none
+-->
+
 状态：candidate index
 
 更新日期：2026-10-01

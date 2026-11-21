@@ -1,5 +1,11 @@
 # R4 普通 host 单元证据包
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-08-host-unit-evidence.index
+status: evidence
+authority: none
+-->
+
 状态：candidate evidence；attempt-2 三窗口九进程完成，attempt-1 的停止现场保留
 
 日期：2026-11-08

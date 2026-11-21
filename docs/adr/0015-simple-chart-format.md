@@ -1,5 +1,11 @@
 # ADR 0015：方案 B 简易谱面格式
 
+<!-- cuexis-meta
+id: ADR-0015
+status: historical
+authority: owns
+-->
+
 日期：2026-07-17
 
 状态：历史决策；已被 ADR 0035 取代

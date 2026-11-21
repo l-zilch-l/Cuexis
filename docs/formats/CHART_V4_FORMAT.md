@@ -1,8 +1,15 @@
 # Cuexis Chart Format v4
 
 状态：accepted contract；CFU-C Reader/Writer/lowering、CFU-D migration/equivalence 与 CFU-E
+
 prepare/identity 已实现或关闭；CFU-F consumer/determinism/safety gates 已关闭；G3 hosted、G4、
 G5 report-SHA hosted revalidation 与 G6 owner acceptance 已完成；非空动画执行已由 Stage 4 关闭
+
+<!-- cuexis-meta
+id: FORMAT-CHART_V4_FORMAT
+status: accepted
+authority: owns
+-->
 
 更新日期：2026-09-01
 
@@ -28,14 +35,15 @@ Layer / BlendGroup / Clip Instance
 
 ### 1.1 Typed 处理层
 
-Chart v4 固定以下数据流；名称表示职责，确切 C++ 类型名可在 CFU-C 按现有命名约定确定：
+Chart v4 固定以下数据流；以下为当前 C++ 类型名（定义在 `engine/chart/include/cuexis/chart/`）：
 
 ```text
-SourceChartDocument
+ChartV4SourceDocument
   保留 ParameterRef、CXT import、模板和规范化扩展数据，可由 Writer 重新保存
 
-ResolvedChartDocument
-  完成 template expansion、参数解析、CXT import/lowering 和冲突验证，只含 concrete typed value
+ChartV4ResolvedArtifact
+  ResolvedChartDocument（concrete chart + 已解析参数）+ AnimationProgramInput
+  + chart/cxt/parameter identity + 资源与能力闭包
 
 ChartRuntime + AnimationProgramInput
   供 Runtime/Stage 4 使用，不含 JSON、CXC、CXT path 或未解析参数

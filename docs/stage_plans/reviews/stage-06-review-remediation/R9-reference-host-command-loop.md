@@ -1,10 +1,17 @@
 # R9：Reference Host 命令循环与 play/pause（实施文档）
 
 状态：completed；设计已获 owner 接受，**已实现并经本地与最终 tip 验证**——最后**行为** SHA `71de8b1`
+
 之后的 10 个文档提交把 tip 推到 `cc14fcd`，该 tip 在 push 与 pull_request 两个事件上共 **7 个运行全部
 通过**（证据见 [R9 报告](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-r9-reference-host-command-loop.md)
 §2.3 与 §8）；**owner 于 2026-09-29 接受 R9 退出**，§0.2 列出的六项 `SPEC-27` 关闭要求至此逐条满足，
 故 `SPEC-27` 记为 **closed**。本文是 R9 的唯一规范来源
+
+<!-- cuexis-meta
+id: PLAN-reviews.stage-06-review-remediation.R9-reference-host-command-loop
+status: completed
+authority: owns
+-->
 
 更新日期：2026-09-29（**退出达成**：owner 于本日接受 R9 退出，`SPEC-27` 关闭依据完整。订正历史——
 本行曾写「**未实现**」与更新日期 `2026-09-28`，二者均为实现落地前的状态；其后曾写「尚未获 owner

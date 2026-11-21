@@ -1,8 +1,14 @@
 # Cuexis Project Guide
 
+<!-- cuexis-meta
+id: GUIDE-PROJECT
+status: active
+authority: owns
+-->
+
 状态：现行项目指南
 
-更新日期：2026-10-10
+更新日期：2026-11-17
 
 本文是项目入口，不再保存完整路线、格式字段或阶段测试日志。整理前的完整长版快照见
 [archive/PROJECT_GUIDE_LEGACY_2026-08-10.md](archive/PROJECT_GUIDE_LEGACY_2026-08-10.md)。
@@ -76,7 +82,7 @@ SHA `4371fdcf04f4f89bfddf070cbb15e4c903810a53` 的 hosted Linux/MSVC/MinGW 验�
 2026-08-24 明确接受报告，CFU-G 与 Stage Chart Format Update 已关闭。Stage 4 已完成；
 最终 SHA `3df92747e575e97b3606aa4a2030a04643c46473` 的 hosted Linux/MSVC/MinGW 已于
 2026-08-27 全部通过，项目所有者已接受完成报告。Stage 5 的 S5-A 合同已冻结；S5-B 已接线可选
-shader 工具；S5-C 已完成公开 Presentation 类型、kind 4/5 解析与 SDK API `0.7.0`；S5-D 已完成
+shader 工具；S5-C 已完成公开 Presentation 类型、kind 4/5 解析与 SDK API `0.7.0`（历史）；S5-D 已完成
 可选 GLSL 450 编译与 reflection；S5-E 已完成 profile 与 presentation capability 预检；S5-F 已完成
 `CXSCCH01` 缓存；S5-G 已完成 OpenGL/Player/Validation Sink 消费与默认 shader/parameterized
 capability；S5-H 已完成关闭门禁。Stage 5 已于 2026-08-28 通过 PR #20 合并至 `master`；其后
@@ -84,13 +90,15 @@ capability；S5-H 已完成关闭门禁。Stage 5 已于 2026-08-28 通过 PR #2
 的文档整理、Chart/CXC parse-once 和关键模块分支覆盖率三个任务已完成，并于 2026-09-01 通过
 PR #22 合并至 `master`。项目所有者已于 2026-09-02 启动
   [Chart v5 format plan](stage_plans/active/chart-format-update-for-v5/plan.md)；当前主路线已明确为
-Chart Format Foundation -> Foundation Hardening -> Stage 6 v5-first candidate path -> Stage 7（7A既有成果 -> 诊断/RPA/PD及原S7A-9受限收尾）-> Stage 7.5 Gameplay Evolution -> Stage 8
+Chart Format Foundation -> Foundation Hardening -> Stage 6 v5-first candidate path -> Stage 7（7A既有成果 -> 诊断/RPA/PD及原S7A-9受限收尾）-> Stage 7-RR Review and Refactoring After Stage-7 -> Stage 7.5 Gameplay Evolution -> Stage 8
 Chart v5/CXT v2/Packed Chart formal release -> Stage 9 Presentation/Chart v6 -> Stage 10 Studio
 -> Stage 11 Chart v7 geometry -> Stage 12 scale/platform -> Stage 13 Chart v8 advanced presentation
 -> Stage 14 稳定 ABI。
-诊断码正式化N0–N3归[独立前置工作包](stage_plans/active/stage-07/02-diagnostics/plan.md)，
+诊断码正式化N0–N3归[独立前置工作包](stage_plans/completed/stage-07/02-diagnostics/plan.md)，
 退出先于RPA新架构原型及A4–A6；Stage 7-RPA承担实时架构、实体设备/同步及原S7A-9矩阵、预算和关闭。
-Stage 7 受限交接后，由[独立 Stage 7.5](stage_plans/active/stage-07-5/plan.md)完成能力演进、局部重构和性能稳定；
+Stage 7 受限交接后，先由[Stage 7-RR](stage_plans/active/stage-07-rr/plan.md)登记并处置
+2026-11-17 的全项目复核发现（[发现登记册](stage_plans/active/stage-07-rr/findings.md)），
+再由[独立 Stage 7.5](stage_plans/active/stage-07-5/plan.md)完成能力演进、局部重构和性能稳定；
 其当前计划范围完成并接受后进入 Stage 8，后续 Stage 8–14 编号不变。
 Stage 8发行矩阵另行决定能力的默认选入。
 Chart Format Foundation [计划](stage_plans/completed/chart-format-foundation/plan.md) 已完成并归档；

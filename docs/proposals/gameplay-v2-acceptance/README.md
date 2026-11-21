@@ -1,11 +1,17 @@
 # Gameplay V2 acceptance package
 
+<!-- cuexis-meta
+id: PROPOSALS-gameplay-v2-acceptance.README
+status: candidate
+authority: none
+-->
+
 状态：active
 
 owner 接受：2026-10-02（记录见 [S7A-0 接受记录](../../stage_reports/stages/stage-07/01-a/s7a-0/2026-10-02-s7a-0-acceptance.md)）
 更新日期：2026-10-05
 
-上级文档：[Stage 7A 实施计划](../../stage_plans/active/stage-07/plan.md) ·
+上级文档：[Stage 7A 实施计划](../../stage_plans/completed/stage-07/plan.md) ·
 [Gameplay V2 redesign research](../research/gameplay-v2/README.md)
 
 文档角色：准入包。它把 Gameplay V2 研究稿收敛为**可逐条裁定的合同清单、支持/拒绝矩阵与决策请求**，
@@ -277,7 +283,7 @@ confidence 0.96），ABI `§登记缺陷` 随之关闭；缺陷 D-14 按方案 (
 ## 6. 相关索引
 
 - [Gameplay V2 redesign research](../research/gameplay-v2/README.md)：V2 研究稿全集
-- [Stage 7A 实施计划](../../stage_plans/active/stage-07/plan.md)：批次、依赖与关闭标准
+- [Stage 7A 实施计划](../../stage_plans/completed/stage-07/plan.md)：批次、依赖与关闭标准
 - [音乐游戏玩法抽象模型](../../architecture/GAMEPLAY_ABSTRACTION_MODEL.md)：共同语义基础
 - [S7A-0 基线报告](../../stage_reports/stages/stage-07/01-a/s7a-0/2026-10-02-s7a-0-baseline.md)：执行基线证据
 - [Packed 候选物理合同](../../formats/PACKED_CHART_FORMAT.md)：已冻结预算表

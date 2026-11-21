@@ -1,5 +1,12 @@
 # R3 high-requirements trusted Seek attribution
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-27-r3-high-requirements-attribution
+status: evidence
+authority: none
+date: 2026-10-27
+-->
+
 状态：diagnosis complete，2026-10-27。仅归因，未进一步修改产品逻辑或接受 R3/R4 预算。
 返回 [New RPA 报告索引](../README.md)。当前候选来源为[空推进 reserve 尝试](2026-10-27-r3-empty-reserve-attempt.md)。
 

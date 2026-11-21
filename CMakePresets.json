@@ -526,7 +526,7 @@
       },
       "filter": {
         "include": {
-          "name": "[Cc]andidate|reference_host"
+          "name": "[Cc]andidate|reference_host|assembler_cli|installed_consumer"
         }
       }
     },
@@ -538,7 +538,7 @@
       },
       "filter": {
         "include": {
-          "name": "[Cc]andidate|reference_host"
+          "name": "[Cc]andidate|reference_host|assembler_cli|installed_consumer"
         }
       }
     },
@@ -550,7 +550,7 @@
       },
       "filter": {
         "include": {
-          "name": "[Cc]andidate|reference_host"
+          "name": "[Cc]andidate|reference_host|assembler_cli|installed_consumer"
         }
       }
     }

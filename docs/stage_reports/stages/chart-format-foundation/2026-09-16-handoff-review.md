@@ -1,5 +1,12 @@
 # Chart Format Foundation: Handoff Review and Hardening Decision
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.chart-format-foundation.2026-09-16-handoff-review
+status: evidence
+authority: none
+date: 2026-09-16
+-->
+
 日期：2026-09-16
 
 状态：review recorded；加固阶段 active，技术门禁尚未关闭

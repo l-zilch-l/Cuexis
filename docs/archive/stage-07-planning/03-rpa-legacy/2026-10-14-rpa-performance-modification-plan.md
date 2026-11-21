@@ -1,14 +1,21 @@
 # Stage 7 RPA Performance Modification Plan
 
+<!-- cuexis-meta
+id: ARCHIVE-stage-07-planning.03-rpa-legacy.2026-10-14-rpa-performance-modification-plan
+status: historical
+authority: none
+date: 2026-10-14
+-->
+
 状态：archived；2026-10-14 proposal 快照，已由当前 RPA 性能整改方案逐项归属/处置，不再作为独立执行计划。
 
 归档日期：2026-10-25。
 
-原路径：`docs/stage_plans/active/stage-07/performance-modification-plan.md`；归档前 SHA-256：`2B804298A9E7E12C20D97BD89E91433F4CA1080FD285E4DF3C05C431B9892B9F`。
+原路径：`docs/stage_plans/completed/stage-07/performance-modification-plan.md`；归档前 SHA-256：`2B804298A9E7E12C20D97BD89E91433F4CA1080FD285E4DF3C05C431B9892B9F`。
 
 本快照保留原 proposal 全文及其当时的修改顺序、语义保持、验证矩阵和回退边界，仅供追溯。
-现行入口见 [RPA 性能整改候选设计](../../../stage_plans/active/stage-07/05-rpa-new/plan.md)。
-旧路径保留 [兼容入口](../../../stage_plans/active/stage-07/03-rpa-legacy/performance-modification-plan.md)，至少一个整理周期。
+现行入口见 [RPA 性能整改候选设计](../../../stage_plans/completed/stage-07/05-rpa-new/plan.md)。
+旧路径保留 [兼容入口](../../../stage_plans/completed/stage-07/03-rpa-legacy/performance-modification-plan.md)，至少一个整理周期。
 
 ---
 

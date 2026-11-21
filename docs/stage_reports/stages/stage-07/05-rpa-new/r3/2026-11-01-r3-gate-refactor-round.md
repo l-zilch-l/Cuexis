@@ -1,5 +1,12 @@
 # R3 两项超界的第一性原理重构探索（2026-11-01）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-r3-gate-refactor-round
+status: evidence
+authority: none
+date: 2026-11-01
+-->
+
 状态：探索记录。基线已打标签 `r3-gate-baseline-2026-11-01`（`09a5b53a`），**本轮没有保留任何代码**：
 仪器诊断与候选改动全部回滚，工作树与标签一致。
 

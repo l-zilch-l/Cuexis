@@ -1,17 +1,24 @@
 # 阶段诊断码审计与正式命名迁移规划
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.02-diagnostics.audit.2026-10-09-diagnostic-phase-name-audit
+status: evidence
+authority: none
+date: 2026-10-09
+-->
+
 状态：dated audit；仅规划，重命名未实施
 
 证据日期：2026-10-09
 
 2026-10-10归属与路径更新：按owner要求，本审计及原始证据ZIP归入Stage 7-RPA的`rpa/`报告目录，
-是[RPA-N0–N3正式命名工作线](../../../../../stage_plans/active/stage-07/03-rpa-legacy/plan.md#正式命名工作线)的基线输入。
+是[RPA-N0–N3正式命名工作线](../../../../../stage_plans/completed/stage-07/03-rpa-legacy/plan.md#正式命名工作线)的基线输入。
 原始审计日期、代码基线、67项映射及ZIP内容保持；下文旧plan-a入口与“本轮”均指原审计时点。
 现行实施顺序为N线先于架构实施、原S7A-9移入RPA-F线统一收尾，完整要求归RPA分册。
 旧路径保留兼容入口，迁移不意味着诊断码已经重命名或通过运行验收。
 
 归属更新（同日后续owner指令）：本报告的审计发现及测量有效范围保留；原S7A-7/8下RT78/DN78
-工作归属由[Stage 7-RPA子阶段](../../../../../stage_plans/active/stage-07/03-rpa-legacy/plan.md)取代；
+工作归属由[Stage 7-RPA子阶段](../../../../../stage_plans/completed/stage-07/03-rpa-legacy/plan.md)取代；
 RPA按owner最新指令归入Stage 7，原future独立阶段落点已被取代。
 原plan-a链接现为交接入口；不将迁移工作计为7/8新增缺口，不将原有设备失败改记通过。
 迁移记录与原规划文本归[拆分报告](../../03-rpa-legacy/design/2026-10-09-realtime-stage-separation.md)。
@@ -141,7 +148,7 @@ Spec/ABI/profile首用条目须按同一映射修订；src-only不因去前缀�
 
 ## 5. 后续实施与验收设计
 
-实施归[plan-a §3.4.19](../../../../../stage_plans/active/stage-07/01-a/plan.md#3419-诊断码去阶段命名规划2026-10-09)，
+实施归[plan-a §3.4.19](../../../../../stage_plans/completed/stage-07/01-a/plan.md#3419-诊断码去阶段命名规划2026-10-09)，
 与实时架构整改分开提交和证明，避免把命名变更与判定行为修改混在同一验收中。
 
 1. 合同与码表：定稿66条映射、公开性、fault恢复兼容、版本差异；保持九类别和拒绝语义。

@@ -1,5 +1,12 @@
 # PD 消费注册生命周期与计划自查
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.design.2026-10-16-pd-registration-and-plan-self-review
+status: evidence
+authority: none
+date: 2026-10-16
+-->
+
 状态：dated design review；文档设计闭合与自查记录，不是实施、模拟、测试或阶段接受
 
 日期：2026-10-16
@@ -73,8 +80,8 @@ Renderer 调用前依序检查 session/Active ConsumerId、完整既有绑定、
 - 成功 Runtime 安装后提帧失败；旧 World/候选/缓存和 Runtime finalize 边界。
 - Resume/Pause/EOF 的绑定切换、Seek/Reset 的 scope 变化，以及 Stage 8–14 的能力/域/预览/恢复/重建/ABI 责任。
 
-对应规则现在集中在[设计细则 §6.1、§6.3.1、§6.4、§7.2–7.3、§8.1–8.2](../../../../../stage_plans/active/stage-07/04-pd/design.md)，
-计划批次、验收和公共差异门禁同步在 [PD 主计划 §5–8、§11](../../../../../stage_plans/active/stage-07/04-pd/plan.md)
+对应规则现在集中在[设计细则 §6.1、§6.3.1、§6.4、§7.2–7.3、§8.1–8.2](../../../../../stage_plans/completed/stage-07/04-pd/design.md)，
+计划批次、验收和公共差异门禁同步在 [PD 主计划 §5–8、§11](../../../../../stage_plans/completed/stage-07/04-pd/plan.md)
 及[宿主候选 §8.3](../../../../../api/realtime-host-boundary.md)。Stage 7-RPA 的 control、resource fence、
 设备 retire 与 Close 仍是权威合同，PD 的注册确认不替代这些责任。
 

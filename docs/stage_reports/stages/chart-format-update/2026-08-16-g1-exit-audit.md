@@ -1,5 +1,12 @@
 # Stage Chart Format Update CFU-G1 Exit Audit
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.chart-format-update.2026-08-16-g1-exit-audit
+status: evidence
+authority: none
+date: 2026-08-16
+-->
+
 状态：CFU-G1 complete；退出条件证据已逐项审计，未发现新的产品代码阻断
 
 快照日期：2026-08-16

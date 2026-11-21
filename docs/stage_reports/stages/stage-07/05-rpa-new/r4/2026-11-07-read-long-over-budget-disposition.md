@@ -1,5 +1,12 @@
 # R4 首固定 CPU 组读取超界处置
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-07-read-long-over-budget-disposition
+status: evidence
+authority: none
+date: 2026-11-07
+-->
+
 状态：candidate；保留失败，未更改判据或开始新正式组
 
 日期：2026-11-07

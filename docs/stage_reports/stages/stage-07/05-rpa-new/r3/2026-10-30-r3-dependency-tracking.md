@@ -1,5 +1,12 @@
 # R3 MSVC Ninja 依赖修复与真实重编验证
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-30-r3-dependency-tracking
+status: evidence
+authority: none
+date: 2026-10-30
+-->
+
 状态：本地修复与定向验证完成；P6 最终完整矩阵仍开放
 
 日期：2026-10-30

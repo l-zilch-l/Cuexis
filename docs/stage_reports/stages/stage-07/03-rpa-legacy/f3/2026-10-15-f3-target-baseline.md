@@ -1,5 +1,12 @@
 # RPA F3 Target Baseline
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.f3.2026-10-15-f3-target-baseline
+status: evidence
+authority: none
+date: 2026-10-15
+-->
+
 Date: 2026-10-15
 
 ## Current RPA measurement target

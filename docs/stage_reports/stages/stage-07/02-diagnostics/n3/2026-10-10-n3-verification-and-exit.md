@@ -1,7 +1,14 @@
 # N3 Diagnostic Verification and Independent Exit
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.02-diagnostics.n3.2026-10-10-n3-verification-and-exit
+status: evidence
+authority: none
+date: 2026-10-10
+-->
+
 证据日期：2026-10-10。状态：N3独立退出；N1合同、N2迁移及全部本地硬门禁通过，冻结完整工作树快照，未提交/未发行。
-范围仅为[诊断正式化N0–N3](../../../../../stage_plans/active/stage-07/02-diagnostics/plan.md)。
+范围仅为[诊断正式化N0–N3](../../../../../stage_plans/completed/stage-07/02-diagnostics/plan.md)。
 本报告不实施RPA，不接受架构、生产预算或实体设备，不授权提交/推送/PR/保护修改/合并/发行。
 
 ## 合同、源码和版本

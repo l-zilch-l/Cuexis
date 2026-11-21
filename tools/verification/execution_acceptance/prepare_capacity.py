@@ -1,3 +1,4 @@
+# Reproduction mapping: tools/verification/execution_acceptance/README.md (R4 evidence).
 """Verify finite observer qualification pairs and record blocked memory/P8 admission."""
 import argparse
 from pathlib import Path

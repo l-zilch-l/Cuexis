@@ -1,5 +1,12 @@
 # PD-5 B1 域归因工具完成（静态度量，未运行）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.memory-attribution.2026-10-24-b1-domain-attribution-tooling
+status: evidence
+authority: none
+date: 2026-10-24
+-->
+
 日期：2026-10-24。范围：PD-5 B1 静态工具与门（观察器、探针 tag、分析器、打包约定、单测、宏关闭审计）。
 本报告不运行任何工作负载，不产生性能或内存验收证据，不改变 B0 已接受账本。
 

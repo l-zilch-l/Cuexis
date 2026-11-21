@@ -4,6 +4,12 @@
 
 更新日期：2026-10-11
 
+<!-- cuexis-meta
+id: GUIDE-BUILDING
+status: active
+authority: owns
+-->
+
 ## 当前仓库说明
 
 当前仓库提供阶段 0 工程基础、阶段 1A-1E Playback Core 闭环、阶段 2 的 Chart/Behavior/迁移
@@ -92,6 +98,9 @@ cuexis_format_check
 cuexis_player_dist
 ```
 <!-- CUEXIS_ACTIVE_TARGETS_END -->
+
+`cuexis_debug` 只被 `cuexis_debug_tests` 链接，是测试专用库，不是生产依赖。
+`cuexis_gameplay_assemble` 只在 candidate 构建中存在（`if(TARGET ...)`），因此不出现在默认 active 列表。
 
 ## C++ toolchain and Catch2 ABI
 

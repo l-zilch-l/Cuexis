@@ -1,5 +1,11 @@
 # R3 两项超界的根因证据（2026-11-01）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-r3-gate-cause-evidence.index
+status: evidence
+authority: none
+-->
+
 本目录保存根因分析的数值证据。它回答两个问题：179 ms 的 Pause 超界落在哪，以及读取相对门那 17 % 是
 由什么构成。所有用于取得这些数字的仪器诊断与产品补丁都已回滚。
 

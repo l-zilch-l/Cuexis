@@ -1,5 +1,11 @@
 # Stage 9A Implementation Plan: SDK and Host Performance Validation
 
+<!-- cuexis-meta
+id: PLAN-historical-inputs.stage-09a.plan
+status: historical
+authority: owns
+-->
+
 > 路线说明：本文件保留为旧性能专题计划，内容已并入 [Stage 12](../../future/stage-12/plan.md)。
 > 新的阶段入口见 [Stage 12](../../future/stage-12/plan.md)。
 

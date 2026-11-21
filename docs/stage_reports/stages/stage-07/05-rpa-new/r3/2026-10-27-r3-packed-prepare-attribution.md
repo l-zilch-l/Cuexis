@@ -1,5 +1,12 @@
 # R3 完整 Packed 准备路径精确归因
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-27-r3-packed-prepare-attribution
+status: evidence
+authority: none
+date: 2026-10-27
+-->
+
 状态：诊断完成，产品修复未实施。日期：2026-10-27。
 返回 [New RPA 报告索引](../README.md)。
 

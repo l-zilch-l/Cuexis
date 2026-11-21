@@ -1,5 +1,11 @@
 # V2 设计决策与新增语义
 
+<!-- cuexis-meta
+id: PROPOSALS-research.gameplay-v2.DESIGN_DECISIONS
+status: candidate
+authority: none
+-->
+
 状态：candidate；研究提案，未接受，未实施
 
 更新日期：2026-10-02

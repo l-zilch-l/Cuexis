@@ -1,5 +1,12 @@
 # Stage 4 S4-G Safety, Allocation, and Performance Report
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-04.2026-08-27-s4-g-safety-allocation
+status: evidence
+authority: none
+date: 2026-08-27
+-->
+
 状态：S4-G local checkpoint；Stage 4 仍为 unblocked / not started 的整体阶段
 
 后续关闭证据：[Cuexis 阶段 4 验收报告](completion.md)。

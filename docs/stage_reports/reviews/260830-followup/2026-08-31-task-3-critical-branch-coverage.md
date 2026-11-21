@@ -1,5 +1,12 @@
 # 260830 Follow-up Task 3 Critical Branch Coverage Local Snapshot
 
+<!-- cuexis-meta
+id: EVIDENCE-reviews.260830-followup.2026-08-31-task-3-critical-branch-coverage
+status: evidence
+authority: none
+date: 2026-08-31
+-->
+
 状态：historical
 
 更新日期：2026-08-31

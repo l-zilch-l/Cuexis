@@ -1,5 +1,11 @@
 # chart-format-update-for-v5：Chart v5 谱面格式与采样合同
 
+<!-- cuexis-meta
+id: PLAN-active.chart-format-update-for-v5.plan
+status: active
+authority: owns
+-->
+
 Chart v5 只改变要求描述的字段合同和 Packed Chart 物理编码，不把某一种视觉轨道、
 Note 表现或渲染后端提升为核心玩法语义。判定域、动作、有限行为和表现环境应保持
 可分离，以便未来接入不同输入设备与 Presentation。
@@ -18,8 +24,8 @@ SDK 版本遵循 [版本规范](../../../guides/VERSIONING.md)。本文“v5 发
 [Chart v4 格式合同](../../../formats/CHART_V4_FORMAT.md)、[谱面格式审计记录](../../../stage_reports/reviews/stage-verification-2026-09/2026-09-01-findings.md)
 与前置 [Stage 6 计划](../../completed/stage-06/plan.md)。
 
-2026-10-10路线补充：诊断码审计与正式化归[独立前置N0–N3](../stage-07/02-diagnostics/plan.md)；
-[Stage 7-RPA子阶段](../stage-07/03-rpa-legacy/plan.md)承接实时架构、实体设备/同步及原S7A-9的矩阵、预算、交接和关闭。
+2026-10-10路线补充：诊断码审计与正式化归[独立前置N0–N3](../../completed/stage-07/02-diagnostics/plan.md)；
+[Stage 7-RPA子阶段](../../completed/stage-07/03-rpa-legacy/plan.md)承接实时架构、实体设备/同步及原S7A-9的矩阵、预算、交接和关闭。
 实施顺序为7A既有成果 → 诊断独立前置N3退出 → RPA 受限退出及明确交接 → [Stage 7.5](../stage-07-5/plan.md)实施与验收
 → Stage 8发行收敛。本跨阶段工作包不复制分册计划，也不因归属调整接受生产预算。
 

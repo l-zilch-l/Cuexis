@@ -1,5 +1,11 @@
 # 目标、依赖与安装图（S7A-0 准入）
 
+<!-- cuexis-meta
+id: PROPOSALS-gameplay-v2-acceptance.TARGETS_AND_DEPENDENCIES
+status: candidate
+authority: none
+-->
+
 状态：candidate；S7A-0 准入产出，待 owner acceptance
 
 更新日期：2026-10-02
@@ -8,7 +14,7 @@
 口径，CMake 与 allowlist 落地属 S7A-1 实施批次（见 §9）。
 
 上级文档：[Gameplay V2 acceptance package](README.md) ·
-[Stage 7A 实施计划](../../stage_plans/active/stage-07/plan.md)
+[Stage 7A 实施计划](../../stage_plans/completed/stage-07/plan.md)
 
 文档角色：target / 依赖 / 安装图草案。它描述 Stage 7A 需要新增或改造的构建目标、允许依赖、
 安装导出影响与必须同步修改的位置；它不是实施记录，也不表示任何 target 已经存在。

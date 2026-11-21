@@ -1,5 +1,12 @@
 # PD-4 按需交付、真实回收与紧凑观察记录
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-4.2026-10-19-pd4-delivery-retirement-and-observation
+status: evidence
+authority: none
+date: 2026-10-19
+-->
+
 日期：2026-10-19。状态：PD-4 内部实施、适用本地门禁与新的无上下文独立复审完成；物理设备、正式性能与发行接受保持独立。
 当前状态唯一见 [CURRENT_STATUS](../../../../../CURRENT_STATUS.md)。
 

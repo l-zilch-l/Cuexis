@@ -1,5 +1,12 @@
 # 设备单元 adapter 与 GPU 侧内存取证（2026-11-13）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-13-device-adapter-and-gpu-memory
+status: evidence
+authority: none
+date: 2026-11-13
+-->
+
 状态：candidate evidence；设备 adapter 已实现未跑组，GPU 内存跑通一个用例但规模不匹配
 
 日期：2026-11-13

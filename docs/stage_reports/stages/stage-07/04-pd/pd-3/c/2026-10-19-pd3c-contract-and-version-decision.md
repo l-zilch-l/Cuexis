@@ -1,5 +1,12 @@
 # PD-3-c 宿主细化与 SDK 差异决策
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-3.c.2026-10-19-pd3c-contract-and-version-decision
+status: evidence
+authority: none
+date: 2026-10-19
+-->
+
 日期：2026-10-19。状态：owner 已在本对话接受新增只读 API 与 SDK 0.8.1；内部实施及适用本地验证完成；新建无上下文 GPT-6-Luna 独立审核发现的 P2 测试覆盖缺口已补正，最终复核 PASS；PD-3-c 完成。
 用户本次授权实施 PD-3-c；本记录不把授权扩展到 PD-4、合并、推送或发行。
 当前实施状态唯一见 [CURRENT_STATUS](../../../../../../CURRENT_STATUS.md)。
@@ -7,7 +14,7 @@
 ## 1. 已授权内部范围
 
 落实[宿主合同 §8.1](../../../../../../api/realtime-host-boundary.md)及
-[PD 细则 §4.4、§11](../../../../../../stage_plans/active/stage-07/04-pd/design.md)：
+[PD 细则 §4.4、§11](../../../../../../stage_plans/completed/stage-07/04-pd/design.md)：
 来源与确认使用许可分离；Pause/Resume/纯 EOF 换段保留 projectionScope、状态来源和激活；
 只从实际最后成功呈现画面生成新 attempt；保留重绘不重新求值、不消费 drain 的新 Fact 或 lifetime。
 Seek/Reset/Stop/内容或表现替换撤销旧画面再次提交资格。完整 HostContext、资源与呈现端核对保留。

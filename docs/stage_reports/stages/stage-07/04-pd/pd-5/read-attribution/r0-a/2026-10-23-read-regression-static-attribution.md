@@ -1,10 +1,17 @@
 # PD-5 读取回归的静态指令归因（R0-a）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.read-attribution.r0-a.2026-10-23-read-regression-static-attribution
+status: evidence
+authority: none
+date: 2026-10-23
+-->
+
 状态：诊断报告。只读证据，不运行测量、不修改产品代码、不登记正式测量、不产生 A/B 结论，不构成性能、内存或阶段接受，也不改变任何已接受判据。
 
 日期：2026-10-23
 
-归属：Stage 7-PD / PD-5。执行[读取候选与分域内存观测实施方案](../../../../../../../stage_plans/active/stage-07/04-pd/pd-5/pd5-read-candidate-and-memory-domains-plan.md) §2.1 的 R0-a 静态归因，并按其门 G1 判定是否提名读取候选。上游证据为[读取噪声与寿命诊断](../../memory-attribution/2026-10-23-memory-lifetime-and-read-noise-diagnostics.md) §4 的复算、[Stage C 独立验收与退出缺口](../../admission/stage-c/2026-10-23-stage-c-independent-acceptance-and-exit-gaps.md) §5 的阈值矩阵，以及[C2 结果](../../read-candidate/2026-10-21-c2-read-result-candidate.md)。
+归属：Stage 7-PD / PD-5。执行[读取候选与分域内存观测实施方案](../../../../../../../stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-candidate-and-memory-domains-plan.md) §2.1 的 R0-a 静态归因，并按其门 G1 判定是否提名读取候选。上游证据为[读取噪声与寿命诊断](../../memory-attribution/2026-10-23-memory-lifetime-and-read-noise-diagnostics.md) §4 的复算、[Stage C 独立验收与退出缺口](../../admission/stage-c/2026-10-23-stage-c-independent-acceptance-and-exit-gaps.md) §5 的阈值矩阵，以及[C2 结果](../../read-candidate/2026-10-21-c2-read-result-candidate.md)。
 
 结论摘要：读取回归不是尺寸效应，也基本不是固定成本效应。四点什么拟合把 F1/A 拆成每对象边际 +16.43 ns 与每轮固定 +24.16 ns；按现有对象循环的指令清单，可静态指认的可移除项占边际差的约 92%（14.8–15.2 ns/对象），高于通过 1.10 所需的 12.32 ns/对象，但按方案 §2.1 的严格口径（排除 ECS 查找）只有 80.3%（13.18 ns，投影 1.0824，余量仅 1.6%），而若按“整个 `readObject` 热路径都计入额外工作”的保守模型则只回收约 9.53 ns（投影 1.1656）。因此 R0-a 的判定是**灰区**：上界够得着 1.10，下界够不着，且严格口径没有留下余量；按方案 G1 不直接提名 RB，进入 R0-b。本报告不主张候选一定通过。
 

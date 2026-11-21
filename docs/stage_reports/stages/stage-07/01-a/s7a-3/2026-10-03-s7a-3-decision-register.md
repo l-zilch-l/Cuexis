@@ -1,5 +1,12 @@
 # S7A-3 后续合同讨论与决策登记
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.01-a.s7a-3.2026-10-03-s7a-3-decision-register
+status: evidence
+authority: none
+date: 2026-10-03
+-->
+
 日期：2026-10-03  
 收口更新：2026-10-04  
 状态：设计裁决记录；G2 + R2 + P1 及其细化组合已按 owner 授权完成裁决；实现与验收尚未完成。  

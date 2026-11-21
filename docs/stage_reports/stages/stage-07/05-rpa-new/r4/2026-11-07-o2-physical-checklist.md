@@ -1,5 +1,12 @@
 # R4 O2 实体操作与记录清单
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-07-o2-physical-checklist
+status: evidence
+authority: none
+date: 2026-11-07
+-->
+
 状态：prepared；未启动新设备运行，未取得本候选实体接受
 
 日期：2026-11-07

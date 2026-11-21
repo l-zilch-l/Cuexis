@@ -1,5 +1,12 @@
 # S7A-3 未闭合合同组合裁定：G2 + R2 + P1
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.01-a.s7a-3.2026-10-03-s7a-3-contract-selection-g2-r2-p1
+status: evidence
+authority: none
+date: 2026-10-03
+-->
+
 日期：2026-10-03  
 范围：S7A-3 第二半尚未实现的 prepared grace、资源 claim / ownership prepare 计划、以及 REF0 / Packed 首次写入边界。
 

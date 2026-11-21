@@ -1,5 +1,11 @@
 # R3c 原型移植到 HEAD，并补上跨旧 archive 的字节准入（2026-11-03）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-03-r3c-head-port-and-cross-archive-admission.index
+status: evidence
+authority: none
+-->
+
 状态：candidate + local verification；2026-11-04 正式单元未形成有效样本，**不采用**；test-only 探针；
 不改判据、不关闭 R3，也不替代 R4 / 设备 / 生产接受。
 

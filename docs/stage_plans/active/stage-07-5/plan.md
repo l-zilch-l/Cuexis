@@ -4,6 +4,12 @@
 
 更新日期：2026-11-14
 
+<!-- cuexis-meta
+id: PLAN-active.stage-07-5.plan
+status: active
+authority: owns
+-->
+
 返回[阶段计划索引](../../README.md)；报告入口见[独立阶段报告索引](../../../stage_reports/stages/stage-07-5/README.md)。
 当前进度唯一以[CURRENT_STATUS](../../../CURRENT_STATUS.md)为准。
 
@@ -33,15 +39,20 @@ identity 及已接受合同不因本次拆分改名或重编号。
 
 ## 2. 前置基线与依赖
 
-主路线为 **Stage 7 受限关闭交接 → Stage 7.5 → Stage 8**。
+主路线为 **Stage 7 受限关闭交接 → Stage 7-RR（复核与重构） → Stage 7.5 → Stage 8**。
 归档来源：[拆分前 Stage 7 总计划](../../../archive/stage-07-planning/2026-11-14-stage-07-before-gameplay-evolution-split.md)，
 实际实施基线及 owner 接受边界见
 [R4／RPA 受限退出与缺陷交接](../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-14-limited-exit-and-defect-handoff.md)。
 其已验证代码为 `d1951326`，SDK `0.9.1`；后续工具／实现差异另行绑定，不能冒称该 SHA 已认证新能力。
-[独立诊断前置](../stage-07/02-diagnostics/plan.md)的 N3 已退出，正式码及兼容合同继续继承。
+[独立诊断前置](../../completed/stage-07/02-diagnostics/plan.md)的 N3 已退出，正式码及兼容合同继续继承。
 
 RPA 入场前置按 owner 明确接受的受限退出满足。原性能／内存／GPU／设备限制、P8 历史缺口、F3 延期及 testOnly
 继续有效，拆分不扩大生产范围、不重置正式次数，也不把历史 fail／inconclusive／blocked 改成 pass。
+
+[Stage 7-RR](../stage-07-rr/plan.md) 的当前计划范围完成并取得 owner 接受，是本阶段的入场前置。
+该阶段只登记与处置 2026-11-17 复核发现（文档-实现漂移、格式互操作、诊断一致性、拆分预算），
+不改变本计划的能力范围；其发现与处置结论见[发现登记册](../stage-07-rr/findings.md)。
+复核发现不等于能力已实现，也不替代本阶段 §5 的准入包与门禁。
 
 | 能力工作线 | 最低依赖 | 边界 |
 | --- | --- | --- |
@@ -53,11 +64,11 @@ RPA 入场前置按 owner 明确接受的受限退出满足。原性能／内存
 | S7C-1 calibration | S7B-0 与实际设备／profile 合同 | 高级策略不自动接受历史 F3 生产参数或精确 AV |
 | S7C-2 Ruleset package | S7B-0、已接受 Ruleset Interface | 静态模块／常量包，不开放脚本、字节码或动态插件 |
 
-所用基线若包含[PD](../stage-07/04-pd/plan.md)，须消费其实际合同 revision、SDK 与安装消费者交接；
+所用基线若包含[PD](../../completed/stage-07/04-pd/plan.md)，须消费其实际合同 revision、SDK 与安装消费者交接；
 phase/outcome、FactBinding／聚合、Snapshot／Replay 和表现预算的影响逐项核验。
 必需绑定不支持时在 prepare 拒绝，不静默跳过 Fact 后推进 cursor；细则见
-[PD 能力边界](../stage-07/04-pd/design.md#121-能力演进与-factbinding)及
-[PD 版本交接](../stage-07/04-pd/design.md#127-跨阶段交接版本与维护成本)。
+[PD 能力边界](../../completed/stage-07/04-pd/design.md#121-能力演进与-factbinding)及
+[PD 版本交接](../../completed/stage-07/04-pd/design.md#127-跨阶段交接版本与维护成本)。
 
 ## 3. 工作线与实施顺序
 
@@ -245,7 +256,7 @@ grading 或有界重复的动作语义。7A 已支持的 Release/tail 仍是同�
 
 ### S7C-1：校准、设备延迟和 Judgement Policy
 
-基础实时架构归[Stage 7-RPA子阶段](../stage-07/03-rpa-legacy/plan.md)，正式命名迁移归[独立诊断前置](../stage-07/02-diagnostics/plan.md)。
+基础实时架构归[Stage 7-RPA子阶段](../../completed/stage-07/03-rpa-legacy/plan.md)，正式命名迁移归[独立诊断前置](../../completed/stage-07/02-diagnostics/plan.md)。
 S7C-1负责校准参数及高级设备策略；本批不承接基础同步缺口，未因此启动实施。
 
 **目标。** 将 timing offset、input latency、窗口等级和设备能力变成显式、可复现的策略。
@@ -379,5 +390,9 @@ Stage 8 必须取得本阶段当前范围的完成及 owner 接受，发行矩�
 ## 10. 排除项与旧路径
 
 本阶段不实现 Stage 8 默认 Writer／正式发行，也不实现 Studio、稳定 C ABI、任意脚本或未准入的 3D／自由体感能力。
-[Stage 7 原计划入口](../stage-07/06-b/plan.md)保留一轮兼容导航；历史报告中的 7B+ 名称及 S7B/S7C ID
+[Stage 7 原计划入口](../../completed/stage-07/06-b/plan.md)保留一轮兼容导航；历史报告中的 7B+ 名称及 S7B/S7C ID
 保留原语境。活合同与新交接统一引用本路径；后续阶段只消费本阶段实际接受的接口与证据。
+
+## 11. 交接
+
+暂停或结束本阶段时更新 [交接页](../../../HANDOFF.md)（当前任务、下一步、阻塞与验证状态），并把新增缺陷写入当前登记册。

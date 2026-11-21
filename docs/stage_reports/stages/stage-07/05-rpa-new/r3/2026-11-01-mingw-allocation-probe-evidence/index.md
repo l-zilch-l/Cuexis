@@ -1,5 +1,11 @@
 # MinGW 分配探针缺陷与第二次矩阵运行附件
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-mingw-allocation-probe-evidence.index
+status: evidence
+authority: none
+-->
+
 状态：冻结证据索引。返回 [诊断报告](../2026-11-01-r3-run2-and-mingw-allocation-probe-limit.md)。
 
 本目录回答几个互不替代的问题，因此分成六组文件：

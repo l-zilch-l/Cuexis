@@ -1,5 +1,12 @@
 # Chart Format Foundation F8: Capacity and Security Harness
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.chart-format-foundation.2026-09-07-f8-capacity-harness
+status: evidence
+authority: none
+date: 2026-09-07
+-->
+
 日期：2026-09-07  
 状态：harness added; raw cross-platform measurements pending
 

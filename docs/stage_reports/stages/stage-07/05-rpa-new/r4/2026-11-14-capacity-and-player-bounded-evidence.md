@@ -1,5 +1,12 @@
 # R4 容量与 Player 有限证据（2026-11-14）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-14-capacity-and-player-bounded-evidence
+status: evidence
+authority: none
+date: 2026-11-14
+-->
+
 状态：candidate bounded evidence；不是正式计时、完整内存预算或退出接受。
 
 返回 [New RPA 报告索引](../README.md)。依据 [11/13 收尾裁定](2026-11-13-closeout-decisions.md)、[工具实施报告](2026-11-13-closeout-implementation.md)、[P8 low 报告](2026-11-13-p8-low.md)及 [11/11 owner 裁定](2026-11-11-owner-decisions.md)。既有归属修正与 P8 `(40000,4096)` 内容口径的接受继续有效；下述缺口尚未成为已接受限制。

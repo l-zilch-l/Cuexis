@@ -4,6 +4,12 @@
 
 更新日期：2026-08-30
 
+<!-- cuexis-meta
+id: PLAN-completed.stage-05.plan
+status: completed
+authority: owns
+-->
+
 归档来源：[旧版 PROJECT_GUIDE](../../../archive/PROJECT_GUIDE_LEGACY_2026-08-10.md) 与
 [SDK transition plan 快照](../../../archive/CUEXIS_SDK_TRANSITION_PLAN_2026-08-10.md)。权威合同：
 [ADR 0040](../../../adr/0040-stage-5-material-shader-contracts.md) 与

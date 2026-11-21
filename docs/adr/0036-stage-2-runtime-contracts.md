@@ -1,5 +1,11 @@
 # ADR 0036：Stage 2 Timing、Step Event 与可观察表现合同
 
+<!-- cuexis-meta
+id: ADR-0036
+status: accepted
+authority: owns
+-->
+
 日期：2026-08-05
 
 状态：已接受

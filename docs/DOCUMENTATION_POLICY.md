@@ -4,6 +4,12 @@
 
 更新日期：2026-10-06
 
+<!-- cuexis-meta
+id: GUIDE-DOC-POLICY
+status: accepted
+authority: owns
+-->
+
 ## 文档角色
 
 每份文档必须拥有一个主要角色：
@@ -18,14 +24,19 @@
 | Index/Status | 导航和当前摘要 | 复制完整技术合同 |
 | API Reference | 已发布 SDK 的入口、生命周期、可观察结果、错误与兼容约定 | 把内部实现类型描述为宿主 API，或复制完整头文件声明 |
 
+`AGENTS.md` 只写路由与硬约束，不复述阶段、版本、预算或能力状态；这些事实由
+`docs/MAP.md`、`docs/CURRENT_STATUS.md`、代码与生成页承载。`AGENTS.md` 顶部的
+`CUEXIS_STATE` 块是生成物，`check_docs.py` 只校验它的指针与规则片段是否存在。
+
 ## 权威顺序
 
 同一事实冲突时，按以下顺序处理：
 
 ```text
-当前状态页 -> 已接受 ADR -> 生产 Spec -> 当前 Stage Plan -> 最新完成/审查 Report -> 历史材料
+代码与 schema -> 当前状态页 -> 已接受 ADR -> 生产 Spec -> 当前 Stage Plan -> 最新完成/审查 Report -> 历史材料
 ```
 
+代码、schema、`cmake/CuexisVersion.cmake` 始终高于文档；文档之间才按上面的顺序裁决。
 “当前状态页”只负责当前摘要，不能替代 ADR 或 Spec。候选格式必须同时标记 candidate、提案
 或未实现，不能使用“已支持”或“生产格式”。
 
@@ -56,6 +67,7 @@ ADR 还要写决策状态；Spec 还要写实现状态；Report 还要写快照�
 ## 目录和命名
 
 稳定入口保持在 `docs/` 根目录：`README.md`、`CURRENT_STATUS.md`、`PROJECT_GUIDE.md`、
+`HANDOFF.md`、
 `ROADMAP.md` 和本文。根目录不承载格式、阶段计划、阶段报告或 API 正文。其余现行文档按角色归档到
 以下目录：
 
@@ -112,6 +124,14 @@ README 只用于稳定入口、顶层文档角色或包含多份需要独立导�
 这些目录不改变报告的历史角色，现行决策归ADR/Spec、当前范围归plan、当前进度归CURRENT_STATUS。
 分类目录不是每个阶段的必建模板；少量报告仍由最近索引直接导航。
 
+写作模板在 [templates/](templates/README.md)：新 plan / 报告复制对应模板，模板中的固定 H2 标题
+是 `check_docs.py` 的检查对象。`docs/HANDOFF.md` 是**对话级交接**，记录当前任务、下一步、阻塞与
+验证状态，不是阶段权威；active 阶段超过 7 天未更新时 `check_docs_facts.py` 只给警告。
+
+计划分两级：`stage_plans/active/**` 用详细模板（任务看板、入场门禁、验收矩阵、回滚条件）；
+`stage_plans/future/**` 只用提纲模板（目标、边界、入口条件、待决问题），启动时再重写为详细计划，
+避免提前写下会过期的批次与数值。
+
 `docs/api/` 以发布的 Playback SDK 为首要对象，说明入口、生命周期、线程、资源、帧观察、诊断、
 capability 和兼容边界。内部模块资料必须显式标为 internal，不能把 Runtime、World、EnTT、SDL、
 OpenGL 或 JSON DOM 写成宿主可依赖的 API。
@@ -132,6 +152,25 @@ API 文档使用中文标题、章节和解释性文字；类型名、函数名�
 ADR 使用其决策日期和决策状态；历史 Report 使用其证据日期或快照日期及后续关闭证据。整理不得把
 历史日期改写为当前日期，也不得以统一字段名掩盖原始证据时点。
 
+### 机器可读元数据块
+
+合同、计划与证据文档在 H1 之后带一个 `cuexis-meta` 注释块，供 `tools/verification/gen_docs_map.py`
+生成路由页与状态块，避免人肉维护索引：
+
+```text
+<!-- cuexis-meta
+id: ADR-0027            # 稳定标识：ADR-<编号> / API-<名> / FORMAT-<名> / ARCH-<名> / GUIDE-<名> / PLAN-<路径> / EVIDENCE-<路径>
+status: accepted        # 权威状态：current / active / accepted / candidate / future / deferred / completed / historical / evidence / unverified
+authority: owns         # owns（拥有该主题）/ summarizes（摘要）/ references（引用）/ index / none（证据）
+-->
+```
+
+- `status` 表达“是否还权威”，`authority` 表达“是否拥有该主题”。证据文档固定为
+  `status: evidence` + `authority: none`；索引为 `authority: index`。
+- 文件名带 `YYYY-MM-DD` 的证据报告额外写 `date`，取文件名中的日期，不改写正文时点。
+- `docs/CURRENT_STATUS.md` 的元数据额外带 `current_stage`，它是“当前阶段”的唯一机器可读来源。
+- 块由脚本批量补齐，正文一字不改；新增文档必须自行带上该块，否则 MAP 中显示 `unverified`。
+
 ## 脚本边界
 
 运行时脚本和逐帧脚本回调无限期延后。任何文档不得为它们预留字段、extension、capability、
@@ -149,3 +188,16 @@ python tools/check_docs.py
 检查器验证 Markdown 相对链接、单一 H1、从 `docs/README.md` 可达、目录索引和完整阶段索引、
 Stage Chart Format Update 名称、运行时脚本边界、Stage 4-12 计划的目标/验收/归档来源，以及
 候选 JSON/CXT 的解析、CXC entry 顺序和 CXT import 一致性。
+
+生成物与事实检查（修改任何 `docs/` 文档后运行）：
+
+```powershell
+python -B tools/verification/gen_docs_map.py          # 重新生成 docs/MAP.md 与 AGENTS.md 状态块
+python -B tools/verification/gen_docs_map.py --check   # 只校验是否过期
+python -B tools/verification/check_docs_facts.py       # 校验生成物新鲜度与版本字面量漂移
+```
+
+- `docs/MAP.md` 与 `AGENTS.md` 的 `CUEXIS_STATE_BEGIN/END` 块是**生成物**，不得手改；`--check` 过期即失败。
+- `check_docs_facts.py` 把 `docs/` 里的构建版本与 SDK API 字面量与 `cmake/CuexisVersion.cmake` 对比；
+  历史叙述行（含“历史/归档/baseline/此前”等标记）豁免，其余差异作为警告列出。
+- 证据目录（`docs/stage_reports/**`、`docs/archive/**`）不参与版本字面量检查：它们是当时的证据，不是当前事实。

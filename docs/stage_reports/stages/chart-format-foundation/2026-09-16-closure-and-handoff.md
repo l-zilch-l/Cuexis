@@ -1,5 +1,12 @@
 # Chart Format Foundation: Closure and Stage 6 Handoff
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.chart-format-foundation.2026-09-16-closure-and-handoff
+status: evidence
+authority: none
+date: 2026-09-16
+-->
+
 日期：2026-09-16
 
 状态：completed；项目所有者确认完成，Stage 6 进入 active

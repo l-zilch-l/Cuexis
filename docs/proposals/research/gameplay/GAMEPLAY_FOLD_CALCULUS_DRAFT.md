@@ -1,5 +1,11 @@
 # Bounded Fold Calculus 提案（第二版）
 
+<!-- cuexis-meta
+id: PROPOSALS-research.gameplay.GAMEPLAY_FOLD_CALCULUS_DRAFT
+status: candidate
+authority: none
+-->
+
 > 目录状态：Gameplay research input。本文是替换性设计研究；核心取舍已吸收到 I 收敛工作稿，未独立成为生产合同。
 
 状态：candidate（设计提案，未接受，未实施）

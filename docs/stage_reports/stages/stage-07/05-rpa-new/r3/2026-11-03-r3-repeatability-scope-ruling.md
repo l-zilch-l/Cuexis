@@ -1,5 +1,12 @@
 # R3 重复性口径裁定：15% 的绑定级别与 A/B 裁决量（2026-11-03）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-03-r3-repeatability-scope-ruling
+status: evidence
+authority: none
+date: 2026-11-03
+-->
+
 状态：active；owner 裁定记录，自 2026-11-03 起生效
 
 日期：2026-11-03

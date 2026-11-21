@@ -1,13 +1,20 @@
 # 2026-10-24 B0 静态内存上限账本与逐域上限推导
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.memory-attribution.2026-10-24-b0-memory-cap-ledger
+status: evidence
+authority: none
+date: 2026-10-24
+-->
+
 **状态**：B0 推导完成并经 owner 复核接受（2026-10-24，G1/G3/G4/G7 四项 blocking 缺口全部关闭，G9 顺延至 B1 计数）。**运行**：否，本步未执行任何工作负载，也未用任何实测值作为上限来源。**PD-5 acceptance**：not passed。
 
 ## 1 边界与判据
 
-- 本步只做静态推导：逐单元上限 = `profiles.json` 已声明的容量 × 已审计元素尺寸 + 固定开销（[读候选与内存域方案](../../../../../../stage_plans/active/stage-07/04-pd/pd-5/pd5-read-candidate-and-memory-domains-plan.md) §3.5）。
+- 本步只做静态推导：逐单元上限 = `profiles.json` 已声明的容量 × 已审计元素尺寸 + 固定开销（[读候选与内存域方案](../../../../../../stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-candidate-and-memory-domains-plan.md) §3.5）。
 - 实测值只能用于核对，不能作为上限来源；`global_cpp_new_envelope` 一类诊断包络不进入本账本。
 - 0 与「无限制」都不得充当缺项占位：缺项必须写成 `NA:<原因>` 并进入 §4 缺口表。
-- 本步不产生预算结论，也不改动[测量方案](../../../../../../stage_plans/active/stage-07/04-pd/pd-5/pd5-measurement-proposal.md) §5 的任何一项；它只把「清单未填齐」变成「逐项可判定：已声明，或明确缺什么」。
+- 本步不产生预算结论，也不改动[测量方案](../../../../../../stage_plans/completed/stage-07/04-pd/pd-5/pd5-measurement-proposal.md) §5 的任何一项；它只把「清单未填齐」变成「逐项可判定：已声明，或明确缺什么」。
 
 ## 2 权威输入
 

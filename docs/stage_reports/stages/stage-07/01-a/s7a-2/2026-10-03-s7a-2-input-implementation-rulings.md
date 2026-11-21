@@ -1,11 +1,18 @@
 # S7A-2 输入规范化半批实现裁定落地记录（第 2 轮输入半批复核）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.01-a.s7a-2.2026-10-03-s7a-2-input-implementation-rulings
+status: evidence
+authority: none
+date: 2026-10-03
+-->
+
 状态：dated implementation record（S7A-2 输入规范化半批的语义裁定与文档落地证据；不是阶段关闭、
 不是 owner acceptance、不是实施验证、**不是发布或提交声明**）
 
 更新日期：2026-10-03
 
-上级文档：[Stage 7A 实施计划](../../../../../stage_plans/active/stage-07/plan.md) §S7A-2 ·
+上级文档：[Stage 7A 实施计划](../../../../../stage_plans/completed/stage-07/plan.md) §S7A-2 ·
 [Gameplay V2 acceptance package](../../../../../proposals/gameplay-v2-acceptance/README.md) ·
 [未决语义分轮裁决清单](../../../../../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md) §2、§9
 
@@ -192,7 +199,7 @@ author-source`）。两者都在本批次落点之外、且早于本批次存在
 
 - [第 2 轮门禁报告](2026-10-03-s7a-2-gate-rulings.md)：第 2 轮 7 条裁定的原始落地证据（历史，不回改）
 - [第 2 轮实现裁定记录](2026-10-03-s7a-2-implementation-rulings.md)：时基半批的 7 项 + 4 项复核（同 thread，互为补充）
-- [Stage 7A 实施计划](../../../../../stage_plans/active/stage-07/plan.md)：§S7A-2 的目的与验证要求
+- [Stage 7A 实施计划](../../../../../stage_plans/completed/stage-07/plan.md)：§S7A-2 的目的与验证要求
 - [未决语义分轮裁决清单](../../../../../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md)：§2 第 2 轮行、表后 provenance 与 §9 裁定登记
 - [未决问题与 owner 决策请求](../../../../../proposals/gameplay-v2-acceptance/OPEN_QUESTIONS.md)：§2.1 与 §4.3 输入半批复核登记
 - [Gameplay V2 Spec](../../../../../formats/GAMEPLAY_V2_SPEC.md)：§3.7.3、§3.7.6、§3.7.7、§3.7.8、§5.2、§9.3、§S7A-2 节、§11.1

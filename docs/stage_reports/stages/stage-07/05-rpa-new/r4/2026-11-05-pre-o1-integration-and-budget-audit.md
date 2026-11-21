@@ -1,12 +1,19 @@
 # R4 O1 前集成核验与预算审计
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-05-pre-o1-integration-and-budget-audit
+status: evidence
+authority: none
+date: 2026-11-05
+-->
+
 状态：candidate；O1 前工作完成，新增数值等待 owner 接受
 
 快照日期：2026-11-05
 
 返回 [New RPA 报告索引](../README.md)。实施范围见
-[R4 计划](../../../../../stage_plans/active/stage-07/05-rpa-new/r4/plan.md)，
-待裁定内容见 [O1 预算与参数提案](../../../../../stage_plans/active/stage-07/05-rpa-new/r4/caps-proposal.md)。
+[R4 计划](../../../../../stage_plans/completed/stage-07/05-rpa-new/r4/plan.md)，
+待裁定内容见 [O1 预算与参数提案](../../../../../stage_plans/completed/stage-07/05-rpa-new/r4/caps-proposal.md)。
 
 ## 1. 授权、起点与实际改动
 

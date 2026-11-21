@@ -1,8 +1,14 @@
 # Cuexis Packed Chart v1
 
-状态：candidate；Chart v5 Foundation 的物理存储提案；未实现、未冻结生产 wire format
+状态：candidate；Chart v5 Foundation 的物理存储提案；v1 wire 已实现（Reader/Writer 仅 mode 0），尚未冻结为生产 wire format
 
-更新日期：2026-09-05
+更新日期：2026-11-20
+
+<!-- cuexis-meta
+id: FORMAT-PACKED_CHART_FORMAT
+status: candidate
+authority: owns
+-->
 
 2026-10-04 补充：本文继续拥有 Foundation `candidateRevision=1` 的合同。
 Gameplay 的显式 revision 2 扩展由 [Gameplay Capsule v2 format](GAMEPLAY_CAPSULE_V2_FORMAT.md)
@@ -60,17 +66,13 @@ Canonical Semantic Chart 是内部逻辑合同，不是新增的 JSON 顶层分�
 
 ```text
 CanonicalSemanticChart {
-  semanticVersion: 5
-  chartId: UUID
-  timing: { offsetMs, defaultBpm, tempoEvents[], stops[] }
-  defaultCamera: resolved CameraData
+  chartId: ChartId
   mainMusic: AssetId | none
-  requiredFeatures: sorted (id, version)[]
-  resourceRequirements: sorted typed references[]
-  entities: sorted ConcreteEntity[]
-  behaviorDefinitions: sorted typed definitions[]
-  animationDefinitions: sorted typed clips and bindings[]
-  effectDefinitions: sorted finite typed schedules[]
+  features: sorted CanonicalFeature[]
+  timing: ChartTiming
+  defaultCamera: CameraData
+  resourceClosure: CanonicalResourceClosure
+  entities: sorted CanonicalEntity[]
 }
 
 ConcreteEntity {
@@ -80,6 +82,10 @@ ConcreteEntity {
   requirements: sorted (localId, kind, interval, domain, action, constraints, effects)[]
 }
 ```
+
+字段以 `engine/chart/include/cuexis/chart/canonical_semantic_chart.hpp:180-188` 为准；本页不新增
+`semanticVersion`、`behaviorDefinitions`、`animationDefinitions` 或 `effectDefinitions` 这类
+当前类型中不存在的字段。
 
 所有 CXT 槽位、参数、局部 Beat 偏移和父引用必须已冻结；所有 Component 默认值必须
 已按语义 Schema 补齐。Requirement 列表只是单实体的逻辑数据，不新增作者层 `notes`、
@@ -198,16 +204,11 @@ alignment 添加 padding。所有索引从 0 起；`IndexPlusOne` 的 0 表示 n
 | mode | Descriptor | Atom |
 | --- | --- | --- |
 | 0：Rational | `u8(0)` | `numerator: sv, denominator: uv64`，每条绝对值 |
-| 1：GridDelta | `u8(1), D: uv64` | `scaledNumeratorDelta: sv` |
 
-Rational atom 必须约分，零为 `0/1`。GridDelta 的前一个 scaled numerator 初值为 0，
-累加使用 checked int64，值为 `N/D`，解码后约分。每个逻辑字段有独立状态，例如
-startBeat 和 endBeat 不能共用前值；不出现的 endBeat 不推进该流。
+其他 descriptor 值非法：当前 Reader 对非 0 mode 报 `packed.time.invalid`，REQ0 非 0 报
+`packed.requirements.codec`。
 
-Writer 尝试该流约分后分母的最小公倍数 D；只在 D、所有 scaled numerator 和相邻
-delta 均可表示，且总编码 bytes 小于 Rational mode 时选择 GridDelta。否则使用
-Rational mode，长度相等也选 Rational。空流使用 mode 0。不能为适应 grid 舍入 Beat，
-也不能因可选 grid 的 LCM 溢出而拒绝可由 Rational 合法表示的谱面。
+Rational atom 必须约分，零为 `0/1`。不能为适应 grid 舍入 Beat。
 
 ### 4.3 规范顺序
 
@@ -243,7 +244,7 @@ ARCH 按 mask 升序、REQ0 按 `(entity ordinal, localId)`、CNS0 按 set paylo
 | 80 | `stringCount` | u32 | STR0 字符串数 |
 | 84 | `referenceCount` | u32 | REF0 行总数（全部 typed reference kind） |
 | 88 | `candidateRevision` | u32 | 本草案为 `1`；正式发行时为 `0` |
-| 92 | `headerCrc32` | u32 | 对 96 bytes Header 计算，本字段临时填零 |
+| 92 | `headerCrc32` | u32 | 对 Header bytes `[0,92)` 计算；结果以 little-endian u32 存于 `[92,96)` |
 
 本草案对应的 Foundation/Stage 6 Header 必须为 `flags=1, candidateRevision=1`，并通过
 显式 candidate path 加载。Schema/wire 合同发生不兼容候选修改必须递增 revision；
@@ -254,6 +255,12 @@ CRC 使用 CRC-32/ISO-HDLC：reflected polynomial `0xEDB88320`、init 和 xorout
 `0xffffffff`，对 bytes 顺序计算，结果 u32 little-endian；`123456789` 的检查值为
 `0xcbf43926`。CRC 用于损坏检测，不是认证。整文件 SHA-256 属于外部 artifact identity，
 不能把它直接写进被自身覆盖的 Header。
+
+本节按现行 Reader/Writer 更正文档：Header 总长仍为 96 bytes，计算范围排除保存结果的
+`[92,96)`，其余 Header 信息均参与 CRC。此处仅澄清合同，不改变现有文件字节、CRC 算法或
+artifact identity，现有 Reader/Writer 产物无需重写。按本节更正前的旧文字采用“96 bytes
+且 CRC 字段置零”实现的工具或文件，与现行实现不兼容；若需迁移，须显式转换并更新受影响
+entry 的 artifact SHA-256，不自动尝试两种算法。
 
 `referenceCount` 是 REF0 的**全部行数**，也就是 Reader 逐行读取并校验
 `maxPackedReferences` 的那个计数（R3 裁定 A13：旧文字「asset 类引用数」与 Writer/Reader

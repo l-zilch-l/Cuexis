@@ -1,12 +1,18 @@
 # 未决语义分轮裁决清单
 
+<!-- cuexis-meta
+id: PROPOSALS-gameplay-v2-acceptance.RULING_WORKSHEET
+status: candidate
+authority: none
+-->
+
 状态：candidate；S7A-0 准入产出，随 Gameplay V2 acceptance package 一并接受；**7 轮裁定已全部登记完成（2026-10-02 至 2026-10-03）**
 
 更新日期：2026-10-03
 
 上级文档：[Gameplay V2 acceptance package](README.md) ·
 [未决问题与 owner 决策请求](OPEN_QUESTIONS.md) ·
-[Stage 7A 实施计划](../../stage_plans/active/stage-07/plan.md)
+[Stage 7A 实施计划](../../stage_plans/completed/stage-07/plan.md)
 
 文档角色：裁定工作表。它把 [CONTRACT_MATRIX.md](CONTRACT_MATRIX.md) 的合同项（登记时为 5 项 `open`，第 7 轮后为 **0**）与
 [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) 的 53 项未决问题**合并成一张按批次依赖排序的裁定清单**，
@@ -683,4 +689,4 @@ confidence **0.96**；决策卡文件名时间戳 `2026-10-02T21:03:39.462Z`（U
 - [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md)：未决问题原文与候选处置
 - [SUPPORT_AND_REJECTION_MATRIX.md](SUPPORT_AND_REJECTION_MATRIX.md)：支持集合、19 条拒绝与 W 类缺口定义
 - [BATCH_GATES.md](BATCH_GATES.md)：每批次的正例/负例/诊断/golden/停止条件
-- [Stage 7A 实施计划](../../stage_plans/active/stage-07/plan.md)：冻结顺序与批次依赖
+- [Stage 7A 实施计划](../../stage_plans/completed/stage-07/plan.md)：冻结顺序与批次依赖

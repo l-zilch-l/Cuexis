@@ -1,5 +1,11 @@
 # Stage 6 Implementation Input
 
+<!-- cuexis-meta
+id: PROPOSALS-implementation-input.stage-06.README
+status: candidate
+authority: none
+-->
+
 状态：historical index
 
 更新日期：2026-10-01

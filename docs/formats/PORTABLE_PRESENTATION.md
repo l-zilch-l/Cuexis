@@ -1,7 +1,14 @@
 # Cuexis Portable Presentation Profile v1
 
 状态：Stage 3A 精确合同已接受；Stage 3B、3C 已于 2026-08-07 关闭；Stage 3D-3G 已于
+
 2026-08-08 关闭；阶段 3 已最终验收完成
+
+<!-- cuexis-meta
+id: FORMAT-PORTABLE_PRESENTATION
+status: accepted
+authority: owns
+-->
 
 日期：2026-08-08
 

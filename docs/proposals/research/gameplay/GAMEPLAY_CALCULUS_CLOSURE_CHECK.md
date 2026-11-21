@@ -1,5 +1,11 @@
 # Fold Calculus 封闭性验证
 
+<!-- cuexis-meta
+id: PROPOSALS-research.gameplay.GAMEPLAY_CALCULUS_CLOSURE_CHECK
+status: candidate
+authority: none
+-->
+
 > 目录状态：Gameplay research evidence。本文记录算子封闭性、V/W 缺口和修补过程，不是生产 Spec。
 
 状态：candidate（验证记录，未接受，未实施）

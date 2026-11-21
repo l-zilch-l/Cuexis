@@ -1,5 +1,12 @@
 # R4 收尾验证与待裁定移交（2026-11-14）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-14-closeout-verification-and-handoff
+status: evidence
+authority: none
+date: 2026-11-14
+-->
+
 状态：verification preparation / unresolved gates；不是退出接受记录。
 
 返回 [New RPA 报告索引](../README.md)。本轮授权见[收尾裁定](2026-11-13-closeout-decisions.md)，
@@ -17,7 +24,7 @@ P5、设备组、观察器、容量与 Player 的结论各自绑定该身份；�
 不以“只有文档变化”继承正式采样身份，也不套用 R3 的限定 delta 裁定。
 最终候选必须实际执行十一行 F1 与同 SHA 的三平台 F2；当前报告不预签结果。
 
-按 [R4 计划 §3.1／§3.7](../../../../../stage_plans/active/stage-07/05-rpa-new/r4/plan.md)，
+按 [R4 计划 §3.1／§3.7](../../../../../stage_plans/completed/stage-07/05-rpa-new/r4/plan.md)，
 最终候选的 SHA、tree、base、UTC 日期、命令结果、原始日志哈希与 hosted run ID 将写入
 `D:/Cuexis-worktree/out/evidence/r4/closeout-20261113/final-verification/` 的外部绑定清单，
 并在必要的单个集成 PR 中发布、回读已授权评论；不为回填候选自身 SHA 和结果再次改变冻结提交。

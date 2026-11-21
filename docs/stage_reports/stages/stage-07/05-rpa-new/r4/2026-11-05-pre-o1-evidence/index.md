@@ -1,5 +1,11 @@
 # R4 O1 前核验原始证据
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-05-pre-o1-evidence.index
+status: evidence
+authority: none
+-->
+
 状态：candidate；普通正确性与工具预检证据，不是正式性能、内存或生产接受
 
 快照日期：2026-11-05

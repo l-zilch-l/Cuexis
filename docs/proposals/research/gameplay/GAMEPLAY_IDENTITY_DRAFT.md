@@ -1,5 +1,11 @@
 # Gameplay Identity 分层草案
 
+<!-- cuexis-meta
+id: PROPOSALS-research.gameplay.GAMEPLAY_IDENTITY_DRAFT
+status: candidate
+authority: none
+-->
+
 > 目录状态：Gameplay research input。身份裁决已整理到 ADR 0043 与 Gameplay Judgement Spec；本文保留分层推导。
 
 状态：candidate（设计草案，未接受，未实施）

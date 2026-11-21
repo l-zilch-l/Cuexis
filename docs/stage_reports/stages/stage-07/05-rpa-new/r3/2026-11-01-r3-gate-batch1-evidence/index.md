@@ -1,5 +1,11 @@
 # R3 第一批正式门测量附件（2026-11-01）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-r3-gate-batch1-evidence.index
+status: evidence
+authority: none
+-->
+
 本目录保存四个组的全部字节：预注册、三个驱动器、逐进程日志与派生结果。它回答的问题只有一个——
 在 `6256af8` 这一份源码上，哪些门真的被测到了、读数是什么、哪些门因为边界不可比而仍未判定。
 

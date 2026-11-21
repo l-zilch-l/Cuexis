@@ -775,7 +775,7 @@
     },
     {
       "source_path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\05-rpa-new\\plan.md",
-      "archive_path": "main/docs/stage_plans/active/stage-07/05-rpa-new/plan.md",
+      "archive_path": "main/docs/stage_plans/completed/stage-07/05-rpa-new/plan.md",
       "category": "documentation-snapshot",
       "bytes": 120355,
       "sha256": "3c0d4902725939b7bc43036410e1c3d770c8f803ee9bde7055db37b8d2f4ea4a"
@@ -1454,7 +1454,7 @@
     },
     {
       "source_path": "D:\\Cuexis-worktree\\out\\r2-exit-report-20261026\\before\\docs\\stage_plans\\active\\stage-07\\05-rpa-new\\plan.md",
-      "archive_path": "main/out/r2-exit-report-20261026/before/docs/stage_plans/active/stage-07/05-rpa-new/plan.md",
+      "archive_path": "main/out/r2-exit-report-20261026/before/docs/stage_plans/completed/stage-07/05-rpa-new/plan.md",
       "category": "pre-report-document-bytes",
       "bytes": 119649,
       "sha256": "d1dbfece573ea4d9a6fa17aa5ae732cf20df38ee8f0e3da5aa316d10ba30f961"

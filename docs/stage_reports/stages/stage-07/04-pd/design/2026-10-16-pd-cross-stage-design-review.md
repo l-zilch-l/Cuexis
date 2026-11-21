@@ -1,13 +1,20 @@
 # PD 跨阶段兼容与演进设计补齐记录
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.design.2026-10-16-pd-cross-stage-design-review
+status: evidence
+authority: none
+date: 2026-10-16
+-->
+
 状态：dated design review；仅文档设计与选型，不是模拟实施、运行证据或阶段接受
 
 日期：2026-10-16
 
 核对基线：`stage-7`，HEAD `d076240a3f66fae9193195c2343afb1aedf94926`，包含尚未提交的 PD 文档。
 本记录补充[事务与交付重审](2026-10-16-pd-transaction-and-delivery-design-review.md)，不改写其历史验证。
-批次与门禁归[PD 主计划](../../../../../stage_plans/active/stage-07/04-pd/plan.md)，
-本轮选定的内部约束归[设计细则 §12](../../../../../stage_plans/active/stage-07/04-pd/design.md)。
+批次与门禁归[PD 主计划](../../../../../stage_plans/completed/stage-07/04-pd/plan.md)，
+本轮选定的内部约束归[设计细则 §12](../../../../../stage_plans/completed/stage-07/04-pd/design.md)。
 公共差异仍为[实时宿主边界 §8](../../../../../api/realtime-host-boundary.md)的未接受候选。
 
 ## 1. 核对范围与评价顺序
@@ -15,7 +22,7 @@
 按维护性、性能、扩展性的顺序比较：先检查数据权威、协调/取消、错误恢复与迁移清理的成本，
 再检查常态复制、延迟、峰值和未来接入范围。此次读取并对齐以下计划：
 
-- [Stage 7B+](../../../../../stage_plans/active/stage-07/06-b/plan.md)与[Stage 8](../../../../../stage_plans/future/stage-08/plan.md)：新判定能力、Graph/Packed、发行与实际基线交接。
+- [Stage 7B+](../../../../../stage_plans/completed/stage-07/06-b/plan.md)与[Stage 8](../../../../../stage_plans/future/stage-08/plan.md)：新判定能力、Graph/Packed、发行与实际基线交接。
 - [Stage 9](../../../../../stage_plans/future/stage-09/plan.md)与[Stage 11](../../../../../stage_plans/future/stage-11/plan.md)：Environment、Model/Submesh、曲线/几何、Snapshot/Digest 扩展。
 - [Stage 10](../../../../../stage_plans/future/stage-10/plan.md)：作者文档、保存/撤销、预览替换与未来多视口。
 - [Stage 12](../../../../../stage_plans/future/stage-12/plan.md)：低内存、后台、设备/Context 换代与后端恢复。

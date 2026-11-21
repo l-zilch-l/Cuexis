@@ -1,5 +1,12 @@
 # PD-0 测量波动方案实施
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-0.2026-10-17-pd0-measurement-variance-resolution
+status: evidence
+authority: none
+date: 2026-10-17
+-->
+
 状态：两窗口正式测量已完成；结果为 `inconclusive`，PD-0 尚未退出
 
 本报告记录当前测量方案的实施边界。历史正式组和补充组的 `inconclusive` 结论保持不变；本方案只定义后续可复核的无插桩基线。

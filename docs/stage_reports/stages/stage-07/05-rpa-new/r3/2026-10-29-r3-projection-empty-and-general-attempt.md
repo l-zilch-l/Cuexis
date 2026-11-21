@@ -1,5 +1,12 @@
 # R3 零绑定投影优化与通用匹配撤回
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-29-r3-projection-empty-and-general-attempt
+status: evidence
+authority: none
+date: 2026-10-29
+-->
+
 状态：本地候选核验；保留零绑定修复，撤回通用匹配试验；R3 未退出
 
 日期：2026-10-29

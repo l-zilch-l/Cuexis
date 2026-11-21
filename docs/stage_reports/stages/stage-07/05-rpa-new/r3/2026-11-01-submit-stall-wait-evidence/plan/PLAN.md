@@ -1,5 +1,11 @@
 # GPU 份额诊断 —— 预注册计划（在测量之前写成）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-submit-stall-wait-evidence.plan.PLAN
+status: evidence
+authority: none
+-->
+
 对象：`docs/stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-01-r3-capacity-frontier-bracket.md`
 记录的那个 `backend.submit` 内部停顿。前缘梯子（无 GPU 计时器）显示：停顿在 2300 static
 起变成 4–15% 的帧，单次多花 2.3–3.6 ms，且慢帧的 `submit_us` 增长而 `present_us` 不变；

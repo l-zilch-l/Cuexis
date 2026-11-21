@@ -1,5 +1,11 @@
 # PD-5 操作级协作停止合同与 candidate Playback 接口方案
 
+<!-- cuexis-meta
+id: PROPOSALS-implementation-input.stage-07.pd5-operation-stop-contract
+status: candidate
+authority: none
+-->
+
 状态：paused candidate / not accepted / not implemented
 
 更新日期：2026-10-23

@@ -2,7 +2,18 @@
 
 状态：superseded as typed preview input；retained as design-input history。Gameplay I 的候选 typed 输入，未实施，从未冻结为稳定 C ABI；typed 内部 / preview 边界现为 [GAMEPLAY_V2_ABI.md](GAMEPLAY_V2_ABI.md)，其语义权威为 [GAMEPLAY_V2_SPEC.md](../formats/GAMEPLAY_V2_SPEC.md)、决策依据为 [ADR 0044](../adr/0044-gameplay-v2-semantic-kernel.md)。本文件保留为历史候选输入与字段级差异对照，不删除、不再更新结论。
 
+<!-- cuexis-meta
+id: API-GAMEPLAY_JUDGEMENT_ABI
+status: historical
+authority: owns
+-->
+
 日期：2026-10-01
+
+> **Seek 的当前入口（candidate）**：语义见 [GAMEPLAY_V2_SPEC](../formats/GAMEPLAY_V2_SPEC.md) §3.19
+> 与控制矩阵，接口边界见 [GAMEPLAY_V2_ABI](GAMEPLAY_V2_ABI.md)；`PlaybackSession::seekGameplay`
+> 仅在 `CUEXIS_ENABLE_CHART_V5_CANDIDATE=ON` 时编译，默认构建与安装面不暴露。
+> 本文的 seek 设计仅作历史对照，不构成当前合同。
 
 本文定义 Stage 7A 可实现的 C++ typed preview 边界，不改变当前 SDK API `0.7.1`，也不宣称
 已有安装包暴露这些类型。稳定 C ABI 仍属于 Stage 14。

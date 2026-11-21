@@ -1,5 +1,11 @@
 # V2 设计审查矩阵与迁移路径
 
+<!-- cuexis-meta
+id: PROPOSALS-research.gameplay-v2.REVIEW_AND_MIGRATION
+status: candidate
+authority: none
+-->
+
 状态：candidate；研究提案，未接受，未实施
 
 更新日期：2026-10-02

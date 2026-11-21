@@ -1,5 +1,12 @@
 # PD-5 Snapshot-bound Stage C preflight stop
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.admission.stage-c.2026-10-23-stage-c-snapshot-bound-preflight-stop
+status: evidence
+authority: none
+date: 2026-10-23
+-->
+
 Status: stopped before native discovery / low and high not run / Stage C not passed.
 
 Date: 2026-10-23, Asia/Shanghai. Worktree: `D:/Cuexis-pd5-40k-admission`.

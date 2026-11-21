@@ -1,5 +1,11 @@
 # S7A-7/8 离线验收夹具
 
+<!-- cuexis-meta
+id: EXAMPLES-s7a78-device-acceptance
+status: candidate
+authority: none
+-->
+
 状态：历史 test-only candidate 的离线生成与核对材料；不再提供 Player 专用四轨引导。
 
 更新日期：2026-10-14。

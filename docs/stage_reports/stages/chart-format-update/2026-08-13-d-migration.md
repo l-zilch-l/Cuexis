@@ -1,5 +1,12 @@
 # Stage Chart Format Update CFU-D1/D2 Migration Report
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.chart-format-update.2026-08-13-d-migration
+status: evidence
+authority: none
+date: 2026-08-13
+-->
+
 状态：D1/D2 本地 Debug 验证已取得并关闭；整包 CFU-D 未关（D3 等待 CFU-E）
 
 快照日期：2026-08-13；验证补记：2026-08-13 同日稍后取得本地 Debug 证据

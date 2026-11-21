@@ -1,5 +1,12 @@
 # R3 恢复实施与预算候选验证
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-30-r3-resume-and-budget-verification
+status: evidence
+authority: none
+date: 2026-10-30
+-->
+
 状态：实施中；R3/R3c 未退出，候选选择须逐项记录。
 
 更新日期：2026-10-30（Asia/Shanghai）。
