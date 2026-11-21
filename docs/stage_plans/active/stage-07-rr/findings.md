@@ -2,7 +2,7 @@
 
 状态：active；只登记复核发现，不包含任何修复结论
 
-更新日期：2026-11-20
+更新日期：2026-11-21
 
 <!-- cuexis-meta
 id: PLAN-active.stage-07-rr.findings
@@ -461,3 +461,20 @@ R4 / PD-5 套件的相对路径已进入验收哈希账本（`binding.py:73`、�
 | --- | --- | --- | --- |
 | RR-F521 | `engine/particles/`（仅 `CMakeLists.txt:1-3`） | 空 INTERFACE 库，`engine/CMakeLists.txt` 从不 `add_subdirectory` | 已修（2026-11-17 删除目录；无构建引用） |
 | RR-F522 | `engine/debug/`（87 行） | 唯一链接方是 `cuexis_debug_tests`；`DebugDraw` 生产 0 引用 | 已处置（保留并标 test-only；删除留待 RR-3） |
+
+## 12. 提案复核记录（2026-11-21）
+
+本轮以 `ed1537fd` 为文档修订依据，核对本地 `Cuexis-Stage-7-RR-PR47-审查报告-2026-11-21.md` 与源码、台账和 owner 已接受共识。该外部报告是待验材料；P1–P6 是提案编号，与本册严重度编号无关。按 owner 本轮补设计授权，P1–P5 五项设计缺口均已有待审推荐；下表只记录核对判断，详细设计见链接。
+
+| 项 | 结论 | 核对与文档处置 | 证据与详细设计 |
+| --- | --- | --- | --- |
+| P1 | 部分成立 | 作者类型、头链、target 分离与成品装载校验确有边界缺口；“必须至少四个 target”未获证明，仅链接依赖也不足以满足已接受目标。D-06/D-10 已订正为拆出的运行内核在头文件与链接上仅依赖 `core`；类型、构建与安装、装载、当次输出及旧 SDK 迁移已补待审方案。 | [当前头链](../../../../engine/judgement/include/cuexis/judgement/kernel_types.hpp)、[装载校验](../../../../engine/gameplay_packed/src/gameplay_capsule_read.cpp)；[D-21](architecture-design.md#d-21-谱面表现与判定共用拍位换算)、[P1](simplification-proposal.md#p1-数据与-sdk) |
+| P2 | 部分成立 | 原 D-23 的约数示例未冻结整数取整；把约数与 P2 待审 floor 规则判为已接受合同的硬冲突不成立。具体矩形、帧布局与整数用例已补待审方案，不在台账预先选定。 | [D-23](architecture-design.md#d-23-谱面画面比例与宿主尺寸)、[P2](simplification-proposal.md#p2-渲染与兼容迁移) |
+| P3 | 部分成立 | 报告混用 Chart 的定拍位停顿与 Judgement 的拍位区间冻结/终点跳变两种模型；不能直接用旧区间 fixture 推断新模型必然改变同一接受集。新 Chart 的量化退化、碰撞、负拍/零拍边界及 clamp/seek 已补待审方案；旧零拍相邻区间样例保留，单区间跨零沿旧规则。 | [Chart 表示](../../../../engine/chart/include/cuexis/chart/timing_map.hpp)、[Judgement 表示](../../../../engine/judgement/include/cuexis/judgement/timebase_profile.hpp)；[D-21](architecture-design.md#d-21-谱面表现与判定共用拍位换算)、[P3](simplification-proposal.md#p3-时间与会话时钟) |
+| P4 | 部分成立 | 台账确有漂移；owner 已接受目标 `R=Retry`、Reload 另键，F5 仍为推荐。源码 `R=Reload` 是未迁移现状；“Retry 键未定”的判断已不适用。Failed 装载恢复、设备状态矩阵、旧 Rebuild 职责迁移及无音轨与启动交互已补待审方案；Empty 仍只走首次 Load。 | [当前按键接线](../../../../app/player/src/player_assembly.cpp)；[D-13](architecture-design.md)、[P4](simplification-proposal.md#p4-player-与旧控制权) |
+| P5 | 部分成立 | 损失接口、首批目标版本、旧签名同批退出，以及输入到转换模型的损失记录与 Writer 损失合并，均已补待审方案；写入前报告具体已知损失、覆盖由 Studio／第三方决定的原则已获接受，不再列为未决归属。 | [当前 Writer](../../../../engine/chart/include/cuexis/chart/chart_writer.hpp)；[P5](simplification-proposal.md#p5-写回与诊断)、[D-19 保存职责](architecture-design.md#d-19-sdk-示例与宿主试用) |
+| P6 | 部分成立 | plan 漏登 D-23–D-25、D-15 局间保留漏同步成立，本轮作摘要订正并标明历史替代。D-05 仅限定 RR-3；RR-4 独立前置和实施授权边界已明列。历史基线与当前文档依据须分别绑定，不能据相差提交数推断全部源码事实失效。 | [台账与实施状态](plan.md#4-已确认方向与决策台账)、[D-15](architecture-design.md)、[P6](simplification-proposal.md#p6-迁移与验收) |
+
+历史研究继续绑定 `aac83e5e`。本轮实跑 `git diff --name-status aac83e5e..ed1537fd -- engine app tests CMakeLists.txt CMakePresets.json cmake/CuexisVersion.cmake vcpkg.json`，列出变化仅为根 CMake、Presets、版本、`engine/debug/CMakeLists.txt`、删除 `engine/particles/CMakeLists.txt`、`tests/pd/CMakeLists.txt` 与 `vcpkg.json`；该范围内 `engine/chart`、`engine/judgement`、`engine/playback` 及 `app/player` 实现源码无差异。这是有限差异核对，未重跑历史证据命令，不证明当前构建、安装面或运行验收通过。
+
+本轮修正状态为文档订正与待审设计补齐，实现未验；详细提案由[附页](architecture-design.md)和[提案](simplification-proposal.md)维护，新增 P1–P6 技术推荐仍待审。本轮统一文档校验状态与结果以 [HANDOFF](../../../HANDOFF.md) 为准。

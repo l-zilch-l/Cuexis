@@ -11,7 +11,7 @@ current_register: stage_plans/active/stage-07-rr/findings.md
 
 状态：current
 
-更新日期：2026-11-17
+更新日期：2026-11-21
 
 当前任务、下一步与阻塞见 [交接页](HANDOFF.md)。
 
@@ -29,7 +29,9 @@ current_register: stage_plans/active/stage-07-rr/findings.md
   2 条渲染路径"过于臃肿），并取消超行文件拆分（全仓仅 1 个 `.cpp` 超 800 行）；
   8 份架构研究已于同日完成，结论与 6 个减重选项见
   [架构与实现研究](stage_reports/stages/stage-07-rr/2026-11-17-architecture-research.md)；
-  RR-0–RR-6 的重构实施尚未开始，减重选项待 owner 选定。
+  RR-3 范围已按[计划 D-05](stage_plans/active/stage-07-rr/plan.md#4-已确认方向与决策台账)限定为
+  R1/R5/R6，R2/R3/R4 延期；本轮已订正文档并补齐提案。
+  [P1–P6 的新增技术推荐](stage_plans/active/stage-07-rr/simplification-proposal.md)仍待审，重构实施尚未开始。
 - **文档治理第一批已完成（2026-11-17）**：文档入口新增生成式路由页 [docs/MAP.md](MAP.md)；
   170 篇合同/计划、424 篇证据报告、70 篇提案/示例/历史文档带 `cuexis-meta` 元数据块；
   `AGENTS.md` 顶部改为生成状态块；新增 `tools/verification/gen_docs_map.py`（生成 MAP 与 AGENTS 块）
@@ -73,7 +75,7 @@ Stage 7 的历史发布证据与评论回读仍保存在 `out/evidence/stage7-pu
 | Stage 7-RPA | R1–R4 已退出；R4 为 owner 接受的带缺陷／未认证范围退出，F3 生产仍延期，testOnly 保留 | [整改计划](stage_plans/completed/stage-07/05-rpa-new/plan.md)、[关闭与交接](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-14-limited-exit-and-defect-handoff.md) |
 | Stage 7-PD | 带限制退出及遗留交接已接受；PD-5 历史“未通过但定案”保持 | [PD 计划](stage_plans/completed/stage-07/04-pd/plan.md) |
 | Stage 7 | 按迁出原 7B+ 后的既有范围受限收束；历史失败、未认证范围与 testOnly 不改 | [Stage 7 计划](stage_plans/completed/stage-07/plan.md) |
-| Stage 7-RR：Review and Refactoring After Stage-7 | 复核发现已登记（P0 两项已就地订正）；RR-0 架构研究完成并给出 6 个减重选项，待 owner 选定；文档治理第一批完成（元数据/MAP/证据头/假断言订正）；重构实施未开始 | [计划](stage_plans/active/stage-07-rr/plan.md)、[研究](stage_reports/stages/stage-07-rr/2026-11-17-architecture-research.md)、[文档治理](stage_reports/stages/stage-07-rr/2026-11-17-documentation-refactor.md) |
+| Stage 7-RR：Review and Refactoring After Stage-7 | 复核发现与 RR-0 研究已登记；D-05 已限定 RR-3 为 R1/R5/R6，R2/R3/R4 延期；文档治理第一批完成；本轮已订正文档并补齐提案，P1–P6 新增技术推荐待审；重构实施未开始 | [计划](stage_plans/active/stage-07-rr/plan.md)、[提案](stage_plans/active/stage-07-rr/simplification-proposal.md)、[登记册](stage_plans/active/stage-07-rr/findings.md) |
 | Stage 7.5：Gameplay Evolution | 独立阶段规划与交接准备；继承受限基线，产品实施未开始；入场前置含 Stage 7-RR 接受 | [独立计划](stage_plans/active/stage-07-5/plan.md) |
 
 Stage 0–6 已完成；Stage 7 按拆分后的范围受限收束，原高级能力不回写为已实施；Stage 7-RR 为当前阶段；

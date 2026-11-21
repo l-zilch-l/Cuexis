@@ -20,7 +20,7 @@ P1–P6 是本页的审阅编号，只审各项未定部分。接受一项不表
 
 已接受的时间、比例、SDK 与兼容设计分别以 [D-21](architecture-design.md#d-21-谱面表现与判定共用拍位换算)、[D-23](architecture-design.md#d-23-谱面画面比例与宿主尺寸)、[D-24](architecture-design.md#d-24-sdk-判定接入与实验扩展)、[D-25](architecture-design.md#d-25-兼容入口与格式合同收敛) 为准。下文[整体推荐方案](#整体推荐方案待审)补齐余项；全部待审，不表示 owner 接受或授权实施、排期。
 
-同日续议确认 [D-25](architecture-design.md#d-25-兼容入口与格式合同收敛)：旧渲染入口逐步替代并最终删除；Packed CRC 与 CXC playback encoding 采用现行实现的明确规则，两处格式合同已更正。候选正式化的 profile/revision 与具体兼容迁移留待后续裁定。
+同日续议确认 [D-25](architecture-design.md#d-25-兼容入口与格式合同收敛)：旧渲染入口逐步替代并最终删除；Packed CRC 与 CXC playback encoding 采用现行实现的明确规则，两处格式合同已更正。兼容迁移的推荐见 P1、P2；正式发行的 profile、revision 与版本仍待裁定。
 
 | 待审 | 要决定什么 | 推荐与主要代价 |
 | --- | --- | --- |
@@ -29,7 +29,7 @@ P1–P6 是本页的审阅编号，只审各项未定部分。接受一项不表
 | P3 时间 | [Stop 量化碰撞、起播钳位与实时准入](#p3-时间与会话时钟)。Stop 半开区间与结束反查已接受，量化退化和碰撞处理仍为待审推荐。 | 保留旧成品与旧回放规则；新实时须验证完整映射，不能只比线性区间。 |
 | P4 Player 与旧宿主 | [显式请求、重试装载、无音轨与控制接管](#p4-player-与旧控制权)。R=Retry 已定；Reload 具体键位推荐 F5。 | 复用同一 prepare 路径和唯一控制者；新交互与接管安排待审。 |
 | P5 合同与诊断 | [目标版本、损失报告内容与失败诊断](#p5-写回与诊断)。保存前报告已知损失、覆盖策略归编辑器的原则已认可。 | 维持已更正的 Packed CRC 与 CXC 编码；只审具体表示、实现和必要的合同修订。 |
-| P6 阶段交付 | [迁移顺序、分段验收与停止条件](#p6-迁移与验收)。D-05 范围已定，本节推荐其交付与交接方式。 | 当前整理 R1/R5/R6 及 RR-4 窄迁移依据；后续实施继续等待相应授权。 |
+| P6 阶段交付 | [迁移顺序、分段验收与停止条件](#p6-迁移与验收)。D-05 范围已定，RR-4 独立跟踪。 | 分开核验 RR-3 的 R1/R5/R6 与 RR-4；RR-4 以前置 RR-2 和 R1 为门槛。 |
 
 审阅可以只回复编号和「接受／修改／延期」，也可以只改一行，例如「P4：无音轨的普通播放改为允许内容指定终点」。没有回复的项继续待审；将来若牵涉已接受的合同或 D-05，须单独裁定。
 
@@ -49,70 +49,179 @@ P1–P6 是本页的审阅编号，只审各项未定部分。接受一项不表
 
 以下是一套连贯的技术推荐，P1–P6 均待审；已接受边界仍以对应 D 条目为准。拟名不占用版本号，本节不构成 owner 共识、合同修订、实施授权或排期。
 
-Chart 解析权威节奏，独立时间库构造一次不可变映射，同次编译生成表现与玩法的离散 tick，连同比例保存在现有 prepared 内容中，Playback 可选接入 Judgement。源谱直开也只编译一次；成品装载直接读取保存的边界，不反向调用作者编译器。依赖为 `timing → core`、`chart → timing`、玩法作者编译器依赖 timing 及所需 judgement 编译模型、judgement 运行时只依赖 core。assembler 作者编译源码与运行时准备已编译内容拆为不同 target，复用现有容器和会话。
+源谱编译、成品装载与会话推进各有边界，见 [P1](#p1-数据与-sdk)；分段授权与证据见 [P6](#p6-迁移与验收)。
 
 推荐先保留旧样本、核清安装消费者，再做当前范围的隔离与渲染替代；后续获准实施新时间和玩法后，逐项由单会话接管旧职责，最后在适用兼容窗口退出旧入口。下表明确各段的技术选择和验收。
 
 ### P1 数据与 SDK
 
-| 事项 | 待审推荐 |
-| --- | --- |
-| 作者与成品 | 比例用宽、高正整数；落点用精确 Beat，窗口用带符号 ms。拟议字段 `aspectRatio`、`gradeTables`、`gradeTable` 仅作草案。源谱及成品保存各自所需表示，运行时共用已编译离散边界。 |
-| 等级与计分 | 等级表具名声明，类型默认、单音符显式覆盖；未知引用拒绝，旧无表谱的 grade 为空。复用现有 ScoreRule 整数计分／连击，不造 DSL。 |
-| 版本边界 | 只升级实际变化的直接读写／解释边界，不要求所有格式同号。旧成品保留原 tick、wire、identity 和规则，不重新编译；Stage 8 发行组合另行裁定。 |
-| SDK 迁移 | 复用 prepare／commit／输入／推进／帧／资源职责；先加独立实验头和窄入口、改具名调用方，再在批准窗口退出旧成员。共享类跨构建一致；删除已安装成员／符号或改变稳定布局仍须版本裁定，不以宏删除或仓内零引用替代。0.x shared 消费者仍按[现行规则](../../../guides/VERSIONING.md#sdk-版本递增规范)在同 minor、工具链和构建配置下重新编译，不承诺二进制热替换。 |
-| 当次输出 | 只直接交付逐阶段结算结果，包括到期 `Miss`；输入回执沿用现有回放/诊断路径。每个声明阶段一局最多结算一次，准备 `P` 个结果槽即可，`P` 为本局阶段总数。容量不足时不推进、不消费输入。宿主提供并拥有输出空间，事件不引用会话临时内存。拟用单一 `AdvanceOutcome`（名称待定）返回结果数量、处理位置、完成/故障状态和故障诊断；预检失败才返回普通 `core::Result` 错误。推进中途故障时，Outcome 同时带回已提交事件，冻结该局，不重跑，也不把未完成折叠的分数当作正常结算。 |
+**类型归属与构建（待审推荐）。** 按 D-21，由 Chart 解析权威节奏，`timing` 持有新作者拍位和不可变映射；源谱直开只编译一次，同次生成表现与玩法的离散 tick。比例用宽、高正整数，玩法用精确拍位和带符号毫秒窗口。`aspectRatio`、`gradeTables`、`gradeTable` 暂作拟名；等级表具名、类型默认、单音符可覆盖，未知引用拒绝，旧无表谱不补等级。计分复用整数 `ScoreRule` 和连击规则。
 
-验收：普通宿主和具名实验宿主分别只从安装树构建，检查实际链接、安装内容与共享类；以等级覆盖、未知表、旧无表、成品往返及无输入到期 Miss 作正反对照。验证 `P` 槽容量、少一槽时状态不变、部分推进故障同次返回已提交结果且后续不会重复结算。
+| 归属 | 迁移与兼容 |
+| --- | --- |
+| `timing`：作者 `RationalBeat`、节奏映射与换算 | 沿用 [Chart 拍位语义](../../../../engine/chart/src/rational_beat.cpp)：正分母、归约、现有构造与全序。先迁 Chart 换算及新玩法作者拍位；Chart 对外类型名和已装符号按兼容窗口迁移。旧 Reader 的字段范围、诊断和接受集各自保留。 |
+| 旧候选入口：Judgement `RationalBeat`、`RationalDuration` 与 `TimebaseProfile` 解码和编译声明 | [旧工厂](../../../../engine/judgement/src/timebase.cpp)允许可翻号的负分母，但拒绝 `INT64_MIN` 分子。先用旧入口规则校验和报告原诊断，只有需要且可精确表示时才转换；不统一两个旧接受集。旧 `RationalDuration` 不进入运行期通用时间类型。 |
+| 判定运行侧：`Tick`、`TickSpan`、phase/outcome、`PreparedGameplay` | 运行头只见离散边界、已验证配置和不可变准备数据；旧 tick 的单位和语义不变。prepared 声明、访问器和内部构造留在运行 target；作者请求、旧 wire 图和装配编译入口留在上游。按头与源码职责分组，无需新增 `model` 库。 |
+
+[当前 `TimebaseProfile`](../../../../engine/judgement/include/cuexis/judgement/timebase_profile.hpp)同时携带原点拍位、tempo/stop、单位与 profile 身份。编译或装载校验完整声明，节奏数据留在时间库或旧候选入口；准备边界输出已验证的 profile 身份、单位和必要的 tick 比例（旧比例可用已验证的整数分子分母表示）。旧入口仍做原有完整 profile 比对并用原身份算法，然后才提取运行记录。内核核对成品与会话的身份和单位，运行侧保留 `LatePolicyParameters` 准入；Playback 拥有校准和时间换算，内核接收校准标识与已换算输入，并核对运行或恢复所需身份。发布后的配置和 prepared 数据不借作者或解码临时对象。
+
+| 构建边 | 拟保留或调整的职责 |
+| --- | --- |
+| `timing → core`；判定运行 target `→ core` | 两个独立 target，`core` 不承载时间库。内核的公开及内部传递 include 均不引入 timing、Chart 或作者编译头；`ruleset` 直接用窄运行类型，移除经 `gameplay_prepare.hpp` 引入编译声明的路径。 |
+| `chart → timing`；`judgement_compile`（拟名）`→ timing` 与判定运行 target | Chart 原有其他依赖照旧。时间库边界传有符号 64 位整数微秒或时间库自己的时间值，`timing` 不引用 `judgement::Tick`。作者编译器完成量化与范围检查后构造运行 `Tick` 和 prepared。编译 target 承接从现有 Judgement 移出的作者装配和旧图重装配；由上游传入已解析的 Chart 节奏上下文，自身不链接 Chart、Packed、Playback 或工具。`animation → chart` 保留。 |
+| `gameplay_packed → chart`、判定运行 target；旧 codec 另 `→ judgement_compile` | 保留 Packed 的 `core`、`filesystem` 和 JSON 支持依赖。新 Reader 调窄判定准备，旧 codec 暂从同一 Packed target 调编译侧旧装配入口；同库过渡期保留这条实际链接边。实验 Playback 依赖 Packed 和判定运行 target，源谱直开接线可直接调用编译 target；成品接线只调 Reader，恢复 codec 使用运行窄头。 |
+| `gameplay_author → judgement_compile`、`gameplay_packed`、Chart/JSON/Core；具名 CLI `→ gameplay_author` 和所需现有工具依赖 | 现有 `gameplay_author` 负责源解析和成品组装，仍可经 Packed 编码。`assembler_cli.cpp` 移入具名作者工具的接线层；`cuexis_gameplay_assemble` 和 `cuexis_chart_candidate --gameplay` 共用这份非安装的接线实现，保留其 Playback、CXC、asset-publish 依赖。工具复用 Playback 的 entry 实现，不重复编入 `gameplay_entry.cpp`；无 Playback 或 Packed 回指工具的边。 |
+
+**构建与安装组合（待审推荐）。** 当前 [engine CMake](../../../../engine/CMakeLists.txt)无条件纳入 Judgement/Packed，[根 CMake](../../../../CMakeLists.txt)将 Judgement 放入 static SDK 实现归档清单、只在实验组合追加 Packed。[Playback CMake](../../../../engine/playback/CMakeLists.txt)虽按开关加入候选源码、链接边和安装头，仍有多份候选翻译单元列在基础源码中。[作者工具](../../../../tools/gameplay/gameplay_assembler/CMakeLists.txt)在开发工具组合就定义 `gameplay_author`，其 CLI 与额外链接边受候选开关控制。以下为拟议组合，须按实际生成的目标、翻译单元和安装导出验收。
+
+| 组合 | 拟构建 | 拟安装或消费 |
+| --- | --- | --- |
+| R1 过渡 | 先隔离普通 Player/Playback 的候选源码与链接，同时继续构建现有 static 安装所需的 Judgement 归档。 | 保留现有 `Cuexis::InternalJudgement` 导出归档和安装面，不把构建隔离当作安装退役许可。 |
+| 收口后、能力正式化前的默认 Player / SDK | Chart/Animation 和原普通 Playback 的依赖。候选翻译单元及混合翻译单元中的候选部分独立编译，只在显式组合中启用判定运行 target、玩法编译器、Gameplay Packed 和候选作者适配。通用开发工具可单独启用。`timing` 获实施授权后随 Chart 构建。 | 普通 `Cuexis::Playback` 和现有通用依赖。static 导出所需实现归档（`timing` 落地后随装），shared 经公共库使用私有实现。保留通用显式 entry 工厂，候选请求仍拒绝。 |
+| 能力正式化前的实验 Player / SDK | 候选开关开启后加入判定运行、编译侧、Packed 和候选 Playback，暂含旧 codec 兼容边。可关闭开发工具。用同一消费者验证两种构建的普通播放行为。 | 用独立前缀和 `Cuexis_ALLOW_EXPERIMENTAL` 显式选择。第三方链接 `Cuexis::Playback` 并包含窄实验头。static 随装链接所需的私有归档，shared 经现有共享库导出入口。这一阶段编译器、Packed 与判定内核仍是私有实现。 |
+| 具名作者工具 | 同时显式启用候选和开发工具，构建 `cuexis_gameplay_assemble`、`cuexis_chart_candidate --gameplay` 及上述依赖，可关闭 Player。普通工具组合继续提供 Chart 校验、迁移及 CXC 工具。 | 工具和接线层按源码工作树消费。 |
+| 判定运行内核独立消费者 | 用仓内独立的最小 CMake 工程，只配置 Core 与判定运行子目录。测试宿主用运行头和固定 tick 准备数据建局、推进、复查结果。该入口独立于会纳入其它模块的根工程开关。 | 从构建树消费。核对传递 include、`ALLOWED` 和实际链接，并用引入作者头或时间库的阴性用例验证门禁。 |
+| D-19 验收通过并获准正式化后 | 同一默认 Player 按同一启动参数和能力规则支持普通播放与显式判定。经批准的判定、格式和必要编译或装载路径进入默认组合。实验组合只在共享路径上增加未成熟格式及其适配。 | 默认 SDK 安装成熟判定的窄公开头和消费组件，第三方可独立接入判定或经 Playback 使用。组件命名和版本目标随正式化裁定。 |
+
+R1 先分离编译输入、链接与测试，保留当前安装成员与行为。默认 static 安装的 `InternalJudgement` 仅在确认不再被默认导出依赖、具名消费者已迁移且安装验收通过后，按下文窗口在下一获准的不兼容 minor 退出；证据或批准缺失就保留。纯运行测试跟独立内核配置，作者/codec 测试跟实验或工具组合。后续取得新时间/编译实施授权才落地 `timing` 和 `judgement_compile`；默认组合不提前启用新 wire。
+
+**成品装载（待审推荐）。** 新 codec 直接采用保存的目标、窗口、等级和表现边界，不重算拍位或调用作者编译器。Reader 校验版本、CRC/内容身份、尺寸和预算，核对索引、引用、闭包及声明一致性；运行侧校验离散 tick 范围与算术、半开窗口与等级区间、阶段关系和会话配置匹配，再构造执行索引。只有校验成功才发布。旧 codec 暂保留[重装配、`semanticDiff` 与源闭包比对](../../../../engine/gameplay_packed/src/gameplay_capsule_read.cpp)，不重新量化或改写原 tick、wire 与 identity。旧装配只从 Packed 兼容入口调用，不暴露在运行头，也不允许新 Reader 依赖该入口。替换旧校验前，以固定成品和带有效完整性信息的语义损坏样本对照接受集、拒绝原因、边界、身份和回放；现阶段未验证等价。各格式可按实际变更独立演进，Stage 8 决定具名发行组合。
+
+**单次推进输出（待审草图）。** 宿主在局准备时取得槽数和本局拥有型结果字典：`RunKey`、tick 单位/必要比例、阶段序号到 Requirement/阶段的映射及等级标识。`RunKey` 复用既有开局路径的 `sessionScope` 和 `runEpoch` 两个值，不新增 ID 生成或协议；字典优先复用现有拥有型元数据。宿主将槽与该局绑定，推进时传入 `RunKey`，返回同一个值；事件只持有值，字典和事件可独立保存，局清理、Retry 和卸载后仍能解释，不必保活整份 prepared。复用槽前，由宿主收存需要保留的事件。
+
+```cpp
+struct SettlementEvent {
+    int64_t tick;
+    uint32_t phaseIndex;    // Index in the host-owned run dictionary.
+    uint32_t gradeIndex;    // UINT32_MAX means no grade.
+    uint8_t outcome;        // Hit or Miss.
+    uint8_t reserved[7]{};
+};
+struct AdvanceOutcome {
+    RunKey run;
+    size_t written;
+    std::optional<Tick> processedThrough;
+    AdvanceStatus status;   // ongoing, completed, faulted
+    FaultCode fault;        // Fixed-size reason and stage; none on success.
+};
+// Events are in slots.first(outcome.written).
+auto advance(Tick horizon, RunKey run, std::span<SettlementEvent> slots)
+    -> core::Result<AdvanceOutcome>;
+```
+
+`P` 是本局完整展开后的实际可结算阶段实例数，对准备后的 Requirement 逐一累加声明阶段。可复用 [ContentProfileCounts::phaseDeclarations](../../../../engine/judgement/include/cuexis/judgement/gameplay_assembler_publication.hpp)，前提是统计同一展开集合且累加经过溢出检查。每个实例只在首次转为终态时提交一次 `Hit` 或 `Miss`，无输入到期也结算；进度、输入回执和其他事实不占槽。同局恢复保留终态，不得重发；Retry 属新局。
+
+准备时检查求和、序号与等级索引的范围及 `P * sizeof(SettlementEvent)` 乘法溢出，再由宿主按现有资源策略分配或拒绝。草图槽布局拟为 24 字节，实施时以静态断言确认；例如实际含 `N` 个单阶段 Requirement 的谱需要 `24 × N` 字节槽空间，字典另计。40k 实体样本和 [Packed 的 Requirement 限额](../../../../engine/chart/include/cuexis/chart/limits.hpp)不足以推出全局 phase 上界；pending 限额不按零或固定上限处理。无需新增预算框架。
+
+少于 `P` 槽、局不匹配或输出不可用时，预检以 `core::Result` 拒绝，不写槽、不改状态、不消费输入。预检通过后，按 tick 事务暂存结算，seal 成功才无分配写入槽；seal 前失败的 tick 不进入 `written`。`processedThrough` 只标实际封定的处理位置，尚无则为空，不用请求 horizon 伪造进度。若 seal 后 Fold 或后续 tick 失败，同次返回 `faulted`、固定大小的原因及已提交前缀，冻结本局；未完成 Fold 的成绩不作为正常交付。详细诊断可在返回后走既有路径，不让诊断分配掩盖已提交事件。不增队列、ACK 或结果有效期。验收覆盖 `P`/`P-1`（含输入不消费）、空局、到期 Miss、多路竞争、seal 前失败、seal 后 Fold 失败、同局恢复不重复及卸载后读取。
+
+**共享 SDK（待审迁移）。** `PlaybackSession`、`PlaybackSource` 和 `PreparedPlayback` 在收口时统一默认与实验构建的类声明及布局。保留通用 source/entry 工厂、prepare/commit、更新、帧和资源接口，以及只读 `presentationSource`、`contentInfo`、`semanticIdentity`、`diagnostics` 等正式观察。实验自由函数借用现有会话或 prepared 对象，内部通过无条件声明的访问入口使用同一私有状态与 owner-thread 规则。下表覆盖候选块的成员名和宏外的候选呈现入口。分组表中的实验头名为拟名。
+
+| 现有声明 | 目标去向 |
+| --- | --- |
+| `PlaybackSource` 的 `from{CxcFile,CxcMemory,Filesystem}GameplayEntry`、`fromGameplay{Entry,Packed,Graph}` | `experimental/gameplay.hpp` 的显式来源自由函数。工程、包、内存和 Graph/Packed 的校验与接入继续由现有 source/prepare 实现承担。通用非 Gameplay entry 工厂留在共享类。 |
+| `prepareGameplayLoad`、`prepareGameplayReload`、`submitGameplay`、`advanceGameplay`、`gameplayState`、`queryGameplay{Capability,Presentation}`、`queryGameplay`、`gameplayFeedback`、`sampleGameplayPresentation`、`controlGameplay` | `experimental/gameplay.hpp` 的准备、输入、推进、控制和观察自由函数。`GameplayResult` 等拥有型观察值保留在实验侧。新推进复用上文当次输出；原推进语义在引入窗口由转发保留。 |
+| `archiveGameplay`、`snapshotGameplay`、`evaluateGameplayReplay`、`restoreGameplay`、`seekGameplay`（两重载）、`checkpointGameplay`、`gameplayReplayCut` | `experimental/gameplay_replay.hpp` 的显式回放与恢复自由函数。第三方继续使用现有拥有型 archive/snapshot、已支持的 Graph/Packed 来源绑定和原回放语义。已带设备步骤证明的 `seekExecutionStep` 属于下行的内部协调。 |
+| `invalidateGameplayClock`、`mapGameplayClock`、`beginRealtimeGameplay`、`beginRealtimeTail`、`deliverGameplayCapture`、`{request,query,retire}GameplayAdvance`、`gameplayAdvanceReceipt`、`acceptGameplayControl`、`{pause,resume}RealtimeGameplay`、`gameplayExecutionLag` | `experimental/gameplay_realtime.hpp` 的显式时钟、capture、推进与回执自由函数，承接现有安装实验宿主的实时输入路径。推进回执跟随这条路径，结算事件仍按上文当次返回。 |
+| `enterExecutionFence`（两重载）、`commitExecutionCandidate`、`releaseExecutionFence`、`validateExecution{ControlBinding,FrameContext}`、`acceptExecutionControl`、`executionFence`、`completeExecutionClose`、`executionOwnerState`、`executionStepEffects`、`{retire,pause,resume,seek}ExecutionStep` | 归 Playback 内部协调入口，由具名 `execution_host_support` 和其测试消费，复用现有设备握手、世代检查及步骤提交。跨包宿主通过前述窄操作接入。安装实验样例中的 owner 状态与无绑定步骤探针迁到内部测试，安装样例保留可公开接入的正反行为测试。 |
+| 私有 `validateExecutionControlProof`、`executionAdvanceRetention`、`gameplayWriteGuard`、`attachGameplay`、`PlaybackSource::fromGameplayEncoded` | 移到现有实现或内部访问代码，去掉共享头的候选私有声明。 |
+| `PreparedPlayback::materializePresentation` | **后续公共面迁移，须单独获准范围。** 推荐由前述内部协调入口承担候选资源准备。获准后，按同一兼容窗口退出已安装成员，并随具名消费者迁出仅供内部协调的头与类型。正式 `presentationManifest`、`validatePresentation`、`acquirePresentationResource` 和只读来源观察留在共享面。D-19 已接受的 RR-4 窄迁移不含本行。 |
+
+**兼容窗口（待审推荐）。** 引入期先在实验包新增自由函数，保留已有成员、符号、布局和默认行为。需要访问私有状态时复用已有的无条件 `friend` 访问声明；若需补声明，两种构建都加同一个 `friend`，不增加状态、虚函数或会话外壳，不改变布局或虚表。新旧入口共享一份实现，现有宏分叉只保留到收口。迁移 Player、具名工具和实验安装样例，分别验证旧源码用引入包重建、新源码按最低包版本重建。仅经验证为兼容的引入可按 patch 提案。若要加 `deprecated` 标记，先记录并批准迁移说明、消费者门禁和版本目标。规则见 [VERSIONING](../../../guides/VERSIONING.md#sdk-版本递增规范) 和 [ADR 0041](../../../adr/0041-legacy-format-exit-policy.md#兼容路径按版本退出)。
+
+在下一获准的不兼容 minor（patch 归零）一并退出旧成员与符号、移除共享头的候选宏分叉、裁减仅供内部协调的安装头。收口前记录具名替代、安装与导出差异，以及外部消费者迁移证明。普通宿主从两种安装树以同一源码重建，实验宿主显式选择实验包并验证输入、推进、回放和恢复。static/shared 分前缀验证，并检查最低请求、过高 patch 和跨 minor 请求拒绝。0.x shared 消费者按同 minor、工具链与构建配置干净重建。证据不足时保留引入窗口，历史 candidate breaking patch 例外不适用本次迁移。
 
 ### P2 渲染与兼容迁移
 
 | 事项 | 待审推荐 |
 | --- | --- |
-| 矩形 | 左上原点、物理像素、非负宽高；用检查过的整数算术选宿主区域内最大居中比例矩形。受约束维取满，另一维向下取整，奇数留边余量给右／下；空区域跳过。 |
-| 投影与状态 | 新谱按作者比例投影，旧谱沿原行为。适配器只清宿主区域，设置内容视口与裁剪，绘制后还原借用状态；稳定帧布局随适用 API／版本迁移，不直接改写。 |
+| Player 初始尺寸 | 短边设置和可用绘图区都按实际像素计算；初始目标按谱面比例放入可用区，只缩不放。平台建窗只接逻辑坐标时，由宿主换算请求并读回实际 drawable 像素，再把实际绘图区交给 SDK。例如 2× DPI、空间足够时，`720 px` 短边对应 360 逻辑单位的请求。 |
+| SDK 内容矩形 | 宿主给定目标内左上原点的实际像素区域。先校验宿主矩形不越界，再用检查过的整数算术求最大居中比例矩形，受约束维取满，另一维向下取整，奇数余量给右／下。21:9 放入 `1280×720` 得 `1280×548`，相对宿主原点 `x=0, y=86`；`1280×721` 上留 86、下留 87。合法空目标、空宿主矩形或取整为空时返回空值，不提帧、不提交、不计呈现。新谱按作者比例投影，旧谱的内容矩形等于宿主矩形，投影随其宽高变化。 |
+| 帧布局值与提取 | 保留现有 [`FrameViewport` / `FrameSnapshot`](../../../../engine/playback/include/cuexis/playback/playback_session.hpp)。独立实验头新增 `PixelRect{x,y,width,height: uint32_t}`、`FrameTarget{FrameViewport extent; PixelRect host}`、`FrameLayout{FrameTarget target; PixelRect content}`。`LaidOutFrame` 拥有快照、布局、帧来源及 Playback 的资源身份值，只读访问。`extractLaidOutFrame(const PlaybackSession&, FrameTarget, optional<uint64_t> exactResultVersion = {}) -> Result<optional<LaidOutFrame>>` 复用 `PresentationAccess::materialize` 的线程、重入、已提交状态及版本检查，从同一提交读取比例并生成布局、相机与物体快照。 |
+| OpenGL 提交桥 | 独立实验适配头新增 `BorrowedGlFramebuffer{uint32_t name; FrameViewport extent}` 和 `submitLaidOut(OpenGlBackend&, const LaidOutFrame&, const render::RenderScene* debug = nullptr, const BorrowedGlFramebuffer* borrowed = nullptr) -> Result<DrawSummary>`。经内部访问桥与旧虚 `IPresentationRenderer::submit` 共用校验、命令生成及绘制；旧签名和行为保留。准备新比例内容时校验适配器能力，不支持则 prepare 拒绝。借用 FBO 仅限同一活动 GL context、当次调用有效；返回前归还状态，不交换窗口。坐标换算、清屏及绘制范围见 [D-23](architecture-design.md#d-23-谱面画面比例与宿主尺寸)。 |
+| 帧交付与保留 | Player 沿用原循环，窗口提交成功后才 `present`；嵌入由宿主实际呈现后按原路径出回执。ExecutionHost 将布局与快照放进同一 `FramePayload`，计入现有存储预算，复用 `FrameEnvelope` 的帧归属、generation、资源及 attempt lease。保留帧按原拥有型来源与比例重算布局和投影。宿主可用自己的适配器及此前取得的匹配资源独立绘制旧帧，不回查当前会话、不发当前会话的呈现回执；内置桥不为此保留退役缓存。 |
 | 旧入口 | 启动、像素和摘要探针取得替代证据后，按 D-25／ADR 0041 的实际发布承诺和消费者门禁退出；公共符号保留到批准窗口。 |
 
-验收：奇数留边、高 DPI、非零嵌入偏移、空区域及旧谱投影；检查区域外像素、状态恢复和探针替代证据。迁移期允许短暂保留旧入口。
+帧资源身份取自 Playback prepare 时的 `PreparedPlayback::presentationCandidateToken()`；`commit` 成功后保留值副本，提帧时随同一提交写入 `LaidOutFrame`。渲染器 prepare 产出的 `PreparedPresentation` 带独立的渲染器候选身份，供校验与 `activate` 使用，提交帧无需传这个句柄。正式提交继续校验帧归属和时效、实际目标，以及帧的 Playback 身份与已激活资源集是否匹配。
+
+兼容新增按 P1；已装布局或虚表的变化须等获准的不兼容 minor。验收覆盖初始尺寸只缩不放、2× DPI 实际像素、横竖屏、奇数留边、嵌入偏移、空布局与越界、旧谱投影和不支持适配器的 prepare 拒绝。验证借用状态归还、区域外像素不变、正式呈现后才回执；保留旧帧重排时仅用匹配的原资源，不产生当前会话回执。正式提交遇目标或资源错配须拒绝。旧入口的替代证据见[渲染迁移](#渲染入口与兼容期)。
 
 ### P3 时间与会话时钟
 
 | 事项 | 待审推荐 |
 | --- | --- |
-| Stop 端点 | 完整累计映射后分别量化绝对起点 S、终点 E，不把量化时长加到 S。正时长量化后 `E <= S` 拒绝；两个不同 Beat Stop 的前 E 等于后 S 也拒绝，以保住已接受的结束 E 返回原 Beat、inStop=false，避免下一 Stop 抢占。 |
-| 同 tick 与零拍 | 不同音符可同 tick；不同 Beat Tempo 阶跃同 tick 按源 Beat 稳定顺序批处理取最终状态；同 Beat Tempo+Stop 沿既有语义。Beat 0 归零只扣严格零拍前的 Stop 总长，不扣零拍自身 Stop。等级相对窗口仍按已接受的 `R(t)+R(δ)`，与 Stop 绝对端点分开。 |
+| Stop 模型 | 新映射沿 Chart 的单一作者 Beat 加正时长；Beat 0 归零只扣 `stop.beat < 0` 的 Stop 总长。旧 `TimebaseProfile` 的 Stop 按 `[startBeat, endBeat)` 工作，保留旧接受集及零拍相邻样例；单区间跨零仍按旧规则处理。 |
+| Stop 端点 | 完整累计映射后分别量化绝对起点 S、终点 E，不把量化时长加到 S。只在新作者编译时拒绝量化后的 `E <= S` 和不同 Beat 的 `E == nextS`：按 D-21，前一个 Stop 的 E 返回该 Stop 的作者 Beat，且 `inStop=false`；同一 tick 若也是下一 Stop 的 S，则要求返回下一 Stop 的作者 Beat，且 `inStop=true`。不新增诊断类别。 |
+| 同 tick | 不同音符可同 tick；不同 Beat Tempo 阶跃同 tick 按源 Beat 稳定顺序批处理取最终状态；同 Beat Tempo+Stop 沿既有语义。等级相对窗口仍按已接受的 `R(t)+R(δ)`，与 Stop 绝对端点分开。 |
 | 查询时刻换算 | Playback 先估算实际所求时刻的源位置，对尚未校正的原始位置应用 `max(0, source - correction)`，再减谱面 offset；等价校正后观测不重复校正。必须在所求时刻 clamp，不能 clamp 锚点后线性外推。 |
 | 起播与分支 | source=0、correction=3 ms、offset=20 ms 时逻辑时间为 -20 ms，直接扣 23 ms 错误。A 相加只在同观测基准的非 clamp 区间可作核对，不能替代完整映射或假定测试 A 自带 offset。输入补偿、显示提前各从共同逻辑时间分支应用。有音轨从源 0、无音轨从谱面时钟 0 起播，不 seek 到 offset 凑零点。 |
 | 实时准入 | 新实时仅接固定 us／1:1 且身份、原点、校准可核对的映射，包含起播钳位边界；旧实时仅接具名验证适配。缺准入只拒绝请求的实时能力，保留普通播放及旧回放。旧普通路径和旧候选回放均保留原映射；设备切换／观测过期后重新核实。 |
+| 后续 seek | 仅在新实时路径另获 seek 支持时，复用完整映射在实际可 seek 的源范围内求反解；目标不可达时拒绝，clamp 平台多解时取最早的可用源位置。source 0 起播和旧普通 seek 的既有范围、舍入与诊断都保持。 |
 
-验收：Stop S/E 及相邻 tick、零宽和不同 Beat E/S 碰撞的拒绝，同 tick 合法事件、零拍 Stop 的接受；另测 clamp 转折与跨锚点查询、正负 offset、暂停、输入和显示分支。极短 Stop 的拒绝是推荐代价，不回写旧成品。
+新作者编译在写入量化边界前完成算术与转换检查，再按源 Beat 顺序校验区间和碰撞。报告首错的源路径；碰撞附两个 Stop 的位置。失败不产出成品、不提交，也不将当前会话置为故障。旧 codec 不加这组检查，不公开旧 `profile_invalid` 私有码。
+
+| 拒绝条件 | 诊断码与现有类别 |
+| --- | --- |
+| 累计或量化结果超 `int64` | 复用 `judgement.timebase.tick_overflow` → `budget_exceeded`。 |
+| 量化后 `E <= S` | 拟新增 `judgement.timebase.stop_quantized_interval_invalid` → `invalid_relation`。 |
+| 不同 Beat 的前一 `E == nextS` | 拟新增 `judgement.timebase.stop_endpoint_collision` → `invalid_relation`。 |
+
+两个新码待审、未登记。验收：测 Stop S/E 及相邻 tick、累计／量化溢出、零宽、不同 Beat E/S 重合、同 tick 合法事件以及负拍、零拍 Stop；对照旧区间样例仍可接受且回放不变。另测 clamp 转折与跨锚点查询、正负 offset、暂停、输入和显示分支；将来接新实时 seek 时补不可达、平台多解和源范围边界。
 
 ### P4 Player 与旧控制权
 
 | 事项 | 待审推荐 |
 | --- | --- |
 | 启动请求 | 官方 Player 一次启动固定来源／难度／用途／必要配置，更改时重启；第三方 SDK 宿主仍可同进程另 prepare。独立布尔选项拟名 `--judge`，显式校验失败报原因、不开局、不自动降级。 |
-| 装载与按键 | R=Retry 已定，较少用的 Reload 键推荐 F5。即使首次装载失败，有启动来源仍可显式 Reload 重读同一来源，成功从零暂停；无来源时均无目标，Retry 另须有已加载可用内容。复用同一 prepare 路径。 |
+| Retry | **R=Retry 已定**，现行按键接线尚未迁移。只使用完好已加载内容，不重读来源；设备与会话安全就绪后从零开新局并直接播放。Stop 或自然结束后清理局状态，保留会话的不可变内容和健康已准备音频。 |
+| Reload | F5 为待审键位。停止旧局的输出与推进，显式重读同一配置来源，复用 Load 的读取、校验与准备。B 须完成验证、加载、初始化及必要的设备接入才提交；B 从零暂停，等待显式 Play。旧操作不再引用 A 后才卸载 A。切换前失败只清理 B、保留已有的完好 A 并停播；切换后故障按 B 报告并停播，不伪称回滚。 |
+| 纯画面 Rebuild | 从当前 A 的拥有型资源与设置重新准备并激活呈现，复用适配器的 `prepareOwned`、`accepts`、`activate`，保留本局位置和判定。无内容则拒绝；不重读、不调用 `prepareReload` 或提交内容，不处理音频设备。当前[组合 Rebuild](../../../../app/player/src/player_control_transaction.cpp)可能重新读谱并处理设备，须迁移调用方，不能作为 D-14 的实现证据。 |
 | 无音轨与尾段 | 无音轨建议复用单调时钟、首版显式 Stop 结束，不从音频掉线自动切入。有音轨实机结束按 D-15 等 EOF 和未完成判定义务实际处理完毕，不增固定黑场时长或尾段字段。Retry／Reload／Stop 和局间寿命沿既有共识。 |
-| 控制与故障 | 独立暂停原因按 D-09／D-12／D-14 解除；回执复用既有 session／run／operation 身份，旧回执不能改新局，不造多级协议。装载／提交失败保留实际阶段，不伪称回滚；旧职责逐项验证再接管，必要临时转发只指向同一实现。 |
+| 控制与故障 | 唯一控制者在 Retry／Reload 中先核实并复用可用的现有 seat，仅在必要时按原配置重开并确认实际接入；状态枚举不代替设备就绪，无需新恢复模式。Retry 的新局替代旧局暂停意图；设备回执只清自身原因，不清本次新到的 Pause。准备失败不挂待恢复后自动播放的意图。回执沿用 session／run／operation 归属；迟到回执不得影响新局。 |
 
-验收：坏谱修正后 Reload、无来源、无可用内容 Retry、缺配置、按键冲突、无音轨长尾、掉线、独立暂停原因及迟到回执。固定官方启动选择减少状态；无音轨手动结束是首版建议的代价。
+**待审命令准入。** 完好 A 指不可变内容及健康的已准备音频数据；seat 或旧局仍可能故障。缺配置来源的 Reload 一律拒绝。对比[当前命令准入](../../../../engine/player_support/src/player_command.cpp)：目前 `Empty` 和 `Failed` 均拒绝 Reload；下表的首次失败恢复为新行为，须获准后实施。
+
+| 状态 | Retry | Reload（有配置来源） | 纯画面 Rebuild |
+| --- | --- | --- | --- |
+| `Empty`，无 A | 拒绝 | 拒绝，首装走 Load | 拒绝 |
+| `Empty`，却有 A | 诊断状态不一致、保留 A 并停播 | 同左 | 同左 |
+| `Failed`，首次 Load 失败且无 A | 拒绝 | 复用首次 Load 准备；成功从零暂停，含设备接入在内的任一步失败仍无谱、`Failed`、停播 | 拒绝，不转 Load |
+| `Failed`，有完好 A、设备可用 | 从零开 A 的新局并播放 | 保留 A 准备 B；成功切换，从零暂停 | 只恢复 A 的画面 |
+| `Failed`，有完好 A、设备不可用 | 先接入；成功才从零开局播放，失败保 A 停播 | 准备 B 时确认必要设备接入，失败保 A 不切换 | 可恢复画面，不清设备故障 |
+
+Rebuild 后按 D-14 恢复：普通播放只有在中断前正在播放、同一局确因画面中断而暂停且无其他暂停原因时自动续播；实机因画面中断暂停后先显示冻结画面，再显式 Resume。判定已 `Faulted` 的旧局不得借 Rebuild 续局，使用 Retry 或 Reload 开新局。D-12 的同局设备安全恢复条件不变。
+
+验收覆盖矩阵各行及无来源、按键、无音轨长尾、独立暂停原因和迟到回执；注入 B 各准备阶段及切换后故障，分别核对停播、当前内容与退役时机。将磁盘来源改为 B 后 Rebuild，确认没有读取且仍显示 A；另测判定故障和重接设备期间新到的 Pause。
 
 ### P5 写回与诊断
 
 | 事项 | 待审推荐 |
 | --- | --- |
-| 保存结果 | 保存前报告具体已知损失、覆盖策略归 Studio／第三方编辑器的原则已认可。具体实现推荐显式目标版本，不支持则报错；先产出文本和损失明细，列对象／字段、损失内容和目标版本，再由编辑器决定覆盖／另存／取消。自动保存和确认方式归编辑器，不增覆盖策略 SDK 接口。 |
+| 目标版本 | 首批只为 v3 源模型写 v3、v4 源模型写 v4；调用显式指定目标，未支持的组合报错。现有旧转换由 Migrator 按 ADR 0041 显式生成目标模型，再调用 Writer；本方案不增加 v4 → v3 支持或隐式升级。 |
+| 写回结果 | 草图 `write(source, targetVersion) -> core::Result<ChartWriteResult>`；结果为 `{targetVersion, text, losses}`，损失项为 `{objectOrPath, field, kind, detail}`，用稳定对象标识或字段路径定位，说明写出后实际消失或改变的值/语义。`kind` 至少区分目标格式无法表达、已支持目标但 writer 尚未保真的字段。组合不受支持、不能生成合法目标文本或损失无法具体说明时返回错误，不给可写文本；空列表仅用于已核对无语义损失的保存。 |
+| 保存职责 | 同版本可表示字段的完整往返是目标。[现有 `ChartWriter::write`](../../../../engine/chart/src/chart_writer.cpp)把非空 tempo/stop 写成空数组，这是 Writer 的保真缺口，不构成 v3 的格式限制。v4 以保真源树为底稿，将作者模型的编辑写入对应字段并保留未编辑的结构与不透明扩展；不能可靠写入且无法具体报告损失时拒绝。不能忽略编辑、仅写回旧 `canonicalSource`。底层写入工具只产出文本和损失报告；编辑器决定覆盖、另存、取消和自动保存。以后公开另走 [D-19](architecture-design.md#d-19-sdk-示例与宿主试用)。 |
 | 格式边界 | 维持已定 Packed 前 92 字节 CRC 与 CXC profile/encoding；旧 Beat 上限推荐用对应 Reader 常量，只修受影响直接合同，不收紧其他版本。 |
 | 诊断 | 保留底层原因，区分分配失败、容量拒绝和未知异常；未知／未测值标不可用，不冒充零或成功。新稳定码、映射和接受集合先经对应合同裁定；跨版本迁移沿 ADR 0041。 |
 
-验收：字段级往返及损失明细，目标不支持／取消／准备失败时原字节不变；独立 CRC、编码、文件／内存错误样本和资源／未知异常注入。明细成本由写入工具承担，不带入播放运行时。
+**非安装 Writer 同批迁移（待审推荐）。** `chart_writer.hpp` 在 [Chart 构建](../../../../engine/chart/CMakeLists.txt)中列为 PRIVATE 头，按 [ADR 0033](../../../adr/0033-cpp-shared-library-preview-boundary.md) 不构成安装 SDK 合同。[ADR 0041](../../../adr/0041-legacy-format-exit-policy.md) 保护既有读取和显式迁移，未保护这些内部 Writer 签名。按下表同批迁移后删除两个旧纯文本签名，不增加包装；源码消费者迁移说明列出旧签名到新签名的对应关系，并说明取得成功结果后必须检查 `losses` 才能按用途使用 `text`。CLI 仍经 Migrator 取得报告和文本后才提交输出。
+
+| 现有调用 | 推荐去向 |
+| --- | --- |
+| `write(ChartDocument)`：`migrateToV3` | 改用 `write(source, 3)`；先完成显式转换并记录转换损失。 |
+| `writeV4`：Migrator、`behavior_candidate`、Writer／C2 闭包／解析特征测试 | 改用 `write(source, 4)`；生成迁移或 identity 成品的调用仅在成功且无损时取 `text`。 |
+| `writeCanonicalJson`：Migrator、Playback prepare、identity／解析测试；`writeAnimationTemplate`：v4 模板解析、Writer／解析测试 | 保留前者的全量 JSON 规范化及后者的 CXT 唯一写入实现；不改作 Chart 保存入口。规范化与 identity 单独验收，不借 Writer 迁移改变合同。 |
+
+**先核对转换，再核对写入。** [现有 Migrator](../../../../engine/chart/src/chart_migrator.cpp)的 v3 路径会在调用 Writer 前清除部分 timing 和模板数据，另一路径将 `discardedFields` 初始化为空。按实际输入和目标模型，在转换阶段记录真实丢失的字段及原因，复用 `ChartMigrationReport::discardedFields`；与 Writer 损失合并后再判断能否交付成品。只有按既有显式迁移合同核对并确认无信息损失的规范化或等价展开，才不计为损失。其他结构变化仍逐项核对并记录实际损失；合法展开仍按既有迁移报告记录。转换或写入有真实损失时，迁移与 identity 路径用诊断交付字段和原因，拒绝交付成品；CLI 不写盘。编辑器直接调用底层 Writer 时可取得合法文本和逐项报告，自行决定是否保存。
+
+验收：以非空 tempo/stop、动画、模板及 v4 编辑和不透明扩展写回，用对应 Reader 逐字段比较值、引用与有序语义；另验等价展开、转换先丢信息而 Writer 不报损失、Writer 单独丢失字段，核对路径、原因及无成品。缺目标支持、准备失败或编辑器取消时原字节不变。另用独立样本核对 canonical/identity、CRC、编码、文件／内存诊断及资源／未知异常。明细成本留在写入工具。
 
 ### P6 迁移与验收
 
 | 范围 | 待审交付与停止条件 |
 | --- | --- |
-| 当前范围 | D-05 的 R1/R5/R6，以及既定 RR-4 窄声明迁移设计／核查；检查隔离、安装边界和渲染替代，保留旧样本与具名消费者。成员删除仍等版本裁定。 |
+| RR-3：D-05 范围 | 仅 R1 构建隔离、R5 渲染收敛和 R6 文档减重。对照实际生产/实验构建目标与安装树，保留渲染替代和具名消费者证据；不借隔离删除已安装成员。 |
+| RR-4：独立的公共面核查与窄迁移 | 前置为 RR-2 对相关候选入口及合同的裁定、R1 构建隔离完成。按 D-19，窄迁移只处理 `PlaybackSession`、`PlaybackSource` 的宏控候选声明；按 P1 核对具名消费者、替代入口、安装差异和版本窗口。`PreparedPlayback::materializePresentation` 等范围外迁移须单独获准；已安装成员/符号退出或布局变更仍须另经版本与合同裁定。 |
+| 基线与差异 | 旧报告及样本保留原 SHA、配置和结论，只作对照。另记当前核验 SHA、较旧基线变化的路径/合同、应重跑的正反用例及已验证/未核实状态；新结果只归本次基线，不回填旧报告。 |
 | 后续目标 | 新时间、新玩法和统一会话待相应实施授权，按本节顺序推进；R2/R3/R4 继续延期，不借本提案重启。 |
 | 退出 | 每段检查相关行为、实际构建／安装及故障场景，不要求一次全矩阵；合同、行为证据或兼容窗口未齐时保留原唯一控制权和入口。长构建／hosted 按既有授权规则，不预定 SDK 版本或 Stage 8 格式组合。 |
 
@@ -147,9 +256,7 @@ Stage 7-RR 最初按加载器分组，把 `v5/Packed` 计作一组。下表分�
 
 **R1 先隔离源码和链接。** 用两套干净构建播放同一份旧谱，再打开同一个含正式和候选条目的合法 CXC。两版都应按默认入口播放正式谱、执行整包完整性检查，且不解码未选择的候选条目；显式选择受支持的候选条目时，实验版应能播放，默认版应给出拒绝原因。
 
-**公开声明迁移另列 RR-4。** [`PlaybackSession`](../../../../engine/playback/include/cuexis/playback/playback_session.hpp)与 [`PlaybackSource`](../../../../engine/playback/include/cuexis/playback/playback_source.hpp)目前随宏改变声明，与 [ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md) 的目标不符。推荐按 [P1](#p1-数据与-sdk)先加实验替代、迁具名消费者，再申请旧成员退出的适用版本窗口。通用显式 entry 工厂在两种构建中保留，OFF 拒绝候选 entry。
-
-RR-4 比对 static/shared 的真实安装树及公开类，检查 `cuexis_internal/` 泄漏，按 D-19 用[外部消费者](../../../../cmake/VerifyExternalConsumer.cmake)和[参考宿主](../../../../cmake/VerifyReferenceHost.cmake)仅从安装树构建并验证接入；实验安装未显式选择应拒绝。若须删除已装符号、改变布局或触及 R2，先登记并申请版本和合同裁定。R2 继续延期，仓内零引用不构成删除许可。
+[`PlaybackSession`](../../../../engine/playback/include/cuexis/playback/playback_session.hpp)与 [`PlaybackSource`](../../../../engine/playback/include/cuexis/playback/playback_source.hpp)目前随宏改变声明，与 [ADR 0042](../../../adr/0042-stage-6-productization-boundaries.md) 的目标不符。迁移按 [P1](#p1-数据与-sdk)，独立 RR-4 的前置与退出按 [P6](#p6-迁移与验收)。安装核验复用[外部消费者](../../../../cmake/VerifyExternalConsumer.cmake)和[参考宿主](../../../../cmake/VerifyReferenceHost.cmake)，并检查 `cuexis_internal/` 泄漏。
 
 ## 渲染入口与兼容期
 
@@ -157,8 +264,8 @@ RR-4 比对 static/shared 的真实安装树及公开类，检查 `cuexis_intern
 
 | 范围 | 当前源码路径 | 建议目标 |
 | --- | --- | --- |
-| 启动静帧 | [Player 启动](../../../../app/player/src/player_app.cpp)在 `deviceFirst` 分支、准备内容前调用 `renderFrame(still)`。此时没有谱面快照。 | 启动占位由 Player 窗口外壳负责绘制；不要求创建谱面快照，也不把它计作当前谱面帧已呈现。无来源时的「无资源」画面同属 D-16；明确指定来源失败仍按实际来源和原因诊断。旧调用的迁移方式另行核实；用冷启动、准备前关闭和不可画的 surface 验证。 |
-| 正式帧交付 | [Player 帧循环](../../../../app/player/src/player_control_frame_loop.cpp)填充 `RenderScene`，通过 [IPresentationRenderer](../../../../engine/presentation_renderer/include/cuexis/presentation_renderer/presentation_renderer.hpp) 的 `submit` / `present` 交付；`presentation.renderer.surface.zero_size` 时跳过，不 `present`。 | 保留 Render ECS 和表现层。有效帧至多提交一次，成功后才呈现；失败回执不报告呈现，重复通知不重复计分或重绘。 |
+| 启动静帧 | [Player 启动](../../../../app/player/src/player_app.cpp)在 `deviceFirst` 分支、准备内容前调用 `renderFrame(still)`。此时没有谱面快照。 | 用 Player 窗口外壳的启动占位绘制替换该调用，不创建谱面快照，不计作谱面帧已呈现。无来源时的「无资源」画面同属 D-16；明确指定来源失败仍按实际来源和原因诊断。用冷启动、准备前关闭和不可画的 surface 验证。 |
+| 正式帧交付 | [Player 帧循环](../../../../app/player/src/player_control_frame_loop.cpp)填充 `RenderScene`，通过 [IPresentationRenderer](../../../../engine/presentation_renderer/include/cuexis/presentation_renderer/presentation_renderer.hpp) 的 `submit` / `present` 交付；`presentation.renderer.surface.zero_size` 时跳过，不 `present`。 | 保留 Render ECS、表现层和帧循环；比例布局按 P2 的提取与提交桥接入。有效帧至多提交一次，成功后才呈现；失败回执不报告呈现，重复通知不重复计分或重绘。 |
 | OpenGL 兼容和 smoke | [smoke 测试](../../../../app/player/src/player_smoke.cpp)还调用 `renderPresentationFrame`，比较省略调试场景、空场景与填充场景的摘要，并有像素读回。它不是第二个产品帧循环。 | 对独立测试帧用正式 renderer 或测试专用观测比较摘要及像素，不能在同一产品帧多次呈现。替代不能验证原有差异时暂留探针；只迁调用不等于删除公开符号。 |
 
 **退出规则已接受，迁移待实施。** 按 [D-25](architecture-design.md#d-25-兼容入口与格式合同收敛)，逐个核对旧入口的实际发布承诺及消费者；兼容包装只作过渡。[ADR 0041 D5](../../../adr/0041-legacy-format-exit-policy.md)保护的 `RenderFrame` / `renderFrame` 须取得版本与迁移裁定。若证实曾正式支持安装消费者，用代表性仓外宿主从安装树验证迁移；若证实仅有源码消费，记录安装门禁不适用，仍须取得保护入口的退出裁定。仍执行 ADR 0041 适用的 hosted consumer 等既有门禁，代表性安装宿主验收不替代这些条件。`renderPresentationFrame` 核对 OpenGL 头、适配器和消费者后，若证实仅供内部使用且替代用例通过，可单独删除。各入口须有适用的启动、零尺寸、像素或恢复场景的替代证据。
@@ -171,7 +278,7 @@ RR-4 比对 static/shared 的真实安装树及公开类，检查 `cuexis_intern
 
 **窗口端点（2026-11-21 已接受）：** 目标时刻 `t` 与带符号相对偏移 `δ` 按上述规则分别量化，端点取 `R(t) + R(δ)`。同一等级表的相对窗口宽度不随目标 tick 改变，[D-22](architecture-design.md#d-22-谱师自定义判定等级) 的相邻档共用量化端点。`int64` 转换或端点加法溢出、非法或非有限值、量化后 `start >= end` 均拒绝，不扩窗。单就两次量化，绝对端点的误差至多 `1 μs`，不含浮点 BPM 积分误差；设备实际精度不因 tick 单位改变。
 
-Playback 负责设备观测、音源位置和输入时间的会话换算与校正。旧成品保留原时间基准和规则，不统一重算，也不改写现有 wire 或 identity。作者精确拍位保留供 Studio 编辑。具体新格式版本与迁移留待实施设计。
+Playback 负责设备观测、音源位置和输入时间的会话换算与校正。旧成品保留原时间基准和规则，不统一重算，也不改写现有 wire 或 identity。作者精确拍位保留供 Studio 编辑。类型、旧入口迁移和新旧成品校验按 [P1 待审推荐](#p1-数据与-sdk)，新的格式版本仍须按 D-17 裁定。
 
 **现有候选基准。** 候选 Capsule/Graph 携带玩法时间基准；[`TimebaseProfile`](../../../../engine/judgement/include/cuexis/judgement/timebase_profile.hpp)声明 `unitToken`、`tickScale`（一个 tick 有多大）与节拍映射所需数据。[现有实现](../../../../engine/judgement/src/timebase.cpp)能声明 `engine.tick.us.v1`、`us`、`1/1`，但不默认给出 tempo；`mapBeatToTick` 按 tempo/stop 积分，没有按任意 `tickScale` 缩放。对 scale 的校验为正，不证明每个正值都能对齐实时输入。输入侧的 `ObservationTick` 已由校准时钟给出，不再当作 beat 二次转换。
 
@@ -183,7 +290,7 @@ Playback 负责设备观测、音源位置和输入时间的会话换算与校�
 
 ## Player 的产品行为
 
-无来源启动和不自动开启判定沿 D-16 至 D-18；Retry、Reload 与结束交付沿 D-13／D-15。交互和故障处置采用[P4 待审推荐](#p4-player-与旧控制权)，此处不重复会话合同。
+无来源启动和不自动开启判定沿 D-16 至 D-18；Retry、Reload 与结束交付沿 D-13／D-15。按键、待审的命令准入及故障验收见 [P4](#p4-player-与旧控制权)。
 
 ## 旧宿主的职责与退出条件
 
@@ -209,7 +316,7 @@ Playback 负责设备观测、音源位置和输入时间的会话换算与校�
 | CXC playback entry（RR-F114） | [CXC](../../../formats/CXC_FORMAT.md) 与 [Chart Entry](../../../formats/CHART_ENTRY_V1_FORMAT.md) 已按[实现](../../../../engine/cxc/src/cxc_candidate.cpp)对齐：`candidate.static-tap-lanes4-v1` 必须使用 `packed-chart`，`candidate.behavior-v2-v1` 必须使用 `source-json`。保留显式候选选择和原默认路径。 | 后续各用合法 profile/encoding、错配、普通 source-only、未显式选择验证接受边界。正式化时按实际不兼容程度决定是否新增 entry revision，并明确兼容迁移；具体发行组合、版本和排期仍待裁定。 |
 | 判定输入与诊断（RR-F131/F135/F142） | 同一 canonical 身份同 tick 再入按 [Gameplay Spec](../../../formats/GAMEPLAY_V2_SPEC.md) 的 `same_tick_collision` / `invalid_relation` 处理；只因 tick 相同不能把不同身份说成同一身份，真正的迟到队列重复另判。内存分配失败、达到容量上限、未知异常和操作成功分开；异常不跨模块。Player 把已有底层 fault 原样保留，在没有下层原因时才按失败阶段给原因，不让 `player.execution.test_only` 遮掉诊断。 | 对三类输入分别断言接纳/拒绝、code 和 category；注入资源耗尽、真实容量拒绝、未知异常，断言不假成功、不冒充容量。只改[散落失败](../../../../app/player/src/player_execution.cpp)中已核对的调用点，不重命名已有稳定码；涉及新码或映射先裁定。 |
 | Packed 两个读取入口、JSON Schema 校验（含 RR-F404） | [文件读取](../../../../engine/chart/src/packed_chart_io.cpp)与内存解码保留共同的内容错误；打不开文件仍是 I/O 错误，不复活旧码别名。[Schema 校验](../../../../engine/json_support/src/schema.cpp)的 `Ok` 是“校验过程成功”，不是“实例合法”：需要合法内容的调用方还须检查本次违规诊断。 | 同一组损坏字节经文件和内存得到同一内容码；文件不存在可区分。分别测合法实例、违规实例、schema 无法编译，消费方不得仅因 `Ok` 放行违规实例。没有差异证据不另造解码器或错误层。 |
-| 防止丢谱或伪造观测（RR-F401/F419/F420） | 当前 [ChartWriter::write](../../../../engine/chart/src/chart_writer.cpp) 返回序列化文本，会把变速和停顿写成空数组。写入时建议显式指定目标版本，不支持该版本就报错。同格式手动保存时，写入工具应在编辑器写文件前说明已知会丢失的内容。按 [D-19](architecture-design.md#d-19-sdk-示例与宿主试用)，编辑器可在谱师知情确认后覆盖，也可要求另存。自动保存和确认方式留给各编辑器设计，无需为覆盖策略新增公开 SDK 接口。旧谱跨版本迁移仍按 [ADR 0041](../../../adr/0041-legacy-format-exit-policy.md)。首帧 `render_us` 没采到不当零时长；`exactLossCount=false` 不能读成“没有丢失”。 | 用非空模板、变速和停顿样本检验可表示内容的字段级往返；对有损样本核对写入前报告的具体损失，并验证未获谱师确认或目标版本不受支持时原文件字节不变。分别用已知测量和不可得测量验证；当前载体若不能区分则明确标不可用，由消费者忽略，不伪造数值或静默修改稳定 ABI。 |
+| 写回与观测（RR-F401/F419/F420） | 写回合同及验收见 [P5](#p5-写回与诊断)。首帧 `render_us` 未采到不当零时长；`exactLossCount=false` 不能读成“没有丢失”。 | 分别验证已知与不可得的测量；当前载体若不能区分则明确标不可用，由消费者忽略，不伪造数值或静默修改稳定 ABI。 |
 
 这些用例是实施前需要准备的正反对照，本稿没有运行它们，也不要求一次清空所有登记项。P0/P1 按[计划 §9](plan.md#9-验收标准)逐条说明处置，P2 延期须注明接手阶段和重新评估条件。
 
@@ -218,8 +325,7 @@ Playback 负责设备观测、音源位置和输入时间的会话换算与校�
 | 归属 | 本方案建议的交付物 | 何时停止或交接 |
 | --- | --- | --- |
 | 现在：只读决策表 | 以产品、格式、时间、渲染为维度，为每个拟删/合并对象列出状态、实际消费者（产品/工具/测试/外部）、权威合同、替代者、迁移成本与阻塞。优先录入本稿各表中的对象，**仓内搜索不到生产调用不是删除许可**。 | 消费者未核清或受兼容保护，默认保留/隔离。`particles` 已处置、`debug` 已标 test-only，勿把旧发现重新列作“立即删除”；见[登记册](findings.md)。 |
-| D-05 范围内：R1 / R5 / R6 | R1 比较生产与实验构建的实际编译目标、安装清单和依赖；R5 仅迁移已识别的渲染调用；R6 将同一语义留在一份 ADR/Spec，计划只记范围，附页只放提案和验收方向，代码注释只保留约束与原因。 | R1 不夹带 R2 的 SDK 删除；R5 不为删入口牺牲启动/像素验证；R6 不删历史报告、归档或哈希绑定的路径。[当前状态](../../../CURRENT_STATUS.md)仍写“选项待选”，建议另作 RR-1 订正，对齐 D-05 的范围和“尚未实施”，不改历史快照。 |
-| 合同、公共面与退出 | RR-2 先裁定接受集合/稳定码再碰同一对象；RR-4 以实际安装树、[外部消费者](../../../../cmake/VerifyExternalConsumer.cmake)和[reference host](../../../../cmake/VerifyReferenceHost.cmake)为门槛。每个对象记录去留、成本（低：改路由；中：迁消费者；高：影响 wire/ABI 或时序证据）、证据及不能合并的原因。 | 如必须依赖延期的 R2/R3/R4，则记录延期、恢复条件和责任阶段，不借 RR-2/RR-4 改名开工；缺 SDK/版本、设备、跨平台或兼容证据，不宣布退出。RR-6 汇总并由 owner 接受；本稿不批准运行完整构建或 hosted。 |
+| 交付与退出 | RR-3、RR-4 的边界、顺序和差异证据见 [P6](#p6-迁移与验收)。R6 将同一语义留在一份权威 ADR/Spec；计划记录范围，附页记录决策，代码注释保留约束与原因。 | 缺与对象相关的证据不宣布退出；RR-6 汇总并由 owner 接受。不删历史报告、归档或哈希绑定路径。 |
 | Plan 拆分试点 | 维持[阶段计划 §6](plan.md#6-工作分解与依赖)和[交接要求](../../../HANDOFF.md)：只试点 RR-0 至 RR-6；`plan.md` 总览，`schedule.md` 只记 ID/波次/前置/并行或独占，任务卡只写任务级验收，`acceptance.md` 只写阶段验收。 | 以后用 `check_plan_schedule.py` 查覆盖、波次和独占，并作一次只交一张卡的真实无上下文委派；由主代理重跑、独立抽查含阴性用例。缺一步就不宣称试点完成，不向其他 active plan 推广。这里不创建这些文件。 |
 | 后续阶段接口 | [Stage 7.5](../stage-07-5/plan.md) 只接收玩法能力和限制，[Stage 8](../../future/stage-08/plan.md)按发行矩阵决定格式提升，[Stage 10](../../future/stage-10/plan.md) 的 Studio 可复用会话；预览纯播放、实机和编辑后的新局遵循既定规则。 | 审阅接受后再提炼进相应阶段的范围、边界、待决与验收方向。future 仍是提纲，不提前建任务卡、定设备阈值、实现 autoplay 或定义 Studio 公共 API。 |
 

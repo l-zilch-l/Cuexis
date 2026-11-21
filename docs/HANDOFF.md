@@ -20,7 +20,7 @@ authority: owns
 
 ## 当前任务
 
-当前讨论入口：[架构精简提案](stage_plans/active/stage-07-rr/simplification-proposal.md)（P1–P6 待审）；已接受设计与背景见[架构设计附页](stage_plans/active/stage-07-rr/architecture-design.md)。
+本轮已按 owner 授权补齐[提案](stage_plans/active/stage-07-rr/simplification-proposal.md)中 P1–P5 五项设计缺口的待审方案并同步台账。新增 P1–P6 技术推荐仍待逐项审阅；已接受设计见[附页](stage_plans/active/stage-07-rr/architecture-design.md)，本轮记录见[计划](stage_plans/active/stage-07-rr/plan.md)和[提案复核记录](stage_plans/active/stage-07-rr/findings.md#12-提案复核记录2026-11-21)。
 
 ## Plan 文档拆分（下一轮并行工作）
 
@@ -48,7 +48,7 @@ stage_plans/active/<stage>/
 
 ## 下一步
 
-1. 审阅[架构精简提案](stage_plans/active/stage-07-rr/simplification-proposal.md)的 P1–P6；接受后再更新对应权威设计并按 D-05 门禁另行授权实施。
+1. 逐项审阅[提案](stage_plans/active/stage-07-rr/simplification-proposal.md)新增的 P1–P6 技术推荐；实施仍须满足[计划](stage_plans/active/stage-07-rr/plan.md)的范围、前置与授权门禁。
 
 ## 阻塞与待决
 
@@ -56,8 +56,8 @@ stage_plans/active/<stage>/
 
 ## 验证状态
 
-本轮 `check_docs.py`、`gen_docs_map.py --check`、`check_docs_facts.py` 与 `git diff --check` 均通过。实现与运行验收：未开始。
+主代理本轮实跑 `check_docs.py`、`gen_docs_map.py --check`、`check_docs_facts.py` 与 `git diff --check`，四项均通过（退出码 0）。实现与运行验收：未开始。
 
 ## 最近改动
 
-- [P1–P6](stage_plans/active/stage-07-rr/simplification-proposal.md#整体推荐方案待审) 统一技术推荐；本页仅保留状态和路径。
+- 本轮共识订正、台账同步与有限基线差异核对见[计划](stage_plans/active/stage-07-rr/plan.md)和[提案复核记录](stage_plans/active/stage-07-rr/findings.md#12-提案复核记录2026-11-21)。
