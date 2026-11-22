@@ -67,3 +67,4 @@ stage_plans/active/<stage>/
 - [T-17 单独立项](stage_plans/active/stage-07-rr/tasks/T-17.md)：会话层 P1 正确性（RR-F501/F508/F509）单独成卡，可拆两段派子代理；未启动实施（2026-11-22）。
 - [Seek 路由订正](stage_plans/active/stage-07-rr/findings.md)：三份 historical 文档与 ADR 0043 的指针改指 candidate 权威，F510 改述为候选能力、无 active 合同（2026-11-22）。
 - [F420 口径](stage_plans/active/stage-07-rr/findings.md)：按 D 并入新设计，观察查询如实报告帧观测缺失并标明计数是否精确，判据随 T-14 收敛（2026-11-22）。
+- [旧问题承接](stage_plans/active/stage-07-rr/findings.md)：§22 把仍开放的问题按承接方归组，T-09 按该表写具名延后（2026-11-22）。
