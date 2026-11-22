@@ -48,6 +48,14 @@ T-03
 ```
 """
 PLAIN_SCHEDULE = SCHEDULE.partition("```mermaid")[0]
+CARD_SECTIONS = ("目标", "输入", "写域", "步骤", "任务级验收", "证据", "停止条件")
+
+
+def card_text(task_id: str, status: str = "active") -> str:
+    return (f"# {task_id}\n\n状态：{status}\n\n<!-- cuexis-meta\n"
+            f"id: PLAN-test.{task_id}\nstatus: {status}\nauthority: owns\n-->\n\n"
+            + "\n\n".join(f"## {name}\n\nFixture {name}." for name in CARD_SECTIONS)
+            + "\n")
 
 
 class PlanScheduleTests(unittest.TestCase):
@@ -63,7 +71,7 @@ class PlanScheduleTests(unittest.TestCase):
         tasks.mkdir(parents=True)
         (stage / "schedule.md").write_text(schedule, encoding="utf-8")
         for task_id in task_ids:
-            (tasks / f"{task_id}.md").write_text(f"# {task_id}\n", encoding="utf-8")
+            (tasks / f"{task_id}.md").write_text(card_text(task_id), encoding="utf-8")
         if acceptance is not None:
             (stage / "acceptance.md").write_text(acceptance, encoding="utf-8")
         return stage
@@ -180,7 +188,8 @@ class PlanScheduleTests(unittest.TestCase):
     def test_rejects_depends_on_in_task_card(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             stage = self.make_stage(Path(temporary))
-            (stage / "tasks" / "T-02.md").write_text("depends_on: T-01\n", encoding="utf-8")
+            (stage / "tasks" / "T-02.md").write_text(
+                card_text("T-02") + "depends_on: T-01\n", encoding="utf-8")
             self.assertTrue(any("must not define depends_on" in message for message in self.messages(stage)))
 
     def test_acceptance_validates_ids_and_expands_explicit_ranges(self) -> None:
@@ -207,7 +216,8 @@ class PlanScheduleTests(unittest.TestCase):
             stage = self.make_stage(Path(temporary))
             docs_dir = Path(temporary) / "docs"
             (docs_dir / "stage_plans/future/stage-08").mkdir(parents=True)
-            (stage / "tasks/T-02.md").write_text("depends_on: T-01\n", encoding="utf-8")
+            (stage / "tasks/T-02.md").write_text(
+                card_text("T-02") + "depends_on: T-01\n", encoding="utf-8")
             failures = []
             check_docs.check_stage7_rr_plan_schedule(failures, docs_dir)
             self.assertEqual(checker.validate_stage_dir(stage), [
@@ -218,7 +228,8 @@ class PlanScheduleTests(unittest.TestCase):
     def test_cli_returns_one_for_invalid_absolute_fixture(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             stage = self.make_stage(Path(temporary))
-            (stage / "tasks/T-02.md").write_text("depends_on: T-01\n", encoding="utf-8")
+            (stage / "tasks/T-02.md").write_text(
+                card_text("T-02") + "depends_on: T-01\n", encoding="utf-8")
             result = subprocess.run(
                 [sys.executable, "-B", str(HERE / "check_plan_schedule.py"),
                  "--stage-dir", str(stage.resolve())],
@@ -235,7 +246,104 @@ class PlanScheduleTests(unittest.TestCase):
             with contextlib.redirect_stdout(output):
                 result = checker.main(["--stage-dir", str(stage.resolve())])
             self.assertEqual(0, result)
-            self.assertIn("3 task cards scheduled", output.getvalue())
+            self.assertIn("3 active task cards; 0 candidate cards", output.getvalue())
+
+    def test_rejects_each_missing_task_section(self) -> None:
+        for section in CARD_SECTIONS:
+            with self.subTest(section=section), tempfile.TemporaryDirectory() as temporary:
+                stage = self.make_stage(Path(temporary))
+                card = stage / "tasks/T-02.md"
+                card.write_text(card_text("T-02").replace(f"## {section}\n", ""), encoding="utf-8")
+                self.assertTrue(any("task sections must occur once" in m for m in self.messages(stage)))
+
+    def test_rejects_duplicate_empty_and_out_of_order_sections(self) -> None:
+        original = card_text("T-02")
+        variants = (
+            original + "\n## 停止条件\n\nDuplicate.\n",
+            original.replace("Fixture 停止条件.", "<!-- empty -->"),
+            original.replace("## 目标", "## TEMP").replace("## 输入", "## 目标")
+                    .replace("## TEMP", "## 输入"),
+        )
+        for variant in variants:
+            with self.subTest(variant=variant), tempfile.TemporaryDirectory() as temporary:
+                stage = self.make_stage(Path(temporary))
+                (stage / "tasks/T-02.md").write_text(variant, encoding="utf-8")
+                self.assertTrue(any("task section" in m for m in self.messages(stage)))
+
+    def test_fenced_or_commented_headings_do_not_complete_a_card(self) -> None:
+        for fence in ("```text\n## 停止条件\n```", "<!--\n## 停止条件\n-->"):
+            with self.subTest(fence=fence), tempfile.TemporaryDirectory() as temporary:
+                stage = self.make_stage(Path(temporary))
+                (stage / "tasks/T-02.md").write_text(
+                    card_text("T-02").replace("## 停止条件", fence), encoding="utf-8")
+                self.assertTrue(any("task sections must occur once" in m for m in self.messages(stage)))
+
+    def test_accepts_task_headings_with_up_to_three_leading_spaces(self) -> None:
+        for spaces in range(4):
+            with self.subTest(spaces=spaces), tempfile.TemporaryDirectory() as temporary:
+                stage = self.make_stage(Path(temporary))
+                (stage / "tasks/T-02.md").write_text(
+                    card_text("T-02").replace("## ", " " * spaces + "## "), encoding="utf-8")
+                self.assertEqual([], self.messages(stage))
+
+    def test_indented_code_headings_do_not_complete_a_card(self) -> None:
+        for indent in ("    ", "\t", " \t"):
+            with self.subTest(indent=indent), tempfile.TemporaryDirectory() as temporary:
+                stage = self.make_stage(Path(temporary))
+                (stage / "tasks/T-02.md").write_text(
+                    card_text("T-02").replace("## 停止条件", indent + "## 停止条件"),
+                    encoding="utf-8")
+                self.assertTrue(any("task sections must occur once" in m for m in self.messages(stage)))
+
+    def test_rejects_invalid_or_disagreeing_status(self) -> None:
+        for variant in (card_text("T-02", "future"),
+                        card_text("T-02").replace("状态：active", "状态：candidate")):
+            with self.subTest(variant=variant), tempfile.TemporaryDirectory() as temporary:
+                stage = self.make_stage(Path(temporary))
+                (stage / "tasks/T-02.md").write_text(variant, encoding="utf-8")
+                self.assertTrue(any("status" in m for m in self.messages(stage)))
+
+    def test_active_task_cannot_depend_on_candidate(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            stage = self.make_stage(Path(temporary))
+            (stage / "tasks/T-01.md").write_text(card_text("T-01", "candidate"), encoding="utf-8")
+            self.assertTrue(any("active task T-02 must not depend on candidate task T-01"
+                                in m for m in self.messages(stage)))
+
+    def test_completed_task_cannot_depend_on_candidate(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            stage = self.make_stage(Path(temporary))
+            (stage / "tasks/T-01.md").write_text(card_text("T-01", "candidate"), encoding="utf-8")
+            (stage / "tasks/T-02.md").write_text(card_text("T-02", "completed"), encoding="utf-8")
+            self.assertTrue(any("completed task T-02 must not depend on candidate task T-01"
+                                in m for m in self.messages(stage)))
+
+    def test_completed_prerequisite_is_valid_but_not_dispatched(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            stage = self.make_stage(Path(temporary))
+            (stage / "tasks/T-01.md").write_text(card_text("T-01", "completed"), encoding="utf-8")
+            (stage / "tasks/T-03.md").write_text(card_text("T-03", "candidate"), encoding="utf-8")
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                self.assertEqual(0, checker.main(["--stage-dir", str(stage)]))
+            lines = output.getvalue().splitlines()
+            self.assertIn("Plan schedule checks passed: 1 active task cards; 1 candidate cards; "
+                          "1 completed cards.", lines)
+            self.assertIn("Current-stage cards (adoption and prerequisites still apply): T-02", lines)
+            self.assertIn("Candidate-only cards (separate adoption required): T-03", lines)
+            self.assertIn("Completed cards: T-01", lines)
+
+    def test_candidate_cards_are_validated_but_reported_separately(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            stage = self.make_stage(Path(temporary))
+            (stage / "tasks/T-03.md").write_text(card_text("T-03", "candidate"), encoding="utf-8")
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                self.assertEqual(0, checker.main(["--stage-dir", str(stage)]))
+            self.assertIn("2 active task cards; 1 candidate cards", output.getvalue())
+            self.assertIn("Current-stage cards (adoption and prerequisites still apply): T-01, T-02",
+                          output.getvalue())
+            self.assertIn("Candidate-only cards (separate adoption required): T-03", output.getvalue())
 
 
 if __name__ == "__main__":

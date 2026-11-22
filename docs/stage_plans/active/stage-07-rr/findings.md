@@ -511,3 +511,9 @@ Einstein 独立调度阴性与集成路由核对在其快照内成立；主代�
 AX-01 至 AX-09 均已写入候选合同或任务卡；逐项落点、实施时的正反例及交叉复验回执见[修订报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md)。生产未实施。
 
 AX-05 / RR-F131：首次登记把两个入口的稳定码判作互换；首次复审又误以为同一原 tick 的不同 subject 能在旧 submit 触发 dispatch collision。普通规范化 (`false`) 与旧执行 (`true`) 各有既定首错；后者在路由前已拒绝同原 tick 的不同 subject。用原 tick 900/901 汇到 901 才触发本例的 dispatch collision。保留旧 profile §8 与既有生产输入逻辑，RPA occurrence 分开验收。见 [T-03](tasks/T-03.md#任务级验收)和[纠正依据](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md#结果与证据)。
+
+## 16. 独立 checkout 复审处置（2026-11-22）
+
+owner 转交对 `8599c83a` 的复审，按 IR-01–IR-20 分开核对类型与构建、数据生产、渲染接线、宿主控制、任务与证据。逐项裁定、修订及实际验证见[本轮报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md)。§14/15 保留原时点判断，旧九项通过不代表本轮新发现已经覆盖。
+
+主代理已复现七段卡结构的漏检并补检查器、对应反例及 active/candidate 区分；T-01 改为跨平台哈希和显式采用基线。候选 schema、诊断码与目标尚待任务交付的事实，按创建责任及前置是否完整判断，不把尚未实施本身登记为设计失败。A-N 仍只移交候选设计；本次核实不扩大 D-05 或后继采用范围。

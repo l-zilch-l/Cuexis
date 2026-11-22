@@ -31,8 +31,8 @@ current_register: stage_plans/active/stage-07-rr/findings.md
   [架构与实现研究](stage_reports/stages/stage-07-rr/2026-11-17-architecture-research.md)；
   RR-3 范围已按[计划 D-05](stage_plans/active/stage-07-rr/plan.md#4-已确认方向与决策台账)限定为
   R1/R5/R6，R2/R3/R4 延期；本轮已订正文档并补齐提案。
-  两名 Astra [首次独立复审](stage_reports/stages/stage-07-rr/2026-11-22-astra-executor-review.md)部分成立，主代理保留 4 项 P1、5 项 P2。**九项候选设计文档已修订，双向交叉复验成立。**
-  最后回执及逐项验收入口见[修订报告](stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md)。生产未实施；下一次对话从 [T-01](stage_plans/active/stage-07-rr/tasks/T-01.md)按[启动授权](stage_plans/active/stage-07-rr/plan.md#唯一派单授权入口)执行，`NEXT` 包独立采用。
+  两名 Astra [首次独立复审](stage_reports/stages/stage-07-rr/2026-11-22-astra-executor-review.md)及其[九项修订复验](stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md)保留当时范围。随后独立 checkout 复审发现合同接线与任务检查仍有缺口，当前处置、实际验证与限制见[本轮报告](stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md)。
+  生产未实施；从 [T-01](stage_plans/active/stage-07-rr/tasks/T-01.md)核验修订输入，再按[启动授权](stage_plans/active/stage-07-rr/plan.md#唯一派单授权入口)执行，`NEXT` 包独立采用。
   上一轮完成了[候选合同与任务](stage_plans/active/stage-07-rr/design-readiness.md)对齐、四组冷启动复验及主代理最终组合文档检查；
   当时的结论、通过记录和输入封存入口保留在[上一轮报告](stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md)。
 - **文档治理第一批已完成（2026-11-17）**：文档入口新增生成式路由页 [docs/MAP.md](MAP.md)；
@@ -78,7 +78,7 @@ Stage 7 的历史发布证据与评论回读仍保存在 `out/evidence/stage7-pu
 | Stage 7-RPA | R1–R4 已退出；R4 为 owner 接受的带缺陷／未认证范围退出，F3 生产仍延期，testOnly 保留 | [整改计划](stage_plans/completed/stage-07/05-rpa-new/plan.md)、[关闭与交接](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-14-limited-exit-and-defect-handoff.md) |
 | Stage 7-PD | 带限制退出及遗留交接已接受；PD-5 历史“未通过但定案”保持 | [PD 计划](stage_plans/completed/stage-07/04-pd/plan.md) |
 | Stage 7 | 按迁出原 7B+ 后的既有范围受限收束；历史失败、未认证范围与 testOnly 不改 | [Stage 7 计划](stage_plans/completed/stage-07/plan.md) |
-| Stage 7-RR：Review and Refactoring After Stage-7 | RR-0 与文档治理第一批完成；D-05 限定 RR-3 为 R1/R5/R6，R2/R3/R4 延期；Astra 九项设计修订及双向复验完成，生产未实施 | [计划](stage_plans/active/stage-07-rr/plan.md)、[可实施性索引](stage_plans/active/stage-07-rr/design-readiness.md)、[修订与复验](stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md) |
+| Stage 7-RR：Review and Refactoring After Stage-7 | RR-0 与文档治理第一批完成；D-05 限定 RR-3 为 R1/R5/R6，R2/R3/R4 延期；独立 checkout 复审缺口按本轮报告处置，生产未实施 | [计划](stage_plans/active/stage-07-rr/plan.md)、[可实施性索引](stage_plans/active/stage-07-rr/design-readiness.md)、[本轮处置](stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md) |
 | Stage 7.5：Gameplay Evolution | 独立阶段规划与交接准备；继承受限基线，产品实施未开始；入场前置含 Stage 7-RR 接受 | [独立计划](stage_plans/active/stage-07-5/plan.md) |
 
 Stage 0–6 已完成；Stage 7 按拆分后的范围受限收束，原高级能力不回写为已实施；Stage 7-RR 为当前阶段；

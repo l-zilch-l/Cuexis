@@ -18,7 +18,7 @@ authority: owns
 
 ## 当前任务
 
-下一次对话从 [T-01：基线、派单包与冷启动](stage_plans/active/stage-07-rr/tasks/T-01.md)开始，按[现行实施范围](stage_plans/active/stage-07-rr/plan.md#唯一派单授权入口)执行。
+从[独立 checkout 复审处置](stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md)接续 [T-01：基线、派单包与冷启动](stage_plans/active/stage-07-rr/tasks/T-01.md)，按[现行实施范围](stage_plans/active/stage-07-rr/plan.md#唯一派单授权入口)执行。
 
 ## Plan 文档拆分（长期约定）
 
@@ -46,7 +46,7 @@ stage_plans/active/<stage>/
 
 ## 下一步
 
-1. 按[本次启动授权](stage_plans/active/stage-07-rr/plan.md#12-交接与变更控制)执行 [T-01](stage_plans/active/stage-07-rr/tasks/T-01.md#步骤)：核验当前提交和[已完成的证据](stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md#执行记录)，绑定实施基线与合同修订，登记采用。
+1. 按[本次启动授权](stage_plans/active/stage-07-rr/plan.md#12-交接与变更控制)执行 [T-01](stage_plans/active/stage-07-rr/tasks/T-01.md#步骤)：核验当前提交和[本轮修订及证据](stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md#执行记录)，绑定实施基线与合同修订，登记采用。
 2. T-01 验收后按[调度表](stage_plans/active/stage-07-rr/schedule.md)派发现行 T-01–T-09 图中的后续任务；各卡按[阶段验收](stage_plans/active/stage-07-rr/acceptance.md)取证。
 
 ## 阻塞与待决
@@ -55,8 +55,8 @@ stage_plans/active/<stage>/
 
 ## 验证状态
 
-[文档检查与复验记录](stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md#执行记录)、[逐项验收入口](stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md#结果与证据)。
+[本轮检查与回执](stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md#执行记录)、[逐项处置](stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md#结果与证据)。
 
 ## 最近改动
 
-- [实施启动交接记录](stage_plans/active/stage-07-rr/plan.md#12-交接与变更控制)。
+- [独立 checkout 复审登记](stage_plans/active/stage-07-rr/findings.md#16-独立-checkout-复审处置2026-11-22)。

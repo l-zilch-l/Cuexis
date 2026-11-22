@@ -9,6 +9,8 @@ comma-separated prerequisite IDs (or an em dash), and 可并行/独占 modes.
 Task IDs may be bare, inline code, or links to the matching tasks/T-xx.md card.
 Acceptance coverage is checked when acceptance.md exists; explicit T-01–T-03
 ranges are supported. Relative --stage-dir paths use the working directory.
+All cards must contain the seven task sections and declare active/candidate/completed
+status. Candidate and completed cards are checked but excluded from current-stage dispatch.
 """
 
 from __future__ import annotations
@@ -25,6 +27,7 @@ TASK_ID = re.compile(r"T-[0-9]{2}\Z")
 TASK_REFERENCE = re.compile(r"(?<![A-Za-z0-9_-])T-[0-9]{2}(?![A-Za-z0-9_-])")
 TASK_RANGE = re.compile(r"\b(T-[0-9]{2})\s*[-\u2013\u2014~\uff5e]\s*(T-[0-9]{2})\b")
 EXPECTED_HEADER = ("波次", "任务 ID", "前置 ID", "可并行/独占")
+TASK_SECTIONS = ("目标", "输入", "写域", "步骤", "任务级验收", "证据", "停止条件")
 FENCE = re.compile(r"^\s*(```+|~~~+)\s*([A-Za-z0-9_-]*)\s*$")
 METADATA_VALUES = {
     "id": r"[A-Za-z0-9_.:/-]+",
@@ -294,6 +297,54 @@ def _parse_schedule(path: Path) -> tuple[list[dict[str, object]], set[str], list
     return entries, seen_ids, failures
 
 
+def _card_status(text: str) -> str | None:
+    blocks = re.findall(r"<!-- cuexis-meta\s*\n(.*?)\n-->", text, re.DOTALL)
+    if len(blocks) != 1:
+        return None
+    statuses = re.findall(r"^status:\s*(\S+)\s*$", blocks[0], re.MULTILINE)
+    return statuses[0] if len(statuses) == 1 else None
+
+
+def _card_sections(text: str) -> list[tuple[str, bool]]:
+    sections: list[tuple[str, bool]] = []
+    name: str | None = None
+    has_body = False
+    fence_char: str | None = None
+    fence_length = 0
+    in_comment = False
+    for raw in text.splitlines():
+        line = raw.strip()
+        if in_comment:
+            if "-->" in line:
+                in_comment = False
+            continue
+        if fence_char is None and line.startswith("<!--"):
+            in_comment = "-->" not in line
+            continue
+        fence = re.match(r"^(`{3,}|~{3,})(.*)$", line)
+        if fence_char is not None:
+            if (fence and fence.group(1)[0] == fence_char
+                    and len(fence.group(1)) >= fence_length
+                    and not fence.group(2).strip()):
+                fence_char = None
+            elif line:
+                has_body = True
+            continue
+        if fence:
+            fence_char, fence_length = fence.group(1)[0], len(fence.group(1))
+            continue
+        heading = re.fullmatch(r" {0,3}##[ \t]+(.+?)[ \t]*", raw)
+        if heading:
+            if name is not None:
+                sections.append((name, has_body))
+            name, has_body = heading.group(1), False
+        elif line and name is not None:
+            has_body = True
+    if name is not None:
+        sections.append((name, has_body))
+    return sections
+
+
 def validate_stage_dir(stage_dir: Path) -> list[tuple[Path, str]]:
     """Return path/message pairs for schedule, task-card, and optional acceptance failures."""
     stage_dir = stage_dir.resolve()
@@ -303,7 +354,7 @@ def validate_stage_dir(stage_dir: Path) -> list[tuple[Path, str]]:
     if not schedule_path.is_file():
         return [(schedule_path, "schedule.md is missing")]
 
-    _, scheduled_ids, failures = _parse_schedule(schedule_path)
+    entries, scheduled_ids, failures = _parse_schedule(schedule_path)
     findings.extend((schedule_path, message) for message in failures)
 
     if not task_dir.is_dir():
@@ -313,6 +364,7 @@ def validate_stage_dir(stage_dir: Path) -> list[tuple[Path, str]]:
         task_paths = sorted(task_dir.glob("*.md"))
 
     task_ids: set[str] = set()
+    statuses: dict[str, str | None] = {}
     for path in task_paths:
         task_id = path.stem
         if not TASK_ID.fullmatch(task_id):
@@ -321,9 +373,33 @@ def validate_stage_dir(stage_dir: Path) -> list[tuple[Path, str]]:
         if task_id in task_ids:
             findings.append((path, f"duplicate task-card ID: {task_id}"))
         task_ids.add(task_id)
-        for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+        text = path.read_text(encoding="utf-8")
+        status = _card_status(text)
+        statuses[task_id] = status
+        if status not in ("active", "candidate", "completed"):
+            findings.append((path, "task metadata status must be active, candidate, or completed"))
+        visible_status = re.findall(r"^状态[：:]\s*([^\s；;]+)\s*$", text, re.MULTILINE)
+        if visible_status != [status]:
+            findings.append((path, "task visible status must match metadata status"))
+        sections = _card_sections(text)
+        if tuple(name for name, _ in sections) != TASK_SECTIONS:
+            findings.append((path, "task sections must occur once in order: "
+                             + ", ".join(TASK_SECTIONS)))
+        for name, has_body in sections:
+            if name in TASK_SECTIONS and not has_body:
+                findings.append((path, f"task section must not be empty: {name}"))
+        for number, line in enumerate(text.splitlines(), start=1):
             if re.search(r"\bdepends_on\b", line, re.IGNORECASE):
                 findings.append((path, f"line {number}: task cards must not define depends_on"))
+
+    for entry in entries:
+        status = statuses.get(entry["task_id"])
+        if status in ("active", "completed"):
+            for dependency in entry["dependencies"]:
+                if statuses.get(dependency) == "candidate":
+                    findings.append((schedule_path,
+                        f"line {entry['line']}: {status} task {entry['task_id']} "
+                        f"must not depend on candidate task {dependency}"))
 
     for task_id in sorted(scheduled_ids - task_ids):
         findings.append((schedule_path, f"scheduled task has no task card: {task_id}"))
@@ -354,8 +430,18 @@ def main(argv: list[str] | None = None) -> int:
             print(f"- {path}: {message}")
         return 1
 
-    task_count = len(list((args.stage_dir / "tasks").glob("*.md")))
-    print(f"Plan schedule checks passed: {task_count} task cards scheduled.")
+    groups: dict[str, list[str]] = {"active": [], "candidate": [], "completed": []}
+    for path in sorted((args.stage_dir / "tasks").glob("*.md")):
+        status = _card_status(path.read_text(encoding="utf-8"))
+        groups[status].append(path.stem)
+    print(f"Plan schedule checks passed: {len(groups['active'])} active task cards; "
+          f"{len(groups['candidate'])} candidate cards; "
+          f"{len(groups['completed'])} completed cards.")
+    print("Current-stage cards (adoption and prerequisites still apply): "
+          + ", ".join(groups["active"]))
+    print("Candidate-only cards (separate adoption required): "
+          + (", ".join(groups["candidate"]) or "none"))
+    print("Completed cards: " + (", ".join(groups["completed"]) or "none"))
     return 0
 
 

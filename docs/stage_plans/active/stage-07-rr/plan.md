@@ -111,6 +111,8 @@ Stage 7（受限退出） -> Stage 7-RR（本阶段） -> Stage 7.5（Gameplay E
 
 owner 已授权下一次对话按本计划启动 T-01–T-09；本次交接未开始生产实施或运行验收。实施采用与发布各自登记。设备/平台取证、逐 API 组的实际发布与退役条件仍按现行门禁执行。
 
+`8599c83a` 后独立 checkout 提交的缺口及修订见[本轮复审处置](../../../stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md)。T-01 先绑定修订后的输入并核对受影响卡，已有启动授权继续有效；旧 AX-01–09 报告不能替代本轮未完成的核对。结构检查分别输出 active/candidate，只有本节已采用的 active 卡可以按依赖派发。
+
 ### 唯一派单授权入口
 
 | Scope code | 范围与准入 |

@@ -10,7 +10,7 @@ status: candidate
 authority: summarizes
 -->
 
-[架构设计附页](architecture-design.md)保存 owner 共识。四组冷启动及差量审查的当期结论见[首轮设计报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md)；九项后续合同修订、责任卡和交叉复验见[Astra 修订报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md)及[可实施性索引](design-readiness.md)。`candidate` 标记未实施、未发布。[计划](plan.md#唯一派单授权入口)管实施范围与采用；A-01 阶段 owner 接受和产品运行证据见[验收](acceptance.md)。
+[架构设计附页](architecture-design.md)保存 owner 共识。四组冷启动及差量审查见[首轮设计报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md)，九项修订复验见[Astra 报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md)；后续独立 checkout 发现的缺口及当前修订见[本轮处置](../../../stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md)和[可实施性索引](design-readiness.md)。`candidate` 标记未实施、未发布。[计划](plan.md#唯一派单授权入口)管实施范围与采用；A-01 阶段 owner 接受和产品运行证据见[验收](acceptance.md)。
 
 ## 整体设计基线（2026-11-22）
 

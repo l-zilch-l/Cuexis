@@ -1,6 +1,6 @@
 # Stage 7-RR 可实施性索引
 
-状态：candidate；九项设计修订已完成交叉复验，未实施、未发布
+状态：candidate；独立 checkout 复审后的修订与验证以本轮报告为准，未实施、未发布
 
 更新日期：2026-11-22
 
@@ -40,7 +40,7 @@ authority: index
 
 Huygens、Nash、Epicurus、Bacon 对 R1、R5 帧交付及 `NEXT` 合同的四组复验均成立；当期结论见[首轮设计报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md)。后续 Astra 九项的合同、责任卡和验收见[修订与交叉复验](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md#结果与证据)。A-01 的阶段 owner 接受和产品运行另按[验收](acceptance.md)登记。
 
-四组审查的封存入口为 `out/review/stage-07-rr/T-01/final-20261122/`，对应调度阴性沿用 `out/review/stage-07-rr/T-01/schedule-negative-20261122-pyii5098/` 的具名快照和回执。本轮文档验证见[执行记录](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md#执行记录)。
+`8599c83a` 的独立 checkout 复审暴露的新缺口及处置见[当前报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md)，旧九项复验仅覆盖当次修订。四组审查的 `out/review/stage-07-rr/T-01/final-20261122/` 等路径是原工作区证据，独立 checkout 未取得时不得依此宣布本次门禁通过；按 T-01 重验当前修订。本轮必需回执与短检查输出随报告交付。
 
 ## 缺口追踪
 
@@ -67,7 +67,7 @@ Player 与工具外部行为按 [D-16 已接受共识](architecture-design.md#�
 | P3.5 | 接口：[反查结果与 Stop 边界](contracts/runtime-timing.md#谱面时间-api) | [T-12](tasks/T-12.md) | S、E−1、E 及旧相邻样例 |
 | P4.1 | 决策：[键位](contracts/render-player-writer.md#命令与启动) | [T-15](tasks/T-15.md) | R/F5 的调用轨迹 |
 | P4.2 | 接口：[CLI 与诊断](contracts/render-player-writer.md#命令与启动) | [T-15](tasks/T-15.md) | P4-06/08：显式项目/CXC 选谱、wrapper 同轨迹、已声明支持的载体计分，源包支持由 Player 决定 |
-| P4.3 | 接口：[六态矩阵](contracts/render-player-writer.md#完整准入矩阵) | [T-15](tasks/T-15.md) | 表驱动命令结果；T-14 的 P4-07 另证 Retry/Pause 竞合 |
+| P4.3 | 接口：[六态矩阵](contracts/render-player-writer.md#完整准入矩阵) | [T-14](tasks/T-14.md)、[T-15](tasks/T-15.md) | T-14 验纯值准入与 owner 提交，包括 P4-07 Retry/Pause 竞合；T-15 验 CLI/窗口到同一命令路径 |
 | P4.4 命令 | 接口：[生产 Retry 命令](contracts/render-player-writer.md#命令与启动) | [T-14](tasks/T-14.md#任务级验收) | P4-07：已有 owner 通道中 Retry 与两来源 Pause 的终态回执 |
 | P4.4 按键 | 输入：[R/F5 绑定](contracts/render-player-writer.md#命令与启动) | [T-15](tasks/T-15.md#任务级验收) | R/F5 到 Retry/Reload 的轨迹，释放和重复按下不重发 |
 | P4.5 | 迁移：[首次失败重载](contracts/render-player-writer.md#完整准入矩阵) | [T-15](tasks/T-15.md) | 无 A 时修复同一来源再加载 |
