@@ -243,7 +243,7 @@ authority: owns
 | RR-F417 | `app/player/src/execution_host.cpp:71-78` | 析构排空是无终止条件的重试循环 | 假保证 |
 | RR-F418 | `app/player/src/player_app.cpp:177-180` | `--frame-stats` 在执行线被静默忽略 | 半实现 |
 | RR-F419 | `app/player/src/player_control_frame_loop.cpp:374,384` | 首帧 `render_us` 恒 0（钩子早于赋值） | 假实现 |
-| RR-F420 | `app/execution_host/frame_observation.cpp:240` | `exactLossCount` 是字面量 `false`。owner 2026-11-22 裁定按 D 并入新设计，具体语义与计数判据待定义，由 T-14 在采用前与 owner 确认；T-06 不再兜底文档化 | 成立（设计缺口，归 T-14；语义待定义） |
+| RR-F420 | `app/execution_host/frame_observation.cpp:240` | `exactLossCount` 是字面量 `false`。owner 2026-11-22 说明设计意图：新会话如实报告帧观测记录的缺失，并标明缺失计数是否精确，避免把不完整观测当成完整证据；按 D 并入新设计，归 T-14。旧路径恒 false 只是保守下界 | 成立（未实现，归 T-14） |
 | RR-F421 | `engine/render_opengl/src/open_gl_presentation_frame.cpp:226-241` | `capabilities()` 非主线程返回默认零能力集 | 假保证 |
 | RR-F422 | `engine/shader/src/shader_pipeline_cache.cpp:32-39` | “worker 线程编译”实为 `thread` + 立即 `join()` | 假保证 |
 | RR-F423 | `docs/api/frames-digests-and-timelines.md:62` | 文档写三参 digest，公开 API 两参 | 假保证（已修） |
