@@ -77,16 +77,7 @@ Player 与工具外部行为按 [D-16 已接受共识](architecture-design.md#�
 | P5.3 | 迁移：[discardedFields 处置](contracts/render-player-writer.md#损失定位与迁移映射) | [T-16](tasks/T-16.md) | Migrator 损失与 Writer 差异不丢失 |
 | P5.4 | 构建/迁移：[旧 helper 与调用](contracts/render-player-writer.md#调用点与可见性) | [T-16](tasks/T-16.md) | 调用扫描与写回回归 |
 | P5.5 | 构建：[Writer 消费可见性](contracts/render-player-writer.md#调用点与可见性) | [T-16](tasks/T-16.md) | 私有头不安装；CLI 不提交有损成品 |
-| P6.1 | 任务化：[任务卡入口](plan.md#任务索引) | [T-01](tasks/T-01.md) | 七项卡结构与输入可达 |
-| P6.2 | 任务化：[唯一调度](schedule.md) | [T-01](tasks/T-01.md) | 覆盖、早波、独占的正负检查 |
-| P6.3 | 验收：[阶段矩阵](acceptance.md#阶段验收矩阵) | [T-09](tasks/T-09.md) | A-01–A-06 验收包 |
-| P6.4 | 任务化：[试点派单规则](plan.md#7-分批细化) | [T-01](tasks/T-01.md) | 无父上下文回执 |
-| P6.5 | 任务化：[提案到任务映射](simplification-proposal.md) | [T-01](tasks/T-01.md) | P1–P6 逐项可导航 |
-| §5.1 范围 | 决策：[scope 和后继 delta](plan.md#唯一派单授权入口) | [T-01](tasks/T-01.md) | 核准任务 ID；候选不参与退出 |
-| §5.2 任务板与拆分 | 任务化：[任务索引](plan.md#任务索引) | [T-01](tasks/T-01.md) | 卡与唯一调度覆盖，独立冷启动 |
-| §5.3 验收 | 验收：[交叉验证](acceptance.md#交叉验证) | [T-01](tasks/T-01.md) | 主代理重跑、独立反例与回执 |
-| §5.4 基线 | 迁移：[记录](findings.md#13-可实施性审查处置2026-11-21) | [T-01](tasks/T-01.md) | 核验 SHA 与受影响证据清单 |
-| §5.5 决策台账 | 决策：[唯一采用](plan.md#唯一派单授权入口) | [T-01](tasks/T-01.md) | 已接受 D 项与实施记录分开 |
-| §5.6 风险 | 迁移：[回滚与停止](plan.md#10-回滚阻塞与停止条件) | [T-09](tasks/T-09.md) | 受影响对象的负例、回滚点、延期处置 |
+| P6/§5 任务化 | 任务索引、唯一调度、阶段矩阵与交叉验证 | [T-01](tasks/T-01.md)、[T-09](tasks/T-09.md) | 七段卡结构、调度覆盖、A-01–A-06 回执；追溯见[本轮处置](findings.md#13-可实施性审查处置2026-11-21) |
+| P6/§5 基线与台账 | 采用入口、基线记录、回滚与停止条件 | [T-01](tasks/T-01.md) | 基线绑定、已接受 D 项与实施记录分开；追溯同上 |
 
 P3 的编译期和 prepare 期验收分别落在 T-12、T-13；旧接受集合裁定由 T-11 的合同差异固定。P1 的[旧 API 逐符号迁移](contracts/runtime-timing.md#rr-4-逐符号兼容迁移)由 [T-08](tasks/T-08.md)独立执行；旧宏成员退出、已保护渲染入口退役和 SDK 晋升按各组替代稳定性及发布裁定进入后继门禁；Judgement 晋升独立评估，不预排统一版本。
