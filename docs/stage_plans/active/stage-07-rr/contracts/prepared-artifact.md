@@ -7,7 +7,7 @@
 实现状态：未实施。[T-13](../tasks/T-13.md) 仍属 `NEXT`；设计、采用和发行分开登记，[唯一派单授权入口](../plan.md#唯一派单授权入口)与 D-05 范围不变。
 
 <!-- cuexis-meta
-id: PLAN-active.stage-07-rr.prepared-artifact
+id: PLAN-active.stage-07-rr.contract-prepared-artifact
 status: candidate
 authority: owns
 -->

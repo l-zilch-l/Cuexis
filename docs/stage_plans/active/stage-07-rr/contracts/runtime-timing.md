@@ -2,8 +2,12 @@
 
 状态：candidate
 
+更新日期：2026-11-22
+
+实现状态：未实施。
+
 <!-- cuexis-meta
-id: STAGE7-RR-RUNTIME-TIMING
+id: PLAN-active.stage-07-rr.contract-runtime-timing
 status: candidate
 authority: references
 -->

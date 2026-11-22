@@ -1,14 +1,16 @@
 # Stage 7-RR 候选合同：渲染、Player 与写回
 
-<!-- cuexis-meta
-id: PLAN-STAGE-07-RR-RENDER-PLAYER-WRITER
-status: candidate
-authority: owns
--->
-
 状态：candidate
 
 更新日期：2026-11-22
+
+实现状态：未实施。
+
+<!-- cuexis-meta
+id: PLAN-active.stage-07-rr.contract-render-player-writer
+status: candidate
+authority: owns
+-->
 
 代码核对基线：`9623efa3`。本页冻结 P2/P4/P5 的单一技术推荐，供审阅与拆卡；实施、发布和删除分别过门禁。[计划 D-05](../plan.md#4-已确认方向与决策台账) 的 RR-3 只含 R1/R5/R6。本页 P2 的旧内容布局、桥接和替代探针归 R5；新 Chart 作者数据、实验安装与保护符号退出分别过格式、SDK 与版本门禁。P4 和 P5 单列实施授权。已定行为见[架构设计附页](../architecture-design.md)。
 
