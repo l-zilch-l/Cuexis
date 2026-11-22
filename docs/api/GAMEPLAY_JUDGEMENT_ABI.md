@@ -10,9 +10,10 @@ authority: owns
 
 日期：2026-10-01
 
-> **Seek 的当前入口（candidate）**：语义见 [GAMEPLAY_V2_SPEC](../formats/GAMEPLAY_V2_SPEC.md) §3.19
-> 与控制矩阵，接口边界见 [GAMEPLAY_V2_ABI](GAMEPLAY_V2_ABI.md)；`PlaybackSession::seekGameplay`
-> 仅在 `CUEXIS_ENABLE_CHART_V5_CANDIDATE=ON` 时编译，默认构建与安装面不暴露。
+> **Seek 的当前入口（candidate）**：行为语义见 [RPA 执行与控制补充合同](../formats/rpa-execution-contract.md) 第 4 节与
+> [GAMEPLAY_V2_SPEC](../formats/GAMEPLAY_V2_SPEC.md) 的 Fact Ledger 重建段（seek／replay 不重新分配、不重编 timer ordinal），
+> 接口边界见 [GAMEPLAY_V2_ABI](GAMEPLAY_V2_ABI.md) 域 9；[§3.19](../formats/GAMEPLAY_V2_SPEC.md) 只规定 `SeekLatencyCommitment` 的延迟承诺。
+> `PlaybackSession::seekGameplay` 仅在 `CUEXIS_ENABLE_CHART_V5_CANDIDATE=ON` 时编译，默认构建与安装面不暴露。
 > 本文的 seek 设计仅作历史对照，不构成当前合同。
 
 本文定义 Stage 7A 可实现的 C++ typed preview 边界，不改变当前 SDK API `0.7.1`，也不宣称

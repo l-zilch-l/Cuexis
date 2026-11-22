@@ -10,6 +10,10 @@ authority: owns
 
 日期：2026-10-01
 
+> **Seek 的当前入口（candidate）**：行为语义见 [RPA 执行与控制补充合同](../formats/rpa-execution-contract.md) 第 4 节与
+> [Gameplay V2 Spec](../formats/GAMEPLAY_V2_SPEC.md) 的 Fact Ledger 重建段；接口边界见 [Gameplay V2 ABI](../api/GAMEPLAY_V2_ABI.md) 域 9；
+> `PlaybackSession::seekGameplay` 仅在候选构建编译，默认构建与安装面不暴露。本文的 seek 设计仅作历史对照。
+
 ## 背景
 
 Stage 7 的 Gameplay 研究已经完成 Fold/Pattern/Measure、Ruleset Fold、Identity、Skill Hook、

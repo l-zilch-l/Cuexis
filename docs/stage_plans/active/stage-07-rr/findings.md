@@ -305,7 +305,7 @@ authority: owns
 | RR-F507 | `execution_kernel_impl_phases.cpp:80-86` | 两个 `find_if` 结果未判 `end()` 即解引用；当前不可达 | 已核实（S1） |
 | RR-F508 | `playback_session.cpp:319-348`；`playback_session_internal.hpp:217,218,221,245,246` | `unload()` 未清 `hostFence`、`acceptedHostControl`、`confirmedHostContext`、`executionMapping`、`tailTransition` | 已核实（S1） |
 | RR-F509 | `playback_session_internal.hpp:268`；`playback_session_prepared.cpp:36` | `PreparedPlayback::State::owner` 为裸指针并在 materialize 时解引用，Session 先销毁即 UAF | 已核实（S1） |
-| RR-F510 | `docs/MAP.md` 路由表；ADR 0043、`api/GAMEPLAY_JUDGEMENT_ABI.md`、`formats/GAMEPLAY_JUDGEMENT_SPEC.md` | Judgement seek 有实现（`judgement_session.hpp:119-140`），但三份合同文档均为 `historical`，无 active 权威入口 | 已核实（路由盲区） |
+| RR-F510 | `docs/MAP.md` 路由表；ADR 0043、`api/GAMEPLAY_JUDGEMENT_ABI.md`、`formats/GAMEPLAY_JUDGEMENT_SPEC.md` | Judgement seek 有实现（`playback_session.hpp:348,352`，仅在 `CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE` 下编译），权威合同是 candidate：RPA 合同第 4 节、V2 Spec 的 Fact Ledger 重建段、V2 ABI 域 9。三份 historical 文档已于 2026-11-17 补路标、2026-11-22 订正语义指向；§3.19 只覆盖延迟承诺 | 部分成立（无 active 合同属候选状态，路标已订正） |
 
 #### 8.3 外部条目核查覆盖
 
