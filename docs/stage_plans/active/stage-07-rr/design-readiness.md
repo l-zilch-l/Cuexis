@@ -79,7 +79,7 @@ Player 与工具外部行为按 [D-16 已接受共识](architecture-design.md#�
 | P5.5 | 构建：[Writer 消费可见性](contracts/render-player-writer.md#调用点与可见性) | [T-16](tasks/T-16.md) | 私有头不安装；CLI 不提交有损成品 |
 | P6.1 | 任务化：[任务卡入口](plan.md#任务索引) | [T-01](tasks/T-01.md) | 七项卡结构与输入可达 |
 | P6.2 | 任务化：[唯一调度](schedule.md) | [T-01](tasks/T-01.md) | 覆盖、早波、独占的正负检查 |
-| P6.3 | 验收：[阶段矩阵](acceptance.md#阶段验收矩阵) | [T-09](tasks/T-09.md) | A-01–A-05 验收包 |
+| P6.3 | 验收：[阶段矩阵](acceptance.md#阶段验收矩阵) | [T-09](tasks/T-09.md) | A-01–A-06 验收包 |
 | P6.4 | 任务化：[试点派单规则](plan.md#7-分批细化) | [T-01](tasks/T-01.md) | 无父上下文回执 |
 | P6.5 | 任务化：[提案到任务映射](simplification-proposal.md) | [T-01](tasks/T-01.md) | P1–P6 逐项可导航 |
 | §5.1 范围 | 决策：[scope 和后继 delta](plan.md#唯一派单授权入口) | [T-01](tasks/T-01.md) | 核准任务 ID；候选不参与退出 |

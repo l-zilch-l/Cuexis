@@ -170,6 +170,7 @@ authority: index
 | [stage_plans/active/stage-07-rr/tasks/T-07.md](stage_plans/active/stage-07-rr/tasks/T-07.md) | active | owns | T-07 RR-3/R6 与 RR-5 文档、注释减重 |
 | [stage_plans/active/stage-07-rr/tasks/T-08.md](stage_plans/active/stage-07-rr/tasks/T-08.md) | active | owns | T-08 独立 RR-4 公共面 |
 | [stage_plans/active/stage-07-rr/tasks/T-09.md](stage_plans/active/stage-07-rr/tasks/T-09.md) | active | owns | T-09 RR-6 退出与交接 |
+| [stage_plans/active/stage-07-rr/tasks/T-17.md](stage_plans/active/stage-07-rr/tasks/T-17.md) | active | owns | T-17 会话层 P1 正确性修复 |
 | [stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-candidate-and-memory-domains-plan.md](stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-candidate-and-memory-domains-plan.md) | accepted | owns | PD-5 读取候选与分域内存观测实施方案 |
 | [stage_plans/completed/stage-07/05-rpa-new/r4/caps-proposal.md](stage_plans/completed/stage-07/05-rpa-new/r4/caps-proposal.md) | accepted | owns | R4 O1 预算与生产参数裁定包 |
 | [stage_plans/completed/stage-07/05-rpa-new/r4/decision-proposal.md](stage_plans/completed/stage-07/05-rpa-new/r4/decision-proposal.md) | accepted | owns | R4 独立推进与 owner 裁定方案 |
