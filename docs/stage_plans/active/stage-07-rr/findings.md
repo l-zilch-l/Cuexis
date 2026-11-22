@@ -1,8 +1,8 @@
-# Stage 7-RR 发现登记册（2026-11-17）
+# Stage 7-RR 发现登记册
 
-状态：active；只登记复核发现，不包含任何修复结论
+状态：active；登记复核发现与待审候选方案，不包含修复结论或实施授权
 
-更新日期：2026-11-21
+更新日期：2026-11-22
 
 <!-- cuexis-meta
 id: PLAN-active.stage-07-rr.findings
@@ -12,6 +12,16 @@ authority: owns
 
 返回 [Stage 7-RR 计划](plan.md)；阶段报告入口见[Stage 7-RR 报告索引](../../../stage_reports/stages/stage-07-rr/README.md)；
 当前进度唯一以 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 为准。
+
+## 阅读索引
+
+本册按问题对象分三块，按此顺序阅读：
+
+1. **现行问题（已实施）**：§1–§11，2026-11-17 全项目复核、假保证扫描、外部审查与工具审计的发现，以及修复清单与复核方法。
+2. **候选设计与文档问题（未实施）**：§17–§21，本轮设计层审查登记，含逐条候选方案与需 owner 裁定的口径项。
+3. **处置记录（按日期）**：§12–§16，历轮审查的处置过程，按当时时点成立，不改写结论。
+
+编号规则：`RR-Fxxx` 按登记时点递增，不因重组重排；部分章节号因此不连续。严重度与证据状态见 §0。
 
 ## 0. 口径与证据状态
 
@@ -32,7 +42,11 @@ authority: owns
 
 本册**不是**修复记录。任何条目在 RR 批次里被关闭前，都应先有对应的 Spec/ADR 裁定或标注决定。
 
-## 1. P0（状态文档与仓库事实冲突）
+## 第一部分 现行问题（已实施）
+
+本部分登记已实施、已发布或已交付对象的缺陷：现行文档与仓库事实冲突、实现与合同不一致、工具链与证据问题。编号按登记时点排列。
+
+### 1. P0（状态文档与仓库事实冲突）
 
 | ID | 位置 | 问题 | 证据状态 |
 | --- | --- | --- | --- |
@@ -41,9 +55,9 @@ authority: owns
 
 两条都与同文件 `:22` 的"当前为 Stage 7.5"自相矛盾，属"唯一状态权威失效"，因此列 P0。
 
-## 2. P1
+### 2. P1
 
-### 2.1 状态与文档漂移
+#### 2.1 状态与文档漂移
 
 | ID | 位置 | 问题 | 证据状态 |
 | --- | --- | --- | --- |
@@ -53,7 +67,7 @@ authority: owns
 | RR-F104 | `docs/formats/MATERIAL_SHADER.md:632` | 仍写“当前分支为 0.7.5”，实际 `CuexisVersion.cmake:8` 为 0.9.1（`CURRENT_STATUS.md:115` 同） | 已修（文档：改为 0.9.1） |
 | RR-F105 | `docs/formats/README.md:40` | 权威矩阵把 Packed Chart v1 标为"未实现"；实际 Header/目录、字典/身份、ARCH/ENT0、TRN0/REN0/CAM0、REQ0/CNS0、语义 hash、Reader/Writer 与 40k 测试均已实现并接入 CMake | 已核实 |
 
-### 2.2 格式互操作与接受集
+#### 2.2 格式互操作与接受集
 
 | ID | 位置 | 问题 | 证据状态 |
 | --- | --- | --- | --- |
@@ -64,7 +78,7 @@ authority: owns
 | RR-F115 | `CXT_V2_FORMAT.md:317,323,326,690` | `cxtImports`/`cxtInstances` 全仓 0 命中；§6 写成合同未标未实现；§12:690 的“Chart invocation”同样过度声明。展开只由工具显式传参触发 | 已修（文档：§6 移入 proposals，§12 收窄） |
 | RR-F116 | `CHART_ENTRY_V1_FORMAT.md:126-145`；`cxc_candidate.cpp` | 文档声明 16 码中 2 个零产出（`resource_closure_invalid` 只有异命名空间的 `playback.candidate.*`）；实现另发 **12 个**未登记码（原文写 5 个，计数订正）。文档写“minimum stable set”，额外码本身不违约 | 已修（文档：删除 2 个零产出码） |
 
-### 2.3 SDK 与表现合同
+#### 2.3 SDK 与表现合同
 
 | ID | 位置 | 问题 | 证据状态 |
 | --- | --- | --- | --- |
@@ -75,7 +89,7 @@ authority: owns
 | RR-F125 | `MATERIAL_SHADER.md` §5、§12；`shader_compiler_sources.cpp:113-138` | 子集预检只覆盖大小/BOM-CR/`#version 450`/`#include`；geometry/tess/compute 等子集项落到 shaderc → `shader.compile.failed`。但 `playback.presentation.shader.subset_invalid` **并非零产出**：`shader_compiler_sources.cpp:128,133`、`presentation_reader.cpp:549,563`、`presentation_parse.cpp:198,204` | 部分修（文档不再承诺“完整预检”；实现仍只做部分预检） |
 | RR-F126 | `MATERIAL_SHADER.md` §9；`playback_session_prepared.cpp:322-347`；`shader_pipeline_cache.cpp:148-153` | `shaderHotReloadEnabled` 由四个 capability 标志（version==2 且三份源码）推导；`render_opengl` 只调 `prepareCandidate()`/`candidate()`，全目录 0 处 `activate()`/`active()`，candidate 永不换入 active | 已修（文档：删除 warning/effective false 承诺） |
 
-### 2.4 运行时、判定与失败语义
+#### 2.4 运行时、判定与失败语义
 
 | ID | 位置 | 问题 | 证据状态 |
 | --- | --- | --- | --- |
@@ -86,7 +100,7 @@ authority: owns
 | RR-F135 | `frame_observation.cpp:72,96,124,288,420,524` 对比 `:335,426,447` 对比 `:550,598,613` | 三种互斥处置并存；`bad_alloc` 被冒充为 `host.rpa.capacity_exceeded`（与预留故障槽同码，仅 message 不同），或被吞成成功 | 已核实（补 420/524；同码问题更严重） |
 | RR-F136 | `app/player/src/player_app.cpp:177-179` | candidate 执行路径在 `PlayerController` 之前分流，完全绕过 `PlayerCommand` 命令表与固定事务顺序；`PLAYER_APPLICATION.md:30,213` 的"所有控制面产生同一个 PlayerCommand"只对中立路径成立 | 已核实 |
 
-### 2.5 主机构建面与文档覆盖
+#### 2.5 主机构建面与文档覆盖
 
 | ID | 位置 | 问题 | 证据状态 |
 | --- | --- | --- | --- |
@@ -94,7 +108,7 @@ authority: owns
 | RR-F142 | `player_execution.cpp:36-38` 及 `:110,115,120,139,608,630,632,642` | 该 `error()` 辅助的 9 类失败统一为 `player.execution.test_only`；文件另有 7 个 `player.execution.*` 码，`:632` 在 fault 自带码时透传 | 已核实（“统一”限定为这 9 类） |
 | RR-F143 | `check_docs.py`、`check_pe_export_gate.py`、`gnu_asset_mirror.py`；`worker_process.cpp:22-31,49,76,83` | `check_docs.py` 在 docs 有 251 处引用，“零引用”不成立；真正零/极少引用的是 `check_pe_export_gate.py`（仅 findings）与 `gnu_asset_mirror.py`。worker 逐字节 `static_cast<wchar_t>`，任何非 ASCII narrow 路径都会 mojibake | 已核实（“零引用”收窄） |
 
-## 3. P2（登记但不阻塞本阶段退出）
+### 3. P2（登记但不阻塞本阶段退出）
 
 | ID | 位置 | 问题 | 证据状态 |
 | --- | --- | --- | --- |
@@ -119,8 +133,8 @@ authority: owns
 | RR-F219 | `VerifyArchitecture.cmake:117`；`MODULE_BOUNDARIES.md:19`；`sha256.cpp:11,13` | core 规则只匹配 `SDL|glad|GL/`，不覆盖 `<windows.h>/<intrin.h>/<cpuid.h>`；引用出处是 `MODULE_BOUNDARIES.md:19`（不是 AGENTS）；core 已有 intrin/cpuid 先例，当前无 windows.h | 已核实（修正引用与“可漏入”） |
 | RR-F220 | `CMakeLists.txt:1035-1044,1486-1497` | 两处 allowlist 条目宽于直接 LINK_LIBRARIES（shader→core、playback_tests→assets），但都在传递闭包内；门禁仍拒绝任何未预置的新依赖，属许可超集而非漏洞 | 已核实（改“冗余但非漏洞”） |
 
-## 4. 源码拆分预算与超长文件
-### 4.1 预算事实
+### 4. 源码拆分预算与超长文件
+#### 4.1 预算事实
 
 > **2026-11-17 owner 决定：取消文件拆分工作。** 本阶段转为架构减重重构（见
 > [plan.md](plan.md)）；本节只作为事实记录保留，不再安排拆分批次。`.cpp ≤ 800`、`.hpp ≤ 500`
@@ -136,7 +150,7 @@ authority: owns
   `.hpp` 全部合规（最大 `engine/playback/include/cuexis/playback/playback_session.hpp`，488 行）；
   `.cpp` 唯一越限 `tests/pd/execution_memory_observer.cpp` = **917 行**。
 
-### 4.2 唯一越限文件
+#### 4.2 唯一越限文件
 
 | 文件 | 行数 | 现状 | 拆分方向 |
 | --- | --- | --- | --- |
@@ -145,7 +159,7 @@ authority: owns
 注意：这是测试专用 interposition 单元，拆分风险高于普通源文件（ODR、单一 `operator new` 定义、
 匿名 namespace 状态）。RR-4 必须先给出等价性说明再动。
 
-### 4.3 700+ 行与 600+ 行的候选深拆清单（非本阶段强制）
+#### 4.3 700+ 行与 600+ 行的候选深拆清单（非本阶段强制）
 
 若 owner 决定把阈值下调到 600/700，以下为各模块报告给出的可分离单元（行数为当次统计）：
 
@@ -162,7 +176,7 @@ authority: owns
   `player_execution.cpp` 645、`frame_observation.cpp` 616。
 - `tools/tests`：`check_docs.py` 881、`gameplay_author.cpp` 695、以及 `tests/` 下 11 个 700 行附近的用例文件。
 
-## 5. 复核方法与已知边界
+### 5. 复核方法与已知边界
 
 - 方法：10 个并行无上下文子代理按模块只读审查 + owner 抽查 8 处关键结论（本册"已核实"项）。
 - 未覆盖：Release/候选预设构建、完整 CTest 矩阵、跨平台与外部消费者复验、GPU/设备路径实测。
@@ -173,7 +187,7 @@ authority: owns
 - 本册不重复 `docs/stage_reports/stages/stage-07/90-shared/source-split-audit/` 已记录的
   五项安全网缺口；那是拆分门禁本身的审计，与本册的文档-实现审查互补。
 
-## 6. 架构层发现（2026-11-17 研究）
+### 6. 架构层发现（2026-11-17 研究）
 
 8 个无上下文研究子代理的结论已整理为
 [架构与实现研究](../../../stage_reports/stages/stage-07-rr/2026-11-17-architecture-research.md)；
@@ -201,12 +215,12 @@ authority: owns
 已推翻的子代理结论（避免按错情报动手）：`ChartTick` **不是**死类型（34 处使用）；
 `acquireHostOverride` 并非全仓 0 引用（5 个测试文件在用，但宿主消费者为 0）。
 
-## 7. 假保证与假实现（2026-11-17 专班扫描）
+### 7. 假保证与假实现（2026-11-17 专班扫描）
 
 7 个无上下文子代理按模块扫描「承诺 vs 实现」，合并去重后 48 条候选，其中 26 条越过 owner 复核。
 完整证据、未复核清单与阴性对照见[扫描报告](../../../stage_reports/stages/stage-07-rr/2026-11-17-false-guarantees-scan.md)。
 
-### 7.1 已复核（owner 亲自 grep/读码确认）
+#### 7.1 已复核（owner 亲自 grep/读码确认）
 
 | ID | 位置 | 摘要 | 判定 |
 | --- | --- | --- | --- |
@@ -237,7 +251,7 @@ authority: owns
 | RR-F425 | `docs/formats/TIMING_MODEL.md:52` | `startRecording/loadReplay` 全仓 0 命中却被写成现行入口 | 过期陈述（已修） |
 | RR-F426 | `docs/guides/LIMITS.md` 生成器 | 只匹配 `std::size_t`，漏两个 `std::int64_t` Beat 上限 | 生成缺陷（已修） |
 
-### 7.2 未复核（子代理声称已读码，动代码前必须复核）
+#### 7.2 未复核（子代理声称已读码，动代码前必须复核）
 
 | ID | 位置 | 摘要 |
 | --- | --- | --- |
@@ -254,13 +268,13 @@ authority: owns
 | RR-F437 | `runtime_session_overrides.cpp:243,375,380,385,390`；`thread_checker.cpp:19-22` | 恰好 5 个 const 观察函数仅 `assertCurrent()`，Release 下 assert 被 NDEBUG 编译掉 → 跨线程静默 UB | 已核实 |
 | RR-F438 | `math.hpp:57,65-66,70,71-72,75`；`math.cpp:111-135` | `noexcept` 函数内构造带堆存储的 `Error`，OOM 时 terminate；这是 math.hpp 全部 Result 入口的共同约定，不是单点 | 已核实（面扩大到全部 Result 入口） |
 
-## 8. 外部审查交叉核对（2026-11-17）
+### 8. 外部审查交叉核对（2026-11-17）
 
 来源：[外部审查报告（59 条）](../../../stage_reports/stages/stage-07-rr/2026-11-17-external-findings-review.md)，
 基线 `aac83e5e`（与本阶段一致），只读审阅，未运行构建。下表只登记**本轮独立核对过证据**的条目；
 外部报告里未核对的条目保留原文，不得据其直接改代码。
 
-### 8.1 已有对应（外部 → 本登记册）
+#### 8.1 已有对应（外部 → 本登记册）
 
 | 外部 | 本登记册 | 核对结果 |
 | --- | --- | --- |
@@ -278,7 +292,7 @@ authority: owns
 | DOC-08 | 文档治理批次 | 部分处置（MAP/元数据/证据头） |
 | DOC-09 / A-09 | **本轮已处置** | ADR 0027「依赖方向」已登记 Judgement 边界 |
 
-### 8.2 本轮新核实并补登记
+#### 8.2 本轮新核实并补登记
 
 | ID | 位置 | 事实 | 结论 |
 | --- | --- | --- | --- |
@@ -293,15 +307,15 @@ authority: owns
 | RR-F509 | `playback_session_internal.hpp:268`；`playback_session_prepared.cpp:36` | `PreparedPlayback::State::owner` 为裸指针并在 materialize 时解引用，Session 先销毁即 UAF | 已核实（S1） |
 | RR-F510 | `docs/MAP.md` 路由表；ADR 0043、`api/GAMEPLAY_JUDGEMENT_ABI.md`、`formats/GAMEPLAY_JUDGEMENT_SPEC.md` | Judgement seek 有实现（`judgement_session.hpp:119-140`），但三份合同文档均为 `historical`，无 active 权威入口 | 已核实（路由盲区） |
 
-### 8.3 外部条目核查覆盖
+#### 8.3 外部条目核查覆盖
 
 外部报告 59 条已全部核查：D/DOC 类 13 条见 8.4 的 D1，P/T/A 类 20 条见 8.4 的 D2；
 其余 C/S 类与既有登记册的对应关系见 8.1/8.2。8.4 中的“部分成立”已按核查结果改写断言，
 不得再按外部原文引用。
 
-### 8.4 分批核查结果（2026-11-17）
+#### 8.4 分批核查结果（2026-11-17）
 
-#### D1 批次：外部报告 D/DOC 类（13 条）
+##### D1 批次：外部报告 D/DOC 类（13 条）
 
 | 外部 | 判定 | 校正与证据 |
 | --- | --- | --- |
@@ -322,7 +336,7 @@ authority: owns
 统计：成立 10 / 部分成立 3 / 不成立 0 / 无法核实 0。D1 的净产出是三条校正：D-25 的探针结论、
 D-08 的计数、DOC-02 的表格行数。
 
-#### D2 批次：外部报告 P/T/A 类（20 条）
+##### D2 批次：外部报告 P/T/A 类（20 条）
 
 | 外部 | 判定 | 校正与证据 |
 | --- | --- | --- |
@@ -350,12 +364,12 @@ D-08 的计数、DOC-02 的表格行数。
 统计：成立 11 / 部分成立 7 / 不成立 1 / 无法核实 1。净产出是四条校正：T-02 的平台范围、T-01 的用例数、
 P-03 的探针覆盖（按 D1 裁定）、A-04/A-07/A-08 的计数与现状。
 
-## 9. 修复清单（2026-11-17 核查后）
+### 9. 修复清单（2026-11-17 核查后）
 
 排序依据：后果是否不可逆或静默 → 触发条件是否可达 → 修复成本 → 能否不构建验证。
 “需构建”指必须跑 CTest/构建才能确认修复；其余可先做静态审查与单测设计。
 
-### 9.1 第一批：数据正确性与挂死（P0，需构建）
+#### 9.1 第一批：数据正确性与挂死（P0，需构建）
 
 | ID | 缺陷 | 触发 | 修复动作 | 验证 |
 | --- | --- | --- | --- | --- |
@@ -367,7 +381,7 @@ P-03 的探针覆盖（按 D1 裁定）、A-04/A-07/A-08 的计数与现状。
 | RR-F507 | `find_if` 未判 `end()` | 资源表不同步（当前不可达） | 两处补 `end()` 检查 | 单元测试（构造缺失资源） |
 | RR-F417 | Close 超预算后析构自旋 | Close 首次超预算 | 析构加上限与放弃策略 | 假时钟 close 测试 |
 
-### 9.2 第二批：假保证与死分支（P1，部分需构建）
+#### 9.2 第二批：假保证与死分支（P1，部分需构建）
 
 | ID | 缺陷 | 修复动作 | 验证 |
 | --- | --- | --- | --- |
@@ -384,21 +398,21 @@ P-03 的探针覆盖（按 D1 裁定）、A-04/A-07/A-08 的计数与现状。
 | RR-F437 | 5 个 const 观察函数仅 Debug 断言 | Release 下返回错误/空值，或写入契约 | Release 构建测试 |
 | RR-F438 | `noexcept` + 分配型 `Error` | 契约写明 OOM=terminate，或改不分配错误码 | 契约评审（无需构建） |
 
-### 9.3 第三批：文档与契约（P2）
+#### 9.3 第三批：文档与契约（P2）
 
 DOC-02、DOC-03、DOC-04、DOC-07 已于 2026-11-17 本轮修复（选项表补到 19 项、启动链改为
 `preparePlayerLoadBundle` → `adoptStartupLoad`、R 键改为 `RestartAtZero`、模块边界补
 `cuexis_execution_host` 行与依赖原则）。剩余 P2 项：RR-F104（MATERIAL_SHADER 已修）、
 35 条版本字面量漂移、RR-F510（Judgement seek 无 active 权威入口，待契约决策）。
 
-## 10. 工具链审计（2026-11-17）
+### 10. 工具链审计（2026-11-17）
 
 覆盖 `tools/` 120 个脚本（5 个无上下文子代理）。核心结论：**不能按“目录搬迁”整理**。
 R4 / PD-5 套件的相对路径已进入验收哈希账本（`binding.py:73`、六处 `prepare_*` 的 glob、
 `etw_safety` 封包按文件哈希），搬目录会让历史验收记录永久失配。整理改为
 “**原位冻结 + 修门禁 + 登记报告来源**”。
 
-### 10.1 新发现（已核实）
+#### 10.1 新发现（已核实）
 
 | ID | 位置 | 事实 | 结论 |
 | --- | --- | --- | --- |
@@ -413,7 +427,7 @@ R4 / PD-5 套件的相对路径已进入验收哈希账本（`binding.py:73`、�
 | RR-F519 | `check_docs_{status,target,section}_contract_tests.py` | 三个活门禁的回归测试没有任何 CI/CTest/预推送入口，只能人工运行；其中 section 测试已因 stage-07 迁移漂移出 11 个失败 | 已修（接入预推送 Quick；section 测试路径同步 `completed/stage-07`） |
 | RR-F520 | `generate_author_schema.py:91`；`schemas/candidate/*.schema.json`；`execution-coordination.md:12` | 生成器把 `executionProfile` 写成单个 `const`，但已提交 schema 与合同允许 `gameplay.execution.t4-k4.rpa.v1`；直接重新生成会删掉该 enum（真实漂移，被新加的 `--check` 首次运行抓到） | 已修（生成器改为两项 enum；`--check` 进预推送） |
 
-### 10.2 分类统计
+#### 10.2 分类统计
 
 | 套件 | keep-gate | keep-maintainer | archive | delete-candidate |
 | --- | --- | --- | --- | --- |
@@ -424,11 +438,11 @@ R4 / PD-5 套件的相对路径已进入验收哈希账本（`binding.py:73`、�
 “delete-candidate”为 0 的直接原因：每个脚本都至少被一份证据报告按路径引用；但引用不等于需要，
 真正可退役的是 `compare_read_candidates.py`（RR-F516）。
 
-## 11. S-06 / S-07 独立核查（2026-11-17）
+### 11. S-06 / S-07 独立核查（2026-11-17）
 
 两个无上下文子代理只读核查外部报告的两条架构断言。结论均为**部分成立**。
 
-### 11.1 S-06 “Chart 有五种表示”
+#### 11.1 S-06 “Chart 有五种表示”
 
 - 被点名的 5 个类型全部存在，定义集中在 `engine/chart/include/cuexis/chart/`；`ChartRuntime`
   是编译结果、`CanonicalSemanticChart` 是另一输入族的语义图，职责对得上。
@@ -444,7 +458,7 @@ R4 / PD-5 套件的相对路径已进入验收哈希账本（`binding.py:73`、�
   `behaviorDefinitions` 等字段在 `canonical_semantic_chart.hpp:180-188` 不存在。
 - 处置：新增“Chart 表示与转换点”表（文档）；F401 仍按 §9 P0 修代码。
 
-### 11.2 S-07 “只加不减”
+#### 11.2 S-07 “只加不减”
 
 - 四个对象都还在：`cuexis_render`、Chart v1/v2/v3 wire、Packed（CXPk5 rev1）、旧 loader。
 - “Stage 7 没有删除任何模块”**成立**：模块级 0 删除/合并，反而新增 3 个
@@ -462,67 +476,15 @@ R4 / PD-5 套件的相对路径已进入验收哈希账本（`binding.py:73`、�
 | RR-F521 | `engine/particles/`（仅 `CMakeLists.txt:1-3`） | 空 INTERFACE 库，`engine/CMakeLists.txt` 从不 `add_subdirectory` | 已修（2026-11-17 删除目录；无构建引用） |
 | RR-F522 | `engine/debug/`（87 行） | 唯一链接方是 `cuexis_debug_tests`；`DebugDraw` 生产 0 引用 | 已处置（保留并标 test-only；删除留待 RR-3） |
 
-## 12. 提案复核记录（2026-11-21）
+## 第二部分 候选设计与文档问题（未实施）
 
-本节保留上一轮文档处置的原有结论；本轮收敛与验收状态见 §13。
+本部分登记尚未实施的新设计、候选合同、任务卡与文档描述问题。任何条目都不表示产品已完成、已发布或已获派单授权。
 
-本轮以 `ed1537fd` 为文档修订依据，核对本地 `Cuexis-Stage-7-RR-PR47-审查报告-2026-11-21.md` 与源码、台账和 owner 已接受共识。该外部报告是待验材料；P1–P6 是提案编号，与本册严重度编号无关。按 owner 本轮补设计授权，P1–P5 五项设计缺口均已有待审推荐；下表只记录核对判断，详细设计见链接。
+## 17. 候选设计缺陷（未实施）
 
-| 项 | 结论 | 核对与文档处置 | 证据与详细设计 |
-| --- | --- | --- | --- |
-| P1 | 部分成立 | 作者类型、头链、target 分离与成品装载校验确有边界缺口；“必须至少四个 target”未获证明，仅链接依赖也不足以满足已接受目标。D-06/D-10 已订正为拆出的运行内核在头文件与链接上仅依赖 `core`；类型、构建与安装、装载、当次输出及旧 SDK 迁移已补待审方案。 | [当前头链](../../../../engine/judgement/include/cuexis/judgement/kernel_types.hpp)、[装载校验](../../../../engine/gameplay_packed/src/gameplay_capsule_read.cpp)；[D-21](architecture-design.md#d-21-谱面表现与判定共用拍位换算)、[P1](simplification-proposal.md#p1-数据与-sdk) |
-| P2 | 部分成立 | 原 D-23 的约数示例未冻结整数取整；把约数与 P2 待审 floor 规则判为已接受合同的硬冲突不成立。具体矩形、帧布局与整数用例已补待审方案，不在台账预先选定。 | [D-23](architecture-design.md#d-23-谱面画面比例与宿主尺寸)、[P2](simplification-proposal.md#p2-渲染与兼容迁移) |
-| P3 | 部分成立 | 报告混用 Chart 的定拍位停顿与 Judgement 的拍位区间冻结/终点跳变两种模型；不能直接用旧区间 fixture 推断新模型必然改变同一接受集。新 Chart 的量化退化、碰撞、负拍/零拍边界及 clamp/seek 已补待审方案；旧零拍相邻区间样例保留，单区间跨零沿旧规则。 | [Chart 表示](../../../../engine/chart/include/cuexis/chart/timing_map.hpp)、[Judgement 表示](../../../../engine/judgement/include/cuexis/judgement/timebase_profile.hpp)；[D-21](architecture-design.md#d-21-谱面表现与判定共用拍位换算)、[P3](simplification-proposal.md#p3-时间与会话时钟) |
-| P4 | 部分成立 | 台账确有漂移；owner 已接受目标 `R=Retry`、Reload 另键，F5 仍为推荐。源码 `R=Reload` 是未迁移现状；“Retry 键未定”的判断已不适用。Failed 装载恢复、设备状态矩阵、旧 Rebuild 职责迁移及无音轨与启动交互已补待审方案；Empty 仍只走首次 Load。 | [当前按键接线](../../../../app/player/src/player_assembly.cpp)；[D-13](architecture-design.md)、[P4](simplification-proposal.md#p4-player-与旧控制权) |
-| P5 | 部分成立 | 损失接口、首批目标版本、旧签名同批退出，以及输入到转换模型的损失记录与 Writer 损失合并，均已补待审方案；写入前报告具体已知损失、覆盖由 Studio／第三方决定的原则已获接受，不再列为未决归属。 | [当前 Writer](../../../../engine/chart/include/cuexis/chart/chart_writer.hpp)；[P5](simplification-proposal.md#p5-写回与诊断)、[D-19 保存职责](architecture-design.md#d-19-sdk-示例与宿主试用) |
-| P6 | 部分成立 | plan 漏登 D-23–D-25、D-15 局间保留漏同步成立，本轮作摘要订正并标明历史替代。D-05 仅限定 RR-3；RR-4 独立前置和实施授权边界已明列。历史基线与当前文档依据须分别绑定，不能据相差提交数推断全部源码事实失效。 | [台账与实施状态](plan.md#4-已确认方向与决策台账)、[D-15](architecture-design.md)、[P6](simplification-proposal.md#p6-迁移与验收) |
+本节登记尚未实施的新设计与候选合同缺陷。输入为四组只读诊断（主干计划、三份候选合同、任务卡与验收、索引与交叉引用）与主代理原文复核。缺陷清单见 §17.1，逐条方案见 §17.2；口径与定义冲突（RR-F530–RR-F532）见 §18，方案层与门禁覆盖（RR-F533–RR-F538）见 §19，文档描述层待办见 §20，本轮撤回与核对见 §21。本节各项由主代理读原文核对，owner 复核另行记录。本节不是修复声明，不改变 D-05、合同语义、任务图或实施授权；每条处置须 owner 裁定。
 
-历史研究继续绑定 `aac83e5e`。本轮实跑 `git diff --name-status aac83e5e..ed1537fd -- engine app tests CMakeLists.txt CMakePresets.json cmake/CuexisVersion.cmake vcpkg.json`，列出变化仅为根 CMake、Presets、版本、`engine/debug/CMakeLists.txt`、删除 `engine/particles/CMakeLists.txt`、`tests/pd/CMakeLists.txt` 与 `vcpkg.json`；该范围内 `engine/chart`、`engine/judgement`、`engine/playback` 及 `app/player` 实现源码无差异。这是有限差异核对，未重跑历史证据命令，不证明当前构建、安装面或运行验收通过。
-
-本轮修正状态为文档订正与待审设计补齐，实现未验；详细提案由[附页](architecture-design.md)和[提案](simplification-proposal.md)维护，新增 P1–P6 技术推荐仍待审。本轮统一文档校验状态与结果以 [HANDOFF](../../../HANDOFF.md) 为准。
-
-## 13. 可实施性审查处置（2026-11-21）
-
-输入为本地 `pr47-stage-07-rr-plan-review-2026-11-21.md`（PR #47，`9623efa321fe488e9c6b8549f7059283020c1861`）。报告指出合同缺口及拆分未落地，**成立**；对照落点逐项登记在[可实施性索引](design-readiness.md#缺口追踪)。本轮推荐已具体化为候选合同，拆分已落盘；owner 已接受方向继续由[附页](architecture-design.md)维护。采用和实施证据分别见[计划](plan.md#唯一派单授权入口)、[验收](acceptance.md)。不改写 §12 的历史裁定。
-
-历史研究绑定 `aac83e5e`；`ed1537fd` 是上一轮文档对照。当前设计核对使用 `9623efa3`。本轮静态比较 `git diff --name-status aac83e5e..9623efa3 -- engine app tests CMakeLists.txt CMakePresets.json cmake tools vcpkg.json`，可见根 CMake、候选 preset、版本及清单、debug CMake、`engine/particles/CMakeLists.txt` 删除、PD 测试 CMake、`tools/CMakeLists.txt` 与验证工具变化；其中工具构建登记含 `cuexis_asset_importer`。该范围内 Chart/Judgement/Playback/Player 实现源码无差异。此核对不沿用旧安装、运行或构建证据。实施核验按 [T-01](tasks/T-01.md) 记录实际 SHA、变化对象及需重跑用例。
-
-本轮验证以 [HANDOFF](../../../HANDOFF.md#验证状态) 为准。新增技术实现、安装和运行验收未开始；延期与范围不随设计补齐而变化。
-
-## 14. 自主技术收敛与任务对齐（2026-11-22）
-
-本轮承接 §13 的审查基线，在 owner 已授权自主细化设计的范围内收敛合同、对齐任务并开展独立冷启动审查。已有共识由[架构附页](architecture-design.md)保留；本轮补充的技术细节由代理按该边界形成，不记为 owner 逐字接受，不改变历史审查及受限退出结论。
-
-架构附页已接入运行、时间与判定，画幅、Player 与写回，以及后继成品和 CXC 源包的候选合同。任务与证据要求见[架构附页](architecture-design.md#6-已接受的行为边界与候选合同入口)、[可实施性索引](design-readiness.md)及[验收](acceptance.md)。
-
-三合同与 16 卡已对齐；四组无父上下文首轮审查发现、作者补全及原审查者最终复验记录在[本轮可实施性报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md)。设计判断为**成立**：Huygens、Epicurus、Bacon、Nash 全部成立，无本轮未决合同项。Epicurus 三处 fixture 与原六项规则均闭合；Bacon 定义体 typed span／stable merge 及关联 fixture 阻断关闭。报告转录四组 tool 回执作为耐久记录，并列出每卡首改、测试、正反例和停止条件的冷启动定位证据。
-
-Einstein 独立调度阴性与集成路由核对在其快照内成立；主代理 18 项独立 Fraction/整数算例成立，位宽为 160/128 位。主代理本批链接／标题锚、尾空白与保护段检查成立，证据路径、哈希与限制见报告。主代理已生成 MAP／AGENTS 并完成最终组合文档检查，文档、正式事实检查、16 卡调度、17 项检查器测试及 diff 全部 exit 0；实际日志位于 `out/review/stage-07-rr/T-01/main-final-20261122/`。本次唯一补录已完成，设计收敛及本单元文档工作收尾并停止修改。Einstein 随后 `--capture` 封存最终文件及独立再验，固定证据目录 `out/review/stage-07-rr/T-01/final-20261122/` 的读取口径见报告，不再回写本批文件。本轮生产实现未开始，文档门禁、算术复算和设计审查不替代运行验收或阶段采用；D-05 与 NEXT 采用规则不变。验证路由见 [HANDOFF](../../../HANDOFF.md#验证状态)。
-
-## 15. Astra 执行者复审（2026-11-22）
-
-首次复审时，合并结论为**部分成立**。[当期报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-executor-review.md#结果与证据)列出逐项证据、触发、最小修正和两项撤回记录。以下九项在首次登记时均待收敛。
-
-- P1：AX-01 默认 shared 帧调用；AX-02 裸 Reader 身份参照；AX-03 RPA 作者测试依赖；AX-04 Retry 生产命令前置。
-- P2：AX-05 同 tick 接纳与提交；AX-06 成功窗阶段序号；AX-07 Graph 相机键；AX-08 迁移 CLI 验收配置；AX-09 其他打包工具帮助归属。
-
-### Astra 九项设计修订
-
-AX-01 至 AX-09 均已写入候选合同或任务卡；逐项落点、实施时的正反例及交叉复验回执见[修订报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md)。生产未实施。
-
-AX-05 / RR-F131：首次登记把两个入口的稳定码判作互换；首次复审又误以为同一原 tick 的不同 subject 能在旧 submit 触发 dispatch collision。普通规范化 (`false`) 与旧执行 (`true`) 各有既定首错；后者在路由前已拒绝同原 tick 的不同 subject。用原 tick 900/901 汇到 901 才触发本例的 dispatch collision。保留旧 profile §8 与既有生产输入逻辑，RPA occurrence 分开验收。见 [T-03](tasks/T-03.md#任务级验收)和[纠正依据](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md#结果与证据)。
-
-## 16. 独立 checkout 复审处置（2026-11-22）
-
-owner 转交对 `8599c83a` 的复审，按 IR-01–IR-20 分开核对类型与构建、数据生产、渲染接线、宿主控制、任务与证据。逐项裁定、修订及实际验证见[本轮报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md)。§14/15 保留原时点判断，旧九项通过不代表本轮新发现已经覆盖。
-
-主代理已复现七段卡结构的漏检并补检查器、对应反例及 active/candidate 区分；T-01 改为跨平台哈希和显式采用基线。候选 schema、诊断码与目标尚待任务交付的事实，按创建责任及前置是否完整判断，不把尚未实施本身登记为设计失败。A-N 仍只移交候选设计；本次核实不扩大 D-05 或后继采用范围。
-
-## 17. 设计缺陷与本轮审查登记（2026-11-22）
-
-本轮先做描述优化前的设计层审查，输入为四组只读诊断（主干计划、三份候选合同、任务卡与验收、索引与交叉引用）和主代理原文复核。登记三类：设计缺陷（RR-F523–RR-F529）、口径冲突（RR-F530–RR-F532）、方案层观察与门禁覆盖（RR-F533–RR-F538）。本节不是修复声明，不改变 D-05、合同语义、任务图或实施授权；每条处置须 owner 裁定。严重度按 §0 四级，证据状态以主代理读到的原文为准，owner 复核另记。
-
-### 17.1 设计缺陷
+### 17.1 缺陷清单（RR-F523–RR-F529）
 
 | ID | 严重度 | 位置 | 事实与影响 | 结论 |
 | --- | --- | --- | --- | --- |
@@ -587,7 +549,7 @@ owner 转交对 `8599c83a` 的复审，按 IR-01–IR-20 分开核对类型与�
 - **方案 C**：把它提为 D-26，取得 owner 接受后两页同步。
 - 推荐 C；至少执行 A，否则读者会把已定规则当成未决项。
 
-### 17.3 口径冲突
+## 18. 口径与定义冲突（未实施设计）
 
 | ID | 严重度 | 位置 | 事实与影响 | 结论 |
 | --- | --- | --- | --- | --- |
@@ -597,7 +559,7 @@ owner 转交对 `8599c83a` 的复审，按 IR-01–IR-20 分开核对类型与�
 
 处置建议：RR-F530 与 RR-F531 待 owner 定口径后统一改写并回填本节；RR-F532 由 owner 决定是否按契约变更排入 T-15 并同步应用文档。
 
-### 17.4 方案层观察与门禁覆盖
+## 19. 方案层与门禁覆盖（未实施设计）
 
 | ID | 严重度 | 位置 | 事实与影响 | 结论 |
 | --- | --- | --- | --- | --- |
@@ -608,10 +570,91 @@ owner 转交对 `8599c83a` 的复审，按 IR-01–IR-20 分开核对类型与�
 | RR-F537 | P2 | 三份候选合同的 `cuexis-meta` 与附页行号锚、`docs/DOCUMENTATION_POLICY.md` | 合同 id 三种写法、运行合同缺"更新日期"、附页 11 处代码行号锚，均违反政策条目，而 `check_docs.py` 仍 exit 0；门禁未覆盖政策实际要求 | 成立 |
 | RR-F538 | P2 | `tools/verification/test_check_plan_schedule.py` | 调度检查器经 `tools/check_docs.py` 随预推送与 CI 运行，但其回归测试只在 `tools/README.md` 与 T-01 手工运行，同类 `check_docs_*_contract_tests.py` 均已入门禁 | 成立 |
 
-### 17.5 撤回与核对记录
+## 20. 文档描述层待办（本轮，不新登记 ID）
+
+本轮描述层审查共 58 条：45 条属写法订正（P 类），14 条需 owner 定口径（O 类）。P 类不逐条入册，它们在同一批"单一权威落点"改写里完成，改完以 diff 与门禁回执复核，逐条入册只会淹没问题清单。O 类如下，裁定后回填处置并同步到对应文档；原第 15 项（按键契约）已并入 RR-F532。
+
+| 编号 | 待裁定项 | 位置 | 建议 |
+| --- | --- | --- | --- |
+| O1 | 三份候选合同头部不同形：更新日期、实现状态、标题与 `cuexis-meta` id、authority 各异 | 三份合同、`docs/DOCUMENTATION_POLICY.md` | 统一头部与 id 形状，并裁定运行合同是否改 `owns` |
+| O2 | 状态标注无统一词表：附页 §4 有六种标记、§6 各节十余种写法，D-16–D-20 无状态词 | 附页 §4、§6 | 收敛为现状／owner 已接受／候选／延期四类，每节首句标注 |
+| O3 | 减重选项 R1–R6 与工作项 RR-0–RR-6 同页并排 | 计划 §2、§4 | 选项写"选项 R5"，工作项写"RR-5" |
+| O4 | "采用"与"接受"未定义且混用 | 全册 | 定义：接受＝owner 裁定，采用＝派单时绑定 |
+| O5 | "候选"与"实验"交替指同一构建，preset 名与头命名空间不一致 | 计划、T-04、T-08、合同 | 正文统一"候选构建"，`experimental` 只作标识符 |
+| O6 | "成品"兼指旧 Packed 产物与后继拥有型准备内容 | 附页 §6、合同 | 定为"编译成品"与"准备内容" |
+| O7 | 附页与合同对同一规则各写一遍（Retry/Reload 顺序、量化、计分、Stop 与 ACK、GP-01 fixture） | 附页 §6、三份合同 | 附页留意图与链接，可测规则归合同 |
+| O8 | 计划 §12 变更表无状态列，历史与现行混排 | 计划 §12 | 加"现行／已取代／仅记录"列 |
+| O9 | 可实施性索引 P6.x 与 §5.x 共 11 行重复计划与验收矩阵 | design-readiness | 收成两行，追溯留本文 §13 |
+| O10 | 方案导读把附页结论再压缩一遍，无路标作用 | simplification-proposal | 改成"基线索引"两列，或改名 |
+| O11 | 附页缺 D-06／D-07／D-08 小节，计划 §4 十行只链整页 | 附页 §6、计划 §4 | 补三节并加锚点 |
+| O12 | 调度表无法区分 active 与 candidate 波次 | schedule.md | 与 RR-F533 一并裁定 |
+| O13 | 登记册的处置状态与修复声明口径未定义 | 本文 §0 | 本轮已补阅读索引与新旧分离说明，口径仍待定 |
+| O14 | `NEXT` 既作范围词又作执行主体，任务卡头无范围码栏 | 合同、任务卡 | 卡头加范围码，正文写"T-13（NEXT）" |
+
+## 21. 本轮撤回与核对记录
 
 - D-15 的 Stop 截止"缺输入全序"一项撤回：合同以串行 owner 事务加 `acceptedIngressThrough` 给出真实上界，规则闭合，不足只在附页摘要未写。
 - 27 篇阶段文档的 761 条相对链接与全部标题锚经两例独立脚本核对，0 失效、0 锚点缺失；引用问题仅剩代码行号锚与重复定义。
 - 判分与时钟向量（GP-01、CLK-02／03、P4-05）的算术抽查自洽；D-13 源码基线与 `player_assembly.cpp` 一致。
 - `check_docs.py`、`check_docs_facts.py`、`check_plan_schedule.py` 在本轮工作树上均 exit 0；调度检查器经 `tools/check_docs.py` 接入预推送与 `linux-quality.yml`，先前"未接门禁"的判断有误，已撤回。
 - 本节的候选方案与口径建议均为待审材料，不构成决定、修复声明或派单授权。
+
+## 附录 处置记录（按日期保留，§12–§16）
+
+本附录保留各轮审查的处置记录，按当时时点成立，不改写结论；编号沿用历史顺序，故排在 §17 之后阅读。
+
+### 12. 提案复核记录（2026-11-21）
+
+本节保留上一轮文档处置的原有结论；本轮收敛与验收状态见 §13。
+
+本轮以 `ed1537fd` 为文档修订依据，核对本地 `Cuexis-Stage-7-RR-PR47-审查报告-2026-11-21.md` 与源码、台账和 owner 已接受共识。该外部报告是待验材料；P1–P6 是提案编号，与本册严重度编号无关。按 owner 本轮补设计授权，P1–P5 五项设计缺口均已有待审推荐；下表只记录核对判断，详细设计见链接。
+
+| 项 | 结论 | 核对与文档处置 | 证据与详细设计 |
+| --- | --- | --- | --- |
+| P1 | 部分成立 | 作者类型、头链、target 分离与成品装载校验确有边界缺口；“必须至少四个 target”未获证明，仅链接依赖也不足以满足已接受目标。D-06/D-10 已订正为拆出的运行内核在头文件与链接上仅依赖 `core`；类型、构建与安装、装载、当次输出及旧 SDK 迁移已补待审方案。 | [当前头链](../../../../engine/judgement/include/cuexis/judgement/kernel_types.hpp)、[装载校验](../../../../engine/gameplay_packed/src/gameplay_capsule_read.cpp)；[D-21](architecture-design.md#d-21-谱面表现与判定共用拍位换算)、[P1](simplification-proposal.md#p1-数据与-sdk) |
+| P2 | 部分成立 | 原 D-23 的约数示例未冻结整数取整；把约数与 P2 待审 floor 规则判为已接受合同的硬冲突不成立。具体矩形、帧布局与整数用例已补待审方案，不在台账预先选定。 | [D-23](architecture-design.md#d-23-谱面画面比例与宿主尺寸)、[P2](simplification-proposal.md#p2-渲染与兼容迁移) |
+| P3 | 部分成立 | 报告混用 Chart 的定拍位停顿与 Judgement 的拍位区间冻结/终点跳变两种模型；不能直接用旧区间 fixture 推断新模型必然改变同一接受集。新 Chart 的量化退化、碰撞、负拍/零拍边界及 clamp/seek 已补待审方案；旧零拍相邻区间样例保留，单区间跨零沿旧规则。 | [Chart 表示](../../../../engine/chart/include/cuexis/chart/timing_map.hpp)、[Judgement 表示](../../../../engine/judgement/include/cuexis/judgement/timebase_profile.hpp)；[D-21](architecture-design.md#d-21-谱面表现与判定共用拍位换算)、[P3](simplification-proposal.md#p3-时间与会话时钟) |
+| P4 | 部分成立 | 台账确有漂移；owner 已接受目标 `R=Retry`、Reload 另键，F5 仍为推荐。源码 `R=Reload` 是未迁移现状；“Retry 键未定”的判断已不适用。Failed 装载恢复、设备状态矩阵、旧 Rebuild 职责迁移及无音轨与启动交互已补待审方案；Empty 仍只走首次 Load。 | [当前按键接线](../../../../app/player/src/player_assembly.cpp)；[D-13](architecture-design.md)、[P4](simplification-proposal.md#p4-player-与旧控制权) |
+| P5 | 部分成立 | 损失接口、首批目标版本、旧签名同批退出，以及输入到转换模型的损失记录与 Writer 损失合并，均已补待审方案；写入前报告具体已知损失、覆盖由 Studio／第三方决定的原则已获接受，不再列为未决归属。 | [当前 Writer](../../../../engine/chart/include/cuexis/chart/chart_writer.hpp)；[P5](simplification-proposal.md#p5-写回与诊断)、[D-19 保存职责](architecture-design.md#d-19-sdk-示例与宿主试用) |
+| P6 | 部分成立 | plan 漏登 D-23–D-25、D-15 局间保留漏同步成立，本轮作摘要订正并标明历史替代。D-05 仅限定 RR-3；RR-4 独立前置和实施授权边界已明列。历史基线与当前文档依据须分别绑定，不能据相差提交数推断全部源码事实失效。 | [台账与实施状态](plan.md#4-已确认方向与决策台账)、[D-15](architecture-design.md)、[P6](simplification-proposal.md#p6-迁移与验收) |
+
+历史研究继续绑定 `aac83e5e`。本轮实跑 `git diff --name-status aac83e5e..ed1537fd -- engine app tests CMakeLists.txt CMakePresets.json cmake/CuexisVersion.cmake vcpkg.json`，列出变化仅为根 CMake、Presets、版本、`engine/debug/CMakeLists.txt`、删除 `engine/particles/CMakeLists.txt`、`tests/pd/CMakeLists.txt` 与 `vcpkg.json`；该范围内 `engine/chart`、`engine/judgement`、`engine/playback` 及 `app/player` 实现源码无差异。这是有限差异核对，未重跑历史证据命令，不证明当前构建、安装面或运行验收通过。
+
+本轮修正状态为文档订正与待审设计补齐，实现未验；详细提案由[附页](architecture-design.md)和[提案](simplification-proposal.md)维护，新增 P1–P6 技术推荐仍待审。本轮统一文档校验状态与结果以 [HANDOFF](../../../HANDOFF.md) 为准。
+
+### 13. 可实施性审查处置（2026-11-21）
+
+输入为本地 `pr47-stage-07-rr-plan-review-2026-11-21.md`（PR #47，`9623efa321fe488e9c6b8549f7059283020c1861`）。报告指出合同缺口及拆分未落地，**成立**；对照落点逐项登记在[可实施性索引](design-readiness.md#缺口追踪)。本轮推荐已具体化为候选合同，拆分已落盘；owner 已接受方向继续由[附页](architecture-design.md)维护。采用和实施证据分别见[计划](plan.md#唯一派单授权入口)、[验收](acceptance.md)。不改写 §12 的历史裁定。
+
+历史研究绑定 `aac83e5e`；`ed1537fd` 是上一轮文档对照。当前设计核对使用 `9623efa3`。本轮静态比较 `git diff --name-status aac83e5e..9623efa3 -- engine app tests CMakeLists.txt CMakePresets.json cmake tools vcpkg.json`，可见根 CMake、候选 preset、版本及清单、debug CMake、`engine/particles/CMakeLists.txt` 删除、PD 测试 CMake、`tools/CMakeLists.txt` 与验证工具变化；其中工具构建登记含 `cuexis_asset_importer`。该范围内 Chart/Judgement/Playback/Player 实现源码无差异。此核对不沿用旧安装、运行或构建证据。实施核验按 [T-01](tasks/T-01.md) 记录实际 SHA、变化对象及需重跑用例。
+
+本轮验证以 [HANDOFF](../../../HANDOFF.md#验证状态) 为准。新增技术实现、安装和运行验收未开始；延期与范围不随设计补齐而变化。
+
+### 14. 自主技术收敛与任务对齐（2026-11-22）
+
+本轮承接 §13 的审查基线，在 owner 已授权自主细化设计的范围内收敛合同、对齐任务并开展独立冷启动审查。已有共识由[架构附页](architecture-design.md)保留；本轮补充的技术细节由代理按该边界形成，不记为 owner 逐字接受，不改变历史审查及受限退出结论。
+
+架构附页已接入运行、时间与判定，画幅、Player 与写回，以及后继成品和 CXC 源包的候选合同。任务与证据要求见[架构附页](architecture-design.md#6-已接受的行为边界与候选合同入口)、[可实施性索引](design-readiness.md)及[验收](acceptance.md)。
+
+三合同与 16 卡已对齐；四组无父上下文首轮审查发现、作者补全及原审查者最终复验记录在[本轮可实施性报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md)。设计判断为**成立**：Huygens、Epicurus、Bacon、Nash 全部成立，无本轮未决合同项。Epicurus 三处 fixture 与原六项规则均闭合；Bacon 定义体 typed span／stable merge 及关联 fixture 阻断关闭。报告转录四组 tool 回执作为耐久记录，并列出每卡首改、测试、正反例和停止条件的冷启动定位证据。
+
+Einstein 独立调度阴性与集成路由核对在其快照内成立；主代理 18 项独立 Fraction/整数算例成立，位宽为 160/128 位。主代理本批链接／标题锚、尾空白与保护段检查成立，证据路径、哈希与限制见报告。主代理已生成 MAP／AGENTS 并完成最终组合文档检查，文档、正式事实检查、16 卡调度、17 项检查器测试及 diff 全部 exit 0；实际日志位于 `out/review/stage-07-rr/T-01/main-final-20261122/`。本次唯一补录已完成，设计收敛及本单元文档工作收尾并停止修改。Einstein 随后 `--capture` 封存最终文件及独立再验，固定证据目录 `out/review/stage-07-rr/T-01/final-20261122/` 的读取口径见报告，不再回写本批文件。本轮生产实现未开始，文档门禁、算术复算和设计审查不替代运行验收或阶段采用；D-05 与 NEXT 采用规则不变。验证路由见 [HANDOFF](../../../HANDOFF.md#验证状态)。
+
+### 15. Astra 执行者复审（2026-11-22）
+
+首次复审时，合并结论为**部分成立**。[当期报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-executor-review.md#结果与证据)列出逐项证据、触发、最小修正和两项撤回记录。以下九项在首次登记时均待收敛。
+
+- P1：AX-01 默认 shared 帧调用；AX-02 裸 Reader 身份参照；AX-03 RPA 作者测试依赖；AX-04 Retry 生产命令前置。
+- P2：AX-05 同 tick 接纳与提交；AX-06 成功窗阶段序号；AX-07 Graph 相机键；AX-08 迁移 CLI 验收配置；AX-09 其他打包工具帮助归属。
+
+#### Astra 九项设计修订
+
+AX-01 至 AX-09 均已写入候选合同或任务卡；逐项落点、实施时的正反例及交叉复验回执见[修订报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md)。生产未实施。
+
+AX-05 / RR-F131：首次登记把两个入口的稳定码判作互换；首次复审又误以为同一原 tick 的不同 subject 能在旧 submit 触发 dispatch collision。普通规范化 (`false`) 与旧执行 (`true`) 各有既定首错；后者在路由前已拒绝同原 tick 的不同 subject。用原 tick 900/901 汇到 901 才触发本例的 dispatch collision。保留旧 profile §8 与既有生产输入逻辑，RPA occurrence 分开验收。见 [T-03](tasks/T-03.md#任务级验收)和[纠正依据](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md#结果与证据)。
+
+### 16. 独立 checkout 复审处置（2026-11-22）
+
+owner 转交对 `8599c83a` 的复审，按 IR-01–IR-20 分开核对类型与构建、数据生产、渲染接线、宿主控制、任务与证据。逐项裁定、修订及实际验证见[本轮报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md)。§14/15 保留原时点判断，旧九项通过不代表本轮新发现已经覆盖。
+
+主代理已复现七段卡结构的漏检并补检查器、对应反例及 active/candidate 区分；T-01 改为跨平台哈希和显式采用基线。候选 schema、诊断码与目标尚待任务交付的事实，按创建责任及前置是否完整判断，不把尚未实施本身登记为设计失败。A-N 仍只移交候选设计；本次核实不扩大 D-05 或后继采用范围。

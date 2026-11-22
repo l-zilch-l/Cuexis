@@ -158,7 +158,7 @@ authority: index
 | [stage_plans/active/stage-07-rr/README.md](stage_plans/active/stage-07-rr/README.md) | active | index | Stage 7-RR：Review and Refactoring After Stage-7 |
 | [stage_plans/active/stage-07-rr/acceptance.md](stage_plans/active/stage-07-rr/acceptance.md) | active | owns | Stage 7-RR 阶段验收 |
 | [stage_plans/active/stage-07-rr/architecture-design.md](stage_plans/active/stage-07-rr/architecture-design.md) | active | none | Stage 7-RR 架构设计附页：Player 实时执行与普通播放收敛 |
-| [stage_plans/active/stage-07-rr/findings.md](stage_plans/active/stage-07-rr/findings.md) | active | owns | Stage 7-RR 发现登记册（2026-11-17） |
+| [stage_plans/active/stage-07-rr/findings.md](stage_plans/active/stage-07-rr/findings.md) | active | owns | Stage 7-RR 发现登记册 |
 | [stage_plans/active/stage-07-rr/plan.md](stage_plans/active/stage-07-rr/plan.md) | active | owns | Stage 7-RR Plan: Review and Refactoring After Stage-7 |
 | [stage_plans/active/stage-07-rr/schedule.md](stage_plans/active/stage-07-rr/schedule.md) | active | owns | Stage 7-RR 调度 |
 | [stage_plans/active/stage-07-rr/tasks/T-01.md](stage_plans/active/stage-07-rr/tasks/T-01.md) | active | owns | T-01 基线、派单包与冷启动 |
