@@ -36,11 +36,11 @@ authority: index
 | 验收 | 可复现正反输入、期望及证据位置 | 任务卡的任务级验收与[阶段矩阵](acceptance.md) |
 | 任务化 | ID、唯一调度、写域、步骤与证据可冷启动 | [任务索引](plan.md#任务索引)、[调度](schedule.md) |
 
-下表索引技术合同与对应的验收向量。实施采用见计划，实施证据与逐组发布迁移见验收。
+「缺口追踪」一节的表列出技术合同与对应的验收向量。实施采用见计划，实施证据与逐组发布迁移见验收。
 
-Huygens、Nash、Epicurus、Bacon 对 R1、R5 帧交付及 `NEXT` 合同的四组复验均成立；当期结论见[首轮设计报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md)。后续 Astra 九项的合同、责任卡和验收见[修订与交叉复验](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md#结果与证据)。A-01 的阶段 owner 接受和产品运行另按[验收](acceptance.md)登记。
+Huygens、Nash、Epicurus、Bacon 分别复验 R1、R5 帧交付与 `NEXT` 合同，四组结论均成立；当期结论见[首轮设计报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md)。后续 Astra 九项的合同、责任卡和验收见[修订与交叉复验](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md#结果与证据)。A-01 的阶段 owner 接受和产品运行另按[验收](acceptance.md)登记。
 
-`8599c83a` 的独立 checkout 复审暴露的新缺口及处置见[当前报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md)，旧九项复验仅覆盖当次修订。四组审查的 `out/review/stage-07-rr/T-01/final-20261122/` 等路径是原工作区证据，独立 checkout 未取得时不得依此宣布本次门禁通过；按 T-01 重验当前修订。本轮必需回执与短检查输出随报告交付。
+独立 checkout 于 `8599c83a` 复审时暴露的新缺口与处置见[本轮复审处置](../../../stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md)，旧九项复验仅覆盖当次修订。四组审查的 `out/review/stage-07-rr/T-01/final-20261122/` 等路径是原工作区证据，独立 checkout 未取得时不得依此宣布本次门禁通过；按 T-01 重验当前修订。本轮必需回执与短检查输出随报告交付。
 
 ## 缺口追踪
 
@@ -49,7 +49,7 @@ Player 与工具外部行为按 [D-16 已接受共识](architecture-design.md#�
 | 审查编号 | 维度及唯一设计落点 | 任务 | 验收证据 |
 | --- | --- | --- | --- |
 | P1.1 | 构建：[目标、头、ALLOWED 与安装](contracts/runtime-timing.md#构建头与安装) | [T-04](tasks/T-04.md) | 源表、目标图、消费者头链 |
-| P1.2 | 构建：[Playback 源表、prepare hook 与 CXC 解码隔离](contracts/runtime-timing.md#r1八个-playback-tu) | [T-04](tasks/T-04.md) | 默认/实验实际闭包、通用整包校验、禁入对照 |
+| P1.2 | 构建：[Playback 源表、prepare hook 与 CXC 解码隔离](contracts/runtime-timing.md#r1八个-playback-tu) | [T-04](tasks/T-04.md) | 默认/候选实际闭包、通用整包校验、禁入对照 |
 | P1.3 | 接口：[Prepared 构造与归属](contracts/runtime-timing.md#prepared-与当次推进) | [T-10](tasks/T-10.md) | runtime-only 消费与构造隔离 |
 | P1.4 | 接口：[时间正反查与类型](contracts/runtime-timing.md#谱面时间-api) | [T-12](tasks/T-12.md) | 正反查与溢出向量 |
 | P1.5 | 接口：[当次推进及字典](contracts/runtime-timing.md#prepared-与当次推进) | [T-10](tasks/T-10.md) | 空结果、Miss、过期身份、故障前缀 |

@@ -24,7 +24,7 @@ authority: summarizes
 
 ### P3 时间与会话时钟
 
-新作者编译共享离散边界，旧规则和旧成品继续兼容，会话单独处理设备校正。见[时间合同](contracts/runtime-timing.md#谱面时间-api)、[格式](tasks/T-11.md)、[编译](tasks/T-12.md)、[成品与源包合同](contracts/prepared-artifact.md)、[成品任务](tasks/T-13.md)和[会话](tasks/T-14.md)。
+新作者编译共享离散边界，旧规则和旧成品继续兼容；设备校正在 Playback 的会话换算中处理。见[时间合同](contracts/runtime-timing.md#谱面时间-api)、[格式](tasks/T-11.md)、[编译](tasks/T-12.md)、[成品与源包合同](contracts/prepared-artifact.md)、[成品任务](tasks/T-13.md)和[会话](tasks/T-14.md)。
 
 ### P4 Player 与旧控制权
 
@@ -36,4 +36,4 @@ authority: summarizes
 
 ### P6 迁移与验收
 
-按[任务索引](plan.md#任务索引)、[调度](schedule.md)和[阶段验收](acceptance.md)交付；共享登记册与生成物按[派单职责](plan.md#7-分批细化)汇合。保存实际基线和消费者证据，旧 API 逐组兼容新增，至少有一个实际发布的过渡版本且替代稳定后才裁定该组退役，不绑定统一 SDK 版本。`NEXT` 合同完整移交，实施另行采用；RR-3、独立 RR-4 和相邻阶段范围按[计划](plan.md#唯一派单授权入口)。
+按[任务索引](plan.md#任务索引)、[调度](schedule.md)和[阶段验收](acceptance.md)交付；共享登记册与生成物的汇合按[§7 分批细化](plan.md#7-分批细化)执行。保存实际基线与消费者证据。旧 API 逐组兼容新增，每组至少有一个实际发布的过渡版本，替代稳定后才裁定该组退役，不绑定统一 SDK 版本。`NEXT` 合同完整移交，实施另行采用；RR-3、独立 RR-4 和相邻阶段范围按[计划](plan.md#唯一派单授权入口)。
