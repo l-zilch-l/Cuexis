@@ -51,7 +51,7 @@ auto compilePreparedArtifact(std::string_view chartJson, const CompiledSourceCon
 
 Reader 只做有界解码、typed closure 检查、`TimingMap::fromCompiled`、索引、dispatch/timer 与 reverse reachability；安全运行表 prepare 可用，禁止调用 `ChartV4Resolver::resolve`、`ChartCompiler::compile`、`AnimationCompiler::compile`、`compilePattern`、grace resolution、`assembleGameplay`、`prepareResolvedGameplay` 或 `semanticDiff`。现有 `AnimationCompiler` 的计数与 index 填充可抽为 resolved 行的普通检查函数。成品不存源 JSON、CXT 文本、EnTT 对象、宿主覆写、输入、结算、历史或逐帧轨迹。失败不替换既有 active。
 
-`cuexis::gameplay_packed_read` 的允许边为 `cuexis::core`、`cuexis::judgement`、`cuexis::timing`、`cuexis::chart`，另 `PRIVATE cuexis::json_support` 用于 Graph SAX。沿现有 Chart 目标及共享 build-only 产物头，不拆 Chart。Reader 不能调用 Chart/Animation 作者 resolver。Writer 共用 Reader 的有界 visitors；源 adapter 与旧 codec 各走独立路径。
+`cuexis::gameplay_packed_read` 的允许边为 `cuexis::core`、`cuexis::judgement`、`cuexis::timing`、`cuexis::chart`，另 `PRIVATE cuexis::json_support` 用于 Graph SAX。沿现有 Chart 目标及共享 build-only 产物头，不拆 Chart；作者 resolver 的调用禁区见上段。Writer 共用 Reader 的有界 visitors；源 adapter 与旧 codec 各走独立路径。
 
 **头文件与链接隔离。** T-10 先按[运行纯值头](runtime-timing.md#judgement-运行与旧作者头链)把四个 `*IdentityDeclaration[s]`（Engine、Ruleset、Session、Prepared）原样定义在 `engine/judgement/include/cuexis/judgement/prepared_identity.hpp`，把 `StableDeclarationId` 原样定义在运行 `phase_types.hpp`。旧作者头仅转引；`prepared_gameplay_records.hpp` 直接包含两头，纯 Core/Judgement 消费者可构造完整 `CompiledGameplayView`，不需要内部根或作者头。`SessionConfiguration` 继续按值拥有身份声明，prepare 复制到不可变 storage；当前不提前安装 Judgement，D-19 晋升时这两头随运行闭包安装。
 

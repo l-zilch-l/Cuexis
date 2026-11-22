@@ -10,7 +10,7 @@ status: active
 authority: owns
 -->
 
-当前状态以 [CURRENT_STATUS](CURRENT_STATUS.md) 为准；阶段范围、设计记录、提案与发现分别见下列文档。
+当前状态以 [CURRENT_STATUS](CURRENT_STATUS.md) 为准；阶段范围、发现与可实施性索引分别见下列文档，设计记录与提案见[下一步](#下一步)。
 
 ## 当前阶段与工作项
 
@@ -65,6 +65,6 @@ stage_plans/active/<stage>/
 - [设计缺陷处置](stage_plans/active/stage-07-rr/findings.md)：RR-F523–RR-F529 按最小改法落地，含 A-04 阶段口径、F419 排入 T-06、F401 归 T-16、F420 待裁与无音轨终点订正；三处标注待 owner 追认（2026-11-22）。
 - [旧问题承接](stage_plans/active/stage-07-rr/findings.md)：在 T-04/06/12/13/15/16 点名 14 条旧发现由新设计承接，并关闭六条已修未标的登记（2026-11-22）。
 - [T-17 单独立项](stage_plans/active/stage-07-rr/tasks/T-17.md)：会话层 P1 正确性（RR-F501/F508/F509）单独成卡，可拆两段派子代理；未启动实施（2026-11-22）。
-- [Seek 路由订正](stage_plans/active/stage-07-rr/findings.md)：三份 historical 文档与 ADR 0043 的指针改指 candidate 权威，F510 改述为候选能力、无 active 合同（2026-11-22）。
+- [Seek 路由订正](stage_plans/active/stage-07-rr/findings.md)：三份历史文档与 ADR 0043 的指针改指 candidate 权威，F510 改述为候选能力、无 active 合同（2026-11-22）。
 - [F420 口径](stage_plans/active/stage-07-rr/findings.md)：按 D 并入新设计，观察查询如实报告帧观测缺失并标明计数是否精确，判据随 T-14 收敛（2026-11-22）。
 - [旧问题承接](stage_plans/active/stage-07-rr/findings.md)：§22 把仍开放的问题按承接方归组，T-09 按该表写具名延后（2026-11-22）。
