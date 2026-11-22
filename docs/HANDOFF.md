@@ -18,7 +18,7 @@ authority: owns
 
 ## 当前任务
 
-从[独立 checkout 复审处置](stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md)接续 [T-01：基线、派单包与冷启动](stage_plans/active/stage-07-rr/tasks/T-01.md)，按[现行实施范围](stage_plans/active/stage-07-rr/plan.md#唯一派单授权入口)执行。
+下一次对话仅做 Stage 7-RR 文档描述优化，范围与步骤见[下一步](#下一步)。
 
 ## Plan 文档拆分（长期约定）
 
@@ -46,12 +46,14 @@ stage_plans/active/<stage>/
 
 ## 下一步
 
-1. 按[本次启动授权](stage_plans/active/stage-07-rr/plan.md#12-交接与变更控制)执行 [T-01](stage_plans/active/stage-07-rr/tasks/T-01.md#步骤)：核验当前提交和[本轮修订及证据](stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md#执行记录)，绑定实施基线与合同修订，登记采用。
-2. T-01 验收后按[调度表](stage_plans/active/stage-07-rr/schedule.md)派发现行 T-01–T-09 图中的后续任务；各卡按[阶段验收](stage_plans/active/stage-07-rr/acceptance.md)取证。
+1. 优先核对并优化[计划](stage_plans/active/stage-07-rr/plan.md)、[架构设计](stage_plans/active/stage-07-rr/architecture-design.md)、[简化提案](stage_plans/active/stage-07-rr/simplification-proposal.md)、[可实施性索引](stage_plans/active/stage-07-rr/design-readiness.md)，再沿相关链接核对合同、任务卡与[阶段验收](stage_plans/active/stage-07-rr/acceptance.md)。
+2. 优化语言清晰度、术语一致性、重复内容与引用，明确现状、已接受设计和候选状态，保持既定设计语义；实质冲突记入[登记册](stage_plans/active/stage-07-rr/findings.md)，交 owner 裁定。
+
+本次交接仅安排文档优化；[T-01](stage_plans/active/stage-07-rr/tasks/T-01.md)及后续实施须 owner 后续明确启动，旧[计划启动登记](stage_plans/active/stage-07-rr/plan.md#12-交接与变更控制)不代表下一次对话直接开工。
 
 ## 阻塞与待决
 
-[T-01 停止条件](stage_plans/active/stage-07-rr/tasks/T-01.md#停止条件)、[阶段停止条件](stage_plans/active/stage-07-rr/plan.md#10-回滚阻塞与停止条件)、[后继采用边界](stage_plans/active/stage-07-rr/plan.md#唯一派单授权入口)。
+[实质冲突登记](stage_plans/active/stage-07-rr/findings.md)、[阶段停止条件](stage_plans/active/stage-07-rr/plan.md#10-回滚阻塞与停止条件)、[后继采用边界](stage_plans/active/stage-07-rr/plan.md#唯一派单授权入口)。
 
 ## 验证状态
 
