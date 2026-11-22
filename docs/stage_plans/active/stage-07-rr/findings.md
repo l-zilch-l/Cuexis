@@ -243,7 +243,7 @@ authority: owns
 | RR-F417 | `app/player/src/execution_host.cpp:71-78` | 析构排空是无终止条件的重试循环 | 假保证 |
 | RR-F418 | `app/player/src/player_app.cpp:177-180` | `--frame-stats` 在执行线被静默忽略 | 半实现 |
 | RR-F419 | `app/player/src/player_control_frame_loop.cpp:374,384` | 首帧 `render_us` 恒 0（钩子早于赋值） | 假实现 |
-| RR-F420 | `app/execution_host/frame_observation.cpp:240` | `exactLossCount` 是字面量 `false` | 假实现 |
+| RR-F420 | `app/execution_host/frame_observation.cpp:240` | `exactLossCount` 是字面量 `false`；owner 2026-11-22 定义 exact 指精确判定结果，`lossEvents` 不是独立精确计数，恒 false 属保守欠报（与 PD-4 观察合同同口径），字段语义尚无合同文本 | 不成立（保守欠报，非假实现；文档化归 T-06） |
 | RR-F421 | `engine/render_opengl/src/open_gl_presentation_frame.cpp:226-241` | `capabilities()` 非主线程返回默认零能力集 | 假保证 |
 | RR-F422 | `engine/shader/src/shader_pipeline_cache.cpp:32-39` | “worker 线程编译”实为 `thread` + 立即 `join()` | 假保证 |
 | RR-F423 | `docs/api/frames-digests-and-timelines.md:62` | 文档写三参 digest，公开 API 两参 | 假保证（已修） |
@@ -555,7 +555,7 @@ R4 / PD-5 套件的相对路径已进入验收哈希账本（`binding.py:73`、�
 
 | ID | 采用改法 | 落点 | 状态 |
 | --- | --- | --- | --- |
-| RR-F523 | RR-F419 排入 T-06 验收（首帧非零、后续帧非负，并说明 0 的含义变化）；RR-F401 由 T-16 承接并在 T-09 记具名延后；RR-F420 登记待裁 | `tasks/T-06`、`T-16`、`T-09` | F419 已排，F401 待 T-16 采用，F420 待 owner 定判据 |
+| RR-F523 | RR-F419 排入 T-06 验收（首帧非零、后续帧非负，并说明 0 的含义变化）；RR-F401 由 T-16 承接并在 T-09 记具名延后；RR-F420 按 owner 定义（exact＝精确判定结果）作保守欠报 | `tasks/T-06`、`T-16`、`T-09` | F419 已排，F401 待 T-16 采用，F420 已定 |
 | RR-F524 | A-04 限定为兼容新增、迁移计划与目标版本；退役核验随稳定 C ABI 归 Stage 14 | `acceptance.md` 发布与迁移门禁 | 已落地 |
 | RR-F525 | 附页 D-09 补等待态无自动超时，点名 D-12、D-13 与 P4-03；呈现合同 P4-03 加观测窗口说明 | `architecture-design.md` D-09、`render-player-writer.md` P4-03 | 待 owner 复核 |
 | RR-F526 | 误差定义处回指 Playback 时钟的 observationTick 换算 | `runtime-timing.md` 事件与成绩 | 已落地 |
