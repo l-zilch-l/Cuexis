@@ -2,7 +2,7 @@
 
 状态：current
 
-更新日期：2026-11-17
+更新日期：2026-11-23
 
 <!-- cuexis-meta
 id: INDEX-stage_plans
@@ -37,11 +37,11 @@ reviews
 
 ```text
 chart-format-update-for-v5
-  Chart v5 跨阶段总工作包，负责维护 Foundation、Stage 6、Stage 7A 和 Stage 8 的总体设计与交接
+  Chart v5 跨阶段总工作包，维护 Foundation 至 RR、7.5 和 Stage 8 的设计与交接
 
 stage-07-rr
   独立 Stage 7-RR：Review and Refactoring After Stage-7，Stage 7 与 Stage 7.5 之间的
-  复核发现登记、合同漂移修正与重构批次
+  复核修正、架构减重、完整结构清理及 Gameplay v3 实验实现与验证
 
 stage-07-5
   独立 Stage 7.5：Gameplay Evolution，能力演进、局部重构及性能稳定
@@ -99,12 +99,12 @@ CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块�
 
 - **[当前]** [Stage 7-RR：Review and Refactoring After Stage-7](active/stage-07-rr/plan.md)：位于 Stage 7 与
   Stage 7.5 之间的独立复核与重构阶段（[目录入口](active/stage-07-rr/README.md)），登记 2026-11-17
-  全项目复核发现（[发现登记册](active/stage-07-rr/findings.md)），按 RR-0–RR-6 处置文档漂移、
-  格式互操作、诊断一致性与源码拆分预算；不承接 Stage 7.5 的能力演进与性能整改。
+  全项目复核发现（[发现登记册](active/stage-07-rr/findings.md)）；按当前 T-01–T-17 完成合同与正确性修正、
+  会话与时间改造、完整结构清理和 v3 实验闭环。后续阶段消费实际验收成果。
 - **[未启动]** [Stage 7.5：Gameplay Evolution](active/stage-07-5/plan.md)：独立高级输入／判定能力、局部重构和性能稳定；
-  保留 S7B/S7C 批次追溯 ID，以受限 Stage 7 交接入场，独立验收后交给 Stage 8。
+  保留 S7B/S7C 批次追溯 ID，以 RR 完成并接受后的实现入场，处理剩余及新增成本，独立验收后交给 Stage 8。
 - [Stage 8](future/stage-08/plan.md)：Chart v5 正式语义、CXT v2、Packed Chart 和 CXC 发行收敛；
-  依赖 Stage 7 受限关闭交接后，独立 Stage 7.5 的完成与 owner 接受，发行选入另按明确矩阵。
+  依赖 RR、Stage 7.5 依次完成并接受；复用 RR 实现，将 Chart v5＋Gameplay v3 收敛为正式主线、默认 Writer 与正式成品；保留已承诺旧内容兼容，实际发行仍须验收。
 - [Stage 9](future/stage-09/plan.md)：Presentation Foundation 与 Chart v6 / Model v1。
 - [Stage 10](future/stage-10/plan.md)：Studio 和完整创作/打包工作流。
 - [Stage 11](future/stage-11/plan.md)：Chart v7 单轴几何表现与 shader.json 声明接口。
@@ -157,8 +157,8 @@ CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块�
 ## 格式专题
 
 - [Chart v5 format plan](active/chart-format-update-for-v5/plan.md)：保留 active 的跨阶段总工作包，正式发行门禁归 Stage 8；
-  Foundation 及其交接加固关闭后为 Stage 6 提供 candidate Core/Packed path，在 Stage 7A 判定合同冻结
-  后完成正式发行收敛。
+  Foundation 与 Stage 6 提供早期候选基线，RR 承担已纳入的 v3 成品及 CXT2 Animation 实验实现；
+  RR、Stage 7.5 完成并接受后由 Stage 8 完成正式发行收敛。
 - [Chart v6 / Model v1](historical-inputs/chart-format-update-for-v6/plan.md)：历史输入，已并入 Stage 9。
 - [Chart v7](historical-inputs/chart-format-update-for-v7/plan.md)：历史输入，已并入 Stage 11。
 - [Chart v8](historical-inputs/chart-format-update-for-v8/plan.md)：历史输入，已并入 Stage 13。

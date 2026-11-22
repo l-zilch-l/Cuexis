@@ -2,7 +2,7 @@
 
 状态：candidate
 
-更新日期：2026-11-22
+更新日期：2026-11-23
 
 实现状态：未实施。
 
@@ -12,7 +12,7 @@ status: candidate
 authority: owns
 -->
 
-代码核对基线：`9623efa3`。本页冻结 P2/P4/P5 的单一技术推荐，供审阅与拆卡；实施、发布和删除分别过门禁。[计划 D-05](../plan.md#4-已确认方向与决策台账) 的 RR-3 只含 R1/R5/R6。本页 P2 的旧内容布局、桥接和替代探针归 R5；新 Chart 作者数据、候选安装与保护符号退出分别过格式、SDK 与版本门禁。P4 和 P5 单列实施授权。已定行为见[架构设计附页](../architecture-design.md)。
+初始代码核对基线：`9623efa3`；当前设计包含后续已接受修订。本页给定 P2/P4/P5 的实施规则，相关任务已按[计划采用入口](../plan.md#唯一派单授权入口)纳入本轮统一安排，不再单列 P4/P5 范围审批。旧内容布局、桥接和替代探针归 R5，其余作者数据、会话、Player 与 Writer 按对应任务验收；生产启动、正式发布和保护符号退出各依原门禁执行。`candidate` 表示未实施、未发布，已定行为见[架构设计附页](../architecture-design.md)。
 
 ## P2：同提交布局与呈现
 
@@ -179,6 +179,16 @@ Player assembly 在 `player_app.cpp` / `player_execution.cpp` 完成 backend hol
 
 R5-10 的非单位 Q＋旋转对照：作者 21:9、host `721×1280`、90°，content=`(86,0,548,1280)`，`Qxx=960/959,Qyy=1`；基础 P 的作者 NDC `(1/4,-1/2)` 映到 content 像素 `(958/7,800)`、host 像素 `(1560/7,800)`。以完整最终矩阵反投影还原同一世界点/射线，误差 ≤1e−6；先逆 Q/R 再逆最终矩阵的对照必须偏离。T-05 用纯值 helper 算，T-06 从实际快照取同一 Pout 并检查 renderer 消费及 retained 重排，不能只验各自重建的公式。
 
+### ResourceScope 实现去重（F207）
+
+2026-11-23 owner 已选择本轮完成此项，尚未实施，由 T-06 承接。依据 [资源生命周期 ADR](../../../../adr/0013-resource-handle-lease-and-scope.md)与 [Runtime 资源准备](../../../../architecture/RUNTIME_SESSION.md#preparedruntimesession)，合并 `resource_scope.cpp::request` 的 Mesh、Material、Texture、AudioSource、Shader 五类 typed load/登记和 fallback 重复实现；现有按 `(AssetType, AssetId)` 的资源闭包去重已经存在，不另建缓存或所有权框架。
+
+在该 TU 内复用最小 typed helper/局部模板，类型分派只选择既有 Tag；加载结果到 Handle、Entry 的登记及 fallback 诊断各共享一份流程。保留现有 Entry/Lease variant、索引、依赖遍历、公开薄包装和错误边界，不加虚接口、异步加载、公共 API 或新错误码，不将模板抽象扩散到公共头。
+
+行为按原路径对照：同键已 Loaded 复用现有 lease；缓存 fallback 对 Required 仍失败、Optional 仍跳过、Fallback 才可复用；依赖仍按 Required 获取，不能借旧 fallback 满足必需依赖。依赖失败先回滚到本次请求前的 scope 大小，再按根请求策略处理，保留此前已持有项。原 cycle/depth/type 检查次序、诊断 severity/code/context/cause 及排序、manager/owner 守卫、移动/clear/释放与 generation 规则保持；不新增异常或零分配保证。Portable Presentation 的严格准备仍拒绝 fallback，不因共用 helper 放宽。
+
+验收复用 `cuexis_assets_tests`：五种类型逐一覆盖成功与 Required/Optional/Fallback 失败处置（含 fallback 自身获取失败）；混合依赖共享同一键不重复持有，部分依赖失败后无新增残留、原有 lease 仍有效。缓存 fallback 的三种后续策略、作为必需依赖的拒绝、cycle/depth/type 错误、move/clear 及真实释放后旧 handle 失效均与卡前同输入结果对照。记录 handle/lease 数、scope 内容及完整诊断，而非仅比较函数返回成功；五类均走共用实现才能完成 F207，不以只抽取外层包装代替去重。
+
 ## P4：Player 生命周期
 
 基线：`player_assembly.cpp` 的 R 是 Reload，`player_command.hpp` 无 Retry；`player_app.cpp` 无源回退默认工程；`player_control_transaction.cpp` 的 Rebuild 会重读及处理音频。现有 `ExecutionHost::pause` 不合并并发暂停。以下闭合 D-07、D-13、D-15、D-16、D-22 与 D-23 的接线，R=Retry、D-09/D-12/D-14 的控制约束与 D-15 的结果顺序保留。
@@ -285,9 +295,9 @@ Player 根据已校验内容描述精确匹配随发行编入的支持表：`(�
 | Stopped | L | 新局→Playing | P | D | — | Retry@0 | Paused@0 | — |
 | Failed | L | F | F | F | F | 有 A→Retry@0；无 A→N | 有来源→Paused@0 | 有 A 只修画面；无 A→N |
 
-`Retry@0` 默认 `Playing@0`；提交前已受理独立新 Pause 时，Pause 优先，直接静音提交 `Paused@0`，中间无 Play 或输出。Seek 使用现有有限、非负与音频可达性校验，实时游玩拒绝 `player.command.seek_gameplay_unsupported`。普通 Stop 重置待播位置至 0；Stopped 后普通 Seek 只改下一次 Play 起点，Retry 总从零。有 A 的 Failed Retry 需先恢复必要设备再开始；Failed Rebuild 只清画面原因，局已 Faulted 或仍有非画面故障则保持 Failed，不能借其续局。无配置的 Reload 一律 `player.command.source_unavailable`（先于表中 Reload 状态判断）。单一事务期间仅 Quit、独立持久 Pause 登记及当前事务所需回执可进入；重叠 Retry/Reload/Rebuild/Seek/Load/Play/Stop 拒绝 `player.command.transaction_in_progress`，不排队重做。收尾正在运行时 Stop 与 EOF 共用该次收尾，重复 Stop 不再结算。
+`Retry@0` 默认 `Playing@0`；提交前已受理独立新 Pause 时，Pause 优先，直接静音提交 `Paused@0`，中间无 Play 或输出。Seek 使用现有有限、非负与音频可达性校验，实时游玩拒绝 `player.command.seek_gameplay_unsupported`。普通 Stop 重置待播位置至 0；Stopped 后普通 Seek 只改下一次 Play 起点，Retry 总从零。有 A 的 Failed Retry 需先恢复必要设备再开始；Failed Rebuild 只清画面原因，局已 Faulted 或仍有非画面故障则保持 Failed，不能借其续局。无配置的 Reload 一律 `player.command.source_unavailable`（先于表中 Reload 状态判断）。单一事务期间普通准入仅允许 Quit、独立持久 Pause 登记及当前事务所需回执；设备等待态至多一个用户 Retry 重开意图由唯一 owner 写入既有事务记录，暂不调用 `evaluatePlayerCommand`，也不声称设备已回滚或新局成功。原事务按既有取消/终态、清理和 ACK 收束并清除 `transactionInProgress` 后，该意图才作为一次普通 Retry 经过纯函数准入，再按 D-13 建立新 `RunKey` 且仍须满足原设备条件。其他重叠 Retry/Reload/Rebuild/Seek/Load/Play/Stop 仍拒绝 `player.command.transaction_in_progress`，不排队重做。收尾正在运行时 Stop 与 EOF 共用该次收尾，重复 Stop 不再结算。
 
-**准入纯值与提交事实（T-14）。** 基线 `engine/player_support/include/cuexis/player_support/player_command.hpp` 的 Context 只有 `state/transactionInProgress`，Decision 只有 `state/duplicate`；不足以直接实施上表。该库为仓内静态支持库，T-14 在同一非安装头追加以下值，不改已装 Playback 类型。Context 保留原成员，追加 `bool hasActiveContent, hasConfiguredSource, initialLoad, realtimeGameplay`（均缺省 false）及 `PlayerPauseAdmission pauseAdmission{None}`；该枚举为 `None, CurrentRun, PendingNewRun, AlreadyHeld`。唯一 owner 在受理命令时，从当前 A、锁定来源、首装是否尚未尝试、用途和原暂停原因/事务记录构造值；Pause 的 context/operation 和非零来源先过原门禁，再区分本局新来源、新局事务待定来源或已登记来源。`initialLoad` 在第一次 Load 受理时耗尽，失败后也不恢复；PendingNewRun 仅用于已受理的 Retry/Reload 事务；其中重复的 pending 来源仍归 PendingNewRun，共享该事务终态。AlreadyHeld 只表示本局已完成冻结确认的既有原因，不能提前确认尚未提交的新局。不能据调用方自填值绕过 owner 校验。
+**准入纯值与提交事实（T-14）。** 基线 `engine/player_support/include/cuexis/player_support/player_command.hpp` 的 Context 只有 `state/transactionInProgress`，Decision 只有 `state/duplicate`；不足以直接实施上表。该库为仓内静态支持库；T-14 先按[应用分层](#应用分层与内部入口f313f316)迁至 `app/player_support`，再在同一非安装头追加以下值，不改已装 Playback 类型。Context 保留原成员，追加 `bool hasActiveContent, hasConfiguredSource, initialLoad, realtimeGameplay`（均缺省 false）及 `PlayerPauseAdmission pauseAdmission{None}`；该枚举为 `None, CurrentRun, PendingNewRun, AlreadyHeld`。唯一 owner 在受理命令时，从当前 A、锁定来源、首装是否尚未尝试、用途和原暂停原因/事务记录构造值；Pause 的 context/operation 和非零来源先过原门禁，再区分本局新来源、新局事务待定来源或已登记来源。`initialLoad` 在第一次 Load 受理时耗尽，失败后也不恢复；PendingNewRun 仅用于已受理的 Retry/Reload 事务；其中重复的 pending 来源仍归 PendingNewRun，共享该事务终态。AlreadyHeld 只表示本局已完成冻结确认的既有原因，不能提前确认尚未提交的新局。不能据调用方自填值绕过 owner 校验。
 
 Decision 保留原成员，追加 `PlayerCommandEffect effect{Execute}`（`Execute, RegisterPause, AlreadySatisfied`）和 `PlayerSuccessStatePolicy successPolicy{Fixed}`（`Fixed, RetryAfterDevices, ReloadPaused, ResumeAfterReasons, RebuildAfterFacts`）。`evaluatePlayerCommand` 仍为纯函数，返回准入/成功策略或已有稳定拒绝，不读设备、不登记暂停、不发布状态。先拒未知 kind 和 Empty 持 A 的不一致，再检查 Reload 有来源，之后处理事务互斥：合格 Pause 返回 RegisterPause 或 AlreadySatisfied，不能先被 busy 分支拒绝；其余重叠命令拒绝。非事务按上表查 A/来源/首装/用途。Paused 的同源 Pause 成功返回 AlreadySatisfied、`duplicate=true`，不重复冻结；Playing 的 Play、Stopped 的 Stop 仍是表中 duplicate 错误，正在收尾的重复 Stop 由 owner 合流。Quit 沿既有关闭请求，不塞入这八命令枚举。
 
@@ -295,9 +305,11 @@ Decision 保留原成员，追加 `PlayerCommandEffect effect{Execute}`（`Execu
 
 ### 所有权、暂停与收尾
 
+设备等待的计时、超时判断及处置由各平台 Player 的会话控制层实现和决定；Player 可不设期限，也可按平台与设备特性设置期限。SDK 只提供操作状态与实际结果，不实现设备等待超时机制、策略或默认期限，不因设备等待时长自行判失败。设备接入层报告就绪和实际失败，系统或驱动返回的错误仍按实际失败处理。Player 超时不得冒充取消完成、设备回滚或安全恢复的证据，旧事务仍按终态、清理与 ACK 收束；谱面时间、判定窗口、时钟有效性和回执身份校验不属于本项超时策略。期限只用于对应 Player 的等待处置，本合同不指定发布默认值，也不要求新增通用配置框架。
+
 唯一控制者用现有 ExecutionHost 控制路径去除测试外壳后接入 Player；窗口/capture/GL 沿主线程 owner，音频沿 audio worker，Playback 与可选 Judgement 同一个 session worker 串行执行。I/O 与解码留在现有准备路径，准备工作可阻塞其 owner，但不得阻塞音频 callback 或改旧局。`PlayerController` 的纯转移和请求映射保留，取消其与 ExecutionHost 重复的状态/事务决策。D-11 的 deadline、receipt、时钟失效/过期等行为测试走替代路径后才撤旧控制权；同一局不运行两套控制。先用原 `OwnerChannel`、`SessionCommand`/`SessionReply` 和 `HostContext`/`StepKey`，不新建消息总线或安装 SDK 控制 API。
 
-内部提交沿 `PlayerController::apply(PlayerCommand) -> core::Result<void>`；该同步适配器送请求给唯一控制者并读终态，不自行裁决。请求值为 `PlayerCommand`、`HostContext`、`uint64_t requestSequence` 及 `uint64_t pauseSource`（仅 Pause/Resume 使用，0 无来源，1 窗口玩家，设备/画面故障仍走参与方事实）；headless 测试和其他调用方可在线程安全的既有 `OwnerChannel` 递交相同请求，使用原非阻塞 poll 接口，避免同步窗口等待影响其他来源合流。控制者按入队顺序串行受理，用 `HostContext/StepKey` 核验会话、局及 operation。面向 `PlayerController` 的命令终态为每请求一个拥有型 `Result<void>`；使用既有 channel terminal/ack 回收命令槽，满则不改状态。长事务前先保留 reply 槽；旧/重复回执只核验原请求或丢弃，不成为新意图。申请者线程不等待音频 callback，不在其上调用同步入口。
+内部提交沿 `PlayerController::apply(PlayerCommand) -> core::Result<void>`：该同步适配器仅供可以等待的调用方使用，送请求给唯一控制者并读终态，不自行裁决。请求值为 `PlayerCommand`、`HostContext`、`uint64_t requestSequence` 及 `uint64_t pauseSource`（仅 Pause/Resume 使用，0 无来源，1 窗口玩家，设备/画面故障仍走参与方事实）。窗口/交互热路径不得在可能进入 D-09 等待的 `apply` 内同步等终态；它经同一线程安全的既有 `OwnerChannel::post` 保存请求 ID，在窗口循环每轮用原非阻塞 `poll/ack` 收束，并继续发现 Quit 与一个用户 Retry 重开意图。阻塞型 `apply` 与非阻塞窗口路径共用唯一 owner、`HostContext/StepKey` 核验、每请求一个拥有型终态及 channel ACK；提交本身不报告命令成功，旧/重复回执只核验原请求或丢弃，不成为新意图。控制者按入队顺序串行受理。长事务前先保留 reply 槽；满则不改状态。申请者线程不等待音频 callback，不在其上调用同步入口。
 
 **实时结算接线。** v3 严格采用 [runtime/timing 的实时调度单次回复](runtime-timing.md#实时调度的封定与单次回复)定义的 `ScheduledSettlement`、`SessionSettlementCommand`、`SessionSettlementReply` 和 `SessionSettlementStatus`，不复制另一套事件或成绩结构。启动的 `SessionRealtimeStart` 经原 terminal 交付唯一 P 槽 `GameplaySettlementBuffer`；控制者持有它并在每个可能 seal 的现有 session job 前移动到封套，完成后取回。`postSettlement` 拒绝时 buffer 仍归调用方，不能消费输入或尝试无槽推进。Waiting 返回空 outcome 和可复用的 buffer，原 scheduler waiting record 不持槽引用。
 
@@ -347,7 +359,7 @@ Stop 复用现有 capture epoch/fence。T-14 的 Playing 路径先预检槽/时�
 | --- | --- |
 | P4-01 | 逐跑 6×8 格（Failed 无/有 A、设备不可用两支），断言状态和码；R、F5 各非重复按下只生一命令。无参 Empty 可关闭且退出 0，无默认工程读或判定；`--help` 帮助退出 0；缺值、多来源、重复/带值 `--judge` 无窗口、stderr 诊断、非零退出。语法正确且拼写受支持的正式判定请求，仅在构建未编入正式判定入口时保留错误窗口及 `player.candidate.disabled`；其他能力不足保持原有 profile 等具体诊断，不报未知参数。日志/FPS/性能统计等仅观察功能分别与普通播放、正式判定组合；手工时间、输入注入、玩法覆盖只在显式测试入口且不绕准入，原不相容测试请求仍拒绝。曾成功→后加载/运行失败未恢复→关闭非零；失败→Reload 恢复且零点暂停→关闭 0。Stop/自然结束不关窗，正常关闭 0；普通拒绝命令不自动使退出失败。注入已认证测试行，`--chart X --judge` 与具名工程/CXC `--entry PATH --judge` 无需额外测试参数；同内容有/无主音乐分别请求 audio/chart；缺匹配行或绑定报 `player.judge.profile_unsupported`，控制键冲突报 `player.judge.binding_conflict`，均零开局。测试行不进正式包。 |
 | P4-02 | A 正播，在磁盘改 B，R 复用 A，读/解析/解码计数增量 0，runEpoch 加一且从 0 播；F5 每次重读一次，B 静音 Paused@0。按阶段注入失败、重叠 F5、设备破坏、迟到 A 回执，检查保留和停播。首次 Load 缺文件、坏谱、缺资源及合法不支持内容分别保留可关闭错误窗口，简短实际原因与 stderr 详细诊断一致，缺能力不报包损坏或降级；修复为有效 B 后 F5 从无 A→Paused@0，关闭 0；仍失败则关闭非零。A 成功后 Reload 失败也停播，未恢复关闭非零。B 键 A 重建时磁盘 B 的打开计数为零。 |
-| P4-03 | 同局 Pause 来源 11、12 在音频 fence 回前到达，只冻结一次，两个 terminal 同结果；清 11 后仍停，清 12 才许恢复。单参与方注入失败，两回执同故障。恢复后重放旧 token 不暂停，下一请求可暂停。画面恢复不解除手动/音频原因；位置未知 500 ms 内零推进、零新增 Miss（该 500 ms 是观测窗口，不是判定界线，见附页 D-09 的等待态说明）。 |
+| P4-03 | 同局 Pause 来源 11、12 在音频 fence 回前到达，只冻结一次，两个 terminal 同结果；清 11 后仍停，清 12 才许恢复。单参与方注入失败，两回执同故障。恢复后重放旧 token 不暂停，下一请求可暂停。画面恢复不解除手动/音频原因；Player 未设设备等待期限的对照中，位置未知 500 ms 内零推进、零新增 Miss（500 ms 仅为观测窗口）。Player 自定期限及 SDK 无设备等待超时机制的对照归 T-14，窗口操作归 T-15，按附页 D-09 验收。 |
 | P4-04 | 对照 `CLK-03`：EOF raw=`523000us`、correction=`3000us`、offset=`20000us`；设备观察冻结 `500000`，独立 tail 活动 `100000us` 到 `600000`，停 `250000us` 仍为 `600000`；Resume 后再活动 `100000us` 到 `700000`，尚未封 `D=700000`（`close=15`），再活动 `15us` 实际结算才结束。run 不变，进入 tail 与 Resume 各换 segment。反序等 EOF；stale/倒退 EOF 零新增 Miss。无音轨有限表现尾@300、判定尾实际 seal@500：普通@300、实时@500；空/静态@首个 0 帧，活动无限循环只 Stop。 |
 | P4-05 | 对照 `CLK-02` 分层构造：`C=100`、`closeThreshold=15`。105/90 的未来 pending 向量仅由 T-10 纯内核入口验证；T-14 真实 capture 先送六条无匹配义务的合法 release@10/20/30/40/50/60，再送 release@89、匹配 press@90，各批 observed=原 tick+1，最后为 91，均不越过 C。沿生产 receive 实际生成 ingress 0–7，插入合法 prefix 使 capture delivery 上界不同于 7，Stop 经生产 query 取得上界 7，不手填；缺批片不编号、不成功 Stop，相同 delivery 重投不增加编号。Stop 仅结算 press 的 Hit@90 和独立 phase 的 Miss@100；@110 未到音符及未到期 Hold 无 Miss。锁后到达的 tick 95 无编号、无归档、不结算；Stop 实封 100，独立普通 `advance(100)` 对照只封 85，不放宽未来证明或 epoch-end 守卫。EOF 同轮只交付一次；从试验注入同 epoch 异 scope、同 scope 旧 epoch 的 result reply，均不交付，segment 变化本身不换局。Reload 后未 Play 的 Stop 无结果；实际开局零分仍交付完整 `GameplayNormalizedScoreResult`，等于首次终态 `GameplayAdvanceOutcome::score`，旧 query/旧 Fold 调用计数为 0，注入清理失败仍交付一次，清理重试只执行未完成步骤，Retry/卸载后持有结果可读。Stop 正常及已 Pause 两支按 `CLK-02` 检查内存 archive 终止行和 replay，失败分支无成功归档；回放/重复通知均不重发。增加已结清、尚未到 EOF 时显式 Stop：同局完整成绩只交一次，不再调用 StopCut、不追加 Stop 终止行；漏掉首次正常终态的 score 载荷注入 `result_unavailable`，零成绩回调。Retry 时模拟键仍按住、送旧 epoch 释放与 EOF，当前局无输入/结束；当前 epoch 释放只解除阻挡，下一按下才结算。 |
 | P4-06 | 实际旧工程/普通 CXC 以 bootstrap easy 且原 Reader 合法时，省略选 easy，显式同 path 也可；删除必需 `entry.chart` 即原 Reader 错误。分别用后继 filesystem extension 与 CXC v2 声明 easy/hard：省略一律 `entry_required`，只有 hard 一行且 bootstrap=hard 也拒绝省略；显式 hard 成品只选 hard，未知 path `entry_not_found`，显式后继 CXC source 条目 `encoding_unsupported`。松散 source 行 hard 经同一 compile 可准入匹配测试行；仅放 sidecar 而没有 extension 时不能选到 hard。旧 Chart-entry/Gameplay-entry v1 各用实际工厂保持原开发接受集，不能交给 v2 decoder。初装 hard 后改 bootstrap 并删 hard，Retry 缓存 hard，Reload 报 missing、保 A 停播。`--chart` 搭配 `--entry`、重复和 `../` 拒绝。开发 wrapper 与正式路径注入同内容/host facts，Pause、EOF、Stop 及结果 trace 相同。 |
@@ -358,6 +370,19 @@ Stop 复用现有 capture epoch/fence。T-14 的 Playing 路径先预检槽/时�
 | P4-11 | 用同一真实 v3 kernel/worker/host，`close=15,H=115`：先送有效输入@90 的完整 batch，受理 advance #20 返回 Waiting；再送真实 prefix=100 仍 Waiting，prefix=101 的 capture job 才 seal，交付 Hit@90 与 timer Miss@100 各一次。逐字段等于同步内核对照的事件/完整终态值，origin 为 advance #20；capture ACK 在消费后。query、同 ID 重投、terminal 重读、retire 各零新增事件/成绩；原 reply 第二次 poll 只得 taken status。用先具备 prefix=101 再 request 的对照验证立即执行同投影；不能调用 queryGameplay 补分。P−1/错 run 槽或 post 满在输入/记录变更前拒绝且保有 buffer；注入实际 seal 后 Fold 故障，仍从触发的 capture 回复得到已封前缀、faulted 和空 score。全过程只有一个 P 槽 buffer，重用前未丢未读输出。 |
 | P4-12 | 真实 Waiting 先受理 Pause，取消 waiting 后关闭完整 capture 前缀，cut=100 的 drain 实际封 Hit@90/Miss@100；仅 SessionPause 的 StepKey 回复各交一次，Pause 合流/重复/step query 无重发，score 为空。注入 drain 后 controlRpa 或 tail pause 失败，先得到相同已封事件，再错误终态且不交成绩。另用已按住 Hold 的暂停局，trace 中实际 release 经合法 Resume 在 cut 封定中断 Miss：SessionResume 回复含一次新事件，无档/方向时保持空；先前同 cut 事件不重发，Fold 故障保留此新事件但不授权新路由。Stop 在 Playing/Paused 两支走 CLK-02 的真实 cutoff，各自先交事件后移交完整成绩；回放、重复 Stop/EOF、清理失败重试仍零重发。 |
 | P4-13 | NEXT 局 `RunKey=(4,7),clockSegment=3` 在 cut=100 Pause；合法新 operation/controlSequence、完整 capture trace 和匹配 route receipt 恢复到 `(scope=4,epoch=7,segment=4)`，已得分/连击/Hold 和 canonical ingress 序号连续、无新局初始化。错误 next epoch=8、同 segment=3、错 scope、旧 operation/pauseEpoch/finalTraceCut/digest 分别拒绝且不启普通 capture。恢复后注入旧 segment=3 的 deliverySequence=0、旧 advance 及旧 Pause/Resume receipt，均不推进/发事件/改新状态；新 segment=4 的真实 prefix 才可 seal。没有 release 的恢复零新增事件；有 release 依 P4-12。legacy 对照仍要求 epoch 增加，原 Resume/replay golden 不变。随后 Retry 才到 epoch=8；停止后的 CompletedRun.run 始终是本局 `(4,7)`。 |
+
+### 应用分层与内部入口（F313/F316）
+
+2026-11-23 owner 选择将完整应用分层纳入本轮，以下为已接受范围的实施设计，尚未实现。目标是让应用职责位于 `app/`、引擎不反向装配应用，并让每条跨模块内部访问都有明确的提供方和消费者。沿 D-11 复用同一会话控制实现；保留参考应用所需的窄内部协作，不增加另一个 Player SDK 或通用桥接框架。
+
+- **T-08 内部入口。** 将 `engine/playback/src/replay_identity.hpp` 的现有实现原样迁至 `engine/playback/internal/cuexis/playback/replay_identity.hpp`，更新 Playback、自带 Player、host 和现有测试的全部引用。保留 `ReplayIdentityAccess` 的现有 friend、签名、身份字节与拒绝规则，不增加导出或安装头。与已有 `execution_host_access.hpp` 一起，只向具名仓内 host/测试目标提供 PRIVATE include 根；不得把整个 `playback/src` 暴露给应用。共享库继续消费同一个 Playback，旧已安装入口遵守其兼容窗口。
+- **T-14 应用目录与配置。** 将 `engine/player_support` 整体迁至 `app/player_support`，保留 `cuexis_player_support`、alias、原 include 拼写与命名空间，不安装该目标或头。根 CMake 在 `engine` 之后、`tools/tests` 之前进入 `app`：Player 开启或其支持测试开启时创建 player_support；候选且 Player 或相关测试开启时创建 execution_host_support；只有 Player 开启才进入窗口程序目录。移除 `engine/CMakeLists.txt` 对上述两个 app 支持目标的创建，根 active-target/ALLOWED 按实际存在性登记，`tests/player_support` 同条件注册。SDK-only、Player OFF 的 headless 测试均可独立配置，不为测试引入 SDL/GL。
+- **T-14 唯一控制权。** `app/execution_host` 继续持有 owner/channel/protocol 和设备协调；Player 只做配置、输入与窗口装配。迁移后的 `player_support` 对消费者提供纯值命令/配置，不依赖 Playback、SDL 或 GL，头与跨目标签名不泄漏 JSON DOM。内部配置解析复用原 `config_json` 与 `json_support`，随目录整体迁移，保持校验、诊断和配置身份；不为消除内部解析依赖另建配置层。T-14 按原 D-11 完成旧控制分支的实际消费者迁移后删除重复控制实现；暂存的旧公开 SDK 转发不重新持有状态。不得把同一控制器复制为普通/判定两套。
+- **合法的内部工具。** 现有 `cuexis_internal/sha256.hpp` 是配置/路由身份的共享算法，保留同一实现与原摘要；`allocation_observer.hpp`、`presentation_metrics.hpp`、`execution_diagnostics.hpp` 是原测量/故障观察设施，保留 testOnly 开关和非致命观察语义；`pixel_probe.hpp` 仅由既有 `player_smoke.cpp` 使用。T-08 在现有 `VerifyArchitecture.cmake` 中登记实际消费文件到这些具名头的封闭许可，T-14 随目录搬迁更新路径。该许可不授予其它引擎内部头、其它源文件或目录通配访问，也不把测试设施安装到 SDK。
+
+F313 的门禁扩展在现有 CMake 检查中完成：扫描全部 `app/` 的头与 TU（T-14 完成后包含搬迁的支持库），规范化引号相对路径与尖括号 include，拒绝解析到任意 `engine/*/src` 的直接引用；跨模块 internal 引用仅允许上列具名入口与实际消费者。同步检查提供目标的 include 可见性、引擎链接图不得到达 app 目标、安装目录不得含 app/内部头。T-08 引入入口和 include 规则，T-14 完成目录/构建方向门禁，T-15 的新增装配同样接受规则。封闭表与现有检查脚本为唯一维护点，不另建依赖数据库或声称自动证明合同语义。
+
+验收复用现有架构测试、安装消费者与 T-14 会话正反例：默认/实验的 static/shared Player 与 headless-only 测试保持原功能；相同 replay/config 输入的身份字节不变；同一生产 owner 完成 Pause/Resume/Retry/Stop。隔离副本分别加入相对路径和尖括号的 `playback/src` 引用、未许可 internal 引用、engine → app 链接及 app 头安装，必须按具体边界拒绝。合法内部入口正例仍可构建，已安装外部消费者不能包含它们。基线有旧布局时只记迁移前证据；不能为让中途门禁通过将全部 `app/**` 加入许可。
 
 ## P5：内部 Writer 与显式迁移
 
@@ -465,10 +490,10 @@ R5 按纯布局/GL 状态、帧消费/兼容证据两卡；以现行旧谱和内
 | 任务 | 命令 | 向量 |
 | --- | --- | --- |
 | 布局/借用目标 | `ctest --preset debug --no-tests=error -R '^rr_frame_layout$'` | R5-01–04、R5-06 内存比例、R5-09、R5-10 纯几何/逆算、R5-11 |
-| 帧桥/迁移 | `ctest --preset candidate-debug --no-tests=error -R '^rr_laid_out_frame$'` | R5-05、R5-07–08、R5-10 相机/retained、旧入口探针；作者和 wire 向量在格式卡执行 |
+| 帧桥/迁移 | `ctest --test-dir out/build/candidate-debug --no-tests=error -R '^rr_laid_out_frame$'` | R5-05、R5-07–08、R5-10 相机/retained、旧入口探针；作者和 wire 向量在格式卡执行 |
 | R5 双 flavor 链接与头 | [T-06 的双 shared 门禁](../tasks/T-06.md#任务级验收) | 两套实际 Player、旧谱摘要、符号/头边界与生命周期 |
-| 会话控制 | `ctest --preset candidate-debug --no-tests=error -R '^rr_session_control$'` | P4-03–05、P4-07、P4-11–13 |
-| Player 外壳 | `ctest --preset candidate-debug --no-tests=error -R '^rr_player_(startup|commands)$'` | P4-01–02、P4-06、P4-08–10 |
+| 会话控制 | `ctest --test-dir out/build/candidate-debug --no-tests=error -R '^rr_session_control$'` | P4-03–05、P4-07、P4-11–13 |
+| Player 外壳 | `ctest --test-dir out/build/candidate-debug --no-tests=error -R '^rr_player_(startup|commands)$'` | P4-01–02、P4-06、P4-08–10 |
 | 内部写回库 | `ctest --test-dir out/build/headless-debug --no-tests=error -R '^rr_chart_write$'` | T-16：P5-01–05、P5-07 |
 | 迁移 CLI | `ctest --test-dir out/build/candidate-headless-debug --no-tests=error -R '^rr_chart_migrator_cli$'` | T-16：P5-06 迁移分支，先构建 `cuexis_chart_migrator` |
 | 编译/打包 CLI | `ctest --test-dir out/build/candidate-headless-debug --no-tests=error -R '^rr_compile_pack_cli$'` | T-13：P5-06 三工具分支，先构建 `cuexis_gameplay_assemble cuexis_chart_candidate cuexis_cxc_pack` |

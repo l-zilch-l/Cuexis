@@ -2,7 +2,7 @@
 
 状态：active
 
-更新日期：2026-10-28
+更新日期：2026-11-23
 
 适用版本：SDK API `0.9.1`
 
@@ -163,6 +163,26 @@ resource closure、typed Asset index/provider、CPU资源与 exact content ident
 其 prepare/commit/submit/advance/query/Replay/Snapshot/Seek 与 Presentation 模式使用相同
 实际 kernel/Fold。H/T/RuntimeFrame 仍显式预检；RuntimeUpdated=false 明示没有 Runtime
 图，而不是错误。Frame/update/HostOverride 沿已有无 World 稳定拒绝。该意图不增加数值预算。
+
+### PreparedPlayback 有效性修订（F501，已接受、未实现）
+
+2026-11-23 owner 按 Stage 7-RR D-04 接受本节，实施与运行验收归
+[T-17](../stage_plans/active/stage-07-rr/tasks/T-17.md)。当前实现仍以 RuntimeSession 存在作为
+`valid()` 的必要条件，因此把合法 GameplayOnly 候选判为无效；本节定义待落实的修订。
+
+`valid()` 按候选实际内容类别判断是否已合法准备：普通表现候选保留对应 Runtime 条件，显式
+GameplayOnly 候选以其合法准备的 Gameplay 内容成立，不要求创建 World 或 RuntimeSession。
+空对象、移动后的对象和在错误线程查询的对象返回 false；线程与析构约束保持上文规定。
+该修订沿用现有类型和接口，不引入占位 Runtime 或另一套有效性 API。
+
+有效 GameplayOnly 候选的 `contentInfo()`、`semanticIdentity()` 应可读取实际准备的内容；
+`mainMusicSource()` 在已有有效音频资源时可用，无音频时仍返回缺失。依赖表现能力的访问与操作
+另行检查所需资源或 Runtime，沿已有缺失/拒绝规则处理，不能由 `valid()` 推断可生成画面。
+
+`valid()` 不承诺 `commit()` 必然成功。提交仍独立校验 owner/session、generation、生命周期、
+正在执行的操作及 host fence；旧候选即使内容仍完整，也可被提交门禁拒绝。
+正例须在同一合法会话、准备后前置条件未改变时验证有效性与提交成功；负例分别验证对象无效
+和提交资格失效，不能要求两者在所有情况下返回相同结论。
 
 ## Candidate 安装 consumer 的首用边界
 

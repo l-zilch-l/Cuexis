@@ -2,7 +2,7 @@
 
 状态：candidate
 
-更新日期：2026-11-22
+更新日期：2026-11-23
 
 实现状态：未实施。
 
@@ -16,9 +16,9 @@ authority: references
 
 本页是 [P1/P3](../simplification-proposal.md) 的技术设计基线。D-05 的 RR-3 仍仅包含 R1/R5/R6；本页在 RR-3 内只排 R1。实施及发布分别依计划门禁授权。保持 D-20 的旧谱行为、D-21 的量化与反查、D-22 的等级目标和 D-24 的当次结算交付。新增 API、target、wire、诊断和命令未实施。源码基线 `9623efa3`。
 
-2026-11-21 的 [D-22](../architecture-design.md#d-22-谱师自定义判定等级)计分、误差与方向共识在下文落为实施候选合同。技术闭合不改变 `NEXT` 状态；旧 delta Fold 仅沿 D-20 的旧分支读取和运行。
+2026-11-21 的 [D-22](../architecture-design.md#d-22-谱师自定义判定等级)计分、误差与方向共识在下文落为实施候选合同。`NEXT` 保留为技术范围码；2026-11-23 owner 已将该包纳入本轮实验实现与验证，调度及基线采用见计划。旧 delta Fold 仅沿 D-20 的旧分支读取和运行。
 
-**显式发行 delta，待 owner 接受。** [Chart v5 计划 §3.8](../../chart-format-update-for-v5/plan.md#38-gameplay-v2-route-selected-for-stage-7a8)及 [Stage 8 已确认约束](../../../future/stage-08/plan.md#已确认约束)限定 Chart v5 的 Gameplay v2 路线及 v2 Graph/Packed 同语义。本页保留该交付目标。后继能力另获批准后，为同一个 Chart v5 增加显式 `gameplay.version=3` 分支；仅在这一分支取代上述计划的“v5 只接受 v2”和“只发行 v2 Graph”约束。Stage 7.5 的现有高级输入任务沿用原边界；推荐另立 D-21 基础与 D-22 分阶段任务，Stage 8 维持 v2 必交项，v3 独立试用、互操作验收和晋升。Chart v6 的模型、网格与 submesh 规划不变；遵循 D-17 的各层派发，不新增跨层版本号。
+**发行方向（2026-11-23 owner 续议已接受，未实施）。** Stage 8 正式主线改为 Chart v5＋Gameplay v3，替代先前保留 v2 正式目标的选择；RR 仍完整实现并通过独立实验入口验证 v3。同一 Chart v5 显式声明 `gameplay.version=3`，按本页及[成品合同](prepared-artifact.md)的具名组合编译与装载，不靠字段猜版本。[Stage 8](../../../future/stage-08/plan.md#已确认约束)负责正式规范、默认创作输出与经过验证的播放组合；[Chart v5 计划 §3.8](../../chart-format-update-for-v5/plan.md#38-gameplay-v2-route-selected-for-stage-7a8)保留旧 v2 路线的兼容边界。正式目标接受不代表实验编码已正式发布或默认 SDK 已晋升，RR 的构建/默认能力及任务验收边界不因此提前改变。决定见[续议记录](../findings.md#stage-8-正式主线续议2026-11-23)，任务仍按统一调度执行。Stage 7.5 新能力以 v3 为主线，Chart v6 保持表现扩展职责。原 v5 作者表现规则继续适用，不接受旧动画语法特许。
 
 ## 构建、头与安装
 
@@ -27,27 +27,65 @@ authority: references
 | target / alias 后缀 / export 后缀 | 头源分配 | ALLOWED |
 | --- | --- | --- |
 | `cuexis_timing` / `timing` / `InternalTiming` | `engine/timing/include/cuexis/timing/{rational_beat,timing_map}.hpp` 与对应 `.cpp`；P3 后随 Chart。 | `core` PUBLIC |
-| `cuexis_judgement` / `judgement` / `InternalJudgement` | `engine/judgement` 运行头与源；下文列职责。R1 保留现有 static 安装归档；收口后默认不建，仅实验、具名内核测试或获准的正式组合。 | `core` PUBLIC |
+| `cuexis_judgement` / `judgement` / `InternalJudgement` | `engine/judgement` 运行头与源；下文列职责。继续无条件创建并保留默认 static 的 `InternalJudgement` 安装归档；运行源收口不等于删除安装目标，也不新增默认 Playback 链接边。 | `core` PUBLIC |
 | `cuexis_judgement_compile` / `judgement_compile` / `InternalJudgementCompile` | `engine/judgement_compile` 的旧作者/图/旧 timebase 源和新 `beat_us_compile.hpp/.cpp`；候选、作者工具与启用的编译测试；默认启测也需该目标。 | `judgement core timing` PUBLIC |
-| `cuexis_gameplay_packed_read` / `gameplay_packed_read` / `InternalGameplayPackedRead` | `engine/gameplay_packed/include/cuexis/gameplay_packed/{compiled_capsule,detail/compiled_artifact_rows}.hpp`；`engine/gameplay_packed/src/{compiled_capsule_read,compiled_graph_read,compiled_artifact_finalize}.cpp`。Reader 与 Source 共用此目标的 `finalizeCompiledArtifact`。 | `core judgement timing chart` PUBLIC；`json_support`。 |
-| `cuexis_gameplay_packed_source` / `gameplay_packed_source` / `InternalGameplayPackedSource` | `engine/gameplay_packed/source_include/cuexis/gameplay_packed/{compiled_source,compiled_writer}.hpp`；`engine/gameplay_packed/src/{compiled_source,compiled_writer}.cpp`。 | `gameplay_packed_read judgement_compile chart timing core` PUBLIC；`json_support`。无 Playback 边。 |
+| `cuexis_gameplay_packed_read` / `gameplay_packed_read` / `InternalGameplayPackedRead` | `engine/gameplay_packed/include/cuexis/gameplay_packed/{compiled_capsule,detail/compiled_artifact_rows}.hpp`；`engine/gameplay_packed/src/{compiled_capsule_read,compiled_graph_read,compiled_artifact_finalize}.cpp`。Reader 与 Source 共用此目标的 `finalizeCompiledArtifact`。 | `core judgement timing chart chart_codec` PUBLIC；`json_support`。 |
+| `cuexis_gameplay_packed_source` / `gameplay_packed_source` / `InternalGameplayPackedSource` | `engine/gameplay_packed/source_include/cuexis/gameplay_packed/{compiled_source,compiled_writer}.hpp`；`engine/gameplay_packed/src/{compiled_source,compiled_writer}.cpp`。 | `gameplay_packed_read judgement_compile chart chart_codec chart_tools timing core` PUBLIC；`json_support`。无 Playback 边。 |
 | `cuexis_cxc` / `cxc` / `InternalCxc` | `engine/cxc` 的通用包、清单、路径、完整性、资源闭包及写入。 | `core content project chart` PUBLIC；`filesystem json_support MINIZIP::minizip-ng`。 |
-| `cuexis_cxc_candidate` / `cxc_candidate` / `InternalCxcCandidate` | `engine/cxc/include/cuexis/cxc/cxc_candidate.hpp` 与 `engine/cxc/src/cxc_candidate.cpp`；保留既有候选解码，后继条目只验包络、metadata、路径和 hash。 | `cxc chart core` PUBLIC；`json_support`。无玩法 Reader 或 Judgement 边。 |
-| `cuexis_gameplay_packed` / `gameplay_packed` / `InternalGameplayPacked` | 原 `gameplay_capsule.hpp` 在 T-13 移至 `engine/gameplay_packed/legacy_include/cuexis/gameplay_packed/`，include 拼写不变；原 `gameplay_capsule*.cpp/.hpp`、Graph JSON 及语义哈希辅助头留原目标，保留 rev2–4、Graph1 重装配及 `semanticDiff`。 | `chart judgement_compile filesystem core` PUBLIC；`json_support` |
-| `cuexis_chart` / `chart` / `InternalChart` | 旧 Reader、`behavior_candidate.cpp`、`packed_chart_*` 保留；新 `chart_v5_loader.cpp`、`chart_v5_document.hpp`、`compiled_chart_timing.cpp/.hpp`；旧 `chart::RationalBeat`/`TimingMap` 保留原接口和旧诊断。 | `core` PUBLIC；P3 后加 `timing` PUBLIC；`json_support` |
-| `cuexis_playback` / `playback` / `Playback` | 普通与实验源分表，沿用单个 SDK 库。 | `audio content core` PUBLIC；`animation assets chart cxc filesystem project runtime render world`；实验加 `cxc_candidate json_support judgement gameplay_packed`；后继成品加 `gameplay_packed_read timing`；显式源 bridge 才加 `gameplay_packed_source`。 |
-| `cuexis_gameplay_author` / `gameplay_author` 与 `cuexis_gameplay_author_cli` / `gameplay_author_cli` / 不安装 | `tools/gameplay/gameplay_assembler` 的源解析、编译与编码；`src/assembler_cli.cpp` 只编入 CLI 接线；旧 metadata helper 沿现有方式把 `engine/playback/src/gameplay_entry.cpp` 编入 CLI 私有源表，不新增 shared 导出。 | author: `core json_support chart judgement_compile gameplay_packed gameplay_packed_source` PUBLIC；CLI 接线: `gameplay_author core playback cxc cxc_candidate asset_publish`；`cuexis_gameplay_assemble` 只连 CLI 接线；`cuexis_chart_candidate` 在原普通工具边上追加 CLI 接线。 |
+| `cuexis_cxc_candidate` / `cxc_candidate` / `InternalCxcCandidate` | `engine/cxc/include/cuexis/cxc/cxc_candidate.hpp` 与 `engine/cxc/src/cxc_candidate.cpp`；保留既有候选解码，后继条目只验包络、metadata、路径和 hash。 | `cxc chart chart_codec chart_tools core` PUBLIC；`json_support`。旧候选源验证仍用 Chart 作者库，无玩法 Reader 或 Judgement 边。 |
+| `cuexis_gameplay_packed` / `gameplay_packed` / `InternalGameplayPacked` | 原 `gameplay_capsule.hpp` 在 T-13 移至 `engine/gameplay_packed/legacy_include/cuexis/gameplay_packed/`，include 拼写不变；原 `gameplay_capsule*.cpp/.hpp`、Graph JSON 及语义哈希辅助头留原目标，保留 rev2–4、Graph1 重装配及 `semanticDiff`。 | `chart chart_codec judgement_compile filesystem core` PUBLIC；`chart_tools json_support`。旧读写混合路径保留，不能冒充纯 Reader。 |
+| `cuexis_chart` / `chart` / `InternalChart` | 旧 Reader、CXT1、v4 Resolver/Runtime、`chart_writer.cpp` 与旧身份/时间基础；完整源表见下方 F302。旧 `chart::RationalBeat`/`TimingMap` 保留原接口和旧诊断。 | `core` PUBLIC；T-12 后加 `timing` PUBLIC；`json_support` |
+| `cuexis_chart_codec` / `chart_codec` / `InternalChartCodec` | Packed 读/检视、原语和语义身份；T-12 加 `compiled_chart_timing.cpp/.hpp`。不含源 lowering、CXT2 展开或文件 Writer。 | `chart core` PUBLIC；T-12 后加 `timing` PUBLIC |
+| `cuexis_chart_tools` / `chart_tools` / `InternalChartTools` | CXT2、candidate/Behavior 源编译、assembler、Packed Writer 与 migrator；T-13 加 v5/CXT2 Animation adapter。 | `chart chart_codec core` PUBLIC；`json_support` |
+| `cuexis_playback` / `playback` / `Playback` | 普通与实验源分表，沿用单个 SDK 库。 | `audio content core` PUBLIC；`animation assets chart cxc filesystem project runtime render world`；实验加 `chart_codec chart_tools cxc_candidate json_support judgement gameplay_packed`；后继成品加 `gameplay_packed_read timing`；显式源 bridge 才加 `gameplay_packed_source`。 |
+| `cuexis_gameplay_author` / `gameplay_author` 与 `cuexis_gameplay_author_cli` / `gameplay_author_cli` / 不安装 | `tools/gameplay/gameplay_assembler` 的源解析、编译与编码；`src/assembler_cli.cpp` 只编入 CLI 接线；旧 metadata helper 沿现有方式把 `engine/playback/src/gameplay_entry.cpp` 编入 CLI 私有源表，不新增 shared 导出。 | author: `core json_support chart chart_codec chart_tools judgement_compile gameplay_packed gameplay_packed_source` PUBLIC；CLI 接线: `gameplay_author chart_tools core playback cxc cxc_candidate asset_publish`；`cuexis_gameplay_assemble` 只连 CLI 接线；`cuexis_chart_candidate` 在原普通工具边上追加 CLI 接线。 |
 
-**配置拓扑。** `engine/CMakeLists.txt` 保留现有基础目录次序，T-12 在 `chart` 之前插入 `timing`，T-10 在 `judgement` 之后插入 `judgement_compile`，`gameplay_packed` 只 `add_subdirectory` 一次。涉及本合同的先后是 `core/json_support/content/project` → `timing`（T-12 起）→ `chart` → `cxc` → `judgement` → `judgement_compile` → `gameplay_packed` → 原 `render/debug/runtime` 等 Playback 前置 → `playback`；其它原目录和开关保留。`cxc/CMakeLists.txt` 先创建 `cuexis_cxc` 再创建 T-04 的 `cuexis_cxc_candidate`；`gameplay_packed/CMakeLists.txt` 先创建旧 `cuexis_gameplay_packed`，T-13 再依次创建 `cuexis_gameplay_packed_read`、`cuexis_gameplay_packed_source`。这些是真实 target 名，不增加同名新目录。根仍在 `engine` 全部完成后进入 `tools`；`tools` 内先 `common/asset_publish`，再 `gameplay/gameplay_assembler`，后 `chart/chart_candidate`。依赖检查在所有启用目标创建后运行；按开关跳过的目标及其边也一同跳过，不把后继 target 写进前卡的 `ALLOWED` 或安装列表。
+**配置拓扑。** `engine/CMakeLists.txt` 保留现有基础目录次序，T-12 在 `chart` 之前插入 `timing`，T-10 在 `judgement` 之后插入 `judgement_compile`，`gameplay_packed` 只 `add_subdirectory` 一次。涉及本合同的先后是 `core/json_support/content/project` → `timing`（T-12 起）→ `chart` → `cxc` → `judgement` → `judgement_compile` → `gameplay_packed` → 原 `render/debug/runtime` 等 Playback 前置 → `playback`；其它原目录和开关保留。`chart/CMakeLists.txt` 按下方 F302 条件依次创建 `chart`、`chart_codec`、`chart_tools`；不增加同名子目录。`cxc/CMakeLists.txt` 先创建 `cuexis_cxc` 再创建 T-04 的 `cuexis_cxc_candidate`；`gameplay_packed/CMakeLists.txt` 先创建旧 `cuexis_gameplay_packed`，T-13 再依次创建 `cuexis_gameplay_packed_read`、`cuexis_gameplay_packed_source`。这些是真实 target 名，不增加同名新目录。根仍在 `engine` 全部完成后进入 `tools`；`tools` 内先 `common/asset_publish`，再 `gameplay/gameplay_assembler`，后 `chart/chart_candidate`。依赖检查在所有启用目标创建后运行；按开关跳过的目标及其边也一同跳过，不把后继 target 写进前卡的 `ALLOWED` 或安装列表。
 
 **分阶段构建。** 上表是后继接线完成后的目标图；源表、链接和 `ALLOWED` 按任务同步生效。
 
 - [T-10](../tasks/T-10.md)：`judgement_compile` 只编译迁入的 legacy 作者、图、旧 timebase 及适配源，`PUBLIC` 直接链接 `cuexis::judgement` 和 `cuexis::core`，`ALLOWED` 仅这两项。运行计分 records、局部验证与 Fold 同卡归 `judgement`，只用 Core。默认顶层启测（`BUILD_TESTING=ON`，`CUEXIS_BUILD_TESTS` 随之启用）也构建 `judgement_compile`；不以 candidate 或 developer tools 为前提。`tests/rpa/CMakeLists.txt` 给既有 `cuexis_rpa_tests` 追加 `PRIVATE cuexis::judgement_compile`，根给该测试追加同名 `ALLOWED`；测试夹具直接使用作者图和旧 prepare。该测试边不改变运行目标或默认安装闭包。旧 `gameplay_packed` 与 `gameplay_author` 从 `judgement_compile` 取得旧公开作者头（原作者验收的 judgement 测试亦加此边），同时更新根 `ALLOWED` 与编译/安装归档表；候选 Playback 的旧作者用法从旧 Packed 的 PUBLIC 编译边取得。仍引用搬迁私有头的旧 Packed 和测试只在 `PRIVATE` 增 `judgement_compile/src` 相应路径。`cmake/VerifyArchitecture.cmake` 按归属检查两个分区；运行 `include/internal/src` 逐文件禁止拉入迁出的作者头或 timing，编译侧存在性/声明检查改到新根。同卡无 `timing`、`beat_us_compile`、共享成品头或 `gameplay_packed_read`。实验 static SDK 的 `CUEXIS_STATIC_IMPLEMENTATION_TARGETS` 加 `cuexis_judgement_compile`（`EXPORT_NAME InternalJudgementCompile`，不安装头）；shared 安装不引出该归档。默认安装若不链接该归档不加入安装树，保留现行旧归档规则。
-- T-10 同卡在 `tools/gameplay/gameplay_assembler/CMakeLists.txt` 首创 `add_library(cuexis_gameplay_author_cli STATIC ...)` 及 alias `cuexis::gameplay_author_cli`，仅在 developer tools 和 candidate 同时启用时创建。将现有 candidate 分支的 `src/assembler_cli.cpp`、`engine/playback/src/gameplay_entry.cpp`、私有 include 根和 Playback/CXC/asset_publish 接线从 `cuexis_gameplay_author` 移入该目标；CLI 的 BUILD_INTERFACE 暴露原 `include`，私有根仍为 `engine/core/internal`、`engine/playback/src`、`engine/judgement/internal`。author 保留 `src/gameplay_author.cpp` 与旧作者头，T-10 PUBLIC 边仅 `core json_support chart judgement_compile gameplay_packed`，无 Playback/CXC/发布边。CLI 直接 PRIVATE 边与上表一致；`cuexis_gameplay_assemble` 改链 `cuexis::gameplay_author_cli`，`cuexis_chart_candidate` 的 candidate 分支把 `cuexis::gameplay_author` 换为 `cuexis::gameplay_author_cli`，原普通工具边保留。根同步 active-target 列表与这四个目标的 `ALLOWED`；不安装两种 author 归档/头。T-13 才给 author 追加 `gameplay_packed_source` PUBLIC 并在已有 CLI 加 `beat-us` 分支，不重复创建目标。
-- [T-12](../tasks/T-12.md)：创建 `timing`，加入 `engine/judgement_compile/include/cuexis/judgement/beat_us_compile.hpp` 与 `engine/judgement_compile/src/beat_us_compile.cpp`，链接与 `ALLOWED` 加 `timing` PUBLIC。首创 `engine/judgement/internal/cuexis/judgement/compiled_gameplay_rows.hpp`，放 `CanonicalGameplayRows`、`CompiledBeatKeys`、未终结 `BeatGameplayProduct`；同卡首创 `compiled_gameplay_context.hpp`，仅提取 `CompileCapabilityContext`、`ContentProfileLimits`，直接包含 T-10 的运行值头 `prepared_identity.hpp`，旧作者头转引。四个身份声明由 T-10 定义，本卡不移动或重定义。共享内部根以 `judgement_compile` 的 `BUILD_INTERFACE` 给编译消费者；运行头/TU 无须从该内部 context 取得身份定义。T-13 只消费这两头，定义与兼容转引按[成品合同](prepared-artifact.md#拥有关系与入口)。
-- [T-13](../tasks/T-13.md)：才引入 `gameplay_packed_read`、`gameplay_packed_source` 与表列文件。Reader 自己以 `BUILD_INTERFACE` 声明 `engine/judgement/internal`，不链接编译目标，不取作者 include 根；Reader 仍不得引入旧重装配或源/写出目标。Source/Writer 和两者唯一入口见[成品拥有关系](prepared-artifact.md#拥有关系与入口)。归档按各实验 static 路径的实际链接闭包安装；离线独用的 Source/Writer 不随纯成品安装。
+- T-10 同卡在 `tools/gameplay/gameplay_assembler/CMakeLists.txt` 首创 `add_library(cuexis_gameplay_author_cli STATIC ...)` 及 alias `cuexis::gameplay_author_cli`，仅在 developer tools 和 candidate 同时启用时创建。将现有 candidate 分支的 `src/assembler_cli.cpp`、`engine/playback/src/gameplay_entry.cpp`、私有 include 根和 Playback/CXC/asset_publish 接线从 `cuexis_gameplay_author` 移入该目标；CLI 的 BUILD_INTERFACE 暴露原 `include`，私有根仍为 `engine/core/internal`、`engine/playback/src`、`engine/judgement/internal`。author 保留 `src/gameplay_author.cpp` 与旧作者头，T-10 PUBLIC 边仅 `core json_support chart chart_codec chart_tools judgement_compile gameplay_packed`，无 Playback/CXC/发布边。CLI 直接 PRIVATE 边与上表一致；`cuexis_gameplay_assemble` 改链 `cuexis::gameplay_author_cli`，`cuexis_chart_candidate` 的 candidate 分支把 `cuexis::gameplay_author` 换为 `cuexis::gameplay_author_cli`，原普通工具边保留。根同步 active-target 列表与这四个目标的 `ALLOWED`；不安装两种 author 归档/头。T-13 才给 author 追加 `gameplay_packed_source` PUBLIC 并在已有 CLI 加 `beat-us` 分支，不重复创建目标。
+- [T-12](../tasks/T-12.md)：创建 `timing`，在 `chart_codec` 首创 `engine/chart/internal/cuexis/chart/compiled_chart_timing.hpp` 与 `engine/chart/src/compiled_chart_timing.cpp`，该内部根只由 codec 的 BUILD_INTERFACE 提供；`chart` 的旧时间适配与 codec 各加 `timing` PUBLIC，默认 static 按基础 Chart 实际边安装 `InternalTiming`。源时间声明的 Chart 适配归 `chart_tools`，不把新作者头放回基础 include。加入 `engine/judgement_compile/include/cuexis/judgement/beat_us_compile.hpp` 与 `engine/judgement_compile/src/beat_us_compile.cpp`，链接与 `ALLOWED` 加 `timing` PUBLIC。首创 `engine/judgement/internal/cuexis/judgement/compiled_gameplay_rows.hpp`，放 `CanonicalGameplayRows`、`CompiledBeatKeys`、未终结 `BeatGameplayProduct`；同卡首创 `compiled_gameplay_context.hpp`，仅提取 `CompileCapabilityContext`、`ContentProfileLimits`，直接包含 T-10 的运行值头 `prepared_identity.hpp`，旧作者头转引。四个身份声明由 T-10 定义，本卡不移动或重定义。共享内部根以 `judgement_compile` 的 `BUILD_INTERFACE` 给编译消费者；运行头/TU 无须从该内部 context 取得身份定义。T-13 只消费这两头，定义与兼容转引按[成品合同](prepared-artifact.md#拥有关系与入口)。
+- [T-13](../tasks/T-13.md)：`chart_v5_document.hpp` 放在 `engine/chart/tools_include/cuexis/chart/`；`chart_v5_loader.cpp`、`cxt_v2_animation_adapter.cpp` 编入既有 `chart_tools`，后者的私有头留 `engine/chart/src/`。旧源与新源共用且不识别 v5 作者格式的 typed 动画 helper 留基础 Chart，codec 不反向依赖 tools。才引入 `gameplay_packed_read`、`gameplay_packed_source` 与表列文件。Reader 自己以 `BUILD_INTERFACE` 声明 `engine/judgement/internal`，不链接编译目标，不取作者 include 根；Reader 仍不得引入旧重装配或源/写出目标。Source/Writer 和两者唯一入口见[成品拥有关系](prepared-artifact.md#拥有关系与入口)。归档按各实验 static 路径的实际链接闭包安装；离线独用的 Source/Writer 不随纯成品安装。
 
 **架构检查归属。** T-10 逐文件检查运行 `include/internal/src`。T-12 在同一个 `VerifyArchitecture.cmake` 检查中，只从这份运行文件清单排除完整相对路径 `engine/judgement/internal/cuexis/judgement/compiled_gameplay_rows.hpp`：它归编译侧与成品 Reader 的共享产物，可包含 `cuexis/timing/`。`compiled_gameplay_context.hpp` 及其它运行 TU 和头继续接受原作者头与 timing 禁入检查。所有运行扫描项还须拒绝路径末段为 `compiled_gameplay_rows.hpp` 的 `#include`，含引号相对路径和尖括号路径；同一分区内通过中转头引入也会在该中转头处失败。该例外不增加 `cuexis_judgement` 链接边、源或运行头依赖，不按目录或名字通配。
+
+### Chart 源表与安装隔离（RR-F302）
+
+2026-11-23 owner 已接受完整结构隔离，以下为未实施设计，取代 Chart 内 candidate/packed/cxt 全编译的旧限制。`cuexis_chart_candidate` 继续是已有工具可执行目标；新增库只用 `cuexis_chart_codec` 和 `cuexis_chart_tools`，aliases/export 见上表。
+
+**创建条件。** 基础 `cuexis_chart`、`cuexis_judgement` 保持创建；`chart_codec`、`chart_tools`、`cxc_candidate` 和旧 `gameplay_packed` 使用同一内部条件：`CUEXIS_ENABLE_CHART_V5_CANDIDATE OR CUEXIS_BUILD_DEVELOPER_TOOLS OR (BUILD_TESTING AND CUEXIS_BUILD_TESTS)`。只复用既有选项，不增加用户开关。`engine` 仍按原顺序进入这些目录，条件判断在目录内；条件为假时不创建对应目标、alias、active/ALLOWED 项或安装引用。T-10 的 `judgement_compile` 也按此条件创建；T-12 的 `timing` 因基础 Chart 的旧时间适配边保持创建。T-13 的新 read/source 两目标只在 candidate 配置创建；仅启测的默认配置不因此启用 v3。开发工具与测试可构建支持库，默认 Playback/Player 仍不得链接 codec/tools/cxc_candidate。
+
+**文件源表。** 路径相对 `engine/chart/src/`；实施在 CMake 显式列举，以下花括号只是精确枚举缩写，不使用 GLOB。每个 TU 只编译进一个目标。
+
+| 源组 | 完整基线 `.cpp` 归属及必要拆分 |
+| --- | --- |
+| 基础 `chart` | `animation_template_loader.cpp`；`canonical_chart_loader{,_behaviors,_primitives,_sections}.cpp`、`canonical_chart_template_internal.cpp`；`chart_loader.cpp`、`chart_parameter_resolver.cpp`、`chart_runtime.cpp`；`chart_v4_loader{,_animators,_parameters,_projection}.cpp`、`chart_v4_resolver{,_patching,_program}.cpp`；`chart_writer.cpp`、`prepared_semantic_identity.cpp`；`chart_v4_common_reader_internal.cpp`、`chart_v4_animation_reader_{animator,clip,values}.cpp`、`chart_project_path_internal.cpp`；`rational_beat.cpp`、`timing_map.cpp`、`uuid.cpp`。 |
+| `chart_codec` | `packed_chart_primitives.cpp`、`packed_chart_tables_decoder{,_header,_identity,_model,_tables}.cpp`、`packed_chart_tables_inspect.cpp`、`packed_profile.cpp`、`packed_semantic_identity.cpp`；新增拆分文件 `packed_chart_tables_common.cpp`、`packed_chart_read.cpp`。 |
+| `chart_tools` | `chart_migrator.cpp`；`cxt_v2_loader{,_expand,_parse_nodes,_parse_values,_reader}.cpp`；`candidate_lowering.cpp`、`candidate_assembler.cpp`、`behavior_candidate.cpp`；`packed_chart_tables_writer.cpp`、`packed_chart_tables_sections.cpp`、拆分后仅保留 Writer 的 `packed_chart_io.cpp`。 |
+
+`packed_chart_tables_common.cpp` 从原 writer 提取 `fail/narrowU32/classifySection/identityText/readF32/readF64/validUtf8/identityKey`，保持唯一实现及原诊断；写出专用 `writeUuid/writeF32/writeF64`、字典与 section 编码仍在 tools。`packed_chart_read.cpp` 接收原 `PackedChartReader::read/decode` 和它们所需的局部错误 helper；原 `packed_chart_io.cpp` 保留 sizing、临时文件、原子替换和 `packed::file_detail::writeAtomic`。基础 `chart_writer.cpp` 被旧 Resolver/Playback 实际使用，保留原目标，不为“Writer”名字迁移。codec 只提供 packed 原语及 typed 读/身份能力；`lowerCandidateRuntime`、`compileBehaviorCandidate` 属源编译，留 tools。
+
+**头和 include。** 基础 `engine/chart/include` 只留基础头。把 `canonical_semantic_chart.hpp`、`packed_chart_primitives.hpp`、`packed_chart_tables.hpp` 移至 `engine/chart/codec_include/cuexis/chart/`；把 `candidate_lowering.hpp`、`candidate_assembler.hpp`、`behavior_candidate.hpp`、`cxt_v2_loader.hpp`、`chart_migrator.hpp`、`packed_chart_io.hpp` 移至 `tools_include/cuexis/chart/`，保留 include 拼写。新 `codec_include/cuexis/chart/packed_chart_reader.hpp` 单独声明 Reader，原 `packed_chart_io.hpp` 转引它并保留 Writer 声明；`packed_chart_tables.hpp` 的 encode 声明移到新 `tools_include/cuexis/chart/packed_chart_writer.hpp`，作者调用方显式包含该头。私有 packed/CXT helper 头留 src 并按所属目标登记，只有具名 codec/tools/旧 Packed 消费者可 PRIVATE 使用该根，不 PUBLIC 传播。T-12 的 `engine/chart/internal` 只经 codec 暴露。两新增 include 根全部 BUILD_INTERFACE、无安装头；基础目标不得转引它们。Playback 普通共享头的 candidate include、metadata 成员及访问/reset/commit 实现与 R1 同步条件化，候选测试访问头只在实验消费者可见；默认拒绝 hook 不要求完整候选类型。
+
+**直接消费者。** 下列为已有边的具名增量，须同步完整 ALLOWED；不以传递 include 偶然可见代替直接使用关系。
+
+| 消费者 | 增量及默认配置接线 |
+| --- | --- |
+| `cuexis_cxc_candidate`、候选 Playback | 按上表显式链接 codec/tools；通用 CXC 仅保留基础 Chart，原包络、CRC、manifest、资源闭包和拒绝顺序保持。 |
+| 旧 `cuexis_gameplay_packed` | PUBLIC codec（头中的 semantic model），PRIVATE tools（旧 encode/atomic write）；T-10 才把原 Judgement 作者边改为 judgement_compile。旧读写混合归档不作为纯 Reader 验收对象。 |
+| `cuexis_chart_candidate` 工具 | 原 chart/cxc/core/json_support/asset_publish/playback 边保留，PRIVATE 加 chart_codec/chart_tools/cxc_candidate；candidate 开关只控制玩法扩展分支，不控制既有 Packed/CXT2 工具功能。 |
+| `cuexis_cxc_tool_common` | PRIVATE 加 cxc_candidate；原通用边保持，默认 developer tools 仍校验候选扩展。 |
+| `cuexis_chart_migrator`、`cuexis_chart_validator` | migrator PRIVATE 加 chart_tools；validator 留基础 chart，不因迁移器接线取得作者库。 |
+| `cuexis_gameplay_author`、`cuexis_gameplay_author_cli` | 按上表及 T-10/T-13 分阶段接线；直接使用原子文件 Writer 的 CLI 显式 PRIVATE 链 chart_tools。 |
+| 现有测试 | `cuexis_chart_tests`、`cuexis_chart_capacity_probe`、`cuexis_asset_publish_tests`、旧 `gameplay_packed` 测试按使用 PRIVATE 加 codec/tools；`cuexis_cxc_tests` 的 candidate bridge 加 cxc_candidate，写 Packed fixture 加 tools；Runtime/Playback 的迁移对照加 tools，候选 metadata 测试仅实验源表。保留原测试注册与默认可用的旧正反例，不以关掉测试实现隔离。 |
+
+Packed 的离线读写和工具校验在 candidate=OFF 时仍有消费者，不能把全部 Packed 用例改成 candidate-only。`tools/practice/compile_entity_practice.cpp` 等手动工具若保留构建说明，其直接编译/链接入口同步 codec/tools；不为此新建常驻 target。
+
+**安装及验收边界。** 默认 static 保留原 `InternalChart`、`InternalJudgement` 等已有实现归档；安装前显式构建安装清单中的目标，不能仅构建 Playback 后假定无链接边的 Judgement 已生成。默认工具/测试启用不把 codec/tools/cxc_candidate 或 judgement_compile 自动加入安装树。实验 static 随实际闭包导出 `InternalChartCodec`；现行候选 CXC/Behavior 与旧 Packed 仍需要 `InternalChartTools`，必须一起导出，不能仅看名为 tools 就漏装。纯 Reader 独立目标只连 codec 与运行库，不借整个实验 Playback 来证明隔离。shared 保留现有仅安装公共库的规则；不安装新增内部头，不新增公开 component。安装 target/alias 均不得悬空，也不得残留源码树 include 或绝对 archive 路径。
+
+验收由 [T-04](../tasks/T-04.md#任务级验收)逐项记录实际 source/include/link 与 installed export 闭包；T-12/T-13 再验证新增适配、纯 Reader 的正向与作者头/符号阴性。内部拆分保持旧 Reader、工具产物、诊断、hash 和已装公共消费者行为，不以链接器未抽取某个 object 代替源表隔离。
 
 ### R1：八个 Playback TU
 
@@ -112,6 +150,21 @@ authority: references
 **shared 内接线与退出。** 上表所有自由 facade 及 `detail` 入口的声明与定义均使用 `CUEXIS_PLAYBACK_API`，`cmake/VerifySharedExports.cmake` 精确允许表列限定名及其合法重载，只放行实验库。`validateExecutionControlProof` 与 `executionAdvanceRetention` 同表迁移，`host_candidate.cpp` 的两处消费者改用仓内入口。实验 DLL 逐函数导出内部符号；头不安装，符号无 SDK 稳定承诺。`PlaybackSession`、`PreparedPlayback`、`ExecutionFence` 无条件 friend 同一前置声明的 `detail::ExecutionHostAccess`，不变更任何布局。过渡期自由函数转发旧成员，保留全部旧导出。另获退出批准后，把原函数体移入同一 Playback TU 的 `ExecutionHostAccess` 静态成员，按原顺序检查并访问三个友元的数据；自由函数只转入这些成员。旧声明和符号仅在这一步移除。`execution_host_support` 继续单独 STATIC，按同版重编；RR-4 以 R5 的具名帧布局增量为默认导出基线，不向默认库追加本表的 Gameplay 或仓内协调符号，候选安装沿既有候选配置。
 
 T-08 安装消费者以现有 [Resume 对照](../../../../../tests/playback/playback_gameplay_execution_tests.cpp) 建两次独立 legacy 实验局：送 `GameplayEpochEnd{{21},1}` 并 Pause；以 `GameplayReconciliation{{21},0,1,0,{}}` 分别走旧、新身份函数和 Resume 入口，新 context `{1,2,2}`、segment `2`、首样本 `22` µs、`finalRouteApplied=true`，结果相同。篡改 `pauseEpoch=2` 后身份变化且提交拒绝，局保留 Paused。实验 shared Player/host 测试以实际库和 `execution_host_support` 驱动 fence、Pause、Resume、close；默认安装探针包含实验头及私有头分别失败，候选安装也不得包含私有头。退出验证重跑同一 shared Player/host 路径并核对只有该组批准移除的旧符号消失；保留组旧消费者仍通过。
+
+### 公共类型分类与兼容清理（F310）
+
+2026-11-23 owner 已选择本轮完成公共面分类与清理，尚未实施；D-19 的实际过渡发布与逐组退出条件继续有效。T-08 以本轮默认/实验、static/shared 的实际安装文件集及其可达声明为全集，包含类、枚举、别名、前置声明、成员和签名依赖；旧“约 96 个类型”只是调查线索，不是删除清单或验收总数。证据放入 T-08 现有目录，每项记录声明位置、安装配置、公开签名/字段依赖、仓内/独立宿主消费、下表分类、动作与阻塞条件；声明仅一次归类，所有安装声明均须有落点。没有仓内调用不证明没有外部消费者。
+
+| 分类及具名锚点 | 本轮决定与兼容边界 |
+| --- | --- |
+| 默认宿主能力：`PlaybackSource`、`PreparedPlayback`、`PlaybackSession`、`FrameSnapshot`、内容/provider、Timeline 及其参数/结果 | 保留既有入口及完整直接类型链；仅去除经证明不需要的传递 include，不减少宿主能力。Core/Audio/Content 的可达公共类型记录为外部合同依赖，不借本卡重定义。 |
+| 候选宿主能力：`gameplay_candidate.hpp` 的配置/内容/结果/恢复类型、`execution_coordination.hpp` 的 capture/推进/Resume DTO 及 realtime 类型 | 新 facade 使用同一份原类型定义；保留旧头拼写、命名空间、类型身份和旧宏消费。按用途组织实验入口的窄 include 链，不复制 DTO 或以外观相同的新类型代替。 |
+| 仓内协调：`execution_control.hpp` 的 owner/步骤/控制 proof 与 `presentation_candidate.hpp` 的候选交付类型 | 仓内调用转入既定内部桥；被任何仍受支持公开签名、成员或 inline 代码依赖的类型继续保留所需公开定义。全部公开依赖退出后才可搬完整定义到内部根，不能先搬头使旧消费者失效。 |
+| 共享身份/资源：`PreparedSemanticIdentity`、`PresentationResourceRef`、manifest、portable 资源及 `ReplaySourceIdentity` 等跨入口值 | 沿各自合同保留唯一完整定义及必要前置声明；内部 identity access 的迁移不带走公开值类型。不以 private/friend 名称或无直接宿主调用绕开已安装类的源码/布局检查。 |
+| 休眠或待退役：`ShaderStage`、`shaderGlslEs300`、`builtInRendererProfileVersion`、`SessionState::Failed` 等 | F210/F408/F412 记录真实生产/消费及当前无效或保留语义；不激活新功能，不重排枚举，不删字段或改变布局。弃用与移除跟随所属接口组及 D-19，未满足条件时明确保留，不以“全面清理”批准破坏兼容。 |
+| 确认未安装且无公开依赖的实现声明 | 具名迁移到既有内部根，或在仓内全调用/构建闭包证明无用后删除；先迁移真实消费者。仍有任何公开引用、安装可达性或证据不明时转回相应保留类，禁止自动删除。 |
+
+本轮完成要求是全集无漏项、每项有决定、可兼容动作已落实；公共退出条件未满足的项保持原面并具名列出发布/替代/消费者门槛，不能标为已删除。T-08 复用四配置安装消费者与导出门禁，检查旧头独立可编译、同一类型身份和受影响类布局/枚举值不变；新 facade 可调用，内部头在安装树不可见。只移除经证实无用的传递 include 时，须核对既有独立消费者是否依赖该可见性，有破坏则保留至对应窗口。每类的适用编译/运行对照与清单关联，不另建治理框架；缺项、未分类或旧消费者破坏均不得关闭 F310。
 
 ## Prepared 与当次推进
 
@@ -369,7 +422,7 @@ auto roundMicroseconds(double us) -> core::Result<TimeUs>;
 
 保持已规划 v5 alpha、Behavior/Clip/CXT 与旧 `compileBehaviorCandidate` 接受集。可选多画幅、默认项、规约、取景范围及 prepared 类型只由 [作者画幅](render-player-writer.md#作者画幅) 定义；时间与判定模块不持画幅或设备键位。v1–v4 Reader 不增字段。输入映射按 [Player 输入](render-player-writer.md#命令与启动)。
 
-`gameplay.version=3` 要求外层 `format="cuexis.chart",version=5` 与 `gameplay.authorProfile="gameplay.author.beat-us.v1"`。从 Chart 读取唯一 `offsetMs,defaultBpm,tempoEvents,stops`；[v4 timing 形状](../../../../../schemas/cuexis.chart.v4.schema.json)不变，Stop 只接受 `beat,durationMs`（有限正数，不接受 `endBeat`）。`offsetMs` 量化后独立保存，不参与积分。先按 version 派发，再核验 profile，不从字段推断或 fallback。无 Gameplay、旧 v5/v2 与当前纯表现 Reader 保留旧路径；默认不启用 v3。
+`gameplay.version=3` 要求外层 `format="cuexis.chart",version=5` 与 `gameplay.authorProfile="gameplay.author.beat-us.v1"`。从 Chart 读取唯一 `offsetMs,defaultBpm,tempoEvents,stops`；[v4 timing 形状](../../../../../schemas/cuexis.chart.v4.schema.json)不变，Stop 只接受 `beat,durationMs`（有限正数，不接受 `endBeat`）。`offsetMs` 量化后独立保存，不参与积分。先按 version 派发，再核验 profile，不从字段推断或 fallback。无 Gameplay、旧 v5/v2 与当前纯表现 Reader 保留旧路径；RR 阶段默认不启用 v3，正式默认切换归 Stage 8 验收。
 
 `schemas/candidate/cuexis.gameplay-author.beat-us.v3.schema.json` 复用 [inline v2](../../../../../schemas/candidate/cuexis.gameplay-inline.t4-k4.v1.schema.json) 的非差量定义，v5 schema 用 `oneOf` 分派。新对象 `additionalProperties:false`，除 `?` 外各字段均必填。`id` 符合 `^[A-Za-z_][A-Za-z0-9_.-]{0,63}$`；`i64/u64/u32` 接受确切整数 token（小数、指数、越域拒绝）；毫秒为有限 binary64 JSON number；`Beat={numerator:i64,denominator:i64>0}`，源可未约分，编译值约分。
 
@@ -495,7 +548,7 @@ D-04 先接受 Spec/ADR 再改 schema/实现。两个新增 Stop 码及容量码
 | horizon 逆转 | `judgement.timebase.time_reversal` / `invalid_relation`。 |
 | 预检后执行故障 | 当次只返回无分配的 `FaultCode`；Fold 的详细观察沿 `ruleset.transaction_failed` / `invalid_relation` + `session_faulted`；其它原内核故障诊断不改。 |
 
-迁移顺序：先冻结 v1–v4/v5 candidate、v2 Graph1/rev2–4 的接受与拒绝 fixture、wire/hash/replay golden；再注册上表新增码并生成 `python -B tools/verification/gen_docs_codes.py`，跑诊断门禁；接 timing/作者 schema 与新 Reader 并保持旧 readiness。Stage 8 提升时在 Chart v5 计划 §3.8 与 Stage 8 发行矩阵明确 v3 是独立候选/正式组合，更新 `CHART_V5_FORMAT`、Gameplay v3 Spec/ABI、`GAMEPLAY_GRAPH_*_FORMAT`、`GAMEPLAY_CAPSULE_*_FORMAT`、`CHART_ENTRY_V1_FORMAT`、`PACKED_CHART_FORMAT`、`TIMING_MODEL`、新版 schema/诊断/兼容说明，记录 Stage 8 原 v2 默认不变。无 playback 路径自动转换旧输入；离线 Writer 只在字段、窗口、身份与能力可证明无损时生成新目标，失败保留原字节及当前会话。
+迁移顺序：先冻结 v1–v4/v5 candidate、v2 Graph1/rev2–4 的接受与拒绝 fixture、wire/hash/replay golden；再注册上表新增码并生成 `python -B tools/verification/gen_docs_codes.py`，跑诊断门禁；接 timing/作者 schema 与新 Reader 并保持旧 readiness。Stage 8 将 v3 收敛为正式主线时，在 Chart v5 计划与发行矩阵明确正式组合、默认能力和旧内容兼容范围，更新 `CHART_V5_FORMAT`、Gameplay v3 Spec/ABI、`GAMEPLAY_GRAPH_*_FORMAT`、`GAMEPLAY_CAPSULE_*_FORMAT`、`CHART_ENTRY_V1_FORMAT`、`PACKED_CHART_FORMAT`、`TIMING_MODEL`、新版 schema/诊断/兼容说明，记录新创作默认 v3、旧版本直接读取及所用正式编码的接受证据；不再将 v2 完整正式化列作新交付。无 playback 路径自动转换旧输入；离线 Writer 只在字段、窗口、身份与能力可证明无损时生成新目标，失败保留原字节及当前会话。
 
 ## 验收向量与任务前置
 

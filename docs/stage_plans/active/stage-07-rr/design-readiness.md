@@ -2,7 +2,7 @@
 
 状态：candidate；独立 checkout 复审后的修订与验证以本轮报告为准，未实施、未发布
 
-更新日期：2026-11-22
+更新日期：2026-11-23
 
 <!-- cuexis-meta
 id: PLAN-active.stage-07-rr.design-readiness
@@ -20,9 +20,11 @@ authority: index
 | 先做纯函数原型 | 快速暴露数值与测试问题 | 不能验证完整消费、安装和迁移路径 |
 | 只任务化 D-05 现行范围 | 缩短首批路径 | P3/P4/P5 仍需重建设计上下文 |
 | 把跨阶段实现合成一条重构 | 可能减少临时桥 | 扩大范围，回滚和旧集验证难隔离 |
-| **合同和任务一次收敛，分范围采用** | 每个切片有明确接口、落点与正反证据；现行范围与后继分别可审 | 需要核对跨合同字段、调度和兼容窗口 |
+| **合同与任务统一安排，分批实施验收** | 已接受的修复、结构清理与实验能力连续交付，每卡有明确写域和正反证据 | 需维护真实前置及旧 SDK 兼容窗口，最终退出须核对全部分支 |
 
-推荐第五条。它把技术选择一次写全，同时保留独立采用边界；开发者可按受权切片处理，无需为实施范围或接口细节重开提案。
+2026-11-23 按 owner 决定采用第五条的统一安排：T-01–T-17 及具名全面结构清理均纳入本轮。新玩法先实现并实验验证，Stage 8 按后续续议以 v3 为正式主线并保留已承诺旧内容兼容；公开接口实际退役继续按组保留过渡条件。裁定与残余处置见[登记册 §24](findings.md#24-统一实施前设计裁定2026-11-23)。
+
+2026-11-23 的最新 plan/task 接手复查见[报告](../../../stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md)和[登记册 §25](findings.md#25-实施接手复查2026-11-23)。任务执行口径以修订后的卡为准；旧轮次的待审或阶段外移交记录不覆盖后续裁定。
 
 ## 七维闭合口径
 
@@ -44,7 +46,7 @@ Huygens、Nash、Epicurus、Bacon 分别复验 R1、R5 帧交付与 `NEXT` 合�
 
 ## 缺口追踪
 
-Player 与工具外部行为按 [D-16 已接受共识](architecture-design.md#外部行为2026-11-21-owner-已接受拟实施)记录；[P4 启动与退出](contracts/render-player-writer.md#命令与启动)由 T-14/T-15 分验，[P5 工具行为](contracts/render-player-writer.md#工具外部行为)由 T-13/T-16 分验，仍待后继实施授权。
+Player 与工具外部行为按 [D-16 已接受共识](architecture-design.md#外部行为2026-11-21-owner-已接受拟实施)记录；[P4 启动与退出](contracts/render-player-writer.md#命令与启动)由 T-14/T-15 分验，[P5 工具行为](contracts/render-player-writer.md#工具外部行为)由 T-13/T-16 分验，均纳入本轮安排，生产实施尚未启动。
 
 | 审查编号 | 维度及唯一设计落点 | 任务 | 验收证据 |
 | --- | --- | --- | --- |
@@ -77,7 +79,7 @@ Player 与工具外部行为按 [D-16 已接受共识](architecture-design.md#�
 | P5.3 | 迁移：[discardedFields 处置](contracts/render-player-writer.md#损失定位与迁移映射) | [T-16](tasks/T-16.md) | Migrator 损失与 Writer 差异不丢失 |
 | P5.4 | 构建/迁移：[旧 helper 与调用](contracts/render-player-writer.md#调用点与可见性) | [T-16](tasks/T-16.md) | 调用扫描与写回回归 |
 | P5.5 | 构建：[Writer 消费可见性](contracts/render-player-writer.md#调用点与可见性) | [T-16](tasks/T-16.md) | 私有头不安装；CLI 不提交有损成品 |
-| P6/§5 任务化 | 任务索引、唯一调度、阶段矩阵与交叉验证 | [T-01](tasks/T-01.md)、[T-09](tasks/T-09.md) | 七段卡结构、调度覆盖、A-01–A-06 回执；追溯见[本轮处置](findings.md#13-可实施性审查处置2026-11-21) |
+| P6/§5 任务化 | 任务索引、唯一调度、阶段矩阵与交叉验证 | [T-01](tasks/T-01.md)、[T-09](tasks/T-09.md) | 七段卡结构、调度覆盖、A-01–A-09 回执；追溯见[本轮处置](findings.md#13-可实施性审查处置2026-11-21) |
 | P6/§5 基线与台账 | 采用入口、基线记录、回滚与停止条件 | [T-01](tasks/T-01.md) | 基线绑定、已接受 D 项与实施记录分开；追溯同上 |
 
 P3 的编译期和 prepare 期验收分别落在 T-12、T-13；旧接受集合裁定由 T-11 的合同差异固定。P1 的[旧 API 逐符号迁移](contracts/runtime-timing.md#rr-4-逐符号兼容迁移)由 [T-08](tasks/T-08.md)独立执行；旧宏成员退出、已保护渲染入口退役和 SDK 晋升按各组替代稳定性及发布裁定进入后继门禁；Judgement 晋升独立评估，不预排统一版本。

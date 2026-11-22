@@ -2,7 +2,7 @@
 
 状态：future；未启动，仅为方向提纲
 
-更新日期：2026-11-17
+更新日期：2026-11-23
 
 <!-- cuexis-meta
 id: PLAN-future.stage-10.plan
@@ -20,16 +20,17 @@ authority: none
 
 ## 范围与边界
 
-- 前置基线为 Stage 8 的 Chart v5 / CXT v2 / Packed Chart 与 Stage 9 中首个 Studio 发行所需的 Presentation 扩展；本阶段不重新验收这些合同。
+- 前置基线为 Stage 8 正式验收的 Chart v5 + Gameplay v3、CXT v2 / Packed Chart 与 Stage 9 中首个 Studio 发行所需的 Presentation 扩展；新创作默认使用正式 v3 Writer 与已验证播放组合，复用已接受成果，在 Studio 集成处补消费与行为对照，不重建基础实现。
+- 按 [RR §24](../../active/stage-07-rr/findings.md#24-统一实施前设计裁定2026-11-23)承接届时实际接受的 Chart 基础/codec/tools 分层、资源生命周期、公共类型边界和单一会话 owner。RR 仍承担 v3 实验实现与验证，Stage 8 承担正式验收；Studio 保留已承诺旧内容兼容，不要求完整新交付 v2 正式化，不把旧 v2 规则改写为 v3。所选额外实验组合须有独立试用依据，接口是否公开仍按 SDK 成熟度决定。
 - Studio 只编辑作者源（Chart v5 authoring document 与 CXT v2），不直接编辑 Packed Chart；Packed Chart 是确定性编译产物。
 - 预览工作台、发行工作流和资源工作流都必须复用 Player 已验收的求值路径；本阶段不因 Studio 需要而修改 Chart、Input、Judgement、Replay 或 FrameSnapshot 语义。
 - 与 Stage 11–14 的边界：本阶段不做曲线/高级表现、平台规模化、稳定 C ABI 或发行后的能力扩展。
 
 ## 入口条件
 
-- Stage 7A Gameplay Foundation 关闭。
+- Stage 7 已接受的 Gameplay 基线及所需 RR 交付有可定位的实现与验收记录；设计接受或历史受限退出不替代 Studio 所需能力的证据。
 - Stage 7.5 中首个 Studio 发行所选能力已被接受。
-- Stage 8 Chart v5 / CXT v2 / Packed Chart 关闭。
+- Stage 8 Chart v5 + Gameplay v3、CXT v2 / Packed Chart 正式验收完成，正式 Writer 与已验证播放组合有可定位证据。
 - Stage 9 中首个 Studio 发行所需的 Presentation 扩展已交付并接受。
 - 若采用 PD 基线，[PD 细则 §12.3](../../completed/stage-07/04-pd/design.md) 的预览与控制合同已接受。
 
@@ -37,11 +38,12 @@ authority: none
 
 - Studio 是作者工具，不建立第二套 Chart 编译、Judgement、Runtime 或 Presentation 求值路径；不直接编辑 Packed Chart。
 - Viewport、Timeline 和拖动时间预览必须复用 PlaybackSession；Studio 的判定结果必须与 Player 和 external consumer 一致。
-- 拖动时间复用 Seek；未接纳的 UI 请求可合并，已接纳的可靠控制必须有实际终态。
+- 拖动时间复用所选内容/玩法版本已接受且实际验证的 Seek；RR v3 实验完成或 Stage 8 格式正式化均不自动提供新 Seek，尚不支持的请求须明确拒绝。未接纳的 UI 请求可合并，已接纳的可靠控制必须有实际终态。
 - 采用 PD 基线时遵守 [PD 细则 §12.3](../../completed/stage-07/04-pd/design.md)：Undo/Redo 不使用 Runtime mutation guard 实现；编辑后沿共同 compile/prepare 构建带文档 revision/请求身份的候选，编译/prepare 失败不替换旧软件预览；软件已提交后设备激活失败保留实际软件版本与回执并进入 Suspended；结果不明时沿原操作查询/收束，不能把超时或取消请求当作已回滚；不承诺跨设备原子回滚。
 - 按 §12.3 收束设备阶段：旧编译结果在软件安装前复核请求身份，已产生副作用的旧操作必须收束，后续编辑不构成自动取消；恢复复用原合同允许的重试/重建/关闭，设备阶段重试不得重做软件提交；重新选择旧文档也须走合法新事务，不增加常驻第二套预览运行状态。
 - 作者文档版本、已提交软件预览版本、最后成功画面来源和可用状态分别显示；旧 CPU 图不证明旧预览仍有设备许可。全域确认后物化或首次 present 失败，不撤回软件提交或作者编辑。
-- 保存是独立原子文件事务；编译和打包失败不得破坏上一份有效文件或有效预览。
+- 保存沿 [RR Writer 与显式迁移](../../active/stage-07-rr/contracts/render-player-writer.md#p5内部-writer-与显式迁移)分离文本/损失报告与文件发布；编辑器决定告知、覆盖、另存或取消，自动保存也遵守该决定。RR 内部 Writer 的同版 Chart v3/v4 支持不等于 v5 保存已实现；Studio 接入 Stage 8 正式 Chart v5 + Gameplay v3 Writer 并补齐编辑器保存流程，复用已有保真、损失和发布机制，不另建通用写回框架。旧内容沿已承诺路径保存或显式迁移，离线编译/打包仍拒绝有损交付。
+- 按 [D-19](../../active/stage-07-rr/architecture-design.md#d-19-sdk-示例与宿主试用)区分官方应用内部工具和第三方 SDK：内部 Writer、应用支持库与控制器不因 Studio 使用而安装或成为编辑器 SDK；第三方只用已安装公开面，实际缺口沿独立实验包试用与成熟度接受处理。预览复用已有会话控制实现，文档/Undo 状态归 Studio，不复制普通/判定两套控制权。
 - StudioPreferences、布局、最近项目、自动保存和本机路径不得写入 ProjectConfig、Chart 或 CXC 内容语义。
 - 多视口不是本阶段隐含能力：若产品需要，另行比较独立 session 与共享 session 多端的运行状态、控制和资源成本；两者都使用同一求值实现，不能仅增加 ConsumerId 就宣称获得独立 Renderer。
 - Studio 不暴露 World、EnTT、OpenGL、JSON DOM 或 Packed 内部实体给公共 SDK。
@@ -61,7 +63,7 @@ authority: none
 1. 首个 Studio 发行版纳入哪些 Stage 7.5 与 Stage 9 能力？由 owner 在启动时批准。
 2. 是否需要多视口；若需要，选独立 session 还是共享 session 多端？由产品所有者在启动时决定。
 3. Studio MVP 与正式产品的边界由谁定义、何时冻结？由 owner 决定。
-4. 发行基线是否包含 PD；若包含，由哪个已接受批次提供 §12.3 的实现与证据？
+4. 哪个实际交付基线提供首版所需的预览事务与 Seek；若包含 PD，由哪个已接受批次提供 §12.3 的实现与证据？未覆盖的内容版本能力须显式选择范围。
 5. 设备阶段的重试/重建/关闭恢复策略采用哪种已接受形态？由 owner 与 Runtime owner 在启动时决定。
 
 ## 验收标准
@@ -69,9 +71,10 @@ authority: none
 启动时定义。当前只写方向性判据：
 
 - Studio、Player 与 external consumer 使用同一 PlaybackSession/Runtime 路径，判定结果一致。
-- Chart v5 与 CXT v2 可编辑、保存、校验和重新加载，Pattern 展开结果可预览且与 Packed 编译结果一致。
-- CXC 打包产物可直接被 Player 播放，编译/打包失败不破坏上一份有效文件或有效预览。
-- 保存/迁移失败不破坏作者文档；预览准备阶段发现资源缺失不替换旧软件状态；运行期设备或资源失效按实际控制阶段恢复，不扩大作者事务的回滚范围。
+- 新创作默认 Chart v5 + Gameplay v3；作者源与 CXT v2 可编辑、保存、校验和重新加载，Pattern 展开结果可预览且与 Packed 编译结果一致，使用 Stage 8 正式 Writer 与已验证播放组合。
+- CXC 打包产物可直接被 Player 播放；编译/打包在发布前失败保持上一份有效文件和软件预览，发布或恢复失败按实际文件状态报告，不虚报完成。
+- 同版保存重读及字段保真、显式迁移损失、用户拒绝/另存/覆盖均有对照；发布前拒绝保持原文件，发布或恢复失败保留可用备份并报告实际阶段，不把恢复尝试记作已回滚。预览准备失败不替换旧软件状态，运行期故障按实际控制阶段恢复，不扩大作者事务的回滚范围。
+- Studio 的正式 v3 组合及所选额外实验组合与 Player、独立安装消费者分别对照；Seek 按实际支持版本验证成功或明确拒绝。内部作者工具不进入 SDK 安装面，已承诺旧内容沿具名输入和独立预期复验，不以新输出自证兼容。
 - 若采用 PD 基线，预览替换按 §12.3 验证未提交失败、终态未生效、取消超时、SoftwareApplied 后设备失败、全域确认后首次构帧/呈现失败，且作者、软件与画面版本及许可分别正确。
 - Studio 不通过公共 SDK 暴露 World、EnTT、OpenGL、JSON DOM 或 Packed 内部实体。
 

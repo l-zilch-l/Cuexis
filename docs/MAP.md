@@ -170,6 +170,13 @@ authority: index
 | [stage_plans/active/stage-07-rr/tasks/T-07.md](stage_plans/active/stage-07-rr/tasks/T-07.md) | active | owns | T-07 RR-3/R6 与 RR-5 文档、注释减重 |
 | [stage_plans/active/stage-07-rr/tasks/T-08.md](stage_plans/active/stage-07-rr/tasks/T-08.md) | active | owns | T-08 独立 RR-4 公共面 |
 | [stage_plans/active/stage-07-rr/tasks/T-09.md](stage_plans/active/stage-07-rr/tasks/T-09.md) | active | owns | T-09 RR-6 退出与交接 |
+| [stage_plans/active/stage-07-rr/tasks/T-10.md](stage_plans/active/stage-07-rr/tasks/T-10.md) | active | owns | T-10 候选运行内核与当次输出 |
+| [stage_plans/active/stage-07-rr/tasks/T-11.md](stage_plans/active/stage-07-rr/tasks/T-11.md) | active | owns | T-11 候选格式、诊断与作者比例 |
+| [stage_plans/active/stage-07-rr/tasks/T-12.md](stage_plans/active/stage-07-rr/tasks/T-12.md) | active | owns | T-12 候选时间映射与作者编译 |
+| [stage_plans/active/stage-07-rr/tasks/T-13.md](stage_plans/active/stage-07-rr/tasks/T-13.md) | active | owns | T-13 候选成品装载 |
+| [stage_plans/active/stage-07-rr/tasks/T-14.md](stage_plans/active/stage-07-rr/tasks/T-14.md) | active | owns | T-14 候选会话控制与时钟 |
+| [stage_plans/active/stage-07-rr/tasks/T-15.md](stage_plans/active/stage-07-rr/tasks/T-15.md) | active | owns | T-15 候选 Player 启动与交互 |
+| [stage_plans/active/stage-07-rr/tasks/T-16.md](stage_plans/active/stage-07-rr/tasks/T-16.md) | active | owns | T-16 候选 Writer 与损失报告 |
 | [stage_plans/active/stage-07-rr/tasks/T-17.md](stage_plans/active/stage-07-rr/tasks/T-17.md) | active | owns | T-17 会话层 P1 正确性修复 |
 | [stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-candidate-and-memory-domains-plan.md](stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-candidate-and-memory-domains-plan.md) | accepted | owns | PD-5 读取候选与分域内存观测实施方案 |
 | [stage_plans/completed/stage-07/05-rpa-new/r4/caps-proposal.md](stage_plans/completed/stage-07/05-rpa-new/r4/caps-proposal.md) | accepted | owns | R4 O1 预算与生产参数裁定包 |
@@ -180,13 +187,6 @@ authority: index
 | [stage_plans/active/stage-07-rr/contracts/runtime-timing.md](stage_plans/active/stage-07-rr/contracts/runtime-timing.md) | candidate | references | P1 / P3：运行内核、谱面时间与成品合同 |
 | [stage_plans/active/stage-07-rr/design-readiness.md](stage_plans/active/stage-07-rr/design-readiness.md) | candidate | index | Stage 7-RR 可实施性索引 |
 | [stage_plans/active/stage-07-rr/simplification-proposal.md](stage_plans/active/stage-07-rr/simplification-proposal.md) | candidate | summarizes | Stage 7-RR 架构精简方案基线索引 |
-| [stage_plans/active/stage-07-rr/tasks/T-10.md](stage_plans/active/stage-07-rr/tasks/T-10.md) | candidate | owns | T-10 候选运行内核与当次输出 |
-| [stage_plans/active/stage-07-rr/tasks/T-11.md](stage_plans/active/stage-07-rr/tasks/T-11.md) | candidate | owns | T-11 候选格式、诊断与作者比例 |
-| [stage_plans/active/stage-07-rr/tasks/T-12.md](stage_plans/active/stage-07-rr/tasks/T-12.md) | candidate | owns | T-12 候选时间映射与作者编译 |
-| [stage_plans/active/stage-07-rr/tasks/T-13.md](stage_plans/active/stage-07-rr/tasks/T-13.md) | candidate | owns | T-13 候选成品装载 |
-| [stage_plans/active/stage-07-rr/tasks/T-14.md](stage_plans/active/stage-07-rr/tasks/T-14.md) | candidate | owns | T-14 候选会话控制与时钟 |
-| [stage_plans/active/stage-07-rr/tasks/T-15.md](stage_plans/active/stage-07-rr/tasks/T-15.md) | candidate | owns | T-15 候选 Player 启动与交互 |
-| [stage_plans/active/stage-07-rr/tasks/T-16.md](stage_plans/active/stage-07-rr/tasks/T-16.md) | candidate | owns | T-16 候选 Writer 与损失报告 |
 | [stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-result-candidate.md](stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-result-candidate.md) | candidate | owns | PD-5 C2: caller-owned neutral read result candidate |
 | [stage_plans/completed/stage-07/05-rpa-new/r3/trusted-restore-candidate.md](stage_plans/completed/stage-07/05-rpa-new/r3/trusted-restore-candidate.md) | candidate | owns | R3b explicit trusted restore candidate |
 | [stage_plans/future/realtime-playback-foundation/plan.md](stage_plans/future/realtime-playback-foundation/plan.md) | future | owns | Stage 7-RPA 计划迁移入口 |

@@ -2,7 +2,7 @@
 
 状态：candidate contract；当前分支 SDK 0.9.1 preview；发行、设备与生产接受独立
 
-更新日期：2026-10-28
+更新日期：2026-11-23
 
 <!-- cuexis-meta
 id: API-realtime-host-boundary
@@ -86,7 +86,8 @@ Gameplay 的 Prepared/Running/Paused/Faulted 保持独立；Suspended 是禁止�
 | 连续交付尚有缺口 | Waiting，reason=InputPrefix | 保留输入、精确重传；不借超时跳过 |
 | 时钟无效/超期/误差参数缺失 | `host.rpa.clock_invalid` | 撤销许可；显式新段恢复，不静默 fallback |
 | 配置预算未测量 | `host.rpa.profile_incomplete` | 生产启动拒绝；testOnly 明示 |
-| 可靠通道不能接纳 | `host.rpa.capacity_exceeded` | 未发送请求明确拒绝；已捕获无法保留则记录 gap 并 Suspended |
+| 配置预算或容量耗尽，可靠通道不能接纳 | `host.rpa.capacity_exceeded` | 未发送请求明确拒绝；已捕获无法保留则记录 gap 并 Suspended |
+| 观测桥操作因实际内存分配失败而未完成（F135 已接受、未实现） | `host.rpa.allocation_failed` | 由预留故障槽保留失败；按下节区分操作失败与单纯观测丢失，不伪报提交或呈现成功 |
 | PauseTrace 已确认不可补齐 | `host.rpa.capture_gap` | 拒绝直接续跑；保留结果，显式 Stop/reset/完整恢复 |
 | 已接纳操作迟迟无设备回执 | `host.rpa.device_pending` | 报实际阶段；超时不是回滚或 Closed |
 | renderer/audio 失败 | `host.rpa.device_failed`，cause 保留原码 | 按实际副作用收束；未生效步骤依B1取消；切段或软件提交后保留实际状态，不假回滚 |
@@ -108,6 +109,26 @@ host.rpa 码只属于宿主协议，不投影成 judgement.*，不增加 N3 九�
 控制消息和故障回执各有预留容量。D1 的切段步骤也遵循下面 B1，Applied 的 payload 为
 CutApplied(cut,q,pauseEpoch)；当前未执行为 Pending，不能用裸 NotApplied 充当取消成功。
 超时/查询不到记录只表示未知，保持实际宿主状态和禁止推进要求，不授权撤销或重发新操作。
+
+### F135 观测桥错误分类修订（已接受、未实现）
+
+2026-11-23 owner 按 Stage 7-RR D-04 接受新增稳定宿主码 `host.rpa.allocation_failed`；
+[T-03](../stage_plans/active/stage-07-rr/tasks/T-03.md)绑定合同与旧新映射，
+[T-06](../stage_plans/active/stage-07-rr/tasks/T-06.md)落实观测桥及故障注入验收。
+当前观测桥仍把部分分配失败映射为 `host.rpa.capacity_exceeded`，本节不表示实现已修复。
+
+实际分配失败导致操作无法完成时使用 `host.rpa.allocation_failed`；配置预算或容量确实耗尽时
+保留 `host.rpa.capacity_exceeded`。复用现有预留 `FaultSlot` 的 allocation/capacity 原因，
+不新增错误框架，不向 judgement 诊断 schema 登记宿主码。仅凭 catch-all 不能断定发生分配失败；
+其他异常须保留可核实的原因与既有边界处理，不能统一改报 allocation_failed。
+
+故障报告本身不得再次分配内存。预建 owning `core::Error` 的复制也可能分配，不能仅凭
+“预先构造”认定安全；故障槽及错误交付路径必须在分配器持续失败时仍可用，并保留实际失败阶段。
+
+单纯丢失观测记录时，允许原执行继续，但必须留下不完整/Unknown 标记；观测缺失不能反向
+阻塞 Gameplay，也不能用来证明实际 submit/present 成功。若请求的操作本身未完成，须如实报告
+该操作失败；不得用允许丢观测的规则掩盖操作失败。区分依据是实际副作用与该入口的职责。
+本次修订限定于 F135 观测桥切片；其他宿主路径的稳定码变更仍须各自的合同接受记录。
 
 ### 2.1 B1：owner 串行裁决 Apply 与 Cancel
 

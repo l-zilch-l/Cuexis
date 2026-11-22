@@ -2,7 +2,7 @@
 
 状态：future；未启动，仅为方向提纲
 
-更新日期：2026-11-17
+更新日期：2026-11-23
 
 <!-- cuexis-meta
 id: PLAN-future.stage-13.plan
@@ -20,8 +20,10 @@ authority: none
 
 ## 范围与边界
 
-- 前置基线为 Stage 8 Chart v5、Stage 9 Chart v6 / Model v1、[Stage 11](../stage-11/plan.md) 的 Chart v7 单轴表现，以及 [Stage 12](../stage-12/plan.md) 针对所选表现 profile 的规模化与平台证据。
+- 前置基线为 Stage 8 Chart v5＋Gameplay v3 正式交付、Stage 9 Chart v6 / Model v1、[Stage 11](../stage-11/plan.md) 的 Chart v7 单轴表现，以及 [Stage 12](../stage-12/plan.md) 针对所选表现 profile 的规模化与平台证据。
+- 继承前置阶段接受的 [RR 会话、时间及应用边界](../../active/stage-07-rr/plan.md)；新表现工作挂到同一会话 owner 和提交路径，复用既有动画运行时。粒子的固定步长是表现域内部求值规则，不建立第二个播放时钟。
 - 与 Stage 11 的边界：双轴形变在 v7 单轴 identity 与标架规则之上扩展，不改变 v7 单轴语义；后处理执行 Stage 11 冻结的包根 `shader.json` 接口。
+- Chart v8 仅扩展表现；Gameplay 版本与旧内容规则沿所选正式基线，不因粒子或模型动画自动变化。
 - 与 Stage 14 的边界：稳定 C ABI 归 Stage 14；本阶段的可选能力未完成不阻塞 Stage 14。
 - 本阶段不修改 Judgement、Score、Replay 或 FrameSnapshot 的既有语义，只按各自的版本门禁扩展表现相关字段。
 
@@ -40,6 +42,7 @@ authority: none
 - 后处理只执行 Stage 11 冻结的包根 `shader.json` 接口，只允许 SDK 内置效果与有类型参数；未知效果、参数越界或能力缺失稳定拒绝；后处理不得改变 Judgement/Replay，是否进入 FrameDigest 由 ADR 明确分离。
 - 粒子默认使用 ChartTime，允许显式 LocalTime，暂停、Seek、discontinuity 语义固定；固定步长、版本化 RNG、绝对时间重建；Checkpoint 只作运行时缓存，不写入 Chart；GPU 路径不得静默替代具备确定性要求的 CPU 语义；无法在同步调用预算完成的重建只能走已接受的显式任务，分片期间为可诊断 building，超限明确失败，旧同步入口不得以 rebuilding 冒充成功。
 - 采用 PD 基线时消费 [PD 细则 §12.2、§12.5–12.7](../../completed/stage-07/04-pd/design.md)：先在所属 ADR/Spec/ABI 接受显式任务、进度/取消/终态、时钟与版本迁移；每会话一个有界候选，固定目标后分片推进，中间步不发布状态修订、不推进 projection cursor、不扣 RemainingFrames；全部必需域完成同一采样点后复用无失败安装/finalize 一次提交，读桥/Renderer 不运行粒子模拟；旧完整图仅在原来源与控制仍合法时可保留显示，不代表目标完成，Seek/Reload 换作用域后不能重绑旧图。
+- 粒子重建的工作量与内存预算归算法合同；设备恢复等等待的超时由平台 Player 决定，SDK 不添加设备等待期限。显式任务必须报告真实进度、取消清理及终态，具体粒子任务字段仍在本阶段冻结。
 - 候选/Checkpoint/current/scratch 峰值、取消清理、单片和总工作上限分别入账，重建超限不得无限追赶、拼接不同时间的域或显示近似结果；离线/预览可显式等待，实时普通更新准入须满足最坏推进预算。确定步长、RNG、Checkpoint 算法与具体公共任务字段仍由本阶段冻结，PD 不提前实现。
 - 合法 v4–v7 输入的既有 digest、Judgement、Score 和 Replay 结果不变；不支持能力稳定拒绝，不降级为 v7 或普通 Transform。
 
@@ -57,7 +60,7 @@ authority: none
 1. 首批后处理效果目录是否只含 identity、fade、vignette、color-multiply？由 owner 与渲染 owner 决定。
 2. 粒子的固定步长、RNG 算法、Checkpoint 算法和公共任务字段由本阶段冻结，启动时由谁批准？
 3. Chart v8 与确定性粒子交付 candidate 还是正式 capability？由 owner 在启动时决定。
-4. 是否采用 PD 基线；若采用，由哪个已接受批次提供 §12.5–12.7 的任务/取消/终态合同与证据？
+4. 前置阶段实际交付的 PD/RR 任务、取消与终态能力是否足以承载粒子重建；若不足，本阶段需补哪些显式任务合同与验证？不得另建并行会话 owner。
 5. 后处理是否进入 FrameDigest 由哪份 ADR 决定？
 
 ## 验收标准

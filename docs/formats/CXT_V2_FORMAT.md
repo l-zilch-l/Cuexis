@@ -2,7 +2,7 @@
 
 状态：candidate；Foundation 作者层模板提案；F2 integer/beat reader 已实现；非生产 Schema
 
-更新日期：2026-09-07
+更新日期：2026-11-23
 
 <!-- cuexis-meta
 id: FORMAT-CXT_V2_FORMAT
@@ -574,8 +574,71 @@ durationScale/weight 属于 Chart Animator Binding，不属于 CXT Clip 内部�
 Core 与 Animation 分别校验/计数。Core 不直接调用 Animation，也不向新生成实体
 隐式添加 Animator。Stage 6 如需把实体生成和动画绑定组合，必须先定义显式
 generated-target binding 合同、候选版本和 golden；不能由 reader 猜测对象名称。
-完整 Animator export/import 映射及其 ANM0 encoding 归 Stage 8 收敛，混合语义见
-[ANIMATION_MIXING.md](ANIMATION_MIXING.md)。
+混合语义见 [ANIMATION_MIXING.md](ANIMATION_MIXING.md)。Stage 8 按[正式 v3 主线](../stage_plans/future/stage-08/plan.md#已确认约束)收敛发行成品编码；
+下述源适配设计由 Stage 7-RR [T-13](../stage_plans/active/stage-07-rr/tasks/T-13.md) 提前承接，
+用于后继成品的 ANI1。ANM0 按实际旧内容兼容范围保留与回归，不为原 v2 正式目标重复建立新链路；
+RR 候选编码不因本条自动正式化。
+
+### 9.1 Chart v5 动画导入与 Animator 映射
+
+**2026-11-23 owner 裁定（RR-F547）：已接受，未实现。** Chart v5 必须遵循既有 v5 表现规则；
+Gameplay v3 不得特许 CXT v1、Clip v1、Behavior Event v1 或旧作者透明度语法。
+本节补齐 T-13 所需的内部源适配设计，不新增作者字段或公共 API。目前 Foundation
+schema 仍仅接受 prototype/pattern、空 animations，Core expander 不展开 animation；
+T-13 须交付独立候选 Animation 分支及验收，不能把本节视为现有实现。
+
+Chart 保留 `animationTemplateImports:[{id,source}]` 与既有 Animator
+`templateBindings:[{bindingId,template:{domain:"animation-template",id},startBeat,durationScale,weight,priority}]`
+形状（见 [Chart 导入](CHART_V4_FORMAT.md#4-animation-template-import)）；只有所读文档改为
+本页 §2 的 CXT v2 animation 模块。import ID 与该文档 `moduleId` 必须相同；唯一
+`exports[0]={kind:"animation",id}` 必须引用同文档一个 `animations[].id`，export ID
+无需等于 moduleId。所有 Animation 定义 ID 唯一，完整验证每个定义；每个定义恰含
+`id,application,clip`，application 与 clip 恰含 §9 所列字段，无未知字段，clip 不另带 id。
+`parameters/prototypes/patterns` 必须为空；模块不携 Gameplay payload，不参与 Core 实体展开。
+未导出的定义仍校验字段、限额和资源引用，但不生成运行 Clip。唯一 export 确定实际导出，
+不能按 animations 数组首项选择。导入的模块未被绑定也须完成校验。
+
+Importer 只从调用方已提供的 `ProjectDocument` 路径/UTF-8 快照取文档；使用既有 portable
+path、小写 `.cxt`、import ID/source 唯一、预算和资源闭包检查。每份文档先守
+`maxInputBytes/maxAnimationTemplateBytes`、JSON 深度与字符串上限；所有 Animation 定义
+（含未导出项）计入 `maxAnimationClips` 及既有累计 track/segment/step 预算，绑定展开另守
+`maxGeneratedAnimationRecords`，先计数再分配，不因唯一 export 跳过未用内容的限额。
+`animationTemplateImports`
+只导入 animation 模块，`cxtImports/cxtInstances` 只处理 prototype/pattern；两者按明确
+moduleKind 分派，同一文档不能获得双重解释。未知必需扩展沿 CXT2 的拒绝规则处理。
+Animator 的 template 引用解析到 import ID，随后取该模块唯一 export 的 Animation；内部
+`TemplateBinding.templateId` 与适配后的 `AnimationTemplateDocument.templateId/clip.id`
+均取 import ID（即 moduleId），不取 export ID。只复用这些 typed 数据与 application 校验，
+不调用 v1 JSON Reader/Writer 重读或重写源；原 v2 bytes 和诊断 source/path 保留。
+
+绑定仍在已解析 Chart 对象的 `cuexis.animator` 中声明；参数先按 ChartParameter 规则解析。
+每个绑定复用现有生成 Clip/Layer/Group/Instance 的四条记录：身份使用原
+`(owner,bindingId,templateId,recordKind)`，其中 templateId 为 moduleId；startBeat、
+durationScale、priority 来自绑定，Group weight 取绑定 weight、Layer/Instance weight 为 1；
+blendMode、iterations、fillMode 来自导出的 application，mask 从其 Clip 的实际属性生成。
+已有正 scale、weight、离散属性、Additive 和 generated-count 门禁保持；无新运行时、回调或名称拼接。此分支不向 Core 生成实体
+隐式添加 Animator；后继成品按其既有 AId/ANI1 合同保存已解析数据。
+
+导入 CXT2 所需 `cuexis.source.cxt.v2`、v5 动画所需 `cuexis.animation.clip.v2` /
+`cuexis.animation.layers.v1` 是宿主 capability 要求，独立于本页 `requiredExtensions`。
+T-13 按[成品合同的源与表现预检](../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md#源输入与-lowering)
+保存源需求并接实际 Playback prepare；只支持 CXT1/Clip1 不能满足 CXT2/Clip2。
+成品已保存解析后的程序，不执行 source import，按自身运行表检查表现能力。
+这些实验检查不提前改变稳定安装 capability 或默认 `allCapabilities()` 发行门禁。
+
+源 Clip 必须 version 2；`render.alpha` 的整数静态值/端点在源边界仅除 255 一次，
+Hermite 归一化斜率原值保留。作者 mask 先在 v5 属性名集合按 exact/prefix 展开，再映射
+内部属性；不能先改成 `material.opacity` 再判断 `render.` 前缀。旧作者属性名拒绝，
+内部 opacity 表示及 Mixer 不变。
+
+诊断沿已有入口：错 CXT 版本 `cxt.version.unsupported`；import/module ID 不符
+`cxt.template.id_mismatch`；错 moduleKind `cxt.v2.module_kind_unsupported`；export 数量、
+kind 或悬挂 id 错 `cxt.v2.exports_invalid`；定义重复 `cxt.v2.id_duplicate`；非空禁用数组
+`cxt.v2.module_shape_invalid`；缺文档/重复导入分别 `cxt.import.missing`/`cxt.import.duplicate`。
+Animator 错引用/domain 为 `chart.animation.template_reference_missing`，重复 bindingId
+为 `chart.animation.template_binding_conflict`。字段形状和 Clip/application 值域沿对应
+CXT2 JSON 与共享动画校验的原码；传播原 source、实际字段路径和 import/binding 上下文。
+失败不产出部分动画程序，不能回退 v1 或另选 export。
 
 ## 10. 展开算法与资源闭包
 

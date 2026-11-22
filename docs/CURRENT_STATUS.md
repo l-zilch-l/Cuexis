@@ -11,7 +11,7 @@ current_register: stage_plans/active/stage-07-rr/findings.md
 
 状态：current
 
-更新日期：2026-11-22
+更新日期：2026-11-23
 
 当前任务、下一步与阻塞见 [交接页](HANDOFF.md)。
 
@@ -30,9 +30,14 @@ current_register: stage_plans/active/stage-07-rr/findings.md
   8 份架构研究已于同日完成，结论与 6 个减重选项见
   [架构与实现研究](stage_reports/stages/stage-07-rr/2026-11-17-architecture-research.md)；
   RR-3 范围已按[计划 D-05](stage_plans/active/stage-07-rr/plan.md#4-已确认方向与决策台账)限定为
-  R1/R5/R6，R2/R3/R4 延期；本轮已订正文档并补齐提案。
+  R1/R5/R6；原 R2/R3/R4 延期边界已由下述 2026-11-23 具名扩展取代，历史研究保留。
   两名 Astra [首次独立复审](stage_reports/stages/stage-07-rr/2026-11-22-astra-executor-review.md)及其[九项修订复验](stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md)保留当时范围。随后独立 checkout 复审发现合同接线与任务检查仍有缺口，当前处置、实际验证与限制见[本轮报告](stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md)。
-  生产未实施；文档描述优化已于 2026-11-22 完成，下一次对话做正式实施前的计划检查，不启动实施，见 [HANDOFF](HANDOFF.md#下一步)。[T-01](stage_plans/active/stage-07-rr/tasks/T-01.md)及后续实施须 owner 后续明确启动，`NEXT` 包独立采用。
+  生产未实施；正式实施前的计划检查及最小文档订正已完成，见[本轮报告](stage_reports/stages/stage-07-rr/2026-11-22-pre-implementation-plan-check.md)，任务承接、调度和验收缺口归[登记册 §23](stage_plans/active/stage-07-rr/findings.md#23-正式实施前计划检查2026-11-22)，待决与下一步见 [HANDOFF](HANDOFF.md#下一步)。[T-01](stage_plans/active/stage-07-rr/tasks/T-01.md)及后续生产实施须 owner 后续明确启动；`NEXT` 已纳入本轮统一任务安排。
+  2026-11-23 续议已明确设备等待超时由各平台 Player 实现和决定，SDK 不实现该机制；设计与验收以[附页 D-09](stage_plans/active/stage-07-rr/architecture-design.md#会话控制串行化d-09已确认目标与验收场景非现状或实施授权)为准。
+  同日 owner 接受 F501 有效性与 F135 错误分类修订，已同步合同及 T-03/T-06/T-17、A-06；两项不再待设计裁定，实现与运行验证仍未完成，详见[登记册 §23](stage_plans/active/stage-07-rr/findings.md#23-正式实施前计划检查2026-11-22)。
+  2026-11-23 已完成本轮范围与行为裁定：v3 本轮实现并实验验证；随后 owner 在未来路线续议中将 Stage 8 改为 Chart v5＋Gameplay v3 正式主线，保留已承诺旧内容兼容；v5 沿用原作者表现语法，F203 登记前整批验证，全面结构清理全部纳入。T-01–T-17 已统一排期、T-09 最终退出；组合文档检查通过，生产未启动，记录见[登记册 §24](stage_plans/active/stage-07-rr/findings.md#24-统一实施前设计裁定2026-11-23)。
+  同日已按 RR 接受的方向调整[后续路线衔接](ROADMAP.md#rr-成果与后续阶段的衔接)及 Stage 7.5、8–14 计划：后续复用 RR 实际交付，分别保留高级能力、正式发行、创作工具、平台与稳定 SDK 的验收责任；未来阶段仍未启动。正式目标续议见[登记册](stage_plans/active/stage-07-rr/findings.md#stage-8-正式主线续议2026-11-23)，RR 的候选默认能力与实验验收不因此提前晋升。
+  2026-11-23 按 owner 要求再次复查 plan 和全部任务的执行前提，订正审批/范围残留及验收偏差；[复查证据](stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md)与[接手入口](HANDOFF.md)记录当前结果和下一步，产品实施仍未启动。
   上一轮完成了[候选合同与任务](stage_plans/active/stage-07-rr/design-readiness.md)对齐、四组冷启动复验及主代理最终组合文档检查；
   当时的结论、通过记录和输入封存入口保留在[上一轮报告](stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md)。
 - **文档治理第一批已完成（2026-11-17）**：文档入口新增生成式路由页 [docs/MAP.md](MAP.md)；
@@ -54,7 +59,7 @@ current_register: stage_plans/active/stage-07-rr/findings.md
   26 项 skip、0 失败；同 SHA 三平台 F2 及当时适用版本门通过。其日期版本为 `26.11.13-1`（历史），
   不代表本日新触发的 live 版本门通过。P5／设备正式测量仍绑定 `ce2a9a69`，原封存包不改。
   那轮发布（2026-11-14）只包含关闭／Stage 7.5 规划、文档检查器及日期版本 `26.11.14-1`（历史）；没有产品源码、SDK、
-  profile 或 caps 变化。当前工作树日期版本已提升为 `26.11.18-1`（UTC 2026-11-18），本轮只有文档登记，
+  profile 或 caps 变化。当前工作树日期版本见[版本权威](../cmake/CuexisVersion.cmake)，本轮交付文档与日期构建身份，
   不外推旧十一行 F1 或旧 hosted 结果到新日期版本。
 - **P7 听音／O2 实体操作已获主观范围接受**：owner 本次反馈“没有出现异常”。
   不外推未提供细目的设备拔插、仪器或精确 AV 数值；此前持续降帧和卡顿记录保持。
@@ -64,7 +69,7 @@ current_register: stage_plans/active/stage-07-rr/findings.md
 
 当前工作树为 `E:/Cuexis-worktree`，分支为 `stage-7-rr`；HEAD 以 `git rev-parse --short HEAD` 为准，不在此页固化。
 PR #44 已于 2026-11-14（`564e0d90`）合并，PR #45 已于 2026-11-16（`aac83e5e`）合并；
-`codex/r4-closeout` 只作历史分支保留。文档描述优化已完成，后续见 [HANDOFF](HANDOFF.md#下一步)；未取得 merge／release 授权。
+`codex/r4-closeout` 只作历史分支保留。当前计划检查处置与后续见 [HANDOFF](HANDOFF.md#下一步)；未取得 merge／release 授权。
 Stage 7 的历史发布证据与评论回读仍保存在 `out/evidence/stage7-publication-20261114/`，
 原样保留，不为回填自身 SHA 改写旧候选。
 逐批历史与原始证据见[Stage 7 报告索引](stage_reports/stages/stage-07/README.md)及
@@ -78,7 +83,7 @@ Stage 7 的历史发布证据与评论回读仍保存在 `out/evidence/stage7-pu
 | Stage 7-RPA | R1–R4 已退出；R4 为 owner 接受的带缺陷／未认证范围退出，F3 生产仍延期，testOnly 保留 | [整改计划](stage_plans/completed/stage-07/05-rpa-new/plan.md)、[关闭与交接](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-14-limited-exit-and-defect-handoff.md) |
 | Stage 7-PD | 带限制退出及遗留交接已接受；PD-5 历史“未通过但定案”保持 | [PD 计划](stage_plans/completed/stage-07/04-pd/plan.md) |
 | Stage 7 | 按迁出原 7B+ 后的既有范围受限收束；历史失败、未认证范围与 testOnly 不改 | [Stage 7 计划](stage_plans/completed/stage-07/plan.md) |
-| Stage 7-RR：Review and Refactoring After Stage-7 | RR-0 与文档治理第一批完成；D-05 限定 RR-3 为 R1/R5/R6，R2/R3/R4 延期；独立 checkout 复审缺口按本轮报告处置，生产未实施 | [计划](stage_plans/active/stage-07-rr/plan.md)、[可实施性索引](stage_plans/active/stage-07-rr/design-readiness.md)、[本轮处置](stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md) |
+| Stage 7-RR：Review and Refactoring After Stage-7 | RR-0 与文档治理第一批完成；2026-11-23 全部任务、实验能力与具名全面结构清理已统一安排；设计裁定完成，生产未实施 | [计划](stage_plans/active/stage-07-rr/plan.md)、[可实施性索引](stage_plans/active/stage-07-rr/design-readiness.md)、[本轮处置](stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md) |
 | Stage 7.5：Gameplay Evolution | 独立阶段规划与交接准备；继承受限基线，产品实施未开始；入场前置含 Stage 7-RR 接受 | [独立计划](stage_plans/active/stage-07-5/plan.md) |
 
 Stage 0–6 已完成；Stage 7 按拆分后的范围受限收束，原高级能力不回写为已实施；Stage 7-RR 为当前阶段；
@@ -119,8 +124,8 @@ Cuexis 由可嵌入的 Playback SDK、独立 Cuexis Player 和 Cuexis Studio 构
 
 ## 当前格式与 SDK 合同
 
-- 当前工作树 SDK API 为 **`0.9.1` preview**，日期构建为 **`26.11.18-1`**（UTC 2026-11-18 提升；
-  此前 `26.11.14-1` 与 `26.11.13-1` 为历史构建身份，不作为当前值引用）。
+- 当前工作树 SDK API 与日期构建身份以[版本权威](../cmake/CuexisVersion.cmake)为准；SDK 仍处于 preview。
+  此前 `26.11.14-1` 与 `26.11.13-1` 为历史构建身份，不作为当前值引用。
   历史实现点 `d1951326` 的 F1/F2 绑定 `26.11.13-1`；`26.11.14-1` 那次关闭落档形成独立发布候选，
   实际版本门与 hosted 结果按当时记录绑定核验。
   不把后继 SHA 写成旧十一行 F1 的受验点，原通过不外推为发行结论。

@@ -2,7 +2,7 @@
 
 状态：future；未启动，仅为方向提纲
 
-更新日期：2026-11-17
+更新日期：2026-11-23
 
 <!-- cuexis-meta
 id: PLAN-future.stage-11.plan
@@ -20,7 +20,9 @@ authority: none
 
 ## 范围与边界
 
-- 前置基线为 Stage 8 Chart v5 production baseline 与 Stage 9 的 Chart v6 / Model v1 / Presentation Foundation；Stage 10 Studio MVP 只在其预览或创作支持需要处参与。
+- 前置基线为 Stage 8 Chart v5＋Gameplay v3 正式基线 与 Stage 9 的 Chart v6 / Model v1 / Presentation Foundation；Stage 10 Studio MVP 只在其预览或创作支持需要处参与。
+- 继承 Stage 8/9 对 [RR 架构](../../active/stage-07-rr/plan.md)的实际交接，曲线与 line 接入已有会话、求值和帧提交边界；离线几何准备放在工具侧，Player 不增加第二条控制链。
+- 继承前置正式玩法与旧版本兼容范围，Chart v7 不自动提高 Gameplay 版本。
 - 本阶段只扩展 Presentation 与表现格式；曲线形变和几何资源的语义边界在 Chart v7 中定义，不改写 Chart v5/v6 的字段含义。
 - 与 Stage 13 的边界：双轴形变和内置后处理执行归 Stage 13，且保持 v7 identity 不变；本阶段只冻结单轴合同与 `shader.json` 接口。
 - 平台规模化（Android、Vulkan、整机性能矩阵）归 Stage 12。
@@ -36,7 +38,7 @@ authority: none
 
 - `mappingAxes` 只允许一条 X/Y/Z 轴；两轴留给 Stage 13，三轴永久拒绝。
 - 只使用分段三次 Bézier；不支持公式、表达式字符串或运行时生成曲线。
-- 采样由绝对 Beat 与当前局部 TRS 一次完成；Seek、Reload、不同帧率必须得到相同结果；使用稳定的平行移动标架，C0/C1 边界和拐点必须有 golden。
+- 采样使用内容所属版本既有时间映射提供的绝对 Beat 与当前局部 TRS 一次完成，不另行换算或推进时钟；Seek、Reload、不同帧率必须得到相同结果；使用稳定的平行移动标架，C0/C1 边界和拐点必须有 golden。
 - line 的视觉轨迹不是 Judgement 轨迹；对象/子对象共享既有 Transform 层级，line 与 Stage 9 的 Model/Submesh、材质和资源闭包保持独立、可组合。
 - CXC 根可包含空或省略的 `shader.json`，空值表示 SDK 默认；本阶段只定义 schema、identity、capability、参数类型和拒绝路径，不执行用户 shader；不接受 GLSL/HLSL 源、Shader Graph 或任意全屏 pass 图。
 - 合法 v4–v6 输入的既有 FrameDigest、Judgement、Score 和 Replay 结果不变。

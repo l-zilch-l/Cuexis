@@ -2,7 +2,7 @@
 
 状态：active
 
-更新日期：2026-11-22
+更新日期：2026-11-23
 
 <!-- cuexis-meta
 id: STATUS-HANDOFF
@@ -10,15 +10,25 @@ status: active
 authority: owns
 -->
 
-当前状态以 [CURRENT_STATUS](CURRENT_STATUS.md) 为准；阶段范围、发现与可实施性索引分别见下列文档，设计记录与提案见[下一步](#下一步)。
-
 ## 当前阶段与工作项
 
-- [计划](stage_plans/active/stage-07-rr/plan.md)、[登记册](stage_plans/active/stage-07-rr/findings.md)、[可实施性索引](stage_plans/active/stage-07-rr/design-readiness.md)。
+当前阶段为 Stage 7-RR；进度以 [CURRENT_STATUS](CURRENT_STATUS.md) 为准。接手入口为[计划](stage_plans/active/stage-07-rr/plan.md)、[任务索引](stage_plans/active/stage-07-rr/plan.md#任务索引)、[唯一调度](stage_plans/active/stage-07-rr/schedule.md)和[阶段验收](stage_plans/active/stage-07-rr/acceptance.md)。设计到任务的对应关系见[可实施性索引](stage_plans/active/stage-07-rr/design-readiness.md)，发现与裁定见[登记册](stage_plans/active/stage-07-rr/findings.md)。
 
 ## 当前任务
 
-下一次对话做正式实施前的计划检查：核对计划、任务卡、调度与阶段验收是否仍与已接受设计一致，找出实施前必须解决的偏差。本次检查不启动实施，也不派单。
+owner 最新要求是复查 plan 和 task 中可能阻碍 agent 执行的决策、待定项和不确定表述，确认后编写接手文档。本轮审查与订正记录见[接手复查报告](stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md)；本页是下一位 agent 的执行入口。
+
+工作区为 `E:\Cuexis-worktree`，分支 `stage-7-rr`。本次审查时的历史 HEAD 为 `db6042b659139ac86bb52192e18132309c2aab27`，当时输入另含尚未提交的文档和三份新报告。owner 随后要求提交并推送，这些输入随本次文档提交一同交付；接手须取得包含本页及三份报告的后继提交，不能只 checkout 审查前的旧 HEAD。开始实施时重新核对实际 HEAD/tree 与工作树，按 T-01 绑定输入。生产实现尚未启动。
+
+### 接手时沿用的决定
+
+- 本轮统一实施 T-01–T-17；`NEXT` 是实验能力的范围标记，`candidate` 表示未发布或未实现，均不表示重新等待范围裁定。全面结构清理归属和具体验收见[登记册 §24](stage_plans/active/stage-07-rr/findings.md#24-统一实施前设计裁定2026-11-23)。
+- RR 完整实现并实验验证 Gameplay v3；Stage 7.5 完整范围验收后，Stage 8 以 Chart v5＋Gameplay v3 为正式主线。已承诺旧内容按原规则、时间与身份兼容；不能用隐式迁移或重新编译代替旧成品直读。旧报告中的 v2 正式目标已被[最新续议](stage_plans/active/stage-07-rr/findings.md#stage-8-正式主线续议2026-11-23)取代。
+- v5 沿用 CXT2、Clip2、Behavior Event2 和整数 `render.alpha` 的原设计；新候选不接受旧动画作者语法。设备等待的计时、超时判断及处置全部由 Player 实现，SDK 不实现这套机制。
+- F501 的有效性与独立提交检查、F135 的分配失败/容量/观测缺失区分、F203 的登记前整批验证均已接受，分别按 T-03/T-06/T-17 及其合同执行。
+- 公共 API 逐组兼容新增，旧入口在实际过渡发布、替代稳定性和消费者证据满足后才能获准退出；不预填统一退役版本或统一等待 Stage 14。仓内清理与本轮消费者验证按任务完成，默认 SDK 晋升和正式发行另行验收。
+
+工作约定：按完整议题复用无父对话上下文的子代理，派单提供完整输入；避免为小问题新增维护框架；用清楚、自然的中文解释背景、操作与结果。局部实现和测试组织由 agent 决定，已接受规则不重复提问。
 
 ## Plan 文档拆分（长期约定）
 
@@ -46,33 +56,26 @@ stage_plans/active/<stage>/
 
 ## 下一步
 
-1. 先读[计划](stage_plans/active/stage-07-rr/plan.md)、[架构设计附页](stage_plans/active/stage-07-rr/architecture-design.md)、三份候选合同与[验收](stage_plans/active/stage-07-rr/acceptance.md)，再按卡核对。检查项：
-   - 设计基线：D-01–D-25 的已接受边界都有现行卡或具名延期承接；D-05 的 RR-3 仍只含选项 R1/R5/R6。
-   - 任务卡：T-01–T-09 与 T-17 的目标、写域、步骤、验收覆盖所属 D 项和承接的 RR-F 编号；T-17 仍限定在 D-05 之外。
-   - 合同对齐：每张卡引用的合同章节存在；合同里的可测规则都有验收落点，尤其 T-11 的表几何、选表与 `scoreMode`，T-14 的 F420 观察口径，T-06 的 F419／F135／F508。
-   - 调度与验收：前置只引更早波次；A-01–A-06 覆盖全部现行卡；候选包仍标 `NEXT`，未被当成现行图。
-   - 状态与指针：candidate／active 用词、证据路径、HANDOFF 与 CURRENT_STATUS 一致。
-   - 轻量遗留：O2 的图例、O6 的术语定义、O12 的波次说明是否可接受；不可接受就列为实施前修正项。
-2. 结论按“成立／部分成立／不成立”逐条写落点。文字级偏差直接修正；实质偏差回写[登记册](stage_plans/active/stage-07-rr/findings.md)并交 owner 裁定，不改设计范围。
-3. 检查通过后，实施启动仍须 owner 明确授权；从 [T-01](stage_plans/active/stage-07-rr/tasks/T-01.md) 起按[调度](stage_plans/active/stage-07-rr/schedule.md)绑定基线、登记采用。
+1. 若 owner 下一条指令明确启动实施，直接执行 [T-01](stage_plans/active/stage-07-rr/tasks/T-01.md)：固定实际 HEAD/tree、文档修订、补丁及相关未跟踪原文/哈希，取得当前冷启动回执，登记一次采用。本次文档复查不代替实施时的基线绑定。
+2. 依[调度](stage_plans/active/stage-07-rr/schedule.md)推进。各卡先创建自己负责的 target/schema/测试，再按卡执行正反验收；后继卡只消费已交付的产物。T-02/T-05/T-17 允许按独立写域并行，共享 CMake、登记册、状态页和生成物由集成者串行汇合。
+3. 每卡留下对应修订的实际证据，T-07 在实现汇合后整理文档，T-09 核全部验收与发现并提交阶段退出接受。不要将本轮已纳入的实验能力或全面结构清理整体延期。
 
 ## 阻塞与待决
 
-- 实施未授权；`NEXT` 包单独采用。
-- 22 个提交未推送，等 owner 决定。
-- RR-F401 随 T-16，RR-F420 判据随 T-14，RR-F510 候选能力待晋升裁定。
-- O2／O6／O12 三处轻量处理待 owner 认可或列入修正项。
-- [实质冲突登记](stage_plans/active/stage-07-rr/findings.md)、[阶段停止条件](stage_plans/active/stage-07-rr/plan.md#10-回滚阻塞与停止条件)、[后继采用边界](stage_plans/active/stage-07-rr/plan.md#唯一派单授权入口)。
+本轮已完成 plan、全部任务卡及关联合同的复查和交叉复核；已发现的文档阻碍均已订正，未发现仍需 owner 先裁定的当前 RR 产品选择。具体修订与复核回执见上述报告。
+
+实际运行失败、缺失的旧交付资料或新发现的合同冲突须据实记录。按 T-01 区分“有依据的不适用”和“已承诺但缺证据”，保持旧兼容行为；仅在需改变规则、兼容承诺或接受缺证据退出时询问 owner，暂停受影响切片，其余独立工作继续。不能把 future 提纲的发行矩阵、设备容量或版本决定当作当前 RR 的设计前置。
+
+完整构建、容量探针、hosted 和设备长任务按仓库约定，先说明范围、环境可行性和预计时长，待 owner 选定后执行。阶段退出仍需 owner 接受；这些是执行与证据门禁，不能预先写成通过。
 
 ## 验证状态
 
-最近一次全量门禁在 `2d0e9f3d`（2026-11-22 21:14）通过：`python -B tools/check_docs.py`（769 篇）、`python -B tools/verification/check_docs_facts.py`（SDK 0.9.1、构建 26.11.18-1）、`python -B tools/verification/check_plan_schedule.py`（10 张现行卡、7 张候选卡）、`git diff --check`。工作树干净，HEAD 为 `2d0e9f3d`，领先 `origin/stage-7-rr` 22 个提交。历史回执见[本轮检查](stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md#执行记录)。
+本轮文档检查、事实检查（漂移 0）、生成物新鲜度、调度检查及其 27 项测试、diff 空白检查均通过；本地链接/章节锚无错误。调度副本的错误前置和缺失停止条件均按预期拒绝，正本哈希不变。两组独立复核及其增量复验均已返回，实际命令、修订与限制见[复查报告](stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md)。
+
+提交前另验日期版本一致性与当前版本门通过；版本检查器整套自测受 Windows 进程内 Git 配置环境恢复影响，出现 `missing config value GIT_CONFIG_VALUE_0`。原用例逐个独立进程复验：24 项通过，2 项因缺少可用 POSIX shell 按原条件跳过；未修改检查器或放宽断言。
+
+本次提交交付文档，并按更新 PR 的仓库规则同步日期构建身份与生成路由；SDK API 与产品实现未改变。产品运行、安装消费者、窗口/设备和正式发行的通过状态必须由对应实施任务取得。提交和远端同步状态以当前 Git 记录为准。
 
 ## 最近改动
 
-- [文档描述优化收口](stage_plans/active/stage-07-rr/plan.md)：O1–O14 按 owner 决定落地，两组 P 类订正应用 42 条（2026-11-22）。
-- [独立 checkout 复审登记](stage_plans/active/stage-07-rr/findings.md#16-独立-checkout-复审处置2026-11-22)。
-- [设计缺陷处置](stage_plans/active/stage-07-rr/findings.md)：RR-F523–RR-F529 按最小改法落地，含 A-04 阶段口径、F419 排入 T-06、F401 归 T-16、F420 归 T-14 与无音轨终点订正（2026-11-22）。
-- [旧问题承接](stage_plans/active/stage-07-rr/findings.md)：§22 按承接方归组，T-09 按该表写具名延后（2026-11-22）。
-- [T-17 单独立项](stage_plans/active/stage-07-rr/tasks/T-17.md)：会话层 P1 正确性（RR-F501/F508/F509）单独成卡，未启动实施（2026-11-22）。
-- [Seek 路由订正](stage_plans/active/stage-07-rr/findings.md)：三份历史文档与 ADR 0043 的指针改指 candidate 权威，F510 改述为候选能力、无 active 合同（2026-11-22）。
+本次清除重复设计审批和候选范围移交的残留表述，统一逐组 API 迁移条件，并补齐工作树输入与旧兼容证据的交接规则。逐项修订及任务卡交叉复核见[复查报告](stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md)。

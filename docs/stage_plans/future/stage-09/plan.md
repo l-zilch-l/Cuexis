@@ -2,7 +2,7 @@
 
 状态：future；未启动，仅为方向提纲
 
-更新日期：2026-11-17
+更新日期：2026-11-23
 
 <!-- cuexis-meta
 id: PLAN-future.stage-09.plan
@@ -20,8 +20,9 @@ authority: none
 
 ## 范围与边界
 
-- 前置基线为 Stage 8 的 Chart v5 / CXT v2 / Packed Chart production baseline，以及 Portable Presentation v1 与 Material/Shader v1。
-- Stage 7A core 合同是本阶段基础；只有在某个表现批次确实需要时才纳入已接受的 Stage 7.5 capability，本阶段不重新验收 Stage 7.5。
+- 前置基线为 Stage 8 的 Chart v5＋Gameplay v3 / CXT v2 / 正式成品 baseline，以及 Portable Presentation v1 与 Material/Shader v1。
+- 消费 Stage 8 承接的 [RR 架构与结构清理成果](../../active/stage-07-rr/plan.md)：离线 importer 接入工具侧，成品读取保持独立；表现接入已有会话、资源生命周期和帧提交入口，不增加模型专用播放控制链。
+- 继承 Stage 8 接受的 Gameplay v3 与旧版本兼容边界；只有在某个表现批次确实需要时才消费已接受的 Stage 7.5 capability。Chart v6 不另改玩法版本，也不回写 Stage 7A 的旧规则。
 - 环境是独立 Presentation 资源，不是普通 Chart Object 或 Renderable Mesh；Model/Submesh 资源进入 CXC closure，能力缺失时稳定拒绝。
 - 与 Stage 11 的边界：曲线形变、line 和 shader 执行不在本阶段，Stage 11 仅在本阶段关闭后接收曲线表现扩展；与 Stage 10 的边界：本阶段只交付 Studio 可消费的稳定子集，不交付 Studio 产品。
 
@@ -29,7 +30,7 @@ authority: none
 
 - Stage 8 关闭并交付 Chart v5 production baseline。
 - Portable Presentation v1 与 Material/Shader v1 合同冻结。
-- Stage 7A core 合同冻结；若某表现批次需要 Stage 7.5 能力，该能力已被接受。
+- Stage 8 正式玩法及旧内容兼容合同已接受；若某表现批次需要 Stage 7.5 能力，该能力已被接受。
 - 若采用 PD 基线，PD 有类型表现域边界已接受。
 
 ## 已确认约束
@@ -38,7 +39,7 @@ authority: none
 - 只接受静态 glTF 2.0；拒绝 animation、skin、morph target、camera、light 和运行时扩展。离线 importer 生成 portable Model v1，Playback/prepare 不解析 glTF；CXC 只打包 portable payload，source glTF 只能保留为 Source Project/source entry。
 - 环境是独立 Presentation 资源，不是普通 Chart Object 或 Renderable Mesh。
 - 非相机、带 renderable 且省略 mesh 的对象默认使用 sheet；相机永不获得默认网格。
-- 沿用 `transform.scale` 与既有 Behavior/AnimationClip 白名单，不建立 morph/骨骼系统。
+- 沿用 `transform.scale` 与既有 Behavior/AnimationClip 白名单，复用 RR 提前承担、Stage 8 正式收敛的 CXT2 Animation 导入和 Animator 绑定；只新增模型所需资源适配，不建立另一套动画运行时或 morph/骨骼系统。
 - 合法 v4/v5 输入的既有 FrameDigest 保持不变；FrameSnapshot、FrameDigest、capability 与预算变化必须独立版本化。
 - 采用 PD 基线时，Environment 与 Model/Submesh 接入 [PD 有类型表现域边界](../../completed/stage-07/04-pd/design.md) §12.2，复用单一求值与 Snapshot 物化协调入口；环境不能被硬塞成普通对象，也不建立动态 provider 或另一套 Renderer 求值；新增 submesh/资源字段同步更新 Snapshot/Digest/capability 与单帧/峰值预算。
 - Stage 11 仅在本阶段关闭后接收曲线表现扩展。
@@ -66,7 +67,7 @@ authority: none
 - Chart v6 ADR、Model v1 Spec、Schema、Reader/Writer 和 importer 合同先于生产实现被接受。
 - 非法 glTF、缺资源、错误拓扑、缺 capability 和超预算均稳定失败。
 - portable Model、内置网格和 submesh closure 可跨平台复现，且 Snapshot/Digest 变化经版本门禁。
-- Seek/Reload 后表现由绝对时间重建，不依赖上一帧或 GPU 状态。
+- 对支持的 Seek/Reload，表现从该内容版本的既有时间映射重建，不依赖上一帧或 GPU 状态；缺失操作按版本稳定拒绝，不能为新表现域私建时钟。
 - Player、headless、external consumer 与 CXC package gates 通过，owner acceptance 完整。
 
 具体矩阵、命令、数值和证据形式在启动时由 owner 与规划模型制定，本提纲不承诺。
