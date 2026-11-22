@@ -18,7 +18,7 @@ authority: owns
 
 ## 当前任务
 
-Stage 7-RR 文档描述优化已于 2026-11-22 完成（O1–O14 口径落地、两组 P 类订正）。接下来是实施启动，仍须 owner 明确授权，见[下一步](#下一步)。
+下一次对话做正式实施前的计划检查：核对计划、任务卡、调度与阶段验收是否仍与已接受设计一致，找出实施前必须解决的偏差。本次检查不启动实施，也不派单。
 
 ## Plan 文档拆分（长期约定）
 
@@ -46,25 +46,33 @@ stage_plans/active/<stage>/
 
 ## 下一步
 
-1. 等 owner 明确启动实施。启动时从 [T-01](stage_plans/active/stage-07-rr/tasks/T-01.md) 起按[调度](stage_plans/active/stage-07-rr/schedule.md)绑定基线、登记采用，再逐卡派单。
-2. 实施前的文档改动按[计划 §12](stage_plans/active/stage-07-rr/plan.md#12-交接与变更控制)记录；新发现回写[登记册](stage_plans/active/stage-07-rr/findings.md)，口径项交 owner 裁定。
-
-本次交接只完成了文档描述优化；实施启动须 owner 后续明确授权。
+1. 先读[计划](stage_plans/active/stage-07-rr/plan.md)、[架构设计附页](stage_plans/active/stage-07-rr/architecture-design.md)、三份候选合同与[验收](stage_plans/active/stage-07-rr/acceptance.md)，再按卡核对。检查项：
+   - 设计基线：D-01–D-25 的已接受边界都有现行卡或具名延期承接；D-05 的 RR-3 仍只含选项 R1/R5/R6。
+   - 任务卡：T-01–T-09 与 T-17 的目标、写域、步骤、验收覆盖所属 D 项和承接的 RR-F 编号；T-17 仍限定在 D-05 之外。
+   - 合同对齐：每张卡引用的合同章节存在；合同里的可测规则都有验收落点，尤其 T-11 的表几何、选表与 `scoreMode`，T-14 的 F420 观察口径，T-06 的 F419／F135／F508。
+   - 调度与验收：前置只引更早波次；A-01–A-06 覆盖全部现行卡；候选包仍标 `NEXT`，未被当成现行图。
+   - 状态与指针：candidate／active 用词、证据路径、HANDOFF 与 CURRENT_STATUS 一致。
+   - 轻量遗留：O2 的图例、O6 的术语定义、O12 的波次说明是否可接受；不可接受就列为实施前修正项。
+2. 结论按“成立／部分成立／不成立”逐条写落点。文字级偏差直接修正；实质偏差回写[登记册](stage_plans/active/stage-07-rr/findings.md)并交 owner 裁定，不改设计范围。
+3. 检查通过后，实施启动仍须 owner 明确授权；从 [T-01](stage_plans/active/stage-07-rr/tasks/T-01.md) 起按[调度](stage_plans/active/stage-07-rr/schedule.md)绑定基线、登记采用。
 
 ## 阻塞与待决
 
-[实质冲突登记](stage_plans/active/stage-07-rr/findings.md)、[阶段停止条件](stage_plans/active/stage-07-rr/plan.md#10-回滚阻塞与停止条件)、[后继采用边界](stage_plans/active/stage-07-rr/plan.md#唯一派单授权入口)。
+- 实施未授权；`NEXT` 包单独采用。
+- 22 个提交未推送，等 owner 决定。
+- RR-F401 随 T-16，RR-F420 判据随 T-14，RR-F510 候选能力待晋升裁定。
+- O2／O6／O12 三处轻量处理待 owner 认可或列入修正项。
+- [实质冲突登记](stage_plans/active/stage-07-rr/findings.md)、[阶段停止条件](stage_plans/active/stage-07-rr/plan.md#10-回滚阻塞与停止条件)、[后继采用边界](stage_plans/active/stage-07-rr/plan.md#唯一派单授权入口)。
 
 ## 验证状态
 
-[本轮检查与回执](stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md#执行记录)、[逐项处置](stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md#结果与证据)。
+最近一次全量门禁在 `2d0e9f3d`（2026-11-22 21:14）通过：`python -B tools/check_docs.py`（769 篇）、`python -B tools/verification/check_docs_facts.py`（SDK 0.9.1、构建 26.11.18-1）、`python -B tools/verification/check_plan_schedule.py`（10 张现行卡、7 张候选卡）、`git diff --check`。工作树干净，HEAD 为 `2d0e9f3d`，领先 `origin/stage-7-rr` 22 个提交。历史回执见[本轮检查](stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md#执行记录)。
 
 ## 最近改动
 
+- [文档描述优化收口](stage_plans/active/stage-07-rr/plan.md)：O1–O14 按 owner 决定落地，两组 P 类订正应用 42 条（2026-11-22）。
 - [独立 checkout 复审登记](stage_plans/active/stage-07-rr/findings.md#16-独立-checkout-复审处置2026-11-22)。
-- [设计缺陷处置](stage_plans/active/stage-07-rr/findings.md)：RR-F523–RR-F529 按最小改法落地，含 A-04 阶段口径、F419 排入 T-06、F401 归 T-16、F420 待裁与无音轨终点订正；三处标注待 owner 追认（2026-11-22）。
-- [旧问题承接](stage_plans/active/stage-07-rr/findings.md)：在 T-04/06/12/13/15/16 点名 14 条旧发现由新设计承接，并关闭六条已修未标的登记（2026-11-22）。
-- [T-17 单独立项](stage_plans/active/stage-07-rr/tasks/T-17.md)：会话层 P1 正确性（RR-F501/F508/F509）单独成卡，可拆两段派子代理；未启动实施（2026-11-22）。
+- [设计缺陷处置](stage_plans/active/stage-07-rr/findings.md)：RR-F523–RR-F529 按最小改法落地，含 A-04 阶段口径、F419 排入 T-06、F401 归 T-16、F420 归 T-14 与无音轨终点订正（2026-11-22）。
+- [旧问题承接](stage_plans/active/stage-07-rr/findings.md)：§22 按承接方归组，T-09 按该表写具名延后（2026-11-22）。
+- [T-17 单独立项](stage_plans/active/stage-07-rr/tasks/T-17.md)：会话层 P1 正确性（RR-F501/F508/F509）单独成卡，未启动实施（2026-11-22）。
 - [Seek 路由订正](stage_plans/active/stage-07-rr/findings.md)：三份历史文档与 ADR 0043 的指针改指 candidate 权威，F510 改述为候选能力、无 active 合同（2026-11-22）。
-- [F420 口径](stage_plans/active/stage-07-rr/findings.md)：按 D 并入新设计，观察查询如实报告帧观测缺失并标明计数是否精确，判据随 T-14 收敛（2026-11-22）。
-- [旧问题承接](stage_plans/active/stage-07-rr/findings.md)：§22 把仍开放的问题按承接方归组，T-09 按该表写具名延后（2026-11-22）。
