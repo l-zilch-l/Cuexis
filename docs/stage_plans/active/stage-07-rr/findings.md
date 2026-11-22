@@ -243,7 +243,7 @@ authority: owns
 | RR-F417 | `app/player/src/execution_host.cpp:71-78` | 析构排空是无终止条件的重试循环 | 假保证 |
 | RR-F418 | `app/player/src/player_app.cpp:177-180` | `--frame-stats` 在执行线被静默忽略 | 半实现 |
 | RR-F419 | `app/player/src/player_control_frame_loop.cpp:374,384` | 首帧 `render_us` 恒 0（钩子早于赋值） | 假实现 |
-| RR-F420 | `app/execution_host/frame_observation.cpp:240` | `exactLossCount` 是字面量 `false`。2026-11-17 扫描按“计数是否精确”记录；PD-4 观察报告只说明 `lossEvents` 非独立丢失反馈数故取 false；owner 2026-11-22 说明判定域的“精确判定结果”指谱师可自定义的时间区间（`GAMEPLAY_V2_SPEC §3.11`），与本字段无直接对应。无契约文本，当前无消费者按它分支 | 部分成立（常量；语义待定，归 T-06） |
+| RR-F420 | `app/execution_host/frame_observation.cpp:240` | `exactLossCount` 是字面量 `false`。2026-11-17 扫描按“计数是否精确”记录；PD-4 观察报告只说明 `lossEvents` 非独立丢失反馈数故取 false；owner 2026-11-22 说明判定域的“精确判定结果”指谱师可自定义的时间区间。该设计存在两层：现行 Chart v4 的 `MeasureComponent.gradeTable`（`gameplay_graph_phase.hpp:163`，有序区间到 grade，已实现）与候选 v3 的 `Table{id,exact{startMs,endMs},intervals[]}`（`runtime-timing.md` 作者差量，未实现）；观察账本的 feedback 记录不带等级字段。无契约文本，当前无消费者按它分支 | 部分成立（常量；语义待定，归 T-06） |
 | RR-F421 | `engine/render_opengl/src/open_gl_presentation_frame.cpp:226-241` | `capabilities()` 非主线程返回默认零能力集 | 假保证 |
 | RR-F422 | `engine/shader/src/shader_pipeline_cache.cpp:32-39` | “worker 线程编译”实为 `thread` + 立即 `join()` | 假保证 |
 | RR-F423 | `docs/api/frames-digests-and-timelines.md:62` | 文档写三参 digest，公开 API 两参 | 假保证（已修） |
