@@ -50,8 +50,8 @@ authority: owns
 
 | ID | 位置 | 问题 | 证据状态 |
 | --- | --- | --- | --- |
-| RR-F001 | `docs/CURRENT_STATUS.md:5`、`:80` | 自称日期版本 `26.11.14-1`（历史记录），实际 `cmake/CuexisVersion.cmake:1-4` 与 `vcpkg.json:3` 均为 `26.11.16-1`（2026-11-16 提升后未回写） | 已核实 |
-| RR-F002 | `docs/CURRENT_STATUS.md:26` | 自称"执行分支 `codex/r4-closeout`；唯一集成 PR 为 #44，Ready for review"；实际分支 `stage-7.5`，PR #44（`564e0d90`，2026-11-14）与 #45（`aac83e5e`，2026-11-16）均已合并 | 已核实 |
+| RR-F001 | `docs/CURRENT_STATUS.md:5`、`:80` | 自称日期版本 `26.11.14-1`（历史记录），实际 `cmake/CuexisVersion.cmake:1-4` 与 `vcpkg.json:3` 均为 `26.11.16-1`（2026-11-16 提升后未回写） | 已修（2026-11-22 复核：CURRENT_STATUS 已写 26.11.18-1，与版本文件一致） |
+| RR-F002 | `docs/CURRENT_STATUS.md:26` | 自称"执行分支 `codex/r4-closeout`；唯一集成 PR 为 #44，Ready for review"；实际分支 `stage-7.5`，PR #44（`564e0d90`，2026-11-14）与 #45（`aac83e5e`，2026-11-16）均已合并 | 已修（2026-11-22 复核：现写分支 stage-7-rr、#44/#45 已合并） |
 
 两条都与同文件 `:22` 的"当前为 Stage 7.5"自相矛盾，属"唯一状态权威失效"，因此列 P0。
 
@@ -63,9 +63,9 @@ authority: owns
 | --- | --- | --- | --- |
 | RR-F101 | `AGENTS.md`（2026-11-17 前版本） | 已修：AGENTS 精简后原句与 `:261` 均不存在；`ROADMAP.md:48`、`GAMEPLAY_V2_SPEC.md:2595` 仍称“AGENTS 写 Stage 12”，本轮同日订正 | 已核实（已修） |
 | RR-F102 | `AGENTS.md`（2026-11-17 前版本） | 已修：AGENTS 精简后“Stage 7A 是当前实施准备线”“Stage 4-12 都是 future/deferred”均已删除 | 已核实（已修） |
-| RR-F103 | `docs/api/diagnostics-identity-and-compatibility.md:22`、`:64`；`docs/api/GAMEPLAY_V2_ABI.md:69` | 仍写"当前分支 SDK API 为 `0.8.0`"；实际 `cmake/CuexisVersion.cmake:8` 为 `0.9.1`，同目录其他页已写 0.9.1 | 已核实 |
+| RR-F103 | `docs/api/diagnostics-identity-and-compatibility.md:22`、`:64`；`docs/api/GAMEPLAY_V2_ABI.md:69` | 仍写"当前分支 SDK API 为 `0.8.0`"；实际 `cmake/CuexisVersion.cmake:8` 为 `0.9.1`，同目录其他页已写 0.9.1 | 已修（2026-11-22 复核：两页现均写 0.9.1，`check_docs_facts` 无版本漂移） |
 | RR-F104 | `docs/formats/MATERIAL_SHADER.md:632` | 仍写“当前分支为 0.7.5”，实际 `CuexisVersion.cmake:8` 为 0.9.1（`CURRENT_STATUS.md:115` 同） | 已修（文档：改为 0.9.1） |
-| RR-F105 | `docs/formats/README.md:40` | 权威矩阵把 Packed Chart v1 标为"未实现"；实际 Header/目录、字典/身份、ARCH/ENT0、TRN0/REN0/CAM0、REQ0/CNS0、语义 hash、Reader/Writer 与 40k 测试均已实现并接入 CMake | 已核实 |
+| RR-F105 | `docs/formats/README.md:40` | 权威矩阵把 Packed Chart v1 标为"未实现"；实际 Header/目录、字典/身份、ARCH/ENT0、TRN0/REN0/CAM0、REQ0/CNS0、语义 hash、Reader/Writer 与 40k 测试均已实现并接入 CMake | 已修（2026-11-22 复核：README 已改 candidate 并写明 Reader/Writer 已实现；同行误引 RR-F201 已改为 RR-F105） |
 
 #### 2.2 格式互操作与接受集
 
@@ -73,7 +73,7 @@ authority: owns
 | --- | --- | --- | --- |
 | RR-F111 | [Packed §5.1](../../../formats/PACKED_CHART_FORMAT.md#51-fixed-header96-bytes)；`packed_chart_tables_writer.cpp` / `packed_chart_tables_inspect.cpp` | 原文规定完整 Header 置零计算，与 Reader/Writer 的前 92 字节算法不一致。owner 已接受按现行实现更正合同，Header 总长仍为 96 字节；兼容后果见 [D-25](architecture-design.md#d-25-兼容入口与格式合同收敛)。 | 合同更正已完成；实现未变；真实外部消费者及互操作情况未核实 |
 | RR-F112 | `packed_chart_tables_sections.cpp:55-57,489-490`；`decoder_tables.cpp:195-197`；`decoder_model.cpp:340-344` | Writer 硬写 descriptor 0；Reader 把 TIME mode 1 判 `packed.time.invalid`、REQ0 判 `packed.requirements.codec`。`writeBeatDescriptor/readBeatDescriptor` 全仓 0 调用者；GridDelta codec 仅测试调用 | 已修（文档：删除 mode 1 与 Writer 选择段） |
-| RR-F113 | `limits.hpp:58-59`；`canonical_chart_loader_primitives.cpp:325-330`；`CHART_FORMAT.md:159-167` | v1/v2/v3 生产 Reader 额外拒绝 `|分子| > 1e12`、`分母 > 1e9`（`chart.beat.limit_exceeded`）；`chart.beat.out_of_range` 来自 v4 reader 与 `rational_beat.cpp` 算术，不是这两个上限。两个上限已由 `guides/LIMITS.md:62-63` 生成登记，但未进格式合同 | 已核实（“未在任何文档声明”收窄为“未在格式合同声明”） |
+| RR-F113 | `limits.hpp:58-59`；`canonical_chart_loader_primitives.cpp:325-330`；`CHART_FORMAT.md:159-167` | v1/v2/v3 生产 Reader 额外拒绝 `|分子| > 1e12`、`分母 > 1e9`（`chart.beat.limit_exceeded`）；`chart.beat.out_of_range` 来自 v4 reader 与 `rational_beat.cpp` 算术，不是这两个上限。两个上限已由 `guides/LIMITS.md:62-63` 生成登记，但未进格式合同 | 已修（2026-11-22 复核：已写入 CHART_FORMAT 的 Beat 上限段；改引具名常量归 T-03） |
 | RR-F114 | [CXC](../../../formats/CXC_FORMAT.md)；[Chart Entry §7](../../../formats/CHART_ENTRY_V1_FORMAT.md#7-behavior-source-candidate-profile)；`cxc_candidate.cpp` | 原合同对 candidate playback encoding 的范围不一致。owner 已接受按具名 profile 对齐：静态 profile 必须为 `packed-chart`，Behavior profile 必须为 `source-json`；普通 CXC v1 默认入口继续沿用原路径。 | 两份合同已对齐并移除冲突提示；实现未变；本轮未重跑候选播放验收 |
 | RR-F115 | `CXT_V2_FORMAT.md:317,323,326,690` | `cxtImports`/`cxtInstances` 全仓 0 命中；§6 写成合同未标未实现；§12:690 的“Chart invocation”同样过度声明。展开只由工具显式传参触发 | 已修（文档：§6 移入 proposals，§12 收窄） |
 | RR-F116 | `CHART_ENTRY_V1_FORMAT.md:126-145`；`cxc_candidate.cpp` | 文档声明 16 码中 2 个零产出（`resource_closure_invalid` 只有异命名空间的 `playback.candidate.*`）；实现另发 **12 个**未登记码（原文写 5 个，计数订正）。文档写“minimum stable set”，额外码本身不违约 | 已修（文档：删除 2 个零产出码） |
@@ -82,7 +82,7 @@ authority: owns
 
 | ID | 位置 | 问题 | 证据状态 |
 | --- | --- | --- | --- |
-| RR-F121 | `frames-digests-and-timelines.md:56,67`；`frame_digest.hpp:18-20`；`frame_digest_internal.hpp:9-12` | 文档主句已改为“公开 API 不接受版本入参”；残留：同文件 `:67` 仍要求“指定版本 digest”的 parity，安装 API 不可达；测试把 `src/frame_digest_version.cpp` 编进测试目标 | 已核实（主句已修，残留待处置） |
+| RR-F121 | `frames-digests-and-timelines.md:56,67`；`frame_digest.hpp:18-20`；`frame_digest_internal.hpp:9-12` | 文档主句已改为“公开 API 不接受版本入参”；残留：同文件 `:67` 仍要求“指定版本 digest”的 parity，安装 API 不可达；测试把 `src/frame_digest_version.cpp` 编进测试目标 | 已修（2026-11-22 复核：文档主句已改，测试重复编译归 RR-F214/T-04） |
 | RR-F122 | `include/cuexis/playback/playback_session.hpp:250-254` | `materializePresentation` 无 `#if CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE` 门；production 构建的安装头暴露 RPA candidate 入口，错误码命名空间 `host.rpa.*` 也随之出现在 OFF 构建 | 已核实 |
 | RR-F123 | `docs/formats/MATERIAL_SHADER.md` §9；`engine/render_opengl/src/open_gl_presentation.cpp:105` | `builtInRendererProfileVersion` 只有写入点与测试读取，无任何生产读取点；`requiredRendererProfile` 与 adapter profile 不匹配时不构成失败，合同项静默通过 | 已核实 |
 | RR-F124 | `docs/formats/MATERIAL_SHADER.md` §5；`engine/playback/src/presentation_parse.cpp:404-414` | 实现额外要求 host-extension profile 必须出现在 `requiredHostExtensions` 中（文档无此规则）；同时 profile ID 走 `isUserIdentifier`，禁止 `.` 与 `cuexis` 前缀，与 §9 带点 ID 风格、`profileByteCount [1,64]` 三处互相矛盾 | 已核实 |
@@ -474,7 +474,7 @@ R4 / PD-5 套件的相对路径已进入验收哈希账本（`binding.py:73`、�
 | ID | 位置 | 事实 | 结论 |
 | --- | --- | --- | --- |
 | RR-F521 | `engine/particles/`（仅 `CMakeLists.txt:1-3`） | 空 INTERFACE 库，`engine/CMakeLists.txt` 从不 `add_subdirectory` | 已修（2026-11-17 删除目录；无构建引用） |
-| RR-F522 | `engine/debug/`（87 行） | 唯一链接方是 `cuexis_debug_tests`；`DebugDraw` 生产 0 引用 | 已处置（保留并标 test-only；删除留待 RR-3） |
+| RR-F522 | `engine/debug/`（87 行） | 唯一链接方是 `cuexis_debug_tests`；`DebugDraw` 生产 0 引用 | 已处置（保留并标 test-only；模块删除不在 D-05 的 R1/R5/R6 范围，另行评估） |
 
 ## 第二部分 候选设计与文档问题（未实施）
 
@@ -564,6 +564,8 @@ R4 / PD-5 套件的相对路径已进入验收哈希账本（`binding.py:73`、�
 | RR-F529 | 附页改为候选规则见合同、本段不另作裁定 | `architecture-design.md` §6 | 已落地 |
 
 待 owner 追认的三处：等待态不设超时（F525）、判定活跃命名（F527）、峰值只观测不设阈（F528）。其余为回指或状态订正，不改语义。
+
+承接点名（2026-11-22）：T-04 点名 RR-F208/F214，T-06 点名 RR-F135/F508/F420，T-12 点名 RR-F505，T-13 点名 RR-F432/F502，T-15 点名 RR-F418/F506/F142，T-16 点名 RR-F401/F433/F402；RR-F001/F002/F103/F105/F113/F121 已在本轮复核后标为已修，RR-F522 的"留待 RR-3"改为按 D-05 范围另行评估。
 
 ## 18. 口径与定义冲突（未实施设计）
 
