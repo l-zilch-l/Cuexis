@@ -18,7 +18,7 @@ authority: owns
 
 ## 当前任务
 
-下一次对话仅做 Stage 7-RR 文档描述优化，范围与步骤见[下一步](#下一步)。
+Stage 7-RR 文档描述优化已于 2026-11-22 完成（O1–O14 口径落地、两组 P 类订正）。接下来是实施启动，仍须 owner 明确授权，见[下一步](#下一步)。
 
 ## Plan 文档拆分（长期约定）
 
@@ -46,10 +46,10 @@ stage_plans/active/<stage>/
 
 ## 下一步
 
-1. 优先核对并优化[计划](stage_plans/active/stage-07-rr/plan.md)、[架构设计](stage_plans/active/stage-07-rr/architecture-design.md)、[简化提案](stage_plans/active/stage-07-rr/simplification-proposal.md)、[可实施性索引](stage_plans/active/stage-07-rr/design-readiness.md)，再沿相关链接核对合同、任务卡与[阶段验收](stage_plans/active/stage-07-rr/acceptance.md)。
-2. 优化语言清晰度、术语一致性、重复内容与引用，明确现状、已接受设计和候选状态，保持既定设计语义；实质冲突记入[登记册](stage_plans/active/stage-07-rr/findings.md)，交 owner 裁定。
+1. 等 owner 明确启动实施。启动时从 [T-01](stage_plans/active/stage-07-rr/tasks/T-01.md) 起按[调度](stage_plans/active/stage-07-rr/schedule.md)绑定基线、登记采用，再逐卡派单。
+2. 实施前的文档改动按[计划 §12](stage_plans/active/stage-07-rr/plan.md#12-交接与变更控制)记录；新发现回写[登记册](stage_plans/active/stage-07-rr/findings.md)，口径项交 owner 裁定。
 
-本次交接仅安排文档优化；[T-01](stage_plans/active/stage-07-rr/tasks/T-01.md)及后续实施须 owner 后续明确启动，旧[计划启动登记](stage_plans/active/stage-07-rr/plan.md#12-交接与变更控制)不代表下一次对话直接开工。
+本次交接只完成了文档描述优化；实施启动须 owner 后续明确授权。
 
 ## 阻塞与待决
 

@@ -32,7 +32,7 @@ current_register: stage_plans/active/stage-07-rr/findings.md
   RR-3 范围已按[计划 D-05](stage_plans/active/stage-07-rr/plan.md#4-已确认方向与决策台账)限定为
   R1/R5/R6，R2/R3/R4 延期；本轮已订正文档并补齐提案。
   两名 Astra [首次独立复审](stage_reports/stages/stage-07-rr/2026-11-22-astra-executor-review.md)及其[九项修订复验](stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md)保留当时范围。随后独立 checkout 复审发现合同接线与任务检查仍有缺口，当前处置、实际验证与限制见[本轮报告](stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md)。
-  生产未实施；下一次对话仅做文档描述优化，范围与步骤见 [HANDOFF](HANDOFF.md#下一步)。[T-01](stage_plans/active/stage-07-rr/tasks/T-01.md)及后续实施须 owner 后续明确启动，`NEXT` 包独立采用。
+  生产未实施；文档描述优化已于 2026-11-22 完成，后续安排见 [HANDOFF](HANDOFF.md#下一步)。[T-01](stage_plans/active/stage-07-rr/tasks/T-01.md)及后续实施须 owner 后续明确启动，`NEXT` 包独立采用。
   上一轮完成了[候选合同与任务](stage_plans/active/stage-07-rr/design-readiness.md)对齐、四组冷启动复验及主代理最终组合文档检查；
   当时的结论、通过记录和输入封存入口保留在[上一轮报告](stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md)。
 - **文档治理第一批已完成（2026-11-17）**：文档入口新增生成式路由页 [docs/MAP.md](MAP.md)；
@@ -64,7 +64,7 @@ current_register: stage_plans/active/stage-07-rr/findings.md
 
 当前工作树为 `E:/Cuexis-worktree`，分支为 `stage-7-rr`；HEAD 以 `git rev-parse --short HEAD` 为准，不在此页固化。
 PR #44 已于 2026-11-14（`564e0d90`）合并，PR #45 已于 2026-11-16（`aac83e5e`）合并；
-`codex/r4-closeout` 只作历史分支保留。文档描述优化交接见 [HANDOFF](HANDOFF.md#下一步)；未取得 merge／release 授权。
+`codex/r4-closeout` 只作历史分支保留。文档描述优化已完成，后续见 [HANDOFF](HANDOFF.md#下一步)；未取得 merge／release 授权。
 Stage 7 的历史发布证据与评论回读仍保存在 `out/evidence/stage7-publication-20261114/`，
 原样保留，不为回填自身 SHA 改写旧候选。
 逐批历史与原始证据见[Stage 7 报告索引](stage_reports/stages/stage-07/README.md)及
