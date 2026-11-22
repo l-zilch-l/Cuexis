@@ -179,7 +179,7 @@ authority: index
 | [stage_plans/active/stage-07-rr/contracts/render-player-writer.md](stage_plans/active/stage-07-rr/contracts/render-player-writer.md) | candidate | owns | Stage 7-RR 候选合同：渲染、Player 与写回 |
 | [stage_plans/active/stage-07-rr/contracts/runtime-timing.md](stage_plans/active/stage-07-rr/contracts/runtime-timing.md) | candidate | references | P1 / P3：运行内核、谱面时间与成品合同 |
 | [stage_plans/active/stage-07-rr/design-readiness.md](stage_plans/active/stage-07-rr/design-readiness.md) | candidate | index | Stage 7-RR 可实施性索引 |
-| [stage_plans/active/stage-07-rr/simplification-proposal.md](stage_plans/active/stage-07-rr/simplification-proposal.md) | candidate | summarizes | Stage 7-RR 架构精简方案导读 |
+| [stage_plans/active/stage-07-rr/simplification-proposal.md](stage_plans/active/stage-07-rr/simplification-proposal.md) | candidate | summarizes | Stage 7-RR 架构精简方案基线索引 |
 | [stage_plans/active/stage-07-rr/tasks/T-10.md](stage_plans/active/stage-07-rr/tasks/T-10.md) | candidate | owns | T-10 候选运行内核与当次输出 |
 | [stage_plans/active/stage-07-rr/tasks/T-11.md](stage_plans/active/stage-07-rr/tasks/T-11.md) | candidate | owns | T-11 候选格式、诊断与作者比例 |
 | [stage_plans/active/stage-07-rr/tasks/T-12.md](stage_plans/active/stage-07-rr/tasks/T-12.md) | candidate | owns | T-12 候选时间映射与作者编译 |
