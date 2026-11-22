@@ -62,3 +62,4 @@ stage_plans/active/<stage>/
 ## 最近改动
 
 - [独立 checkout 复审登记](stage_plans/active/stage-07-rr/findings.md#16-独立-checkout-复审处置2026-11-22)。
+- [设计缺陷处置](stage_plans/active/stage-07-rr/findings.md)：RR-F523–RR-F529 按最小改法落地，含 A-04 阶段口径、F419 排入 T-06、F401 归 T-16、F420 待裁与无音轨终点订正；三处标注待 owner 追认（2026-11-22）。

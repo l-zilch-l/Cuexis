@@ -198,7 +198,7 @@ struct AdvanceOutcome final {
     -> core::Result<AdvanceOutcome>;
 ```
 
-事件及成绩均按值、可平凡拷贝且不抛，`sizeof/alignof/offsetof` 由同一工具链按声明决定；不作 wire，不跨 API 类型强转。`tick` 为结算时刻，`error` 是 `observationTick−target` 的受检 `TickDelta`；证据存在且阶段有选表才独立算方向和 grade。无选表时保留真实误差，方向、等级为空；timer Miss、无证据 Hold 阶段或无输入的 Pattern 成功三项都空。真实 release Miss 可同时有档与方向。legacy 保留原 grade/误差，方向为空。字典 phases 按 canonical requirement 顺序及其 phase 声明序；grades 为不同等级标识的 UTF-8 字节序。字段在 seal 前具备，按 ledger 中新 fact 顺序交付。字典为 owning 值，宿主开局前复制并分配槽；卸载后仍能解释保留的结果。v3 `score` 仅在该次首次正常终止（自然完成或成功 Stop）有值；ongoing、faulted、重复已完成调用及旧局均为空。旧摘要保持原入口。
+事件及成绩均按值、可平凡拷贝且不抛，`sizeof/alignof/offsetof` 由同一工具链按声明决定；不作 wire，不跨 API 类型强转。`tick` 为结算时刻，`error` 是 `observationTick−target` 的受检 `TickDelta`；证据存在且阶段有选表才独立算方向和 grade。无选表时保留真实误差，方向、等级为空；timer Miss、无证据 Hold 阶段或无输入的 Pattern 成功三项都空。真实 release Miss 可同时有档与方向。`observationTick` 取[Playback 会话换算](#playback-时钟与实时准入)后的观测值，已含设备校正、谱面 offset 与输入补偿，不含显示提前；显示提前只进 `presentationTick`。legacy 保留原 grade/误差，方向为空。字典 phases 按 canonical requirement 顺序及其 phase 声明序；grades 为不同等级标识的 UTF-8 字节序。字段在 seal 前具备，按 ledger 中新 fact 顺序交付。字典为 owning 值，宿主开局前复制并分配槽；卸载后仍能解释保留的结果。v3 `score` 仅在该次首次正常终止（自然完成或成功 Stop）有值；ongoing、faulted、重复已完成调用及旧局均为空。旧摘要保持原入口。
 
 P 从已展开、去重并验证的 requirements 累加 phase 实例，和 [kernel `phaseOffsets`](../../../../../engine/judgement/src/execution_kernel_impl_setup.cpp) 同序；`(RequirementIdentity,PhaseKind)` 唯一。现有 [`outcome`](../../../../../engine/judgement/src/execution_kernel_impl_phases.cpp) 检查 Pending 后才写终态；每个封定 phase 只交付一次，恢复历史建状态不重发。一次 `advance` 最多 P 条，含计时 Miss，非阶段事实不占槽。检查累加、`P<=UINT32_MAX`、等级数 `<=UINT32_MAX` 和 `P<=SIZE_MAX/sizeof(SettlementEvent)`；SDK 投影单独检查其类型。P=0 合法。P 只界定事件容量，不给计分定分母；`phaseDeclarations` 只作交叉核对，requirement/实体/pending 限额不能代用。槽分配失败拒绝开局，不增预算框架。
 
