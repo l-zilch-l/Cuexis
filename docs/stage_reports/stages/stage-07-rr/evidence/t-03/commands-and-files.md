@@ -32,9 +32,9 @@ python -B tools/check_docs.py
   exit 0
 python -B tools/verification/check_docs_facts.py
   exit 0
-# 收尾重跑 check_docs.py 时 exit 1：四份并发文件链接到尚未创建的
+# 中途 check_docs.py 曾 exit 1：四份并发文件链接到当时尚未创建的
 # docs/stage_reports/stages/stage-07-rr/implementation/2026-11-23-t-03-contracts-and-diagnostics.md
-# 该文件与链接方不在本卡写域；check_docs_facts.py 仍 exit 0
+# 该文件随 b46ce396 创建；复核重跑 check_docs.py 与 check_docs_facts.py 均 exit 0
 
 # 基线与改动范围
 git rev-parse --abbrev-ref HEAD
@@ -65,12 +65,16 @@ digest：engine/playback/include/cuexis/playback/frame_digest.hpp、src/frame_di
 cmake --build --preset candidate-debug --target cuexis_chart_tests cuexis_cxc_tests cuexis_judgement_tests
   exit 0（三个可执行均链接）
 ctest --test-dir out/build/candidate-debug -N -R '^rr2_contract'
-  Test #121 rr2_contract_packed、#170 rr2_contract_beat、#326 rr2_contract_entry、#488 rr2_contract_input
+  首次枚举：rr2_contract_packed #121、rr2_contract_beat #170、
+            rr2_contract_entry #326、rr2_contract_input #488
+  复核（b46ce396）：rr2_contract_packed #251、rr2_contract_beat #175、
+            rr2_contract_entry #326、rr2_contract_input #452；B3 两条 #580/#614
+  编号随 catch_discover_tests 每次重写漂移，不是身份；正文只用名称
 ctest --test-dir out/build/candidate-debug --no-tests=error -R '^rr2_contract_packed$'
 ctest --test-dir out/build/candidate-debug --no-tests=error -R '^rr2_contract_beat$'
 ctest --test-dir out/build/candidate-debug --no-tests=error -R '^rr2_contract_entry$'
 ctest --test-dir out/build/candidate-debug --no-tests=error -R '^rr2_contract_input$'
-  各 1/1 passed，退出 0
+  上一版各 1/1 passed，退出 0；本轮新增 Beat 约分与 input 断言待重跑
 cmake --build --preset candidate-debug --target cuexis_rpa_tests
   exit 0
 两条 B3 RPA 对照（-R '^…$'）各 1/1 passed，退出 0

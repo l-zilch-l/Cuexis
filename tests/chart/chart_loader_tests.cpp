@@ -88,8 +88,8 @@ TEST_CASE("rr2_contract_beat", "[chart][loader][beat][rr2][limits]") {
 
     for (const int version : {1, 2, 3}) {
         INFO("chart version " << version);
-        // v1-v3 的最小合法外形已由 candidate-debug 的 rr2_contract_beat 实测覆盖（Test #170）：
-        // 空 tempoEvents/behaviors 不引入其它诊断，边界与越界都由 chart.beat.limit_exceeded 判定。
+        // v1-v3 的最小合法外形已由上一版 rr2_contract_beat 在 candidate-debug 实测覆盖；
+        // 本轮新增的约分断言待重建重跑。
 
         // Simplest rationals at the authoritative bound load successfully.
         CHECK(cuexis::chart::ChartLoader::load(
@@ -101,6 +101,16 @@ TEST_CASE("rr2_contract_beat", "[chart][loader][beat][rr2][limits]") {
         CHECK(cuexis::chart::ChartLoader::load(
                   chartWithNoteBeat(version, "1", std::to_string(maximumDenominator)))
                   .hasValue());
+
+        // The limit is checked after reduction: 2*max/2 reduces to max and is accepted, while
+        // 2*(max+1)/2 reduces to max+1 and must be rejected with the same stable code.
+        CHECK(cuexis::chart::ChartLoader::load(
+                  chartWithNoteBeat(version, std::to_string(maximumNumerator * 2), "2"))
+                  .hasValue());
+        const auto reducedOver = cuexis::chart::ChartLoader::load(
+            chartWithNoteBeat(version, std::to_string((maximumNumerator + 1) * 2), "2"));
+        REQUIRE_FALSE(reducedOver.hasValue());
+        CHECK(hasCode(reducedOver.diagnostics, "chart.beat.limit_exceeded"));
 
         // One past the bound is a stable limit rejection, on both numerator signs and on the
         // denominator. The check runs after reduction, so each case spells a reduced rational.

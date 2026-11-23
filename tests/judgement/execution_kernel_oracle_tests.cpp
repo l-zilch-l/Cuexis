@@ -725,7 +725,13 @@ TEST_CASE("rr2_contract_input", "[judgement][execution][input][rr2][atomic][late
         REQUIRE(first);
         REQUIRE(first->size() == 1U);
         CHECK(first->front().dispatchTick == Tick{901});
-        CHECK(first->front().wasForwarded == forwarded);
+        if (forwarded) {
+            // The 900 press is forwarded to 901; the receipt must say so.
+            CHECK(first->front().wasForwarded);
+        } else {
+            // The native 901 press is already at the dispatch tick; it must not be marked forwarded.
+            CHECK_FALSE(first->front().wasForwarded);
+        }
 
         const auto before = session.query();
         REQUIRE(before);
@@ -740,18 +746,25 @@ TEST_CASE("rr2_contract_input", "[judgement][execution][input][rr2][atomic][late
               before->kernelView().lastAdvanceHorizon);
 
         // The native/forwarded pending entry still executes exactly once.
-        // candidate-debug 的 rr2_contract_input 已实测（Test #488）：推进到 905 后原 pending 只结算
-        // 一条 receipt；若未来推进语义改变，按新合同修断言，不放宽计数。
+        // 上一版 rr2_contract_input 已在 candidate-debug 实测 receipts 为 1；本轮新增 receipt 对象
+        // 断言待重建重跑。
         REQUIRE(session.advance(Tick{905}));
         const auto executed = session.query();
         REQUIRE(executed);
-        CHECK(executed->kernelView().receipts.size() == 1U);
+        REQUIRE(executed->kernelView().receipts.size() == 1U);
+        // Size alone would accept a phantom receipt; bind the settled receipt to the original
+        // pending key and dispatch tick so this distinguishes "executed exactly once" from "one
+        // receipt of some other content".
+        CHECK(executed->kernelView().receipts.front().dispatchTick == Tick{901});
+        CHECK(executed->kernelView().receipts.front().observationKey ==
+              first->front().observationKey);
 
         // The rejected ordinal was never consumed: it is accepted at another legal tick.
-        // candidate-debug 的 rr2_contract_input 已实测（Test #488）：tick 902 的新序号路由到
-        // dispatch 903，说明拒绝没有消费该序号；参数变化时按 routeExecutionObservation 的实际结果调整。
+        // 上一版 rr2_contract_input 已在 candidate-debug 实测 dispatch 903；本轮新增
+        // wasForwarded==false 断言待重建重跑。
         const auto reused = session.submit({input(902, 9, InputAction::press)});
         REQUIRE(reused);
         CHECK(reused->front().dispatchTick == Tick{903});
+        CHECK_FALSE(reused->front().wasForwarded);
     }
 }

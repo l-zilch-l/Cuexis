@@ -14,16 +14,17 @@ date: 2026-11-23
 ## 结论
 
 - RR-F111（Packed CRC 前 92 字节算法）**成立**：合同、Writer 与 Reader 一致；本卡补了旧算法值必须报
-  `packed.header.crc` 的对照用例，已在 candidate-debug 实测通过（Test #121），未改变算法或现有产物。
+  `packed.header.crc` 的对照用例，已在 candidate-debug 实测通过，未改变算法或现有产物。
 - RR-F112（TIME/REQ0 只接受 mode 0）**成立**：合同只声明 mode 0，Reader 对 TIME/REQ0 的非 0 mode 分别报
   `packed.time.invalid` / `packed.requirements.codec`，GridDelta 仍只由 primitives 测试覆盖。本卡补了
-  TIME/REQ0 mode 1 的 envelope 保持对照（随 #121 通过），并写明 GridDelta 不在 wire 接受集。
+  TIME/REQ0 mode 1 的 envelope 保持对照（随 `rr2_contract_packed` 通过），并写明 GridDelta 不在 wire
+  接受集。
 - RR-F113（Chart Beat 上限）**成立**：v1–v3 生产 Reader 在约分后拒绝超限值；合同已改为引用
   `ChartLimits::maxBeatNumeratorMagnitude` 与 `maxBeatDenominator`，`rr2_contract_beat` 已实测 v1–v3
-  边界通过（Test #170）。
+  边界通过（`rr2_contract_beat` 上一版；本轮新增约分断言待重跑）。
 - RR-F114（CXC playback encoding 按 profile 固定）**成立**：两份合同与 `cxc_candidate.cpp` 一致；
   静态 profile 只接受 `packed-chart`、Behavior profile 只接受 `source-json`，`rr2_contract_entry` 已实测
-  两 profile 与交换编码拒绝（Test #326），普通 CXC v1 默认入口不变。
+  两 profile 与交换编码拒绝（`rr2_contract_entry` 上一版），普通 CXC v1 默认入口不变。
 - RR-F115（CXT v2 Chart invocation 未实现）**成立**：`cxtImports` / `cxtInstances` 在实现与测试中 0 命中，
   §6 与 §12 已标未实现；本卡只在 §6 补了当前唯一的显式展开入口与 `tools/chart/chart_candidate` 的
   显式参数调用，没有新增 Chart 自动 import 路径。
@@ -35,8 +36,9 @@ date: 2026-11-23
   `playback_session_prepared.cpp:10-66` 也无条件编入并返回 `host.rpa.*`。本卡只做基线证据，不实施修复。
 - RR-F131（入口分层）**部分成立**：原记录把普通规范化的 same-tick 归属与旧执行 profile 的 duplicate
   queue 首错混在一条；实际是普通规范化、旧执行 §8、RPA occurrence 三层各自首错。合同已写明分层并保留
-  旧 profile 次序与 Replay 行为，生产输入逻辑未改；`rr2_contract_input`（Test #488）与两条 B3 RPA
-  对照均已实测通过。
+  旧 profile 次序与 Replay 行为，生产输入逻辑未改。`rr2_contract_input` 覆盖前两层；RPA 层由既有 B3
+  覆盖 `judgement.late.duplicate_queue_entry` 与 `judgement.input.occurrence_conflict` 及转发顺序，
+  不在 `rr2_contract_input` 内。
 - RR-F132（身份映射）**部分成立**：原记录“`gameplay.fold.finite.v1` 应进 ruleset/session identity”把
   engine 算法标记与 ruleset/session 实际配置混为一条。实际实现同时写两层：算法标记进 engine revision，
   配置（identity token/build/module order/loadout）进 ruleset/session 分量；grade 后缀是
@@ -48,9 +50,9 @@ date: 2026-11-23
   `player.execution.test_only`；`:632` 在 fault 自带码时透传。原记录所称“另有 7 个
   `player.execution.*` 码”实为 logger 通道名，不是错误码。该条归 T-15，本卡只列基线。
 
-四个新增合同用例与两条 RPA 对照已由主代理在 candidate-debug 构建并实测通过（命令、注册号与退出码
-见「执行记录」）；本代理未亲自运行这些命令。F135 五类故障注入、安装消费者、F132 旧身份字节等仍未
-执行，分别由 T-06/T-08/T-10 承接。
+上一版四个新增合同用例与两条 RPA 对照已由主代理在 candidate-debug 构建并实测通过（命令与退出码见
+「执行记录」）；本代理未亲自运行这些命令。本轮按复核意见新增的 Beat 约分与 input 显式断言尚待重建
+重跑。F135 五类故障注入、安装消费者、F132 旧身份字节等仍未执行，分别由 T-06/T-08/T-10 承接。
 
 ## 范围与方法
 
@@ -79,9 +81,9 @@ hash 订正）；`3b8bf41e` 是所有后续提交的祖先。开读期间工作�
 ```text
 python -B tools/check_docs.py
   exit 0
-  Documentation checks passed: 785 Markdown files and 20 candidate JSON/CXT files validated.
+  Documentation checks passed: 790 Markdown files and 20 candidate JSON/CXT files validated.
   NOT CHECKED: CMake target facts are missing; set CUEXIS_TARGETS_FILE to fresh configure output
-  NOTICE: Git protection checked against 6c77a888a5ac5e564393dc8c2e60b22fc1656d1f: 149 definitions
+  NOTICE: Git protection checked against b46ce396b897487e2b80d5e5de878e4beb1a20ab: 149 definitions
   NOTICE: source naming: 712 paths scanned, 4 frozen exceptions (cmake/Verify{S4G,S5H,CfuF3,CfuF4}*.cmake)
 
 python -B tools/verification/check_docs_facts.py
@@ -103,26 +105,28 @@ git merge-base --is-ancestor 3b8bf41e HEAD -> exit 0
 上面是本代理执行的文档门禁与只读命令，本卡 docs 改完后两者均退出 0；`check_docs.py` 的
 “CMake target facts missing”是缺少新鲜 configure 输出的既有提示，不是退出失败。
 
-收尾重跑 `check_docs.py` 时退出 1，报错只有四条相对链接指向尚未创建的
+收尾重跑 `check_docs.py` 曾退出 1，报错只有四条相对链接指向当时尚未创建的
 `docs/stage_reports/stages/stage-07-rr/implementation/2026-11-23-t-03-contracts-and-diagnostics.md`
 （`docs/CURRENT_STATUS.md`、`docs/HANDOFF.md`、`docs/stage_plans/active/stage-07-rr/findings.md`、
-`docs/stage_plans/active/stage-07-rr/plan.md`）。这四个文件不在本卡写域，改动来自并发集成，本代理未
-触碰；同一时点 `check_docs_facts.py` 仍退出 0。该失败不是本卡文档改动造成的。
+`docs/stage_plans/active/stage-07-rr/plan.md`）。该文件已随提交 `b46ce396` 创建；本卡复核后再跑
+`check_docs.py`/`check_docs_facts.py` 均退出 0。这段保留为当时的瞬时状态，不是当前失败。
 
 ### 构建与测试记录（主代理执行）
 
 执行者：主代理；环境：MSVC 19.51 + `candidate-debug`；本代理未运行下列命令。结果由主代理回执，
-本代理按回执记录。
+本代理按回执记录。命令与文件清单另存
+[evidence/t-03/commands-and-files.md](../evidence/t-03/commands-and-files.md)。
 
 ```text
 cmake --build --preset candidate-debug --target cuexis_chart_tests cuexis_cxc_tests cuexis_judgement_tests
   exit 0；三个测试可执行均链接成功
 
 ctest --test-dir out/build/candidate-debug -N -R '^rr2_contract'
-  Test #121  rr2_contract_packed
-  Test #170  rr2_contract_beat
-  Test #326  rr2_contract_entry
-  Test #488  rr2_contract_input
+  首次构建枚举：rr2_contract_packed #121、rr2_contract_beat #170、
+                rr2_contract_entry #326、rr2_contract_input #488
+  独立复核（提交 b46ce396）枚举：rr2_contract_packed #251、rr2_contract_beat #175、
+                rr2_contract_entry #326、rr2_contract_input #452
+  复核时 B3 两条枚举为 #580/#614（未区分先后）
 
 ctest --test-dir out/build/candidate-debug --no-tests=error -R '^rr2_contract_packed$'   exit 0（1/1 passed）
 ctest --test-dir out/build/candidate-debug --no-tests=error -R '^rr2_contract_beat$'     exit 0（1/1 passed）
@@ -137,8 +141,13 @@ ctest --test-dir out/build/candidate-debug --no-tests=error -R '^B3 occurrence d
   exit 0（1/1 passed）
 ```
 
-四个用例的断言在实测中全部通过，未为通过而放宽检查。F135 五类故障注入、安装消费者、ABI/安装面、
-F132 旧身份字节与 digest parity 不在这次构建/CTest 范围内。
+编号说明：`catch_discover_tests` 每次构建都会重写注册，同一批用例在不同构建/复核中编号不同；编号只是
+当时枚举的位置，不是用例身份，正文与登记引用一律使用用例名。
+
+上一版四个用例的断言在实测中全部通过，未为通过而放宽检查。本轮按复核意见新增了 Beat 约分用例与
+`rr2_contract_input` 的显式 native/forwarded、receipt 对象断言，**这些新增断言尚未重建重跑**，等待
+主代理统一构建。F135 五类故障注入、安装消费者、ABI/安装面、F132 旧身份字节与 digest parity 不在
+这次构建/CTest 范围内。
 
 ## 结果与证据
 
@@ -157,15 +166,22 @@ F132 旧身份字节与 digest parity 不在这次构建/CTest 范围内。
 | RR-F135 | 已接受 `host.rpa.allocation_failed` 与 capacity 的分工 | `frame_observation.hpp:230-231` 的预建 `allocationFailure_` 仍用 `host.rpa.capacity_exceeded`；`fault_` 无写入点；多个 catch 返回成功 | 在宿主边界与报告写同一张旧/新/未执行表；实现归 T-06 |
 | RR-F142 | 原记录称 9 类失败统一 test_only、另有 7 个码 | `error()` 返回 `player.execution.test_only`（`player_execution.cpp:36-38`）；7 个 `player.execution.*` 字符串是 `logger.info` 通道（`:263,338,407,493,543,580,599`），不是错误码；`:632` 在 fault 有码时透传 | 只列基线并纠正“码”的措辞；归 T-15 |
 
+独立复核（提交 `b46ce396`）另确认两组事实：Packed 前 92 字节 CRC、TIME/REQ0 拒绝码、digest 公开
+可见性和 CXC entry 接受集与代码一致，证据位置见上表的 file:line；F131 三层结论与
+`rr2_contract_input` 的实测行为一致，RPA 层归既有 B3 用例。复核未发现这两组需要改合同正文。
+
 ### RR-F135 基线映射（与 `docs/api/realtime-host-boundary.md` 的 F135 小节同表）
 
-| 场景 | 旧实现（当前触发与诊断） | 已接受目标 | 未执行验收（T-06 `rr_frame_observation_errors`） |
+| 场景 | 旧实现（当前触发与诊断） | 已接受目标 | 未执行验收（T-06 `rr_frame_observation_errors`；计划用例名，未实施） |
 | --- | --- | --- | --- |
 | 实际分配失败导致观测桥操作失败 | `copyPresentReceipt` 的 catch 返回 `host.rpa.capacity_exceeded`（`:72-73`）；`configure` 与 `create` 的 catch 同样报 `capacity_exceeded`（`:124-125`/`:288-289`）；`observe/expire/activate/query` 的 catch 返回预建 `allocationFailure_`，其码同为 `capacity_exceeded`（`:524-527`/`:549-552`/`:597-600`/`:613-614`，定义见 `frame_observation.hpp:230-231`）。 | 精确报 `host.rpa.allocation_failed`，并保留失败阶段；不得吞掉或误报 `capacity_exceeded`。 | [实际分配失败导致观测桥操作失败](../../../../stage_plans/active/stage-07-rr/tasks/T-06.md#任务级验收) |
 | 真实预算/容量耗尽 | `feedback` 超出 `limits.bytes` 时置 `coverageLost()` 并返回成功空值（`:322-327`）；`publishImpl` 超出预算同样 `coverageLost()` 后返回成功（`:396-399`）；`configure` 的预算不足报 `profile_incomplete`（`:104-126`）。 | 真实预算/容量拒绝保留 `host.rpa.capacity_exceeded`；不得借用 `allocation_failed`。 | [真实预算/容量耗尽](../../../../stage_plans/active/stage-07-rr/tasks/T-06.md#任务级验收) |
 | 非致命观测记录丢失 | `dropAttempt/dropFeedback/trim` 设置 unknown/历史丢失标记后继续（`:143-231`）；`feedback`/`publishImpl`/`recordAttempt` 的 catch 只 `coverageLost()` 并返回成功（`:335-337`/`:426-428`/`:447-449`），丢失不阻塞原执行，也不区分操作失败。 | 允许原执行继续，但必须留下不完整/Unknown 标记；不得据此证明 submit/present 成功。 | [非致命观测记录丢失](../../../../stage_plans/active/stage-07-rr/tasks/T-06.md#任务级验收) |
 | 持续 OOM 下报告可用 | 预留故障槽字段 `FaultSlot fault_` 已声明（`frame_observation.hpp:173`、`:229`），但本文件没有写入点；`error()` 以字符串拼接构造 `host.rpa.*`（`:8-10`），`copyPresentReceipt` 复制 cause 链时仍分配（`:58-68`）。 | 复用既有 `FaultSlot` 的 allocation/capacity Reason；故障槽与错误交付路径在持续 OOM 下仍可用，预建 owning `core::Error` 的复制/移动也须验证。 | [持续 OOM 下报告可用](../../../../stage_plans/active/stage-07-rr/tasks/T-06.md#任务级验收) |
 | submit/present 真实性及异常分类 | `presentOwnedFrame` 的 catch 返回 `PresentStatus::unknown` 与 `host.rpa.device_failed`（`frame_observation.hpp:113-117`）；`observe` 在 `copyPresentReceipt` 失败时记 `receiptLost` 后返回成功（`:486-491`），自身 catch 则返回预建 `allocationFailure_`（`:524-527`）。 | 操作未完成必须报告失败；纯观测丢失标 Unknown/不完整且不阻塞 Gameplay；不得伪报完成，也不得把其他异常统一改报 allocation_failed。 | [submit/present 真实性及异常分类](../../../../stage_plans/active/stage-07-rr/tasks/T-06.md#任务级验收) |
+
+表内 `rr_frame_observation_errors` 及五个场景名目前只存在于 T-06 计划与 `realtime-host-boundary.md`
+本节，代码/测试 0 命中；它们是待实施的计划用例，不是现有测试。
 
 2026-11-23 接受记录见登记册 §23（RR-F135）；该表只固定映射，不表示实现或运行已通过。
 **状态：已接受、未实现。** 合同修订落在 `docs/api/realtime-host-boundary.md` 的 F135 小节；生产修复与
@@ -200,7 +216,8 @@ F132 旧身份字节与 digest parity 不在这次构建/CTest 范围内。
   `src/playback_session_prepared.cpp:10-66` 无条件编入，错误码为 `host.rpa.*`。
 - `CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE=1` 仅候选构建以 `PUBLIC` 定义（`CMakeLists.txt:47-54`）；默认构
   建安装同一个头但宏未定义，形成“同文件不同声明面”。该差异清单见
-  `candidate-install-and-macro-diff.md`，交 RR-4/T-08 限定迁移。
+  `candidate-install-and-macro-diff.md`，交 RR-4/T-08 限定迁移；完整清单见
+[evidence/t-03/candidate-install-and-macro-diff.md](../evidence/t-03/candidate-install-and-macro-diff.md)。
 
 ### RR-F131 三层取证
 
@@ -210,9 +227,13 @@ F132 旧身份字节与 digest parity 不在这次构建/CTest 范围内。
 - 旧执行 profile：`execution_kernel_submit.cpp:91` 以 `resolveDomains=true` 调 `prepareIngressBatch`，
   `:99-141` 再做 route 与 dispatch 检查；`late.duplicate_queue_entry` 与
   `late.dispatch_collision` 分别来自 `input.cpp:177` 与 `execution_kernel_submit.cpp:130/136`。
-- RPA：`submitCanonical` 走 `submitRpa`（`:16-33`、`:235-262`）；既有
-  `tests/rpa/rpa_b3_schedule_tests.cpp:157` 与 `rpa_b3_checkpoint_tests.cpp:405` 覆盖 occurrence 槽
-  共享 dispatch 与 duplicate/conflict 两码，两条对照已由主代理实测 1/1 通过。本卡不改 RPA 规则。
+- RPA：`submitCanonical` 走 `submitRpa`（`:16-33`、`:235-262`）。两条既有 B3 用例覆盖的实际行为是：
+  `tests/rpa/rpa_b3_schedule_tests.cpp:157` 让不同 original Tick（897 release、898 press）转发到同一
+  dispatch，断言两条 receipt 的 dispatch 相同、按 canonical order 排列，且 head 为 Hit；它是顺序/
+  转发对照，不产生错误码。`tests/rpa/rpa_b3_checkpoint_tests.cpp:405` 对重复 occurrence 断言
+  `judgement.late.duplicate_queue_entry`，对同 tick/Ordinal 不同 action 断言
+  `judgement.input.occurrence_conflict`，并断言状态原子不变。两条都在既有 `cuexis_rpa_tests`，不在
+  `rr2_contract_input` 内；本卡不改 RPA 规则。
 
 ### RR-F132 身份 preimage 与 fixture 绑定
 
@@ -232,21 +253,23 @@ F132 旧身份字节与 digest parity 不在这次构建/CTest 范围内。
 `tests/judgement/fold_recovery_fixture.hpp:51-102`；既有期望构造在
 `tests/judgement/fold_recovery_seek_tests.cpp:341-383`。该期望调用
 `makeRuntimePreparedIdentity`，是镜像实现，不能独立证明身份未变；十六进制旧字节必须由 T-10 在改动前
-实跑取得。本卡在 `rr-f132-identity-binding.md` 给出逐字段对照与取字节命令，不改字段、不改后缀。
+实跑取得。本卡在
+[evidence/t-03/rr-f132-identity-binding.md](../evidence/t-03/rr-f132-identity-binding.md) 给出逐字段
+对照与取字节命令，不改字段、不改后缀。
 
-### 新增测试源（candidate-debug 实测通过）
+### 新增测试源（上一版已实测，本轮补强待重跑）
 
 | 测试名 | 注册目标/文件 | 覆盖 |
 | --- | --- | --- |
 | `rr2_contract_packed` | `cuexis_chart_tests` / `tests/chart/packed_chart_io_tests.cpp` | 同一可读样本、前 92 字节 CRC、旧 96 字节算法必须报 `packed.header.crc`、TIME/REQ0 mode 1 分别在 envelope/CRC 保持时报 `packed.time.invalid` / `packed.requirements.codec` |
-| `rr2_contract_beat` | `cuexis_chart_tests` / `tests/chart/chart_loader_tests.cpp` | v1–v3 最简有理数在上限（分子正负两侧、分母）通过，上限加一报 `chart.beat.limit_exceeded` |
+| `rr2_contract_beat` | `cuexis_chart_tests` / `tests/chart/chart_loader_tests.cpp` | v1–v3 最简有理数在上限（分子正负两侧、分母）通过，上限加一报 `chart.beat.limit_exceeded`；新增 `2*max/2` 约分后通过、`2*(max+1)/2` 约分后拒绝 |
 | `rr2_contract_entry` | `cuexis_cxc_tests` / `tests/cxc/cxc_candidate_bridge_tests.cpp` | 静态 profile+`packed-chart`、Behavior profile+`source-json` 各自通过；交换 encoding 报 `cxc.chart_entry.entry_invalid`；默认 CXC v1 仍可读且无 candidate 扩展 |
-| `rr2_contract_input` | `cuexis_judgement_tests` / `tests/judgement/execution_kernel_oracle_tests.cpp` | 普通规范化的 distinct/duplicate/sequence 首错；旧执行 §8 的 sequence→duplicate→same-tick→dispatch；跨批 native/forwarded receipt、拒绝不推进不消费序号、序号可再用 |
+| `rr2_contract_input` | `cuexis_judgement_tests` / `tests/judgement/execution_kernel_oracle_tests.cpp` | 普通规范化的 distinct/duplicate/sequence 首错；旧执行 §8 的 sequence→duplicate→same-tick→dispatch；native/forwarded 两分支各自断言 `wasForwarded`；跨批结算绑定 receipt 的 key 与 dispatch，拒绝不推进不消费序号，序号可再用且 `wasForwarded==false` |
 
 CMake 注册：四个用例追加在既有已注册源文件内，由既有 `catch_discover_tests` 自动发现，故无需改
-`tests/{chart,cxc,judgement}/CMakeLists.txt`；主代理的 `ctest -N -R '^rr2_contract'` 已发现
-Test #121/#170/#326/#488，四个精确名称各自 1/1 通过。RPA 沿用现有 `cuexis_rpa_tests` 与两个既有
-B3 用例，也各 1/1 通过。
+`tests/{chart,cxc,judgement}/CMakeLists.txt`；主代理的 `ctest -N -R '^rr2_contract'` 已按名称发现四个
+用例（枚举编号随构建漂移，见「执行记录」），上一版四个精确名称各自 1/1 通过。RPA 沿用现有
+`cuexis_rpa_tests` 与两个既有 B3 用例，也各 1/1 通过。
 
 ### 文档改动
 
@@ -273,10 +296,10 @@ B3 用例，也各 1/1 通过。
 - 未验证 Packed 旧算法文件的外部互操作、真实外部消费者或 artifact 迁移；只验证合同与实现一致，并以
   已通过的测试固定“旧算法值必须被拒”。
 - “为错误原因通过”的风险见下节；本轮没有为消除风险而修改或放宽任何断言。
-- 文档门禁：本卡 docs 改完后 `check_docs.py`/`check_docs_facts.py` 均退出 0；收尾重跑时
-  `check_docs.py` 因四份并发文件链接到尚未创建的
-  `docs/stage_reports/.../2026-11-23-t-03-contracts-and-diagnostics.md` 而退出 1，该文件与链接方均不在
-  本卡写域，详见「执行记录」。`check_docs_facts.py` 仍退出 0。
+- 文档门禁：本卡 docs 改完后 `check_docs.py`/`check_docs_facts.py` 均退出 0；中途 `check_docs.py` 曾因
+  四份并发文件链接到当时尚未创建的
+  `docs/stage_reports/.../2026-11-23-t-03-contracts-and-diagnostics.md` 而退出 1；该文件随 `b46ce396`
+  创建后，复核重跑两个门禁均退出 0。
 - 基线漂移：派单基线 `3b8bf41e`，收尾 `HEAD` `6c77a888`，`3b8bf41e` 是其祖先；开读期间的其他代理
   未提交改动已由各自提交，本卡未提交。
 - `out/review/stage-07-rr/T-03/` 下既有的 `configure.*` / `build-tests.*` 日志非本代理生成；构建结果
@@ -291,31 +314,27 @@ B3 用例，也各 1/1 通过。
   因此通过只能来自该门。`chart.beat.limit_exceeded` 只在 `canonical_chart_loader_primitives.cpp:328`
   产生，`packed.header.crc` / `packed.time.invalid` / `packed.requirements.codec` 也各自唯一，未发现
   “任意失败即通过”的路径。
-- 仍有前置条件偏松、建议后续加强的地方：`rr2_contract_input` 的复用序号只断言
-  `dispatchTick==903`，没有断言 `wasForwarded==false`；建议补
-  `CHECK_FALSE(reused->front().wasForwarded)`，把“native 复用”钉住。跨批结算只断言
-  `receipts.size()==1`；建议再断言该 receipt 的 dispatch/key 属于原 pending，防止“数量对但对象错”。
-  这两处本轮受“只改注释”限制未改，不影响当前通过结论。
+- `rr2_contract_input` 的 native/forwarded 分支已改成显式期望：转发分支断言
+  `wasForwarded==true`，native 分支断言 `wasForwarded==false`，不再只靠循环变量比较；跨批结算除
+  `receipts.size()==1` 外，新增 receipt 的 `dispatchTick==901` 与 `observationKey` 等于首个 pending
+  的 key，能区分“执行一次”和“数量为一的其它 receipt”；复用序号新增
+  `CHECK_FALSE(reused->front().wasForwarded)`。这些新增断言**尚未重跑**，待主代理统一构建确认。
+- `rr2_contract_beat` 新增约分用例：`2*max/2` 应接受，`2*(max+1)/2` 应报
+  `chart.beat.limit_exceeded`；它直接覆盖“判定在约分后”的合同句子，不再是只靠等值边界推断。
 - `rr2_contract_packed` 的旧 CRC 值与存储值不等由 `REQUIRE` 先固定，TIME/REQ0 两例各自先要求 envelope
   通过、再要求精确语义码，不依赖“任意失败”。
 
 ## 对登记册与合同的影响
 
-- 登记册（由集成者写回，本卡不改 `findings.md`）：RR-F131 需追加“三层入口”分层纠正并保留原记录；
+- 登记册（由集成者写回，本卡不改 `findings.md`）：逐项处置表见
+  [evidence/t-03/finding-disposition.md](../evidence/t-03/finding-disposition.md)。RR-F131 需追加
+  “三层入口”分层纠正并保留原记录；
   RR-F132 需把“`gameplay.fold.finite.v1` 应进 ruleset/session identity”改为“engine 算法标记进
   engine revision、实际配置进 ruleset/session”；RR-F142 需把“7 个码”改为 logger 通道；RR-F111/112/
-  113/114/115/121/122/135 的当前处置依据应指向本报告与新增测试名。四个用例与两条 RPA 对照已在
-  candidate-debug 实测通过（Test #121/#170/#326/#488），登记册可引用这些注册号；F135 仍标未实现。
+  113/114/115/121/122/135 的当前处置依据应指向本报告与新增测试名。用例引用一律用名称，不写 CTest
+  编号（`catch_discover_tests` 每次构建会重写编号）；上一版四个用例与两条 RPA 对照已实测通过，本轮
+  补强断言待重跑；F135 仍标未实现。
 - 合同：本卡只改上述八个文件；CXC、Chart Entry 与其余页面未改，因为没有发现需订正的差异。
 - 移交：F135 的五个运行验收归 T-06；F132 的身份字节迁移对照归 T-10；F122 与候选安装/宏头差异归
   RR-4/T-08；F121 的测试重复编译归 T-04/RR-F214；F142 归 T-15；Packed 双入口与其它错误表若后续出现
   新语义，按 D-04 另立接受记录，不在本卡重开。
-
-## 证据附件
-
-- [逐项 finding 处置](../evidence/t-03/finding-disposition.md)
-- [candidate 安装与宏头差异](../evidence/t-03/candidate-install-and-macro-diff.md)
-- [RR-F132 身份绑定与 T-10 取样命令](../evidence/t-03/rr-f132-identity-binding.md)
-- [命令与改动文件清单](../evidence/t-03/commands-and-files.md)
-- [candidate-debug 构建与 ctest 原始日志](../evidence/t-03/ctest-rr2.log)
-

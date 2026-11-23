@@ -138,13 +138,16 @@ CutApplied(cut,q,pauseEpoch)；当前未执行为 Pending，不能用裸 NotAppl
 声明；“未执行验收”列链接 [T-06 任务级验收](../stage_plans/active/stage-07-rr/tasks/T-06.md#任务级验收)
 的 `rr_frame_observation_errors` 具名场景。本轮没有构建或运行该测试，合同接受不等于运行通过。
 
-| 场景 | 旧实现（当前触发与诊断） | 已接受目标 | 未执行验收（T-06 `rr_frame_observation_errors`） |
+| 场景 | 旧实现（当前触发与诊断） | 已接受目标 | 未执行验收（T-06 `rr_frame_observation_errors`；计划用例名，未实施） |
 | --- | --- | --- | --- |
 | 实际分配失败导致观测桥操作失败 | `copyPresentReceipt` 的 catch 返回 `host.rpa.capacity_exceeded`（`:72-73`）；`configure` 与 `create` 的 catch 同样报 `capacity_exceeded`（`:124-125`/`:288-289`）；`observe/expire/activate/query` 的 catch 返回预建 `allocationFailure_`，其码同为 `capacity_exceeded`（`:524-527`/`:549-552`/`:597-600`/`:613-614`，定义见 `frame_observation.hpp:230-231`）。 | 精确报 `host.rpa.allocation_failed`，并保留失败阶段；不得吞掉或误报 `capacity_exceeded`。 | [实际分配失败导致观测桥操作失败](../stage_plans/active/stage-07-rr/tasks/T-06.md#任务级验收) |
 | 真实预算/容量耗尽 | `feedback` 超出 `limits.bytes` 时置 `coverageLost()` 并返回成功空值（`:322-327`）；`publishImpl` 超出预算同样 `coverageLost()` 后返回成功（`:396-399`）；`configure` 的预算不足报 `profile_incomplete`（`:104-126`）。 | 真实预算/容量拒绝保留 `host.rpa.capacity_exceeded`；不得借用 `allocation_failed`。 | [真实预算/容量耗尽](../stage_plans/active/stage-07-rr/tasks/T-06.md#任务级验收) |
 | 非致命观测记录丢失 | `dropAttempt/dropFeedback/trim` 设置 unknown/历史丢失标记后继续（`:143-231`）；`feedback`/`publishImpl`/`recordAttempt` 的 catch 只 `coverageLost()` 并返回成功（`:335-337`/`:426-428`/`:447-449`），丢失不阻塞原执行，也不区分操作失败。 | 允许原执行继续，但必须留下不完整/Unknown 标记；不得据此证明 submit/present 成功。 | [非致命观测记录丢失](../stage_plans/active/stage-07-rr/tasks/T-06.md#任务级验收) |
 | 持续 OOM 下报告可用 | 预留故障槽字段 `FaultSlot fault_` 已声明（`frame_observation.hpp:173`、`:229`），但本文件没有写入点；`error()` 以字符串拼接构造 `host.rpa.*`（`:8-10`），`copyPresentReceipt` 复制 cause 链时仍分配（`:58-68`）。 | 复用既有 `FaultSlot` 的 allocation/capacity Reason；故障槽与错误交付路径在持续 OOM 下仍可用，预建 owning `core::Error` 的复制/移动也须验证。 | [持续 OOM 下报告可用](../stage_plans/active/stage-07-rr/tasks/T-06.md#任务级验收) |
 | submit/present 真实性及异常分类 | `presentOwnedFrame` 的 catch 返回 `PresentStatus::unknown` 与 `host.rpa.device_failed`（`frame_observation.hpp:113-117`）；`observe` 在 `copyPresentReceipt` 失败时记 `receiptLost` 后返回成功（`:486-491`），自身 catch 则返回预建 `allocationFailure_`（`:524-527`）。 | 操作未完成必须报告失败；纯观测丢失标 Unknown/不完整且不阻塞 Gameplay；不得伪报完成，也不得把其他异常统一改报 allocation_failed。 | [submit/present 真实性及异常分类](../stage_plans/active/stage-07-rr/tasks/T-06.md#任务级验收) |
+
+表内 `rr_frame_observation_errors` 及五个场景名目前只存在于 T-06 计划与本节，代码/测试 0 命中；
+它们是待实施的计划用例，不是现有测试。
 
 2026-11-23 接受记录见[登记册 §23](../stage_plans/active/stage-07-rr/findings.md#23-正式实施前计划检查2026-11-22)；
 实现与故障注入由 T-06 承接，本节只固定旧新映射，不表示缺陷已修复。
