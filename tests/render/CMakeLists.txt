@@ -4,6 +4,7 @@ if(TARGET cuexis_render_opengl)
         frame_layout_tests.cpp
         open_gl_config_tests.cpp
         open_gl_presentation_tests.cpp
+        ${PROJECT_SOURCE_DIR}/engine/render_opengl/src/frame_layout_test_support.cpp
     )
 
     target_link_libraries(cuexis_render_opengl_tests
