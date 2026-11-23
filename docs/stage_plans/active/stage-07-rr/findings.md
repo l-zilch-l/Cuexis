@@ -884,6 +884,28 @@ T-06 按卡实施，交付范围只到 Playback 帧对象与 GL 实验桥，宿�
 - 验证：`cuexis_execution_host_tests` 68/68、candidate-headless `rpa` 182/182、`cuexis_playback_tests` debug 137 例、candidate 193 例、debug 布局 6/6、shared 两预设各 2/2、架构与隔离门禁 3/3。
 - 全局格式门禁：本轮改动的源码里 17 个文件未按 clang-format 输出，已统一格式化（`a977e01a`），`cuexis_format_check` 恢复通过。
 
+## 39. T-08 独立 RR-4 公共面（2026-11-24）
+
+- 候选实验 facade（`gameplay`、`gameplay_realtime`、`gameplay_replay`）与逐符号转发、候选 `FILE_SET` 与默认安装拒绝：**成立**。默认前缀编译实验头必须失败、未 opt in 的 `find_package` 必须被拒，两条负例都实际命中。
+- `detail::ExecutionHostAccess` build-only 入口、`CUEXIS_PLAYBACK_API` 逐函数导出、三处 friend 与 `host_candidate.cpp` 消费同步：**成立**。`rr_sdk_execution_host_shared` 证明 Player 与测试只 import 同一个候选 `cuexis_playback` DLL，bridge 21 条、真实 host Pause/Resume/Seek/Close 68 条断言通过。
+- 候选 hooks 拆分：**成立**。默认闭包不含候选 hook 声明，实验闭包每个 hook 只有一个定义，`cuexis_rr_playback_isolation` 与安装消费者同一套证据核验。
+- replay identity 与 frame layout 的窄内部入口迁移、F313/F316 具名 include 封闭：**成立**。全应用反向依赖与目录搬迁按卡面留 T-14。
+- RR-F209/F412：**成立**。reference host 改为 Result 驱动，不再等待未进入的 Playback `SessionState::Failed`；公开枚举保留，删除仍走所属接口组退出条件。
+- 共享导出对照：候选 219→275（新增 56，移除 0，其中 39 个实验符号、17 个内部符号，各含一个两重载）；默认 109→109（0 增 0 减）。候选门禁正例退出 0，两个负例分别以缺符号与默认拒绝候选 detail 符号退出 1。
+- 四配置安装消费者、facade 兼容消费者、reference-host staging：**成立**（复用既有构建目录，未做 `--fresh` 与全量 CTest）。`--fresh` 四配置与全量 CTest 连同符号移除变异负例列为 T-09 补证项，不能按已通过计。
+- 风险面：实验 shared 新增 56 个导出符号，是限定策略变更；候选 facade 尚未获准发布，保留候选面，不预填退役版本。
+
+## 40. T-06 第三轮：诊断、资源去重与 retained 用例（2026-11-24）
+
+- RR-F419/`rr_frame_diagnostics`：**成立**。注册在既有 `cuexis_player_control_tests`，常规路径断言 `renderMicroseconds` 有限非负，受控 2 ms renderer 首帧即报 ≥1000 µs，`notePresented` 与 `validatePresented` 看到同一值，证明赋值先于钩子。`0` 的语义按“低于微秒分辨率的一次真实测量”表述，不再承诺恰好为零。
+- F207 五类资源去重：**成立**。`resource_scope.cpp` 的五段 typed load 与五段 fallback 合并为两个按 Tag 分派的模板，Entry/Lease variant、索引、回滚边界与诊断 severity/code/context/cause 排序全部保留；新增五类共用路径与 depth/type/fallback 用例，资源用例 14/14 通过。`fallback_failed` 与 scope 级 `dependency_cycle` 在当前构造下不可达，记无法核实并附原因。
+- RR-F428：**成立**。假后端 close 后 `rebuild()`/`resize()` 返回 `presentation.renderer.closed` 且 generation 不前进；真实 GL 释放后返回 `render.opengl.backend_unavailable`，后续 submit/present 仍失败。原用例把“close 后 rebuild 成功”编码成预期，已按合同改正。
+- RR-F421：**成立**。能力缓存改为已发布缓存任意线程直读、首次初始化只允许 owner 主线程且活 context、非 owner 未初始化查询返回未初始化集，真实 GL 前后两次跨线程取证。
+- RR-F427：**部分成立**。owner 路径（析构、move-assign 入站、discard）用例成立；跨线程 detach 实现为改状态前 `std::terminate()`，进程内无断言可测，未做子进程死亡探针。
+- RR-F415：**部分成立**。读者普查显示 `mutationEpoch` 生产 0 读者，唯一读者是 PD 寿命探针的等值断言；按卡面“仅清理确认无用途的副本”条件未满足，保留字段并逐条引用证据。
+- retained 两向模式与请求选择差异：**成立**。legacy handle+有 target、layout handle+`nullopt` 两向都在帧 ID/attempt/reservation 前记终态 `noRetainedFrame`（新增 `FrameDelivery::refuse`），重复请求同终态，随后匹配模式复用原 handle/serial；Default handle 时 BestFit 请求被拒、同选择复用。
+- CI 适配：`rr_frame_layout_shared` 在无 OpenGL 上下文的宿主上把真实 Player smoke 记为 NOT CHECKED 而不是产品失败；本地 NVIDIA 上下文仍真实执行。`cuexis_rr_sdk_facade_compat` 需要 vcvars 环境，未加载 MSVC 环境时嵌套 configure 会因缺库失败并误报，运行说明需写明这一点。
+
 ## 附录 处置记录（按日期保留，§12–§16）
 
 本附录保留各轮审查的处置记录，按当时时点成立，不改写结论；编号沿用历史顺序，故排在 §17 之后阅读。

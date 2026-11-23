@@ -63,3 +63,7 @@ GL 桥：`rr_frame_layout_gl_bridge` 覆盖缺能力/非法表拒绝、target/to
 宿主/Player 帧链补齐：`FramePayload` 变体与 envelope 视图、worker 布局提取/重排、`FrameRequest` 的 target/framing 与指纹、Player 绑定同一 `OpenGlBackend`、宿主 deadline 与 target-changed 弃帧均成立；`rr_frame_layout_shared` 在两个 shared 预设的真实 Player smoke 与仓内消费者通过（两边 consumer digest 相同，真实 Player 完成 6 帧）。新增 4 个宿主用例与 1 个 shared 消费者。
 
 仍未闭环：`rr_frame_diagnostics`/F419、F207 五类资源去重、F427/F428/F421/F415、retained 两向与请求选择差异、非空作者画幅表端到端（依赖 T-11/T-13）；`FramePayload` 由 328 B 增至 904 B，PD-5 的尺寸/容量基线需要重生成。RR-F135 场景 4 与 RR-F508 继续等裁定。
+
+## 10. 第三轮补充（2026-11-24）
+
+`rr_frame_diagnostics`/F419 时序、F207 五类资源共用实现、F428 close 语义、F421 能力缓存线程约束与 retained 两向/选择差异成立；新增 `FrameDelivery::refuse` 作为终态记录入口。F427 的跨线程 detach 采用 terminate 策略但未做进程死亡探针；F415 的 `mutationEpoch` 因仍有寿命探针读者而保留；F207 的 `fallback_failed` 与 scope 级 `dependency_cycle` 不可达，记为无法核实。CI 上无 OpenGL 的宿主把 shared Player smoke 记为 NOT CHECKED，不伪装成通过。

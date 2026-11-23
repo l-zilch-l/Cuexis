@@ -18,6 +18,7 @@ authority: index
 | --- | --- | --- |
 | 2026-11-24 | [T-02 RR-1 状态事实对齐](implementation/2026-11-24-t-02-state-facts.md) | 四篇状态事实与版本字面量对齐；RR-F105 部分成立，Packed 69 例全过 |
 | 2026-11-24 | [T-05 像素几何与 GL 边界](implementation/2026-11-24-t-05-frame-layout.md) | 几何/投影纯值成立，借用 FBO 与状态恢复成立，framebuffer_incomplete 本机不可达 |
+| 2026-11-24 | [T-08 独立 RR-4 公共面](implementation/2026-11-24-t-08-rr4-surface.md) | 候选 facade 与逐符号迁移、hooks 拆分、导出对照与四配置消费者成立；--fresh 与全量 CTest 留 T-09 |
 | 2026-11-24 | [T-06 帧对象与 GL 实验桥（部分）](implementation/2026-11-24-t-06-frame-bridge-partial.md) | 帧对象/安装/导出与 F135 1/2/3/5 成立；场景 4 与宿主接线未闭环 |
 | 2026-11-24 | [T-17 会话层正确性修复](implementation/2026-11-24-t-17-session-correctness.md) | F501/F508/F509/F203 成立，候选与默认闭包测试通过 |
 | 2026-11-24 | [T-04 构建闭包拆分与隔离门禁](implementation/2026-11-24-t-04-build-isolation.md) | 四预设与两独立配置的构建、门禁、安装消费者、阴性与 F216/F217/F434 验收；A2 暴露的门禁缺陷已修复 |
