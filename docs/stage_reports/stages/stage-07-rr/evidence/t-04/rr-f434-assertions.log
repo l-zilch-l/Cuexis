@@ -1,0 +1,117 @@
+Filters: "FrameDigest fixed-version entry rejects unsupported algorithm versions"
+Randomness seeded to: 3555543058
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cuexis_playback_tests.exe is a Catch2 v3.15.2 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+FrameDigest fixed-version entry rejects unsupported algorithm versions
+-------------------------------------------------------------------------------
+E:\Cuexis-worktree\tests\playback\frame_digest_tests.cpp(56)
+...............................................................................
+
+E:\Cuexis-worktree\tests\playback\frame_digest_tests.cpp(63): PASSED:
+  REQUIRE_FALSE( future.has_value() )
+with expansion:
+  !false
+
+E:\Cuexis-worktree\tests\playback\frame_digest_tests.cpp(64): PASSED:
+  CHECK( future.error().code() == "playback.frame_digest.version_unsupported" )
+with expansion:
+  "playback.frame_digest.version_unsupported"
+  ==
+  "playback.frame_digest.version_unsupported"
+
+E:\Cuexis-worktree\tests\playback\frame_digest_tests.cpp(66): PASSED:
+  REQUIRE_FALSE( zero.has_value() )
+with expansion:
+  !false
+
+E:\Cuexis-worktree\tests\playback\frame_digest_tests.cpp(67): PASSED:
+  CHECK( zero.error().code() == "playback.frame_digest.version_unsupported" )
+with expansion:
+  "playback.frame_digest.version_unsupported"
+  ==
+  "playback.frame_digest.version_unsupported"
+
+E:\Cuexis-worktree\tests\playback\frame_digest_tests.cpp(71): PASSED:
+  REQUIRE( publicDigest.has_value() )
+with expansion:
+  true
+
+E:\Cuexis-worktree\tests\playback\frame_digest_tests.cpp(72): PASSED:
+  CHECK( publicDigest->algorithmVersion == 3 )
+with expansion:
+  3 == 3
+
+E:\Cuexis-worktree\tests\playback\frame_digest_tests.cpp(74): PASSED:
+  REQUIRE( fixedV3.has_value() )
+with expansion:
+  true
+
+E:\Cuexis-worktree\tests\playback\frame_digest_tests.cpp(75): PASSED:
+  CHECK( fixedV3->value == publicDigest->value )
+with expansion:
+  9292624206614054870 (0x80f6087b426d47d6)
+  ==
+  9292624206614054870 (0x80f6087b426d47d6)
+
+===============================================================================
+All tests passed (8 assertions in 1 test case)
+
+
+EXIT-REJECT=0
+
+Filters: "FrameDigest preserves v1 and v2 historical definitions"
+Randomness seeded to: 2513951318
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cuexis_playback_tests.exe is a Catch2 v3.15.2 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+FrameDigest preserves v1 and v2 historical definitions
+-------------------------------------------------------------------------------
+E:\Cuexis-worktree\tests\playback\frame_digest_tests.cpp(42)
+...............................................................................
+
+E:\Cuexis-worktree\tests\playback\frame_digest_tests.cpp(47): PASSED:
+  REQUIRE( v1.has_value() )
+with expansion:
+  true
+
+E:\Cuexis-worktree\tests\playback\frame_digest_tests.cpp(48): PASSED:
+  REQUIRE( v2.has_value() )
+with expansion:
+  true
+
+E:\Cuexis-worktree\tests\playback\frame_digest_tests.cpp(49): PASSED:
+  CHECK( v1->algorithmVersion == 1 )
+with expansion:
+  1 == 1
+
+E:\Cuexis-worktree\tests\playback\frame_digest_tests.cpp(50): PASSED:
+  CHECK( v1->value == 7174372098521454160ULL )
+with expansion:
+  7174372098521454160 (0x63907d6982d85650)
+  ==
+  7174372098521454160 (0x63907d6982d85650)
+
+E:\Cuexis-worktree\tests\playback\frame_digest_tests.cpp(51): PASSED:
+  CHECK( v2->algorithmVersion == 2 )
+with expansion:
+  2 == 2
+
+E:\Cuexis-worktree\tests\playback\frame_digest_tests.cpp(52): PASSED:
+  CHECK( v2->value == 7850652359432829177ULL )
+with expansion:
+  7850652359432829177 (0x6cf31eb9f31378f9)
+  ==
+  7850652359432829177 (0x6cf31eb9f31378f9)
+
+===============================================================================
+All tests passed (6 assertions in 1 test case)
+
+
+EXIT-HISTORICAL=0

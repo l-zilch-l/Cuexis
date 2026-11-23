@@ -1,0 +1,9 @@
+Test project E:/Cuexis-worktree/out/build/debug
+    Start 716: FrameDigest preserves v1 and v2 historical definitions
+1/2 Test #716: FrameDigest preserves v1 and v2 historical definitions ...................   Passed    0.07 sec
+    Start 722: FrameDigest fixed-version entry rejects unsupported algorithm versions
+2/2 Test #722: FrameDigest fixed-version entry rejects unsupported algorithm versions ...   Passed    0.08 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =   0.21 sec

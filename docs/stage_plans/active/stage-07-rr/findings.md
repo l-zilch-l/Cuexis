@@ -828,6 +828,17 @@ owner 2026-11-23 裁定：移交 T-08，与 RR-F122 的候选宏、安装面和�
 - 原样完整 R4 用例文件（160,354 字节）仍超过工具内 128 KiB 解析预算，两侧都 exit 2、同一条 `json.parse.size_limit`；单例拆分路径成立，完整文件路径记为不成立。
 - 这批语料可以充当当前实现的内部回归输入，但聚合值相同只证明 score/hits/misses 与同构建 replay 自洽；逐音符判定窗口、跨实现 replay 字节与设备输入仍无法核实。
 
+## 34. T-04 构建闭包拆分与隔离门禁（2026-11-24）
+
+T-04 交付见[构建闭包拆分与隔离门禁](../../../stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-04-build-isolation.md)。
+
+- RR-F302 处置：**已关闭**。`cuexis_chart` 只保留基础 Reader/CXT1/v4 Resolver 源表与 include 根；codec 与 tools 拆成独立内部静态库，各自只含其消费合同内的源与 include 根；每个 Chart TU 只归属一个库，门禁在四个预设与 `rr-f302-minimal`/`rr-f302-tools` 两个独立配置按实际配置通过。
+- RR-F216 处置：**在 Windows 可核实范围关闭**。启用 observer 且不显式传库类型时默认 STATIC 配置通过；显式 SHARED 在 Windows 被拒绝，首错 `PD allocation observer requires Windows STATIC`。非 Windows 分支需要非 Windows 主机，未核实。
+- RR-F217 处置：**已关闭**。GL ON/shader tools OFF 下 `cuexis_shader_tests` 构建成功，6 个 cache 用例注册并全部通过；codemodel 显示该目标不含 shader compiler 源与 shaderc 链接边。本机无 tools ON + tests ON + GL ON 配置，compiler/cache 对照未做，记为遗留。
+- RR-F434 处置：**已关闭**。摘要版本 0 与 4 被 `playback.frame_digest.version_unsupported` 拒绝；默认 v3 与历史 v1/v2 的摘要值未变。
+- 新发现（门禁自身）：`cuexis_target_dependency_names()` 把 File API `dependencies` 元素当字符串读取，导致基础 Chart 的链接边检查恒为空，A2 阴性在候选配置假通过；修复为读取 `id` 成员（`92539ad4`），修复后 A2 按预期失败。该缺陷由阴性对照发现，说明拆分门禁需要定期用反对照自检。
+- 遗留：候选 hook 文件拆分按 §32 移交 T-08；安装消费者的 `find_package` 接线由本卡脚本直接指向前缀，`VerifyGameplayInstalledConsumer` 只做前缀侧断言；全部运行是 Windows Debug，Release 与非 Windows 未覆盖；设备与实体输入不在本卡。
+
 ## 附录 处置记录（按日期保留，§12–§16）
 
 本附录保留各轮审查的处置记录，按当时时点成立，不改写结论；编号沿用历史顺序，故排在 §17 之后阅读。

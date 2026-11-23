@@ -16,6 +16,10 @@ authority: index
 
 | 日期 | 报告 | 内容 |
 | --- | --- | --- |
+| 2026-11-24 | [T-04 构建闭包拆分与隔离门禁](implementation/2026-11-24-t-04-build-isolation.md) | 四预设与两独立配置的构建、门禁、安装消费者、阴性与 F216/F217/F434 验收；A2 暴露的门禁缺陷已修复 |
+| 2026-11-24 | [T-04 安装消费者证据](evidence/t-04/t-04-install.md) | 五档前缀的清单、导出、泄漏检查与消费者运行 |
+| 2026-11-24 | [T-04 阴性证据](evidence/t-04/t-04-negatives.md) | A1/A3 结构阴性、A2 修复前后、B 链接 probe 与补充件 |
+| 2026-11-24 | [T-04 F216/F217/F434 证据](evidence/t-04/t-04-rr-cases.md) | 三项验收的命令、退出码与断言输出 |
 | 2026-11-24 | [当前实现重放两套历史包](evidence/external-corpus/replay-current/replay-current.md) | 聚合判定与历史期望逐字节一致；完整 R4 用例文件受 128 KiB 解析预算限制 |
 | 2026-11-24 | [RR-F132 身份字节基线](evidence/t-03/identity-baseline/identity-baseline.md) | T-10 改动前的两套 `judgementIdentity` 规范字节与哈希；仅当前实现，历史发布值仍无法核实 |
 | 2026-11-23 | [外部旧设备验收包清点](readiness/2026-11-23-external-legacy-corpus.md) | 仓库外两套内部候选验收包的哈希、期望值与可复现性；D-20 正式发行语料仍为空集 |

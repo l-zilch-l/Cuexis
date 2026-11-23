@@ -1,0 +1,43 @@
+== configuration ==
+CUEXIS_BUILD_OPENGL_ADAPTER:BOOL=ON
+CUEXIS_BUILD_SHADER_TOOLS:BOOL=OFF
+CUEXIS_BUILD_TESTS:BOOL=ON
+CUEXIS_LIBRARY_TYPE:STRING=STATIC
+CUEXIS_LIBRARY_TYPE-STRINGS:INTERNAL=STATIC;SHARED
+== target cuexis_shader_tests ==
+type: EXECUTABLE
+sources:
+  tests/shader/shader_cache_tests.cpp
+direct linkLibraries:
+  cuexis_shader_cache
+  Catch2::Catch2WithMain
+dependencies:
+  cuexis_core
+  cuexis_shader_cache
+compile defines: CUEXIS_CORE_STATIC_DEFINE;NOMINMAX;WIN32_LEAN_AND_MEAN
+CUEXIS_SHADER_COMPILER_AVAILABLE present in target json: False
+== target cuexis_shader_cache ==
+sources:
+  engine/shader/src/shader_cache.cpp
+  engine/shader/src/shader_reflection.cpp
+  engine/shader/include/cuexis/shader/shader_cache.hpp
+  engine/shader/include/cuexis/shader/shader_compiler.hpp
+  engine/shader/include/cuexis/shader/shader_diagnostics.hpp
+linkLibraries:
+  cuexis_core
+dependencies:
+  cuexis_core
+== all codemodel targets matching 'shader' ==
+  cuexis_shader_cache
+  cuexis_shader_tests
+== build.ninja link edge ==
+  build bin\cuexis_shader_tests.exe tests\shader\cuexis_shader_tests-b12d07c_tests.cmake | ${cmake_ninja_workdir}tests\shader\cuexis_shader_tests-b12d07c_tests.cmake: CXX_EXECUTABLE_LINKER__cuexis_shader_tests_Debug tests\shader\CMakeFiles\cuexis_shader_tests.dir\shader_cache_tests.cpp.obj | lib\cuexis_shader_cache.lib vcpkg_installed\x64-windows\debug\lib\manual-link\Catch2Maind.lib lib\cuexis_core.lib vcpkg_installed\x64-windows\debug\lib\glm.lib vcpkg_installed\x64-windows\debug\lib\Catch2d.lib || lib\cuexis_core.lib lib\cuexis_shader_cache.lib
+    CONFIG = Debug
+    FLAGS = /DWIN32 /D_WINDOWS /EHsc /Ob0 /Od /RTC1 -MDd -Zi
+    LINK_FLAGS = /machine:x64 /debug /INCREMENTAL /subsystem:console
+    LINK_LIBRARIES = lib\cuexis_shader_cache.lib  vcpkg_installed\x64-windows\debug\lib\manual-link\Catch2Maind.lib  lib\cuexis_core.lib  vcpkg_installed\x64-windows\debug\lib\glm.lib  vcpkg_installed\x64-windows\debug\lib\Catch2d.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
+    OBJECT_DIR = tests\shader\CMakeFiles\cuexis_shader_tests.dir
+    POST_BUILD = C:\WINDOWS\system32\cmd.exe /C "cd /D E:\Cuexis-worktree\out\build\debug\tests\shader && "C:\Program Files (x86)\PowerShell\7\pwsh.exe" -noprofile -executionpolicy Bypass -file "D:/Program Files/Microsoft Visual Studio/18/Community/VC/vcpkg/scripts/buildsystems/msbuild/applocal.ps1" -targetBinary E:/Cuexis-worktree/out/build/debug/bin/cuexis_shader_tests.exe -installedDir E:/Cuexis-worktree/out/build/debug/vcpkg_installed/x64-windows/debug/bin -OutVariable out && cd /D E:\Cuexis-worktree\out\build\debug\tests\shader && "D:\Program Files\CMake\bin\cmake.exe" -D TEST_TARGET=cuexis_shader_tests -D TEST_EXECUTABLE=E:/Cuexis-worktree/out/build/debug/bin/cuexis_shader_tests.exe -D TEST_EXECUTOR= -D TEST_WORKING_DIR=E:/Cuexis-worktree/out/build/debug/tests/shader -D TEST_SPEC= -D TEST_EXTRA_ARGS= -D TEST_PROPERTIES=SKIP_RETURN_CODE;4 -D TEST_PREFIX= -D TEST_SUFFIX= -D TEST_LIST=cuexis_shader_tests_TESTS -D TEST_REPORTER= -D TEST_OUTPUT_DIR= -D TEST_OUTPUT_PREFIX= -D TEST_OUTPUT_SUFFIX= -D TEST_DL_PATHS= -D TEST_DL_FRAMEWORK_PATHS= -D CTEST_FILE=E:/Cuexis-worktree/out/build/debug/tests/shader/cuexis_shader_tests-b12d07c_tests.cmake -D ADD_TAGS_AS_LABELS=FALSE -P E:/Cuexis-worktree/out/build/debug/vcpkg_installed/x64-windows/share/catch2/CatchAddTests.cmake"
+shaderc occurrences in link edge: 0
+shader_compiler occurrences in cuexis_shader_tests sources: 0
+cuexis_shader.lib occurrences in link edge: 0
