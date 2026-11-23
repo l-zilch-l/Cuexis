@@ -186,20 +186,6 @@ auto PlaybackSession::validateExecutionControlBinding(const StepRequest& request
 auto PlaybackSession::validateExecutionControlProof(const StepRequest& request,
                                                     const ControlReceipt& proof) const
     -> core::Result<void> {
-    // Unload clears the accepted control fields (RR-F508), and the host close sequence sends the
-    // terminal software close after that unload. On an empty session the close has no target to
-    // apply, so it is validated by the directed close proof alone; a non-close proof still fails
-    // as stale, and the worker keeps rejecting failed close proofs before this check.
-    const bool terminalSoftwareClose =
-        request.key.participant == Participant::software &&
-        request.key.phase == StepPhase::close &&
-        state_->sessionState == SessionState::Empty;
-    if (terminalSoftwareClose) {
-        if (proof.request.kind != ControlKind::close)
-            return core::unexpected(core::Error{
-                "host.rpa.context_stale", "Software close lacks a Close decision"});
-        return {};
-    }
     if (auto valid = validateExecutionControlBinding(request); !valid)
         return valid;
     if (!state_->acceptedHostDecision || proof.decisionOrdinal != *state_->acceptedHostDecision ||

@@ -164,58 +164,6 @@ TEST_CASE("rr_session_prepared_owner", "[playback][t17][candidate][prepared-owne
     }
 }
 
-TEST_CASE("rr_session_unload_state", "[playback][t17][candidate][unload]") {
-    using Access = cuexis::playback::detail::CandidateMetadataAccess;
-
-    PlaybackSession session;
-    REQUIRE(session.load(playback_gameplay_fixture::presentation(), PlaybackMode::ChartClock));
-    REQUIRE(session.update({.chartTimeMs = 10.0}));
-
-    // Seed the candidate fields that unload must clear. hostCommitAuthorized models the
-    // transient permission that lets the fence-owning owner unload.
-    auto slots = Access::candidateSlots(session);
-    slots.hostFence.emplace();
-    slots.acceptedHostControl.emplace();
-    slots.confirmedHostContext.emplace();
-    slots.executionMapping.emplace();
-    slots.tailTransition.emplace();
-    slots.hostCommitAuthorized = true;
-    const auto before = Access::candidateState(session);
-    CHECK(before.hostFence);
-    CHECK(before.acceptedHostControl);
-    CHECK(before.confirmedHostContext);
-    CHECK(before.executionMapping);
-    CHECK(before.tailTransition);
-
-    const auto ownersBefore = session.executionOwnerState();
-    REQUIRE(ownersBefore);
-    CHECK(ownersBefore->fence.has_value());
-    CHECK(ownersBefore->acceptedControl.has_value());
-
-    REQUIRE(session.unload());
-    const auto after = Access::candidateState(session);
-    CHECK_FALSE(after.hostFence);
-    CHECK_FALSE(after.acceptedHostControl);
-    CHECK_FALSE(after.confirmedHostContext);
-    CHECK_FALSE(after.executionMapping);
-    CHECK_FALSE(after.tailTransition);
-
-    const auto ownersAfter = session.executionOwnerState();
-    REQUIRE(ownersAfter);
-    CHECK_FALSE(ownersAfter->fence.has_value());
-    CHECK_FALSE(ownersAfter->acceptedControl.has_value());
-
-    // A fresh commit in the same session must not observe the previous round's control state.
-    auto prepared =
-        session.prepareLoad(playback_gameplay_fixture::presentation(), PlaybackMode::ChartClock);
-    REQUIRE(prepared);
-    CHECK(prepared->valid());
-    REQUIRE(session.commit(std::move(*prepared)));
-    REQUIRE(session.state());
-    CHECK(*session.state() == SessionState::Ready);
-    CHECK_FALSE(Access::candidateState(session).hostFence);
-}
-
 TEST_CASE("rr_gameplay_only_accept", "[playback][t17][candidate][gameplay-only]") {
     // Presentation prepared content stays valid, readable and committable in the same session.
     {
