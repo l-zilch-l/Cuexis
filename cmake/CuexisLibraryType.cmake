@@ -1,3 +1,8 @@
+# This file must be included before any configure-time admission check that branches on
+# CUEXIS_LIBRARY_TYPE (for example the allocation observer gates). It resolves the default and
+# validates explicit values, so a fresh configuration without -DCUEXIS_LIBRARY_TYPE already
+# knows STATIC when those checks run.
+
 set(CUEXIS_LIBRARY_TYPE "STATIC" CACHE STRING
     "Cuexis public library linkage (STATIC or SHARED)")
 set_property(CACHE CUEXIS_LIBRARY_TYPE PROPERTY STRINGS STATIC SHARED)

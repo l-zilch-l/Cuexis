@@ -3,7 +3,8 @@ add_library(cuexis::gameplay_author ALIAS cuexis_gameplay_author)
 target_include_directories(cuexis_gameplay_author PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_compile_features(cuexis_gameplay_author PUBLIC cxx_std_20)
 target_link_libraries(cuexis_gameplay_author PUBLIC
-    cuexis::core cuexis::json_support cuexis::chart cuexis::judgement cuexis::gameplay_packed)
+    cuexis::core cuexis::json_support cuexis::chart cuexis::chart_tools cuexis::judgement
+    cuexis::gameplay_packed)
 
 if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
     target_sources(cuexis_gameplay_author PRIVATE src/assembler_cli.cpp

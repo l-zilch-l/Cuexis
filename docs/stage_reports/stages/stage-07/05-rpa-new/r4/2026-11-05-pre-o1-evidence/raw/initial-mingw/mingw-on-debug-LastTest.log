@@ -7667,7 +7667,7 @@ Test Passed.
 
 394/1266 Testing: cuexis_s4g_performance
 394/1266 Test: cuexis_s4g_performance
-Command: "D:/Program Files/CMake/bin/cmake.exe" "-DCUEXIS_S4G_PERFORMANCE_PROBE=D:/Cuexis-worktree/out/build/r4/pre-o1/preflight/20261105-123139-c8af190f/mingw-on-debug/bin/cuexis_s4g_performance_probe.exe" "-DCUEXIS_S4G_OUTPUT=D:/Cuexis-worktree/out/build/r4/pre-o1/preflight/20261105-123139-c8af190f/mingw-on-debug/s4-g/performance.txt" "-DCUEXIS_IMPLEMENTATION_SHA=" "-DCUEXIS_SOURCE_DIR=D:/Cuexis-worktree" "-P" "D:/Cuexis-worktree/cmake/VerifyS4GPerformance.cmake"
+Command: "D:/Program Files/CMake/bin/cmake.exe" "-DCUEXIS_S4G_PERFORMANCE_PROBE=D:/Cuexis-worktree/out/build/r4/pre-o1/preflight/20261105-123139-c8af190f/mingw-on-debug/bin/cuexis_s4g_performance_probe.exe" "-DCUEXIS_S4G_OUTPUT=D:/Cuexis-worktree/out/build/r4/pre-o1/preflight/20261105-123139-c8af190f/mingw-on-debug/s4-g/performance.txt" "-DCUEXIS_IMPLEMENTATION_SHA=" "-DCUEXIS_SOURCE_DIR=D:/Cuexis-worktree" "-P" "D:/Cuexis-worktree/cmake/VerifyClipCompilePerformance.cmake"
 Directory: D:/Cuexis-worktree/out/build/r4/pre-o1/preflight/20261105-123139-c8af190f/mingw-on-debug/tests/animation
 "cuexis_s4g_performance" start time: Nov 05 12:46 中国标准时间
 Output:
@@ -24844,7 +24844,7 @@ Test Passed.
 
 1235/1266 Testing: cuexis_s5h_performance
 1235/1266 Test: cuexis_s5h_performance
-Command: "D:/Program Files/CMake/bin/cmake.exe" "-DCUEXIS_S5H_PERFORMANCE_PROBE=D:/Cuexis-worktree/out/build/r4/pre-o1/preflight/20261105-123139-c8af190f/mingw-on-debug/bin/cuexis_s5h_performance_probe.exe" "-DCUEXIS_S5H_OUTPUT=D:/Cuexis-worktree/out/build/r4/pre-o1/preflight/20261105-123139-c8af190f/mingw-on-debug/s5-h/performance.txt" "-DCUEXIS_IMPLEMENTATION_SHA=" "-DCUEXIS_SOURCE_DIR=D:/Cuexis-worktree" "-P" "D:/Cuexis-worktree/cmake/VerifyS5HPerformance.cmake"
+Command: "D:/Program Files/CMake/bin/cmake.exe" "-DCUEXIS_S5H_PERFORMANCE_PROBE=D:/Cuexis-worktree/out/build/r4/pre-o1/preflight/20261105-123139-c8af190f/mingw-on-debug/bin/cuexis_s5h_performance_probe.exe" "-DCUEXIS_S5H_OUTPUT=D:/Cuexis-worktree/out/build/r4/pre-o1/preflight/20261105-123139-c8af190f/mingw-on-debug/s5-h/performance.txt" "-DCUEXIS_IMPLEMENTATION_SHA=" "-DCUEXIS_SOURCE_DIR=D:/Cuexis-worktree" "-P" "D:/Cuexis-worktree/cmake/VerifyRulesetPreparePerformance.cmake"
 Directory: D:/Cuexis-worktree/out/build/r4/pre-o1/preflight/20261105-123139-c8af190f/mingw-on-debug/tests/playback
 "cuexis_s5h_performance" start time: Nov 05 12:48 中国标准时间
 Output:
@@ -25417,7 +25417,7 @@ Test Passed.
 
 1264/1266 Testing: cuexis_cfu_f4_performance
 1264/1266 Test: cuexis_cfu_f4_performance
-Command: "D:/Program Files/CMake/bin/cmake.exe" "-DCUEXIS_CFU_F4_PERFORMANCE_PROBE=D:/Cuexis-worktree/out/build/r4/pre-o1/preflight/20261105-123139-c8af190f/mingw-on-debug/bin/cuexis_cfu_f4_performance_probe.exe" "-DCUEXIS_CFU_F4_OUTPUT=D:/Cuexis-worktree/out/build/r4/pre-o1/preflight/20261105-123139-c8af190f/mingw-on-debug/cfu-f4/performance.txt" "-DCUEXIS_IMPLEMENTATION_SHA=" "-DCUEXIS_SOURCE_DIR=D:/Cuexis-worktree" "-P" "D:/Cuexis-worktree/cmake/VerifyCfuF4Performance.cmake"
+Command: "D:/Program Files/CMake/bin/cmake.exe" "-DCUEXIS_CFU_F4_PERFORMANCE_PROBE=D:/Cuexis-worktree/out/build/r4/pre-o1/preflight/20261105-123139-c8af190f/mingw-on-debug/bin/cuexis_cfu_f4_performance_probe.exe" "-DCUEXIS_CFU_F4_OUTPUT=D:/Cuexis-worktree/out/build/r4/pre-o1/preflight/20261105-123139-c8af190f/mingw-on-debug/cfu-f4/performance.txt" "-DCUEXIS_IMPLEMENTATION_SHA=" "-DCUEXIS_SOURCE_DIR=D:/Cuexis-worktree" "-P" "D:/Cuexis-worktree/cmake/VerifyContentIOPerformance.cmake"
 Directory: D:/Cuexis-worktree/out/build/r4/pre-o1/preflight/20261105-123139-c8af190f/mingw-on-debug/tests/cfu_f
 "cuexis_cfu_f4_performance" start time: Nov 05 12:48 中国标准时间
 Output:

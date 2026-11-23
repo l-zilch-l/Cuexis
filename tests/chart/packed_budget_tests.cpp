@@ -30,6 +30,7 @@
 #include <string_view>
 #include <utility>
 #include <vector>
+#include <cuexis/chart/packed_chart_writer.hpp>
 
 namespace {
 

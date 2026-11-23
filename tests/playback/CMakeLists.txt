@@ -15,6 +15,7 @@ add_executable(cuexis_playback_tests
     presentation_tests.cpp
     presentation_extraction_tests.cpp
     presentation_fixture.hpp
+    rr_r1_playback_sources_tests.cpp
     runtime_timeline_tests.cpp
     ../presentation/validation_sink.cpp
     ../presentation/validation_sink_canonical.hpp
@@ -52,11 +53,20 @@ endif()
 target_link_libraries(cuexis_playback_tests
     PRIVATE
         cuexis::audio
+        cuexis::animation
         cuexis::chart
+        cuexis::chart_tools
         cuexis::cxc
         cuexis::playback
         Catch2::Catch2WithMain
 )
+
+# The R1 source-table test calls the private prepare rejection hook in static default builds,
+# which needs the complete candidate type. This is a test-only include/link edge; the Playback
+# library and the Player never acquire it.
+if(TARGET cuexis::cxc_candidate)
+    target_link_libraries(cuexis_playback_tests PRIVATE cuexis::cxc_candidate)
+endif()
 
 if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
     target_include_directories(cuexis_playback_tests PRIVATE ${PROJECT_SOURCE_DIR}/engine/judgement/internal)
@@ -174,7 +184,7 @@ add_test(
         "-DCUEXIS_S5H_OUTPUT=${CMAKE_BINARY_DIR}/s5-h/performance.txt"
         "-DCUEXIS_IMPLEMENTATION_SHA=${CUEXIS_IMPLEMENTATION_SHA}"
         "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
-        -P "${PROJECT_SOURCE_DIR}/cmake/VerifyS5HPerformance.cmake"
+        -P "${PROJECT_SOURCE_DIR}/cmake/VerifyRulesetPreparePerformance.cmake"
 )
 
 set_tests_properties(cuexis_s5h_performance PROPERTIES

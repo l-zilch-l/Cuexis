@@ -41,6 +41,7 @@
 #else
 #include <sys/resource.h>
 #include <unistd.h>
+#include <cuexis/chart/packed_chart_writer.hpp>
 #endif
 
 namespace {

@@ -6,7 +6,6 @@
 
 #include <cuexis/playback/playback_session.hpp>
 
-#include "playback_candidate_internal.hpp"
 #include "playback_source_state.hpp"
 #include "presentation_internal.hpp"
 #include "presentation_materializer.hpp"
@@ -18,6 +17,7 @@
 #include <cuexis_internal/sha256.hpp>
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
 #include "gameplay_internal.hpp"
+#include "playback_candidate_internal.hpp"
 #include "presentation_projection.hpp"
 #include "replay_identity.hpp"
 #include <cuexis/judgement/execution_scheduler.hpp>
@@ -26,7 +26,6 @@
 #include <cuexis/animation/animation_compiler.hpp>
 #include <cuexis/assets/asset_database.hpp>
 #include <cuexis/assets/resource_manager.hpp>
-#include <cuexis/chart/candidate_lowering.hpp>
 #include <cuexis/chart/chart_loader.hpp>
 #include <cuexis/chart/chart_runtime.hpp>
 #include <cuexis/chart/chart_v4_loader.hpp>
@@ -209,7 +208,9 @@ struct PlaybackSession::State final {
     std::optional<PlaybackContentInfo> activeContentInfo;
     std::optional<PlaybackMode> activeMode;
     std::optional<PreparedSemanticIdentity> semanticIdentity;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     std::optional<chart::CandidateRuntimeMetadata> candidateMetadata;
+#endif
     ChartParameterSet parameters;
     std::uint64_t sessionToken{allocatePlaybackSessionToken()};
     std::uint64_t generation{1};
@@ -279,7 +280,9 @@ struct PreparedPlayback::State final {
     PlaybackContentInfo contentInfo;
     ChartParameterSet parameters;
     PreparedSemanticIdentity semanticIdentity;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     std::optional<chart::CandidateRuntimeMetadata> candidateMetadata;
+#endif
     std::optional<assets::AudioSourceLease> audioSourceLease;
     core::Diagnostics diagnostics;
     core::Diagnostics lastOperationDiagnostics;

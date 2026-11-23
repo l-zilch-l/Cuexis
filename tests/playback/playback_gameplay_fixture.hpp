@@ -18,6 +18,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cuexis/chart/packed_chart_tables.hpp>
+#include <cuexis/chart/packed_chart_writer.hpp>
 #include <cuexis/content/content_provider.hpp>
 #include <cuexis/cxc/cxc_writer.hpp>
 #include <cuexis/gameplay_packed/gameplay_capsule.hpp>

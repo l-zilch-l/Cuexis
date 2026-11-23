@@ -42,12 +42,14 @@ constexpr std::string_view kFragment =
     "    outColor = vec4(cuexisObject.tint, cuexisObject.opacity);\n"
     "}\n";
 
+#if defined(CUEXIS_SHADER_COMPILER_AVAILABLE)
 [[nodiscard]] auto passthroughRequest() -> cuexis::shader::ShaderCompileRequest {
     return cuexis::shader::ShaderCompileRequest{
         .vertexSource = kVertex,
         .fragmentSource = kFragment,
     };
 }
+#endif
 
 [[nodiscard]] auto workRoot(std::string_view name) -> std::filesystem::path {
     const auto root =
@@ -61,10 +63,12 @@ constexpr std::string_view kFragment =
     return cuexis::shader::hashStandaloneSourceIdentity(kVertex, kFragment);
 }
 
+#if defined(CUEXIS_SHADER_COMPILER_AVAILABLE)
 [[nodiscard]] auto makeKey(const std::array<std::uint8_t, 32>& identity = makeIdentity())
     -> cuexis::shader::ShaderCacheKeyInput {
     return cuexis::shader::ShaderCacheKeyInput{.sourceIdentity = identity};
 }
+#endif
 
 } // namespace
 
@@ -201,6 +205,7 @@ TEST_CASE("A2 cache store rejects an invalid record without creating its directo
     CHECK_FALSE(std::filesystem::exists(root));
 }
 
+#if defined(CUEXIS_SHADER_COMPILER_AVAILABLE)
 TEST_CASE("A2 pipeline rejects request keywords when the key omits semantic identity",
           "[shader][a2][key][pipeline][red]") {
     const auto root = workRoot("half-empty-key");
@@ -476,6 +481,7 @@ TEST_CASE("S5-F undeclared keywords never become macros or cache entries",
     CHECK(cache.active() == nullptr);
     CHECK(std::filesystem::is_empty(root));
 }
+#endif
 
 TEST_CASE("S5-F shader diagnostics truncate at 1024 with the frozen sentinel",
           "[shader][s5-f][diagnostics]") {

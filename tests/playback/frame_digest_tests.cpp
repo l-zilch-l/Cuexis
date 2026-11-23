@@ -52,6 +52,29 @@ TEST_CASE("FrameDigest preserves v1 and v2 historical definitions",
     CHECK(v2->value == 7850652359432829177ULL);
 }
 
+TEST_CASE("FrameDigest fixed-version entry rejects unsupported algorithm versions",
+          "[playback][frame-digest][version]") {
+    const cuexis::playback::RuntimeFrame frame{100.0, 16.0, 3};
+    const auto snapshot = digestSnapshot();
+
+    // The internal fixed-version entry is the compatibility seam for historical digests. It must
+    // reject an unknown version explicitly instead of silently hashing with the current one.
+    const auto future = cuexis::playback::detail::computeFrameDigestVersion(4, frame, snapshot);
+    REQUIRE_FALSE(future.has_value());
+    CHECK(future.error().code() == "playback.frame_digest.version_unsupported");
+    const auto zero = cuexis::playback::detail::computeFrameDigestVersion(0, frame, snapshot);
+    REQUIRE_FALSE(zero.has_value());
+    CHECK(zero.error().code() == "playback.frame_digest.version_unsupported");
+
+    // The public default version and the historical versions keep their algorithms.
+    const auto publicDigest = cuexis::playback::computeFrameDigest(frame, snapshot);
+    REQUIRE(publicDigest.has_value());
+    CHECK(publicDigest->algorithmVersion == 3);
+    const auto fixedV3 = cuexis::playback::detail::computeFrameDigestVersion(3, frame, snapshot);
+    REQUIRE(fixedV3.has_value());
+    CHECK(fixedV3->value == publicDigest->value);
+}
+
 TEST_CASE("FrameDigest v3 hashes portable ref presence, type, ID, and identity",
           "[playback][frame-digest][portable]") {
     const cuexis::playback::RuntimeFrame frame{100.0, 16.0, 3};

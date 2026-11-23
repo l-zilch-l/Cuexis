@@ -35,7 +35,7 @@ add_test(
         "-DCUEXIS_S4G_OUTPUT=${CMAKE_BINARY_DIR}/s4-g/performance.txt"
         "-DCUEXIS_IMPLEMENTATION_SHA=${CUEXIS_IMPLEMENTATION_SHA}"
         "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
-        -P "${PROJECT_SOURCE_DIR}/cmake/VerifyS4GPerformance.cmake"
+        -P "${PROJECT_SOURCE_DIR}/cmake/VerifyClipCompilePerformance.cmake"
 )
 
 set_tests_properties(cuexis_s4g_performance PROPERTIES

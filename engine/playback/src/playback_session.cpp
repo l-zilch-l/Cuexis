@@ -328,7 +328,9 @@ auto PlaybackSession::unload() -> core::Result<void> {
     state_->activeContentInfo.reset();
     state_->activeMode.reset();
     state_->semanticIdentity.reset();
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     state_->candidateMetadata.reset();
+#endif
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     state_->pendingRetiredRequestFloor.reset();
     state_->executionScheduler.reset();

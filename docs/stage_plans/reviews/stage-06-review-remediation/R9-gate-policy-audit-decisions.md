@@ -63,8 +63,8 @@ audit items left open by section 4 of this file，即 D11/D14/D15），策略基
 ### 1.4 仓库既有模式
 
 ```
-VerifyCfuF3Determinism / CfuF4Performance / ChartCapacity /
-ExternalConsumer / S4GPerformance / S5HPerformance
+VerifyContentDeterminism / ContentIOPerformance / ChartCapacity /
+ExternalConsumer / ClipCompilePerformance / RulesetPreparePerformance
     → cmake_minimum_required(VERSION 3.25)
 VerifyReferenceHost / VerifyReferenceHostCommands   → 无（本批次新增）
 VerifyPlayerDistribution                            → 无（既有）

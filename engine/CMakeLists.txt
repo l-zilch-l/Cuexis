@@ -22,7 +22,12 @@ add_subdirectory(cxc)
 add_subdirectory(behavior)
 add_subdirectory(gameplay)
 add_subdirectory(judgement)
-add_subdirectory(gameplay_packed)
+# The legacy Packed read/write adapter needs the Chart codec and tools, so it shares their
+# creation condition instead of being built for the ordinary Playback/Player graph.
+if(CUEXIS_ENABLE_CHART_V5_CANDIDATE OR CUEXIS_BUILD_DEVELOPER_TOOLS OR
+   (BUILD_TESTING AND CUEXIS_BUILD_TESTS))
+    add_subdirectory(gameplay_packed)
+endif()
 add_subdirectory(render)
 add_subdirectory(debug)
 add_subdirectory(runtime)

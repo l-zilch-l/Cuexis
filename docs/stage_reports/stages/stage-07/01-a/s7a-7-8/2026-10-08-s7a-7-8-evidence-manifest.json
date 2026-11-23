@@ -6565,12 +6565,12 @@
       "workingNormalizedGitBlob": "58c25673d6d9f1b873d264fd9d29f33f72e7922a"
     },
     {
-      "path": "cmake/VerifyCfuF3Determinism.cmake",
+      "path": "cmake/VerifyContentDeterminism.cmake",
       "gitBlob": "d751aae49e0299aad5177e78b2973c840b40dcff",
       "workingNormalizedGitBlob": "d751aae49e0299aad5177e78b2973c840b40dcff"
     },
     {
-      "path": "cmake/VerifyCfuF4Performance.cmake",
+      "path": "cmake/VerifyContentIOPerformance.cmake",
       "gitBlob": "1ba2d80a054ca01bfecfff577d69d634d68c1e8f",
       "workingNormalizedGitBlob": "1ba2d80a054ca01bfecfff577d69d634d68c1e8f"
     },
@@ -6640,12 +6640,12 @@
       "workingNormalizedGitBlob": "9fcdf9d23c111bc3f0918bd840e9436a071ab405"
     },
     {
-      "path": "cmake/VerifyS4GPerformance.cmake",
+      "path": "cmake/VerifyClipCompilePerformance.cmake",
       "gitBlob": "c5aeb3e1a1464a0bacc821b7ff5ca48f79af209d",
       "workingNormalizedGitBlob": "c5aeb3e1a1464a0bacc821b7ff5ca48f79af209d"
     },
     {
-      "path": "cmake/VerifyS5HPerformance.cmake",
+      "path": "cmake/VerifyRulesetPreparePerformance.cmake",
       "gitBlob": "c2a3bb012c8304f414196c86da0af07bc2cee795",
       "workingNormalizedGitBlob": "c2a3bb012c8304f414196c86da0af07bc2cee795"
     },

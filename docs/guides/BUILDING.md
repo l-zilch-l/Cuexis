@@ -37,13 +37,16 @@ cuexis_cxc
 cuexis_behavior
 cuexis_gameplay
 cuexis_judgement
-cuexis_gameplay_packed
 cuexis_render
 cuexis_debug
 cuexis_runtime
 cuexis_playback
 cuexis_presentation_renderer
 cuexis_player_support
+cuexis_cxc_candidate
+cuexis_chart_codec
+cuexis_chart_tools
+cuexis_gameplay_packed
 cuexis_platform_sdl
 cuexis_audio_sdl
 cuexis_render_opengl
@@ -92,6 +95,7 @@ cuexis_audio_sdl_tests
 cuexis_render_opengl_tests
 cuexis_player_diagnostics_tests
 cuexis_player_control_tests
+cuexis_shader_tests
 cuexis_asset_publish_tests
 cuexis_gameplay_author_tests
 cuexis_format_check

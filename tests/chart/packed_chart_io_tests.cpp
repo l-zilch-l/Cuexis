@@ -9,6 +9,7 @@
 #include <fstream>
 #include <span>
 #include <vector>
+#include <cuexis/chart/packed_chart_writer.hpp>
 
 namespace {
 

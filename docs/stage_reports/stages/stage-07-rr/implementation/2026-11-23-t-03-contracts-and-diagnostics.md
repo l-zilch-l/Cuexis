@@ -252,10 +252,17 @@ ctest --test-dir out/build/candidate-debug --no-tests=error -R '^B3 occurrence d
 旧 fixture 的原始 token 值绑定在 `tests/judgement/execution_test_fixture.hpp:21-24` 与
 `tests/judgement/fold_recovery_fixture.hpp:51-102`；既有期望构造在
 `tests/judgement/fold_recovery_seek_tests.cpp:341-383`。该期望调用
-`makeRuntimePreparedIdentity`，是镜像实现，不能独立证明身份未变；十六进制旧字节必须由 T-10 在改动前
-实跑取得。本卡在
+`makeRuntimePreparedIdentity`，是镜像实现，不能独立证明身份未变。本卡在
 [evidence/t-03/rr-f132-identity-binding.md](../evidence/t-03/rr-f132-identity-binding.md) 给出逐字段
-对照与取字节命令，不改字段、不改后缀。
+对照，不改字段、不改后缀。
+
+旧副本与存档取证（2026-11-23 追加）确认 `execution_kernel_prepare.cpp`、`gameplay_assembler_assemble.cpp`、
+`identity_factory.hpp`、`execution_kernel_submit.cpp` 在本机 `master` 副本（`aac83e5e`，2026-11-16）与
+`d1951326` 源码存档中与当前 HEAD 逐字节相同，身份构造未变，因此旧字节可由当前代码复现。新增
+`rr_f132_identity_baseline`（`tests/judgement/rr_f132_identity_baseline_tests.cpp`）打印两套
+`judgementIdentity.canonicalBytes().toHex()`，T-10 改动前后各跑一次并解释差异；取证记录见
+[旧工作副本的身份代码与发行记录](../evidence/t-03/old-checkout-identity-and-release.md)。真实发布版在
+设备上产生的身份值仍无记录。
 
 ### 新增测试源（上一版已实测，本轮补强待重跑）
 

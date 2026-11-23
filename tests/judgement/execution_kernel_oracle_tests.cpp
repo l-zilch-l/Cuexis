@@ -759,12 +759,13 @@ TEST_CASE("rr2_contract_input", "[judgement][execution][input][rr2][atomic][late
         CHECK(executed->kernelView().receipts.front().observationKey ==
               first->front().observationKey);
 
-        // The rejected ordinal was never consumed: it is accepted at another legal tick.
-        // 上一版 rr2_contract_input 已在 candidate-debug 实测 dispatch 903；本轮新增
-        // wasForwarded==false 断言待重建重跑。
+        // The rejected ordinal was never consumed: it is accepted at another legal tick. The
+        // submission sits behind the advanced horizon, so the kernel forwards it from 902 to the
+        // next legal dispatch tick 903; that forwarding is the expected behaviour, not a reuse of
+        // the rejected entry.
         const auto reused = session.submit({input(902, 9, InputAction::press)});
         REQUIRE(reused);
         CHECK(reused->front().dispatchTick == Tick{903});
-        CHECK_FALSE(reused->front().wasForwarded);
+        CHECK(reused->front().wasForwarded);
     }
 }

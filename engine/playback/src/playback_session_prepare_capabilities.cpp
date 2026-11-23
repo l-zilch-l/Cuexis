@@ -315,57 +315,6 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities) {
     return documents;
 }
 
-[[nodiscard]] auto candidateResourceRequirements(const chart::CanonicalResourceClosure& closure,
-                                                 core::Diagnostics& diagnostics)
-    -> std::optional<std::vector<chart::ChartResourceRequirement>> {
-    std::map<std::string, chart::ChartResourceRequirement, std::less<>> grouped;
-    for (const auto& resource : closure.resources) {
-        chart::ChartResourceUse use = chart::ChartResourceUse::MainMusic;
-        switch (resource.use) {
-        case chart::CanonicalResourceUseKind::MainMusic:
-            use = chart::ChartResourceUse::MainMusic;
-            break;
-        case chart::CanonicalResourceUseKind::RenderableMesh:
-            use = chart::ChartResourceUse::RenderableMesh;
-            break;
-        case chart::CanonicalResourceUseKind::RenderableMaterial:
-            use = chart::ChartResourceUse::RenderableMaterial;
-            break;
-        }
-        auto& requirement = grouped[resource.assetId.value];
-        requirement.assetId = resource.assetId;
-        if (std::ranges::find(requirement.uses, use) == requirement.uses.end()) {
-            requirement.uses.push_back(use);
-        }
-    }
-
-    std::vector<chart::ChartResourceRequirement> requirements;
-    requirements.reserve(grouped.size());
-    for (auto& [unused, requirement] : grouped) {
-        static_cast<void>(unused);
-        const bool audio = std::ranges::any_of(requirement.uses, [](chart::ChartResourceUse use) {
-            return use == chart::ChartResourceUse::MainMusic;
-        });
-        const bool presentation =
-            std::ranges::any_of(requirement.uses, [](chart::ChartResourceUse use) {
-                return use != chart::ChartResourceUse::MainMusic;
-            });
-        if (requirement.assetId.value.empty() || (audio && presentation)) {
-            diagnostics.add(core::Diagnostic{
-                core::DiagnosticSeverity::Error, "candidate.identity.resource_conflict",
-                "Candidate resource closure has an empty or mixed-identity asset",
-                "$/resources/" + requirement.assetId.value});
-            continue;
-        }
-        requirements.push_back(std::move(requirement));
-    }
-    if (diagnostics.hasErrors()) {
-        diagnostics.sortDeterministically();
-        return std::nullopt;
-    }
-    return requirements;
-}
-
 // Lowers the typed chart already validated by the explicit source factory. It does not read
 // Chart JSON, expand CXT v2, or decode Packed bytes again.
 } // namespace prepare_detail

@@ -335,6 +335,27 @@ else()
                     "Static Cuexis package is missing ${required_internal_target}")
             endif()
         endforeach()
+        if(CUEXIS_EXPERIMENTAL)
+            # The experimental static SDK exports the Chart support archives the candidate
+            # closure actually links; a missing archive breaks an installed candidate consumer.
+            foreach(required_chart_archive IN ITEMS InternalChartCodec InternalChartTools)
+                if(NOT installed_targets MATCHES "Cuexis::${required_chart_archive}")
+                    message(FATAL_ERROR
+                        "Experimental static Cuexis package is missing ${required_chart_archive}")
+                endif()
+            endforeach()
+        else()
+            # The default SDK must not export the Chart codec/tools archives or the candidate
+            # package/Gameplay archives even when developer tools were configured.
+            foreach(forbidden_internal_archive IN ITEMS
+                    InternalChartCodec InternalChartTools InternalCxcCandidate
+                    InternalGameplayPacked)
+                if(installed_targets MATCHES "Cuexis::${forbidden_internal_archive}")
+                    message(FATAL_ERROR
+                        "Default static Cuexis package leaks ${forbidden_internal_archive}")
+                endif()
+            endforeach()
+        endif()
         string(REGEX MATCH
             "set_target_properties\\(Cuexis::Playback PROPERTIES[^)]*\\)"
             installed_playback_target_block

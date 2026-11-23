@@ -114,6 +114,7 @@ const PlaybackContentInfo* PreparedPlayback::contentInfo() const noexcept {
     return valid() ? &state_->contentInfo : nullptr;
 }
 
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
 auto detail::CandidateMetadataAccess::prepared(const PreparedPlayback& playback)
     -> const chart::CandidateRuntimeMetadata* {
     if (playback.state_ == nullptr || !playback.state_->candidateMetadata) {
@@ -129,6 +130,7 @@ auto detail::CandidateMetadataAccess::active(const PlaybackSession& session)
     }
     return &*session.state_->candidateMetadata;
 }
+#endif
 
 std::optional<PreparedSemanticIdentity> PreparedPlayback::semanticIdentity() const noexcept {
     if (!valid()) {

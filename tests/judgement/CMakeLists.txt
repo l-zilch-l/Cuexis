@@ -9,6 +9,7 @@ add_executable(cuexis_judgement_tests
     publication_tests.cpp
     execution_profile_tests.cpp
     execution_kernel_oracle_tests.cpp
+    rr_f132_identity_baseline_tests.cpp
     execution_kernel_phase_tests.cpp
     execution_kernel_test_fixture.hpp
     execution_reference.cpp

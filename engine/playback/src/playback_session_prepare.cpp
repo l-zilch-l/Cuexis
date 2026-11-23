@@ -187,7 +187,11 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
         }
         auto& sourceState = *source.state_;
         const auto* entryChart = sourceState.entryChart();
+#if defined(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
         const bool candidateSource = sourceState.candidate.has_value();
+#else
+        const bool candidateSource = false;
+#endif
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
         const bool gameplayOnly = sourceState.gameplayContent.valid() &&
                                   sourceState.gameplayIntent == GameplayPrepareIntent::GameplayOnly;
@@ -219,6 +223,7 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
 
         std::optional<chart::ChartRuntime> chartRuntimeStorage;
         std::optional<animation::AnimationProgram> compiledAnimation;
+#if defined(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
         if (candidateSource) {
             auto candidateRuntime =
                 prepareCandidateStage(*sourceState.candidate,
@@ -240,7 +245,9 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
             }
             compiledAnimation = animation::AnimationProgram{};
             chartRuntimeStorage = std::move(*candidateRuntime);
-        } else {
+        } else
+#endif
+        {
             auto loaded = [&] {
                 const internal::PrepareTraceScope trace{"load_document"};
                 return loadDocumentStage(context, artifact, diagnostics);
@@ -416,7 +423,9 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
                                    : std::nullopt};
         prepared->parameters = context.options.parameters;
         prepared->semanticIdentity = toPublicIdentity(*assembledIdentity);
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
         prepared->candidateMetadata = std::move(artifact.candidateMetadata);
+#endif
         prepared->audioSourceLease = std::move(audioSourceLease);
         prepared->targetFrame = committedFrame;
         prepared->committedState = replacement ? state_->sessionState : SessionState::Ready;
@@ -535,7 +544,9 @@ auto PlaybackSession::commit(PreparedPlayback&& prepared) -> core::Result<void> 
     state_->activeContentInfo = std::move(candidate.contentInfo);
     state_->activeMode = state_->activeContentInfo->mode;
     state_->semanticIdentity = candidate.semanticIdentity;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     state_->candidateMetadata = std::move(candidate.candidateMetadata);
+#endif
     state_->parameters = std::move(candidate.parameters);
     state_->lastFrame = candidate.targetFrame;
     state_->diagnostics = std::move(candidate.diagnostics);

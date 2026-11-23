@@ -22,6 +22,7 @@ target_link_libraries(cuexis_cxc_tool_common
     PUBLIC
         cuexis_cxc
     PRIVATE
+        cuexis::cxc_candidate
         cuexis::filesystem
         cuexis::json_support
         cuexis::project

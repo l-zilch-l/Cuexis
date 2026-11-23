@@ -47,14 +47,8 @@ using PackedSemanticIdentity = std::array<std::uint8_t, 32>;
 // Lowercase hexadecimal form of a semantic identity digest.
 [[nodiscard]] auto semanticIdentityHex(const PackedSemanticIdentity& identity) -> std::string;
 
-// Encodes a chart after validating the Spec 7.6 Foundation profile. A model outside the
-// registered subset is refused before any identity or artifact bytes are produced. The Spec 3.3
-// budgets apply with the frozen Foundation ceilings: a caller may tighten "limits" but never
-// relax them. Count budgets are checked before the identity preimage, and the exact artifact
-// envelope before the file is assembled, so an over-budget model produces neither a partial
-// artifact nor a wrapped fixed-width wire counter.
-[[nodiscard]] auto encode(const CanonicalSemanticChart& chart, PackedChartProfile profile = {},
-                          PackedChartLimits limits = {}) -> core::Result<std::vector<std::byte>>;
+// The typed Writer is declared in <cuexis/chart/packed_chart_writer.hpp> and implemented by
+// cuexis_chart_tools. The codec library only reads, inspects and hashes artifacts.
 
 // Verifies the registered section registry, the Spec 3.3 budgets, the Foundation profile of
 // Spec 7.6 and Header.semanticIdentity against the recomputed digest. Structural, budget, profile

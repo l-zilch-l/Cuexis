@@ -12,19 +12,14 @@ add_library(cuexis_playback ${CUEXIS_LIBRARY_TYPE}
     src/presentation_internal.hpp
     src/playback_candidate_internal.hpp
     src/playback_session.cpp
-    src/playback_session_execution.cpp
-    src/playback_session_gameplay.cpp
-        src/playback_session_gameplay_seek.cpp
     src/playback_session_internal.hpp
     src/playback_session_prepare.cpp
     src/playback_session_prepared.cpp
     src/playback_session_prepare_capabilities.cpp
     src/playback_session_prepare_internal.hpp
     src/playback_session_prepare_stages.cpp
-    src/playback_session_realtime.cpp
     src/presentation_materializer.cpp
     src/playback_source.cpp
-    src/playback_source_gameplay.cpp
     src/playback_source_internal.hpp
     src/playback_source_state.hpp
     src/playback_source_support.cpp
@@ -48,9 +43,23 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
     target_compile_definitions(cuexis_playback PRIVATE CUEXIS_ENABLE_CHART_V5_CANDIDATE=1)
     target_compile_definitions(cuexis_playback PUBLIC CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE=1)
     target_include_directories(cuexis_playback PRIVATE ${PROJECT_SOURCE_DIR}/engine/judgement/internal)
-    target_sources(cuexis_playback PRIVATE src/gameplay_candidate.cpp src/gameplay_configuration.cpp src/gameplay_entry.cpp
-        src/presentation_projection.cpp src/presentation_projection.hpp)
-    target_link_libraries(cuexis_playback PRIVATE cuexis::judgement cuexis::gameplay_packed cuexis::json_support)
+    # Candidate-only implementation units. The ordinary source table above never compiles them;
+    # each hook therefore has exactly one definition in either closure, never both. The codec and
+    # tools include roots arrive only through this candidate-only link edge.
+    target_sources(cuexis_playback PRIVATE
+        src/gameplay_candidate.cpp
+        src/gameplay_configuration.cpp
+        src/gameplay_entry.cpp
+        src/playback_session_execution.cpp
+        src/playback_session_gameplay.cpp
+        src/playback_session_gameplay_seek.cpp
+        src/playback_session_prepare_gameplay.cpp
+        src/playback_session_realtime.cpp
+        src/playback_source_gameplay.cpp
+        src/presentation_projection.cpp
+        src/presentation_projection.hpp)
+    target_link_libraries(cuexis_playback PRIVATE cuexis::judgement cuexis::gameplay_packed
+        cuexis::cxc_candidate cuexis::chart_codec cuexis::chart_tools cuexis::json_support)
 endif()
 
 set_target_properties(cuexis_playback PROPERTIES EXPORT_NAME Playback)

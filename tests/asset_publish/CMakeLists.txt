@@ -15,6 +15,8 @@ target_link_libraries(cuexis_asset_publish_tests
     PRIVATE
         cuexis::asset_publish
         cuexis::chart
+        cuexis::chart_codec
+        cuexis::chart_tools
         Catch2::Catch2WithMain
 )
 

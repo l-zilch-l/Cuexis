@@ -1,6 +1,7 @@
 #include <cuexis/chart/candidate_assembler.hpp>
 
 #include <cuexis/chart/packed_chart_tables.hpp>
+#include <cuexis/chart/packed_chart_writer.hpp>
 
 #include <exception>
 #include <set>

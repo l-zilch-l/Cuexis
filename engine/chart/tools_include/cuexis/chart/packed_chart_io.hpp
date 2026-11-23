@@ -1,15 +1,17 @@
 #pragma once
 
-// Candidate Packed Chart sizing, atomic file output, and reader bridge.
+// Candidate Packed Chart sizing and atomic file output. The Reader bridge is declared by the
+// codec header; this tools header re-exports it so existing file-consumer spelling keeps working.
 
 #include <cuexis/chart/limits.hpp>
+#include <cuexis/chart/packed_chart_reader.hpp>
 #include <cuexis/chart/packed_chart_tables.hpp>
+#include <cuexis/chart/packed_chart_writer.hpp>
 #include <cuexis/core/result.hpp>
 
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
-#include <span>
 #include <string>
 #include <vector>
 
@@ -46,17 +48,6 @@ class PackedChartWriter final {
                                           const std::filesystem::path& target,
                                           PackedChartWriteOptions options = {})
         -> core::Result<PackedChartSizing>;
-};
-
-class PackedChartReader final {
-  public:
-    [[nodiscard]] static auto read(const std::filesystem::path& source,
-                                   PackedChartLimits limits = {})
-        -> core::Result<CanonicalSemanticChart>;
-
-    [[nodiscard]] static auto decode(std::span<const std::byte> bytes,
-                                     PackedChartLimits limits = {})
-        -> core::Result<CanonicalSemanticChart>;
 };
 
 } // namespace cuexis::chart

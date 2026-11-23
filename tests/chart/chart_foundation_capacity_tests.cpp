@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <iostream>
 #include <string>
+#include <cuexis/chart/packed_chart_writer.hpp>
 
 namespace {
 

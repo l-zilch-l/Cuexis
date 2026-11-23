@@ -2,6 +2,7 @@
 
 #include <cuexis/chart/canonical_semantic_chart.hpp>
 #include <cuexis/chart/packed_chart_tables.hpp>
+#include <cuexis/chart/packed_chart_writer.hpp>
 #include <cuexis/cxc/cxc_candidate.hpp>
 #include <cuexis/cxc/cxc_manifest_loader.hpp>
 #include <cuexis/cxc/cxc_writer.hpp>
