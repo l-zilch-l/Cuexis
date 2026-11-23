@@ -12,29 +12,32 @@ authority: owns
 
 ## 当前阶段与工作项
 
-当前为 Stage 7-RR，状态以 [CURRENT_STATUS](CURRENT_STATUS.md) 为准。[T-18 文档治理](stage_plans/active/stage-07-rr/tasks/T-18.md)已完成。owner 于 2026-11-23 明确要求“下一次开始正式实施 RR 任务”，已授权下一次接手从 T-01 开始，按现行调度推进 T-01–T-17；本次仅更新交接，产品任务尚未执行。
+当前为 Stage 7-RR，状态以 [CURRENT_STATUS](CURRENT_STATUS.md) 为准。[T-18 文档治理](stage_plans/active/stage-07-rr/tasks/T-18.md)与 [T-01 基线、派单包与冷启动](stage_plans/active/stage-07-rr/tasks/T-01.md)已完成。T-01 把实施基线固定在提交 `a22e255f6716b22f96ad8a183136eae4fb04ac2f`（tree `7869115460b0c17a1f833f30700cd06f34e8e3c3`，工作树干净），交付派单清单、调度正反例、独立冷启动和 D-20 旧内容清单，产品实现尚未开始。
 
 ## 当前任务
 
-下一次接手的首项是 [T-01 基线、派单包与冷启动](stage_plans/active/stage-07-rr/tasks/T-01.md)：固定接手时实际 HEAD/tree、工作树差异及相关未跟踪输入，登记合同修订和旧内容独立预期，完成本卡验收后继续后续任务。启动授权已取得，按[总计划采用入口](stage_plans/active/stage-07-rr/plan.md#唯一派单授权入口)登记实际基线即可，无需再次询问是否开始。
+下一次接手的首项是 [T-03 RR-2 既有合同与诊断](stage_plans/active/stage-07-rr/tasks/T-03.md)（scope `RR2`）：按[采用记录](stage_reports/stages/stage-07-rr/readiness/2026-11-23-t-01-dispatch-baseline.md)在基线上逐项交付既有合同的对照、修订和回归记录；改变 wire、接受集合或稳定码语义前仍须对应 ADR/Spec 接受（D-04）。取证口径、派单输入哈希与回滚基线见同报告的附件。
 
-治理结果和输入见[交付报告](stage_reports/stages/stage-07-rr/implementation/2026-11-23-documentation-governance.md)。共享工作树仍有本轮未提交的治理改动及相关文件，接手须先核对并纳入实际基线，保留同期修改；旧报告中的 HEAD 和通过结果只证明其原受验对象。
+T-01 的完整证据在 `out/review/stage-07-rr/T-01/`；提交内固定了收据、哈希表、语料清单与旧成品夹具。独立 checkout 核对派单时按 [hashes.txt](stage_reports/stages/stage-07-rr/evidence/t-01-baseline/hashes.txt) 的 blob 口径复算，不依赖 `out/`。
 
 ## 下一步
 
-1. 正式执行 T-01：按卡封存实际输入、核对旧内容与独立预期，完成调度正反例、基线可复现检查和冷启动回执；登记本次采用修订、范围及证据。
-2. T-01 完成后按[唯一调度](stage_plans/active/stage-07-rr/schedule.md)执行 T-03、T-04，再进入允许并行的任务。具体依赖只读调度表，适合委派的完整议题使用无父对话上下文子代理，共享文件由主代理串行汇合。
-3. 每卡运行实际适用的正反验收，更新发现处置和交接；文档变更完成前执行总入口与事实检查。完整构建、容量/内存、hosted 和设备长任务仍先说明范围、可行性与预计耗时，待 owner 选定后执行。
+1. 执行 T-03，完成后按[唯一调度](stage_plans/active/stage-07-rr/schedule.md)进入 T-04；波次 5 的 T-02、T-05、T-17 在 T-04 完成后并行。
+2. T-04 起需要真实 configure 与构建隔离证据。完整构建、容量/内存、hosted 与设备长任务仍须先说明范围、可行性与预计耗时，待 owner 选定后执行；在取得真实 CMake target 事实前，文档严格入口会因缺输入失败，普通入口按设计显示 `NOT CHECKED`。
+3. T-13 的冷启动补注已在任务卡内完成，复验回执随修订提交登记；T-10、T-13 的 D-20 条目已指向[旧谱兼容语料清单](stage_reports/stages/stage-07-rr/readiness/2026-11-23-legacy-corpus-inventory.md)。
+4. 每卡完成时按其任务级验收取证，更新发现处置与交接；文档变更完成前运行文档总入口、事实与生成物检查。实际发布、SDK 晋升与旧 API 退役仍各自单独取得。
 
 ## 阻塞与待决
 
-当前无已知阻止 T-01 开始的待决设计，实施启动授权已取得。本地缺少 fresh configure 的 CMake target 事实，普通入口明确标未检查，严格入口已验证因缺输入失败；这不阻止先做基线与短检查。相应配置/构建工作取得真实清单后再验该项，产品构建、设备/容量、hosted 及实际发布证据由各责任任务取得。
+当前无阻止 T-03 开始的待决设计。构建类长任务的执行范围与时机等待 owner 选择，这不阻止先做静态与短检查。
 
-出现新产品合同、兼容承诺冲突或接受缺证据退出的需求时，只暂停受影响切片并交 owner 裁定；其他独立工作继续。既有受限退出、采样额度和 testOnly 限制不因治理改变。
+D-20 的正式发行判定语料在仓库内为空集，历史发行资料是否存在无法核实；该缺口已具名交 T-09，不得用内部候选 L1–L4 替代正式发行语料，也不得据此新增正式支持承诺。
+
+既有受限退出、采样额度、设备/P8 台账与 testOnly 限制不因本轮基线或治理改变；出现新产品合同、兼容承诺冲突或缺证据退出的需求时，只暂停受影响切片并交 owner 裁定。
 
 ## 验证状态
 
-T-18 的检查器自测、故障对照、独立复核和迁移核对见治理报告的 evidence，证明范围限原治理修订。本次交接更新已运行文档总入口、事实、生成物新鲜度、调度及空白检查。T-01 基线与产品验收将在下一次实际执行时取证，不能沿用旧报告冒充当前结果。
+T-01 已在本基线实际运行：`check_docs.py`、`check_docs_facts.py`、`check_plan_schedule.py`、`test_check_plan_schedule.py`（27 项）与 `git diff --check` 全部退出 0；独立代理在阶段目录副本上复现调度正反例，正本 `schedule.md` 哈希前后一致；独立交叉核验复算了派单清单（178/178 路径、5104 文件 checkout），并把规范哈希改为基线 blob 口径以消除行尾差异。冷启动对 T-04、T-06 判成立，对 T-13 判部分成立，四项派单缺口已补注。CMake target 事实仍缺输入，`check_docs.py` 该项标 `NOT CHECKED`，严格入口会失败；本轮未 configure、未构建、未运行任何产品测试或设备任务，产品验收不能沿用旧报告。
 
 ## 接手沿用的产品决定
 
@@ -46,4 +49,4 @@ T-18 的检查器自测、故障对照、独立复核和迁移核对见治理报
 
 ## 最近改动
 
-已登记 owner 关于下一次正式实施 RR 的启动授权，并同步总计划与当前状态；下一位执行者直接从 T-01 绑定实际输入，完成后按调度推进。
+T-18 治理成果已作为 `docs(stage-7-rr): land documentation governance for T-18` 提交；T-01 在其上绑定基线并交付派单证据，随后进入 T-03。

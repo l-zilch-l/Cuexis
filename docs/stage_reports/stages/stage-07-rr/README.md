@@ -16,6 +16,8 @@ authority: index
 
 | 日期 | 报告 | 内容 |
 | --- | --- | --- |
+| 2026-11-23 | [T-01 基线与派单](readiness/2026-11-23-t-01-dispatch-baseline.md) | 实施基线 `a22e255f`、派单清单、调度正反例、独立冷启动与采用绑定；产品实现未开始 |
+| 2026-11-23 | [旧谱兼容语料清单](readiness/2026-11-23-legacy-corpus-inventory.md) | 7 个旧内容组合的交付身份、输入、设置与独立预期；仓库内无正式发行判定组合，缺口交 T-09 |
 | 2026-11-22 | [正式实施前计划检查](readiness/2026-11-22-pre-implementation-plan-check.md) | 追踪已接受设计到任务、调度与验收，登记本轮缺口、最小文档订正和实际验证 |
 
 ## 设计裁定
@@ -35,6 +37,8 @@ authority: index
 
 | 日期 | 报告 | 内容 |
 | --- | --- | --- |
+| 2026-11-23 | [T-01 调度正反例与基线复核](verification/2026-11-23-t-01-schedule-controls.md) | 17 次独立运行复现调度正反例与正本完整性，并交叉核对派单清单、checkout 与历史差异 |
+| 2026-11-23 | [T-01 独立冷启动](verification/2026-11-23-t-01-cold-start.md) | T-04/T-06/T-13 的链接、锚点、target、命令与停止条件抽查；T-13 四项补注 |
 | 2026-11-22 | [独立 checkout 复审处置](verification/2026-11-22-checkout-review-resolution.md) | 核对 8599c83a 的类型、数据流、渲染和任务缺口；区分候选未实现与设计遗漏，补可提交回执和任务结构门禁 |
 | 2026-11-22 | [Astra 九项设计修订与交叉复验](verification/2026-11-22-astra-review-resolution.md) | 逐项链接合同、责任卡和验收；记录双方复验及 AX-05 / RR-F131 的入口纠正 |
 | 2026-11-22 | [Astra 独立执行者复审](verification/2026-11-22-astra-executor-review.md) | 两人分别接卡推演，主代理复核后保留 4 项 P1、5 项 P2；设计可实施性部分成立，两条撤回判断单列 |

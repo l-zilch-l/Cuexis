@@ -1,0 +1,3138 @@
+{
+  "stage": "Stage 7-RR",
+  "task": "T-01",
+  "baseline": {
+    "head": "a22e255f6716b22f96ad8a183136eae4fb04ac2f",
+    "tree": "7869115460b0c17a1f833f30700cd06f34e8e3c3",
+    "branch": "stage-7-rr",
+    "status": "",
+    "baseline_sha": "a22e255f6716b22f96ad8a183136eae4fb04ac2f",
+    "diff_name_status": "",
+    "diff_binary": "",
+    "untracked": "",
+    "untracked_count": 0
+  },
+  "hash_rule": "Canonical sha256 is computed from the committed blob at baseline_sha (git cat-file blob <baseline>:<path>), so it reproduces on any checkout. sha256_worktree is the adopted working tree's bytes; it differs only by line endings on a Windows checkout with core.autocrlf=true.",
+  "global_inputs": [
+    {
+      "path": "AGENTS.md",
+      "bytes": 6209,
+      "sha256": "f594e1003cab0a21eab9b0c1081040927cef285b895d74c11564a8b023acd078",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "f594e1003cab0a21eab9b0c1081040927cef285b895d74c11564a8b023acd078"
+    },
+    {
+      "path": "CMakeLists.txt",
+      "bytes": 58820,
+      "sha256": "da88b7c1c6c974f55121203f332a269dbec2b81ebbe00ac76dec104149cb3c84",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "e595b67ed14d6b669dc16421122fd2233c3e62585980c0b44b5f6331bd08727f",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "CMakePresets.json",
+      "bytes": 14023,
+      "sha256": "5096b0edc3f3277cc76aaae4750f8310c52d5532dee671ab85d8173df2219d08",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "a60396d05835f4d006fd3d6930389d5e85c479337de8d2ef41ec2bb23c2406de",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "vcpkg.json",
+      "bytes": 1421,
+      "sha256": "c71a3dbe45a06ebb89e70b58f0a22047af4d38a47b364dd05ec9692a0c9f82f8",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "97bc08d1cdd712419b38989fb4cee8bf70814f3e22fc9cae171f1b022ea69eca",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "cmake/CuexisVersion.cmake",
+      "bytes": 3530,
+      "sha256": "dcfd41d0a82729a111e76db53dc7a63dc562259ba07d85fead733b128c3f2982",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "cec6f9e3e3ddab694308de99bf86c3051037feff974dd1c7ad27c1da5d9276ab",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "cmake/VerifySharedExports.cmake",
+      "bytes": 7397,
+      "sha256": "2e3310391d4ff42d0cfb4da6d2a9df26114c6daa8e223c151b88d4af6fb5e107",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "db4a780f89ccf492a01ff89a2b83f6a3ef39561d201beb99232ea4c7bc654382",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "cmake/VerifyExternalConsumer.cmake",
+      "bytes": 27353,
+      "sha256": "e681799d2b70668867622bfb3666b444a9ad22a11ad6969cccdb3f2664ce5f80",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "94799674b7b0d1035bc40622c3b23515d6202a827eb74eea0fc783f3bf19aab0",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "cmake/VerifyGameplayInstalledConsumer.cmake",
+      "bytes": 4643,
+      "sha256": "3b4add0b7ec5e8795eca7ac0cd0e7271595584ca8f3890a3ec87015563312957",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "dafc3efe1dc8a4e139e3e525b4b79de04d99d980969db16bccfef2f1f109e6ee",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/HANDOFF.md",
+      "bytes": 4107,
+      "sha256": "f7c4bfcf2da54206134664d56f32c3f6a15dc8318bfa979236081953ca450bbe",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "0cfc3175ed9cac9e7fd376aac428dae446eec5bba699c0ddac172f4c8a997ecb",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/CURRENT_STATUS.md",
+      "bytes": 5608,
+      "sha256": "86c48f1917f83e394f88f108fa213685d060701efb86cc95b8624cbf3a213e9d",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "361616998faff5c446f2d9aa64e1021041f19204cb4877be6be17f9bf3ce833a",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/MAP.md",
+      "bytes": 34796,
+      "sha256": "cadc65fedacfd4e85cd0cc99bd6ac431db79d74bea9af3a6fe6840cdbc89cef9",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "cadc65fedacfd4e85cd0cc99bd6ac431db79d74bea9af3a6fe6840cdbc89cef9"
+    },
+    {
+      "path": "docs/PROJECT_GUIDE.md",
+      "bytes": 10826,
+      "sha256": "0580168bbc43971da5c5bf50d9cde47dbf65035a3c5e5409f67154c1ee60c213",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "0580168bbc43971da5c5bf50d9cde47dbf65035a3c5e5409f67154c1ee60c213"
+    },
+    {
+      "path": "docs/ROADMAP.md",
+      "bytes": 15956,
+      "sha256": "6a21e3e806025920863bee7644403ff7224d9b8cfd6bc61c3acd68cfc551eba1",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "5ec4bf192db903524a493e5b94efbc309ce5c4565c396c8a8133bd23754301a6",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/DOCUMENTATION_POLICY.md",
+      "bytes": 15403,
+      "sha256": "61122b7c112c6d22428b8630fa734526ca4b3f08b6b64b5dd0455336370605a5",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "aafefcbf57299688c0dc54ce3a8e482373bdfb9381140f9f3b8f4c6de468b0f9",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/guides/BUILDING.md",
+      "bytes": 35983,
+      "sha256": "d525e68c293fc43256b433985c586ce31b4900901e2b5adeaa50ac198968add9",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "d525e68c293fc43256b433985c586ce31b4900901e2b5adeaa50ac198968add9"
+    },
+    {
+      "path": "docs/guides/CODE_POLICY.md",
+      "bytes": 6901,
+      "sha256": "401282e0724723dc666be8e92af1811442b51b266151569bdd734d747af69393",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "401282e0724723dc666be8e92af1811442b51b266151569bdd734d747af69393"
+    },
+    {
+      "path": "docs/guides/DEPENDENCY_POLICY.md",
+      "bytes": 10517,
+      "sha256": "1c8d03f05ce2ac52c1d3b53577c1f4f5e948dd2ae94c19d2b3ec4bcadbf64ccb",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "1c8d03f05ce2ac52c1d3b53577c1f4f5e948dd2ae94c19d2b3ec4bcadbf64ccb"
+    },
+    {
+      "path": "docs/guides/VERSIONING.md",
+      "bytes": 29499,
+      "sha256": "5e6d4da57ffe7c16f426b1dfb2a07f9022bc59d0d44b723fa58e78d49ec2a404",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "5e6d4da57ffe7c16f426b1dfb2a07f9022bc59d0d44b723fa58e78d49ec2a404"
+    },
+    {
+      "path": "docs/guides/LIMITS.md",
+      "bytes": 3304,
+      "sha256": "a63f20717b46e391651235cc9809c4dd24a6842b2c4084193d659aae101d043c",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "a63f20717b46e391651235cc9809c4dd24a6842b2c4084193d659aae101d043c"
+    },
+    {
+      "path": "docs/guides/DIAGNOSTIC_CODES.md",
+      "bytes": 7762,
+      "sha256": "907f730ab9457b297e4e083bf7065c6e0b20588d5ef1f52b0b95ebb7203e11e0",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "907f730ab9457b297e4e083bf7065c6e0b20588d5ef1f52b0b95ebb7203e11e0"
+    },
+    {
+      "path": "docs/guides/COMMIT_AND_PR_CONVENTION.md",
+      "bytes": 2130,
+      "sha256": "a339d94b7006352b6a25f9760fe67c1d522fdf3e55c19d9ea9f2f4571db03e44",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "a339d94b7006352b6a25f9760fe67c1d522fdf3e55c19d9ea9f2f4571db03e44"
+    },
+    {
+      "path": "docs/formats/README.md",
+      "bytes": 9075,
+      "sha256": "db8c8f91e5ee844a32c743b74bb277210efd00b7b08b4d45c6a715aaff99923f",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "db8c8f91e5ee844a32c743b74bb277210efd00b7b08b4d45c6a715aaff99923f"
+    },
+    {
+      "path": "docs/formats/CHART_FORMAT.md",
+      "bytes": 29135,
+      "sha256": "58763902f688768fc03b35eb11d391d7fef642594a38e5bd2683b7520dd7f894",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "58763902f688768fc03b35eb11d391d7fef642594a38e5bd2683b7520dd7f894"
+    },
+    {
+      "path": "docs/formats/CHART_V4_FORMAT.md",
+      "bytes": 24309,
+      "sha256": "7ff5bfe346bf87ef3300d3c5d4f2d83e4f42a5756f29a3be4dab95d7f14d3ca6",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "7ff5bfe346bf87ef3300d3c5d4f2d83e4f42a5756f29a3be4dab95d7f14d3ca6"
+    },
+    {
+      "path": "docs/formats/CXC_FORMAT.md",
+      "bytes": 20260,
+      "sha256": "222250d55308fdb58758b50502dd2340eaf79d1356e424640672104497a1dc1b",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "222250d55308fdb58758b50502dd2340eaf79d1356e424640672104497a1dc1b"
+    },
+    {
+      "path": "docs/formats/CXT_FORMAT.md",
+      "bytes": 8573,
+      "sha256": "8ec8c09de6987c9b1cda3c8891c357a1727ccfc120ff01f4f03cf471aaa3b8f0",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "8ec8c09de6987c9b1cda3c8891c357a1727ccfc120ff01f4f03cf471aaa3b8f0"
+    },
+    {
+      "path": "docs/formats/CXT_V2_FORMAT.md",
+      "bytes": 32650,
+      "sha256": "19bb96bada690b470552be23b58ad3ca004d420b6261fb7a89774d2936790977",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "247f32df6729bc262bbe4219d58fc16ad6216fdb55b34c7965ed1b88d815c218",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/formats/GAMEPLAY_V2_SPEC.md",
+      "bytes": 280547,
+      "sha256": "ea4b0c018dc850e390ed4b671efb183c689609768222c3f8f536ae3d80d2f1ce",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "ea4b0c018dc850e390ed4b671efb183c689609768222c3f8f536ae3d80d2f1ce"
+    },
+    {
+      "path": "docs/formats/GAMEPLAY_CAPSULE_V2_FORMAT.md",
+      "bytes": 37017,
+      "sha256": "b969d6a22ecc617305b0e04d6057c96ea4a173193f3c929866c6de9f599d4cb6",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "b969d6a22ecc617305b0e04d6057c96ea4a173193f3c929866c6de9f599d4cb6"
+    },
+    {
+      "path": "docs/formats/GAMEPLAY_GRAPH_V1_FORMAT.md",
+      "bytes": 11460,
+      "sha256": "91728c091b013df45eba7c3e5401943bb56d847a4f98a7fc537bb4e9b405f1e6",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "91728c091b013df45eba7c3e5401943bb56d847a4f98a7fc537bb4e9b405f1e6"
+    },
+    {
+      "path": "docs/formats/PACKED_CHART_FORMAT.md",
+      "bytes": 46229,
+      "sha256": "1feb9a014163e6c0304020b1dd5bb59f037474fe929bb1100af510a16acf6c03",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "1feb9a014163e6c0304020b1dd5bb59f037474fe929bb1100af510a16acf6c03"
+    },
+    {
+      "path": "docs/formats/TIMING_MODEL.md",
+      "bytes": 7647,
+      "sha256": "c876e208b77ef872cb9563ef3afc26185be33ed8d9b436efd6e52c6d81bb9668",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "c876e208b77ef872cb9563ef3afc26185be33ed8d9b436efd6e52c6d81bb9668"
+    },
+    {
+      "path": "docs/formats/ANIMATION_MIXING.md",
+      "bytes": 8205,
+      "sha256": "0b54dd811ae6a0c44ca3fbe606b80683c5a546a00806147c8b5e382d339ae8f9",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "dcad41c51848464d679cf75f7381d7fc7ef1871cb7ae436817d383c59c1d91e9",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/formats/PORTABLE_PRESENTATION.md",
+      "bytes": 33244,
+      "sha256": "56c84fda0b6f37dcffd6a59065bfd4e8231e0d048f84b898891d5192b3e7858e",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "56c84fda0b6f37dcffd6a59065bfd4e8231e0d048f84b898891d5192b3e7858e"
+    },
+    {
+      "path": "docs/formats/execution-recovery-wire-v3.md",
+      "bytes": 5509,
+      "sha256": "a26b40f4d8615e74fd35bfa4d7745c47c05a9d9326ea69bd518bca5a39df0c28",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "a26b40f4d8615e74fd35bfa4d7745c47c05a9d9326ea69bd518bca5a39df0c28"
+    },
+    {
+      "path": "docs/formats/rpa-execution-contract.md",
+      "bytes": 32568,
+      "sha256": "736016609d6b6400ef71c3512c675ff66b6af7e1b7b3ccb355cc680c3d5af0b7",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "736016609d6b6400ef71c3512c675ff66b6af7e1b7b3ccb355cc680c3d5af0b7"
+    },
+    {
+      "path": "docs/api/README.md",
+      "bytes": 3287,
+      "sha256": "6441cf12754af87a9112de122704530290ce0f04a6a8832cc9db619a4575dd76",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "6441cf12754af87a9112de122704530290ce0f04a6a8832cc9db619a4575dd76"
+    },
+    {
+      "path": "docs/api/GAMEPLAY_V2_ABI.md",
+      "bytes": 182149,
+      "sha256": "c90799acd1b21f3de6fd52ec4820881311cee576f15318b4f6751da53c191948",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "c30307a2429c0108d2f2c07f5b14ea574a26555581829a1ca5964351d89eef3a",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/api/playback-session.md",
+      "bytes": 23353,
+      "sha256": "980ac2b02278a5e2f2281b6764312ec0664f053dd7580a77da33b4cdb4ab5f90",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "ce3a2c9c03c17c87b47a2787f2d3ba7ac262b563b2cd8ad497b83950004d8053",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/api/realtime-host-boundary.md",
+      "bytes": 35173,
+      "sha256": "e60ebf558c46183d90b73308423f178c4a19484b20a5f85186514675d53952e2",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "6c989046a9132f7c556df1b5bef083316282b320c8e92c8099dba53b5a8a816d",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/api/frames-digests-and-timelines.md",
+      "bytes": 5316,
+      "sha256": "7bc7ab7da0c3fbb70a9262598f4ee19c2d08b83b77e19c257a6bfd69064d0f7b",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "7bc7ab7da0c3fbb70a9262598f4ee19c2d08b83b77e19c257a6bfd69064d0f7b"
+    },
+    {
+      "path": "docs/api/presentation-and-capabilities.md",
+      "bytes": 3579,
+      "sha256": "a3ee339f3e4278488159880769261e4011031f630036ac0045f51a3f7021ca2c",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "a3ee339f3e4278488159880769261e4011031f630036ac0045f51a3f7021ca2c"
+    },
+    {
+      "path": "docs/api/sources-and-content.md",
+      "bytes": 3462,
+      "sha256": "bb5a3b1259135a4d0099f7be569dec7dab7a9ed8977bedb49a87662c1049edac",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "bb5a3b1259135a4d0099f7be569dec7dab7a9ed8977bedb49a87662c1049edac"
+    },
+    {
+      "path": "docs/api/execution-coordination.md",
+      "bytes": 7030,
+      "sha256": "06182ceaea3d58b55bd28b4a71e1be9a09f10129a4ea9bf98218c7c48f19aa53",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "06182ceaea3d58b55bd28b4a71e1be9a09f10129a4ea9bf98218c7c48f19aa53"
+    },
+    {
+      "path": "docs/api/gameplay-v2-execution-types.md",
+      "bytes": 16871,
+      "sha256": "390a43e318bea5d3cd58900ba36a461e62951ed7e777dc5d379c07308a627eea",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "390a43e318bea5d3cd58900ba36a461e62951ed7e777dc5d379c07308a627eea"
+    },
+    {
+      "path": "docs/api/internal-module-catalog.md",
+      "bytes": 3099,
+      "sha256": "5d432bf9ed8e7339750e90a880064e2202296688c6d3696a8d2a74d002370098",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "5d432bf9ed8e7339750e90a880064e2202296688c6d3696a8d2a74d002370098"
+    },
+    {
+      "path": "docs/api/diagnostics-identity-and-compatibility.md",
+      "bytes": 3543,
+      "sha256": "eb2ffad761db107576012b1f7cf72e3bbd6fbdfdb8ab9d782e51dc7ef33ca605",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "eb2ffad761db107576012b1f7cf72e3bbd6fbdfdb8ab9d782e51dc7ef33ca605"
+    },
+    {
+      "path": "docs/architecture/OVERVIEW.md",
+      "bytes": 5048,
+      "sha256": "65d3e6e4aea31debcac68d99b564b685e2a2f4d77a58b1f3a4ba1790116fd0a7",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "65d3e6e4aea31debcac68d99b564b685e2a2f4d77a58b1f3a4ba1790116fd0a7"
+    },
+    {
+      "path": "docs/architecture/MODULE_BOUNDARIES.md",
+      "bytes": 6366,
+      "sha256": "6cd8d78ffe6fea7d4bdd0d764409451151cc8dbd71f4615f05680fc523989561",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "6cd8d78ffe6fea7d4bdd0d764409451151cc8dbd71f4615f05680fc523989561"
+    },
+    {
+      "path": "docs/architecture/RUNTIME_SESSION.md",
+      "bytes": 14611,
+      "sha256": "773f0e481b86492ec9b49dad06e6b9218199486b9ef2777a53b93ccbfa109a29",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "41a970fb65ac94cd4ac29cad2305f4f0e4fefb0e688615c4c189fab86e1c2592",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/architecture/CHART_REPRESENTATIONS.md",
+      "bytes": 7893,
+      "sha256": "bbb3fca7c3b0ab8dadfa84416408217794292bed3df762a9f302ee0d7151111e",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "bbb3fca7c3b0ab8dadfa84416408217794292bed3df762a9f302ee0d7151111e"
+    },
+    {
+      "path": "docs/architecture/GAMEPLAY_ABSTRACTION_MODEL.md",
+      "bytes": 12315,
+      "sha256": "348d85b0865e7d1523dcabd637c02efd27054ab568699b29376899fd2b2b4f35",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "348d85b0865e7d1523dcabd637c02efd27054ab568699b29376899fd2b2b4f35"
+    },
+    {
+      "path": "docs/architecture/execution-state-and-recovery.md",
+      "bytes": 15071,
+      "sha256": "8d0ac10ced0dad022a34eb6a5f0be2d4d6f3e7cecbb6f0abd5e9ea35b9f0ad5e",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "8d0ac10ced0dad022a34eb6a5f0be2d4d6f3e7cecbb6f0abd5e9ea35b9f0ad5e"
+    },
+    {
+      "path": "docs/architecture/PLAYER_APPLICATION.md",
+      "bytes": 23686,
+      "sha256": "a62c1d821a2e31cc7d1b8c47c9253f8407b9f89c6bb382a9e319b65dd98b01c6",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "a62c1d821a2e31cc7d1b8c47c9253f8407b9f89c6bb382a9e319b65dd98b01c6"
+    },
+    {
+      "path": "docs/adr/0041-legacy-format-exit-policy.md",
+      "bytes": 3245,
+      "sha256": "389f3053dfab5bc0ee115654b82ee484dc408a33f8bae63d21cee1e8b359f316",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "389f3053dfab5bc0ee115654b82ee484dc408a33f8bae63d21cee1e8b359f316"
+    },
+    {
+      "path": "docs/adr/0046-realtime-playback-coordination.md",
+      "bytes": 6857,
+      "sha256": "cf31e5f7a8934eef9e815a11f4209f99d12d0fd771cc2cabe37ca300f972dd9d",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "cf31e5f7a8934eef9e815a11f4209f99d12d0fd771cc2cabe37ca300f972dd9d"
+    },
+    {
+      "path": "docs/adr/0047-pd-feedback-lifetime-and-delivery-retirement.md",
+      "bytes": 4271,
+      "sha256": "84cd4909351946a4a032c075fc86f025146c2ab990c3ce7bd21e1d655ceac36a",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "84cd4909351946a4a032c075fc86f025146c2ab990c3ce7bd21e1d655ceac36a"
+    },
+    {
+      "path": "docs/adr/0030-playback-preview-api-version-and-result.md",
+      "bytes": 4982,
+      "sha256": "305cfe1bbebcd2045927c4e6be83fde2aaafcea56acb2b6cd8fbb641e28654bf",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "305cfe1bbebcd2045927c4e6be83fde2aaafcea56acb2b6cd8fbb641e28654bf"
+    },
+    {
+      "path": "docs/adr/0033-cpp-shared-library-preview-boundary.md",
+      "bytes": 12853,
+      "sha256": "7bb9e9e4441842277e399f50f57753979fb4296c2815851057b69ae4259eca0b",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "7bb9e9e4441842277e399f50f57753979fb4296c2815851057b69ae4259eca0b"
+    },
+    {
+      "path": "docs/templates/report.md",
+      "bytes": 795,
+      "sha256": "f890650bb1e850f3775868b5f4f5cb450c708d5b7eec0505c6566eeacbeea7e1",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "f890650bb1e850f3775868b5f4f5cb450c708d5b7eec0505c6566eeacbeea7e1"
+    },
+    {
+      "path": "docs/templates/task.md",
+      "bytes": 1780,
+      "sha256": "5aff41ee0680700c22ba4216fe1803bdae741268721847f179e53bde962435c7",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "5aff41ee0680700c22ba4216fe1803bdae741268721847f179e53bde962435c7"
+    },
+    {
+      "path": "docs/templates/plan.md",
+      "bytes": 5920,
+      "sha256": "95287d75a1af9f7e03c570002e606b8c49f7f675b6e9648b165f7083f2970c74",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "95287d75a1af9f7e03c570002e606b8c49f7f675b6e9648b165f7083f2970c74"
+    },
+    {
+      "path": "docs/guides/CHART_V5_AUTHORING.md",
+      "bytes": 16803,
+      "sha256": "2e2acf7a0760e8ae7ed18e6d6cedfcfe0a17e0a5f2727a20c8906e763b33cfba",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "2e2acf7a0760e8ae7ed18e6d6cedfcfe0a17e0a5f2727a20c8906e763b33cfba"
+    },
+    {
+      "path": "docs/stage_plans/active/chart-format-update-for-v5/plan.md",
+      "bytes": 66372,
+      "sha256": "3548a62ac3773a8620f089b0894b6c43427189a3d5349af02148dd9394095915",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "ac34b007412ec6b088c9bcb9099eb5757aac128c817469edafa6d323660a980d",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/stage_plans/active/stage-07-rr/README.md",
+      "bytes": 2630,
+      "sha256": "a36f56a8637285a96b149cc15eb0d7a4dc3daae0303c64bcba2f4d66674e1d77",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "2c28ffafd4cc0edbb4fb5deb5f1f3ab74a44fe910e0431e8b281219d35f566b9",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/stage_plans/active/stage-07-rr/plan.md",
+      "bytes": 58607,
+      "sha256": "84cb51fb8cc8c7dbe401739a2e479ea75cd14ea8e551902addd1345027fe789d",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "0db3e0fba61b70325088c0d10db7ccba70794389fa3e1c1af8309baa535d2562",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/stage_plans/active/stage-07-rr/schedule.md",
+      "bytes": 856,
+      "sha256": "b1b032142a49b794b9c4492464063f6d323b2b701949381d6150723db163a2ea",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "85cdee01bb41c7feb48348cc719508e9400618dd886bae3cbb967ec3d6ba83b7",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/stage_plans/active/stage-07-rr/acceptance.md",
+      "bytes": 11635,
+      "sha256": "9c0d9536305aeee93a4e530b43fd0a8170bb4b390a333795086de2bea342557a",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "c4739581923e6a8c9657c23f34958a1f301dbac0f0e1637da9015d22d83f3336",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/stage_plans/active/stage-07-rr/findings.md",
+      "bytes": 168100,
+      "sha256": "eae5d9b174123e151928335078d8ec5dbcace06c55a8aec7568747331e417f3c",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "a37556b75ec64d0eb4f0ac304cc16e310ec9987896d70cbad881e5b9f8372854",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/stage_plans/active/stage-07-rr/design-readiness.md",
+      "bytes": 11734,
+      "sha256": "2fb24dfd06fd29a002ce9adb53d3f8d28594b4edbc167d40afff76a1fb7caf94",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "f1164936ea749016b3cab34f0c40af5f0deaf3eec4c9c26ccd3599935273f6f0",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/stage_plans/active/stage-07-rr/architecture-design.md",
+      "bytes": 87557,
+      "sha256": "69a77a8951ea128c6a28f98b70331fb2871f1ecd5f310684d8ddeef2ad8c89e7",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "0e7dd837b5cf7721eab3cf2bf98775a52e89946703005612538300615e604d01",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/stage_plans/active/stage-07-rr/simplification-proposal.md",
+      "bytes": 3242,
+      "sha256": "c8aa971c9faf218f8f894c49681a10ce0982e7277f9bc97c62b092005cd4f237",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "dadd095ccd06b02294bc7b14e357accfd021818c82ac44f33ebea348fb72494d",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/stage_plans/active/stage-07-rr/contracts/runtime-timing.md",
+      "bytes": 127368,
+      "sha256": "bdb72b3aba8d36fcb939d25005fa9c2a7a9a1f8c8043392d2525bc98523e23e2",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "76d3c66a24340543e15b55ba5f1281146da2c57a9b2cb393f6b8e6915793f51d",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/stage_plans/active/stage-07-rr/contracts/prepared-artifact.md",
+      "bytes": 98359,
+      "sha256": "e9c4f8fab69778fffd4b6d4ef33e0f054fba32dc62027f5c245e9c1eaa5cb8b2",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "6e0e67284dea7c4bffba9c6a0b54a68f2e602579fccc6ab79fd0ed5882e06cc2",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/stage_plans/active/stage-07-rr/contracts/render-player-writer.md",
+      "bytes": 135212,
+      "sha256": "0939210386334eea8baec34a796f0a52312766c12e078b9b2c369aa911df3354",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "977bc5a87b316497a9cb53ac85aa395f83ad4ae0819ffc569d1d937c253ea7c6",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/verification/2026-11-22-design-readiness-review.md",
+      "bytes": 33828,
+      "sha256": "18b297b6d7ac0cd477d0896ac68e45179c3a79d886861551e3c728f85c4f4f7f",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "203fe7cf32bbcc20ddedb574dc6a6aa3b11a8967f9763339b909f4984d4079b8",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-executor-review.md",
+      "bytes": 7371,
+      "sha256": "ae669ed4311bc22ad2f873e352141bc464ea84105e6c7d21d0b2bc02bb20ad3c",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "edea2d4ebc8b472a34d093ba76914243869bb0cb37394f3c0160b44595c66c9c",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-review-resolution.md",
+      "bytes": 10268,
+      "sha256": "31dca2c8ed2bda961e1a5cc6bb25b7eb8e349f3ddffdfb2b601c8046caa238e6",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "4f7b87b22322bc65321224a4f897532ed01155b1f174fc8d144d154dce7c1118",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/verification/2026-11-22-checkout-review-resolution.md",
+      "bytes": 10961,
+      "sha256": "66d82e4a6db6e786386e0f7098d424e01a2323e805b1629fc9e3b271b5999321",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "bf13d74ab32680c74525e81cec15367c0e90fbf8d5a60bcf1947ddd6da8ec8ae",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/handoffs/2026-11-23-execution-readiness-handoff.md",
+      "bytes": 9019,
+      "sha256": "1bedd8512e3200d0e0569574b25d79dcc595f973d352690a17e80c4bccdad9cb",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "d35cce552e30506bc2464125e3f703fbaa2f660c178259dc45304778e249e45a",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/decisions/2026-11-23-design-decisions-and-schedule.md",
+      "bytes": 5138,
+      "sha256": "da66245279fae9bed03df9e95b1e5ba34c207cb824ada30643694362372fc8a7",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "74ee2a3c80e8a4b89b2f1010d4b781428999f800cc0af7188f68107b4db97b7b",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/implementation/2026-11-23-documentation-governance.md",
+      "bytes": 7387,
+      "sha256": "ca6b440f619aeaf6dfa38cbfdf7224dc37f0a4b76285735a986c8768d33c9d27",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "ca6b440f619aeaf6dfa38cbfdf7224dc37f0a4b76285735a986c8768d33c9d27"
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/evidence/documentation-governance/manifest.json",
+      "bytes": 5368,
+      "sha256": "090b718c031aec4e32ab2a3c1bdf3cd6a4659f65a9a8fc782d4d68d35cbc1f15",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "2b99a8d2aad4424642c936b9330ae9da620b527d4c23fc4cced7ee4cc89b75d1",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/evidence/documentation-governance/migration.json",
+      "bytes": 60993,
+      "sha256": "3c9aee4ace47477fc8d6ead89da3484f4a504f4eacc471742cc8f4177ca3eb7b",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "97997ee03fc4249b7c378d489b26eae9c1867b64d0efad0548b014336a3d32f3",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "tools/verification/check_plan_schedule.py",
+      "bytes": 19149,
+      "sha256": "afbdc10a1e8596904276909fec5c68038b6acc5cc52e6be6a963b112ae49523d",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "afbdc10a1e8596904276909fec5c68038b6acc5cc52e6be6a963b112ae49523d"
+    },
+    {
+      "path": "tools/verification/test_check_plan_schedule.py",
+      "bytes": 18092,
+      "sha256": "8c651ea330cb3dab73e65a9bb746e53d21786e67212f45a8e99e089389a4e9cd",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "8c651ea330cb3dab73e65a9bb746e53d21786e67212f45a8e99e089389a4e9cd"
+    },
+    {
+      "path": "tools/verification/check_docs.py",
+      "bytes": 46472,
+      "sha256": "9997f901d8ad0edb499327ce8e9a92bae55ac4c0906c4c8f419eaf6e453f9836",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "600f60bf6eb756d09620c4e3d72921710727524f88d460c0a7a3648190bee66e",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "tools/verification/check_docs_facts.py",
+      "bytes": 11874,
+      "sha256": "2dbbe551ad474580d7db0e1a18b50ca4d0f100aab90586dfd74e043b1079b6f5",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "2dbbe551ad474580d7db0e1a18b50ca4d0f100aab90586dfd74e043b1079b6f5"
+    },
+    {
+      "path": "tools/verification/check_findings.py",
+      "bytes": 15352,
+      "sha256": "bfa6a5dfdc76c1c5e96177bcb01c804e2d0a57fd1ab15a0aae0b6869fe612e06",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "bfa6a5dfdc76c1c5e96177bcb01c804e2d0a57fd1ab15a0aae0b6869fe612e06"
+    },
+    {
+      "path": "tools/verification/check_docs_governance.py",
+      "bytes": 17948,
+      "sha256": "3c3beb3a1d07123042e21b6707934128f0b20601184aaa3909a7078331fddbf6",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "3c3beb3a1d07123042e21b6707934128f0b20601184aaa3909a7078331fddbf6"
+    },
+    {
+      "path": "tools/verification/gen_docs_map.py",
+      "bytes": 13816,
+      "sha256": "44d2020f0a3f14df13f1281bc0333e68b88cbcf88afe63fd570204b5e4e74e80",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "44d2020f0a3f14df13f1281bc0333e68b88cbcf88afe63fd570204b5e4e74e80"
+    },
+    {
+      "path": "docs/governance_rules.json",
+      "bytes": 63972,
+      "sha256": "732c154b749be5870fbbcc90327a5e49a6dfdfc137fb69fbb42ca83ca1082714",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "732c154b749be5870fbbcc90327a5e49a6dfdfc137fb69fbb42ca83ca1082714"
+    },
+    {
+      "path": "docs/status_contract.json",
+      "bytes": 100,
+      "sha256": "5367b3449e8d191bbf1fed209ec95aea9558fc19a02e4ef8bb72079a64439950",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "e40262d00170f7d07f4247f9dc049f57cf194c87a19923287294c735320bf9bf",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "tests/fixtures/chart_format_update/golden/README.md",
+      "bytes": 1723,
+      "sha256": "023eab6f08fdf6e340077ab03258420ae306f9f03ca6daf40687fe653402f39e",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "746a70d35a183da07867c184d5176b1c429b89e5a7ee072973cb84025275843b",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "tests/judgement/CMakeLists.txt",
+      "bytes": 1574,
+      "sha256": "664bc5ebba72a374117cb7f3a5a1e7fd7c9ffb76f0df80d5249c739207bc64bb",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "e3fc65b45fc778d1cd55470e8ec10ae17f4bbbb1f9d2ad1e3628b8991b07be0b",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "tests/chart/CMakeLists.txt",
+      "bytes": 3383,
+      "sha256": "4ad56af782bb77b57463099300dc289c92fd6e29ccf2357900a6e4bf89d9130a",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "bbab4c408a9d1f3c779197443d96a7e00016d538981d26770069c41bf54b807a",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "tests/playback/CMakeLists.txt",
+      "bytes": 6183,
+      "sha256": "50c5aba69a2fca1e6e8b0e0de89a2dee9736a5421c4f51cc9e3c4bab2a9b645d",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "76874dd7c06e3427929559046b9d0b7f5a00911ec93252223afdf317c0873b55",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "tests/rpa/CMakeLists.txt",
+      "bytes": 2816,
+      "sha256": "f89f578027728bf4117f09e0c82a0894168166ce0b39cba23b83cca8da1efa3e",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "7b0bf448a05488b5f63fa822f388924313ad3464732b9ba9160224a695986abb",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "tests/player/CMakeLists.txt",
+      "bytes": 3246,
+      "sha256": "2f3bcb89f5d0d94c3f6155f63ff32bed09758916ec85bb01f4ee941955473162",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "2f8f15a6be3660b5d4aea2ab36a1b465cadf4794b31106e1314e5263b6cf8962",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "tests/cxc/CMakeLists.txt",
+      "bytes": 1707,
+      "sha256": "6ddd09fe19e179276fdad5aad3f4b3c3c9015c60017aa60770e7516a1cbf5a5a",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "1156152933bbbc6fe0b7e5b332a0c8ea8a9e145e062f2f09187f08a3c026ed7c",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "tests/gameplay_packed/CMakeLists.txt",
+      "bytes": 1133,
+      "sha256": "9ceb7fed952837a93bb9e43cb4c1446de3946e26d0dd9a8e65dd232732c1ae1f",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "7a3055b9b08efc74aa1748d247cc50bb23465849651f039bcb83c39abc64f5ab",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "schemas/cuexis.animation-template.v1.schema.json",
+      "bytes": 5343,
+      "sha256": "826f0583400dd74ac6c4de173e7584620bb111ca4f615c1a1199df71d4518142",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "96e744fecefdf4d2c7fdf746a82b61ce377f873745380cf3921643362b226840",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "schemas/cuexis.animation-template.v2.schema.json",
+      "bytes": 10723,
+      "sha256": "4f2e2f2e6279e1a11919e8182d075425e6298427f100e0a229d5b08bda4014b7",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "ca12a7dd3cc7e9e1c30ecf75d8b8d4441f874686e33180f6b9fd048c95922821",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "schemas/cuexis.asset-index.v1.schema.json",
+      "bytes": 1493,
+      "sha256": "c7987cfbc11df32a899d4c036761765f12165432f8063cf758e7438a3d3bf5ea",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "eb3a89852beb7c22ca1ebdc4a03eddef89e77a34f23f344ba414091333a9bb7b",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "schemas/cuexis.asset-index.v2.schema.json",
+      "bytes": 1690,
+      "sha256": "02dc3e80967a5dd7a25ddd7608edc4835b779c517d6b7cc3cb950d9948baa5ad",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "28ea3bb46e9c0ef033d06ef451de32765732a76cab91c09872726f27bb0be01e",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "schemas/cuexis.asset-index.v3.schema.json",
+      "bytes": 1864,
+      "sha256": "67a672c1aea7990de37f18f64acce7c9ad3f07ee0fbdf5638c466cc289b47b81",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "3a69a9276db3e86ab8de7acf2c79461aa642dc64b0f9d24c7d47865588c21fc2",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "schemas/cuexis.audio-device-profile.v1.schema.json",
+      "bytes": 1751,
+      "sha256": "5d8c4b527e7a2a2b7c7421bf7c6e70b26a15b2c9431152321b52cec2ffa9741c",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "85ddd4d74c1755338600d6c77bad7a0700196b9a0796d9f1a2fd34167b795837",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "schemas/cuexis.chart-entry.v1.schema.json",
+      "bytes": 2906,
+      "sha256": "521aa26f70597599713fd7689af49e1ca934fe6fd5680259b3dc2e77c634fd34",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "ed8418bcd822e58da09b63f23fff919a500d459a5bc20b32a63a8ec45e7c45ce",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "schemas/cuexis.chart.v1.schema.json",
+      "bytes": 11968,
+      "sha256": "78484f2342ed983f289ec791098a063cfbfcc4d6b639b3cddb85a43217bea466",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "b1bd275d9167161ad1f6db00a57fb5583fa939f58ecbdd30f413c19b6344fcd3",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "schemas/cuexis.chart.v2.schema.json",
+      "bytes": 12260,
+      "sha256": "36ead69eb89f18711778a441de8f09126faff747059fb1b99fe502cf497245f9",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "c9b5219592b4de45f0926ed0cfa1a795c62e940f6257eaa4a62d8f81dc45140b",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "schemas/cuexis.chart.v3.schema.json",
+      "bytes": 15377,
+      "sha256": "49ee13db60af70ac6ba13e34638da3aca3e61c2d68b828670c18797686b92ad1",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "ec56fe56cefbc2a5b60ecce60d6e5c2be140be2038aae3a5f8d0b2b78346321d",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "schemas/cuexis.chart.v4.schema.json",
+      "bytes": 26433,
+      "sha256": "5543a486f0a41467b127de0ef4896d4e0266687b49e96860480ab02984132516",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "76f8ce1d3cce7e025afe30c9f3ddbea40fcde5ca42a576a97f2e0c525f68e743",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "schemas/cuexis.cxc.v1.schema.json",
+      "bytes": 1753,
+      "sha256": "3db7cac34ec313950c548c008792536cb92a7d8c9228809049e70428bba5a0b2",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "17bc000de868c78cf90d63d57512be23c924745198bf8dff45668ad6f7927ed5",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "schemas/cuexis.gameplay-capabilities.v1.json",
+      "bytes": 1207,
+      "sha256": "ae987432a030a8268ac4da46a6198a43449b201453156c47329e30deac2c4c64",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "698d413884068a6d16466f81d1d2f1d6684355f0c69756b3a98659ff62f3d08b",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "schemas/cuexis.gameplay-diagnostics.v2.codes.json",
+      "bytes": 104953,
+      "sha256": "96d43a50830b0e6c082519d18d82627ccf8f714c33ed433f6d2c1b4db38d7fc0",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "d600d2629729e4ed603fa1bab2ae3cc7fe2207fabd8a65893743fc6238c90a04",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "schemas/cuexis.gameplay-graph.v1.schema.json",
+      "bytes": 14342,
+      "sha256": "9c58e51e81e50cd3d0148cf951f2f9eaac67bd7f75a8388ed23b61353a712974",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "cebd0c008b405aeff1367fb06399f063f1f8484e8fe678c9629e50df377b642d",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "schemas/cuexis.player-preferences.v1.schema.json",
+      "bytes": 909,
+      "sha256": "e522249871b7dc656c0678d73150439a21edb63bdc8c839c3d78e5c365a9aae7",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "4fd58529c645601d7af18ea6e4cf7d0e0de15f642149121f9b4336b92049b027",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "schemas/cuexis.project.v1.schema.json",
+      "bytes": 1976,
+      "sha256": "8701e5c54973ea3529e4dbfc11e9c7107853ea63f5fa5e7fe6b17fcabe0f82ac",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "a572b50619f1a273c130130a1f64aabf86289c0698458c50e4c0f74b60c0b3f7",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "schemas/candidate/cuexis.gameplay-author.t4-k4.v1.schema.json",
+      "bytes": 37555,
+      "sha256": "90715406ef1dde3d9e801b07344d4cb79e25e9902fe60818bed3a2aa9572c0ca",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "2c1d93d7634077e393d41e779fc32717174ff3f0aa322a21f3beec0494d4ef93",
+      "worktree_variant": "line-endings"
+    },
+    {
+      "path": "schemas/candidate/cuexis.gameplay-inline.t4-k4.v1.schema.json",
+      "bytes": 47423,
+      "sha256": "aa934e69692be0123bdd9346be86019f18644e6c9d3d87defff6a8db15b9bdfa",
+      "source": "blob@a22e255f",
+      "sha256_worktree": "5fc0da843d4051ddbc1bb6a26082e253f765496afbc88cc8ac631add6545e491",
+      "worktree_variant": "line-endings"
+    }
+  ],
+  "missing_global_inputs": [],
+  "tasks": [
+    {
+      "id": "T-01",
+      "card": {
+        "path": "docs/stage_plans/active/stage-07-rr/tasks/T-01.md",
+        "bytes": 6174,
+        "sha256": "1524dfa9c6b6c30460762b8b09588348819e30f667a05d549b54e75e9c58bfaa",
+        "source": "blob@a22e255f",
+        "sha256_worktree": "575ba08633fb55cc9ad9c5f1d57df1899ca4baad6d9d326448b64c93d23ff802",
+        "worktree_variant": "line-endings"
+      },
+      "scope": "现行图",
+      "scope_code": "DOC",
+      "headings": [
+        "目标",
+        "输入",
+        "写域",
+        "步骤",
+        "任务级验收",
+        "证据",
+        "停止条件"
+      ],
+      "inputs": [
+        {
+          "path": "docs/adr/0041-legacy-format-exit-policy.md",
+          "bytes": 3245,
+          "sha256": "389f3053dfab5bc0ee115654b82ee484dc408a33f8bae63d21cee1e8b359f316",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "389f3053dfab5bc0ee115654b82ee484dc408a33f8bae63d21cee1e8b359f316"
+        },
+        {
+          "path": "docs/formats/README.md",
+          "bytes": 9075,
+          "sha256": "db8c8f91e5ee844a32c743b74bb277210efd00b7b08b4d45c6a715aaff99923f",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "db8c8f91e5ee844a32c743b74bb277210efd00b7b08b4d45c6a715aaff99923f"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/acceptance.md",
+          "bytes": 11635,
+          "sha256": "9c0d9536305aeee93a4e530b43fd0a8170bb4b390a333795086de2bea342557a",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "c4739581923e6a8c9657c23f34958a1f301dbac0f0e1637da9015d22d83f3336",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/architecture-design.md",
+          "bytes": 87557,
+          "sha256": "69a77a8951ea128c6a28f98b70331fb2871f1ecd5f310684d8ddeef2ad8c89e7",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0e7dd837b5cf7721eab3cf2bf98775a52e89946703005612538300615e604d01",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/design-readiness.md",
+          "bytes": 11734,
+          "sha256": "2fb24dfd06fd29a002ce9adb53d3f8d28594b4edbc167d40afff76a1fb7caf94",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "f1164936ea749016b3cab34f0c40af5f0deaf3eec4c9c26ccd3599935273f6f0",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/findings.md",
+          "bytes": 168100,
+          "sha256": "eae5d9b174123e151928335078d8ec5dbcace06c55a8aec7568747331e417f3c",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "a37556b75ec64d0eb4f0ac304cc16e310ec9987896d70cbad881e5b9f8372854",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/plan.md",
+          "bytes": 58607,
+          "sha256": "84cb51fb8cc8c7dbe401739a2e479ea75cd14ea8e551902addd1345027fe789d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0db3e0fba61b70325088c0d10db7ccba70794389fa3e1c1af8309baa535d2562",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/schedule.md",
+          "bytes": 856,
+          "sha256": "b1b032142a49b794b9c4492464063f6d323b2b701949381d6150723db163a2ea",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "85cdee01bb41c7feb48348cc719508e9400618dd886bae3cbb967ec3d6ba83b7",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/fixtures/chart_format_update/golden/README.md",
+          "bytes": 1723,
+          "sha256": "023eab6f08fdf6e340077ab03258420ae306f9f03ca6daf40687fe653402f39e",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "746a70d35a183da07867c184d5176b1c429b89e5a7ee072973cb84025275843b",
+          "worktree_variant": "line-endings"
+        }
+      ],
+      "commands": [
+        "1. 从仓库根运行 `git rev-parse HEAD`、`git rev-parse 'HEAD^{tree}'`、`git status --short`，把完整 SHA/tree 记入派单清单。`<BASE_SHA>` 取计划采用记录绑定的合同提交；首次接卡尚未绑定时取本次读出的完整 HEAD，并在清单固定后继续。运行 `git diff --name-status <BASE_SHA> --`，对变化项保留 `git diff --binary <BASE_SHA> -- <列出的路径>`。`9623efa3` 是旧研究对照，`8599c83a` 是首次实施交接提交，均不自动替代接卡时已采用的修订。用 `git ls-files --others --exclude-standard` 清点整个仓库的未跟踪文件，从中明确列出本次派单所需的设计、报告、回执及 fixture 输入，不能只扫描 RR 计划目录。未提交的已跟踪差异随上述补丁交付，相关未跟踪文件另保留原文与相对路径；哈希清单不能代替文件内容。接手者若使用独立 checkout，须先应用这份补丁并取得这些文件，再逐项核对哈希；同工作树接手也须核对它们尚在。对所有派单输入逐文件计算原字节哈希，统一使用下面的 Python 命令，Windows 和 Linux 相同。以任务 ID 列出合同、CMake/安装、源码、schema、fixture、复跑命令和回滚基线。历史证据依其记录的 revision 解释，当前变化对象重取证。",
+        "- `python -B tools/verification/check_plan_schedule.py` 和 `python -B tools/verification/test_check_plan_schedule.py` 退出 0。复制阶段目录到本卡证据目录的独立临时子目录，先用 `python -B tools/verification/check_plan_schedule.py --stage-dir <副本路径>` 确认退出 0；仅在副本中把 T-05 的前置加上 T-06，再运行同一命令，应退出 1。唯一错误须精确对应 T-05 行的 `prerequisite T-06 must be in an earlier wave`。保存前后哈希、命令、stdout/stderr、退出码、单行差异和回执，确认正本 schedule.md 哈希未变、副本其他文件未变。",
+        "- `python -B tools/check_docs.py` 与 `git diff --check` 退出 0。抽查派单清单中的合同哈希和输入路径可重现，冷启动回执覆盖[交叉验证](../acceptance.md#交叉验证)指定的卡。发现不存在的入口、未给定的合同选择或无法说明预期诊断时，该卡回到设计复核。"
+      ],
+      "evidence_dir": "out/review/stage-07-rr/T-01/",
+      "rollback": "git checkout a22e255f6716b22f96ad8a183136eae4fb04ac2f -- <write scope paths>; delete paths created by the card. Baseline commit a22e255f6716b22f96ad8a183136eae4fb04ac2f is the only rollback base for all cards."
+    },
+    {
+      "id": "T-02",
+      "card": {
+        "path": "docs/stage_plans/active/stage-07-rr/tasks/T-02.md",
+        "bytes": 2515,
+        "sha256": "32d1684f7af55625d6dd1ef550147e06de9b2573041f48c32d69f049771471ed",
+        "source": "blob@a22e255f",
+        "sha256_worktree": "25a455df7e0e2a97d4b2092c5c55d00f76dc5bf8e7edc7aace568a401bf3bfe6",
+        "worktree_variant": "line-endings"
+      },
+      "scope": "现行图",
+      "scope_code": "DOC",
+      "headings": [
+        "目标",
+        "输入",
+        "写域",
+        "步骤",
+        "任务级验收",
+        "证据",
+        "停止条件"
+      ],
+      "inputs": [
+        {
+          "path": "cmake/CuexisVersion.cmake",
+          "bytes": 3530,
+          "sha256": "dcfd41d0a82729a111e76db53dc7a63dc562259ba07d85fead733b128c3f2982",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "cec6f9e3e3ddab694308de99bf86c3051037feff974dd1c7ad27c1da5d9276ab",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/DOCUMENTATION_POLICY.md",
+          "bytes": 15403,
+          "sha256": "61122b7c112c6d22428b8630fa734526ca4b3f08b6b64b5dd0455336370605a5",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "aafefcbf57299688c0dc54ce3a8e482373bdfb9381140f9f3b8f4c6de468b0f9",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/api/GAMEPLAY_V2_ABI.md",
+          "bytes": 182149,
+          "sha256": "c90799acd1b21f3de6fd52ec4820881311cee576f15318b4f6751da53c191948",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "c30307a2429c0108d2f2c07f5b14ea574a26555581829a1ca5964351d89eef3a",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/api/diagnostics-identity-and-compatibility.md",
+          "bytes": 3543,
+          "sha256": "eb2ffad761db107576012b1f7cf72e3bbd6fbdfdb8ab9d782e51dc7ef33ca605",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "eb2ffad761db107576012b1f7cf72e3bbd6fbdfdb8ab9d782e51dc7ef33ca605"
+        },
+        {
+          "path": "docs/formats/MATERIAL_SHADER.md",
+          "bytes": 27592,
+          "sha256": "d27afeb4b3e0cbd5510c81508cfa7b8b694963aecd46f51ef2955d3bd49d6ef7",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "d27afeb4b3e0cbd5510c81508cfa7b8b694963aecd46f51ef2955d3bd49d6ef7"
+        },
+        {
+          "path": "docs/formats/README.md",
+          "bytes": 9075,
+          "sha256": "db8c8f91e5ee844a32c743b74bb277210efd00b7b08b4d45c6a715aaff99923f",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "db8c8f91e5ee844a32c743b74bb277210efd00b7b08b4d45c6a715aaff99923f"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/findings.md",
+          "bytes": 168100,
+          "sha256": "eae5d9b174123e151928335078d8ec5dbcace06c55a8aec7568747331e417f3c",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "a37556b75ec64d0eb4f0ac304cc16e310ec9987896d70cbad881e5b9f8372854",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/plan.md",
+          "bytes": 58607,
+          "sha256": "84cb51fb8cc8c7dbe401739a2e479ea75cd14ea8e551902addd1345027fe789d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0db3e0fba61b70325088c0d10db7ccba70794389fa3e1c1af8309baa535d2562",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/chart/CMakeLists.txt",
+          "bytes": 4012,
+          "sha256": "4ad8d53fbfa58544b4e3b5caed6dbe98899701d51a02afcea7c1bad24ee7c606",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "b51c55972de60398358819699be4d272feff69305f6809f1ef4cd6ad018b8a01",
+          "worktree_variant": "line-endings"
+        }
+      ],
+      "commands": [
+        "1. 用 `git branch --show-current`、`git rev-parse HEAD` 和 `git log -1 --format=%H` 绑定本地基线，对 RR-F001/F002 核对已登记历史标识。版本摘要对照 `cmake/CuexisVersion.cmake` 和 `vcpkg.json`，改为指向版本权威。用 `engine/chart/CMakeLists.txt` 的 Packed 实现和可达测试判 RR-F105，记录 Reader/Writer 已实现的候选子集及既有验证状态。",
+        "在集成副本运行 `python -B tools/verification/gen_docs_map.py` 后，`python -B tools/check_docs.py`、`python -B tools/verification/gen_docs_map.py --check`、`python -B tools/verification/check_docs_facts.py --list` 退出 0。逐项清点 drift 输出，涉及本卡的现行错误版本和状态须清零。隔离副本在 `docs/api/diagnostics-identity-and-compatibility.md` 的现行正文插入一行与权威值不同的 SDK API 字面量，`--list` 应指出该文件、行和值。版本漂移在现有检查器中是警告，反例匹配输出。历史行应维持原值和历史标记。"
+      ],
+      "evidence_dir": "out/review/stage-07-rr/T-02/",
+      "rollback": "git checkout a22e255f6716b22f96ad8a183136eae4fb04ac2f -- <write scope paths>; delete paths created by the card. Baseline commit a22e255f6716b22f96ad8a183136eae4fb04ac2f is the only rollback base for all cards."
+    },
+    {
+      "id": "T-03",
+      "card": {
+        "path": "docs/stage_plans/active/stage-07-rr/tasks/T-03.md",
+        "bytes": 9255,
+        "sha256": "6b185dd3594b454a6d3d119e60a40fddedf38dc6a799fb90bc4b197a6b3ab922",
+        "source": "blob@a22e255f",
+        "sha256_worktree": "f86030159c5ed8fdfb3b4f25a4282dad8f1afb65160c69c2acf3472687476180",
+        "worktree_variant": "line-endings"
+      },
+      "scope": "现行图",
+      "scope_code": "RR2",
+      "headings": [
+        "目标",
+        "输入",
+        "写域",
+        "步骤",
+        "任务级验收",
+        "证据",
+        "停止条件"
+      ],
+      "inputs": [
+        {
+          "path": "app/execution_host/frame_observation.cpp",
+          "bytes": 28534,
+          "sha256": "f9d8f8d3feff86b60b90f77b9f1125878857a55033e6105b2e30cafde2313c3b",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "5b1b9f842600ecbf90441ee28cb71a6702bfcd34d398cd75b35e03bdc829e9eb",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "app/player/src/player_execution.cpp",
+          "bytes": 33961,
+          "sha256": "c6030aaafa5e4af27c6832889551975f17db7d04d1940cd7b447a8a19a8ca214",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "5c9803811256b86d152cc7e7767317b9b005b00eb17a8f0f1452ce8ad877f9a0",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/api/frames-digests-and-timelines.md",
+          "bytes": 5316,
+          "sha256": "7bc7ab7da0c3fbb70a9262598f4ee19c2d08b83b77e19c257a6bfd69064d0f7b",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "7bc7ab7da0c3fbb70a9262598f4ee19c2d08b83b77e19c257a6bfd69064d0f7b"
+        },
+        {
+          "path": "docs/api/gameplay-v2-execution-types.md",
+          "bytes": 16871,
+          "sha256": "390a43e318bea5d3cd58900ba36a461e62951ed7e777dc5d379c07308a627eea",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "390a43e318bea5d3cd58900ba36a461e62951ed7e777dc5d379c07308a627eea"
+        },
+        {
+          "path": "docs/api/realtime-host-boundary.md",
+          "bytes": 35173,
+          "sha256": "e60ebf558c46183d90b73308423f178c4a19484b20a5f85186514675d53952e2",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "6c989046a9132f7c556df1b5bef083316282b320c8e92c8099dba53b5a8a816d",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/formats/GAMEPLAY_V2_SPEC.md",
+          "bytes": 280547,
+          "sha256": "ea4b0c018dc850e390ed4b671efb183c689609768222c3f8f536ae3d80d2f1ce",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "ea4b0c018dc850e390ed4b671efb183c689609768222c3f8f536ae3d80d2f1ce"
+        },
+        {
+          "path": "docs/formats/gameplay-v2-execution-profile.md",
+          "bytes": 57996,
+          "sha256": "fffe0107da9b3806580a942e26adb508aeb1950c3fda5028556ae35d119a8d16",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "fffe0107da9b3806580a942e26adb508aeb1950c3fda5028556ae35d119a8d16"
+        },
+        {
+          "path": "docs/formats/rpa-execution-contract.md",
+          "bytes": 32568,
+          "sha256": "736016609d6b6400ef71c3512c675ff66b6af7e1b7b3ccb355cc680c3d5af0b7",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "736016609d6b6400ef71c3512c675ff66b6af7e1b7b3ccb355cc680c3d5af0b7"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/architecture-design.md",
+          "bytes": 87557,
+          "sha256": "69a77a8951ea128c6a28f98b70331fb2871f1ecd5f310684d8ddeef2ad8c89e7",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0e7dd837b5cf7721eab3cf2bf98775a52e89946703005612538300615e604d01",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/findings.md",
+          "bytes": 168100,
+          "sha256": "eae5d9b174123e151928335078d8ec5dbcace06c55a8aec7568747331e417f3c",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "a37556b75ec64d0eb4f0ac304cc16e310ec9987896d70cbad881e5b9f8372854",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/plan.md",
+          "bytes": 58607,
+          "sha256": "84cb51fb8cc8c7dbe401739a2e479ea75cd14ea8e551902addd1345027fe789d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0db3e0fba61b70325088c0d10db7ccba70794389fa3e1c1af8309baa535d2562",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/tasks/T-06.md",
+          "bytes": 16570,
+          "sha256": "a5b0e5e52906f1645b37f14cdb8aabbdf9ce1f652c504b21fc4ef3f557c4690c",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "fe2c5e18aca4543123b093e7e8a58b87092ce9b5f8b0ab1a912207ac7b79a9e3",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/chart/src/canonical_chart_loader_primitives.cpp",
+          "bytes": 20251,
+          "sha256": "b8cd960bb44626e77660e61c46d656b6d48df8c26bd44d92504b1600ee123f55",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "7277783034475287dd98f21d35e6f443ebdaab28e7f0dc2311045460472a34a6",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/judgement/src/execution_kernel_submit.cpp",
+          "bytes": 15631,
+          "sha256": "750ba3106c525169c3818af39973ad5c05c41c86e5affb7d2d4b8d64a3484d45",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "27440916732d399e3933a2163cb4304b694df48ee3c716acdc524af1ff59504a",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/judgement/src/input.cpp",
+          "bytes": 14909,
+          "sha256": "23c2c5f04727b0c3caceb21ddf4cdddd4b84b2880e2be0c10d115d78ed86e83b",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "9cd15c4e4a54e040e1c9e441695bb7520189016ee01947bcbc03a8dfc9e074e8",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/chart/chart_loader_tests.cpp",
+          "bytes": 2305,
+          "sha256": "cfb8d8a5cc08c5818e7edfa259fda0096bcbab63257f6c094b956db76b41095d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "199bc801cd34b1f7ecbe61126505ed70ed52b3f61fdb0bf0d24fe91f681105c7",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/chart/packed_chart_io_tests.cpp",
+          "bytes": 3781,
+          "sha256": "fe0918d7db74e13fe67a0cc8be79d76133f3984d1174a7327659b8086239acb3",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "d635731bfec0efbe5b2d2f1aa2fa5acc8fddda0044978fcdf589989c8c9a6aeb",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/cxc/cxc_candidate_bridge_tests.cpp",
+          "bytes": 15123,
+          "sha256": "510a2fdf5cafd74d532027c503f3157c142816d3bd3a577fb91b3150e8184abd",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "db04cbd86bec859a271a0c14f8240a45a5ffa03599d47f52171995e4364c6522",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/judgement/execution_profile_tests.cpp",
+          "bytes": 12957,
+          "sha256": "0c2aff182e8eb55d04470131f4c1b751fd0b712a205f877fd820e1d16b1203f6",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "21a7e0a4a9dfc0fe4bcb23d456b164938d2452ce436c131564a91de292b17f53",
+          "worktree_variant": "line-endings"
+        }
+      ],
+      "commands": [
+        "- 实施时用 `cmake --preset candidate-debug --fresh` 及 `cmake --build --preset candidate-debug --target cuexis_chart_tests cuexis_cxc_tests cuexis_judgement_tests`。将下列名称注册到对应测试目标，再逐个执行 `ctest --test-dir out/build/candidate-debug --no-tests=error -R '^<测试名>$'`。",
+        "| RPA T2 对照 | 真正的不同 occurrence 槽可共享一个 dispatch tick；相同 occurrence 重投仍报 `judgement.late.duplicate_queue_entry`，同槽异值按 `judgement.input.occurrence_conflict` 拒绝。构建 `cmake --build --preset candidate-debug --target cuexis_rpa_tests`，复跑 `ctest --test-dir out/build/candidate-debug --no-tests=error -R '^B3 different original Ticks forwarded to one dispatch retain canonical occurrence order$'` ；同一命令将 `-R` 换为 `'^B3 occurrence duplicate and slot conflict are atomic and distinguish content$'` 验证两条拒绝码。此处不改 RPA 规则。 |",
+        "- `python -B tools/check_docs.py` 退出 0；对每项比对诊断和分类，新增误收旧 CRC 或省略 candidate 前置报告均判失败。"
+      ],
+      "evidence_dir": "out/review/stage-07-rr/T-03/",
+      "rollback": "git checkout a22e255f6716b22f96ad8a183136eae4fb04ac2f -- <write scope paths>; delete paths created by the card. Baseline commit a22e255f6716b22f96ad8a183136eae4fb04ac2f is the only rollback base for all cards."
+    },
+    {
+      "id": "T-04",
+      "card": {
+        "path": "docs/stage_plans/active/stage-07-rr/tasks/T-04.md",
+        "bytes": 14472,
+        "sha256": "d5015e61a5c27be3a6814d6cd143ae89c0ddfa4ef3a453365f5c016321518811",
+        "source": "blob@a22e255f",
+        "sha256_worktree": "f12e3def0814ceb4181a28ffa72b0a6dd309fba216566bf3c6595cf3b8fb3c9f",
+        "worktree_variant": "line-endings"
+      },
+      "scope": "现行图",
+      "scope_code": "R1",
+      "headings": [
+        "目标",
+        "输入",
+        "写域",
+        "步骤",
+        "任务级验收",
+        "证据",
+        "停止条件"
+      ],
+      "inputs": [
+        {
+          "path": "app/player/CMakeLists.txt",
+          "bytes": 7291,
+          "sha256": "fdb1265d685caa679368fe2511e479eb28038190e2d74cc944ac78c8b04ed342",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "c7d72031833f6aff3e841b54b1812ef2f13debbf929f71110284d2fd71b2b991",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "cmake/CuexisLibraryType.cmake",
+          "bytes": 1425,
+          "sha256": "d9c5062d36cdc3e2dadb994efe623960345254c53972daa0ca834c371094a789",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "95e5013e74b00c1799d32665a60fa07540c3b20304badacbb303f5678d20fe8f",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/guides/BUILDING.md",
+          "bytes": 35983,
+          "sha256": "d525e68c293fc43256b433985c586ce31b4900901e2b5adeaa50ac198968add9",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "d525e68c293fc43256b433985c586ce31b4900901e2b5adeaa50ac198968add9"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/architecture-design.md",
+          "bytes": 87557,
+          "sha256": "69a77a8951ea128c6a28f98b70331fb2871f1ecd5f310684d8ddeef2ad8c89e7",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0e7dd837b5cf7721eab3cf2bf98775a52e89946703005612538300615e604d01",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/contracts/runtime-timing.md",
+          "bytes": 127368,
+          "sha256": "bdb72b3aba8d36fcb939d25005fa9c2a7a9a1f8c8043392d2525bc98523e23e2",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "76d3c66a24340543e15b55ba5f1281146da2c57a9b2cb393f6b8e6915793f51d",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/plan.md",
+          "bytes": 58607,
+          "sha256": "84cb51fb8cc8c7dbe401739a2e479ea75cd14ea8e551902addd1345027fe789d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0db3e0fba61b70325088c0d10db7ccba70794389fa3e1c1af8309baa535d2562",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/CMakeLists.txt",
+          "bytes": 1112,
+          "sha256": "d062df92fc30fcf51e877ad695c7a3af1c21099147130393a601e7dfa5be1ea1",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "2da24a445111ef57dc89a331531f5a79eaca59ec592e4e30d912368b80bd37aa",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/chart/CMakeLists.txt",
+          "bytes": 4012,
+          "sha256": "4ad8d53fbfa58544b4e3b5caed6dbe98899701d51a02afcea7c1bad24ee7c606",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "b51c55972de60398358819699be4d272feff69305f6809f1ef4cd6ad018b8a01",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/cxc/CMakeLists.txt",
+          "bytes": 1297,
+          "sha256": "58140922bb45f46f8a5d498cc5699e179cdc8433eb08d4a4fa6115dc7968fa70",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "315c667e3da7e3bf34d11c80783c0664ef4d94f3359c8a0e992140041902177a",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/cxc/src/cxc_candidate.cpp",
+          "bytes": 31672,
+          "sha256": "16fae90c2caa5dde73e076da59910c87a2fd5b01901713c6fa076b43f6c47e14",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "dfceb08f9cdfd944b46d4a615a55c23d2bd52efd39e6281c1835556cb1b88d36",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/gameplay_packed/CMakeLists.txt",
+          "bytes": 1191,
+          "sha256": "2af3e4a3e131d181e4bd8642de34f5f5a2445ccfef7bdd367a4c286cd0251e3d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "e54ec24002d9370224855a1f10ded3f4543f684ce816ff60024c14fe42a2c986",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/playback/CMakeLists.txt",
+          "bytes": 3988,
+          "sha256": "348b8355369552b320c9543ca5356c74e058008903afa7dc9ef669dcbac86c03",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "1b0431e08bfdd0f7a9ed706f78c656c1b00f47fb271c3477b67177f7d479bb3b",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/playback/src/playback_session_prepare.cpp",
+          "bytes": 28564,
+          "sha256": "250dfcf8ffe6c46c816c966927e1f65ea3e7839d7e8d1241568e47004f7bbd80",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "fe2b1f67a7f655da45b4088b2eaae9384bbe053bff58ed62a391c8c6cc64fa3c",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/playback/src/playback_session_prepare_stages.cpp",
+          "bytes": 29888,
+          "sha256": "91897914d20b64382155fd19784f07806b1ea255ff007ea7c92b3cb0aa25d40b",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "91897914d20b64382155fd19784f07806b1ea255ff007ea7c92b3cb0aa25d40b"
+        },
+        {
+          "path": "tests/CMakeLists.txt",
+          "bytes": 2124,
+          "sha256": "1bb1562c78f4b2b8dd1b44684e4da8b4819849f4bb04d71d07423a1fc1580412",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "90fb929cbf9f2503d770d94dd56557bc3442eeb43cbe50c54778b8a2a772f1a8",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/playback/CMakeLists.txt",
+          "bytes": 6183,
+          "sha256": "50c5aba69a2fca1e6e8b0e0de89a2dee9736a5421c4f51cc9e3c4bab2a9b645d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "76874dd7c06e3427929559046b9d0b7f5a00911ec93252223afdf317c0873b55",
+          "worktree_variant": "line-endings"
+        }
+      ],
+      "commands": [
+        "1. 对 `headless-debug`、`debug`、`candidate-headless-debug`、`candidate-shared-debug`，先在 `out/build/<preset>/.cmake/api/v1/query/` 放置空文件 `codemodel-v2`，再执行 `cmake --preset <preset> --fresh` 和 `cmake --build --preset <preset> --target cuexis_playback cuexis_playback_tests cuexis_cxc_tests`。在 `debug`、`candidate-shared-debug` 追加 `cmake --build --preset <preset> --target cuexis_player`。在根 `CMakeLists.txt` 新增 `cuexis_rr_playback_isolation` 注册，调用本卡新增的 `cmake/VerifyRrPlaybackIsolation.cmake`，传入当前 binary dir、候选开关与 Player 是否存在。该脚本读取此配置的 File API codemodel，从 Playback 和存在时的 Player 递归检查源及链接闭包；缺 codemodel 或目标时失败。用 `ctest --test-dir out/build/<preset> --no-tests=error -R '^(cuexis_rr_playback_isolation|cuexis_architecture_tests)$'` 执行。",
+        "3. 在 `tests/playback/` 注册 `rr_r1_playback_sources`，在 `tests/cxc/` 注册 `rr_r1_cxc_package_integrity`，四个配置均用 `ctest --test-dir out/build/<preset> --no-tests=error -R '^(rr_r1_playback_sources|rr_r1_cxc_package_integrity)$'`。普通入口加载原 CXC v1 通过，整包损坏或资源闭包缺项沿用原诊断且不提交。默认显式候选选择和默认 prepare 候选分支报 `playback.candidate.disabled`；实验静态 Packed 与 Behavior 源条目通过，候选 metadata/编译失败保留原诊断。另用 `ctest --test-dir out/build/debug --no-tests=error -R '^cuexis_cxc_tools$'` 验证独立工具装配，先构建 `cuexis_cxc_pack`、`cuexis_cxc_validate`、`cuexis_cxc_unpack`。",
+        "4. 在 `candidate-headless-debug` 先执行 `cmake --build --preset candidate-headless-debug --target cuexis_playback cuexis_gameplay cuexis_playback_tests cuexis_chart_candidate`；在 `candidate-shared-debug` 先执行 `cmake --build --preset candidate-shared-debug --target cuexis_playback cuexis_audio_sdl cuexis_playback_tests cuexis_chart_candidate`。按根 `CUEXIS_STATIC_IMPLEMENTATION_TARGETS` 清单核对 static 安装归档均已生成，包含不由 Playback 链接触达的 `cuexis_gameplay`；新增私有归档随 Playback 的实际依赖构建。然后用 `ctest --test-dir out/build/<preset> --no-tests=error -R '^cuexis_gameplay_installed_consumer$'` 取证。安装用例内的 typed fixture、候选工具及独立宿主运行均须有输出。",
+        "- RR-F216 在全新无缓存 Windows 配置中启用 observer、不显式传库类型，默认 STATIC 配置通过；显式 SHARED 及非 Windows 仍拒绝，旧缓存通过不能代验。RR-F217 在 GL ON/tools OFF 下构建现有 shader 测试目标，列出并运行 cache 用例，确认无 compiler 源/shaderc 边；tools ON 保留 compiler/cache 对照。均先用同配置 `ctest --test-dir out/build/<preset> --no-tests=error -N -R '<已核对的用例表达式>'` 核对非零注册，再去掉 `-N` 执行；记录实际配置及匹配用例，不另建框架。RR-F434 在已有 Playback 摘要用例验证不支持版本拒绝且默认/历史合法版本结果不变。",
+        "1. 追加两个独立配置目录，从 `headless-debug` 配置且覆盖 `-DCUEXIS_ENABLE_CHART_V5_CANDIDATE=OFF -DBUILD_TESTING=OFF -DCUEXIS_BUILD_TESTS=OFF`：`out/build/rr-f302-minimal` 再设 `-DCUEXIS_BUILD_DEVELOPER_TOOLS=OFF`，`out/build/rr-f302-tools` 再设 `-DCUEXIS_BUILD_DEVELOPER_TOOLS=ON`。均在各自目录预放 File API query，再用 `cmake --preset headless-debug -B <dir> --fresh <上述覆盖>`；其后用 `cmake --build <dir>` 指定目标，不误用原 preset binary dir。minimal 应无 codec/tools/cxc_candidate/旧 gameplay_packed，但必须有 chart/judgement；tools 应有完整工具支持库，默认 Playback 闭包仍与 minimal 一致。测试关闭时直接以 `cmake -DCUEXIS_BINARY_DIR=<dir> -DCUEXIS_ENABLE_CHART_V5_CANDIDATE=OFF -DCUEXIS_BUILD_DEVELOPER_TOOLS=<ON或OFF> -DCUEXIS_BUILD_TESTS=OFF -P cmake/VerifyRrPlaybackIsolation.cmake` 核对；本卡为脚本实现这些参数，不能把缺 CTest 注册当通过。",
+        "2. 保留 `cuexis_chart_tests` 和原用例注册，给它显式链接 codec/tools。在四个启测配置构建该目标及 `cuexis_cxc_tests`、`cuexis_runtime_tests`、`cuexis_playback_tests`；本卡在已有 Chart 测试内注册 `rr_f302_chart_boundaries`，覆盖旧 Reader/CXT1/v4 Resolver、Packed read/write golden 与诊断、CXT2/candidate assembly、migration 对照。先以 `ctest --test-dir out/build/<preset> --no-tests=error -N -R '^rr_f302_chart_boundaries$'` 确认非零，再去掉 `-N` 执行；这些旧工具能力在 candidate=OFF 也须通过。原容量探针只核对可构建及链接闭包，不在本卡运行性能探针。"
+      ],
+      "evidence_dir": "out/review/stage-07-rr/T-04/",
+      "rollback": "git checkout a22e255f6716b22f96ad8a183136eae4fb04ac2f -- <write scope paths>; delete paths created by the card. Baseline commit a22e255f6716b22f96ad8a183136eae4fb04ac2f is the only rollback base for all cards."
+    },
+    {
+      "id": "T-05",
+      "card": {
+        "path": "docs/stage_plans/active/stage-07-rr/tasks/T-05.md",
+        "bytes": 4893,
+        "sha256": "f5b4ecdafc0eeca7d08de95cdc469e6f8328aa760894bc18c9b7325230499f8a",
+        "source": "blob@a22e255f",
+        "sha256_worktree": "d910f4187a2003743f02bbd1af8ad85cc6767bda0cc36b341f9d8fb55c5ec5da",
+        "worktree_variant": "line-endings"
+      },
+      "scope": "现行图",
+      "scope_code": "R5",
+      "headings": [
+        "目标",
+        "输入",
+        "写域",
+        "步骤",
+        "任务级验收",
+        "证据",
+        "停止条件"
+      ],
+      "inputs": [
+        {
+          "path": "cmake/VerifySharedExports.cmake",
+          "bytes": 7397,
+          "sha256": "2e3310391d4ff42d0cfb4da6d2a9df26114c6daa8e223c151b88d4af6fb5e107",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "db4a780f89ccf492a01ff89a2b83f6a3ef39561d201beb99232ea4c7bc654382",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/guides/BUILDING.md",
+          "bytes": 35983,
+          "sha256": "d525e68c293fc43256b433985c586ce31b4900901e2b5adeaa50ac198968add9",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "d525e68c293fc43256b433985c586ce31b4900901e2b5adeaa50ac198968add9"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/architecture-design.md",
+          "bytes": 87557,
+          "sha256": "69a77a8951ea128c6a28f98b70331fb2871f1ecd5f310684d8ddeef2ad8c89e7",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0e7dd837b5cf7721eab3cf2bf98775a52e89946703005612538300615e604d01",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/contracts/render-player-writer.md",
+          "bytes": 135212,
+          "sha256": "0939210386334eea8baec34a796f0a52312766c12e078b9b2c369aa911df3354",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "977bc5a87b316497a9cb53ac85aa395f83ad4ae0819ffc569d1d937c253ea7c6",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/plan.md",
+          "bytes": 58607,
+          "sha256": "84cb51fb8cc8c7dbe401739a2e479ea75cd14ea8e551902addd1345027fe789d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0db3e0fba61b70325088c0d10db7ccba70794389fa3e1c1af8309baa535d2562",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/render/CMakeLists.txt",
+          "bytes": 1068,
+          "sha256": "430b8ced6f6557eed40ac49181e2e4a97e5281d12e2e9aa85b6f8b09162446f1",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "60afc7470ddda6072c971366a32af4b9e56dc576765512f69dd97bcf4ab081c0",
+          "worktree_variant": "line-endings"
+        }
+      ],
+      "commands": [
+        "先配置 `debug`，执行 `cmake --build --preset debug --target cuexis_render_opengl_tests`，再用 `ctest --test-dir out/build/debug --no-tests=error -N -R '^rr_frame_layout$'` 确认注册。下列 GL 正反例须使用能创建实际上下文的驱动，覆盖该用例继承的 `SDL_VIDEODRIVER=dummy` 设置；上下文不可用时记录未执行，不以跳过或纯值测试替代像素验收。",
+        "实施时新增、当前未执行：`ctest --preset debug --no-tests=error -R '^rr_frame_layout$'`，执行[向量 R5-01–04、R5-06 的内存比例对照、R5-09 与 R5-10 的纯几何/逆算](../contracts/render-player-writer.md#兼容目标及向量)。例如 host `(100,50,1280,721)`、extent `1600×1000`、21:9，内容绝对矩形为 `(100,136,1280,548)`，GL 中为 `(100,316,1280,548)`；失败也恢复预设 GL 状态，区域外像素不变。溢出与零比例拒绝，空矩形不绘制。正方形中 `2:1` 与 `1:2` 平手取首项；90° 下 Exact 仍匹配未旋转作者比。按向量核对非零 host 原点、整数取整、Q 和边缘不命中。另执行 R5-11：FBO complete 且初始 draw buffers 全为 GL_NONE 仍应画到 color0，返回精确恢复 GL_NONE 及各绑定；color1-only、缺 depth、texture、多样本、depth-stencil、尺寸不符各在 clear/draw 前拒绝且像素不动。有效附件 draw 失败也归还路由和全部触及状态。"
+      ],
+      "evidence_dir": "out/review/stage-07-rr/T-05/",
+      "rollback": "git checkout a22e255f6716b22f96ad8a183136eae4fb04ac2f -- <write scope paths>; delete paths created by the card. Baseline commit a22e255f6716b22f96ad8a183136eae4fb04ac2f is the only rollback base for all cards."
+    },
+    {
+      "id": "T-06",
+      "card": {
+        "path": "docs/stage_plans/active/stage-07-rr/tasks/T-06.md",
+        "bytes": 16570,
+        "sha256": "a5b0e5e52906f1645b37f14cdb8aabbdf9ce1f652c504b21fc4ef3f557c4690c",
+        "source": "blob@a22e255f",
+        "sha256_worktree": "fe2c5e18aca4543123b093e7e8a58b87092ce9b5f8b0ab1a912207ac7b79a9e3",
+        "worktree_variant": "line-endings"
+      },
+      "scope": "现行图",
+      "scope_code": "R5",
+      "headings": [
+        "目标",
+        "输入",
+        "写域",
+        "步骤",
+        "任务级验收",
+        "证据",
+        "停止条件"
+      ],
+      "inputs": [
+        {
+          "path": "cmake/VerifySharedExports.cmake",
+          "bytes": 7397,
+          "sha256": "2e3310391d4ff42d0cfb4da6d2a9df26114c6daa8e223c151b88d4af6fb5e107",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "db4a780f89ccf492a01ff89a2b83f6a3ef39561d201beb99232ea4c7bc654382",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/adr/0041-legacy-format-exit-policy.md",
+          "bytes": 3245,
+          "sha256": "389f3053dfab5bc0ee115654b82ee484dc408a33f8bae63d21cee1e8b359f316",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "389f3053dfab5bc0ee115654b82ee484dc408a33f8bae63d21cee1e8b359f316"
+        },
+        {
+          "path": "docs/api/realtime-host-boundary.md",
+          "bytes": 35173,
+          "sha256": "e60ebf558c46183d90b73308423f178c4a19484b20a5f85186514675d53952e2",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "6c989046a9132f7c556df1b5bef083316282b320c8e92c8099dba53b5a8a816d",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/architecture-design.md",
+          "bytes": 87557,
+          "sha256": "69a77a8951ea128c6a28f98b70331fb2871f1ecd5f310684d8ddeef2ad8c89e7",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0e7dd837b5cf7721eab3cf2bf98775a52e89946703005612538300615e604d01",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/contracts/render-player-writer.md",
+          "bytes": 135212,
+          "sha256": "0939210386334eea8baec34a796f0a52312766c12e078b9b2c369aa911df3354",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "977bc5a87b316497a9cb53ac85aa395f83ad4ae0819ffc569d1d937c253ea7c6",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/plan.md",
+          "bytes": 58607,
+          "sha256": "84cb51fb8cc8c7dbe401739a2e479ea75cd14ea8e551902addd1345027fe789d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0db3e0fba61b70325088c0d10db7ccba70794389fa3e1c1af8309baa535d2562",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/tasks/T-03.md",
+          "bytes": 9255,
+          "sha256": "6b185dd3594b454a6d3d119e60a40fddedf38dc6a799fb90bc4b197a6b3ab922",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "f86030159c5ed8fdfb3b4f25a4282dad8f1afb65160c69c2acf3472687476180",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/tasks/T-17.md",
+          "bytes": 10570,
+          "sha256": "074a122baf0de7e8c275d1c9c5af17242884cdbe77ef4046d3e92aa9b2eba0ce",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "aa0fd2ecd99825af47f8406b7d67c3bc8682c5abb7999f65ebbc5214f6a14b17",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/assets/src/resource_scope.cpp",
+          "bytes": 28568,
+          "sha256": "396d3940ef5edfff4f16fe99587bbb162bb6154de1c44e3e2029c1dabd6bf39b",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "f84be47bd6f99ebf88f2389fcbac105a9704623c1a77c26e9d1d74a9de4881f0",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/presentation_renderer/src/presentation_renderer.cpp",
+          "bytes": 22091,
+          "sha256": "f39dace145c90b42dfd856cacc4e52c3ffbb4a69f6f47f84235bc0139743a817",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "67919e1b6c08ad14e4c2c544303ddad34dadd005b3d8648671389547775e1aa7",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/render_opengl/CMakeLists.txt",
+          "bytes": 1106,
+          "sha256": "88de5707d280d010cd2ec1393b361f9cca18597a5ab910ccfab44e3837346b28",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "e50447da396e1b6ad4436d503ca4f28c8873004884a9f721ed8d11cff4a72889",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/player/CMakeLists.txt",
+          "bytes": 3246,
+          "sha256": "2f3bcb89f5d0d94c3f6155f63ff32bed09758916ec85bb01f4ee941955473162",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "2f8f15a6be3660b5d4aea2ab36a1b465cadf4794b31106e1314e5263b6cf8962",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/rpa/CMakeLists.txt",
+          "bytes": 2816,
+          "sha256": "f89f578027728bf4117f09e0c82a0894168166ce0b39cba23b83cca8da1efa3e",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "7b0bf448a05488b5f63fa822f388924313ad3464732b9ba9160224a695986abb",
+          "worktree_variant": "line-endings"
+        }
+      ],
+      "commands": [
+        "新增 `rr_laid_out_frame` 沿上述目标的 Catch 注册。先配置 `candidate-debug`，执行 `cmake --build --preset candidate-debug --target cuexis_player_control_tests cuexis_playback_tests`，再用 `ctest --test-dir out/build/candidate-debug --no-tests=error -N -R '^rr_laid_out_frame$'` 确认注册，去掉 `-N` 执行。R5-08 像素对照使用真实 GL 上下文；缺上下文时标未执行，不能以无窗后端代验。以下涉及 candidate 的新用例一律使用 `--test-dir`，不依赖 preset 的默认名称过滤。",
+        "实施时新增、当前未执行：`ctest --test-dir out/build/candidate-debug --no-tests=error -R '^rr_laid_out_frame$'`，执行[向量 R5-05、R5-07–08、R5-10 的相机/retained 及旧入口对照](../contracts/render-player-writer.md#兼容目标及向量)。R5-05 的 legacy handle + layout 请求、layout handle + legacy 请求均为 `noRetainedFrame`，旧 handle 仍可用且不重采、不提交。R5-07 断言同一 backend；`deadline=100`，submit 前 99 提交/交换各一次，100 则报 `host.rpa.context_stale`（`reason=frame_deadline`）且零提交。另以 extent `1600×1000`、host 大小 `1280×721`，在取帧后把 host.x 从 100 改为 200，断言提交前 `frame_target_changed`、零 clear/submit/present/成功 receipt，旧 retained/serial 保持、无 renderer fault；下次新目标请求可呈现。分别覆盖只改 y/宽高/rotation，不能只比 extent。R5-08 对同一帧的两次借用均从本次 FBO 得到青色 RGBA，保留正式帧 digest；任一借用失败都不复用旧像素或提交正式帧。 比例和 rotation 随请求进入同帧投影，旧谱 0° digest 不变；BestFit 冻帧 resize 后重选、重投影，依据原采样、同资源与 token，零 Runtime 重采样。",
+        "本卡在根 CMake 新注册 `rr_frame_layout_shared`，以 `$<TARGET_FILE:cuexis_player>` 驱动该树的真实 Player。分别在 `shared-debug`、`candidate-shared-debug` 配置后执行 `cmake --build --preset <preset> --target cuexis_player`，按同配置安装闭包备齐归档/库，再用 `ctest --test-dir out/build/<preset> --no-tests=error -R '^(rr_frame_layout_shared|cuexis_shared_export_surface)$'`。两者以同一正式旧谱和固定采样、0° 走普通新路径，各提帧一次，对照同一旧谱基线 digest（两构建相同）。同版仓内消费者真实构造结果、移动构造/赋值、调用五个访问器、重排、析构；候选安装消费者 opt-in 后仅链接 `Cuexis::Playback` 复做。默认安装与普通 `add_subdirectory` 消费者分别包含 `cuexis/playback/experimental/frame_layout.hpp` 须因头不可见失败；默认旧头独立可用。两 shared 逐项比导出表：隔离副本各撤一个必需成员标注或多导出一个未列函数，应分别因缺符号/额外符号失败；不以仅检查命名空间或仅链接 static 代验。",
+        "- RR-F419：在现有 `tests/player/CMakeLists.txt` 的 `cuexis_player_control_tests` 注册 `rr_frame_diagnostics`，不新建测试框架或 target。先执行 `cmake --build --preset debug --target cuexis_player_control_tests`，再以 `ctest --test-dir out/build/debug --no-tests=error -N -R '^rr_frame_diagnostics$'` 核对注册，并执行 `ctest --test-dir out/build/debug --no-tests=error -R '^rr_frame_diagnostics$'`。常规路径的 `PlayerPresentedFrame.renderMicroseconds` 只断言非负；另用确定性时间输入和可控 renderer 触发一次明确正耗时，证明 `player_control_frame_loop.cpp` 的赋值在 `notePresented` 使用前。0 表示真实零耗时。本卡新证据注明新旧语义，历史报告原样保留。",
+        "- RR-F135：在现有 `cuexis_execution_host_tests` 注册 `rr_frame_observation_errors`，先执行 `cmake --build --preset candidate-headless-debug --target cuexis_execution_host_tests`，用 `ctest --test-dir out/build/candidate-headless-debug --no-tests=error -N -R '^rr_frame_observation_errors$'` 核对注册，再执行 `ctest --test-dir out/build/candidate-headless-debug --no-tests=error -R '^rr_frame_observation_errors$'`。同一测试覆盖下表，在现有测试目标补故障注入。",
+        "- RR-F207 在现有 `cuexis_assets_tests` 的 ResourceScope 用例覆盖合同所列五类型/三策略、fallback 自身失败、混合闭包复用、部分失败回滚、缓存 fallback 再请求、cycle/depth/type 拒绝、move/clear/释放及 manager/owner 守卫。前后对照完整诊断、scope 内容与 lease/handle 状态；合法旧 Runtime 准备继续通过，Portable 准备仍拒绝 fallback。实施时 `cmake --build --preset headless-debug --target cuexis_assets_tests`，再用 `ctest --test-dir out/build/headless-debug --no-tests=error -N -R '(ResourceScope|ResourceManager|Resource policies|Lease release)'` 确认新增分支和既有用例均注册，去掉 `-N` 执行且保留 `--no-tests=error`。证据收入本卡目录；共享代码须覆盖五类实路，不以薄包装改名或仅缩短行数验收。"
+      ],
+      "evidence_dir": "out/review/stage-07-rr/T-06/",
+      "rollback": "git checkout a22e255f6716b22f96ad8a183136eae4fb04ac2f -- <write scope paths>; delete paths created by the card. Baseline commit a22e255f6716b22f96ad8a183136eae4fb04ac2f is the only rollback base for all cards."
+    },
+    {
+      "id": "T-07",
+      "card": {
+        "path": "docs/stage_plans/active/stage-07-rr/tasks/T-07.md",
+        "bytes": 7293,
+        "sha256": "6f05dd8f06b718bf14f0747bf45f93956fe68d4fd43c54311f646aebb8903531",
+        "source": "blob@a22e255f",
+        "sha256_worktree": "40f04cbf6d734f377e131ff63c4c4ea1b03d9039ceac978b0e5e62f05493cf33",
+        "worktree_variant": "line-endings"
+      },
+      "scope": "现行图",
+      "scope_code": "DOC",
+      "headings": [
+        "目标",
+        "输入",
+        "写域",
+        "步骤",
+        "任务级验收",
+        "证据",
+        "停止条件"
+      ],
+      "inputs": [
+        {
+          "path": "docs/DOCUMENTATION_POLICY.md",
+          "bytes": 15403,
+          "sha256": "61122b7c112c6d22428b8630fa734526ca4b3f08b6b64b5dd0455336370605a5",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "aafefcbf57299688c0dc54ce3a8e482373bdfb9381140f9f3b8f4c6de468b0f9",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/api/frames-digests-and-timelines.md",
+          "bytes": 5316,
+          "sha256": "7bc7ab7da0c3fbb70a9262598f4ee19c2d08b83b77e19c257a6bfd69064d0f7b",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "7bc7ab7da0c3fbb70a9262598f4ee19c2d08b83b77e19c257a6bfd69064d0f7b"
+        },
+        {
+          "path": "docs/architecture/RUNTIME_SESSION.md",
+          "bytes": 14611,
+          "sha256": "773f0e481b86492ec9b49dad06e6b9218199486b9ef2777a53b93ccbfa109a29",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "41a970fb65ac94cd4ac29cad2305f4f0e4fefb0e688615c4c189fab86e1c2592",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/formats/ANIMATION_MIXING.md",
+          "bytes": 8205,
+          "sha256": "0b54dd811ae6a0c44ca3fbe606b80683c5a546a00806147c8b5e382d339ae8f9",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "dcad41c51848464d679cf75f7381d7fc7ef1871cb7ae436817d383c59c1d91e9",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/formats/CHART_FORMAT.md",
+          "bytes": 29135,
+          "sha256": "58763902f688768fc03b35eb11d391d7fef642594a38e5bd2683b7520dd7f894",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "58763902f688768fc03b35eb11d391d7fef642594a38e5bd2683b7520dd7f894"
+        },
+        {
+          "path": "docs/formats/GAMEPLAY_V2_SPEC.md",
+          "bytes": 280547,
+          "sha256": "ea4b0c018dc850e390ed4b671efb183c689609768222c3f8f536ae3d80d2f1ce",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "ea4b0c018dc850e390ed4b671efb183c689609768222c3f8f536ae3d80d2f1ce"
+        },
+        {
+          "path": "docs/formats/TIMING_MODEL.md",
+          "bytes": 7647,
+          "sha256": "c876e208b77ef872cb9563ef3afc26185be33ed8d9b436efd6e52c6d81bb9668",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "c876e208b77ef872cb9563ef3afc26185be33ed8d9b436efd6e52c6d81bb9668"
+        },
+        {
+          "path": "docs/guides/CODE_POLICY.md",
+          "bytes": 6901,
+          "sha256": "401282e0724723dc666be8e92af1811442b51b266151569bdd734d747af69393",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "401282e0724723dc666be8e92af1811442b51b266151569bdd734d747af69393"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/contracts/render-player-writer.md",
+          "bytes": 135212,
+          "sha256": "0939210386334eea8baec34a796f0a52312766c12e078b9b2c369aa911df3354",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "977bc5a87b316497a9cb53ac85aa395f83ad4ae0819ffc569d1d937c253ea7c6",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/findings.md",
+          "bytes": 168100,
+          "sha256": "eae5d9b174123e151928335078d8ec5dbcace06c55a8aec7568747331e417f3c",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "a37556b75ec64d0eb4f0ac304cc16e310ec9987896d70cbad881e5b9f8372854",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/plan.md",
+          "bytes": 58607,
+          "sha256": "84cb51fb8cc8c7dbe401739a2e479ea75cd14ea8e551902addd1345027fe789d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0db3e0fba61b70325088c0d10db7ccba70794389fa3e1c1af8309baa535d2562",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/tasks/T-06.md",
+          "bytes": 16570,
+          "sha256": "a5b0e5e52906f1645b37f14cdb8aabbdf9ce1f652c504b21fc4ef3f557c4690c",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "fe2c5e18aca4543123b093e7e8a58b87092ce9b5f8b0ab1a912207ac7b79a9e3",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/judgement/include/cuexis/judgement/judgement_session.hpp",
+          "bytes": 8998,
+          "sha256": "d082929cb30ad32225ad5fb95d3be18708ad14bbe4122f1f356f38ae4ceddfbf",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "2428ad91bd8804f57df225c0051dd127ac72ccb2075a8fe6b24da030c2320fee",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/judgement/src/session.cpp",
+          "bytes": 26028,
+          "sha256": "59b8d998d693f1db3a61c2864889e78baaceb53a71839d590842c44656fd2282",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "3bc6f13fed7a80de3fdca6ab95b0121f748254af12565f68ecbd3b929aea8668",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/world/include/cuexis/world/property.hpp",
+          "bytes": 8730,
+          "sha256": "77e56875f5616808e092add48a8547ce9ed4633aa4b187147b767aa6389ea560",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "f0084b2b2161d0e44dc22d9f7d99239fcdb5e12fe9ca8681969c6d67429a0b05",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/world/include/cuexis/world/world.hpp",
+          "bytes": 4727,
+          "sha256": "f4100d6c1b81135c1c2235bdfbe73e0ff6e31cf5cfb06438af8ce87367d69bdd",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "fd23c353e917e5dd70ac6e21c8a94d2f982b4a8f09647b972fe78a24da3a9bf5",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/world/src/property_helpers.hpp",
+          "bytes": 11811,
+          "sha256": "d97bd3836eeea27ed933bc78f339d40ba0515ba177b3acc7e5a5d51c117fe081",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "a3edc923b22c3ddb2be7a3e51b9b184f57bcfe68e6ef6cc5c40c4dbc29f2c45f",
+          "worktree_variant": "line-endings"
+        }
+      ],
+      "commands": [
+        "- 集成者刷新受影响的生成路由后，`python -B tools/check_docs.py`、`python -B tools/verification/check_docs_facts.py --list`、`python -B tools/verification/gen_docs_map.py --check` 和 `git diff --check` 均退出 0，现行正文无本卡引入的事实漂移。逐条重读替代章节与对应实现，确认步骤 1–2 的保留项未被删。",
+        "- 在包含同一改后资料的隔离副本，把 TIMING_MODEL 新链接由 `../architecture/RUNTIME_SESSION.md#playbacksession-公共门面` 改成不存在的 `../architecture/RUNTIME_SESSION_REMOVED.md`。运行 `python -B tools/check_docs.py` 应退出 1 并报 `broken relative link: ../architecture/RUNTIME_SESSION_REMOVED.md`。还原后退出 0。",
+        "- 修改代码注释时，在有 clang-format 的环境执行 `cmake --preset debug` 和 `cmake --build --preset debug --target cuexis_format_check`。人工核对源/头 diff 仅触及注释，安装头保持 ASCII。"
+      ],
+      "evidence_dir": "out/review/stage-07-rr/T-07/",
+      "rollback": "git checkout a22e255f6716b22f96ad8a183136eae4fb04ac2f -- <write scope paths>; delete paths created by the card. Baseline commit a22e255f6716b22f96ad8a183136eae4fb04ac2f is the only rollback base for all cards."
+    },
+    {
+      "id": "T-08",
+      "card": {
+        "path": "docs/stage_plans/active/stage-07-rr/tasks/T-08.md",
+        "bytes": 12907,
+        "sha256": "55a93a299a6ae6fbe867212069f20b1dcb9da3af9b34b433c463ca6c4cc341aa",
+        "source": "blob@a22e255f",
+        "sha256_worktree": "acdbccc7c5bc63afa561fe5041da6ab64de5e400fc70c79a66d1d6cc8a9c8bb6",
+        "worktree_variant": "line-endings"
+      },
+      "scope": "现行图",
+      "scope_code": "RR4",
+      "headings": [
+        "目标",
+        "输入",
+        "写域",
+        "步骤",
+        "任务级验收",
+        "证据",
+        "停止条件"
+      ],
+      "inputs": [
+        {
+          "path": "cmake/VerifyArchitecture.cmake",
+          "bytes": 33196,
+          "sha256": "e9b7c2a64e83738faf5247ad3d66f5822d5342864b92a46b412b51839495e936",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "4ee170d71784c5c13527ecae281896a55c3e338a8f69a743689112359696f91a",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "cmake/VerifySharedExports.cmake",
+          "bytes": 7397,
+          "sha256": "2e3310391d4ff42d0cfb4da6d2a9df26114c6daa8e223c151b88d4af6fb5e107",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "db4a780f89ccf492a01ff89a2b83f6a3ef39561d201beb99232ea4c7bc654382",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/guides/BUILDING.md",
+          "bytes": 35983,
+          "sha256": "d525e68c293fc43256b433985c586ce31b4900901e2b5adeaa50ac198968add9",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "d525e68c293fc43256b433985c586ce31b4900901e2b5adeaa50ac198968add9"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/architecture-design.md",
+          "bytes": 87557,
+          "sha256": "69a77a8951ea128c6a28f98b70331fb2871f1ecd5f310684d8ddeef2ad8c89e7",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0e7dd837b5cf7721eab3cf2bf98775a52e89946703005612538300615e604d01",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/contracts/render-player-writer.md",
+          "bytes": 135212,
+          "sha256": "0939210386334eea8baec34a796f0a52312766c12e078b9b2c369aa911df3354",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "977bc5a87b316497a9cb53ac85aa395f83ad4ae0819ffc569d1d937c253ea7c6",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/contracts/runtime-timing.md",
+          "bytes": 127368,
+          "sha256": "bdb72b3aba8d36fcb939d25005fa9c2a7a9a1f8c8043392d2525bc98523e23e2",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "76d3c66a24340543e15b55ba5f1281146da2c57a9b2cb393f6b8e6915793f51d",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/plan.md",
+          "bytes": 58607,
+          "sha256": "84cb51fb8cc8c7dbe401739a2e479ea75cd14ea8e551902addd1345027fe789d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0db3e0fba61b70325088c0d10db7ccba70794389fa3e1c1af8309baa535d2562",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/tasks/T-06.md",
+          "bytes": 16570,
+          "sha256": "a5b0e5e52906f1645b37f14cdb8aabbdf9ce1f652c504b21fc4ef3f557c4690c",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "fe2c5e18aca4543123b093e7e8a58b87092ce9b5f8b0ab1a912207ac7b79a9e3",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/playback/CMakeLists.txt",
+          "bytes": 3988,
+          "sha256": "348b8355369552b320c9543ca5356c74e058008903afa7dc9ef669dcbac86c03",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "1b0431e08bfdd0f7a9ed706f78c656c1b00f47fb271c3477b67177f7d479bb3b",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/playback/src/replay_identity.hpp",
+          "bytes": 1500,
+          "sha256": "d3acc516e849a63fb2ed6120329662a06064feeca0ffc770f3e39038e4bccfcf",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "21d6cf2f132a94b6e90b96802a3839c1038438006c6746e81747a5b4f5c3da87",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/external/gameplay_consumer.cpp",
+          "bytes": 17677,
+          "sha256": "5bfd0e2e4b0e74534e1a9617688c8eeaac36fabface50043509343fcfcf76e63",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "c8cffdb1966886efcba1de11b97ec66c4d277a00151fbbfb7846006bded64985",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/rpa/CMakeLists.txt",
+          "bytes": 2816,
+          "sha256": "f89f578027728bf4117f09e0c82a0894168166ce0b39cba23b83cca8da1efa3e",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "7b0bf448a05488b5f63fa822f388924313ad3464732b9ba9160224a695986abb",
+          "worktree_variant": "line-endings"
+        }
+      ],
+      "commands": [
+        "1. 四个安装消费者配置分别用 `cmake --preset <preset> --fresh`。默认 static 用 `cmake --build --preset headless-debug --target cuexis_playback cuexis_judgement cuexis_gameplay`，默认 shared 用 `cmake --build --preset headless-shared-debug --target cuexis_playback`。候选 static 用 `cmake --build --preset candidate-headless-debug --target cuexis_playback cuexis_gameplay cuexis_chart_tests cuexis_playback_tests cuexis_chart_candidate`，候选 shared 用 `cmake --build --preset candidate-shared-debug --target cuexis_playback cuexis_audio_sdl cuexis_chart_tests cuexis_playback_tests cuexis_chart_candidate cuexis_player cuexis_host_protocol_tests cuexis_execution_host_tests`。两种候选配置的 reference-host staging 都调用 `cuexis_chart_tests` 生成输入，须先构建该目标。",
+        "2. 用 `ctest --test-dir out/build/headless-debug --no-tests=error -R '^cuexis_external_consumer_(find_package_playback|add_subdirectory_playback|find_package_core)$'`，再在实验 static/shared 两配置用 `ctest --test-dir out/build/<preset> --no-tests=error -R '^(cuexis_gameplay_installed_consumer|cuexis_reference_host_staging|cuexis_rr_sdk_facade_compat)$'`。本卡在根 CMake 注册 `cuexis_rr_sdk_facade_compat`，由 `VerifyRrSdkFacadeCompat.cmake` 用已安装包构建 [Resume 对照](../contracts/runtime-timing.md#rr-4-逐符号兼容迁移) 的独立消费者。旧调用和新 facade 分别在独立同输入局获得相同身份、进入 Running。变更 reconciliation 的 `pauseEpoch` 后用错误身份调用必须拒绝并保持 Paused。用同一编译器从默认前缀编译实验头应报找不到头，实验前缀未 opt in 应在 `find_package` 被拒绝。",
+        "3. 默认 shared 另跑 `ctest --test-dir out/build/headless-shared-debug --no-tests=error -R '^cuexis_external_consumer_(find_package_playback|add_subdirectory_playback|find_package_core)$'`。导出差分单独使用 [T-06](T-06.md#任务级验收) 留存的两个 preset：默认侧另用 `cmake --preset shared-debug --fresh`，执行 `cmake --build --preset shared-debug --target cuexis_playback`；实验侧沿用第 1 步已配置、构建 `cuexis_playback` 的 `candidate-shared-debug`。`cuexis_shared_export_surface` 读取本树 `$<TARGET_FILE:cuexis_playback>`。分别以 `shared-debug`、`candidate-shared-debug` 替换 `<preset>` 运行 `ctest --test-dir out/build/<preset> --no-tests=error -R '^cuexis_shared_export_surface$'`，各与 T-06 同 preset、同工具链的符号表逐项比对，默认保留 R5 全表且无新增 Gameplay 导出，实验另加本卡允许项。实验隔离对照分别给新自由函数移除 `CUEXIS_PLAYBACK_API`，以及在 `experimental`、`detail` 命名空间各额外导出一个未列函数，前者应在安装消费者或仓内 shared host 链接、缺符号检查失败，后者应由导出门禁按限定名拒绝。",
+        "4. 兼容新增与执行协调组后继退役各自从 `candidate-shared-debug` 执行 `cmake --build --preset candidate-shared-debug --target cuexis_player cuexis_host_protocol_tests cuexis_execution_host_tests`。在 `tests/rpa/CMakeLists.txt` 注册 `rr_sdk_execution_host_shared`，用 `ctest --test-dir out/build/candidate-shared-debug --no-tests=error -R '^rr_sdk_execution_host_shared$'` 验证真实 Player 装配只载入同一个实验 Playback 共享库及 owner/fence/Pause/Resume/close 行为。默认及候选安装消费者均不能包含 `execution_host_access.hpp`；实验库检查所有允许的内部 symbol，额外内部 symbol 阴性失败；默认库无该组导出。退出复验仅删除批准组旧符号，复跑同一 shared Player 与内部导出探针。"
+      ],
+      "evidence_dir": "out/review/stage-07-rr/T-08/",
+      "rollback": "git checkout a22e255f6716b22f96ad8a183136eae4fb04ac2f -- <write scope paths>; delete paths created by the card. Baseline commit a22e255f6716b22f96ad8a183136eae4fb04ac2f is the only rollback base for all cards."
+    },
+    {
+      "id": "T-09",
+      "card": {
+        "path": "docs/stage_plans/active/stage-07-rr/tasks/T-09.md",
+        "bytes": 5373,
+        "sha256": "d04bf028a2cc62158689231512565b52348eee44508cda9bea29b7b3a5821004",
+        "source": "blob@a22e255f",
+        "sha256_worktree": "558fb65a406da150d28dce4b1c6c60d34af4b11bfde4cf87419b88448b93adc1",
+        "worktree_variant": "line-endings"
+      },
+      "scope": "现行图",
+      "scope_code": "DOC",
+      "headings": [
+        "目标",
+        "输入",
+        "写域",
+        "步骤",
+        "任务级验收",
+        "证据",
+        "停止条件"
+      ],
+      "inputs": [
+        {
+          "path": "docs/stage_plans/active/stage-07-5/plan.md",
+          "bytes": 35446,
+          "sha256": "ab10ee1df5bc54e43c70ece73560bcf83a1139dda999c9e00dea3b08662157b1",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "6a7acbfb1fe469d660a031f7337b2143884bada6317ca172f23732e7e5aa43a6",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/acceptance.md",
+          "bytes": 11635,
+          "sha256": "9c0d9536305aeee93a4e530b43fd0a8170bb4b390a333795086de2bea342557a",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "c4739581923e6a8c9657c23f34958a1f301dbac0f0e1637da9015d22d83f3336",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/findings.md",
+          "bytes": 168100,
+          "sha256": "eae5d9b174123e151928335078d8ec5dbcace06c55a8aec7568747331e417f3c",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "a37556b75ec64d0eb4f0ac304cc16e310ec9987896d70cbad881e5b9f8372854",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/plan.md",
+          "bytes": 58607,
+          "sha256": "84cb51fb8cc8c7dbe401739a2e479ea75cd14ea8e551902addd1345027fe789d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0db3e0fba61b70325088c0d10db7ccba70794389fa3e1c1af8309baa535d2562",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/tasks/T-14.md",
+          "bytes": 20387,
+          "sha256": "070e5aa4c45b5748409ad5aa4b8f7937ee3c4a7ea7c8e342a7612dc65b7c6af8",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "6aada7bffc80d633ddd2c3f2c28629593534967b34b9a1effc1c606b97345e05",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/tasks/T-16.md",
+          "bytes": 7406,
+          "sha256": "b334209b4f2d8bcbbe9b6d36cd735bc6e4db87912bca10c7101029b2525db010",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "e1918f36d7d6c07e4873fe2572afcf44807707ac1caa7d79b24e10669db96abc",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/future/stage-08/plan.md",
+          "bytes": 14553,
+          "sha256": "0b0fbae6b0d3b2b7438f142f7cc9e72a7a5dc7470b96a228a82c7e5a91ededbc",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "7ba53d6e5c86f1fd05735401c0c7b0ca67570edc4e8f48ee587afb453f06b429",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_reports/stages/stage-07-rr/README.md",
+          "bytes": 4444,
+          "sha256": "f5e91d1d5088dee6f6ba5ecd8cf0a4fc10ec2b4de30b47fb51d5096e897ebed1",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "dc752b530c9c22b153186fb9d3f4eb31b62ff07ecc3ff766181a2fab3cb36786",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/templates/report.md",
+          "bytes": 795,
+          "sha256": "f890650bb1e850f3775868b5f4f5cb450c708d5b7eec0505c6566eeacbeea7e1",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "f890650bb1e850f3775868b5f4f5cb450c708d5b7eec0505c6566eeacbeea7e1"
+        },
+        {
+          "path": "engine/chart/src/chart_writer.cpp",
+          "bytes": 32271,
+          "sha256": "c15b63e5e179036e3aa651ee6a8c64659ad158e3d0a6425281ea570317cf1918",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "fe43bba10a12b887567f790065176e90662c333c073d2d00e1f63b8b4c38bbff",
+          "worktree_variant": "line-endings"
+        }
+      ],
+      "commands": [
+        "- 在退出快照执行 `python -B tools/verification/gen_docs_map.py`，再执行 `python -B tools/check_docs.py`、`python -B tools/verification/check_plan_schedule.py --stage-dir docs/stage_plans/completed/stage-07-rr`、`python -B tools/verification/gen_docs_map.py --check`、`python -B tools/verification/check_docs_facts.py --list` 和 `git diff --check`，均退出 0。接受前核对时，调度命令使用当前阶段目录。索引的每项通过须回溯至与对象一致的 SHA、证据与接受记录。"
+      ],
+      "evidence_dir": "out/review/stage-07-rr/T-09/",
+      "rollback": "git checkout a22e255f6716b22f96ad8a183136eae4fb04ac2f -- <write scope paths>; delete paths created by the card. Baseline commit a22e255f6716b22f96ad8a183136eae4fb04ac2f is the only rollback base for all cards."
+    },
+    {
+      "id": "T-10",
+      "card": {
+        "path": "docs/stage_plans/active/stage-07-rr/tasks/T-10.md",
+        "bytes": 11173,
+        "sha256": "8cf98f0f085e9b43942c5a8e3bd8d453ade7778cf2f8775b06487aa7bc337a2a",
+        "source": "blob@a22e255f",
+        "sha256_worktree": "ebb2a931afa1f601714a154c2737920f403044063b0c900289b7533fb89b34d4",
+        "worktree_variant": "line-endings"
+      },
+      "scope": "NEXT（本轮实验实现）",
+      "scope_code": "NEXT",
+      "headings": [
+        "目标",
+        "输入",
+        "写域",
+        "步骤",
+        "任务级验收",
+        "证据",
+        "停止条件"
+      ],
+      "inputs": [
+        {
+          "path": "cmake/VerifyArchitecture.cmake",
+          "bytes": 33196,
+          "sha256": "e9b7c2a64e83738faf5247ad3d66f5822d5342864b92a46b412b51839495e936",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "4ee170d71784c5c13527ecae281896a55c3e338a8f69a743689112359696f91a",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "cmake/VerifySharedExports.cmake",
+          "bytes": 7397,
+          "sha256": "2e3310391d4ff42d0cfb4da6d2a9df26114c6daa8e223c151b88d4af6fb5e107",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "db4a780f89ccf492a01ff89a2b83f6a3ef39561d201beb99232ea4c7bc654382",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/architecture-design.md",
+          "bytes": 87557,
+          "sha256": "69a77a8951ea128c6a28f98b70331fb2871f1ecd5f310684d8ddeef2ad8c89e7",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0e7dd837b5cf7721eab3cf2bf98775a52e89946703005612538300615e604d01",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/contracts/runtime-timing.md",
+          "bytes": 127368,
+          "sha256": "bdb72b3aba8d36fcb939d25005fa9c2a7a9a1f8c8043392d2525bc98523e23e2",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "76d3c66a24340543e15b55ba5f1281146da2c57a9b2cb393f6b8e6915793f51d",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/plan.md",
+          "bytes": 58607,
+          "sha256": "84cb51fb8cc8c7dbe401739a2e479ea75cd14ea8e551902addd1345027fe789d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0db3e0fba61b70325088c0d10db7ccba70794389fa3e1c1af8309baa535d2562",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/CMakeLists.txt",
+          "bytes": 1112,
+          "sha256": "d062df92fc30fcf51e877ad695c7a3af1c21099147130393a601e7dfa5be1ea1",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "2da24a445111ef57dc89a331531f5a79eaca59ec592e4e30d912368b80bd37aa",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/gameplay_packed/CMakeLists.txt",
+          "bytes": 1191,
+          "sha256": "2af3e4a3e131d181e4bd8642de34f5f5a2445ccfef7bdd367a4c286cd0251e3d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "e54ec24002d9370224855a1f10ded3f4543f684ce816ff60024c14fe42a2c986",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/judgement/CMakeLists.txt",
+          "bytes": 1574,
+          "sha256": "664bc5ebba72a374117cb7f3a5a1e7fd7c9ffb76f0df80d5249c739207bc64bb",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "e3fc65b45fc778d1cd55470e8ec10ae17f4bbbb1f9d2ad1e3628b8991b07be0b",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/playback/CMakeLists.txt",
+          "bytes": 6183,
+          "sha256": "50c5aba69a2fca1e6e8b0e0de89a2dee9736a5421c4f51cc9e3c4bab2a9b645d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "76874dd7c06e3427929559046b9d0b7f5a00911ec93252223afdf317c0873b55",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/rpa/CMakeLists.txt",
+          "bytes": 2816,
+          "sha256": "f89f578027728bf4117f09e0c82a0894168166ce0b39cba23b83cca8da1efa3e",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "7b0bf448a05488b5f63fa822f388924313ad3464732b9ba9160224a695986abb",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tools/chart/chart_candidate/CMakeLists.txt",
+          "bytes": 609,
+          "sha256": "46523ba32c16e69cf979b3c7106a3f76ed77254b3d99345311b0c73dad534310",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "c1d7016095dd67504e83bbee294b7a3facfb5ea015d320567a4022ca98464837",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tools/gameplay/gameplay_assembler/CMakeLists.txt",
+          "bytes": 1174,
+          "sha256": "05b9f07b109ad5a8ea090f151443a9fbe6827f84b01c6454d1cfa19d3a615cef",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "3e556b64dd31260cc20e561bb9441ca10541f38f0fd0999e7cbf656d56af4f33",
+          "worktree_variant": "line-endings"
+        }
+      ],
+      "commands": [
+        "测试创建责任：本卡新增 `tests/playback/rr_advance_contract_tests.cpp`，在 `tests/playback/CMakeLists.txt` 的 `CUEXIS_ENABLE_CHART_V5_CANDIDATE` 条件下用 `target_sources(cuexis_playback_tests PRIVATE ...)` 加入现有目标；源内定义精确命名的 `TEST_CASE(\"cuexis_rr_advance_contract\")`，沿既有 `catch_discover_tests(cuexis_playback_tests)` 自动注册同名 CTest 用例；不新建测试框架。纯 tick 内核及 Playback owning 投影均在该用例中核对；旧 judgement 回归仍由原目标执行。上述测试源、CMake 与必要的测试直接边属于本卡写域。先执行 `cmake --build --preset candidate-debug --target cuexis_playback_tests`，再执行 `ctest --test-dir out/build/candidate-debug -N -R '^cuexis_rr_advance_contract$'` 确认注册非零，最后执行 `ctest --test-dir out/build/candidate-debug --no-tests=error -R '^cuexis_rr_advance_contract$'`；尚未交付的用例不得以零匹配计为通过。",
+        "实施时新增、当前未执行；按上段命令执行本卡合同用例 用纯 tick records 跑 [GP-02…05、CLK-02](../contracts/runtime-timing.md#验收向量与任务前置)，核对 Exact 与真实 release、单元失败/竞争折叠、精确比例与终局摘要、容量/故障、Stop 内存回放。另跑原 judgement 恢复、成品 codec 及作者工具 fixture。先 `cmake --build --preset candidate-headless-debug --target cuexis_judgement_tests cuexis_gameplay_packed_tests cuexis_gameplay_assemble cuexis_playback_tests cuexis_chart_candidate`，按 T-04 的安装目标闭包构建归档，再跑 `ctest --preset candidate-headless-debug --no-tests=error -R '^(cuexis_architecture_tests|cuexis_gameplay_installed_consumer)$'`。文件 API/实际命令证明这批无 timing/new Reader。独立构建 `cmake -S tests/consumers/judgement-runtime -B out/rr-judgement-runtime` 与 `cmake --build out/rr-judgement-runtime` 只暴露 Core/Judgement；加入旧作者 `timebase.hpp`、`cuexis/timing/timing_map.hpp` 的两个阴性各须因头不可见失败。",
+        "cmake --preset <preset>",
+        "cmake --build --preset <preset> --target cuexis_rpa_tests",
+        "ctest --test-dir out/build/<preset> --no-tests=error -R \"^B3 different original Ticks forwarded to one dispatch retain canonical occurrence order$\""
+      ],
+      "evidence_dir": "out/review/stage-07-rr/T-10/",
+      "rollback": "git checkout a22e255f6716b22f96ad8a183136eae4fb04ac2f -- <write scope paths>; delete paths created by the card. Baseline commit a22e255f6716b22f96ad8a183136eae4fb04ac2f is the only rollback base for all cards."
+    },
+    {
+      "id": "T-11",
+      "card": {
+        "path": "docs/stage_plans/active/stage-07-rr/tasks/T-11.md",
+        "bytes": 7981,
+        "sha256": "75a88a3e256d887900460e133ff9cb5d2e6548b414c2760e032832fcbd1c718f",
+        "source": "blob@a22e255f",
+        "sha256_worktree": "1d78507e5d7b552cc2ae5ca58da57e3be71c215835c7a09fdd41fcdae479dbe9",
+        "worktree_variant": "line-endings"
+      },
+      "scope": "NEXT（本轮实验实现）",
+      "scope_code": "NEXT",
+      "headings": [
+        "目标",
+        "输入",
+        "写域",
+        "步骤",
+        "任务级验收",
+        "证据",
+        "停止条件"
+      ],
+      "inputs": [
+        {
+          "path": "docs/formats/GAMEPLAY_V2_SPEC.md",
+          "bytes": 280547,
+          "sha256": "ea4b0c018dc850e390ed4b671efb183c689609768222c3f8f536ae3d80d2f1ce",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "ea4b0c018dc850e390ed4b671efb183c689609768222c3f8f536ae3d80d2f1ce"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/contracts/prepared-artifact.md",
+          "bytes": 98359,
+          "sha256": "e9c4f8fab69778fffd4b6d4ef33e0f054fba32dc62027f5c245e9c1eaa5cb8b2",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "6e0e67284dea7c4bffba9c6a0b54a68f2e602579fccc6ab79fd0ed5882e06cc2",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/contracts/render-player-writer.md",
+          "bytes": 135212,
+          "sha256": "0939210386334eea8baec34a796f0a52312766c12e078b9b2c369aa911df3354",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "977bc5a87b316497a9cb53ac85aa395f83ad4ae0819ffc569d1d937c253ea7c6",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/contracts/runtime-timing.md",
+          "bytes": 127368,
+          "sha256": "bdb72b3aba8d36fcb939d25005fa9c2a7a9a1f8c8043392d2525bc98523e23e2",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "76d3c66a24340543e15b55ba5f1281146da2c57a9b2cb393f6b8e6915793f51d",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/plan.md",
+          "bytes": 58607,
+          "sha256": "84cb51fb8cc8c7dbe401739a2e479ea75cd14ea8e551902addd1345027fe789d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0db3e0fba61b70325088c0d10db7ccba70794389fa3e1c1af8309baa535d2562",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "schemas/cuexis.gameplay-diagnostics.v2.codes.json",
+          "bytes": 104953,
+          "sha256": "96d43a50830b0e6c082519d18d82627ccf8f714c33ed433f6d2c1b4db38d7fc0",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "d600d2629729e4ed603fa1bab2ae3cc7fe2207fabd8a65893743fc6238c90a04",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/chart/CMakeLists.txt",
+          "bytes": 3383,
+          "sha256": "4ad56af782bb77b57463099300dc289c92fd6e29ccf2357900a6e4bf89d9130a",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "bbab4c408a9d1f3c779197443d96a7e00016d538981d26770069c41bf54b807a",
+          "worktree_variant": "line-endings"
+        }
+      ],
+      "commands": [
+        "测试创建责任：本卡新增 `tests/chart/rr_candidate_schema_tests.cpp`，在 `tests/chart/CMakeLists.txt` 的 `CUEXIS_ENABLE_CHART_V5_CANDIDATE` 条件下用 `target_sources(cuexis_chart_tests PRIVATE ...)` 加入现有目标；源内定义精确命名的 `TEST_CASE(\"rr_candidate_schema\")`，沿既有 `catch_discover_tests(cuexis_chart_tests)` 自动注册同名 CTest 用例；该文件尚无此条件源表，由本卡在既有 Catch discovery 调用前补上，不新建测试框架。覆盖基础 schema 与本地 typed 源解析；实际时间/关系编译与跨文档 Animation 验收分别交 T-12/T-13。上述测试源、CMake 与必要的测试直接边属于本卡写域。先执行 `cmake --build --preset candidate-debug --target cuexis_chart_tests`，再执行 `ctest --test-dir out/build/candidate-debug -N -R '^rr_candidate_schema$'` 确认注册非零，最后执行 `ctest --test-dir out/build/candidate-debug --no-tests=error -R '^rr_candidate_schema$'`；尚未交付的用例不得以零匹配计为通过。",
+        "实施时新增、当前未执行；按上段命令执行本卡合同用例。GP-01 读取原权重与 Exact；requirement 声明固定 `tap/1`，只把源窗口从 `tap/1` 改为 `tap/2`，两者形状均合法，解析得到的窗口分别保留 ordinal 1/2。T-12 在关系校验处拒绝后者；T-11 不把形状通过当作编译通过。删 `scoreMode`、删 `exact`、重复规则键、`disabled:false`、非整数积分和注入旧 `score/rulesetRef` 拒绝；Body/Tail 的合法有档 Miss 结构接受。按 [画幅向量](../contracts/render-player-writer.md#兼容目标及向量)核对原值保留、规约、顺序、默认、重复比、宽度零及范围失败。v3 Stop 带 `endBeat` 拒绝；旧 v5/v2 路径不变，未启用 v3 报 `format.gameplay_version_unsupported`。跑 `ctest --preset headless-debug --no-tests=error -R '^cuexis_gameplay_diagnostics_codes$'` 和 `python -B tools/verification/check_docs_facts.py`。本卡的 schema/格式交付与 `docs/formats/GAMEPLAY_V2_SPEC.md` 的作者面同提交更新：`gradeTables`、`Table{exact, intervals}`、按 phase 选表与计分单元的字段和约束要在规范正文可见，不以 `contracts/runtime-timing.md` 的 references 文本代替规范；证据附规范与 schema 的字段对照。"
+      ],
+      "evidence_dir": "out/review/stage-07-rr/T-11/",
+      "rollback": "git checkout a22e255f6716b22f96ad8a183136eae4fb04ac2f -- <write scope paths>; delete paths created by the card. Baseline commit a22e255f6716b22f96ad8a183136eae4fb04ac2f is the only rollback base for all cards."
+    },
+    {
+      "id": "T-12",
+      "card": {
+        "path": "docs/stage_plans/active/stage-07-rr/tasks/T-12.md",
+        "bytes": 10540,
+        "sha256": "fef31577a6cb6bb3340dd2196bc16f4cb09fc8ba3ec147b32f805375025c60dc",
+        "source": "blob@a22e255f",
+        "sha256_worktree": "1b0435ab6d6ad25f5c331a8984e13adabdc8b860886947631c94d0077db40dfd",
+        "worktree_variant": "line-endings"
+      },
+      "scope": "NEXT（本轮实验实现）",
+      "scope_code": "NEXT",
+      "headings": [
+        "目标",
+        "输入",
+        "写域",
+        "步骤",
+        "任务级验收",
+        "证据",
+        "停止条件"
+      ],
+      "inputs": [
+        {
+          "path": "cmake/VerifyArchitecture.cmake",
+          "bytes": 33196,
+          "sha256": "e9b7c2a64e83738faf5247ad3d66f5822d5342864b92a46b412b51839495e936",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "4ee170d71784c5c13527ecae281896a55c3e338a8f69a743689112359696f91a",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/architecture-design.md",
+          "bytes": 87557,
+          "sha256": "69a77a8951ea128c6a28f98b70331fb2871f1ecd5f310684d8ddeef2ad8c89e7",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0e7dd837b5cf7721eab3cf2bf98775a52e89946703005612538300615e604d01",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/contracts/prepared-artifact.md",
+          "bytes": 98359,
+          "sha256": "e9c4f8fab69778fffd4b6d4ef33e0f054fba32dc62027f5c245e9c1eaa5cb8b2",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "6e0e67284dea7c4bffba9c6a0b54a68f2e602579fccc6ab79fd0ed5882e06cc2",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/contracts/runtime-timing.md",
+          "bytes": 127368,
+          "sha256": "bdb72b3aba8d36fcb939d25005fa9c2a7a9a1f8c8043392d2525bc98523e23e2",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "76d3c66a24340543e15b55ba5f1281146da2c57a9b2cb393f6b8e6915793f51d",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/plan.md",
+          "bytes": 58607,
+          "sha256": "84cb51fb8cc8c7dbe401739a2e479ea75cd14ea8e551902addd1345027fe789d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0db3e0fba61b70325088c0d10db7ccba70794389fa3e1c1af8309baa535d2562",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/behavior/include/cuexis/behavior/behavior_system.hpp",
+          "bytes": 590,
+          "sha256": "33e6240f499fa17be571b2d5fe1b0438a9a919bc47bdabac660177deb4dae6ce",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "50ed42e358bb33416b9ca1dc79970bccff7c22aa7efba4c7423dbc3c7d50571c",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/behavior/behavior_system_tests.cpp",
+          "bytes": 5172,
+          "sha256": "265f3934fd74c5240c0a3874176cda85538dc415c56157ead2f1db39f520ecd4",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "64fbd7e2df4adbd49c281414c6d99c7e8222139dcf135b8ec85e9ff526058244",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/judgement/CMakeLists.txt",
+          "bytes": 1574,
+          "sha256": "664bc5ebba72a374117cb7f3a5a1e7fd7c9ffb76f0df80d5249c739207bc64bb",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "e3fc65b45fc778d1cd55470e8ec10ae17f4bbbb1f9d2ad1e3628b8991b07be0b",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/runtime/behavior_runtime_tests.cpp",
+          "bytes": 14766,
+          "sha256": "ec44cb7cf296e0516a1c39323a5ee0b8304670e48c7a053124ea574b66e9e67d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "d1a191b035034ebf18b008005c54044a0e7f45d97d98846e245f888af3827a35",
+          "worktree_variant": "line-endings"
+        }
+      ],
+      "commands": [
+        "测试创建责任：本卡新增 `tests/judgement/rr_timing_contract_tests.cpp`，在 `tests/judgement/CMakeLists.txt` 的 `CUEXIS_ENABLE_CHART_V5_CANDIDATE` 条件下用 `target_sources(cuexis_judgement_tests PRIVATE ...)` 加入现有目标；源内定义精确命名的 `TEST_CASE(\"cuexis_rr_timing_contract\")`，沿既有 `catch_discover_tests(cuexis_judgement_tests)` 自动注册同名 CTest 用例；该文件尚无此条件源表，由本卡在既有 Catch discovery 调用前补上，不新建测试框架。该测试目标在 candidate 分支为 Chart 适配正例追加 PRIVATE chart_tools，并同步根 ALLOWED；无 Chart 的独立编译消费者另验纯编译闭包。上述测试源、CMake 与必要的测试直接边属于本卡写域。先执行 `cmake --build --preset candidate-debug --target cuexis_judgement_tests`，再执行 `ctest --test-dir out/build/candidate-debug -N -R '^cuexis_rr_timing_contract$'` 确认注册非零，最后执行 `ctest --test-dir out/build/candidate-debug --no-tests=error -R '^cuexis_rr_timing_contract$'`；尚未交付的用例不得以零匹配计为通过。"
+      ],
+      "evidence_dir": "out/review/stage-07-rr/T-12/",
+      "rollback": "git checkout a22e255f6716b22f96ad8a183136eae4fb04ac2f -- <write scope paths>; delete paths created by the card. Baseline commit a22e255f6716b22f96ad8a183136eae4fb04ac2f is the only rollback base for all cards."
+    },
+    {
+      "id": "T-13",
+      "card": {
+        "path": "docs/stage_plans/active/stage-07-rr/tasks/T-13.md",
+        "bytes": 17871,
+        "sha256": "6a14e8cc3268b3acda0c5d8c7b4dcb70a92c90f79235c3f663c2f051c8ed8580",
+        "source": "blob@a22e255f",
+        "sha256_worktree": "005e647d9706a1014753b81fd64bf1e0170b0a14614b7a7383c63140e6236630",
+        "worktree_variant": "line-endings"
+      },
+      "scope": "NEXT（本轮实验实现）",
+      "scope_code": "NEXT",
+      "headings": [
+        "目标",
+        "输入",
+        "写域",
+        "步骤",
+        "任务级验收",
+        "证据",
+        "停止条件"
+      ],
+      "inputs": [
+        {
+          "path": "docs/adr/0041-legacy-format-exit-policy.md",
+          "bytes": 3245,
+          "sha256": "389f3053dfab5bc0ee115654b82ee484dc408a33f8bae63d21cee1e8b359f316",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "389f3053dfab5bc0ee115654b82ee484dc408a33f8bae63d21cee1e8b359f316"
+        },
+        {
+          "path": "docs/formats/CXT_V2_FORMAT.md",
+          "bytes": 32650,
+          "sha256": "19bb96bada690b470552be23b58ad3ca004d420b6261fb7a89774d2936790977",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "247f32df6729bc262bbe4219d58fc16ad6216fdb55b34c7965ed1b88d815c218",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/architecture-design.md",
+          "bytes": 87557,
+          "sha256": "69a77a8951ea128c6a28f98b70331fb2871f1ecd5f310684d8ddeef2ad8c89e7",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0e7dd837b5cf7721eab3cf2bf98775a52e89946703005612538300615e604d01",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/contracts/prepared-artifact.md",
+          "bytes": 98359,
+          "sha256": "e9c4f8fab69778fffd4b6d4ef33e0f054fba32dc62027f5c245e9c1eaa5cb8b2",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "6e0e67284dea7c4bffba9c6a0b54a68f2e602579fccc6ab79fd0ed5882e06cc2",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/contracts/render-player-writer.md",
+          "bytes": 135212,
+          "sha256": "0939210386334eea8baec34a796f0a52312766c12e078b9b2c369aa911df3354",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "977bc5a87b316497a9cb53ac85aa395f83ad4ae0819ffc569d1d937c253ea7c6",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/contracts/runtime-timing.md",
+          "bytes": 127368,
+          "sha256": "bdb72b3aba8d36fcb939d25005fa9c2a7a9a1f8c8043392d2525bc98523e23e2",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "76d3c66a24340543e15b55ba5f1281146da2c57a9b2cb393f6b8e6915793f51d",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/plan.md",
+          "bytes": 58607,
+          "sha256": "84cb51fb8cc8c7dbe401739a2e479ea75cd14ea8e551902addd1345027fe789d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0db3e0fba61b70325088c0d10db7ccba70794389fa3e1c1af8309baa535d2562",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/chart/src/chart_v4_loader.cpp",
+          "bytes": 13503,
+          "sha256": "ff918f64996335cf125f6584faf3215992f1cab25fcd728cf438dc5c0b330ff6",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "94571c47aed3d0abe5b3c26707edb49471ba5b754bc5c3d511837fb34e1188ec",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/gameplay_packed/CMakeLists.txt",
+          "bytes": 1191,
+          "sha256": "2af3e4a3e131d181e4bd8642de34f5f5a2445ccfef7bdd367a4c286cd0251e3d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "e54ec24002d9370224855a1f10ded3f4543f684ce816ff60024c14fe42a2c986",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/chart/chart_v4_c2_closure_tests.cpp",
+          "bytes": 27384,
+          "sha256": "53c2e6cb6b6b902860a077dc4d02f4ddf60b2c82e5b76b68ebb39c6e003aed80",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "076bb5ab9111b270d336b45628e374a3420569a4faf32b30a10f6df964c27369",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/chart/chart_v4_c2_fixture.hpp",
+          "bytes": 7993,
+          "sha256": "af8860003ade2b18b785adeb368d7fb4fe6860cf2428dcc76d7f77fe69bb8358",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "7f9200746aa0b801b609e11d6f8a1f928864a2ae452d4e1100ec15456ed98035",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/playback/CMakeLists.txt",
+          "bytes": 6183,
+          "sha256": "50c5aba69a2fca1e6e8b0e0de89a2dee9736a5421c4f51cc9e3c4bab2a9b645d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "76874dd7c06e3427929559046b9d0b7f5a00911ec93252223afdf317c0873b55",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tools/chart/chart_candidate/main.cpp",
+          "bytes": 13715,
+          "sha256": "40948b07b57e6a30c85409a9c5cdf92af4579af923e83ae8df300c3b9762a450",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "de7b20540cc524c196286237e0635908f9f3edda9593716cc3cd7ab95cc24694",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tools/cxc/cxc_pack/main.cpp",
+          "bytes": 1496,
+          "sha256": "facaf87cf362da11aa0b8a3c1fee6097bfc11e6628db235310983a3ecb9226c3",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "5f5f9328fc9790493a6e54ccc5ff01e1a86a8cd2efbde963a07099ffbc306ebd",
+          "worktree_variant": "line-endings"
+        }
+      ],
+      "commands": [
+        "测试创建责任：本卡新增 `tests/playback/rr_compiled_capsule_contract_tests.cpp`，在 `tests/playback/CMakeLists.txt` 的 `CUEXIS_ENABLE_CHART_V5_CANDIDATE` 条件下用 `target_sources(cuexis_playback_tests PRIVATE ...)` 加入现有目标；源内定义精确命名的 `TEST_CASE(\"cuexis_rr_compiled_capsule_contract\")`，沿既有 `catch_discover_tests(cuexis_playback_tests)` 自动注册同名 CTest 用例；不新建测试框架。在 candidate 分支为三路源/成品对照追加 PRIVATE gameplay_packed_source/gameplay_packed_read 及根 ALLOWED；纯 Reader 隔离另由独立消费者验收。上述测试源、CMake 与必要的测试直接边属于本卡写域。先执行 `cmake --build --preset candidate-debug --target cuexis_playback_tests`，再执行 `ctest --test-dir out/build/candidate-debug -N -R '^cuexis_rr_compiled_capsule_contract$'` 确认注册非零，最后执行 `ctest --test-dir out/build/candidate-debug --no-tests=error -R '^cuexis_rr_compiled_capsule_contract$'`；尚未交付的用例不得以零匹配计为通过。",
+        "RR-F431 用现有 `tests/chart/chart_v4_c2_closure_tests.cpp`／`chart_v4_c2_fixture.hpp` 夹具和同一 `ChartLimits` 验证 `N-1/N/N+1` 个 clip：上限内与恰上限接受；`N+1` 拒绝且保留既有 `chart.animation.generated_limit`；把第 `N+1` 个条目设为会在 typed clip 解析阶段产生 `chart.animation.clip_invalid` 的坏值，断言该后续码不出现，以证明 loader 没有继续 `readAnimationClip`。后继 v5 source adapter 用同一边界向量走真实源入口，验证上限内/恰上限可产出、超限在解析后续 clip 前拒绝；旧路径与后继路径各保留实际落点，不以纯 Reader 限额替代。先执行 `cmake --build --preset candidate-debug --target cuexis_chart_tests`，再用 `ctest --test-dir out/build/candidate-debug -N -R '^Chart v4 loader stops animation clip parsing at budget$'` 核对注册，随后执行 `ctest --test-dir out/build/candidate-debug --no-tests=error -R '^Chart v4 loader stops animation clip parsing at budget$'`；后继路径用例并入 `cuexis_rr_compiled_capsule_contract`。",
+        "P5-06 的三个编译/打包进程归本卡。在 tools=ON 的 `candidate-headless-debug` 执行 `cmake --build --preset candidate-headless-debug --target cuexis_gameplay_assemble cuexis_chart_candidate cuexis_cxc_pack`，再执行 `ctest --test-dir out/build/candidate-headless-debug --no-tests=error -R '^rr_compile_pack_cli$'`。本卡在根 CMake 新注册该测试，将 `$<TARGET_FILE:cuexis_gameplay_assemble>`、`$<TARGET_FILE:cuexis_chart_candidate>`、`$<TARGET_FILE:cuexis_cxc_pack>` 传给同树进程测试，任一程序缺失即失败，不走 PATH 或跳过。分别在带哨兵的隔离目录启动：唯一参数 `--help` 返回 0、stdout 有本程序 usage、stderr 空、目录清单和哨兵字节不变；混用帮助/坏参数和已有成功 fixture 分别保留各工具既有退出分类、诊断及产物。assembler 的 `beat-us` 新路径及原成功命令均保留。迁移器进程由 T-16 验。"
+      ],
+      "evidence_dir": "out/review/stage-07-rr/T-13/",
+      "rollback": "git checkout a22e255f6716b22f96ad8a183136eae4fb04ac2f -- <write scope paths>; delete paths created by the card. Baseline commit a22e255f6716b22f96ad8a183136eae4fb04ac2f is the only rollback base for all cards."
+    },
+    {
+      "id": "T-14",
+      "card": {
+        "path": "docs/stage_plans/active/stage-07-rr/tasks/T-14.md",
+        "bytes": 20387,
+        "sha256": "070e5aa4c45b5748409ad5aa4b8f7937ee3c4a7ea7c8e342a7612dc65b7c6af8",
+        "source": "blob@a22e255f",
+        "sha256_worktree": "6aada7bffc80d633ddd2c3f2c28629593534967b34b9a1effc1c606b97345e05",
+        "worktree_variant": "line-endings"
+      },
+      "scope": "NEXT（本轮实验实现）",
+      "scope_code": "NEXT",
+      "headings": [
+        "目标",
+        "输入",
+        "写域",
+        "步骤",
+        "任务级验收",
+        "证据",
+        "停止条件"
+      ],
+      "inputs": [
+        {
+          "path": "app/player/src/player_control_transaction.cpp",
+          "bytes": 24118,
+          "sha256": "f3ed4e44416d5d7c62e1629f516405f781a3a0c706f8e4aeb0cc409926e38388",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "3aa18111190bb354e6cdeac2d474bb0d391aa640cd4c73dc97e10d27872e0e9c",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "cmake/VerifyArchitecture.cmake",
+          "bytes": 33196,
+          "sha256": "e9b7c2a64e83738faf5247ad3d66f5822d5342864b92a46b412b51839495e936",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "4ee170d71784c5c13527ecae281896a55c3e338a8f69a743689112359696f91a",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/architecture-design.md",
+          "bytes": 87557,
+          "sha256": "69a77a8951ea128c6a28f98b70331fb2871f1ecd5f310684d8ddeef2ad8c89e7",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0e7dd837b5cf7721eab3cf2bf98775a52e89946703005612538300615e604d01",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/contracts/render-player-writer.md",
+          "bytes": 135212,
+          "sha256": "0939210386334eea8baec34a796f0a52312766c12e078b9b2c369aa911df3354",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "977bc5a87b316497a9cb53ac85aa395f83ad4ae0819ffc569d1d937c253ea7c6",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/contracts/runtime-timing.md",
+          "bytes": 127368,
+          "sha256": "bdb72b3aba8d36fcb939d25005fa9c2a7a9a1f8c8043392d2525bc98523e23e2",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "76d3c66a24340543e15b55ba5f1281146da2c57a9b2cb393f6b8e6915793f51d",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/plan.md",
+          "bytes": 58607,
+          "sha256": "84cb51fb8cc8c7dbe401739a2e479ea75cd14ea8e551902addd1345027fe789d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0db3e0fba61b70325088c0d10db7ccba70794389fa3e1c1af8309baa535d2562",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/player_support/CMakeLists.txt",
+          "bytes": 479,
+          "sha256": "14af89d2c0b5fbd05400e037c02022af9a7400b6536f62ba97d270fa7d6b05dc",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "e4e88127c75b954de401017520c5d5a08bbb54cd74c8adee06c43a353cfc6ec1",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/player_support/player_command_tests.cpp",
+          "bytes": 10841,
+          "sha256": "3677640fa63e3a118091300c9755e267ee680ad5d81ab35d0610841587c3f85d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "24ccef9cf8a32e2adce3325c7dffbea98ee41ba78929e45e38d0d14f6eb58ddc",
+          "worktree_variant": "line-endings"
+        }
+      ],
+      "commands": [
+        "先配置 `candidate-debug`，执行 `cmake --build --preset candidate-debug --target cuexis_execution_host_tests cuexis_playback_tests`；以 `ctest --test-dir out/build/candidate-debug --no-tests=error -N -R '^(rr_session_control|cuexis_rr_compiled_clock_contract)$'` 核对两项均已注册，再去掉 `-N` 执行。两项均经现有 Catch 注册，不使用 candidate preset 的默认名称过滤。纯值命令矩阵仍按下述独立 headless 入口验证。",
+        "P4-01 的命令矩阵及纯值验收归本卡：在 `tests/player_support/player_command_tests.cpp` 扩展既有 `Every application state and command pair follows the published table`，覆盖 6×8、Failed 有/无 A、配置来源、首装耗尽、实时 Seek、三种 Pause 准入以及 effect/successPolicy，更新已有 busy/duplicate/Failed/Reload 的旧预期。执行 `cmake --build --preset headless-debug --target cuexis_player_support_tests` 与 `ctest --preset headless-debug --no-tests=error -R '^Every application state and command pair follows the published table$'`；单元测试只验证纯准入，不把 decision.state 当设备成功证据。下列 `rr_session_control` 验证生产 owner 对策略的实际提交，包括 P4-07 设备确认前后收到 Pause、设备失败、同来源 pending 重投、Resume 剩余原因、Rebuild 尚有非画面故障；每请求一次终态，提交前零错误成功态。P4-01 的 CLI/窗口/R、F5 路由归 T-15，不能把本卡矩阵实现推迟到键位接线。",
+        "- 实施时新增、当前未执行：`ctest --test-dir out/build/candidate-debug --no-tests=error -R '^rr_session_control$'` 执行[向量 P4-03–05、P4-07、P4-11–13](../contracts/render-player-writer.md#所有权暂停与收尾)。P4-07 由 headless 调用方经同一生产 `OwnerChannel` 提交 `PlayerCommand{.kind=PlayerCommandKind::Retry}`；设备确认挂起时再提交来源 11、12 的两条具名 Pause。成功时新 epoch 直接静音 `Paused@0`，三请求各有一次成功终态；只解除 11 仍暂停，解除 12 后只起播一次。事务失败时三者各收一次失败终态、同一 cause、无新局。不以 `static_cast` 枚举值、测试私有命令或伪造回执代替。旧回执不复活旧局，输入边界不可证或 Fold 故障不发正常成绩。清理前复制同局成功 Stop 内存归档，对照 CLK-02 做重放；不重发事件或成绩。注入结果交付后清理失败，重复 Stop/EOF 不重结算；清理仍未完成时 Retry/Reload 不提交。交付的拥有型结果清理及卸载后仍读得到。",
+        "- 同样新增、当前未执行：`ctest --test-dir out/build/candidate-debug --no-tests=error -R '^cuexis_rr_compiled_clock_contract$'` 执行[向量 CLK-01–03](../contracts/runtime-timing.md#验收向量与任务前置)。按 CLK-02 分层构造的真实 capture 对照：六条无义务 release、release@89、press@90 实际生成 ingress 0–7，最后 observed=91 不越过 C=100；加入 prefix 使 capture delivery 上界与 7 不同。Stop 的生产 query 仍得到 7，封至 100，只交 Hit@90/Miss@100，不补未到期项；独立普通 `advance(100)` 对照只封至 85。缺批片拒绝且无虚构上界，重投不增加编号，锁后 tick 95 无编号、无归档、不结算。105/90 未来 pending 场景保留在 T-10 内核验收，不伪造实时未来证明。校正得到 EOF 锚 500000 µs 后推进注入单调时钟，活动 elapsed 199999 µs 不结束，200015 µs 封到最后义务 tick 700000；暂停时间不计入，不用模拟“已完成”通知替代推进。过期身份或无效时钟不推进。覆盖 Paused Stop 复用已闭合前缀、接收序号 0 与空前缀不同、Retry 后旧输入 epoch 和旧 Stop/EOF 回执均不影响新局。覆盖未播放即 Stop 无成绩、空/静态无音轨在首轮推进完成、有限表现/玩法义务取后完成者、活动无限表现须 Stop。"
+      ],
+      "evidence_dir": "out/review/stage-07-rr/T-14/",
+      "rollback": "git checkout a22e255f6716b22f96ad8a183136eae4fb04ac2f -- <write scope paths>; delete paths created by the card. Baseline commit a22e255f6716b22f96ad8a183136eae4fb04ac2f is the only rollback base for all cards."
+    },
+    {
+      "id": "T-15",
+      "card": {
+        "path": "docs/stage_plans/active/stage-07-rr/tasks/T-15.md",
+        "bytes": 12145,
+        "sha256": "7fa6d7360fa0837467c260df33650c811547333309d283d02640466a469a91bf",
+        "source": "blob@a22e255f",
+        "sha256_worktree": "46d3ef0b8931fcf6dd4feba9780d97702d88e05f3527068dd6bbd0c1e1bc7676",
+        "worktree_variant": "line-endings"
+      },
+      "scope": "NEXT（本轮实验实现）",
+      "scope_code": "NEXT",
+      "headings": [
+        "目标",
+        "输入",
+        "写域",
+        "步骤",
+        "任务级验收",
+        "证据",
+        "停止条件"
+      ],
+      "inputs": [
+        {
+          "path": "docs/guides/BUILDING.md",
+          "bytes": 35983,
+          "sha256": "d525e68c293fc43256b433985c586ce31b4900901e2b5adeaa50ac198968add9",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "d525e68c293fc43256b433985c586ce31b4900901e2b5adeaa50ac198968add9"
+        },
+        {
+          "path": "docs/guides/DEPENDENCY_POLICY.md",
+          "bytes": 10517,
+          "sha256": "1c8d03f05ce2ac52c1d3b53577c1f4f5e948dd2ae94c19d2b3ec4bcadbf64ccb",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "1c8d03f05ce2ac52c1d3b53577c1f4f5e948dd2ae94c19d2b3ec4bcadbf64ccb"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/architecture-design.md",
+          "bytes": 87557,
+          "sha256": "69a77a8951ea128c6a28f98b70331fb2871f1ecd5f310684d8ddeef2ad8c89e7",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0e7dd837b5cf7721eab3cf2bf98775a52e89946703005612538300615e604d01",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/contracts/render-player-writer.md",
+          "bytes": 135212,
+          "sha256": "0939210386334eea8baec34a796f0a52312766c12e078b9b2c369aa911df3354",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "977bc5a87b316497a9cb53ac85aa395f83ad4ae0819ffc569d1d937c253ea7c6",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/plan.md",
+          "bytes": 58607,
+          "sha256": "84cb51fb8cc8c7dbe401739a2e479ea75cd14ea8e551902addd1345027fe789d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0db3e0fba61b70325088c0d10db7ccba70794389fa3e1c1af8309baa535d2562",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/platform/include/cuexis/platform_sdl/sdl_window.hpp",
+          "bytes": 4633,
+          "sha256": "4ab192a4f2da5947522f9a427bfebae31d4801585b5f9e3b3c67a5d71c50d271",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "fc26394be287647f0f8606073cfbce294193af17d566333810ec11ef14aa9e1a",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/platform/src/sdl_window.cpp",
+          "bytes": 9022,
+          "sha256": "2b7a311ac949c2a201bd0de29bc65ba13dc0616d8e8e2b0464d557138cc26d10",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "fa17f699cb50b19264d10b34c7adc0192616c116edcd7f52d7c44115ee12d12c",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/platform/CMakeLists.txt",
+          "bytes": 315,
+          "sha256": "de94691ec5cb965cb7bf7d0691896bfd6cd5c70b8608001fa34f6f9c7237892b",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "98b5465afc96b1ea36a576ee3f5a786ae4bc1930e12aecd201e892aeeb257d39",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/platform/sdl_window_tests.cpp",
+          "bytes": 8386,
+          "sha256": "f2645d150ba773bb8e6e5a7f39c7c4f8b7678a016046c8a8bd02369ee402077a",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "1713a53401922b24ecc965b453c04427ed8d792ac05334f2919f8baacf26c696",
+          "worktree_variant": "line-endings"
+        }
+      ],
+      "commands": [
+        "先配置 `candidate-debug`，执行 `cmake --build --preset candidate-debug --target cuexis_player cuexis_player_control_tests cuexis_playback_tests cuexis_platform_sdl_tests`。以 `ctest --test-dir out/build/candidate-debug --no-tests=error -N -R '^(rr_player_startup|rr_player_commands|rr_player_physical_keys)$'` 核对三项均已注册，再去掉 `-N` 执行；以下同名用例均使用该 `--test-dir` 入口，不依赖 candidate preset 的默认名称过滤。",
+        "实施时新增、当前未执行：分别运行 `ctest --test-dir out/build/candidate-debug --no-tests=error -R '^rr_player_startup$'` 和 `ctest --test-dir out/build/candidate-debug --no-tests=error -R '^rr_player_commands$'`，执行[向量 P4-01–02、P4-06、P4-08–10](../contracts/render-player-writer.md#所有权暂停与收尾)。无修饰的非重复按下 R/F5 各只送一条具名 Retry/Reload；配对释放和重复按下不再送命令。R 不重读，F5 重读并在零点暂停。P4-06 用真实目录及 Reader 验证：旧普通工程/CXC 省略选 bootstrap，删必需 entry.chart 报旧错误；后继 v2 工程/CXC 即使单条/等于 bootstrap，无 --entry 也 entry_required。受支持组合显式 `--entry charts/hard.json --judge` 只选 hard；删 hard 后 Retry 用缓存，Reload 报错并留 A 停播。开发 wrapper 与正式入口同输入时控制轨迹一致；P4-08 对照 Player 声明支持的载体，缺规则或身份错误不降级。CXC 源包合法性由 T-13 单独验收；参考 Player 不接后继纯源包播放，合法包报 `player.source.encoding_unsupported`。4/6/7 通道共用一次配置和准入过程；数字、标点、方向、功能键的正例及控制键冲突、重复/缺失/超限、运行中改配置的反例按 P4-09。增加首次 JSON/冲突校验已过但未知 pair 的失败：修正文件后 F5 必须重读并恢复 Paused@0；此时才锁定，后续改文件 Retry/F5 均不改变映射。"
+      ],
+      "evidence_dir": "out/review/stage-07-rr/T-15/",
+      "rollback": "git checkout a22e255f6716b22f96ad8a183136eae4fb04ac2f -- <write scope paths>; delete paths created by the card. Baseline commit a22e255f6716b22f96ad8a183136eae4fb04ac2f is the only rollback base for all cards."
+    },
+    {
+      "id": "T-16",
+      "card": {
+        "path": "docs/stage_plans/active/stage-07-rr/tasks/T-16.md",
+        "bytes": 7406,
+        "sha256": "b334209b4f2d8bcbbe9b6d36cd735bc6e4db87912bca10c7101029b2525db010",
+        "source": "blob@a22e255f",
+        "sha256_worktree": "e1918f36d7d6c07e4873fe2572afcf44807707ac1caa7d79b24e10669db96abc",
+        "worktree_variant": "line-endings"
+      },
+      "scope": "NEXT（本轮实验实现）",
+      "scope_code": "NEXT",
+      "headings": [
+        "目标",
+        "输入",
+        "写域",
+        "步骤",
+        "任务级验收",
+        "证据",
+        "停止条件"
+      ],
+      "inputs": [
+        {
+          "path": "cmake/VerifyMediaImporter.cmake",
+          "bytes": 26497,
+          "sha256": "43e8288761ca16af13394cf64fdf46f3d44cc367582214ae028b7e133caa6e6d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "7a9f85e21d6f53567f4747e06a793906dd4ab8b60e8e3f21578c32822ba566cc",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/adr/0041-legacy-format-exit-policy.md",
+          "bytes": 3245,
+          "sha256": "389f3053dfab5bc0ee115654b82ee484dc408a33f8bae63d21cee1e8b359f316",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "389f3053dfab5bc0ee115654b82ee484dc408a33f8bae63d21cee1e8b359f316"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/architecture-design.md",
+          "bytes": 87557,
+          "sha256": "69a77a8951ea128c6a28f98b70331fb2871f1ecd5f310684d8ddeef2ad8c89e7",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0e7dd837b5cf7721eab3cf2bf98775a52e89946703005612538300615e604d01",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/contracts/render-player-writer.md",
+          "bytes": 135212,
+          "sha256": "0939210386334eea8baec34a796f0a52312766c12e078b9b2c369aa911df3354",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "977bc5a87b316497a9cb53ac85aa395f83ad4ae0819ffc569d1d937c253ea7c6",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/plan.md",
+          "bytes": 58607,
+          "sha256": "84cb51fb8cc8c7dbe401739a2e479ea75cd14ea8e551902addd1345027fe789d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0db3e0fba61b70325088c0d10db7ccba70794389fa3e1c1af8309baa535d2562",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/tasks/T-13.md",
+          "bytes": 17871,
+          "sha256": "6a14e8cc3268b3acda0c5d8c7b4dcb70a92c90f79235c3f663c2f051c8ed8580",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "005e647d9706a1014753b81fd64bf1e0170b0a14614b7a7383c63140e6236630",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/chart/CMakeLists.txt",
+          "bytes": 4012,
+          "sha256": "4ad8d53fbfa58544b4e3b5caed6dbe98899701d51a02afcea7c1bad24ee7c606",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "b51c55972de60398358819699be4d272feff69305f6809f1ef4cd6ad018b8a01",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/chart/src/chart_writer_internal.hpp",
+          "bytes": 716,
+          "sha256": "8608355dae815eb345302137f5574d4fd7436f8e77126aa5ce365753b4243963",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "7c4c24c331682b86897386c4a1ab3b6dcef2d7417628ad68296c9a4a72922d9b",
+          "worktree_variant": "line-endings"
+        }
+      ],
+      "commands": [
+        "实施时新增、当前未执行：在 `headless-debug` 先构建 `cuexis_chart_tests`（库用例宿主），再用 `ctest --test-dir out/build/headless-debug --no-tests=error -R '^rr_chart_write$'`，执行[向量 P5-01–05、P5-07](../contracts/render-player-writer.md#验收向量)。v4 BPM 改至 150 后应重读为 150；v3 写后注入遗漏 `.name=\"edited\"` 仍返回合法 `text` 及 `WriterNotFaithful/field_omitted`，库层验证该损失可供调用方拒交，真实 CLI 拒交及文件不变在 P5-06 验。Animator 新增/替换按 P5-05 用真实 `ChartV4Resolver::resolve` 验证最终 layer；保留悬空 `replace` 的对照须报 `chart.patch.target_missing`，不以 Loader 重读通过替代。P5-07 父 position=[0,param(y),0]、实例只改 X=5，输出 replace /components/cuexis.transform/position 且 value=[5,param(y),0]；分别以 y=2/9 跑 Resolver 得 (5,2,0)/(5,9,0)，losses 空。已有 overrides 和同次父 Z 编辑各保留；/position/0 阴性由原 patch Reader 拒绝，占位向量阴性须被双参数解析对照发现。",
+        "另在 tools=ON 的 `candidate-headless-debug` 执行 `cmake --build --preset candidate-headless-debug --target cuexis_chart_migrator`，再跑 `ctest --test-dir out/build/candidate-headless-debug --no-tests=error -R '^rr_chart_migrator_cli$'`。本卡在根 CMake 新注册该测试，传 `$<TARGET_FILE:cuexis_chart_migrator>` 的同树路径；程序缺失即失败，不走 PATH 或跳过。实际子进程在隔离目录记录 stdout、stderr、退出码及目录/文件前后字节：单独 `--help` 只向 stdout 输出帮助、无文件副作用，混用帮助向 stderr 输出 usage 并返回 2。P5-06 迁移分支：帮助 0、成功 0、迁移损失失败 1、参数/读取/路径/提交失败 2。成功报告形状/golden 保持。提交前拒交时已有输出/报告不变。分别注入新报告发布失败、恢复操作失败；前者验证恢复原双目标（原无新输出时撤销），后者验证备份仍可用、阶段/路径及实际系统错误保留。两者退出 2 且不改输入。进程断言使用实际 stdout/stderr、退出码和文件，不以内存结果替代。"
+      ],
+      "evidence_dir": "out/review/stage-07-rr/T-16/",
+      "rollback": "git checkout a22e255f6716b22f96ad8a183136eae4fb04ac2f -- <write scope paths>; delete paths created by the card. Baseline commit a22e255f6716b22f96ad8a183136eae4fb04ac2f is the only rollback base for all cards."
+    },
+    {
+      "id": "T-17",
+      "card": {
+        "path": "docs/stage_plans/active/stage-07-rr/tasks/T-17.md",
+        "bytes": 10570,
+        "sha256": "074a122baf0de7e8c275d1c9c5af17242884cdbe77ef4046d3e92aa9b2eba0ce",
+        "source": "blob@a22e255f",
+        "sha256_worktree": "aa0fd2ecd99825af47f8406b7d67c3bc8682c5abb7999f65ebbc5214f6a14b17",
+        "worktree_variant": "line-endings"
+      },
+      "scope": "现行图",
+      "scope_code": "FIX",
+      "headings": [
+        "目标",
+        "输入",
+        "写域",
+        "步骤",
+        "任务级验收",
+        "证据",
+        "停止条件"
+      ],
+      "inputs": [
+        {
+          "path": "docs/api/playback-session.md",
+          "bytes": 23353,
+          "sha256": "980ac2b02278a5e2f2281b6764312ec0664f053dd7580a77da33b4cdb4ab5f90",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "ce3a2c9c03c17c87b47a2787f2d3ba7ac262b563b2cd8ad497b83950004d8053",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/architecture/RUNTIME_SESSION.md",
+          "bytes": 14611,
+          "sha256": "773f0e481b86492ec9b49dad06e6b9218199486b9ef2777a53b93ccbfa109a29",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "41a970fb65ac94cd4ac29cad2305f4f0e4fefb0e688615c4c189fab86e1c2592",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/acceptance.md",
+          "bytes": 11635,
+          "sha256": "9c0d9536305aeee93a4e530b43fd0a8170bb4b390a333795086de2bea342557a",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "c4739581923e6a8c9657c23f34958a1f301dbac0f0e1637da9015d22d83f3336",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/contracts/render-player-writer.md",
+          "bytes": 135212,
+          "sha256": "0939210386334eea8baec34a796f0a52312766c12e078b9b2c369aa911df3354",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "977bc5a87b316497a9cb53ac85aa395f83ad4ae0819ffc569d1d937c253ea7c6",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/contracts/runtime-timing.md",
+          "bytes": 127368,
+          "sha256": "bdb72b3aba8d36fcb939d25005fa9c2a7a9a1f8c8043392d2525bc98523e23e2",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "76d3c66a24340543e15b55ba5f1281146da2c57a9b2cb393f6b8e6915793f51d",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/findings.md",
+          "bytes": 168100,
+          "sha256": "eae5d9b174123e151928335078d8ec5dbcace06c55a8aec7568747331e417f3c",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "a37556b75ec64d0eb4f0ac304cc16e310ec9987896d70cbad881e5b9f8372854",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "docs/stage_plans/active/stage-07-rr/plan.md",
+          "bytes": 58607,
+          "sha256": "84cb51fb8cc8c7dbe401739a2e479ea75cd14ea8e551902addd1345027fe789d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "0db3e0fba61b70325088c0d10db7ccba70794389fa3e1c1af8309baa535d2562",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/playback/src/playback_session.cpp",
+          "bytes": 27244,
+          "sha256": "d7408def8ef9e6353d9ce7e46d7f028c84f9bb04845677bc0e298a8d6cb87b59",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "73d16b611304e407691a8d3b08970c2fa4e7cc13f7f1872f3a1c1c3ff01df835",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/playback/src/playback_session_internal.hpp",
+          "bytes": 12269,
+          "sha256": "a7d0a269da69885bf9759f638046cb988b33b530965978add1eb8a54b17a44fa",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "c263f168163f6d2914c9e831c42f035812ed1e1099aca73b44e599e04c055af2",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/playback/src/playback_session_prepare.cpp",
+          "bytes": 28564,
+          "sha256": "250dfcf8ffe6c46c816c966927e1f65ea3e7839d7e8d1241568e47004f7bbd80",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "fe2b1f67a7f655da45b4088b2eaae9384bbe053bff58ed62a391c8c6cc64fa3c",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/playback/src/playback_session_prepared.cpp",
+          "bytes": 20948,
+          "sha256": "1b36ddd3f71869e5285d9b04dcc9c56c7cc64a391f5f0f4057bc0659a129cf3a",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "bc75178f4fa88c6e418759b33805f701d1e219f2bb628ed30bc83bd3efc8b6c7",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/runtime/src/runtime_session_overrides.cpp",
+          "bytes": 21133,
+          "sha256": "f1a4f09545cda04a0ec46dddf8035d1fb7c736bba9bbd9201a9b0dede0e06f55",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "5119796ad7f93c639f737cb8d14a6ecc9b78110662560e514c005820d0a324db",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/world/internal/cuexis/world/resolver_access.hpp",
+          "bytes": 570,
+          "sha256": "b30ea9114c1f9ae70ce18b4878b803f7bb218734d42d790bb2f9fcbc7ae20c76",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "91dabb5e2cf6da678ddd062a0e8f72486c09ef6b30a48853773be526cd862fde",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "engine/world/src/property_helpers.hpp",
+          "bytes": 11811,
+          "sha256": "d97bd3836eeea27ed933bc78f339d40ba0515ba177b3acc7e5a5d51c117fe081",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "a3edc923b22c3ddb2be7a3e51b9b184f57bcfe68e6ef6cc5c40c4dbc29f2c45f",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/playback/CMakeLists.txt",
+          "bytes": 6183,
+          "sha256": "50c5aba69a2fca1e6e8b0e0de89a2dee9736a5421c4f51cc9e3c4bab2a9b645d",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "76874dd7c06e3427929559046b9d0b7f5a00911ec93252223afdf317c0873b55",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/playback/playback_gameplay_recovery_tests.cpp",
+          "bytes": 22804,
+          "sha256": "a3757ca735042a60f922d170479c302d293446c0aa048d73287e64451bea3db7",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "3bdfefd88eea22a6d1c764e210ccf5636dacd23fbb505c83427f6be026cff45d",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/runtime/CMakeLists.txt",
+          "bytes": 818,
+          "sha256": "911a9fe8b624bc5f0fcd1f1ec6b5e4a0b2a08f67aaef0388b6323ed7a2adb202",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "9f471fd134e70515c8652825d07244dbf60431a271723e175e030fe853ade1cd",
+          "worktree_variant": "line-endings"
+        },
+        {
+          "path": "tests/runtime/animation_runtime_tests.cpp",
+          "bytes": 20215,
+          "sha256": "de06e13ab2628da2da585de9fc9b42119563bda0b7d48d312776d87970580440",
+          "source": "blob@a22e255f",
+          "sha256_worktree": "011c462595d61a0bfef27bc123d94682e5255cca34a82741430d5f9e1e535e2a",
+          "worktree_variant": "line-endings"
+        }
+      ],
+      "commands": [
+        "- 实施时新增、当前未执行：在 `tests/playback/CMakeLists.txt` 把 `rr_session_prepared_owner`、`rr_session_unload_state`、`rr_gameplay_only_accept` 注册到现有 `cuexis_playback_tests`。先执行 `cmake --build --preset candidate-headless-debug --target cuexis_playback_tests`，再用 `ctest --test-dir out/build/candidate-headless-debug --no-tests=error -N -R '^(rr_session_prepared_owner|rr_session_unload_state|rr_gameplay_only_accept)$'` 核对三项注册，随后用 `ctest --test-dir out/build/candidate-headless-debug --no-tests=error -R '^(rr_session_prepared_owner|rr_session_unload_state|rr_gameplay_only_accept)$'` 执行。默认 preset 不开启候选宏，不能作为本卡验收入口。",
+        "- RR-F203 在现有 `cuexis_runtime_tests` 扩展 override 用例：合法 Host 与 StudioPreview 批次可登记并整体生效；在独立夹具分别放入类型错误及既有值域拒绝值，包含“合法首项、非法后项”，均无可用 token、无部分覆盖，既有 token 的效果和可观察状态不变。不调用 release 清理失败批次也能继续合法 update，随后可登记合法批次并正常 release；原 RemainingFrames、UntilChartTimeMs 生命周期用例继续通过。用例值及诊断取现有属性校验，不创设新值域；不以 ID 无间隙或全部内部计数不变验收。实施时 `cmake --build --preset candidate-headless-debug --target cuexis_runtime_tests`，再用 `ctest --test-dir out/build/candidate-headless-debug --no-tests=error -N -R '(override|Override)'` 确认原生命周期及新增登记用例均匹配，去掉 `-N` 执行且保留 `--no-tests=error`。"
+      ],
+      "evidence_dir": "out/review/stage-07-rr/T-17/",
+      "rollback": "git checkout a22e255f6716b22f96ad8a183136eae4fb04ac2f -- <write scope paths>; delete paths created by the card. Baseline commit a22e255f6716b22f96ad8a183136eae4fb04ac2f is the only rollback base for all cards."
+    }
+  ],
+  "worktree_line_ending_variants": [
+    "CMakeLists.txt",
+    "CMakePresets.json",
+    "app/execution_host/frame_observation.cpp",
+    "app/player/CMakeLists.txt",
+    "app/player/src/player_control_transaction.cpp",
+    "app/player/src/player_execution.cpp",
+    "cmake/CuexisLibraryType.cmake",
+    "cmake/CuexisVersion.cmake",
+    "cmake/VerifyArchitecture.cmake",
+    "cmake/VerifyExternalConsumer.cmake",
+    "cmake/VerifyGameplayInstalledConsumer.cmake",
+    "cmake/VerifyMediaImporter.cmake",
+    "cmake/VerifySharedExports.cmake",
+    "docs/CURRENT_STATUS.md",
+    "docs/DOCUMENTATION_POLICY.md",
+    "docs/HANDOFF.md",
+    "docs/ROADMAP.md",
+    "docs/api/GAMEPLAY_V2_ABI.md",
+    "docs/api/playback-session.md",
+    "docs/api/realtime-host-boundary.md",
+    "docs/architecture/RUNTIME_SESSION.md",
+    "docs/formats/ANIMATION_MIXING.md",
+    "docs/formats/CXT_V2_FORMAT.md",
+    "docs/stage_plans/active/chart-format-update-for-v5/plan.md",
+    "docs/stage_plans/active/stage-07-5/plan.md",
+    "docs/stage_plans/active/stage-07-rr/README.md",
+    "docs/stage_plans/active/stage-07-rr/acceptance.md",
+    "docs/stage_plans/active/stage-07-rr/architecture-design.md",
+    "docs/stage_plans/active/stage-07-rr/contracts/prepared-artifact.md",
+    "docs/stage_plans/active/stage-07-rr/contracts/render-player-writer.md",
+    "docs/stage_plans/active/stage-07-rr/contracts/runtime-timing.md",
+    "docs/stage_plans/active/stage-07-rr/design-readiness.md",
+    "docs/stage_plans/active/stage-07-rr/findings.md",
+    "docs/stage_plans/active/stage-07-rr/plan.md",
+    "docs/stage_plans/active/stage-07-rr/schedule.md",
+    "docs/stage_plans/active/stage-07-rr/simplification-proposal.md",
+    "docs/stage_plans/active/stage-07-rr/tasks/T-03.md",
+    "docs/stage_plans/active/stage-07-rr/tasks/T-06.md",
+    "docs/stage_plans/active/stage-07-rr/tasks/T-13.md",
+    "docs/stage_plans/active/stage-07-rr/tasks/T-14.md",
+    "docs/stage_plans/active/stage-07-rr/tasks/T-16.md",
+    "docs/stage_plans/active/stage-07-rr/tasks/T-17.md",
+    "docs/stage_plans/future/stage-08/plan.md",
+    "docs/stage_reports/stages/stage-07-rr/README.md",
+    "docs/stage_reports/stages/stage-07-rr/decisions/2026-11-23-design-decisions-and-schedule.md",
+    "docs/stage_reports/stages/stage-07-rr/evidence/documentation-governance/manifest.json",
+    "docs/stage_reports/stages/stage-07-rr/evidence/documentation-governance/migration.json",
+    "docs/stage_reports/stages/stage-07-rr/handoffs/2026-11-23-execution-readiness-handoff.md",
+    "docs/stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-executor-review.md",
+    "docs/stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-review-resolution.md",
+    "docs/stage_reports/stages/stage-07-rr/verification/2026-11-22-checkout-review-resolution.md",
+    "docs/stage_reports/stages/stage-07-rr/verification/2026-11-22-design-readiness-review.md",
+    "docs/status_contract.json",
+    "engine/CMakeLists.txt",
+    "engine/assets/src/resource_scope.cpp",
+    "engine/behavior/include/cuexis/behavior/behavior_system.hpp",
+    "engine/chart/CMakeLists.txt",
+    "engine/chart/src/canonical_chart_loader_primitives.cpp",
+    "engine/chart/src/chart_v4_loader.cpp",
+    "engine/chart/src/chart_writer.cpp",
+    "engine/chart/src/chart_writer_internal.hpp",
+    "engine/cxc/CMakeLists.txt",
+    "engine/cxc/src/cxc_candidate.cpp",
+    "engine/gameplay_packed/CMakeLists.txt",
+    "engine/judgement/include/cuexis/judgement/judgement_session.hpp",
+    "engine/judgement/src/execution_kernel_submit.cpp",
+    "engine/judgement/src/input.cpp",
+    "engine/judgement/src/session.cpp",
+    "engine/platform/include/cuexis/platform_sdl/sdl_window.hpp",
+    "engine/platform/src/sdl_window.cpp",
+    "engine/playback/CMakeLists.txt",
+    "engine/playback/src/playback_session.cpp",
+    "engine/playback/src/playback_session_internal.hpp",
+    "engine/playback/src/playback_session_prepare.cpp",
+    "engine/playback/src/playback_session_prepared.cpp",
+    "engine/playback/src/replay_identity.hpp",
+    "engine/presentation_renderer/src/presentation_renderer.cpp",
+    "engine/render_opengl/CMakeLists.txt",
+    "engine/runtime/src/runtime_session_overrides.cpp",
+    "engine/world/include/cuexis/world/property.hpp",
+    "engine/world/include/cuexis/world/world.hpp",
+    "engine/world/internal/cuexis/world/resolver_access.hpp",
+    "engine/world/src/property_helpers.hpp",
+    "schemas/candidate/cuexis.gameplay-author.t4-k4.v1.schema.json",
+    "schemas/candidate/cuexis.gameplay-inline.t4-k4.v1.schema.json",
+    "schemas/cuexis.animation-template.v1.schema.json",
+    "schemas/cuexis.animation-template.v2.schema.json",
+    "schemas/cuexis.asset-index.v1.schema.json",
+    "schemas/cuexis.asset-index.v2.schema.json",
+    "schemas/cuexis.asset-index.v3.schema.json",
+    "schemas/cuexis.audio-device-profile.v1.schema.json",
+    "schemas/cuexis.chart-entry.v1.schema.json",
+    "schemas/cuexis.chart.v1.schema.json",
+    "schemas/cuexis.chart.v2.schema.json",
+    "schemas/cuexis.chart.v3.schema.json",
+    "schemas/cuexis.chart.v4.schema.json",
+    "schemas/cuexis.cxc.v1.schema.json",
+    "schemas/cuexis.gameplay-capabilities.v1.json",
+    "schemas/cuexis.gameplay-diagnostics.v2.codes.json",
+    "schemas/cuexis.gameplay-graph.v1.schema.json",
+    "schemas/cuexis.player-preferences.v1.schema.json",
+    "schemas/cuexis.project.v1.schema.json",
+    "tests/CMakeLists.txt",
+    "tests/behavior/behavior_system_tests.cpp",
+    "tests/chart/CMakeLists.txt",
+    "tests/chart/chart_loader_tests.cpp",
+    "tests/chart/chart_v4_c2_closure_tests.cpp",
+    "tests/chart/chart_v4_c2_fixture.hpp",
+    "tests/chart/packed_chart_io_tests.cpp",
+    "tests/cxc/CMakeLists.txt",
+    "tests/cxc/cxc_candidate_bridge_tests.cpp",
+    "tests/external/gameplay_consumer.cpp",
+    "tests/fixtures/chart_format_update/golden/README.md",
+    "tests/gameplay_packed/CMakeLists.txt",
+    "tests/judgement/CMakeLists.txt",
+    "tests/judgement/execution_profile_tests.cpp",
+    "tests/platform/CMakeLists.txt",
+    "tests/platform/sdl_window_tests.cpp",
+    "tests/playback/CMakeLists.txt",
+    "tests/playback/playback_gameplay_recovery_tests.cpp",
+    "tests/player/CMakeLists.txt",
+    "tests/player_support/CMakeLists.txt",
+    "tests/player_support/player_command_tests.cpp",
+    "tests/render/CMakeLists.txt",
+    "tests/rpa/CMakeLists.txt",
+    "tests/runtime/CMakeLists.txt",
+    "tests/runtime/animation_runtime_tests.cpp",
+    "tests/runtime/behavior_runtime_tests.cpp",
+    "tools/chart/chart_candidate/CMakeLists.txt",
+    "tools/chart/chart_candidate/main.cpp",
+    "tools/cxc/cxc_pack/main.cpp",
+    "tools/gameplay/gameplay_assembler/CMakeLists.txt",
+    "tools/verification/check_docs.py",
+    "vcpkg.json"
+  ],
+  "worktree_content_variants": [],
+  "notes": [
+    "Baseline SHA equals the committed handoff HEAD; working-tree diff and untracked inventory are therefore expected empty and are recorded as verified emptiness, not as omitted evidence.",
+    "Input hashes cover the dispatch package only. New targets, schemas and tests named by a card are created by that card and cannot be hashed before creation.",
+    "Historical evidence under docs/stage_reports/** is read-only input; it is hashed here and never rewritten."
+  ]
+}

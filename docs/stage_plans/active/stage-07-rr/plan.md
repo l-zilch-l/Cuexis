@@ -114,7 +114,7 @@ Stage 7（受限退出） -> Stage 7-RR（本阶段） -> Stage 7.5（Gameplay E
 
 四组冷启动审查及差量复验的当期结论见[首轮设计报告](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-design-readiness-review.md)。随后两名执行者[独立复审](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-executor-review.md)，九项设计修订与逐卡验收入口见[Astra 修订报告](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-review-resolution.md)及[合同与任务卡](design-readiness.md)。技术选择沿用 D-01–D-25 已接受方向；`candidate` 表示候选合同，可能已有实验实现，正式发布和实际验证须分别取证。A-01 阶段 owner 接受和产品运行验收按[阶段验收](acceptance.md)登记。
 
-正式实施前的计划检查与文档订正见[本轮报告](../../../stage_reports/stages/stage-07-rr/readiness/2026-11-22-pre-implementation-plan-check.md)和[登记册 §23](findings.md#23-正式实施前计划检查2026-11-22)，当前待决与下一步见 [HANDOFF](../../../HANDOFF.md#下一步)。T-01–T-17 已纳入本轮统一实施安排；T-18 文档治理已完成；owner 已于 2026-11-23 授权下一次接手正式实施 T-01–T-17，先完成 T-01 基线绑定与采用登记，再按调度推进。实施采用与发布各自登记。设备/平台取证、逐 API 组的实际发布与退役条件仍按现行门禁执行。
+正式实施前的计划检查与文档订正见[本轮报告](../../../stage_reports/stages/stage-07-rr/readiness/2026-11-22-pre-implementation-plan-check.md)和[登记册 §23](findings.md#23-正式实施前计划检查2026-11-22)，当前待决与下一步见 [HANDOFF](../../../HANDOFF.md#下一步)。T-01–T-17 已纳入本轮统一实施安排；T-18 文档治理已完成；T-01 已于 2026-11-23 完成基线绑定、派单包、调度正反例与独立冷启动（基线 `a22e255f`，见[基线与派单报告](../../../stage_reports/stages/stage-07-rr/readiness/2026-11-23-t-01-dispatch-baseline.md)），按[唯一调度](schedule.md)进入 T-03。实施采用与发布各自登记。设备/平台取证、逐 API 组的实际发布与退役条件仍按现行门禁执行。
 
 `8599c83a` 后独立 checkout 提交的缺口及修订见[本轮复审处置](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-checkout-review-resolution.md)。owner 本轮已明确授权下一次正式实施 RR，T-01 须先绑定修订后的输入并核对受影响卡；已获启动授权不代替实际基线、卡级验收或阶段退出。旧 AX-01–09 报告不能替代本轮未完成的核对。结构检查分别输出 active/candidate，只有本节已采用的 active 卡可以按依赖派发。
 
@@ -305,6 +305,7 @@ Known gaps and next-task handoff
 | 2026-11-23 | 接受并启动治理分册，以 T-18 完成文档治理后供产品任务绑定基线 | owner 要求按方案独立完成；允许常规规则实现、整理及短门禁，产品实施未随之启动 | [T-18](tasks/T-18.md)；输入基线 HEAD `ca5cbb9121b015ae0b3b5d681610ca94dac78184`，工作树补丁与原文另封存 | 现行 |
 | 2026-11-23 | T-18 文档治理完成，规则转入日常维护 | 原文保护、报告迁移、正反门禁和复核证据已交付；CMake target 事实缺输入项独立报告 | [治理交付报告](../../../stage_reports/stages/stage-07-rr/implementation/2026-11-23-documentation-governance.md)；产品任务和 RR 退出继续独立验收 | 现行 |
 | 2026-11-23 | owner 授权下一次接手正式实施 RR 的 T-01–T-17 | 本次只更新交接；下一次从 T-01 固定实际 HEAD/tree、工作树及旧内容独立预期，登记采用后按调度推进；长任务和实际发布沿现行单独门禁 | owner 本轮“修改接手文档，下一次开始正式实施 RR 任务”；[HANDOFF](../../../HANDOFF.md)、[T-01](tasks/T-01.md) | 现行 |
+| 2026-11-23 | T-01 完成：实施基线绑定 `a22e255f`，派单清单、调度正反例、独立冷启动与 D-20 旧内容清单交付；T-13 冷启动四项缺口补注 | 按采用入口从干净基线发起本轮实施；本轮只完成基线与派单，产品任务未执行，正式发行语料缺口交 T-09 | [T-01](tasks/T-01.md)、[基线与派单报告](../../../stage_reports/stages/stage-07-rr/readiness/2026-11-23-t-01-dispatch-baseline.md)、[登记册 §28](findings.md#28-t-01-基线与派单2026-11-23) | 现行 |
 
 ## 13. 排除项与旧路径
 - **不做纯行数拆分**：owner 已取消，详见 D-03 与 §2 非目标。
