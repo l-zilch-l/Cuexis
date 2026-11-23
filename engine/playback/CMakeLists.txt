@@ -2,6 +2,8 @@ add_library(cuexis_playback ${CUEXIS_LIBRARY_TYPE}
     src/frame_digest.cpp
     src/frame_digest_internal.hpp
     src/frame_digest_version.cpp
+    src/frame_layout.cpp
+    src/frame_layout_internal.hpp
     src/presentation.cpp
     src/presentation_identity.cpp
     src/presentation_parse.cpp
@@ -108,3 +110,7 @@ target_link_libraries(cuexis_playback
 )
 
 target_include_directories(cuexis_playback PRIVATE "${PROJECT_SOURCE_DIR}/engine/runtime/internal")
+# The experimental frame layout header is consumed only by compiled Playback translation units in
+# the default build. Experimental SDK packaging adds the same root to its installed header set.
+target_include_directories(cuexis_playback PRIVATE
+    "${PROJECT_SOURCE_DIR}/engine/playback/experimental_include")

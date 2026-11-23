@@ -1,11 +1,14 @@
 if(TARGET cuexis_render_opengl)
     add_executable(cuexis_render_opengl_tests
+        frame_layout_tests.cpp
         open_gl_config_tests.cpp
         open_gl_presentation_tests.cpp
     )
 
     target_link_libraries(cuexis_render_opengl_tests
         PRIVATE
+            cuexis::playback
+            cuexis::platform_sdl
             cuexis::render_opengl
             Catch2::Catch2WithMain
     )
@@ -17,8 +20,11 @@ if(TARGET cuexis_render_opengl)
 
     target_include_directories(cuexis_render_opengl_tests
         PRIVATE
+            ${PROJECT_SOURCE_DIR}/engine/playback/experimental_include
+            ${PROJECT_SOURCE_DIR}/engine/playback/src
             ${PROJECT_SOURCE_DIR}/engine/render_opengl/src
             ${PROJECT_SOURCE_DIR}/engine/shader/include
+            ${PROJECT_SOURCE_DIR}/tests/playback
     )
 
     include(Catch)

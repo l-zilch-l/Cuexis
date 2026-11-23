@@ -58,7 +58,9 @@ foreach(required_symbol IN ITEMS
         PlaybackSource
         RuntimeTimeline
         acquirePresentationResource
+        computeContentRect
         computeFrameDigest
+        computeFrameLayout
         fromCxcFile
         fromCxcMemory
         fromTypedProjectSource
@@ -74,8 +76,11 @@ foreach(required_symbol IN ITEMS
 endforeach()
 set(public_class_pattern "ChartClock|RealtimeClock|PlaybackSession|PlaybackSource|PreparedPlayback|RuntimeTimeline")
 set(public_mangled_classes "10ChartClock|13RealtimeClock|15PlaybackSession|14PlaybackSource|16PreparedPlayback|15RuntimeTimeline")
-set(public_function_pattern "computeFrameDigest")
-set(public_mangled_functions "18computeFrameDigest")
+set(public_function_pattern "computeContentRect|computeFrameDigest|computeFrameLayout")
+set(public_mangled_functions
+    "17computeContentRect|18computeFrameDigest|18computeFrameLayout")
+set(experimental_function_pattern "computeContentRect|computeFrameLayout")
+set(experimental_mangled_functions "17computeContentRect|18computeFrameLayout")
 if(CUEXIS_GAMEPLAY_CANDIDATE)
     string(APPEND public_class_pattern "|GameplayContent|GameplayResult|GameplayCheckpoint|GameplayReplay|GameplaySnapshot")
     string(APPEND public_mangled_classes "|15GameplayContent|14GameplayResult|18GameplayCheckpoint|14GameplayReplay|16GameplaySnapshot")
@@ -123,7 +128,9 @@ foreach(symbol_line IN LISTS symbol_lines)
         if(exported_symbol MATCHES "^\\?\\?[014](${public_class_pattern})@" OR
            exported_symbol MATCHES
                 "^\\?[^@]+@(${public_class_pattern})@playback@cuexis@@" OR
-           exported_symbol MATCHES "^\\?(${public_function_pattern})@playback@cuexis@@")
+           exported_symbol MATCHES "^\\?(${public_function_pattern})@playback@cuexis@@" OR
+           exported_symbol MATCHES
+                "^\\?(${experimental_function_pattern})@experimental@playback@cuexis@@")
             continue()
         endif()
     else()
@@ -155,7 +162,9 @@ foreach(symbol_line IN LISTS symbol_lines)
         endforeach()
         if(exported_symbol MATCHES
                 "^_ZN[KVRrO]*6cuexis8playback(${public_mangled_classes})" OR
-           exported_symbol MATCHES "^_ZN6cuexis8playback(${public_mangled_functions})(B5cxx11)?E")
+           exported_symbol MATCHES "^_ZN6cuexis8playback(${public_mangled_functions})(B5cxx11)?E" OR
+           exported_symbol MATCHES
+                "^_ZN6cuexis8playback12experimental(${experimental_mangled_functions})(B5cxx11)?E")
             continue()
         endif()
     endif()

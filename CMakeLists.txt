@@ -1519,6 +1519,8 @@ if(CUEXIS_BUILD_TESTS)
     if(TARGET cuexis_render_opengl_tests)
         cuexis_verify_target_dependencies(cuexis_render_opengl_tests
             ALLOWED
+                cuexis::playback
+                cuexis::platform_sdl
                 cuexis::render_opengl
                 Catch2::Catch2WithMain
         )
