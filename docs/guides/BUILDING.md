@@ -347,6 +347,7 @@ python -B tools/check_docs.py
 python -B tools/verification/check_docs_facts.py --list
 python -B tools/verification/test_check_findings.py
 python -B tools/verification/test_check_docs_governance.py
+python -B tools/verification/test_check_source_naming.py
 python -B tools/verification/test_check_docs_facts.py
 ```
 

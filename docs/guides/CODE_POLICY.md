@@ -23,10 +23,11 @@ C++ 文件              snake_case.hpp / snake_case.cpp
 
 公共头位于 `include/cuexis/<module>/`，实现位于模块 `src/`。不再允许 PascalCase 文件名与 snake_case 混用。
 
-`app/`、`engine/`、`tools/` 中的源码、脚本和配置文件按功能命名，不使用 `pd5_` 等实施阶段编号作为文件名或目录名。
-阶段信息保存在测试目录、阶段计划、报告和测量协议身份中。例如测量工具归入
-`tools/verification/playback_performance/`，分配观测头使用 `allocation_observer.hpp`。
-修改路径时同步更新 include、构建输入、Python 导入、命令和文档链接；冻结日志与归档保留原时点路径。
+`app/`、`engine/` 中的源码与安装头，以及构建系统文件（根/模块 `CMakeLists.txt`、`cmake/*.cmake`）按功能命名，文件名、目录名与路径段中不得出现实施阶段或任务编号。禁止的 token 含 `rr*`、`s4g`/`s7a` 这类阶段代号、`stage<N>`、`task<N>`、`t01` 这类任务号、`f302` 这类发现号，以及 `cfu`、`pd5` 这类阶段项名；格式版本号（`v2`、`v4`、`v5`）属于领域版本，可以使用。阶段信息保存在测试目录、阶段计划、报告和测量协议身份中。例如测量工具归入 `tools/verification/playback_performance/`，分配观测头使用 `allocation_observer.hpp`。
+
+测试与工具的文件名可以带阶段或任务标识以便回溯，例如 `tests/judgement/rr_advance_contract_tests.cpp`、`tools/verification/check_stage6_a2.py`；它们不因此进入安装面或公共头。已有带阶段名的路径受冻结证据绑定，登记在 [`source_naming_exceptions`](../governance_rules.json)；新文件和后续重命名不得沿用这些名字。
+
+修改路径时同步更新 include、构建输入、Python 导入、命令和文档链接；冻结日志与归档保留原时点路径。命名规则由 `tools/verification/check_source_naming.py` 检查，并随 `python -B tools/check_docs.py` 一起运行。
 
 ## Result 与异常
 

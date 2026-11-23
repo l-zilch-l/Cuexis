@@ -16,6 +16,7 @@
 | `tools/verification/check_docs.py` | 文档总门禁（链接/H1/可达性/状态合同） |
 | `tools/verification/check_findings.py` | 文档总门禁调用：发现定义/引用、字段、处置闭环和可信 Git 原文保护；可用 `--base-ref` 指定同一验收基线 |
 | `tools/verification/check_docs_governance.py` | 文档总门禁调用：命名、布局、元数据、唯一主题和重复疑点；遗留例外在 `docs/governance_rules.json` 逐路径登记 |
+| `tools/verification/check_source_naming.py` / `tools/verification/test_check_source_naming.py` | 文档总门禁调用：生产源码、安装头与构建系统文件名的阶段/任务编号检查；遗留路径按 `source_naming_exceptions` 逐路径豁免；自测进预推送 Quick 与 CI |
 | `tools/verification/test_check_findings.py` / `tools/verification/test_check_docs_governance.py` / `tools/verification/test_check_docs_facts.py` | 预推送 Quick 与 CI 的治理、登记册及事实正反回归 |
 | `tools/verification/check_plan_schedule.py` | 文档总门禁调用的 Stage 7-RR 调度检查；七段标题只认行首 0–3 个空格后的正式 H2，忽略围栏、注释和缩进代码中的伪标题；分列 active/candidate/completed，仅 active 列入当前派单，completed 可作 active 前置，active/completed 均不得依赖 candidate；独立运行 `python -B tools/verification/check_plan_schedule.py [--stage-dir PATH]` |
 | `tools/verification/check_docs_facts.py` | 预推送与 CI：生成物新鲜度及代码派生事实；当前版本漂移失败，历史声明按局部语境解释 |

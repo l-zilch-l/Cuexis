@@ -782,6 +782,15 @@ T-01 按[采用入口](plan.md#唯一派单授权入口)绑定实施基线 `a22e
 - **T-13 冷启动缺口已补注**：shared 导出白名单未进写域、独立消费者工程未标创建责任、RR-F431 用例未标新增、D-20 清单无指针四项，均按卡内规则改卡；同一冷启动代理的复验回执随修订提交登记。不改产品规则、wire、接受集或兼容窗口。T-10 的 D-20 条目同步补指针。
 - **边界**：本节的“已绑定”只表示输入可定位，不表示任何产品行为已验证；构建、CTest、安装消费者与设备证据随各责任任务取得。
 
+## 29. 命名硬规则（2026-11-23）
+
+owner 要求生产源码、安装头与构建系统文件不使用阶段名或任务名，测试与工具可以；“全部都改掉，然后加上硬规则”。
+
+- 规则写入 [CODE_POLICY](../../../guides/CODE_POLICY.md#文件与命名)，检查器 `tools/verification/check_source_naming.py` 随 `python -B tools/check_docs.py` 运行。扫描 `engine/`、`app/`、`cmake/` 的路径段，禁止 token 为 `rr*`、`s<数字><字母>`、`stage<N>`、`task<N>`、`t<两位数字>`、`f<2–3 位数字>`、`cfu`、`pd<N>`；`tests/`、`tools/` 不扫描。
+- 两张计划中的门禁脚本改为领域名：T-04 的 `VerifyPlaybackCandidateIsolation.cmake`、T-08 的 `VerifySdkFacadeCompat.cmake`，任务卡已同步；对应测试目标名不变。
+- 四个既有 `cmake/Verify{S4GPerformance,S5HPerformance,CfuF3Determinism,CfuF4Performance}.cmake` 保留：约 107 处冻结验收清单按路径与内容 SHA-256 绑定，改名或改内容会让历史记录永久失配。它们按路径登记在 [source_naming_exceptions](../../../governance_rules.json)，不构成新文件的命名依据。
+- 本规则不改产品行为、wire 或兼容窗口，只约束新文件与后续重命名。
+
 ## 附录 处置记录（按日期保留，§12–§16）
 
 本附录保留各轮审查的处置记录，按当时时点成立，不改写结论；编号沿用历史顺序，故排在 §17 之后阅读。

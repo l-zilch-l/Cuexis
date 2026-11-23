@@ -214,6 +214,9 @@ function Invoke-QuickChecks {
     Invoke-ExternalCommand -Label "Documentation governance regressions" -Executable $python -Arguments @(
         "-B", "tools/verification/test_check_docs_governance.py"
     )
+    Invoke-ExternalCommand -Label "Source naming regressions" -Executable $python -Arguments @(
+        "-B", "tools/verification/test_check_source_naming.py"
+    )
     Invoke-ExternalCommand -Label "Finding ledger regressions" -Executable $python -Arguments @(
         "-B", "tools/verification/test_check_findings.py"
     )

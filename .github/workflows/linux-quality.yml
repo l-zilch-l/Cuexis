@@ -304,6 +304,7 @@ jobs:
           python3 -B tools/verification/check_docs_facts.py
           python3 -B tools/verification/test_check_docs_governance.py
           python3 -B tools/verification/test_check_findings.py
+          python3 -B tools/verification/test_check_source_naming.py
           python3 -B tools/verification/test_check_docs_facts.py
           python3 -B tools/verification/check_docs_status_contract_tests.py
           python3 -B tools/verification/check_docs_target_contract_tests.py

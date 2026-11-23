@@ -604,5 +604,11 @@
     "docs/proposals/research/gameplay/README.md": "legacy-index-authority",
     "docs/proposals/research/gameplay-v2/README.md": "legacy-index-authority",
     "docs/proposals/research/README.md": "legacy-index-authority"
+  },
+  "source_naming_exceptions": {
+    "cmake/VerifyCfuF3Determinism.cmake": "frozen R3 evidence binds this path and its content hash; renaming or editing it would desynchronise archived acceptance manifests",
+    "cmake/VerifyCfuF4Performance.cmake": "frozen R3 evidence binds this path and its content hash; renaming or editing it would desynchronise archived acceptance manifests",
+    "cmake/VerifyS4GPerformance.cmake": "frozen R3 evidence binds this path and its content hash; renaming or editing it would desynchronise archived acceptance manifests",
+    "cmake/VerifyS5HPerformance.cmake": "frozen R3 evidence binds this path and its content hash; renaming or editing it would desynchronise archived acceptance manifests"
   }
 }

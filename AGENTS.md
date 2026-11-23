@@ -40,6 +40,9 @@
 - 公共头不得泄漏第三方类型、EnTT、SDL、GL/GLAD、JSON DOM；边界图与门禁入口见
   [architecture/OVERVIEW](docs/architecture/OVERVIEW.md) 与 [BUILDING](docs/guides/BUILDING.md)。
 - 依赖增删必须同步 [DEPENDENCY_POLICY](docs/guides/DEPENDENCY_POLICY.md) 要求的多处记录。
+- 生产源码、安装头与构建系统文件名不得带阶段/任务编号；测试与工具可以带。遗留路径登记在
+  `docs/governance_rules.json` 的 `source_naming_exceptions`，规则见
+  [CODE_POLICY](docs/guides/CODE_POLICY.md#文件与命名)。
 - 构建、测试、格式检查、静态分析命令在 [BUILDING](docs/guides/BUILDING.md)；版本与发版规则在
   [VERSIONING](docs/guides/VERSIONING.md)。
 - 改 `docs/` 后、声明完成前运行 `python -B tools/check_docs.py` 与 `python -B tools/verification/check_docs_facts.py`，本轮不推送也要执行；

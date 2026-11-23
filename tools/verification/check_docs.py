@@ -982,7 +982,7 @@ def check_evidence_metadata(failures: list[CheckFailure]) -> None:
 
 
 def check_governance(failures: list[CheckFailure]) -> None:
-    for name in ("check_findings", "check_docs_governance"):
+    for name in ("check_findings", "check_docs_governance", "check_source_naming"):
         path = ROOT / "tools" / "verification" / (name + ".py")
         spec = importlib.util.spec_from_file_location(name, path)
         if spec is None or spec.loader is None:
