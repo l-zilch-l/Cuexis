@@ -2,7 +2,7 @@
 
 状态：现行格式索引
 
-更新日期：2026-10-05
+更新日期：2026-11-24
 
 <!-- cuexis-meta
 id: INDEX-formats
@@ -44,7 +44,7 @@ Compiled Runtime
 | Chart v1/v2/v3 | [CHART_FORMAT.md](CHART_FORMAT.md) | implemented |
 | Chart v4 | [CHART_V4_FORMAT.md](CHART_V4_FORMAT.md) | accepted and implemented; C1–C4, CFU-D/E/F/G gates closed; Stage 4 animation runtime closed |
 | Chart v5 | [Chart v5 工作包](../stage_plans/active/chart-format-update-for-v5/plan.md) | candidate；Foundation 先交 Core，Stage 6 candidate 消费，Stage 8 正式发行；40k/16 MiB 为关闭门禁 |
-| Packed Chart v1 | [PACKED_CHART_FORMAT.md](PACKED_CHART_FORMAT.md) | candidate；Reader/Writer 与 68 条测试已实现，默认 Playback/Player 入口未消费（`CUEXIS_ENABLE_CHART_V5_CANDIDATE` 默认 OFF）；见 Stage 7-RR RR-F105 |
+| Packed Chart v1 | [PACKED_CHART_FORMAT.md](PACKED_CHART_FORMAT.md) | candidate；Reader/Writer 已实现并被 69 个 `[packed]` 测试用例覆盖，默认 Playback/Player 入口未消费（`CUEXIS_ENABLE_CHART_V5_CANDIDATE` 默认 OFF）；见 Stage 7-RR RR-F105 |
 | Gameplay Capsule v2 | [GAMEPLAY_CAPSULE_V2_FORMAT.md](GAMEPLAY_CAPSULE_V2_FORMAT.md) | candidate；S7A-3 首次 Packed 消费物理合同唯一权威，设计已于 2026-10-04 闭合；Reader/Writer 已实现、E1 验收未完成；代码默认 `candidateRevision = 2`（Reader 接受 2/3/4），见 [Stage 7-RR 登记册](../stage_plans/active/stage-07-rr/findings.md) §2.2 |
 | Compiled Gameplay Graph JSON v1 | [GAMEPLAY_GRAPH_V1_FORMAT.md](GAMEPLAY_GRAPH_V1_FORMAT.md) | candidate；C78-05 / R78-08 首用物理合同，明确 typed SAX、完整静态 chart、整数与引用；实现和等价验收仍归现行状态 |
 | CXC v1 | [CXC_FORMAT.md](CXC_FORMAT.md) | accepted and implemented internally; archive/tools and Playback source/prepare/identity gates closed; no public CXC package API |

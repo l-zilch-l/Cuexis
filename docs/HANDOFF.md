@@ -16,7 +16,7 @@ authority: owns
 
 ## 当前任务
 
-下一次接手的首项是波次 5 的 [T-02 规则与预算对齐](stage_plans/active/stage-07-rr/tasks/T-02.md)、[T-05 像素几何与 GL 边界](stage_plans/active/stage-07-rr/tasks/T-05.md)与 [T-17 内容提交门禁](stage_plans/active/stage-07-rr/tasks/T-17.md)，三张卡按唯一调度可并行，之后进入波次 6 的 T-06。
+下一次接手的首项是波次 5 的 [T-02 状态事实对齐](stage_plans/active/stage-07-rr/tasks/T-02.md)、[T-05 像素几何与 GL 边界](stage_plans/active/stage-07-rr/tasks/T-05.md)与 [T-17 内容提交门禁](stage_plans/active/stage-07-rr/tasks/T-17.md)，三张卡按唯一调度可并行，之后进入波次 6 的 T-06。
 
 T-01 证据在 [基线与派单报告](stage_reports/stages/stage-07-rr/readiness/2026-11-23-t-01-dispatch-baseline.md)；T-03 证据在 [合同与诊断交付](stage_reports/stages/stage-07-rr/implementation/2026-11-23-t-03-contracts-and-diagnostics.md)；T-04 证据在 [构建闭包拆分与隔离门禁](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-04-build-isolation.md)。派单输入的规范哈希取基线 blob，见 [hashes.txt](stage_reports/stages/stage-07-rr/evidence/t-01-baseline/hashes.txt)，独立 checkout 复算不需要 `out/`。
 
