@@ -9,6 +9,8 @@
 #include "player_options.hpp"
 #include "player_surface.hpp"
 
+#include "../../execution_host/frame_layout_binding.hpp"
+
 #include <cuexis/audio/audio_clip.hpp>
 #include <cuexis/audio/audio_transport.hpp>
 #include <cuexis/playback/playback_session.hpp>
@@ -244,6 +246,9 @@ struct PlayerFrameLoop final {
     bool debugAxes{};
     bool showFps{};
     FrameDiagnostics* diagnostics{};
+    // Optional laid-out submit bridge installed by the assembly on the same backend as `renderer`.
+    // Without it the loop keeps the legacy snapshot path.
+    const playback::detail::FrameLayoutRendererBinding* layoutBinding{};
     PlayerHooks hooks{};
 #if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
     ScriptedPlaybackTrace* measurementTrace{};

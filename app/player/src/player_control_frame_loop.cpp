@@ -75,6 +75,7 @@ auto runPlayerFrameLoop(PlayerFrameLoop& input) -> core::Result<void> {
     bool quitRequested = false;
     bool traceReloadFrame = false;
     playback::FrameSnapshot snapshot;
+    std::optional<playback::experimental::LaidOutFrame> laidOutFrame;
     render::RenderScene scene;
     auto& controller = input.controller;
 
@@ -312,21 +313,38 @@ auto runPlayerFrameLoop(PlayerFrameLoop& input) -> core::Result<void> {
         if (input.measurementTrace)
             input.measurementTrace->confirmed("resize");
 #endif
-        if (auto result =
-                controller.session().extractFrame({.width = width, .height = height}, snapshot);
-            !result) {
+        const bool layoutPath = input.layoutBinding != nullptr && input.layoutBinding->valid();
+        const playback::experimental::FrameTarget frameTarget{
+            {width, height}, {0, 0, width, height}, playback::experimental::FrameRotation::Deg0};
+        laidOutFrame.reset();
+        if (layoutPath) {
+            // The target and the committed laid-out frame are taken from the same owner round; the
+            // ordinary loop submits this value immediately, so there is no stale attempt to drop.
+            auto extracted =
+                playback::experimental::extractLaidOutFrame(controller.session(), frameTarget);
+            if (!extracted) {
+                return core::unexpected(std::move(extracted.error()));
+            }
+            laidOutFrame = std::move(*extracted);
+            if (!laidOutFrame)
+                continue; // an empty target or an empty selected layout presents nothing
+        } else if (auto result = controller.session().extractFrame(
+                       {.width = width, .height = height}, snapshot);
+                   !result) {
             return core::unexpected(std::move(result.error()));
         }
+        const playback::FrameSnapshot& frameSnapshot =
+            layoutPath ? laidOutFrame->snapshot() : snapshot;
 
         scene.clear();
         if (traceReloadFrame)
             input.logger.info("player.reload.frame", "Frame extraction returned");
         if (input.debugAxes)
-            if (auto result = appendSnapshotAxes(snapshot, scene); !result) {
+            if (auto result = appendSnapshotAxes(frameSnapshot, scene); !result) {
                 return core::unexpected(std::move(result.error()));
             }
         if (input.diagnostics != nullptr) {
-            input.diagnostics->captureFrame(renderedFrames, runtimeFrame, snapshot);
+            input.diagnostics->captureFrame(renderedFrames, runtimeFrame, frameSnapshot);
             if (auto* audio = controller.audio(); audio != nullptr) {
                 const double wallClockMs =
                     std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() -
@@ -338,16 +356,19 @@ auto runPlayerFrameLoop(PlayerFrameLoop& input) -> core::Result<void> {
         }
 
         if (input.hooks.beforeSubmit) {
-            if (auto stepped = input.hooks.beforeSubmit(snapshot, renderedFrames); !stepped) {
+            if (auto stepped = input.hooks.beforeSubmit(frameSnapshot, renderedFrames); !stepped) {
                 return core::unexpected(std::move(stepped.error()));
             }
         }
 
         const auto renderStarted = std::chrono::steady_clock::now();
         if (input.showFps)
-            if (auto overlay = appendFpsOverlay(snapshot, fpsMeter.reading(), scene); !overlay)
+            if (auto overlay = appendFpsOverlay(frameSnapshot, fpsMeter.reading(), scene); !overlay)
                 return overlay;
-        auto submitted = input.renderer.submit(snapshot, &scene);
+        auto submitted = layoutPath
+                             ? input.layoutBinding->submit(input.layoutBinding->object,
+                                                           *laidOutFrame, frameTarget, &scene)
+                             : input.renderer.submit(snapshot, &scene);
         if (traceReloadFrame)
             input.logger.info("player.reload.frame", "Renderer submit returned");
         if (!submitted) {
@@ -369,9 +390,12 @@ auto runPlayerFrameLoop(PlayerFrameLoop& input) -> core::Result<void> {
             traceReloadFrame = false;
         }
         PlayerPresentedFrame presented{.renderedFrames = renderedFrames,
-                                       .snapshot = snapshot,
+                                       .snapshot = frameSnapshot,
                                        .summary = *submitted,
-                                       .renderMicroseconds = 0.0,
+                                       .renderMicroseconds =
+                                           std::chrono::duration<double, std::micro>(
+                                               std::chrono::steady_clock::now() - renderStarted)
+                                               .count(),
                                        .renderer = input.renderer,
                                        .controller = controller};
         if (input.showFps)
@@ -381,9 +405,6 @@ auto runPlayerFrameLoop(PlayerFrameLoop& input) -> core::Result<void> {
                 return core::unexpected(std::move(noted.error()));
             }
         }
-        presented.renderMicroseconds = std::chrono::duration<double, std::micro>(
-                                           std::chrono::steady_clock::now() - renderStarted)
-                                           .count();
         if (renderedFrames == 0) {
             input.logger.info(
                 "player.snapshot",

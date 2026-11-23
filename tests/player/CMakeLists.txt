@@ -52,6 +52,7 @@ target_compile_definitions(cuexis_player_control_tests
 target_include_directories(cuexis_player_control_tests
     PRIVATE
         "${PROJECT_SOURCE_DIR}/app/player/src"
+        "${PROJECT_SOURCE_DIR}/engine/playback/experimental_include"
         "${PROJECT_SOURCE_DIR}/tests/audio"
 )
 target_link_libraries(cuexis_player_control_tests
@@ -77,3 +78,17 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
 else()
     catch_discover_tests(cuexis_player_control_tests)
 endif()
+
+# Shared-library consumer for the experimental laid-out frame surface. It is a separate executable
+# on purpose: rr_frame_layout_shared runs it against the same Cuexis::Playback binary the real
+# Player links, before the Player smoke run.
+add_executable(cuexis_frame_layout_shared_consumer frame_layout_shared_consumer.cpp)
+target_compile_features(cuexis_frame_layout_shared_consumer PRIVATE cxx_std_20)
+target_compile_definitions(cuexis_frame_layout_shared_consumer PRIVATE
+    CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
+target_include_directories(cuexis_frame_layout_shared_consumer PRIVATE
+    "${PROJECT_SOURCE_DIR}/engine/playback/experimental_include")
+target_link_libraries(cuexis_frame_layout_shared_consumer PRIVATE
+    cuexis::playback
+    cuexis::core
+)

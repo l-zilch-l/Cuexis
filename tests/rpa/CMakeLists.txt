@@ -56,6 +56,7 @@ add_executable(cuexis_execution_host_tests
     rpa_b5_seek_host_tests.cpp
     rpa_b5_transcript_tests.cpp
     rr_frame_observation_errors_tests.cpp
+    rr_host_frame_chain_tests.cpp
     ../pd/retained_control_tests.cpp
     ${CUEXIS_EXECUTION_HOST_SOURCES}
     "${PROJECT_SOURCE_DIR}/app/execution_host/frame_observation.cpp"

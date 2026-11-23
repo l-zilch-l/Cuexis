@@ -354,6 +354,7 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
     // Close while the callbacks' local dependencies still exist during error unwinding.
     ExecutionHostLifetime hostLifetime{host};
     auto load = [&]() {
+        hostOptions.frameLayout = makePlayerFrameLayoutBinding(*backend);
         host = take(ExecutionHost::create(*backend, hostOptions, ports));
         std::optional<GameplayContent> gameplay;
         if (options.gameplayPacked)
@@ -604,6 +605,11 @@ auto runExecutionPlayer(const PlayerOptions& options, const player_support::AppC
             scoreCursor = frame.source->factCursor;
         }
         auto presented = take(host->present(frame));
+        if (presented.status == PresentStatus::dropped) {
+            // A stale deadline or a changed target is not a renderer fault: drop this attempt and
+            // request a new frame for the current target.
+            continue;
+        }
         if (presented.status != PresentStatus::succeeded)
             throw Failure{error("Present was not confirmed")};
 #if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)

@@ -278,6 +278,14 @@ using namespace worker_detail;
                                     coverage.historyMisses}};
             } else if constexpr (std::is_same_v<T, SessionDeliveryMetrics>) {
                 return SessionReply{delivery->storageMetrics()};
+            } else if constexpr (std::is_same_v<T, SessionPreparedFramings>) {
+                if (!prepared)
+                    return core::unexpected(
+                        workerError("context_stale", "A Prepared candidate is not retained"));
+                auto framings = experimental::preparedFramings(*prepared);
+                if (!framings)
+                    return core::unexpected(framings.error());
+                return SessionReply{std::move(*framings)};
             } else if constexpr (std::is_same_v<T, SessionSample>) {
                 if (framePath == FramePath::requested)
                     return core::unexpected(
@@ -312,7 +320,8 @@ using namespace worker_detail;
                         frame.retainedSnapshot =
                             retained->payload
                                 ? std::shared_ptr<const FrameSnapshot>{retained->payload,
-                                                                       &retained->payload->snapshot}
+                                                                       &retained->payload
+                                                                            ->snapshotView()}
                             : retained->retainedSnapshot ? retained->retainedSnapshot
                                                          : std::shared_ptr<const FrameSnapshot>{
                                                                retained, &retained->snapshot};

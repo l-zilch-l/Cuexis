@@ -199,7 +199,7 @@ TEST_CASE("rr_frame_observation_errors", "[rpa][observation][f135]") {
         auto frame = matchingFrame();
         ThrowingRenderer badSubmit(ThrowingRenderer::Mode::submitBadAlloc);
         auto failedSubmit = cuexis::playback::detail::presentOwnedFrame(
-            frame, frame.context, 1, 7, badSubmit, [] { return 1; });
+            frame, frame.context, 1, 7, badSubmit, [] { return 1; }, std::nullopt);
         REQUIRE(failedSubmit.has_value());
         CHECK(failedSubmit->status == PresentStatus::failed);
         REQUIRE(failedSubmit->cause);
@@ -209,7 +209,7 @@ TEST_CASE("rr_frame_observation_errors", "[rpa][observation][f135]") {
 
         ThrowingRenderer otherSubmit(ThrowingRenderer::Mode::submitRuntimeError);
         auto otherFailed = cuexis::playback::detail::presentOwnedFrame(
-            frame, frame.context, 1, 7, otherSubmit, [] { return 2; });
+            frame, frame.context, 1, 7, otherSubmit, [] { return 2; }, std::nullopt);
         REQUIRE(otherFailed.has_value());
         CHECK(otherFailed->status == PresentStatus::failed);
         REQUIRE(otherFailed->cause);
@@ -219,7 +219,7 @@ TEST_CASE("rr_frame_observation_errors", "[rpa][observation][f135]") {
 
         ThrowingRenderer badPresent(ThrowingRenderer::Mode::presentBadAlloc);
         auto failedPresent = cuexis::playback::detail::presentOwnedFrame(
-            frame, frame.context, 1, 7, badPresent, [] { return 3; });
+            frame, frame.context, 1, 7, badPresent, [] { return 3; }, std::nullopt);
         REQUIRE(failedPresent.has_value());
         CHECK(failedPresent->status == PresentStatus::failed);
         REQUIRE(failedPresent->cause);
@@ -229,7 +229,7 @@ TEST_CASE("rr_frame_observation_errors", "[rpa][observation][f135]") {
 
         ThrowingRenderer otherPresent(ThrowingRenderer::Mode::presentRuntimeError);
         auto presentFailed = cuexis::playback::detail::presentOwnedFrame(
-            frame, frame.context, 1, 7, otherPresent, [] { return 4; });
+            frame, frame.context, 1, 7, otherPresent, [] { return 4; }, std::nullopt);
         REQUIRE(presentFailed.has_value());
         CHECK(presentFailed->status == PresentStatus::failed);
         REQUIRE(presentFailed->cause);

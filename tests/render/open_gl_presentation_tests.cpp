@@ -432,7 +432,7 @@ TEST_CASE("Player frame scene is persistent and cleared per frame",
     REQUIRE(loopBody.has_value());
 
     const auto sceneDeclaration = loopBody->find("render::RenderScene scene;");
-    const auto appendCall = loopBody->find("appendSnapshotAxes(snapshot, scene)");
+    const auto appendCall = loopBody->find("appendSnapshotAxes(frameSnapshot, scene)");
     const auto loopStart = loopBody->find("while (!quitRequested)");
     REQUIRE(sceneDeclaration != std::string_view::npos);
     REQUIRE(appendCall != std::string_view::npos);

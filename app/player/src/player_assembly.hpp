@@ -2,6 +2,7 @@
 
 // SDL, OpenGL, and AudioSDL factories for the reference Player.
 
+#include "../../execution_host/frame_layout_binding.hpp"
 #include "player_audio_seat.hpp"
 #include "player_log.hpp"
 #include "player_surface.hpp"
@@ -47,6 +48,11 @@ namespace cuexis::player {
 createPlayerBackend(platform_sdl::SdlRuntime& runtime, platform_sdl::SdlWindow& window, bool vsync,
                     const std::optional<std::filesystem::path>& shaderCache, PlayerLogger& logger)
     -> core::Result<render_opengl::OpenGlBackend>;
+
+// Creates the private frame-layout bridge on the final backend instance. The returned binding
+// stores the same renderer and an opaque pointer to that backend; it must not outlive it.
+[[nodiscard]] auto makePlayerFrameLayoutBinding(render_opengl::OpenGlBackend& backend)
+    -> playback::detail::FrameLayoutRendererBinding;
 
 // Records the settings the subsystems actually reached. `requestedVsync` is named as a request
 // because the swap interval cannot be read back; every other field is read from live state.

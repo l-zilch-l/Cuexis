@@ -2,6 +2,7 @@
 
 #include "../../execution_host/audio_worker.hpp"
 #include "../../execution_host/capture_route.hpp"
+#include "../../execution_host/frame_layout_binding.hpp"
 #include "../../execution_host/renderer_owner.hpp"
 #include "../../execution_host/session_worker.hpp"
 #include "snapshot_scene.hpp"
@@ -56,6 +57,9 @@ struct ExecutionHostOptions final {
     std::chrono::milliseconds replyDeadline{};
     std::optional<playback::detail::SessionRealtimeStart> realtime;
     playback::FrameViewport viewport{};
+    // Installed by the Player assembly on its final OpenGlBackend instance. When present, sampled
+    // requests carry the current laid-out target and present dispatches through the binding.
+    std::optional<playback::detail::FrameLayoutRendererBinding> frameLayout;
     bool showFps{};
     SeekIdentityPolicy seekIdentity{SeekIdentityPolicy::owningSource};
 };
@@ -138,6 +142,12 @@ class ExecutionHost final {
         return closeFirstError_;
     }
     [[nodiscard]] auto resize(playback::FrameViewport) -> core::Result<void>;
+    // Applies the complete current target an embedding owner supplies to present. A target change
+    // between sampling and present ends the consumed attempt as a non-fault stale drop.
+    [[nodiscard]] auto setFrameTarget(playback::experimental::FrameTarget) -> core::Result<void>;
+    [[nodiscard]] auto frameTarget() const noexcept -> const playback::experimental::FrameTarget& {
+        return frameTarget_;
+    }
     [[nodiscard]] auto audioPublication() const -> core::Result<playback::detail::AudioPublication>;
     void waitFor(std::chrono::milliseconds duration);
     [[nodiscard]] auto hasAudio() const noexcept -> bool {
@@ -277,6 +287,8 @@ class ExecutionHost final {
     playback::detail::DeliveryStatus deliveryStatus_{playback::detail::DeliveryStatus::pending};
     std::uint64_t registrationOperation_{1};
     std::shared_ptr<const playback::detail::FrameEnvelope> pendingFrame_;
+    playback::experimental::FrameTarget frameTarget_{};
+    std::vector<playback::experimental::FrameFraming> preparedFramings_;
     std::vector<std::pair<playback::GameplayInput, bool>> clockTransitionInputs_;
     bool tailPreparing_{}, tailFrozen_{};
     std::optional<std::int64_t> lastObservedTick_;

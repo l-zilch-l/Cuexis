@@ -314,8 +314,9 @@ TEST_CASE("B4 renderer retry publishes resolved context for actual first frame",
     frame.frameId = 1;
     frame.projectionScope = 1;
     frame.snapshot = *snapshot;
-    auto presented = presentOwnedFrame(frame, frame.context, 1, renderer.identity().instance,
-                                       renderer, [] { return 42; });
+    auto presented = presentOwnedFrame(
+        frame, frame.context, 1, renderer.identity().instance, renderer, [] { return 42; },
+        std::nullopt);
     REQUIRE(presented);
     CHECK(presented->status == PresentStatus::succeeded);
 }

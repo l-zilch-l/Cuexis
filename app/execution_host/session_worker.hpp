@@ -137,6 +137,7 @@ struct ObservationInfo final {
     bool exactLossCount{}, attemptsEvicted{}, feedbackEvicted{}, receiptLoss{}, historyMisses{};
 };
 struct SessionDeliveryMetrics final {};
+struct SessionPreparedFramings final {};
 struct SessionArchive final {};
 struct SessionSnapshot final {};
 struct SessionEvaluateReplay final {
@@ -195,7 +196,8 @@ using SessionCommand = std::variant<
     SessionRegisterConsumer, SessionConfirmConsumer, SessionRevokeConsumer, SessionRequestFrame,
     SessionRevokeRetained, SessionDeliveryMetrics, SessionFeedbackQuery, SessionObservationQuery,
     SessionArchive, SessionSnapshot, SessionEvaluateReplay, SessionLag, SessionArchiveCut,
-    SessionSeek, SessionSoftwareRetire, SessionSoftwareClose, SessionCancelStep, SessionQueryStep
+    SessionSeek, SessionSoftwareRetire, SessionSoftwareClose, SessionCancelStep, SessionQueryStep,
+    SessionPreparedFramings
 #if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
     ,
     SessionRpaObservation, SessionRpaSeekObservation
@@ -206,7 +208,8 @@ using SessionReply =
                  GameplayAdvanceDecision, FrameEnvelope, GameplayReplay, GameplayReplayCut,
                  SessionInspection, TailClockTransition, GameplayReplayEvaluation, GameplaySnapshot,
                  GameplayExecutionLag, GameplayResult, ConsumerRegistration, DeliveryInfo,
-                 FrameDeliveryLayout, StorageMetrics, FeedbackObservation, ObservationInfo
+                 FrameDeliveryLayout, StorageMetrics, FeedbackObservation, ObservationInfo,
+                 std::vector<experimental::FrameFraming>
 #if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
                  ,
                  cuexis::internal::execution_diagnostics::rpa::OwnerCloseObservation,

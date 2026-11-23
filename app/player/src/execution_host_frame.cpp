@@ -37,6 +37,13 @@ auto ExecutionHost::load(PlaybackSource source, std::optional<GameplayContent> g
     candidate_ = value<PresentationCandidateInput>(session(std::move(request)));
     context_ = candidate_->context;
     context_.controlSequence = 0;
+    frameTarget_ = playback::experimental::FrameTarget{
+        options_.viewport,
+        {0, 0, options_.viewport.width, options_.viewport.height},
+        playback::experimental::FrameRotation::Deg0};
+    if (options_.frameLayout && options_.frameLayout->valid())
+        preparedFramings_ = value<std::vector<playback::experimental::FrameFraming>>(
+            session(playback::detail::SessionPreparedFramings{}));
     softwareGeneration_ = candidate_->mutationGeneration;
     host_.emplace(take(HostCoordinator::create(context_, options_.hostCapacity)));
     rendererOwner_.emplace(take(RendererOwner<presentation_renderer::IPresentationRenderer>::create(
@@ -62,7 +69,11 @@ auto ExecutionHost::load(PlaybackSource source, std::optional<GameplayContent> g
     softwarePrepared();
     gpuTouched_ = true;
     observed(take(
-        rendererOwner_->prepare(step(Participant::renderer, StepPhase::prepare), *candidate_)));
+        options_.frameLayout && options_.frameLayout->valid()
+            ? rendererOwner_->prepareLaidOut(step(Participant::renderer, StepPhase::prepare),
+                                             *candidate_, preparedFramings_, *options_.frameLayout)
+            : rendererOwner_->prepare(step(Participant::renderer, StepPhase::prepare),
+                                      *candidate_)));
     audioStep(AudioWorkerCommandKind::prepare, StepPhase::prepare);
     observed(value<StepReceipt>(
         session(SessionSoftwareFence{step(Participant::software, StepPhase::fence), proof()})));
@@ -415,6 +426,8 @@ auto ExecutionHost::trySample(std::int64_t tick, RuntimeFrame runtime, bool froz
     request.consumerId = consumer_->consumerId;
     request.requestId = frameId_++;
     request.viewport = options_.viewport;
+    if (options_.frameLayout && options_.frameLayout->valid())
+        request.target = frameTarget_;
     request.frozen = frozen;
     request.retained = retainedPresentation_;
     const auto now = options_.session.monotonicNow ? options_.session.monotonicNow() : nowUs();
@@ -467,9 +480,19 @@ auto ExecutionHost::present(const FrameEnvelope& frame) -> core::Result<PresentR
     // Consume before invoking the device. Reentry/retry cannot execute this attempt twice.
     auto attempt = std::move(pendingFrame_);
     take(rendererGate_.begin(*attempt, context_, projectionScope_, candidate_->rendererInstance));
+    // The debug/FPS scene is built before the final gate check and borrowed only for the submit
+    // call. The window target is re-read here, after any overlay or hook ran.
+    render::RenderScene scene;
+    std::optional<core::Error> overlayError;
+    if (options_.showFps) {
+        if (auto appended = appendFpsOverlay(attempt->snapshotView(), fps_.reading(), scene);
+            !appended)
+            overlayError = std::move(appended.error());
+    }
     struct OverlayRenderer {
         presentation_renderer::IPresentationRenderer& renderer;
-        PlayerFpsMeter& fps;
+        const FrameLayoutRendererBinding* binding;
+        render::RenderScene* scene;
         bool enabled;
         auto identity() const noexcept {
             return renderer.identity();
@@ -479,19 +502,55 @@ auto ExecutionHost::present(const FrameEnvelope& frame) -> core::Result<PresentR
             internal::pd::Timer measurement{internal::pd::Stage::renderer};
             if (!enabled)
                 return renderer.submit(snapshot);
-            render::RenderScene scene;
-            auto appended = appendFpsOverlay(snapshot, fps.reading(), scene);
-            if (!appended)
-                return core::unexpected(appended.error());
-            return renderer.submit(snapshot, &scene);
+            return renderer.submit(snapshot, scene);
+        }
+        auto submitLaidOut(const playback::experimental::LaidOutFrame& frame,
+                           const playback::experimental::FrameTarget& target)
+            -> core::Result<presentation_renderer::DrawSummary> {
+            internal::pd::Timer measurement{internal::pd::Stage::renderer};
+            if (binding == nullptr || binding->submit == nullptr)
+                return core::unexpected(layoutUnsupported("no_bridge"));
+            return binding->submit(binding->object, frame, target, enabled ? scene : nullptr);
         }
         auto present() -> core::Result<void> {
             internal::pd::Timer measurement{internal::pd::Stage::renderer};
             return renderer.present();
         }
-    } overlay{renderer_, fps_, options_.showFps};
-    auto receipt = take(presentOwnedFrame(*attempt, context_, projectionScope_,
-                                          candidate_->rendererInstance, overlay, nowUs));
+    } overlay{renderer_,
+              options_.frameLayout && options_.frameLayout->valid() ? &*options_.frameLayout
+                                                                    : nullptr,
+              &scene, options_.showFps};
+    if (overlayError) {
+        PresentReceipt receipt{
+            context_, attempt->frameId,       projectionScope_, PresentStatus::failed,
+            0,        std::move(overlayError)};
+        rendererGate_.dropAttempt();
+        session_->postReceipt(receipt);
+        invalidateRetained();
+        failed();
+        return receipt;
+    }
+    const auto currentTarget =
+        attempt->laidOutView() != nullptr
+            ? std::optional<playback::experimental::FrameTarget>{frameTarget_}
+            : std::optional<playback::experimental::FrameTarget>{};
+    auto receipt = take(presentOwnedFrame(
+        *attempt, context_, projectionScope_, candidate_->rendererInstance, overlay,
+        [this]() -> std::int64_t {
+            return options_.session.monotonicNow ? options_.session.monotonicNow() : nowUs();
+        },
+        currentTarget));
+    if (receipt.status == PresentStatus::dropped) {
+        // Non-fault stale attempt: the consumed attempt ends, the previous retained presentation
+        // and its serial stay valid, and nothing was cleared, submitted, presented or receipted.
+        rendererGate_.dropAttempt();
+        pendingFrame_.reset();
+        if (receipt.cause && receipt.cause->code() == "host.rpa.context_stale")
+            for (const auto& context : receipt.cause->context())
+                if (context.key == "reason" && context.value == "frame_deadline")
+                    deliveryStatus_ = DeliveryStatus::expiredRequest;
+        return receipt;
+    }
     if (receipt.status == PresentStatus::succeeded) {
         retainedPresentation_.serial_ = take(rendererGate_.succeeded(*attempt));
         retainedPresentation_.frame_ = attempt;

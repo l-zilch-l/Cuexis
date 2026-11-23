@@ -3,16 +3,35 @@
 #include <cuexis/audio/audio_config.hpp>
 #include <cuexis/audio_sdl/wav_decoder.hpp>
 #include <cuexis/player_support/audio_device_profile.hpp>
+#include <cuexis/render_opengl/experimental/frame_layout.hpp>
 #include <cuexis/version.hpp>
 
 #include <algorithm>
 #include <optional>
+#include <span>
 #include <string>
 #include <utility>
 #include <vector>
 
 namespace cuexis::player {
 namespace {
+
+[[nodiscard]] auto
+prepareFrameLayoutOwned(void* object, const playback::PresentationCandidateInput& input,
+                        std::span<const playback::experimental::FrameFraming> framings)
+    -> core::Result<presentation_renderer::PreparedPresentation> {
+    return render_opengl::experimental::prepareLaidOutOwned(
+        *static_cast<render_opengl::OpenGlBackend*>(object), input, framings);
+}
+
+[[nodiscard]] auto submitFrameLayout(void* object,
+                                     const playback::experimental::LaidOutFrame& frame,
+                                     const playback::experimental::FrameTarget& currentTarget,
+                                     const render::RenderScene* debugScene)
+    -> core::Result<presentation_renderer::DrawSummary> {
+    return render_opengl::experimental::submitLaidOut(
+        *static_cast<render_opengl::OpenGlBackend*>(object), frame, currentTarget, debugScene);
+}
 
 // Maps a named window key to one application action. Only key presses act; releases are ignored,
 // so holding a key does not repeat the action.
@@ -302,6 +321,16 @@ auto createPlayerBackend(platform_sdl::SdlRuntime& runtime, platform_sdl::SdlWin
     logger.info("player.opengl", std::string{"Vendor: "} + openGlInfo.vendor);
     logger.info("player.opengl", std::string{"Renderer: "} + openGlInfo.renderer);
     return backend;
+}
+
+auto makePlayerFrameLayoutBinding(render_opengl::OpenGlBackend& backend)
+    -> playback::detail::FrameLayoutRendererBinding {
+    playback::detail::FrameLayoutRendererBinding binding;
+    binding.renderer = &backend;
+    binding.object = &backend;
+    binding.prepareOwned = &prepareFrameLayoutOwned;
+    binding.submit = &submitFrameLayout;
+    return binding;
 }
 
 auto logEffectiveWindow(platform_sdl::SdlWindow& window,

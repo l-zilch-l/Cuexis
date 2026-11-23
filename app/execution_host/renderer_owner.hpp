@@ -1,6 +1,8 @@
 #pragma once
 
+#include "frame_layout_binding.hpp"
 #include "host_candidate.hpp"
+#include <span>
 #include <utility>
 
 namespace cuexis::playback::detail {
@@ -24,6 +26,16 @@ template <typename Renderer> class RendererOwner final {
     [[nodiscard]] auto prepare(const StepRequest& request, const PresentationCandidateInput& input)
         -> core::Result<StepReceipt> {
         return execute(request, StepPhase::prepare, &input);
+    }
+    // Installed only for the Player assembly that owns a concrete OpenGL backend. The framing
+    // table comes from the same PreparedPlayback that produced the candidate, and the binding
+    // dispatches to the laid-out owning prepare on that exact backend.
+    [[nodiscard]] auto prepareLaidOut(const StepRequest& request,
+                                      const PresentationCandidateInput& input,
+                                      std::span<const experimental::FrameFraming> framings,
+                                      const FrameLayoutRendererBinding& binding)
+        -> core::Result<StepReceipt> {
+        return execute(request, StepPhase::prepare, &input, false, framings, &binding);
     }
     // Readiness for a control retaining the already active device resources.
     [[nodiscard]] auto prepareActive(const StepRequest& request) -> core::Result<StepReceipt> {
@@ -60,7 +72,10 @@ template <typename Renderer> class RendererOwner final {
     }
     [[nodiscard]] auto execute(const StepRequest& request, StepPhase phase,
                                const PresentationCandidateInput* input = nullptr,
-                               bool prepareActive = false) -> core::Result<StepReceipt> {
+                               bool prepareActive = false,
+                               std::span<const experimental::FrameFraming> framings = {},
+                               const FrameLayoutRendererBinding* binding = nullptr)
+        -> core::Result<StepReceipt> {
         if (!owner_.isCurrent())
             return core::unexpected(failure("owner_mismatch"));
         StepReceipt receipt;
@@ -254,7 +269,9 @@ template <typename Renderer> class RendererOwner final {
                     pendingBinding_ = request;
                     retired_ = false;
                     fenced_ = false;
-                    auto candidate = renderer_->prepareOwned(*input_);
+                    auto candidate = binding != nullptr && binding->prepareOwned != nullptr
+                                         ? binding->prepareOwned(binding->object, *input_, framings)
+                                         : renderer_->prepareOwned(*input_);
                     if (!candidate)
                         failed(candidate.error());
                     else

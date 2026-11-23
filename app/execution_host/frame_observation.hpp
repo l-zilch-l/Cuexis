@@ -2,8 +2,13 @@
 #include "frame_storage.hpp"
 #include "host_protocol.hpp"
 #include <atomic>
+#include <cuexis/playback/experimental/frame_layout.hpp>
 #include <exception>
 #include <new>
+#include <string>
+#include <string_view>
+#include <type_traits>
+#include <variant>
 
 namespace cuexis::player {
 class ExecutionHost;
@@ -12,16 +17,38 @@ namespace cuexis::playback::detail {
 // A resize uses the retained owning values, never the current Runtime or a new Fact prefix.
 [[nodiscard]] auto rematerializeRetainedSnapshot(const FrameSnapshot&, FrameViewport)
     -> core::Result<FrameSnapshot>;
+// One owning frame value. The variant keeps the legacy snapshot and the committed laid-out frame
+// in the same payload slot, so no path stores both or copies the frame object.
 struct FramePayload final {
     // Declared first, destroyed last: storage credit is returned after physical arrays/strings.
     StorageReservation storage;
-    FrameSnapshot snapshot;
+    std::variant<FrameSnapshot, experimental::LaidOutFrame> frame;
     std::vector<PortableResourcePtr> resources;
     std::vector<FeedbackId> membership;
+    [[nodiscard]] auto snapshotView() const noexcept -> const FrameSnapshot& {
+        return std::visit(
+            []<typename Value>(const Value& value) -> const FrameSnapshot& {
+                if constexpr (std::is_same_v<Value, FrameSnapshot>)
+                    return value;
+                else
+                    return value.snapshot();
+            },
+            frame);
+    }
+    [[nodiscard]] auto layoutView() const noexcept -> const experimental::FrameLayout* {
+        const auto* laidOut = std::get_if<experimental::LaidOutFrame>(&frame);
+        return laidOut != nullptr ? &laidOut->layout() : nullptr;
+    }
+    [[nodiscard]] auto laidOutView() const noexcept -> const experimental::LaidOutFrame* {
+        return std::get_if<experimental::LaidOutFrame>(&frame);
+    }
 };
 enum class DispatchState : std::uint8_t { ready, transferred, notSubmitted };
 struct DispatchToken final {
     std::atomic<DispatchState> state{DispatchState::ready};
+    // Immutable dispatch metadata: the original request deadline. Zero means no deadline was
+    // attached (legacy callers and hand-built test attempts).
+    std::int64_t deadlineMonotonicUs{};
 };
 struct FrameAttemptLease final {
     StorageReservation storage;
@@ -47,8 +74,15 @@ struct FrameEnvelope final {
     std::shared_ptr<DispatchToken> dispatch;
     [[nodiscard]] auto snapshotView() const noexcept -> const FrameSnapshot& {
         if (payload)
-            return payload->snapshot;
+            return payload->snapshotView();
         return retainedSnapshot ? *retainedSnapshot : snapshot;
+    }
+    // The committed layout of a laid-out frame; empty for a legacy snapshot frame.
+    [[nodiscard]] auto layoutView() const noexcept -> const experimental::FrameLayout* {
+        return payload ? payload->layoutView() : nullptr;
+    }
+    [[nodiscard]] auto laidOutView() const noexcept -> const experimental::LaidOutFrame* {
+        return payload ? payload->laidOutView() : nullptr;
     }
     [[nodiscard]] auto membershipView() const noexcept -> const std::vector<FeedbackId>& {
         return payload ? payload->membership : membership;
@@ -73,7 +107,7 @@ class RetainedPresentation final {
     std::shared_ptr<const FrameEnvelope> frame_;
     std::uint64_t serial_{};
 };
-enum class PresentStatus : std::uint8_t { succeeded, failed, unknown };
+enum class PresentStatus : std::uint8_t { succeeded, failed, unknown, dropped };
 struct PresentReceipt final {
     HostContext context;
     std::uint64_t frameId{}, projectionScope{};
@@ -84,11 +118,31 @@ struct PresentReceipt final {
 // Copy the complete structured error into bounded owning storage; never retain a foreign cause
 // tree.
 [[nodiscard]] auto copyPresentReceipt(const PresentReceipt&) -> core::Result<PresentReceipt>;
-// The renderer adapter owns this call. This bridge never advances Playback or Gameplay.
+[[nodiscard]] inline auto sameFrameTarget(const experimental::FrameTarget& left,
+                                          const experimental::FrameTarget& right) noexcept -> bool {
+    return left.extent.width == right.extent.width && left.extent.height == right.extent.height &&
+           left.host.x == right.host.x && left.host.y == right.host.y &&
+           left.host.width == right.host.width && left.host.height == right.host.height &&
+           left.rotation == right.rotation;
+}
+[[nodiscard]] inline auto staleAttempt(std::string_view reason) -> core::Error {
+    return core::Error{"host.rpa.context_stale", "The frame attempt is no longer current"}
+        .withContext("reason", std::string{reason});
+}
+[[nodiscard]] inline auto layoutUnsupported(std::string_view reason) -> core::Error {
+    return core::Error{"playback.presentation.layout.unsupported",
+                       "This renderer path cannot submit a laid-out frame"}
+        .withContext("reason", std::string{reason});
+}
+// The renderer adapter owns this call. This bridge never advances Playback or Gameplay. The
+// current target is required by a laid-out frame and forbidden for a legacy snapshot frame. A
+// stale deadline or changed target ends the attempt without clearing or drawing: the receipt is
+// dropped, no submit/present ran, and the host keeps its previous retained presentation.
 template <typename Renderer, typename MonotonicNow>
 [[nodiscard]] auto presentOwnedFrame(const FrameEnvelope& frame, const HostContext& expected,
                                      std::uint64_t scope, std::uint64_t rendererInstance,
-                                     Renderer& renderer, MonotonicNow&& now)
+                                     Renderer& renderer, MonotonicNow&& now,
+                                     std::optional<experimental::FrameTarget> currentTarget)
     -> core::Result<PresentReceipt> {
     PresentReceipt receipt{
         frame.context, frame.frameId, frame.projectionScope, PresentStatus::unknown, 0, {}};
@@ -99,6 +153,44 @@ template <typename Renderer, typename MonotonicNow>
             identity.generation != frame.context.rendererGeneration)
             return core::unexpected(core::Error{"host.rpa.context_stale",
                                                 "Frame does not belong to the active renderer"});
+        const auto entered = now();
+        receipt.callMonotonicUs = entered;
+        if (frame.dispatch && frame.dispatch->deadlineMonotonicUs &&
+            !(entered < frame.dispatch->deadlineMonotonicUs)) {
+            receipt.status = PresentStatus::dropped;
+            receipt.cause = staleAttempt("frame_deadline");
+            return receipt;
+        }
+        const auto* laidOut = frame.laidOutView();
+        if (laidOut != nullptr) {
+            if (!currentTarget) {
+                return core::unexpected(layoutUnsupported("target_absent"));
+            }
+            if (!sameFrameTarget(laidOut->layout().target, *currentTarget)) {
+                receipt.status = PresentStatus::dropped;
+                receipt.cause = staleAttempt("frame_target_changed");
+                return receipt;
+            }
+            if constexpr (requires { renderer.submitLaidOut(*laidOut, *currentTarget); }) {
+                auto submitted = renderer.submitLaidOut(*laidOut, *currentTarget);
+                if (!submitted) {
+                    receipt.status = PresentStatus::failed;
+                    receipt.cause = submitted.error();
+                    return receipt;
+                }
+                receipt.callMonotonicUs = now();
+                auto presented = renderer.present();
+                receipt.status = presented ? PresentStatus::succeeded : PresentStatus::failed;
+                if (!presented)
+                    receipt.cause = presented.error();
+                return receipt;
+            } else {
+                return core::unexpected(layoutUnsupported("no_bridge"));
+            }
+        }
+        if (currentTarget) {
+            return core::unexpected(layoutUnsupported("legacy_with_target"));
+        }
         receipt.callMonotonicUs = now();
         auto submitted = renderer.submit(frame.snapshotView());
         if (!submitted) {

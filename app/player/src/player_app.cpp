@@ -313,6 +313,9 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
     audio::AudioClipStore audioStore;
     auto& window = *windowHolder;
     auto& backend = *backendHolder;
+    // The backend has completed its last move, so the private laid-out bridge can bind this exact
+    // instance for the ordinary frame loop.
+    const auto layoutBinding = makePlayerFrameLayoutBinding(backend);
     auto surface = std::move(surfaceHolder);
 
     // The control layer owns the active bundle and drives every transaction. The assembly layer
@@ -429,6 +432,7 @@ auto run(int argumentCount, char** arguments, PlayerLogger& logger) -> core::Res
                          .debugAxes = options.debugAxes,
                          .showFps = options.showFps,
                          .diagnostics = frameDiagnostics ? &*frameDiagnostics : nullptr,
+                         .layoutBinding = &layoutBinding,
                          .hooks = std::move(hooks),
 #if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
                          .measurementTrace = &measurementTrace,

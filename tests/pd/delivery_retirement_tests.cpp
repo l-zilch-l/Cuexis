@@ -49,8 +49,8 @@ struct DeliveryFixture {
         REQUIRE(admitted->materialize);
         auto payload = std::make_shared<FramePayload>();
         payload->storage = std::move(admitted->reservation);
-        payload->snapshot.viewportWidth = 640;
-        payload->snapshot.viewportHeight = 480;
+        std::get<FrameSnapshot>(payload->frame).viewportWidth = 640;
+        std::get<FrameSnapshot>(payload->frame).viewportHeight = 480;
         FrameEnvelope f;
         auto lease = std::make_shared<FrameAttemptLease>();
         lease->storage = std::move(admitted->attempt);

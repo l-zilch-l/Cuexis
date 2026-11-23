@@ -95,6 +95,7 @@ cuexis_audio_sdl_tests
 cuexis_render_opengl_tests
 cuexis_player_diagnostics_tests
 cuexis_player_control_tests
+cuexis_frame_layout_shared_consumer
 cuexis_shader_tests
 cuexis_asset_publish_tests
 cuexis_gameplay_author_tests
