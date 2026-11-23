@@ -1,0 +1,1 @@
+early-hold-release: score=768 hits=385 misses=2 replay=equal

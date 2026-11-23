@@ -2,13 +2,13 @@
 
 状态：evidence
 
-更新日期：2026-11-23
+更新日期：2026-11-24
 
 <!-- cuexis-meta
 id: EVIDENCE-stage-07-rr.external-legacy-corpus
 status: evidence
 authority: none
-date: 2026-11-23
+date: 2026-11-24
 -->
 
 ## 结论
@@ -21,6 +21,7 @@ owner 提供的两套仓库外设备验收包，可以作为 D-20 的“旧判�
 | D-20 可执行回归输入与聚合期望 | 部分成立 | Chart/Gameplay 成品、配置、tick 输入序列与 score/hits/misses 聚合期望齐备，期望与 `scoreRules` 算术一致 |
 | F132 旧身份字节 | 不成立 | 两包无 `judgementIdentity.canonicalBytes()` 记录；只有 Player 会话配置身份 `ff578f4f…`、Chart 语义身份与 Gameplay 装配身份 |
 | 与仓库 D-20 清单的关系 | 部分成立 | “仓库内正式发行组合为空集”不变；“历史资料无法核实”收窄为“仓库外有两套内部候选验收包，仍无发行身份” |
+| 当前实现复现两包聚合期望 | 成立（单例路径） | R4 三例拼接 166 字节与 `verification.log` 逐字节相同；PD3c 两入口归一后与 `logicalCases` 相同，见[当前实现重放](../evidence/external-corpus/replay-current/replay-current.md) |
 
 ## 1. 两套包
 
@@ -80,9 +81,24 @@ A 的密集课程只有**合成输入**运行达到 778/387/0（`20261114-123842
 
 不可用于：把任一套写成“正式发行语料通过”；把 F132 写成“已取得历史身份字节”；用合成输入运行替代设备验收；用包内 `replay=equal` 替代 replay 字节比对。
 
-## 6. 限制与未做
+## 6. 当前实现重放（2026-11-24）
+
+旧实现（`d1951326`）与当前实现（`3943fb13`，Debug、SDK 0.9.1）分别重放两包的单例语料，逐例结果与历史期望一致：
+
+| 包 / 用例 | 当前实现 | 历史期望 | 旧实现 | 判定 |
+| --- | --- | --- | --- | --- |
+| R4 dense all-hit | 778/387/0，replay=equal | 同左 | 同左 | 成立 |
+| R4 dense no-input | −387/0/387，replay=equal | 同左 | 同左 | 成立 |
+| R4 dense early-hold-release | 768/385/2，replay=equal | 同左 | 同左 | 成立 |
+| PD3c all-hit / no-input / early-hold-release | 46/21/0、−21/0/21、36/19/2 | 同左 | 同左 | 成立 |
+
+R4 三行拼接 166 字节，SHA-256 `3c6723af…901c`，与 `a-dense-verification.log` 逐字节相同；PD3c 输出按 CRLF 归一到 157 字节，SHA-256 `a124c5fd…51ab`，与 `b-keyboard-verification.json` 的 `logicalCases` 相同。两侧驱动源码是同一 blob `35af0a91…`；`d1951326..3943fb13` 的 65 个提交中 `engine/judgement` 与 `engine/gameplay` 无文件差异。
+
+原样完整 R4 用例文件（160,354 字节）超过工具内 128 KiB 解析预算，两侧都退出 2、同一条 `json.parse.size_limit`；成立范围仅限拆成单例的重放路径。聚合值相同只能说明总分、命中与失误数未变；逐音符判定窗口、跨实现 replay 字节、设备输入仍无法核实。完整命令与逐例输出见[当前实现重放证据](../evidence/external-corpus/replay-current/replay-current.md)。
+
+## 7. 限制与未做
 
 - 原始目录在 owner 桌面，未纳入仓库；本目录只存关键小文件与全量哈希。
 - 两包都没有逐音符/Fact 期望与结算明细，只有聚合结果。
 - 设备级输入时间戳、校准偏移、人工观察缺失；A 的 `human_observations` 明确未观察。
-- 本轮没有重放；重放对照由 [T-01 外部语料重放] 取证任务另行执行，结果不写入本页。
+- 当前实现重放已完成（2026-11-24），但只是 Debug 构建；历史设备 Player 是 Release，逐音符层没有期望可对照。

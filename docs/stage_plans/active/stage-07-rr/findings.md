@@ -818,6 +818,16 @@ T-04a 实施 R1 构建隔离时发现，`playback_session_gameplay.cpp` 与 `pla
 
 owner 2026-11-23 裁定：移交 T-08，与 RR-F122 的候选宏、安装面和逐符号迁移同批处理。T-04 保持现状并在证据登记，T-08 卡已加入对应条目：拆分后默认闭包不含候选 hook 声明，实验闭包每个 hook 仍只有一个定义，用 `cuexis_rr_playback_isolation` 与安装消费者同一套证据核验。
 
+## 33. D-20 旧语料双侧重放（2026-11-24）
+
+两套外部包的判定语料在旧实现（`d1951326`）与当前实现（`3943fb13`，Debug）上分别重放，结果见[当前实现重放](../../../stage_reports/stages/stage-07-rr/evidence/external-corpus/replay-current/replay-current.md)与 `out/review/stage-07-rr/T-01/legacy-corpus-external/replay-old/report.md`。
+
+- 包 A `keyboard-dense-v5`：两侧都输出 778/387/0、−387/0/387、768/385/2，`replay=equal`；三行拼接 166 字节，SHA-256 `3c6723af…901c`，与包内 `verification.log` 逐字节相同。
+- 包 B `keyboard` 与 `keyboard-release`（同一课程两个入口）：当前实现输出 46/21/0、−21/0/21、36/19/2；CRLF 归一后 157 字节，SHA-256 `a124c5fd…51ab`，与包内 `verification.json.logicalCases` 相同；用 `d1951326` 补跑同一输入，stdout 与当前逐字节相同。
+- 两侧驱动源码是同一 blob `35af0a91…`；`d1951326..3943fb13` 的 65 个提交里 `engine/judgement` 与 `engine/gameplay` 无文件差异，差异集中在 `engine/playback` 准备路径与 chart/cxc 读取。
+- 原样完整 R4 用例文件（160,354 字节）仍超过工具内 128 KiB 解析预算，两侧都 exit 2、同一条 `json.parse.size_limit`；单例拆分路径成立，完整文件路径记为不成立。
+- 这批语料可以充当当前实现的内部回归输入，但聚合值相同只证明 score/hits/misses 与同构建 replay 自洽；逐音符判定窗口、跨实现 replay 字节与设备输入仍无法核实。
+
 ## 附录 处置记录（按日期保留，§12–§16）
 
 本附录保留各轮审查的处置记录，按当时时点成立，不改写结论；编号沿用历史顺序，故排在 §17 之后阅读。

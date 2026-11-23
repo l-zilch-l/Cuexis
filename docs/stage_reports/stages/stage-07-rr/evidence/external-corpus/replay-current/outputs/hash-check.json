@@ -1,0 +1,191 @@
+{
+  "r4": {
+    "all-hit": {
+      "split_bytes": 46948,
+      "split_single_element": true,
+      "matches_full_entry": true,
+      "inputs": 770,
+      "end": 45000000,
+      "expected": {
+        "score": 778,
+        "hits": 387,
+        "misses": 0
+      }
+    },
+    "no-input": {
+      "split_bytes": 94,
+      "split_single_element": true,
+      "matches_full_entry": true,
+      "inputs": 0,
+      "end": 45000000,
+      "expected": {
+        "score": -387,
+        "hits": 0,
+        "misses": 387
+      }
+    },
+    "early-hold-release": {
+      "split_bytes": 46959,
+      "split_single_element": true,
+      "matches_full_entry": true,
+      "inputs": 770,
+      "end": 45000000,
+      "expected": {
+        "score": 768,
+        "hits": 385,
+        "misses": 2
+      }
+    },
+    "package_order": [
+      "all-hit",
+      "no-input",
+      "early-hold-release"
+    ],
+    "verification_log": {
+      "bytes": 166,
+      "sha256": "3c6723af9c8fadd292ba1ac508beb6b5ac504aa425ec9413a78f035c97dd901c"
+    },
+    "full_cases": {
+      "bytes": 160354,
+      "sha256": "768cff0e3ec023bb52b19f9c9fc9d9184be24256230a522b0c18dee807b890e4",
+      "cases": 3
+    },
+    "inputs": {
+      "practice.cxc": {
+        "bytes": 10294067,
+        "sha256": "366ebff81233056c39bc9940b23d8a21e5a5d330ade5ec9bc02de77b6db86dd1"
+      },
+      "gameplay.packed": {
+        "bytes": 309961,
+        "sha256": "acfd31eef366f5cc9aa6e4d3559cb2ec6cc981d4f35f43840f2f8e886a671f16"
+      },
+      "gameplay-configuration.json": {
+        "bytes": 30413,
+        "sha256": "03cf0745b2651502b5e5b613ae45e352a3a549a91cedeeea0ab9033f4de146e3"
+      },
+      "verification-cases.json": {
+        "bytes": 160354,
+        "sha256": "768cff0e3ec023bb52b19f9c9fc9d9184be24256230a522b0c18dee807b890e4"
+      },
+      "verification.log": {
+        "bytes": 166,
+        "sha256": "3c6723af9c8fadd292ba1ac508beb6b5ac504aa425ec9413a78f035c97dd901c"
+      }
+    }
+  },
+  "pd3c": {
+    "cases": [
+      {
+        "name": "all-hit",
+        "end": 35000000,
+        "inputs": 38,
+        "expected": {
+          "score": 46,
+          "hits": 21,
+          "misses": 0
+        }
+      },
+      {
+        "name": "no-input",
+        "end": 35000000,
+        "inputs": 0,
+        "expected": {
+          "score": -21,
+          "hits": 0,
+          "misses": 21
+        }
+      },
+      {
+        "name": "early-hold-release",
+        "end": 35000000,
+        "inputs": 38,
+        "expected": {
+          "score": 36,
+          "hits": 19,
+          "misses": 2
+        }
+      }
+    ],
+    "verification_cases": {
+      "bytes": 8284,
+      "sha256": "e068e61481a4eb24c8af083f76cacd704ef0045b2206cc00c8f2e699f0d49874"
+    },
+    "verification_json": {
+      "bytes": 850,
+      "sha256": "997c097297e00f4f91a2dff62a78a0cc29649302ad60ef067a831b06fbf1529b",
+      "logicalCases_sha256": "a124c5fdf4724c95b559b5f34fb6b469fea7fb4ae291302e8482b41f905751ab",
+      "logicalCases_bytes": 157
+    },
+    "reconstructed_logicalCases_equal": true,
+    "also_copied_identical_to_keyboard_release": {
+      "course.json": true,
+      "entity-index.json": true,
+      "practice.cxc": true,
+      "gameplay.packed": true,
+      "gameplay-configuration.json": true,
+      "verification-cases.json": true,
+      "verification.json": true
+    },
+    "inputs": {
+      "practice.cxc": {
+        "bytes": 4085436,
+        "sha256": "4d4a6bfd70bd288f3a6bc9a31fdac912b8d88c200847ee6a7eabcea705fb0bd3"
+      },
+      "gameplay.packed": {
+        "bytes": 21633,
+        "sha256": "928b2730bb15d972ef8bd579fddde7d98dda8a867a2de46c7abcfeab479e76d4"
+      },
+      "gameplay-configuration.json": {
+        "bytes": 33221,
+        "sha256": "96a1e75a69d8a8f43e3da08da35390bb96180784fec343a920cc481d48f506d9"
+      },
+      "verification-cases.json": {
+        "bytes": 8284,
+        "sha256": "e068e61481a4eb24c8af083f76cacd704ef0045b2206cc00c8f2e699f0d49874"
+      },
+      "verification.json": {
+        "bytes": 850,
+        "sha256": "997c097297e00f4f91a2dff62a78a0cc29649302ad60ef067a831b06fbf1529b"
+      }
+    }
+  },
+  "stdout_checks": {
+    "r4_concatenated_stdout": {
+      "bytes": 166,
+      "sha256": "3c6723af9c8fadd292ba1ac508beb6b5ac504aa425ec9413a78f035c97dd901c",
+      "has_crlf": true,
+      "equals_verification_log_bytes": true
+    },
+    "pd3c_stdout": {
+      "bytes": 160,
+      "sha256": "3fa393e613d533df6669a40388bcbfae40ddddc6ccb0fcc62d25552559e370dd",
+      "has_crlf": true,
+      "equals_verification_json_logicalCases_raw": false,
+      "equals_verification_json_logicalCases_after_crlf_normalization": true,
+      "equals_reconstructed_lines_after_crlf_normalization": true,
+      "normalized_bytes": 157,
+      "normalized_sha256": "a124c5fdf4724c95b559b5f34fb6b469fea7fb4ae291302e8482b41f905751ab",
+      "logicalCases_bytes": 157,
+      "logicalCases_sha256": "a124c5fdf4724c95b559b5f34fb6b469fea7fb4ae291302e8482b41f905751ab"
+    },
+    "pd3c_old_d195_stdout": {
+      "bytes": 160,
+      "sha256": "3fa393e613d533df6669a40388bcbfae40ddddc6ccb0fcc62d25552559e370dd",
+      "has_crlf": true,
+      "equals_current_stdout": true,
+      "equals_verification_json_logicalCases_after_crlf_normalization": true
+    }
+  },
+  "binaries": {
+    "current_compiler.exe": {
+      "path": "E:\\Cuexis-worktree\\out\\review\\stage-07-rr\\T-01\\legacy-corpus-external\\replay-current\\compiler\\compiler.exe",
+      "bytes": 20009984,
+      "sha256": "446dee548f1da34f38e7b38bd21ba20bbd9c74be0313ce267f2d91e08901bac1"
+    },
+    "old_d195_compiler.exe": {
+      "path": "E:\\Cuexis-replay-d195\\out\\build\\replay\\entity-practice\\compiler.exe",
+      "bytes": 20003328,
+      "sha256": "b65d5303d17609caa7c90f7430891374cf49d90d9a74f18204883c7c8d44e1d8"
+    }
+  }
+}

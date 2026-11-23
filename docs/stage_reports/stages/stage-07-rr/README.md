@@ -16,6 +16,7 @@ authority: index
 
 | 日期 | 报告 | 内容 |
 | --- | --- | --- |
+| 2026-11-24 | [当前实现重放两套历史包](evidence/external-corpus/replay-current/replay-current.md) | 聚合判定与历史期望逐字节一致；完整 R4 用例文件受 128 KiB 解析预算限制 |
 | 2026-11-24 | [RR-F132 身份字节基线](evidence/t-03/identity-baseline/identity-baseline.md) | T-10 改动前的两套 `judgementIdentity` 规范字节与哈希；仅当前实现，历史发布值仍无法核实 |
 | 2026-11-23 | [外部旧设备验收包清点](readiness/2026-11-23-external-legacy-corpus.md) | 仓库外两套内部候选验收包的哈希、期望值与可复现性；D-20 正式发行语料仍为空集 |
 | 2026-11-23 | [T-01 基线与派单](readiness/2026-11-23-t-01-dispatch-baseline.md) | 实施基线 `a22e255f`、派单清单、调度正反例、独立冷启动与采用绑定；产品实现未开始 |
