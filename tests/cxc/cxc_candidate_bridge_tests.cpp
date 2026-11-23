@@ -251,10 +251,9 @@ TEST_CASE("rr2_contract_entry", "[cxc][candidate][entry][rr2][encoding]") {
     const auto sourceArtifact = cxc::detail::sha256Hex(sourceBytes);
     const std::string sourcePath{"compiled/z.v5.json"};
     auto behaviorEntry = cxc::parseCandidateChartEntryExtension(
-        extensionJson(entryJson(sourcePath, true, sourceArtifact, behaviorIdentity,
-                                chart::behaviorCandidateProfile,
-                                static_cast<std::uint64_t>(compiled->runtime.objects.size()), 0,
-                                "source-json")),
+        extensionJson(entryJson(
+            sourcePath, true, sourceArtifact, behaviorIdentity, chart::behaviorCandidateProfile,
+            static_cast<std::uint64_t>(compiled->runtime.objects.size()), 0, "source-json")),
         sourcePath);
     REQUIRE(behaviorEntry.hasValue());
     const auto behaviorAccepted =
@@ -273,10 +272,9 @@ TEST_CASE("rr2_contract_entry", "[cxc][candidate][entry][rr2][encoding]") {
     CHECK(hasCode(staticRejected.diagnostics, "cxc.chart_entry.entry_invalid"));
 
     auto behaviorSwapped = cxc::parseCandidateChartEntryExtension(
-        extensionJson(entryJson(sourcePath, true, sourceArtifact, behaviorIdentity,
-                                chart::behaviorCandidateProfile,
-                                static_cast<std::uint64_t>(compiled->runtime.objects.size()), 0,
-                                "packed-chart")),
+        extensionJson(entryJson(
+            sourcePath, true, sourceArtifact, behaviorIdentity, chart::behaviorCandidateProfile,
+            static_cast<std::uint64_t>(compiled->runtime.objects.size()), 0, "packed-chart")),
         sourcePath);
     REQUIRE(behaviorSwapped.hasValue());
     const auto behaviorRejected =

@@ -6,9 +6,9 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <cuexis/chart/packed_chart_writer.hpp>
 #include <iostream>
 #include <string>
-#include <cuexis/chart/packed_chart_writer.hpp>
 
 namespace {
 

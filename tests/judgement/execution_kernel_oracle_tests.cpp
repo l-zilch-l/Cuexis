@@ -1,5 +1,5 @@
-#include "execution_kernel_test_fixture.hpp"
 #include "../../engine/judgement/src/ingress_transaction.hpp"
+#include "execution_kernel_test_fixture.hpp"
 
 // Reset, invariant, trace-oracle and containment cases.
 
@@ -662,8 +662,9 @@ TEST_CASE("rr2_contract_input", "[judgement][execution][input][rr2][atomic][late
         SessionIngressState state;
         REQUIRE(normalizeObservation(state, mapping, ObservationTick{Tick{-10}},
                                      ingress(-10, 1, InputAction::press).declaration));
-        const auto duplicate = normalizeObservation(state, mapping, ObservationTick{Tick{-10}},
-                                                    ingress(-10, 2, InputAction::press).declaration);
+        const auto duplicate =
+            normalizeObservation(state, mapping, ObservationTick{Tick{-10}},
+                                 ingress(-10, 2, InputAction::press).declaration);
         REQUIRE_FALSE(duplicate);
         CHECK(duplicate.error().code() == "judgement.input.same_tick_collision");
         const auto sequence = normalizeObservation(state, mapping, ObservationTick{Tick{-10}},
@@ -686,8 +687,8 @@ TEST_CASE("rr2_contract_input", "[judgement][execution][input][rr2][atomic][late
     {
         KernelFixture f;
         auto session = f.session();
-        const auto rejected = session.submit(
-            {input(900, 1, InputAction::press), input(900, 2, InputAction::press)});
+        const auto rejected =
+            session.submit({input(900, 1, InputAction::press), input(900, 2, InputAction::press)});
         REQUIRE_FALSE(rejected);
         CHECK(rejected.error().code() == "judgement.late.duplicate_queue_entry");
         CHECK(contextValue(rejected.error(), "category") == "late_policy_incomplete");
@@ -705,8 +706,8 @@ TEST_CASE("rr2_contract_input", "[judgement][execution][input][rr2][atomic][late
         KernelFixture f;
         auto session = f.session();
         REQUIRE(session.advance(Tick{903}));
-        const auto rejected =
-            session.submit({input(900, 1, InputAction::press), input(901, 2, InputAction::release)});
+        const auto rejected = session.submit(
+            {input(900, 1, InputAction::press), input(901, 2, InputAction::release)});
         REQUIRE_FALSE(rejected);
         CHECK(rejected.error().code() == "judgement.late.dispatch_collision");
         CHECK(contextValue(rejected.error(), "category") == "invalid_relation");
@@ -729,7 +730,8 @@ TEST_CASE("rr2_contract_input", "[judgement][execution][input][rr2][atomic][late
             // The 900 press is forwarded to 901; the receipt must say so.
             CHECK(first->front().wasForwarded);
         } else {
-            // The native 901 press is already at the dispatch tick; it must not be marked forwarded.
+            // The native 901 press is already at the dispatch tick; it must not be marked
+            // forwarded.
             CHECK_FALSE(first->front().wasForwarded);
         }
 

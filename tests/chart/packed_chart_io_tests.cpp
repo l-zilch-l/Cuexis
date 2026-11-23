@@ -5,11 +5,11 @@
 #include "packed_fixture_support.hpp"
 
 #include <array>
+#include <cuexis/chart/packed_chart_writer.hpp>
 #include <filesystem>
 #include <fstream>
 #include <span>
 #include <vector>
-#include <cuexis/chart/packed_chart_writer.hpp>
 
 namespace {
 
@@ -144,8 +144,7 @@ TEST_CASE("rr2_contract_packed", "[chart][packed][rr2][crc][codec]") {
     REQUIRE(requirements->offset + requirements->size <= bytes.size());
     auto requirementPayload = std::vector<std::byte>(
         bytes.begin() + static_cast<std::ptrdiff_t>(requirements->offset),
-        bytes.begin() +
-            static_cast<std::ptrdiff_t>(requirements->offset + requirements->size));
+        bytes.begin() + static_cast<std::ptrdiff_t>(requirements->offset + requirements->size));
     REQUIRE_FALSE(requirementPayload.empty());
     requirementPayload[0] = std::byte{1};
     auto requirementMode =

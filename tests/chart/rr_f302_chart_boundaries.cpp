@@ -176,6 +176,7 @@ TEST_CASE("rr_f302_chart_boundaries", "[chart][f302][boundaries]") {
         CHECK(v4.artifact->v4Document->chartId.value == first.artifact->document.chartId.value);
         const auto resolved = ChartV4Resolver::resolve(*v4.artifact->v4Document);
         REQUIRE(resolved.hasValue());
-        CHECK(resolved.artifact->document.chart.chartId.value == first.artifact->document.chartId.value);
+        CHECK(resolved.artifact->document.chart.chartId.value ==
+              first.artifact->document.chartId.value);
     }
 }

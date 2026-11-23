@@ -371,8 +371,8 @@ TEST_CASE("Same-priority runtime overrides discard the conflict write",
 }
 
 TEST_CASE("rr_override_registration_validation", "[runtime][override][registration]") {
-    using cuexis::world::PropertyId;
     using cuexis::world::propertyBit;
+    using cuexis::world::PropertyId;
     cuexis::runtime::RuntimeSession session;
     auto prepared = session.prepare(runtimeChart(), compilePositionProgram(10.0, 0.5));
     REQUIRE(prepared.hasValue());
@@ -383,44 +383,44 @@ TEST_CASE("rr_override_registration_validation", "[runtime][override][registrati
     const auto xMask = propertyBit(PropertyId::TransformPositionX);
     const auto yMask = propertyBit(PropertyId::TransformPositionY);
     const auto fovMask = propertyBit(PropertyId::CameraFovY);
-    const auto legal = session.acquireOverride(
-        cuexis::world::OverrideKind::Host, "host", 1, xMask, {},
-        std::array{cuexis::runtime::PropertyOverrideWrite{
-            .objectId = {"object"},
-            .property = PropertyId::TransformPositionX,
-            .value = 4.0,
-        }});
+    const auto legal =
+        session.acquireOverride(cuexis::world::OverrideKind::Host, "host", 1, xMask, {},
+                                std::array{cuexis::runtime::PropertyOverrideWrite{
+                                    .objectId = {"object"},
+                                    .property = PropertyId::TransformPositionX,
+                                    .value = 4.0,
+                                }});
     REQUIRE(legal.has_value());
     REQUIRE(session.update({.chartTimeMs = 250.0}).has_value());
     CHECK(objectPosition(session) == Catch::Approx(4.0F));
 
     // A type error rejects the whole batch before any token exists.
-    const auto typeError = session.acquireOverride(
-        cuexis::world::OverrideKind::Host, "host", 1, yMask, {},
-        std::array{cuexis::runtime::PropertyOverrideWrite{
-            .objectId = {"object"},
-            .property = PropertyId::TransformPositionY,
-            .value = std::string{"not-a-number"},
-        }});
+    const auto typeError =
+        session.acquireOverride(cuexis::world::OverrideKind::Host, "host", 1, yMask, {},
+                                std::array{cuexis::runtime::PropertyOverrideWrite{
+                                    .objectId = {"object"},
+                                    .property = PropertyId::TransformPositionY,
+                                    .value = std::string{"not-a-number"},
+                                }});
     REQUIRE_FALSE(typeError.has_value());
     CHECK(typeError.error().code() == "world.property.value_invalid");
 
     // Legal first write followed by an out-of-domain write: no partial override is published.
-    const auto mixed = session.acquireOverride(
-        cuexis::world::OverrideKind::Host, "host", 1,
-        static_cast<std::uint16_t>(yMask | fovMask), {},
-        std::array<cuexis::runtime::PropertyOverrideWrite, 2>{
-            cuexis::runtime::PropertyOverrideWrite{
-                .objectId = {"object"},
-                .property = PropertyId::TransformPositionY,
-                .value = 2.0,
-            },
-            cuexis::runtime::PropertyOverrideWrite{
-                .objectId = {"object"},
-                .property = PropertyId::CameraFovY,
-                .value = 200.0,
-            },
-        });
+    const auto mixed =
+        session.acquireOverride(cuexis::world::OverrideKind::Host, "host", 1,
+                                static_cast<std::uint16_t>(yMask | fovMask), {},
+                                std::array<cuexis::runtime::PropertyOverrideWrite, 2>{
+                                    cuexis::runtime::PropertyOverrideWrite{
+                                        .objectId = {"object"},
+                                        .property = PropertyId::TransformPositionY,
+                                        .value = 2.0,
+                                    },
+                                    cuexis::runtime::PropertyOverrideWrite{
+                                        .objectId = {"object"},
+                                        .property = PropertyId::CameraFovY,
+                                        .value = 200.0,
+                                    },
+                                });
     REQUIRE_FALSE(mixed.has_value());
     CHECK(mixed.error().code() == "runtime.camera.fov_out_of_range");
 
@@ -430,13 +430,13 @@ TEST_CASE("rr_override_registration_validation", "[runtime][override][registrati
     CHECK(objectPosition(session) == Catch::Approx(4.0F));
     CHECK(objectPositionY(session) == Catch::Approx(0.0F));
 
-    const auto replacement = session.acquireOverride(
-        cuexis::world::OverrideKind::Host, "host", 2, xMask, {},
-        std::array{cuexis::runtime::PropertyOverrideWrite{
-            .objectId = {"object"},
-            .property = PropertyId::TransformPositionX,
-            .value = 8.0,
-        }});
+    const auto replacement =
+        session.acquireOverride(cuexis::world::OverrideKind::Host, "host", 2, xMask, {},
+                                std::array{cuexis::runtime::PropertyOverrideWrite{
+                                    .objectId = {"object"},
+                                    .property = PropertyId::TransformPositionX,
+                                    .value = 8.0,
+                                }});
     REQUIRE(replacement.has_value());
     REQUIRE(session.update({.chartTimeMs = 250.0}).has_value());
     CHECK(objectPosition(session) == Catch::Approx(8.0F));
@@ -453,24 +453,24 @@ TEST_CASE("rr_override_registration_validation", "[runtime][override][registrati
     REQUIRE(previewPrepared.hasValue());
     REQUIRE(preview.commit(std::move(*previewPrepared.prepared)).has_value());
     REQUIRE(preview.update({.chartTimeMs = 250.0}).has_value());
-    const auto invalidPreview = preview.acquireOverride(
-        cuexis::world::OverrideKind::StudioPreview, "studio", 1, xMask, {},
-        std::array{cuexis::runtime::PropertyOverrideWrite{
-            .objectId = {"object"},
-            .property = PropertyId::TransformPositionX,
-            .value = std::string{"not-a-number"},
-        }});
+    const auto invalidPreview =
+        preview.acquireOverride(cuexis::world::OverrideKind::StudioPreview, "studio", 1, xMask, {},
+                                std::array{cuexis::runtime::PropertyOverrideWrite{
+                                    .objectId = {"object"},
+                                    .property = PropertyId::TransformPositionX,
+                                    .value = std::string{"not-a-number"},
+                                }});
     REQUIRE_FALSE(invalidPreview.has_value());
     CHECK(invalidPreview.error().code() == "world.property.value_invalid");
     REQUIRE(preview.update({.chartTimeMs = 250.0}).has_value());
     CHECK(objectPosition(preview) == Catch::Approx(7.5F));
-    const auto previewToken = preview.acquireOverride(
-        cuexis::world::OverrideKind::StudioPreview, "studio", 1, xMask, {},
-        std::array{cuexis::runtime::PropertyOverrideWrite{
-            .objectId = {"object"},
-            .property = PropertyId::TransformPositionX,
-            .value = 1.0,
-        }});
+    const auto previewToken =
+        preview.acquireOverride(cuexis::world::OverrideKind::StudioPreview, "studio", 1, xMask, {},
+                                std::array{cuexis::runtime::PropertyOverrideWrite{
+                                    .objectId = {"object"},
+                                    .property = PropertyId::TransformPositionX,
+                                    .value = 1.0,
+                                }});
     REQUIRE(previewToken.has_value());
     REQUIRE(preview.update({.chartTimeMs = 250.0}).has_value());
     CHECK(objectPosition(preview) == Catch::Approx(1.0F));

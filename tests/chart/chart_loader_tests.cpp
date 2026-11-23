@@ -65,9 +65,8 @@ namespace {
 auto chartWithNoteBeat(int version, std::string_view numerator, std::string_view denominator)
     -> std::string {
     const auto timing =
-        version == 3
-            ? R"("timing":{"offsetMs":0,"defaultBpm":120,"tempoEvents":[],"stops":[]})"
-            : R"("timing":{"offsetMs":0,"defaultBpm":120,"bpmChanges":[],"stops":[]})";
+        version == 3 ? R"("timing":{"offsetMs":0,"defaultBpm":120,"tempoEvents":[],"stops":[]})"
+                     : R"("timing":{"offsetMs":0,"defaultBpm":120,"bpmChanges":[],"stops":[]})";
     return std::string{"{\"format\":\"cuexis.chart\",\"version\":"} + std::to_string(version) +
            R"(,"chartId":"019b0000-0000-7abc-8def-000000000001","metadata":{},)" + timing +
            R"(,"templates":[],"behaviors":[],"objects":[)"

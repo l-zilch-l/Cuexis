@@ -98,8 +98,8 @@ TEST_CASE("rr_session_prepared_owner", "[playback][t17][candidate][prepared-owne
     // A live session owns the lease: materialization dereferences the owner exactly once.
     {
         auto session = std::make_unique<PlaybackSession>();
-        auto prepared =
-            session->prepareLoad(playback_gameplay_fixture::presentation(), PlaybackMode::ChartClock);
+        auto prepared = session->prepareLoad(playback_gameplay_fixture::presentation(),
+                                             PlaybackMode::ChartClock);
         REQUIRE(prepared);
         REQUIRE(prepared->valid());
         CHECK(Access::preparedOwnerDereferences(*prepared) == 0);
@@ -121,8 +121,8 @@ TEST_CASE("rr_session_prepared_owner", "[playback][t17][candidate][prepared-owne
     // error without dereferencing the dangling owner.
     {
         auto session = std::make_unique<PlaybackSession>();
-        auto prepared =
-            session->prepareLoad(playback_gameplay_fixture::presentation(), PlaybackMode::ChartClock);
+        auto prepared = session->prepareLoad(playback_gameplay_fixture::presentation(),
+                                             PlaybackMode::ChartClock);
         REQUIRE(prepared);
         REQUIRE(prepared->valid());
         session.reset();
@@ -138,8 +138,8 @@ TEST_CASE("rr_session_prepared_owner", "[playback][t17][candidate][prepared-owne
     // Reverse order still works: Prepared destroyed before its session.
     {
         auto session = std::make_unique<PlaybackSession>();
-        auto prepared =
-            session->prepareLoad(playback_gameplay_fixture::presentation(), PlaybackMode::ChartClock);
+        auto prepared = session->prepareLoad(playback_gameplay_fixture::presentation(),
+                                             PlaybackMode::ChartClock);
         REQUIRE(prepared);
         *prepared = PreparedPlayback{};
         REQUIRE(session->unload());
@@ -148,8 +148,8 @@ TEST_CASE("rr_session_prepared_owner", "[playback][t17][candidate][prepared-owne
     // Moved-from and off-thread objects are invalid; the moved-to object stays valid.
     {
         PlaybackSession session;
-        auto prepared =
-            session.prepareLoad(playback_gameplay_fixture::presentation(), PlaybackMode::ChartClock);
+        auto prepared = session.prepareLoad(playback_gameplay_fixture::presentation(),
+                                            PlaybackMode::ChartClock);
         REQUIRE(prepared);
         PreparedPlayback moved = std::move(*prepared);
         CHECK_FALSE(prepared->valid());
@@ -168,8 +168,8 @@ TEST_CASE("rr_gameplay_only_accept", "[playback][t17][candidate][gameplay-only]"
     // Presentation prepared content stays valid, readable and committable in the same session.
     {
         PlaybackSession session;
-        auto prepared =
-            session.prepareLoad(playback_gameplay_fixture::presentation(), PlaybackMode::ChartClock);
+        auto prepared = session.prepareLoad(playback_gameplay_fixture::presentation(),
+                                            PlaybackMode::ChartClock);
         REQUIRE(prepared);
         CHECK(prepared->valid());
         REQUIRE(prepared->contentInfo() != nullptr);
@@ -249,11 +249,10 @@ TEST_CASE("rr_gameplay_only_accept", "[playback][t17][candidate][gameplay-only]"
         REQUIRE(session.load(playback_gameplay_fixture::presentation(), PlaybackMode::ChartClock));
         const auto chartId = session.contentInfo();
         REQUIRE(chartId);
-        auto prepared = session.prepareReload(playback_gameplay_fixture::presentation(),
-                                              {.chartTimeMs = 1.0,
-                                               .simulationDeltaTimeMs = 0.0,
-                                               .timeDiscontinuityId = 0},
-                                              cuexis::playback::ReloadPolicy::KeepChartTime);
+        auto prepared = session.prepareReload(
+            playback_gameplay_fixture::presentation(),
+            {.chartTimeMs = 1.0, .simulationDeltaTimeMs = 0.0, .timeDiscontinuityId = 0},
+            cuexis::playback::ReloadPolicy::KeepChartTime);
         REQUIRE(prepared);
         REQUIRE(prepared->valid());
         REQUIRE(session.update({.chartTimeMs = 2.0}));

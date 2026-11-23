@@ -10,11 +10,11 @@
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
+#include <cuexis/chart/packed_chart_writer.hpp>
 #include <filesystem>
 #include <fstream>
 #include <string>
 #include <vector>
-#include <cuexis/chart/packed_chart_writer.hpp>
 
 namespace {
 

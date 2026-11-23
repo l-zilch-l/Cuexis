@@ -277,8 +277,8 @@ auto detail::ResolverAccess::validatePropertyValue(const PropertyResolver& resol
                                             "Property target has no baseline", entity));
     }
     const auto& state = entry->properties[propertyIndex(property)];
-    auto parsed =
-        parsedPropertyValue(entity, entry->hasTransform, state.present, property, writeValue(value));
+    auto parsed = parsedPropertyValue(entity, entry->hasTransform, state.present, property,
+                                      writeValue(value));
     if (!parsed) {
         return core::unexpected(std::move(parsed.error()));
     }
