@@ -1,62 +1,17 @@
 // PlaybackSession gameplay commands: the gameplay session, its projection and the publication.
 
+#include "playback_session_gameplay_hooks.hpp"
 #include "playback_session_internal.hpp"
+
+#include <cuexis/playback/experimental/gameplay.hpp>
+#include <cuexis/playback/experimental/gameplay_realtime.hpp>
+#include <cuexis/playback/experimental/gameplay_replay.hpp>
 
 #include <cmath>
 
 namespace cuexis::playback {
 
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
-auto validateGameplayFrame(const RuntimeFrame& frame, const std::optional<RuntimeFrame>& previous)
-    -> core::Result<void> {
-    // The frame has its own time domain. Never derive integer H or T from this double.
-    if (!std::isfinite(frame.chartTimeMs))
-        return core::unexpected(core::Error{"runtime.frame.chart_time_non_finite",
-                                            "RuntimeFrame chartTimeMs must be finite"});
-    if (!std::isfinite(frame.simulationDeltaTimeMs) || frame.simulationDeltaTimeMs < 0)
-        return core::unexpected(
-            core::Error{"runtime.frame.delta_invalid", "Invalid RuntimeFrame delta"});
-    if (previous) {
-        if (frame.timeDiscontinuityId == previous->timeDiscontinuityId &&
-            frame.chartTimeMs < previous->chartTimeMs)
-            return core::unexpected(core::Error{"runtime.frame.backward_seek_undeclared",
-                                                "Backward time requires discontinuity"});
-        if (frame.timeDiscontinuityId != previous->timeDiscontinuityId &&
-            frame.simulationDeltaTimeMs != 0)
-            return core::unexpected(core::Error{"runtime.frame.discontinuity_delta_nonzero",
-                                                "Discontinuity requires zero delta"});
-    }
-    return {};
-}
-auto makeGameplaySession(const GameplayContent& c) -> core::Result<judgement::JudgementSession> {
-    const auto* content = detail::GameplayAccess::content(c);
-    if (!content)
-        return core::unexpected(gameplayError("Empty Gameplay content"));
-    auto session = judgement::JudgementSession::create();
-    if (!session)
-        return core::unexpected(detail::projectGameplayError(std::move(session.error())));
-    if (auto r = session->configure(content->configuration); !r)
-        return core::unexpected(detail::projectGameplayError(std::move(r.error())));
-    if (auto r = session->prepare(content->capsule.gameplay); !r)
-        return core::unexpected(detail::projectGameplayError(std::move(r.error())));
-    return std::move(*session);
-}
-auto publicTick(std::optional<judgement::Tick> t) -> std::optional<GameplayTick> {
-    return t ? std::optional{GameplayTick{t->value()}} : std::nullopt;
-}
-auto publicFault(std::optional<judgement::FaultStage> s) -> std::optional<GameplayFaultStage> {
-    if (!s)
-        return {};
-    switch (*s) {
-    case judgement::FaultStage::kernel:
-        return GameplayFaultStage::Kernel;
-    case judgement::FaultStage::fold:
-        return GameplayFaultStage::Fold;
-    case judgement::FaultStage::control:
-        return GameplayFaultStage::Control;
-    }
-    return {};
-}
 auto PlaybackSession::gameplayWriteGuard() const -> core::Result<void> {
     if (!state_->ownerThread.isCurrent())
         return core::unexpected(ownerError("gameplay"));
@@ -618,6 +573,67 @@ auto PlaybackSession::checkpointGameplay(const GameplayReplay& a, GameplayTick h
 } catch (...) {
     return core::unexpected(gameplayError("Checkpoint allocation failed"));
 }
+
+// Experimental facade entries. Each one forwards the same-version session member named by the
+// compatibility table; the old members above keep their declarations, symbols and behavior.
+namespace experimental {
+auto prepareGameplayLoad(PlaybackSession& session, PlaybackSource&& source, PlaybackMode mode,
+                         const GameplayContent& content) -> core::Result<PreparedPlayback> {
+    return session.prepareGameplayLoad(std::move(source), mode, content);
+}
+auto prepareGameplayReload(PlaybackSession& session, PlaybackSource&& source,
+                           const GameplayContent& content, ReloadPolicy policy)
+    -> core::Result<PreparedPlayback> {
+    return session.prepareGameplayReload(std::move(source), content, policy);
+}
+auto submitGameplay(PlaybackSession& session, std::span<const GameplayInput> inputs)
+    -> core::Result<void> {
+    return session.submitGameplay(inputs);
+}
+auto advanceGameplay(PlaybackSession& session, GameplayTick advancementTick,
+                     GameplayPresentationTick presentationTick, const RuntimeFrame& frame)
+    -> core::Result<void> {
+    return session.advanceGameplay(advancementTick, presentationTick, frame);
+}
+auto gameplayState(const PlaybackSession& session) -> core::Result<GameplayState> {
+    return session.gameplayState();
+}
+auto queryGameplayCapability(const PlaybackSession& session, std::string_view id,
+                             std::string_view revision, const GameplayConfiguration* pending)
+    -> core::Result<GameplayCapabilityQuery> {
+    return session.queryGameplayCapability(id, revision, pending);
+}
+auto queryGameplay(const PlaybackSession& session) -> core::Result<GameplayResult> {
+    return session.queryGameplay();
+}
+auto queryGameplayPresentation(const PlaybackSession& session)
+    -> core::Result<GameplayPresentationMap> {
+    return session.queryGameplayPresentation();
+}
+auto gameplayAdvanceReceipt(const PlaybackSession& session)
+    -> core::Result<GameplayAdvanceReceipt> {
+    return session.gameplayAdvanceReceipt();
+}
+auto archiveGameplay(const PlaybackSession& session) -> core::Result<GameplayReplay> {
+    return session.archiveGameplay();
+}
+auto snapshotGameplay(const PlaybackSession& session) -> core::Result<GameplaySnapshot> {
+    return session.snapshotGameplay();
+}
+auto evaluateGameplayReplay(const PlaybackSession& session, const GameplayReplay& replay)
+    -> core::Result<GameplayReplayEvaluation> {
+    return session.evaluateGameplayReplay(replay);
+}
+auto restoreGameplay(PlaybackSession& session, const GameplaySnapshot& snapshot,
+                     GameplayPresentationTick presentationTick, const RuntimeFrame& frame)
+    -> core::Result<void> {
+    return session.restoreGameplay(snapshot, presentationTick, frame);
+}
+auto checkpointGameplay(const PlaybackSession& session, const GameplayReplay& replay,
+                        GameplayTick horizon) -> core::Result<GameplayCheckpoint> {
+    return session.checkpointGameplay(replay, horizon);
+}
+} // namespace experimental
 #endif
 
 } // namespace cuexis::playback

@@ -294,6 +294,39 @@ auto FrameDelivery::admit(const FrameRequest& r, std::uint64_t version, std::int
 } catch (...) {
     return core::unexpected(stale());
 }
+auto FrameDelivery::refuse(const FrameRequest& r, DeliveryStatus status)
+    -> core::Result<DeliveryInfo> try {
+    std::lock_guard lock(mutex_);
+    auto* c = find(r.consumerId);
+    if (!c || c->registration.state != ConsumerState::active || closing_ || !r.requestId ||
+        r.context.sessionScope != c->registration.context.sessionScope || !terminal(status))
+        return core::unexpected(stale());
+    const auto f = fingerprint(r);
+    if (auto* old = request(*c, r.requestId)) {
+        if (old->fingerprint != f)
+            return core::unexpected(conflict());
+        return old->info;
+    }
+    if (r.requestId <= c->requestHighWater)
+        return DeliveryInfo{r.consumerId, r.requestId, 0, 0, DeliveryStatus::historyUnavailable};
+    if (c->current && !terminal(c->current->info.status)) {
+        if (c->registration.profile.mode == ConsumerMode::exactCapture)
+            return core::unexpected(stale());
+        finish(*c, DeliveryStatus::canceled);
+    }
+    if (c->current) {
+        c->history[c->historyNext] = *c->current;
+        c->historyNext = (c->historyNext + 1) % c->history.size();
+    }
+    c->requestHighWater = r.requestId;
+    DeliveryInfo info{r.consumerId, r.requestId, 0, 0, status};
+    if (r.retained.frame() && r.retained.frame()->source)
+        info.resultVersion = r.retained.frame()->source->resultVersion;
+    c->current = RequestRecord{f, info};
+    return info;
+} catch (...) {
+    return core::unexpected(stale());
+}
 auto FrameDelivery::publish(const FrameRequest& r, FrameEnvelope frame, std::int64_t now)
     -> core::Result<DeliveryInfo> {
     std::lock_guard lock(mutex_);

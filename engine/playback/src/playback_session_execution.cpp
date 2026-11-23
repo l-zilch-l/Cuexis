@@ -3,6 +3,10 @@
 
 #include "playback_session_internal.hpp"
 
+#include <cuexis/playback/experimental/gameplay.hpp>
+#include <cuexis/playback/experimental/gameplay_realtime.hpp>
+#include <cuexis/playback/experimental/gameplay_replay.hpp>
+
 namespace cuexis::playback {
 
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
@@ -713,6 +717,34 @@ auto PlaybackSession::seekExecutionStep(const StepRequest& request, const Contro
 } catch (...) {
     return core::unexpected(core::Error{"host.rpa.capacity_exceeded", "Seek reservation failed"});
 }
+
+// Experimental facade entries. The reconciliation identity entry forwards the same algorithm and
+// the old installed free function keeps its declaration and export.
+namespace experimental {
+auto computeGameplayReconciliationIdentity(const GameplayReconciliation& reconciliation)
+    -> core::Result<PreparedSemanticIdentity> {
+    return cuexis::playback::computeGameplayReconciliationIdentity(reconciliation);
+}
+auto invalidateGameplayClock(PlaybackSession& session) -> core::Result<void> {
+    return session.invalidateGameplayClock();
+}
+auto mapGameplayClock(PlaybackSession& session, const ClockObservation& clock, std::int64_t now)
+    -> core::Result<ClockTicks> {
+    return session.mapGameplayClock(clock, now);
+}
+auto gameplayFeedback(const PlaybackSession& session, std::uint64_t scope)
+    -> core::Result<std::vector<FeedbackObservation>> {
+    return session.gameplayFeedback(scope);
+}
+auto sampleGameplayPresentation(PlaybackSession& session, GameplayPresentationTick tick,
+                                const RuntimeFrame& frame) -> core::Result<void> {
+    return session.sampleGameplayPresentation(tick, frame);
+}
+auto gameplayReplayCut(const PlaybackSession& session, const GameplayReplay& replay,
+                       GameplayTick horizon) -> core::Result<GameplayReplayCut> {
+    return session.gameplayReplayCut(replay, horizon);
+}
+} // namespace experimental
 
 #endif
 

@@ -334,7 +334,9 @@ endfunction()
 
 set(candidate_source_names
     playback_session_execution.cpp
+    playback_session_execution_host_access.cpp
     playback_session_gameplay.cpp
+    playback_session_gameplay_hooks.cpp
     playback_session_gameplay_seek.cpp
     playback_session_prepare_gameplay.cpp
     playback_session_realtime.cpp

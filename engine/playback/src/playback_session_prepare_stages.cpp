@@ -6,27 +6,6 @@
 namespace cuexis::playback {
 namespace prepare_detail {
 
-#if !defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
-// Ordinary source table: the candidate prepare hook keeps the candidate signature but produces
-// no preparation result. The explicit candidate Playback factories reject before reaching this
-// hook; the definition exists so the shared prepare path still links without candidate code.
-[[nodiscard]] auto prepareCandidateStage(const cxc::CandidateChart& candidate, bool gameplaySource,
-                                         const PlaybackPrepareOptions& options, bool replacement,
-                                         const chart::ChartLimits& limits,
-                                         PrepareArtifact& artifact, core::Diagnostics& diagnostics)
-    -> core::Result<chart::ChartRuntime> {
-    static_cast<void>(candidate);
-    static_cast<void>(gameplaySource);
-    static_cast<void>(options);
-    static_cast<void>(replacement);
-    static_cast<void>(limits);
-    static_cast<void>(artifact);
-    static_cast<void>(diagnostics);
-    return core::unexpected(core::Error{"playback.candidate.disabled",
-                                        "Chart v5 candidate Playback is disabled in this build"});
-}
-#endif
-
 [[nodiscard]] auto loadDocumentStage(const PrepareContext& context, PrepareArtifact& artifact,
                                      core::Diagnostics& diagnostics) -> core::Result<void> {
     const internal::pd::memory::ExecutionDomainScope memoryScope{

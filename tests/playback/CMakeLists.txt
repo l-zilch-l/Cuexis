@@ -28,6 +28,19 @@ add_executable(cuexis_playback_tests
     ${PROJECT_SOURCE_DIR}/engine/playback/src/presentation_extraction.cpp
 )
 
+# The ordinary prepare-hook rejection lives only in this test executable: the ordinary Playback
+# closure neither declares nor defines a candidate hook, and the candidate build has its single
+# real definition in the library.
+if(NOT CUEXIS_ENABLE_CHART_V5_CANDIDATE AND CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
+    target_sources(cuexis_playback_tests PRIVATE playback_candidate_hook_rejection.cpp)
+endif()
+
+# The Prepared-owner introspection seams are deliberately unexported. A candidate shared test
+# executable compiles the identical private-access definitions locally instead of importing them.
+if(CUEXIS_ENABLE_CHART_V5_CANDIDATE AND CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
+    target_sources(cuexis_playback_tests PRIVATE playback_candidate_metadata_access.cpp)
+endif()
+
 target_compile_definitions(cuexis_playback_tests
     PRIVATE
         CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
@@ -39,6 +52,7 @@ target_include_directories(cuexis_playback_tests
         ${PROJECT_SOURCE_DIR}/engine/core/internal
         ${PROJECT_SOURCE_DIR}/engine/json_support/src
         ${PROJECT_SOURCE_DIR}/engine/playback/experimental_include
+        ${PROJECT_SOURCE_DIR}/engine/playback/internal
         ${PROJECT_SOURCE_DIR}/engine/playback/src
         ${PROJECT_SOURCE_DIR}/engine/runtime/internal
         ${PROJECT_SOURCE_DIR}/engine/runtime/include

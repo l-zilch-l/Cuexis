@@ -297,3 +297,126 @@ TEST_CASE("T-06 host finishes an empty laid-out target as skipped empty layout",
 
     REQUIRE(host.close());
 }
+
+TEST_CASE("T-06 retained handles keep their mode in both directions",
+          "[rpa][t06][frame-chain][retained]") {
+    std::int64_t clock = 1000;
+    auto settings = options([&] { return clock; }, std::chrono::seconds{5});
+    LayoutProbeRenderer renderer;
+    settings.frameLayout = renderer.binding();
+    auto made = player::ExecutionHost::create(renderer, settings, {});
+    REQUIRE(made);
+    auto& host = **made;
+    REQUIRE(host.load(test_support::presentation()));
+
+    auto layoutFrame = host.sample(0, {0, 0, host.context().clockSegment}, false);
+    REQUIRE(layoutFrame);
+    REQUIRE(layoutFrame->laidOutView() != nullptr);
+    REQUIRE(host.present(*layoutFrame));
+
+    // A laid-out retained handle cannot answer a legacy (no target) frozen request. The refusal is
+    // recorded as the terminal status before any frame id, attempt or reservation exists, so the
+    // following poll reports the same state instead of a history miss.
+    auto legacyRetained =
+        host.trySample(1, {}, true, player::FrameSampleShape{.legacyRequest = true});
+    REQUIRE(legacyRetained);
+    CHECK_FALSE(*legacyRetained);
+    CHECK(host.deliveryStatus() == DeliveryStatus::noRetainedFrame);
+    CHECK(renderer.layoutSubmits == 1);
+    CHECK(renderer.plainSubmits == 0);
+    CHECK(renderer.presents == 1);
+    auto repeated = host.trySample(2, {}, true, player::FrameSampleShape{.legacyRequest = true});
+    REQUIRE(repeated);
+    CHECK_FALSE(*repeated);
+    CHECK(host.deliveryStatus() == DeliveryStatus::noRetainedFrame);
+
+    // The matching mode still reuses the original layout attempt and keeps its retained identity.
+    auto matching = host.trySample(3, {}, true);
+    REQUIRE(matching);
+    REQUIRE(*matching);
+    CHECK((*matching)->retainedSerial != 0);
+    CHECK((*matching)->retainedFrameId == layoutFrame->frameId);
+    REQUIRE(host.present(**matching));
+    CHECK(renderer.layoutSubmits == 2);
+    CHECK(renderer.plainSubmits == 0);
+    (*matching)->payload.reset();
+    layoutFrame->payload.reset();
+
+    // The other direction: a legacy handle cannot answer a laid-out frozen request.
+    LayoutProbeRenderer legacyRenderer;
+    auto legacySettings = options([&] { return clock; }, std::chrono::seconds{5});
+    auto legacyHost = player::ExecutionHost::create(legacyRenderer, legacySettings, {});
+    REQUIRE(legacyHost);
+    auto& plain = **legacyHost;
+    REQUIRE(plain.load(test_support::presentation()));
+    auto legacyFrame = plain.sample(0, {0, 0, plain.context().clockSegment}, false);
+    REQUIRE(legacyFrame);
+    CHECK(legacyFrame->laidOutView() == nullptr);
+    REQUIRE(plain.present(*legacyFrame));
+
+    auto layoutRetained =
+        plain.trySample(1, {}, true,
+                        player::FrameSampleShape{
+                            .target = experimental::FrameTarget{
+                                {640, 480}, {0, 0, 640, 480}, experimental::FrameRotation::Deg0}});
+    REQUIRE(layoutRetained);
+    CHECK_FALSE(*layoutRetained);
+    CHECK(plain.deliveryStatus() == DeliveryStatus::noRetainedFrame);
+    CHECK(legacyRenderer.layoutSubmits == 0);
+    CHECK(legacyRenderer.plainSubmits == 1);
+    CHECK(legacyRenderer.presents == 1);
+
+    auto legacyMatching = plain.trySample(2, {}, true);
+    REQUIRE(legacyMatching);
+    REQUIRE(*legacyMatching);
+    CHECK((*legacyMatching)->retainedSerial != 0);
+    REQUIRE(plain.present(**legacyMatching));
+    CHECK(legacyRenderer.plainSubmits == 2);
+    (*legacyMatching)->payload.reset();
+    legacyFrame->payload.reset();
+
+    REQUIRE(host.close());
+    REQUIRE(plain.close());
+}
+
+TEST_CASE("T-06 retained layout keeps the framing selection that produced it",
+          "[rpa][t06][frame-chain][retained]") {
+    std::int64_t clock = 2000;
+    auto settings = options([&] { return clock; }, std::chrono::seconds{5});
+    LayoutProbeRenderer renderer;
+    settings.frameLayout = renderer.binding();
+    auto made = player::ExecutionHost::create(renderer, settings, {});
+    REQUIRE(made);
+    auto& host = **made;
+    REQUIRE(host.load(test_support::presentation()));
+
+    auto first = host.sample(0, {0, 0, host.context().clockSegment}, false);
+    REQUIRE(first);
+    REQUIRE(first->laidOutView() != nullptr);
+    REQUIRE(host.present(*first));
+
+    // The default selection produced the handle. A BestFit request must not relayout the handle
+    // under another selection, which is what relayout from the retained request would do.
+    auto bestFit = host.trySample(
+        1, {}, true,
+        player::FrameSampleShape{.framing = experimental::FramingRequest{
+                                     .selection = experimental::FramingSelection::BestFit}});
+    REQUIRE(bestFit);
+    CHECK_FALSE(*bestFit);
+    CHECK(host.deliveryStatus() == DeliveryStatus::noRetainedFrame);
+    CHECK(renderer.layoutSubmits == 1);
+    CHECK(renderer.presents == 1);
+
+    // The same normalized selection still reuses the handle.
+    auto sameSelection = host.trySample(
+        2, {}, true,
+        player::FrameSampleShape{.framing = experimental::FramingRequest{
+                                     .selection = experimental::FramingSelection::Default}});
+    REQUIRE(sameSelection);
+    REQUIRE(*sameSelection);
+    REQUIRE(host.present(**sameSelection));
+    CHECK(renderer.layoutSubmits == 2);
+    (*sameSelection)->payload.reset();
+    first->payload.reset();
+    REQUIRE(host.close());
+}

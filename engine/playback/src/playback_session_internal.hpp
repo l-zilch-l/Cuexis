@@ -19,8 +19,8 @@
 #include "gameplay_internal.hpp"
 #include "playback_candidate_internal.hpp"
 #include "presentation_projection.hpp"
-#include "replay_identity.hpp"
 #include <cuexis/judgement/execution_scheduler.hpp>
+#include <cuexis/playback/replay_identity.hpp>
 #endif
 
 #include <cuexis/animation/animation_compiler.hpp>
@@ -165,26 +165,8 @@ class SessionOperation final {
     bool& active_;
 };
 
-#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
-[[nodiscard]] auto makeGameplaySession(const GameplayContent& content)
-    -> core::Result<judgement::JudgementSession>;
-
-[[nodiscard]] auto internalContext(GameplayExecutionContext context) -> judgement::RpaContext;
-
-[[nodiscard]] auto canonicalOccurrence(const GameplayOccurrence& occurrence,
-                                       const judgement::SessionConfiguration& config)
-    -> core::Result<judgement::CanonicalInput>;
-
-[[nodiscard]] auto publicDecision(const judgement::AdvanceDecision& decision)
-    -> GameplayAdvanceDecision;
-
-// Shared by the gameplay and gameplay Seek translation units.
-[[nodiscard]] auto publicTick(std::optional<judgement::Tick> tick) -> std::optional<GameplayTick>;
-#endif
-
 struct PlaybackSession::State final {
     State() = default;
-
     core::ThreadChecker ownerThread;
     // ResourceManager must outlive RuntimeSession and its ResourceScope.
     std::shared_ptr<content::IContentProvider> contentProvider;

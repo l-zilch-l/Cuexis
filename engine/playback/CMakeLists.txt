@@ -3,7 +3,6 @@ add_library(cuexis_playback ${CUEXIS_LIBRARY_TYPE}
     src/frame_digest_internal.hpp
     src/frame_digest_version.cpp
     src/frame_layout.cpp
-    src/frame_layout_access.hpp
     src/frame_layout_bridge.cpp
     src/frame_layout_internal.hpp
     src/presentation.cpp
@@ -55,6 +54,9 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
         BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/experimental_include"
         FILES
             "${CMAKE_CURRENT_SOURCE_DIR}/experimental_include/cuexis/playback/experimental/frame_layout.hpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/experimental_include/cuexis/playback/experimental/gameplay.hpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/experimental_include/cuexis/playback/experimental/gameplay_realtime.hpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/experimental_include/cuexis/playback/experimental/gameplay_replay.hpp"
     )
     target_include_directories(cuexis_playback PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental_include>")
@@ -66,7 +68,9 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
         src/gameplay_configuration.cpp
         src/gameplay_entry.cpp
         src/playback_session_execution.cpp
+        src/playback_session_execution_host_access.cpp
         src/playback_session_gameplay.cpp
+        src/playback_session_gameplay_hooks.cpp
         src/playback_session_gameplay_seek.cpp
         src/playback_session_prepare_gameplay.cpp
         src/playback_session_realtime.cpp
@@ -123,6 +127,10 @@ target_link_libraries(cuexis_playback
 )
 
 target_include_directories(cuexis_playback PRIVATE "${PROJECT_SOURCE_DIR}/engine/runtime/internal")
+# Build-only internal root for the execution-host access bridge and the replay identity entry.
+# It is never part of the installed include tree or the SDK header file set.
+target_include_directories(cuexis_playback PRIVATE
+    "${PROJECT_SOURCE_DIR}/engine/playback/internal")
 # The experimental frame layout header is consumed only by compiled Playback translation units in
 # the default build. Experimental SDK packaging adds the same root to its installed header set.
 target_include_directories(cuexis_playback PRIVATE

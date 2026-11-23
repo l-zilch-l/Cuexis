@@ -200,7 +200,8 @@ if(BUILD_TESTING AND CUEXIS_BUILD_TESTS AND CUEXIS_ENABLE_CHART_V5_CANDIDATE
     target_compile_features(cuexis_execution_device_probe PRIVATE cxx_std_20)
     target_include_directories(cuexis_execution_device_probe PRIVATE
         "${PROJECT_SOURCE_DIR}/engine/judgement/internal"
-        "${PROJECT_SOURCE_DIR}/engine/render_opengl/internal")
+        "${PROJECT_SOURCE_DIR}/engine/render_opengl/internal"
+        "${PROJECT_SOURCE_DIR}/engine/playback/internal")
     target_compile_definitions(cuexis_execution_device_probe PRIVATE
         CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
         CUEXIS_PD5_CAPACITY_SOURCE_SHA="${CUEXIS_IMPLEMENTATION_SHA}"
@@ -690,6 +691,23 @@ if(CUEXIS_BUILD_TESTS)
                     -P "${PROJECT_SOURCE_DIR}/cmake/VerifyGameplayInstalledConsumer.cmake")
             set_tests_properties(cuexis_gameplay_installed_consumer PROPERTIES
                 LABELS "candidate;gameplay;external;package;headless"
+                RESOURCE_LOCK cuexis_external_consumer TIMEOUT 900)
+            add_test(NAME cuexis_rr_sdk_facade_compat
+                COMMAND "${CMAKE_COMMAND}"
+                    "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+                    "-DCUEXIS_BINARY_DIR=${PROJECT_BINARY_DIR}"
+                    "-DCUEXIS_PLAYBACK_TESTS=$<TARGET_FILE:cuexis_playback_tests>"
+                    "-DCUEXIS_GENERATOR=${CMAKE_GENERATOR}"
+                    "-DCUEXIS_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+                    "-DCUEXIS_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+                    "-DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}"
+                    "-DCMAKE_RC_COMPILER=${CMAKE_RC_COMPILER}"
+                    "-DCMAKE_MT=${CMAKE_MT}"
+                    "-DCUEXIS_VCPKG_INSTALLED_DIR=${VCPKG_INSTALLED_DIR}"
+                    "-DCUEXIS_VCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET}"
+                    -P "${PROJECT_SOURCE_DIR}/cmake/VerifySdkFacadeCompat.cmake")
+            set_tests_properties(cuexis_rr_sdk_facade_compat PROPERTIES
+                LABELS "candidate;gameplay;external;package;headless;rpa"
                 RESOURCE_LOCK cuexis_external_consumer TIMEOUT 900)
             if(TARGET cuexis_gameplay_assemble)
                 add_test(NAME cuexis_gameplay_assembler_cli

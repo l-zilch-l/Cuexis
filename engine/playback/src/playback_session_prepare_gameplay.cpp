@@ -3,6 +3,7 @@
 // table provides the same-signature rejection hook in playback_session_prepare_stages.cpp.
 
 #include "playback_session_internal.hpp"
+#include "playback_session_prepare_hooks.hpp"
 #include "playback_session_prepare_internal.hpp"
 
 #include <algorithm>

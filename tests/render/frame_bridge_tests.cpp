@@ -2,9 +2,9 @@
 // borrowed-framebuffer drawing. Requires a real GL context; the test skips with a warning when the
 // driver/window is unavailable.
 
-#include "frame_layout_access.hpp"
 #include "frame_layout_test_support.hpp"
 #include "presentation_fixture.hpp"
+#include <cuexis/playback/frame_layout_access.hpp>
 
 #include <cuexis/platform_sdl/sdl_runtime.hpp>
 #include <cuexis/platform_sdl/sdl_window.hpp>
@@ -18,6 +18,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <filesystem>
+#include <future>
 #include <memory>
 #include <string>
 #include <utility>
@@ -182,4 +183,61 @@ TEST_CASE("rr_frame_layout_gl_bridge", "[render][opengl][frame-layout][bridge]")
     const auto routesAfter = cuexis::render_opengl::test_support::drawRoutes();
     CHECK(routesAfter == routesBefore);
     cuexis::render_opengl::test_support::bindFramebuffer(0);
+}
+
+TEST_CASE("rr_frame_capabilities_initialization", "[render][opengl][capabilities]") {
+    const auto fixture = requireGlFixture();
+    if (!fixture) {
+        return;
+    }
+    auto& backend = fixture->backend;
+    // Before the owner's first query nothing is initialized. A worker running before that point
+    // reports the uninitialized set; it must not be read as a device without any capability.
+    const auto beforeInit =
+        std::async(std::launch::async, [&backend] {
+            return cuexis::playback::PresentationCapabilities{backend.capabilities()};
+        }).get();
+    CHECK_FALSE(beforeInit.opaquePass);
+    CHECK(beforeInit.hostExtensionIds.empty());
+
+    // The owner's first query is the only one that makes the context current and publishes it.
+    const auto ownerSet = cuexis::playback::PresentationCapabilities{backend.capabilities()};
+    REQUIRE(ownerSet.opaquePass);
+    CHECK(ownerSet.version == 2);
+    REQUIRE_FALSE(ownerSet.hostExtensionIds.empty());
+
+    // A published cache is an ordinary read: the same initialized set is visible from any thread.
+    const auto afterInit =
+        std::async(std::launch::async, [&backend] {
+            return cuexis::playback::PresentationCapabilities{backend.capabilities()};
+        }).get();
+    CHECK(afterInit.opaquePass == ownerSet.opaquePass);
+    CHECK(afterInit.version == ownerSet.version);
+    CHECK(afterInit.maxTextureDimension == ownerSet.maxTextureDimension);
+    CHECK(afterInit.hostExtensionIds == ownerSet.hostExtensionIds);
+}
+
+TEST_CASE("rr_frame_lifecycle_after_close", "[render][opengl][lifecycle]") {
+    const auto fixture = requireGlFixture();
+    if (!fixture) {
+        return;
+    }
+    auto& backend = fixture->backend;
+    REQUIRE(backend.close().has_value());
+    const auto closedGeneration = backend.identity().generation;
+
+    // A closed backend released its window and context. Rebuild must fail instead of reporting a
+    // recovery that cannot present, and it must not advance the renderer generation.
+    const auto rebuilt = backend.rebuild();
+    REQUIRE_FALSE(rebuilt.has_value());
+    CHECK(rebuilt.error().code() == "render.opengl.backend_unavailable");
+    CHECK(backend.identity().generation == closedGeneration);
+    // Resize follows the same closed rule.
+    const auto resized = backend.resize(64, 64);
+    REQUIRE_FALSE(resized.has_value());
+    CHECK(resized.error().code() == "render.opengl.backend_unavailable");
+
+    // Neither control path can continue the session on the closed backend.
+    CHECK_FALSE(backend.present().has_value());
+    CHECK_FALSE(backend.submit(cuexis::playback::FrameSnapshot{}, nullptr).has_value());
 }

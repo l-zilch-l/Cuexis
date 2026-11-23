@@ -2,6 +2,9 @@
 
 #include "playback_session_internal.hpp"
 #include "playback_session_prepare_internal.hpp"
+#if defined(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+#include "playback_session_prepare_hooks.hpp"
+#endif
 #if defined(CUEXIS_EXECUTION_ALLOCATION_OBSERVER)
 #include <cuexis/runtime/transaction_access.hpp>
 #endif

@@ -247,12 +247,61 @@ TEST_CASE("Test renderer transactions reject failure and stale tokens",
     const auto closed = renderer.prepare(*reopened);
     REQUIRE_FALSE(closed.has_value());
     CHECK(closed.error().code() == "presentation.renderer.closed");
-    REQUIRE(renderer.rebuild().has_value());
-    auto restored = renderer.prepare(*reopened);
-    REQUIRE(restored.has_value());
-    const auto closeBlocked = renderer.close();
+    // Close is terminal for the lifecycle entries as well: neither rebuild nor resize may report a
+    // recovery that cannot present, and the generation stays where close left it.
+    const auto closedGeneration = renderer.identity().generation;
+    const auto rebuildClosed = renderer.rebuild();
+    REQUIRE_FALSE(rebuildClosed.has_value());
+    CHECK(rebuildClosed.error().code() == "presentation.renderer.closed");
+    const auto resizeClosed = renderer.resize(32, 32);
+    REQUIRE_FALSE(resizeClosed.has_value());
+    CHECK(resizeClosed.error().code() == "presentation.renderer.closed");
+    CHECK(renderer.identity().generation == closedGeneration);
+    CHECK(renderer.status().closed);
+
+    // A close with an outstanding candidate is still rejected on a renderer that is not closed.
+    cuexis::presentation_renderer::TestPresentationRenderer live;
+    auto pending = live.prepare(*reopened);
+    REQUIRE(pending.has_value());
+    const auto closeBlocked = live.close();
     REQUIRE_FALSE(closeBlocked.has_value());
     CHECK(closeBlocked.error().code() == "presentation.renderer.close.candidate_outstanding");
-    renderer.discard(std::move(*restored));
+    live.discard(std::move(*pending));
+    REQUIRE(live.close().has_value());
+}
+
+TEST_CASE("Candidate detach keeps owner-only pending state on its owner",
+          "[presentation][renderer][lifecycle]") {
+    cuexis::presentation_renderer::TestPresentationRenderer renderer;
+    cuexis::playback::PlaybackSession session;
+    auto prepared = prepareProject(session);
+    REQUIRE(prepared.has_value());
+
+    // Destroying one candidate on its owner detaches it and lets the next prepare succeed.
+    {
+        auto first = renderer.prepare(*prepared);
+        REQUIRE(first.has_value());
+        CHECK(renderer.status().candidateOutstanding);
+    }
+    CHECK_FALSE(renderer.status().candidateOutstanding);
+    auto second = renderer.prepare(*prepared);
+    REQUIRE(second.has_value());
+    cuexis::presentation_renderer::PreparedPresentation owned = std::move(*second);
+
+    // Move-assign into a populated candidate runs the same detach before taking the new owner.
+    cuexis::presentation_renderer::PreparedPresentation empty;
+    owned = std::move(empty);
+    CHECK_FALSE(renderer.status().candidateOutstanding);
+    CHECK_FALSE(owned.valid());
+
+    auto third = renderer.prepare(*prepared);
+    REQUIRE(third.has_value());
+    CHECK(renderer.status().candidateOutstanding);
+    renderer.discard(std::move(*third));
+    CHECK_FALSE(renderer.status().candidateOutstanding);
+
+    // The owner-only rule is the same one activate and discard enforce: the cross-thread branch
+    // terminates before it can mutate pending state. A terminate probe has no in-process assertion,
+    // so this case covers the owner paths and the reject policy is documented in the report.
     REQUIRE(renderer.close().has_value());
 }

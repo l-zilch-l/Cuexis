@@ -8,6 +8,7 @@
 #include <cuexis/playback/experimental/frame_layout.hpp>
 
 #include <cstdint>
+#include <numeric>
 #include <optional>
 #include <span>
 #include <vector>
@@ -32,6 +33,28 @@ struct FrameLayoutAccess final {
         -> core::Result<std::optional<experimental::LaidOutFrame>>;
     [[nodiscard]] static auto relayout(const experimental::LaidOutFrame&, experimental::FrameTarget)
         -> core::Result<std::optional<experimental::LaidOutFrame>>;
+    // Compares one request with the selection the frame was produced by, both normalized the same
+    // way. A retained handle keeps its mode and selection, so the host uses this to reject a
+    // retained request that no longer matches the handle instead of relaying it out under another
+    // selection. The definition is inline so the static execution-host library never needs a
+    // Playback symbol that the shared build does not export.
+    [[nodiscard]] static auto matchesRequest(const experimental::LaidOutFrame& frame,
+                                             experimental::FramingRequest request) -> bool {
+        if (request.exact) {
+            const auto divisor = std::gcd(request.exact->width, request.exact->height);
+            if (divisor == 0)
+                return false;
+            request.exact = experimental::AspectRatio{request.exact->width / divisor,
+                                                      request.exact->height / divisor};
+        }
+        if (frame.request_.selection != request.selection)
+            return false;
+        if (request.selection != experimental::FramingSelection::Exact)
+            return !frame.request_.exact.has_value() && !request.exact.has_value();
+        return frame.request_.exact.has_value() && request.exact.has_value() &&
+               frame.request_.exact->width == request.exact->width &&
+               frame.request_.exact->height == request.exact->height;
+    }
 };
 
 } // namespace detail

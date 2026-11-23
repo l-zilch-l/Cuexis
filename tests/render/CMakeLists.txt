@@ -24,6 +24,7 @@ if(TARGET cuexis_render_opengl)
         PRIVATE
             ${PROJECT_SOURCE_DIR}/engine/chart/include
             ${PROJECT_SOURCE_DIR}/engine/playback/experimental_include
+            ${PROJECT_SOURCE_DIR}/engine/playback/internal
             ${PROJECT_SOURCE_DIR}/engine/playback/src
             ${PROJECT_SOURCE_DIR}/engine/render_opengl/src
             ${PROJECT_SOURCE_DIR}/engine/shader/include

@@ -1,5 +1,7 @@
 #include "session_worker_internal.hpp"
 
+#include <cuexis/playback/frame_layout_access.hpp>
+
 // Frame binding, presentation membership, coherent advance retention and the software ledger.
 
 namespace cuexis::playback::detail {
@@ -118,26 +120,35 @@ SessionOwner::SessionOwner(SessionWorkerConfiguration& config,
     const bool layout = request.target.has_value();
     const auto& original = request.retained.frame();
     if (request.frozen && original) {
+        // Every refusal below is recorded as the request's terminal state before any frame id,
+        // attempt or storage reservation exists, so the take reports no frame and the poll reports
+        // the same status instead of historyUnavailable.
+        const auto refuseNoRetained = [&]() -> core::Result<DeliveryInfo> {
+            return delivery->refuse(request, DeliveryStatus::noRetainedFrame);
+        };
         if (original->projectionScope != request.projectionScope ||
             original->context.sessionScope != request.context.sessionScope ||
             original->context.contentIdentity != request.context.contentIdentity ||
             original->context.resourceGeneration != request.context.resourceGeneration ||
             original->context.rendererGeneration != request.context.rendererGeneration)
-            return DeliveryInfo{request.consumerId, request.requestId, 0, 0,
-                                DeliveryStatus::noRetainedFrame};
+            return refuseNoRetained();
         // A retained handle keeps its mode. A legacy handle cannot produce a layout frame and a
-        // layout handle is never stripped back to a snapshot frame.
+        // layout handle is never stripped back to a snapshot frame. A laid-out handle also keeps
+        // the framing selection that produced it: relayout re-selects with the retained frame's own
+        // request, so a request with another selection cannot silently reuse a layout it did not
+        // ask for.
         if (layout != (original->laidOutView() != nullptr))
-            return DeliveryInfo{request.consumerId, request.requestId, 0, 0,
-                                DeliveryStatus::noRetainedFrame};
+            return refuseNoRetained();
+        if (original->laidOutView() != nullptr &&
+            !FrameLayoutAccess::matchesRequest(*original->laidOutView(), request.framing))
+            return refuseNoRetained();
     }
     const auto& members =
         request.frozen && original ? original->membershipView() : currentMembership;
     if (std::any_of(members.begin(), members.end(), [](const auto& id) {
             return id.targetId.size() > 256 || id.bindingId.size() > 256;
         }))
-        return DeliveryInfo{request.consumerId, request.requestId, 0, 0,
-                            DeliveryStatus::skippedNoCredit};
+        return delivery->refuse(request, DeliveryStatus::skippedNoCredit);
     const bool reuse =
         request.frozen && original && original->payload &&
         (layout ? original->layoutView() != nullptr &&

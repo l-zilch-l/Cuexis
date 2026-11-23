@@ -1,5 +1,6 @@
 #include "playback_source_internal.hpp"
 
+#include <cuexis/playback/experimental/gameplay.hpp>
 #include <cuexis/playback/playback_source.hpp>
 
 #include "playback_source_state.hpp"
@@ -376,6 +377,67 @@ auto PlaybackSource::fromGameplayGraph(std::string sourceId, std::string entryPa
                                configuration, std::move(assets), std::move(provider), intent,
                                budget);
 }
+
+// Experimental facade entries. Each one forwards the same-version candidate factory; the old
+// static members above keep their declarations, symbols and behavior during the compatibility
+// window.
+namespace experimental {
+auto fromCxcFileGameplayEntry(const std::filesystem::path& locator, std::string entryPath,
+                              const GameplayConfiguration& configuration,
+                              GameplayConfigurationDecodeBudget configurationBudget,
+                              GameplayGraphDecodeBudget graphBudget, GameplayPrepareIntent intent)
+    -> core::Result<PlaybackSource> {
+    return PlaybackSource::fromCxcFileGameplayEntry(locator, std::move(entryPath), configuration,
+                                                    configurationBudget, graphBudget, intent);
+}
+auto fromCxcMemoryGameplayEntry(std::vector<std::byte> packageBytes, std::string entryPath,
+                                const GameplayConfiguration& configuration,
+                                GameplayConfigurationDecodeBudget configurationBudget,
+                                GameplayGraphDecodeBudget graphBudget, GameplayPrepareIntent intent)
+    -> core::Result<PlaybackSource> {
+    return PlaybackSource::fromCxcMemoryGameplayEntry(std::move(packageBytes), std::move(entryPath),
+                                                      configuration, configurationBudget,
+                                                      graphBudget, intent);
+}
+auto fromFilesystemGameplayEntry(const std::filesystem::path& locator, std::string entryPath,
+                                 const GameplayConfiguration& configuration,
+                                 GameplayConfigurationDecodeBudget configurationBudget,
+                                 GameplayGraphDecodeBudget graphBudget,
+                                 GameplayPrepareIntent intent) -> core::Result<PlaybackSource> {
+    return PlaybackSource::fromFilesystemGameplayEntry(locator, std::move(entryPath), configuration,
+                                                       configurationBudget, graphBudget, intent);
+}
+auto fromGameplayEntry(std::string sourceId, std::string metadataJson,
+                       std::vector<std::byte> entryBytes,
+                       const GameplayConfiguration& configuration,
+                       GameplayConfigurationDecodeBudget metadataBudget,
+                       GameplayGraphDecodeBudget graphBudget,
+                       std::vector<PlaybackAssetDescriptor> assets,
+                       std::shared_ptr<content::IContentProvider> provider,
+                       GameplayPrepareIntent intent) -> core::Result<PlaybackSource> {
+    return PlaybackSource::fromGameplayEntry(
+        std::move(sourceId), std::move(metadataJson), std::move(entryBytes), configuration,
+        metadataBudget, graphBudget, std::move(assets), std::move(provider), intent);
+}
+auto fromGameplayPacked(std::string sourceId, std::string entryPath, std::vector<std::byte> bytes,
+                        const GameplayConfiguration& configuration,
+                        std::vector<PlaybackAssetDescriptor> assets,
+                        std::shared_ptr<content::IContentProvider> provider,
+                        GameplayPrepareIntent intent) -> core::Result<PlaybackSource> {
+    return PlaybackSource::fromGameplayPacked(std::move(sourceId), std::move(entryPath),
+                                              std::move(bytes), configuration, std::move(assets),
+                                              std::move(provider), intent);
+}
+auto fromGameplayGraph(std::string sourceId, std::string entryPath, std::vector<std::byte> bytes,
+                       const GameplayConfiguration& configuration, GameplayGraphDecodeBudget budget,
+                       std::vector<PlaybackAssetDescriptor> assets,
+                       std::shared_ptr<content::IContentProvider> provider,
+                       GameplayPrepareIntent intent) -> core::Result<PlaybackSource> {
+    return PlaybackSource::fromGameplayGraph(std::move(sourceId), std::move(entryPath),
+                                             std::move(bytes), configuration, budget,
+                                             std::move(assets), std::move(provider), intent);
+}
+} // namespace experimental
 
 #endif
 

@@ -531,6 +531,62 @@ function(cuexis_verify_source_architecture source_dir)
         endif()
     endforeach()
 
+    # F313/F316: application units do not resolve engine implementation headers directly. The only
+    # cross-module internal entries are the named build-only bridges below, each with its actual
+    # consumer list; the list is closed, so a new app consumer or a new internal header fails here.
+    set(app_internal_entries
+        "replay_identity.hpp|app/execution_host/host_candidate.cpp,app/player/src/execution_host.cpp,app/player/src/execution_host_close.cpp,app/player/src/execution_host_frame.cpp,app/player/src/execution_host_replay.cpp,app/player/src/execution_host_rpa.cpp"
+        "execution_host_access.hpp|app/execution_host/host_candidate.cpp"
+        "frame_layout_access.hpp|app/execution_host/session_worker_owner.cpp"
+    )
+    set(app_cuexis_internal_headers
+        sha256.hpp
+        allocation_observer.hpp
+        presentation_metrics.hpp
+        execution_diagnostics.hpp
+        pixel_probe.hpp
+    )
+    file(GLOB_RECURSE app_sources "${source_dir}/app/*.cpp" "${source_dir}/app/*.hpp")
+    foreach(source IN LISTS app_sources)
+        file(READ "${source}" contents)
+        string(REPLACE "\\" "/" normalized_contents "${contents}")
+        if(normalized_contents MATCHES
+           "#[ \t]*include[ \t]*[<\"][^\">]*engine/[^\">]*/src/")
+            message(FATAL_ERROR
+                "Application source resolves an engine implementation source header directly: "
+                "${source}")
+        endif()
+        if(normalized_contents MATCHES
+           "#[ \t]*include[ \t]*[<\"][^\">]*engine/[^\">]*/internal/")
+            message(FATAL_ERROR
+                "Application source includes an unlisted engine internal header: ${source}")
+        endif()
+        file(RELATIVE_PATH relative_source "${source_dir}" "${source}")
+        foreach(entry IN LISTS app_internal_entries)
+            string(REPLACE "|" ";" entry_fields "${entry}")
+            list(GET entry_fields 0 entry_header)
+            list(GET entry_fields 1 entry_consumers)
+            string(REPLACE "," ";" entry_consumers "${entry_consumers}")
+            if(normalized_contents MATCHES
+               "#[ \t]*include[ \t]*[<\"]cuexis/playback/${entry_header}[>\"]")
+                if(NOT relative_source IN_LIST entry_consumers)
+                    message(FATAL_ERROR
+                        "Application source '${relative_source}' includes the unlisted internal "
+                        "entry '${entry_header}'; allowlisted consumers: ${entry_consumers}")
+                endif()
+            endif()
+        endforeach()
+        if(normalized_contents MATCHES
+           "#[ \t]*include[ \t]*[<\"]cuexis_internal/([^>\"]+)[>\"]")
+            set(included_internal "${CMAKE_MATCH_1}")
+            if(NOT included_internal IN_LIST app_cuexis_internal_headers)
+                message(FATAL_ERROR
+                    "Application source '${source}' includes the unlisted internal tool header "
+                    "'cuexis_internal/${included_internal}'")
+            endif()
+        endif()
+    endforeach()
+
     set(player_neutral_sources
         "${source_dir}/app/player/src/player_options.hpp"
         "${source_dir}/app/player/src/player_options.cpp"

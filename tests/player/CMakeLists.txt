@@ -29,6 +29,7 @@ find_package(spdlog CONFIG REQUIRED)
 
 add_executable(cuexis_player_control_tests
     player_control_fixture.hpp
+    frame_diagnostics_loop_tests.cpp
     player_control_load_tests.cpp
     player_control_session_tests.cpp
     player_candidate_options_tests.cpp

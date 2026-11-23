@@ -1,6 +1,7 @@
 #include "host_candidate.hpp"
-#include "../../engine/playback/src/replay_identity.hpp"
 #include "capture_route.hpp"
+#include <cuexis/playback/execution_host_access.hpp>
+#include <cuexis/playback/replay_identity.hpp>
 #include <cuexis_internal/execution_diagnostics.hpp>
 namespace cuexis::playback::detail {
 namespace {
@@ -36,7 +37,7 @@ auto HostCoordinationAccess::validateControlProof(const PlaybackSession& session
                                                   const StepRequest& request,
                                                   const ControlReceipt& proof)
     -> core::Result<void> {
-    return session.validateExecutionControlProof(request, proof);
+    return ExecutionHostAccess::validateExecutionControlProof(session, request, proof);
 }
 
 auto HostCoordinationAccess::materialize(PreparedPlayback& prepared,
@@ -97,8 +98,8 @@ auto HostCoordinationAccess::revokeRealtimePermission(PlaybackSession& session)
 auto HostCoordinationAccess::advanceRetention(const PlaybackSession& session)
     -> core::Result<AdvanceRetentionProgress> {
     AdvanceRetentionProgress progress{};
-    auto read = session.executionAdvanceRetention(progress.identityContext, progress.lastAcceptedId,
-                                                  progress.reclaimedThrough);
+    auto read = ExecutionHostAccess::executionAdvanceRetention(
+        session, progress.identityContext, progress.lastAcceptedId, progress.reclaimedThrough);
     if (!read)
         return core::unexpected(read.error());
     return progress;

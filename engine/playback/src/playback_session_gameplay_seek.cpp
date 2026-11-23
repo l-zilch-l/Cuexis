@@ -1,6 +1,9 @@
 // PlaybackSession gameplay commands: the gameplay session, its projection and the publication.
 
+#include "playback_session_gameplay_hooks.hpp"
 #include "playback_session_internal.hpp"
+
+#include <cuexis/playback/experimental/gameplay_replay.hpp>
 
 // Seek entry points and the public/private gameplay translators they share with the realtime
 // unit. Their declarations live in playback_session_internal.hpp.
@@ -220,6 +223,22 @@ auto publicDecision(const judgement::AdvanceDecision& decision) -> GameplayAdvan
         decision.error ? std::optional<core::Error>{detail::projectGameplayError(*decision.error)}
                        : std::nullopt};
 }
+
+// Experimental facade entries. Both overloads forward the same-version member; the old member
+// declarations and symbols remain during the compatibility window.
+namespace experimental {
+auto seekGameplay(PlaybackSession& session, const GameplayReplay& replay, GameplayTick tick,
+                  GameplayPresentationTick presentationTick, const RuntimeFrame& frame)
+    -> core::Result<void> {
+    return session.seekGameplay(replay, tick, presentationTick, frame);
+}
+auto seekGameplay(PlaybackSession& session, const GameplayReplay& replay, GameplayTick tick,
+                  const GameplayReplayCut& cut, std::span<const GameplayCheckpoint> checkpoints,
+                  GameplayPresentationTick presentationTick, const RuntimeFrame& frame)
+    -> core::Result<void> {
+    return session.seekGameplay(replay, tick, cut, checkpoints, presentationTick, frame);
+}
+} // namespace experimental
 #endif
 
 } // namespace cuexis::playback

@@ -145,3 +145,12 @@ and `--execution-tail-input-deadline <tick>` with `--content`. This mode require
 It excludes command programs and legacy H/T step arguments. The report identifies the clock
 as an explicit fixture; it is not device timing evidence. It validates the full Replay result
 and retains owning archive bytes after unload.
+
+## 10. Operation results and session state
+
+Every operation returns `core::Result`; a rejected load, reload, step or control is reported from
+that error and the command program stops without expecting a later state transition. The public
+`SessionState::Failed` value is retained in the SDK enum and documented as never entered by the
+current implementation, so this host never waits for it. Host-run failures and the SDK session
+state stay separate: a host diagnostic or a non-zero exit says the host run failed, while a
+reported session state only describes what the Playback session currently holds.

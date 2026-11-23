@@ -144,8 +144,9 @@ void emitCommand(HostReport& report, std::uint64_t index, std::size_t line, Verb
 }
 
 // A command that needs a live session. A missing session is not the same as an
-// inconsistent one, and neither is the same as a Failed session, so each is
-// reported as what it actually is.
+// inconsistent one. `SessionState::Failed` stays in the public enum but the current
+// SDK never enters it: operation errors come back as `core::Result` and the host
+// stops on that Result, never by waiting for a state transition.
 [[nodiscard]] auto requireSession(HostContext& context, HostReport& report, std::string_view step,
                                   SessionState& stateOut) -> bool {
     const auto state = hostState(context, report, step);
@@ -153,9 +154,10 @@ void emitCommand(HostReport& report, std::uint64_t index, std::size_t line, Verb
         return false;
     }
     stateOut = *state;
-    if (stateOut == SessionState::Failed) {
+    if (stateOut != SessionState::Empty && stateOut != SessionState::Ready &&
+        stateOut != SessionState::Running) {
         report.diagnostic(step, diagnostic::stateMismatch,
-                          "the session is Failed and no further command is dispatched");
+                          "the session reported a state the host does not dispatch from");
         return false;
     }
     if (context.transport == Transport::Terminated) {

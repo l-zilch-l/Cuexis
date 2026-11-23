@@ -306,9 +306,11 @@ auto runHost(const HostOptions& options, HostReport& report) -> int {
     report.rejection("reload-failed", rejected.error().code());
     auto identityAfterFailure = activeIdentity(session, report, "reload-failed");
     auto stateAfterFailure = currentState(session, report, "reload-failed");
-    if (!identityAfterFailure || !stateAfterFailure ||
-        *identityAfterFailure != identityBeforeFailure ||
-        *stateAfterFailure == SessionState::Failed) {
+    const bool activeStatePreserved = stateAfterFailure &&
+                                      (*stateAfterFailure == SessionState::Ready ||
+                                       *stateAfterFailure == SessionState::Running);
+    if (!identityAfterFailure || !activeStatePreserved ||
+        *identityAfterFailure != identityBeforeFailure) {
         report.failure("reload-failed", "active content was disturbed by a rejected reload");
         return 1;
     }

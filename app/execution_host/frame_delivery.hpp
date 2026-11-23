@@ -104,6 +104,10 @@ class FrameDelivery final {
         -> core::Result<ConsumerRegistration>;
     [[nodiscard]] auto admit(const FrameRequest&, std::uint64_t currentVersion, std::int64_t now,
                              bool reusePayload) -> core::Result<DeliveryAdmission>;
+    // Records a request the owner refused before admission. The record keeps the request identity
+    // and the terminal status, so a later take reports no frame and a poll reports this status
+    // instead of historyUnavailable. No frame id, attempt or storage reservation is created.
+    [[nodiscard]] auto refuse(const FrameRequest&, DeliveryStatus) -> core::Result<DeliveryInfo>;
     [[nodiscard]] auto publish(const FrameRequest&, FrameEnvelope, std::int64_t now)
         -> core::Result<DeliveryInfo>;
     [[nodiscard]] auto cancel(std::uint64_t consumerId, std::uint64_t requestId,

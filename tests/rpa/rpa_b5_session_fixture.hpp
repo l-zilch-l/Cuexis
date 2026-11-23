@@ -5,7 +5,6 @@
 #include "../../app/execution_host/capture_route.hpp"
 #include "../../app/execution_host/session_worker.hpp"
 #include "../../engine/core/internal/cuexis_internal/sha256.hpp"
-#include "../../engine/playback/src/replay_identity.hpp"
 #include "execution_fixture.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
@@ -13,6 +12,7 @@
 #include <cstring>
 #include <cuexis/content/content_provider.hpp>
 #include <cuexis/gameplay_packed/gameplay_capsule.hpp>
+#include <cuexis/playback/replay_identity.hpp>
 #include <cuexis/presentation_renderer/presentation_renderer.hpp>
 #include <filesystem>
 #include <fstream>

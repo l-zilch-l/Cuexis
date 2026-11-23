@@ -5,7 +5,6 @@
 #include "../../app/player/src/execution_host.hpp"
 #include "../../engine/core/internal/cuexis_internal/sha256.hpp"
 #include "../../engine/playback/src/gameplay_internal.hpp"
-#include "../../engine/playback/src/replay_identity.hpp"
 #include "../audio/fake_audio_transport.hpp"
 #include "../support/environment.hpp"
 #include "execution_fixture.hpp"
@@ -14,6 +13,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <cuexis/judgement/recovery_codec.hpp>
+#include <cuexis/playback/replay_identity.hpp>
 #include <filesystem>
 #include <future>
 #include <iostream>

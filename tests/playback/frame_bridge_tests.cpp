@@ -1,7 +1,7 @@
 #include "presentation_fixture.hpp"
 
-#include "frame_layout_access.hpp"
 #include "frame_layout_internal.hpp"
+#include <cuexis/playback/frame_layout_access.hpp>
 
 #include <cuexis/core/math.hpp>
 #include <cuexis/playback/experimental/frame_layout.hpp>

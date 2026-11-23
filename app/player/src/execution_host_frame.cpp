@@ -1,7 +1,7 @@
 #include "execution_host.hpp"
 
-#include "../../../engine/playback/src/replay_identity.hpp"
 #include "execution_host_units_internal.hpp"
+#include <cuexis/playback/replay_identity.hpp>
 
 #include <algorithm>
 #include <cuexis_internal/execution_diagnostics.hpp>
@@ -390,16 +390,17 @@ auto ExecutionHost::resume(const ClockSource& source) -> core::Result<void> try 
     failed();
     return core::unexpected(error("capacity_exceeded"));
 }
-auto ExecutionHost::sample(std::int64_t tick, RuntimeFrame runtime, bool frozen)
-    -> core::Result<FrameEnvelope> {
-    auto result = trySample(tick, runtime, frozen);
+auto ExecutionHost::sample(std::int64_t tick, RuntimeFrame runtime, bool frozen,
+                           FrameSampleShape shape) -> core::Result<FrameEnvelope> {
+    auto result = trySample(tick, runtime, frozen, shape);
     if (!result)
         return core::unexpected(result.error());
     if (!*result)
         return core::unexpected(error("context_stale"));
     return std::move(**result);
 }
-auto ExecutionHost::trySample(std::int64_t tick, RuntimeFrame runtime, bool frozen)
+auto ExecutionHost::trySample(std::int64_t tick, RuntimeFrame runtime, bool frozen,
+                              FrameSampleShape shape)
     -> core::Result<std::optional<FrameEnvelope>> try {
     checkOwner();
     Busy operation{busy_};
@@ -426,8 +427,11 @@ auto ExecutionHost::trySample(std::int64_t tick, RuntimeFrame runtime, bool froz
     request.consumerId = consumer_->consumerId;
     request.requestId = frameId_++;
     request.viewport = options_.viewport;
-    if (options_.frameLayout && options_.frameLayout->valid())
+    if (shape.target)
+        request.target = *shape.target;
+    else if (options_.frameLayout && options_.frameLayout->valid() && !shape.legacyRequest)
         request.target = frameTarget_;
+    request.framing = shape.framing;
     request.frozen = frozen;
     request.retained = retainedPresentation_;
     const auto now = options_.session.monotonicNow ? options_.session.monotonicNow() : nowUs();

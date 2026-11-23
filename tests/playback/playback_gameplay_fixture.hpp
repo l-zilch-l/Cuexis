@@ -11,7 +11,6 @@
 #include "../support/environment.hpp"
 #include "gameplay_entry_internal.hpp"
 #include "gameplay_internal.hpp"
-#include "replay_identity.hpp"
 #include <algorithm>
 #include <catch2/generators/catch_generators.hpp>
 #include <chrono>
@@ -25,6 +24,7 @@
 #include <cuexis/json/parse.hpp>
 #include <cuexis/playback/frame_digest.hpp>
 #include <cuexis/playback/playback_session.hpp>
+#include <cuexis/playback/replay_identity.hpp>
 #include <cuexis_internal/sha256.hpp>
 #include <filesystem>
 #include <fstream>

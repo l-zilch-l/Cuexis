@@ -91,6 +91,21 @@ if(CUEXIS_GAMEPLAY_CANDIDATE)
     string(APPEND public_mangled_classes "|15GameplayContent|14GameplayResult|18GameplayCheckpoint|14GameplayReplay|16GameplaySnapshot")
     string(APPEND public_function_pattern "|gameplayCapabilities|encodeGameplayConfiguration|decodeGameplayConfiguration|computeGameplayReconciliationIdentity")
     string(APPEND public_mangled_functions "|20gameplayCapabilities|27encodeGameplayConfiguration|27decodeGameplayConfiguration|37computeGameplayReconciliationIdentity")
+    # RR-4 experimental Playback Gameplay facade: one entry per fully qualified function name from
+    # the Gameplay compatibility table. No namespace-wide allowance is granted: a name that is not
+    # listed here remains outside the allowlist even when it lives in the experimental namespace.
+    set(candidate_experimental_functions
+        "fromCxcFileGameplayEntry|fromCxcMemoryGameplayEntry|fromFilesystemGameplayEntry|fromGameplayEntry|fromGameplayPacked|fromGameplayGraph|prepareGameplayLoad|prepareGameplayReload|submitGameplay|advanceGameplay|gameplayState|queryGameplayCapability|queryGameplay|queryGameplayPresentation|gameplayFeedback|sampleGameplayPresentation|controlGameplay|archiveGameplay|snapshotGameplay|evaluateGameplayReplay|restoreGameplay|seekGameplay|checkpointGameplay|gameplayReplayCut|computeGameplayReconciliationIdentity|invalidateGameplayClock|mapGameplayClock|beginRealtimeGameplay|beginRealtimeTail|deliverGameplayCapture|requestGameplayAdvance|queryGameplayAdvance|retireGameplayAdvance|gameplayAdvanceReceipt|acceptGameplayControl|pauseRealtimeGameplay|resumeRealtimeGameplay|gameplayExecutionLag")
+    set(candidate_experimental_mangled_functions
+        "24fromCxcFileGameplayEntry|26fromCxcMemoryGameplayEntry|27fromFilesystemGameplayEntry|17fromGameplayEntry|18fromGameplayPacked|17fromGameplayGraph|19prepareGameplayLoad|21prepareGameplayReload|14submitGameplay|15advanceGameplay|13gameplayState|23queryGameplayCapability|13queryGameplay|25queryGameplayPresentation|16gameplayFeedback|26sampleGameplayPresentation|15controlGameplay|15archiveGameplay|16snapshotGameplay|22evaluateGameplayReplay|15restoreGameplay|12seekGameplay|18checkpointGameplay|17gameplayReplayCut|37computeGameplayReconciliationIdentity|23invalidateGameplayClock|16mapGameplayClock|21beginRealtimeGameplay|17beginRealtimeTail|22deliverGameplayCapture|22requestGameplayAdvance|20queryGameplayAdvance|21retireGameplayAdvance|22gameplayAdvanceReceipt|21acceptGameplayControl|21pauseRealtimeGameplay|22resumeRealtimeGameplay|20gameplayExecutionLag")
+    # Build-only execution-host coordination entries. They are static members of one named detail
+    # class, so the allowlist names both the class and every method instead of the detail namespace.
+    set(candidate_detail_functions
+        "enterExecutionFence|commitExecutionCandidate|releaseExecutionFence|executionFence|completeExecutionClose|validateExecutionControlBinding|validateExecutionControlProof|validateExecutionFrameContext|acceptExecutionControl|executionOwnerState|executionStepEffects|executionAdvanceRetention|retireExecutionStep|pauseExecutionStep|resumeExecutionStep|seekExecutionStep")
+    set(candidate_detail_mangled_functions
+        "19enterExecutionFence|24commitExecutionCandidate|21releaseExecutionFence|14executionFence|22completeExecutionClose|31validateExecutionControlBinding|29validateExecutionControlProof|29validateExecutionFrameContext|22acceptExecutionControl|19executionOwnerState|20executionStepEffects|25executionAdvanceRetention|19retireExecutionStep|18pauseExecutionStep|19resumeExecutionStep|17seekExecutionStep")
+    string(APPEND experimental_function_pattern "|${candidate_experimental_functions}")
+    string(APPEND experimental_mangled_functions "|${candidate_experimental_mangled_functions}")
 endif()
 
 if(CUEXIS_SYMBOL_TOOL_KIND STREQUAL "dumpbin")
@@ -100,8 +115,11 @@ if(CUEXIS_SYMBOL_TOOL_KIND STREQUAL "dumpbin")
         entt::
         cuexis::world
         computeFrameDigestVersion
-        normalizePresentationFrame
-        detail@playback@cuexis)
+        normalizePresentationFrame)
+    # The detail namespace stays closed unless the candidate branch allowlists a named member.
+    if(NOT CUEXIS_GAMEPLAY_CANDIDATE)
+        list(APPEND forbidden_symbols "detail@playback@cuexis")
+    endif()
 else()
     set(forbidden_symbols
         RuntimeSession
@@ -109,8 +127,10 @@ else()
         4entt
         6cuexis5world
         computeFrameDigestVersion
-        normalizePresentationFrame
-        6cuexis8playback6detail)
+        normalizePresentationFrame)
+    if(NOT CUEXIS_GAMEPLAY_CANDIDATE)
+        list(APPEND forbidden_symbols "6cuexis8playback6detail")
+    endif()
 endif()
 if(CUEXIS_SYMBOL_TOOL_KIND STREQUAL "dumpbin")
     # The moved/exported laid-out frame ABI members are required individually; a missing export
@@ -130,6 +150,92 @@ if(CUEXIS_SYMBOL_TOOL_KIND STREQUAL "dumpbin")
                 "Playback shared library does not export ${required_symbol}")
         endif()
     endforeach()
+endif()
+
+if(CUEXIS_GAMEPLAY_CANDIDATE)
+    # RR-4: every gameplay facade entry from the compatibility table must be exported by the
+    # experimental library. Missing one is a table omission, not an allowlist decision.
+    if(CUEXIS_SYMBOL_TOOL_KIND STREQUAL "dumpbin")
+        foreach(required_name IN ITEMS
+                fromCxcFileGameplayEntry fromCxcMemoryGameplayEntry
+                fromFilesystemGameplayEntry fromGameplayEntry fromGameplayPacked
+                fromGameplayGraph prepareGameplayLoad prepareGameplayReload submitGameplay
+                advanceGameplay gameplayState queryGameplayCapability queryGameplay
+                queryGameplayPresentation gameplayFeedback sampleGameplayPresentation
+                controlGameplay archiveGameplay snapshotGameplay evaluateGameplayReplay
+                restoreGameplay seekGameplay checkpointGameplay gameplayReplayCut
+                computeGameplayReconciliationIdentity invalidateGameplayClock mapGameplayClock
+                beginRealtimeGameplay beginRealtimeTail deliverGameplayCapture
+                requestGameplayAdvance queryGameplayAdvance retireGameplayAdvance
+                gameplayAdvanceReceipt acceptGameplayControl pauseRealtimeGameplay
+                resumeRealtimeGameplay gameplayExecutionLag)
+            set(required_symbol "?${required_name}@experimental@playback@cuexis@@")
+            string(FIND "${required_symbol_output}" "${required_symbol}" position)
+            if(position EQUAL -1)
+                message(FATAL_ERROR
+                    "Experimental Playback shared library does not export "
+                    "cuexis::playback::experimental::${required_name}")
+            endif()
+        endforeach()
+        foreach(required_method IN ITEMS
+                enterExecutionFence commitExecutionCandidate releaseExecutionFence
+                executionFence completeExecutionClose validateExecutionControlBinding
+                validateExecutionControlProof validateExecutionFrameContext
+                acceptExecutionControl executionOwnerState executionStepEffects
+                executionAdvanceRetention retireExecutionStep pauseExecutionStep
+                resumeExecutionStep seekExecutionStep)
+            set(required_symbol "?${required_method}@ExecutionHostAccess@detail@playback@cuexis@@")
+            string(FIND "${required_symbol_output}" "${required_symbol}" position)
+            if(position EQUAL -1)
+                message(FATAL_ERROR
+                    "Experimental Playback shared library does not export "
+                    "cuexis::playback::detail::ExecutionHostAccess::${required_method}")
+            endif()
+        endforeach()
+    elseif(CUEXIS_SYMBOL_TOOL_KIND STREQUAL "objdump")
+        foreach(required_name IN ITEMS
+                fromCxcFileGameplayEntry fromGameplayPacked prepareGameplayLoad
+                archiveGameplay seekGameplay computeGameplayReconciliationIdentity
+                beginRealtimeGameplay requestGameplayAdvance resumeRealtimeGameplay)
+            set(required_symbol "_ZN6cuexis8playback12experimental")
+            string(LENGTH "${required_name}" name_length)
+            string(APPEND required_symbol "${name_length}${required_name}")
+            string(FIND "${required_symbol_output}" "${required_symbol}" position)
+            if(position EQUAL -1)
+                message(FATAL_ERROR
+                    "Experimental Playback shared library does not export "
+                    "cuexis::playback::experimental::${required_name}")
+            endif()
+        endforeach()
+        foreach(required_method IN ITEMS
+                enterExecutionFence executionFence executionOwnerState
+                executionAdvanceRetention pauseExecutionStep resumeExecutionStep
+                seekExecutionStep)
+            set(required_symbol "_ZN6cuexis8playback6detail17ExecutionHostAccess")
+            string(LENGTH "${required_method}" method_length)
+            string(APPEND required_symbol "${method_length}${required_method}")
+            string(FIND "${required_symbol_output}" "${required_symbol}" position)
+            if(position EQUAL -1)
+                message(FATAL_ERROR
+                    "Experimental Playback shared library does not export "
+                    "cuexis::playback::detail::ExecutionHostAccess::${required_method}")
+            endif()
+        endforeach()
+    else()
+        foreach(required_name IN ITEMS
+                fromCxcFileGameplayEntry fromGameplayPacked prepareGameplayLoad
+                archiveGameplay seekGameplay computeGameplayReconciliationIdentity
+                beginRealtimeGameplay requestGameplayAdvance resumeRealtimeGameplay)
+            string(LENGTH "${required_name}" name_length)
+            set(required_symbol "_ZN6cuexis8playback12experimental${name_length}${required_name}")
+            string(FIND "${required_symbol_output}" "${required_symbol}" position)
+            if(position EQUAL -1)
+                message(FATAL_ERROR
+                    "Experimental Playback shared library does not export "
+                    "cuexis::playback::experimental::${required_name}")
+            endif()
+        endforeach()
+    endif()
 endif()
 set(export_count 0)
 string(REPLACE "\r\n" "\n" normalized_symbol_output "${symbol_output}")
@@ -156,6 +262,11 @@ foreach(symbol_line IN LISTS symbol_lines)
            exported_symbol MATCHES
                 "^\\?(${experimental_function_pattern})@experimental@playback@cuexis@@" OR
            exported_symbol MATCHES "^\\?[^@]+@(LaidOutFrame)@experimental@playback@cuexis@@")
+            continue()
+        endif()
+        if(CUEXIS_GAMEPLAY_CANDIDATE AND
+           exported_symbol MATCHES
+                "^\\?(${candidate_detail_functions})@ExecutionHostAccess@detail@playback@cuexis@@")
             continue()
         endif()
     else()
@@ -192,6 +303,10 @@ foreach(symbol_line IN LISTS symbol_lines)
                 "^_ZN6cuexis8playback12experimental(${experimental_mangled_functions})(B5cxx11)?E" OR
            exported_symbol MATCHES
                 "^_ZN[KVRrO]*6cuexis8playback12experimental12LaidOutFrame")
+            continue()
+        endif()
+        if(CUEXIS_GAMEPLAY_CANDIDATE AND exported_symbol MATCHES
+                "^_ZN6cuexis8playback6detail17ExecutionHostAccess(${candidate_detail_mangled_functions})")
             continue()
         endif()
     endif()

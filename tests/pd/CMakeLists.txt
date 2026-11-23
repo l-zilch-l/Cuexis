@@ -39,6 +39,8 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE AND CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
             ${CUEXIS_EXECUTION_HOST_SOURCES}
             "${PROJECT_SOURCE_DIR}/app/player/src/snapshot_scene.cpp")
         target_compile_features(cuexis_pd_host_probe PRIVATE cxx_std_20)
+        target_include_directories(cuexis_pd_host_probe PRIVATE
+            "${PROJECT_SOURCE_DIR}/engine/playback/internal")
         target_compile_definitions(cuexis_pd_host_probe PRIVATE CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
         target_compile_definitions(cuexis_pd_host_probe PRIVATE
             CUEXIS_PD5_CAPACITY_SOURCE_SHA="${CUEXIS_IMPLEMENTATION_SHA}")

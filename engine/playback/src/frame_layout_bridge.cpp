@@ -2,11 +2,11 @@
 // The unit reads the same committed descriptor and Runtime window as extractFrame, writes the one
 // final projection into the snapshot, and never re-reads Runtime for a retained relayout.
 
-#include "frame_layout_access.hpp"
 #include "frame_layout_internal.hpp"
 #include "playback_session_internal.hpp"
 #include "presentation_materializer.hpp"
 #include "presentation_state.hpp"
+#include <cuexis/playback/frame_layout_access.hpp>
 
 #include <cuexis/runtime/presentation_read.hpp>
 

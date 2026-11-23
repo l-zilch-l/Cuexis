@@ -39,6 +39,16 @@ execute_process(
 )
 message(STATUS "player smoke output:\n${player_output}${player_error}")
 if(NOT player_result EQUAL 0)
+    if("${player_output}${player_error}" MATCHES
+       "render\\.opengl\\.(version_unsupported|backend_unavailable)|platform\\.sdl\\.window_create_failed")
+        # The shared Player path needs a usable OpenGL context; hosted runners without a GL
+        # driver cannot provide one, so the smoke leg is recorded as not checked instead of
+        # turning an environment limitation into a product failure.
+        message(STATUS
+            "rr_frame_layout_shared: consumer passed; real Player smoke NOT CHECKED "
+            "(no usable OpenGL context on this host)")
+        return()
+    endif()
     message(FATAL_ERROR "real Player smoke run failed with ${player_result}")
 endif()
 

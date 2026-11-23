@@ -550,6 +550,47 @@ else()
             ${component_arguments}
         )
     endif()
+    if(CUEXIS_CONSUMER_MODE STREQUAL "find_package_playback" AND NOT CUEXIS_EXPERIMENTAL)
+        # Default installed prefix: the experimental Gameplay headers are not part of this
+        # package, so including one must fail at the include and never reach the compiler's
+        # candidate declarations.
+        if(EXISTS "${package_prefix}/include/cuexis/playback/experimental")
+            message(FATAL_ERROR
+                "Default Cuexis package installed the experimental Playback header directory")
+        endif()
+        foreach(candidate_header IN ITEMS
+                gameplay_candidate.hpp execution_control.hpp execution_coordination.hpp)
+            if(EXISTS "${package_prefix}/include/cuexis/playback/${candidate_header}")
+                message(FATAL_ERROR
+                    "Default Cuexis package installed the candidate header ${candidate_header}")
+            endif()
+        endforeach()
+        cuexis_run_checked(
+            "default-prefix experimental header configure"
+            "${CMAKE_COMMAND}"
+            -S "${CUEXIS_SOURCE_DIR}/tests/external/experimental_header_negative"
+            -B "${work_dir}/default-prefix-negative"
+            ${consumer_configure_arguments}
+            "-DCuexis_DIR=${package_prefix}/lib/cmake/Cuexis"
+            "-DCMAKE_PREFIX_PATH=${dependency_prefix}"
+        )
+        execute_process(
+            COMMAND "${CMAKE_COMMAND}" --build "${work_dir}/default-prefix-negative"
+                --config "${CUEXIS_BUILD_TYPE}"
+            RESULT_VARIABLE negative_result
+            OUTPUT_VARIABLE negative_output
+            ERROR_VARIABLE negative_errors
+        )
+        if(negative_result EQUAL 0)
+            message(FATAL_ERROR
+                "Default prefix compiled an experimental Playback header; the header must be absent")
+        endif()
+        if(NOT "${negative_output}${negative_errors}" MATCHES "experimental/gameplay.hpp")
+            message(FATAL_ERROR
+                "Default-prefix experimental header negative did not fail at the missing include:\n"
+                "${negative_output}\n${negative_errors}")
+        endif()
+    endif()
     if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
         if(CUEXIS_BUILD_TYPE STREQUAL "Debug")
             set(mismatched_build_type Release)

@@ -63,6 +63,20 @@ struct ExecutionHostOptions final {
     bool showFps{};
     SeekIdentityPolicy seekIdentity{SeekIdentityPolicy::owningSource};
 };
+// Shape of one frame sample request. The ordinary loop and the Player leave every member at its
+// default, which is the request the installed layout binding and the contract's default selection
+// produce. An embedding owner can ask the same consumer for the other retained mode or another
+// framing selection; that is how the retained two-way rule and the request-selection rule are
+// exercised without a second host or a second consumer.
+struct FrameSampleShape final {
+    // True: this request carries no present target even when a layout binding is installed, so it
+    // is the legacy snapshot request.
+    bool legacyRequest{};
+    // Explicit present target for this request. It wins over the installed binding, which lets an
+    // embedding owner without a layout binding issue a laid-out request.
+    std::optional<playback::experimental::FrameTarget> target{};
+    playback::experimental::FramingRequest framing{};
+};
 struct ExecutionHostPorts final {
     playback::detail::AudioWorker::DeviceFactory audioDevice;
     playback::detail::AudioWorker::DecodeClip decode;
@@ -105,9 +119,11 @@ class ExecutionHost final {
                             playback::GameplayTick, const ClockSource&,
                             std::span<const playback::GameplayCheckpoint> checkpoints = {})
         -> core::Result<void>;
-    [[nodiscard]] auto sample(std::int64_t presentationTick, playback::RuntimeFrame, bool frozen)
+    [[nodiscard]] auto sample(std::int64_t presentationTick, playback::RuntimeFrame, bool frozen,
+                              FrameSampleShape shape = {})
         -> core::Result<playback::detail::FrameEnvelope>;
-    [[nodiscard]] auto trySample(std::int64_t presentationTick, playback::RuntimeFrame, bool frozen)
+    [[nodiscard]] auto trySample(std::int64_t presentationTick, playback::RuntimeFrame, bool frozen,
+                                 FrameSampleShape shape = {})
         -> core::Result<std::optional<playback::detail::FrameEnvelope>>;
     [[nodiscard]] auto revokeRetained() -> core::Result<void>;
     [[nodiscard]] auto deliveryStatus() const noexcept -> playback::detail::DeliveryStatus {

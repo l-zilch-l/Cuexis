@@ -2,6 +2,9 @@
 // preparation result exists, while the candidate build reaches the candidate factory path.
 
 #include "playback_session_prepare_internal.hpp"
+#if !defined(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+#include "playback_candidate_hook_rejection.hpp"
+#endif
 
 #include <cuexis/playback/playback_source.hpp>
 #if !defined(CUEXIS_ENABLE_CHART_V5_CANDIDATE) && defined(CUEXIS_PLAYBACK_STATIC_DEFINE)

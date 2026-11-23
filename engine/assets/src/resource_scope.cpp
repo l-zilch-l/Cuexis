@@ -137,11 +137,64 @@ auto ResourceScope::request(AssetType type, const AssetId& id, ResourcePolicy po
         storage_->index.emplace(std::move(key), index);
         return true;
     };
+    using HandleVariant =
+        std::variant<MeshHandle, MaterialHandle, TextureHandle, AudioSourceHandle, ShaderHandle>;
+    // One typed helper owns the load-to-entry path for every kind, so the five kinds cannot drift
+    // apart again. The caller still chooses the tag; the entry shape, index, rollback boundary and
+    // diagnostics are shared.
+    const auto loadTyped =
+        [&]<typename Tag>(Tag, AssetType requestedType,
+                          const AssetId& requestedId) -> core::Result<HandleVariant> {
+        auto lease = state->load<Tag>(requestedId);
+        if (!lease) {
+            return core::unexpected(std::move(lease.error()));
+        }
+        const auto handle = lease->handle();
+        if (!addEntry(Entry{.type = requestedType,
+                            .requestedId = requestedId,
+                            .resolution = EntryResolution::Loaded,
+                            .acquisitionPolicy = ResourcePolicy::Required,
+                            .failureCause = std::nullopt,
+                            .lease = std::move(*lease)})) {
+            return core::unexpected(
+                core::Error{"assets.resource.scope_index_conflict",
+                            "ResourceScope already contains the requested resource key"});
+        }
+        return HandleVariant{handle};
+    };
+    // The fallback sibling: acquiring the built-in resource, registering the fallback entry that
+    // records the original cause, and the used/failed/conflict diagnostics in their original order.
+    const auto fallbackTyped =
+        [&]<typename Tag>(Tag, AssetType requestedType, const AssetId& requestedId,
+                          const core::Error& cause) -> std::optional<HandleVariant> {
+        auto fallback = state->fallback<Tag>();
+        if (!fallback) {
+            appendErrorDiagnostic(diagnostics, fallback.error(), core::DiagnosticSeverity::Error,
+                                  "assets.resource.fallback_failed",
+                                  "Built-in fallback resource could not be acquired", requestedId);
+            return std::nullopt;
+        }
+        const auto handle = fallback->handle();
+        if (!addEntry(Entry{.type = requestedType,
+                            .requestedId = requestedId,
+                            .resolution = EntryResolution::Fallback,
+                            .acquisitionPolicy = ResourcePolicy::Fallback,
+                            .failureCause = cause,
+                            .lease = std::move(*fallback)})) {
+            appendErrorDiagnostic(diagnostics, cause, core::DiagnosticSeverity::Error,
+                                  "assets.resource.scope_index_conflict",
+                                  "ResourceScope fallback key conflicts with an entry",
+                                  requestedId);
+            return std::nullopt;
+        }
+        appendErrorDiagnostic(diagnostics, cause, core::DiagnosticSeverity::Warning,
+                              "assets.resource.fallback_used",
+                              "Built-in fallback resource was used", requestedId);
+        return HandleVariant{handle};
+    };
     std::vector<std::pair<AssetType, AssetId>> visiting;
     const auto acquire = [&](auto&& self, AssetType requestedType, const AssetId& requestedId,
-                             std::size_t depth)
-        -> core::Result<std::variant<MeshHandle, MaterialHandle, TextureHandle, AudioSourceHandle,
-                                     ShaderHandle>> {
+                             std::size_t depth) -> core::Result<HandleVariant> {
         const auto held = storage_->index.find(EntryKeyView{requestedType, requestedId.value});
         if (held != storage_->index.end()) {
             const auto& entry = storage_->entries[held->second];
@@ -214,97 +267,19 @@ auto ResourceScope::request(AssetType type, const AssetId& id, ResourcePolicy po
         }
         visiting.pop_back();
 
+        // Only the tag type is dispatched here. Loading one typed lease, registering exactly one
+        // entry and reporting a scope index conflict are the same steps for all five kinds.
         switch (requestedType) {
-        case AssetType::Mesh: {
-            auto lease = state->load<MeshTag>(requestedId);
-            if (!lease) {
-                return core::unexpected(std::move(lease.error()));
-            }
-            const auto handle = lease->handle();
-            if (!addEntry(Entry{.type = requestedType,
-                                .requestedId = requestedId,
-                                .resolution = EntryResolution::Loaded,
-                                .acquisitionPolicy = ResourcePolicy::Required,
-                                .failureCause = std::nullopt,
-                                .lease = std::move(*lease)})) {
-                return core::unexpected(
-                    core::Error{"assets.resource.scope_index_conflict",
-                                "ResourceScope already contains the requested resource key"});
-            }
-            return handle;
-        }
-        case AssetType::Material: {
-            auto lease = state->load<MaterialTag>(requestedId);
-            if (!lease) {
-                return core::unexpected(std::move(lease.error()));
-            }
-            const auto handle = lease->handle();
-            if (!addEntry(Entry{.type = requestedType,
-                                .requestedId = requestedId,
-                                .resolution = EntryResolution::Loaded,
-                                .acquisitionPolicy = ResourcePolicy::Required,
-                                .failureCause = std::nullopt,
-                                .lease = std::move(*lease)})) {
-                return core::unexpected(
-                    core::Error{"assets.resource.scope_index_conflict",
-                                "ResourceScope already contains the requested resource key"});
-            }
-            return handle;
-        }
-        case AssetType::Texture: {
-            auto lease = state->load<TextureTag>(requestedId);
-            if (!lease) {
-                return core::unexpected(std::move(lease.error()));
-            }
-            const auto handle = lease->handle();
-            if (!addEntry(Entry{.type = requestedType,
-                                .requestedId = requestedId,
-                                .resolution = EntryResolution::Loaded,
-                                .acquisitionPolicy = ResourcePolicy::Required,
-                                .failureCause = std::nullopt,
-                                .lease = std::move(*lease)})) {
-                return core::unexpected(
-                    core::Error{"assets.resource.scope_index_conflict",
-                                "ResourceScope already contains the requested resource key"});
-            }
-            return handle;
-        }
-        case AssetType::Audio: {
-            auto lease = state->load<AudioSourceTag>(requestedId);
-            if (!lease) {
-                return core::unexpected(std::move(lease.error()));
-            }
-            const auto handle = lease->handle();
-            if (!addEntry(Entry{.type = requestedType,
-                                .requestedId = requestedId,
-                                .resolution = EntryResolution::Loaded,
-                                .acquisitionPolicy = ResourcePolicy::Required,
-                                .failureCause = std::nullopt,
-                                .lease = std::move(*lease)})) {
-                return core::unexpected(
-                    core::Error{"assets.resource.scope_index_conflict",
-                                "ResourceScope already contains the requested resource key"});
-            }
-            return handle;
-        }
-        case AssetType::Shader: {
-            auto lease = state->load<ShaderTag>(requestedId);
-            if (!lease) {
-                return core::unexpected(std::move(lease.error()));
-            }
-            const auto handle = lease->handle();
-            if (!addEntry(Entry{.type = requestedType,
-                                .requestedId = requestedId,
-                                .resolution = EntryResolution::Loaded,
-                                .acquisitionPolicy = ResourcePolicy::Required,
-                                .failureCause = std::nullopt,
-                                .lease = std::move(*lease)})) {
-                return core::unexpected(
-                    core::Error{"assets.resource.scope_index_conflict",
-                                "ResourceScope already contains the requested resource key"});
-            }
-            return handle;
-        }
+        case AssetType::Mesh:
+            return loadTyped(MeshTag{}, requestedType, requestedId);
+        case AssetType::Material:
+            return loadTyped(MaterialTag{}, requestedType, requestedId);
+        case AssetType::Texture:
+            return loadTyped(TextureTag{}, requestedType, requestedId);
+        case AssetType::Audio:
+            return loadTyped(AudioSourceTag{}, requestedType, requestedId);
+        case AssetType::Shader:
+            return loadTyped(ShaderTag{}, requestedType, requestedId);
         }
         return core::unexpected(
             core::Error{"assets.resource.type_unknown", "Resource type is unknown"});
@@ -327,145 +302,32 @@ auto ResourceScope::request(AssetType type, const AssetId& id, ResourcePolicy po
                               "assets.resource.optional_skipped",
                               "Optional resource dependency closure was skipped", id);
         break;
-    case ResourcePolicy::Fallback:
+    case ResourcePolicy::Fallback: {
+        // The fallback decision is shared as well; the request policy only reaches the retained
+        // entry through the same typed lease the failed load would have produced.
+        std::optional<HandleVariant> reused;
         switch (type) {
-        case AssetType::Mesh: {
-            auto fallback = state->fallback<MeshTag>();
-            if (fallback) {
-                const auto handle = fallback->handle();
-                if (!addEntry(Entry{.type = type,
-                                    .requestedId = id,
-                                    .resolution = EntryResolution::Fallback,
-                                    .acquisitionPolicy = ResourcePolicy::Fallback,
-                                    .failureCause = loaded.error(),
-                                    .lease = std::move(*fallback)})) {
-                    appendErrorDiagnostic(diagnostics, loaded.error(),
-                                          core::DiagnosticSeverity::Error,
-                                          "assets.resource.scope_index_conflict",
-                                          "ResourceScope fallback key conflicts with an entry", id);
-                    break;
-                }
-                appendErrorDiagnostic(
-                    diagnostics, loaded.error(), core::DiagnosticSeverity::Warning,
-                    "assets.resource.fallback_used", "Built-in fallback resource was used", id);
-                diagnostics.sortDeterministically();
-                return {handle, std::move(diagnostics)};
-            }
-            appendErrorDiagnostic(diagnostics, fallback.error(), core::DiagnosticSeverity::Error,
-                                  "assets.resource.fallback_failed",
-                                  "Built-in fallback resource could not be acquired", id);
+        case AssetType::Mesh:
+            reused = fallbackTyped(MeshTag{}, type, id, loaded.error());
+            break;
+        case AssetType::Material:
+            reused = fallbackTyped(MaterialTag{}, type, id, loaded.error());
+            break;
+        case AssetType::Texture:
+            reused = fallbackTyped(TextureTag{}, type, id, loaded.error());
+            break;
+        case AssetType::Audio:
+            reused = fallbackTyped(AudioSourceTag{}, type, id, loaded.error());
+            break;
+        case AssetType::Shader:
+            reused = fallbackTyped(ShaderTag{}, type, id, loaded.error());
             break;
         }
-        case AssetType::Material: {
-            auto fallback = state->fallback<MaterialTag>();
-            if (fallback) {
-                const auto handle = fallback->handle();
-                if (!addEntry(Entry{.type = type,
-                                    .requestedId = id,
-                                    .resolution = EntryResolution::Fallback,
-                                    .acquisitionPolicy = ResourcePolicy::Fallback,
-                                    .failureCause = loaded.error(),
-                                    .lease = std::move(*fallback)})) {
-                    appendErrorDiagnostic(diagnostics, loaded.error(),
-                                          core::DiagnosticSeverity::Error,
-                                          "assets.resource.scope_index_conflict",
-                                          "ResourceScope fallback key conflicts with an entry", id);
-                    break;
-                }
-                appendErrorDiagnostic(
-                    diagnostics, loaded.error(), core::DiagnosticSeverity::Warning,
-                    "assets.resource.fallback_used", "Built-in fallback resource was used", id);
-                diagnostics.sortDeterministically();
-                return {handle, std::move(diagnostics)};
-            }
-            appendErrorDiagnostic(diagnostics, fallback.error(), core::DiagnosticSeverity::Error,
-                                  "assets.resource.fallback_failed",
-                                  "Built-in fallback resource could not be acquired", id);
+        if (!reused)
             break;
-        }
-        case AssetType::Texture: {
-            auto fallback = state->fallback<TextureTag>();
-            if (fallback) {
-                const auto handle = fallback->handle();
-                if (!addEntry(Entry{.type = type,
-                                    .requestedId = id,
-                                    .resolution = EntryResolution::Fallback,
-                                    .acquisitionPolicy = ResourcePolicy::Fallback,
-                                    .failureCause = loaded.error(),
-                                    .lease = std::move(*fallback)})) {
-                    appendErrorDiagnostic(diagnostics, loaded.error(),
-                                          core::DiagnosticSeverity::Error,
-                                          "assets.resource.scope_index_conflict",
-                                          "ResourceScope fallback key conflicts with an entry", id);
-                    break;
-                }
-                appendErrorDiagnostic(
-                    diagnostics, loaded.error(), core::DiagnosticSeverity::Warning,
-                    "assets.resource.fallback_used", "Built-in fallback resource was used", id);
-                diagnostics.sortDeterministically();
-                return {handle, std::move(diagnostics)};
-            }
-            appendErrorDiagnostic(diagnostics, fallback.error(), core::DiagnosticSeverity::Error,
-                                  "assets.resource.fallback_failed",
-                                  "Built-in fallback resource could not be acquired", id);
-            break;
-        }
-        case AssetType::Audio: {
-            auto fallback = state->fallback<AudioSourceTag>();
-            if (fallback) {
-                const auto handle = fallback->handle();
-                if (!addEntry(Entry{.type = type,
-                                    .requestedId = id,
-                                    .resolution = EntryResolution::Fallback,
-                                    .acquisitionPolicy = ResourcePolicy::Fallback,
-                                    .failureCause = loaded.error(),
-                                    .lease = std::move(*fallback)})) {
-                    appendErrorDiagnostic(diagnostics, loaded.error(),
-                                          core::DiagnosticSeverity::Error,
-                                          "assets.resource.scope_index_conflict",
-                                          "ResourceScope fallback key conflicts with an entry", id);
-                    break;
-                }
-                appendErrorDiagnostic(
-                    diagnostics, loaded.error(), core::DiagnosticSeverity::Warning,
-                    "assets.resource.fallback_used", "Built-in fallback resource was used", id);
-                diagnostics.sortDeterministically();
-                return {handle, std::move(diagnostics)};
-            }
-            appendErrorDiagnostic(diagnostics, fallback.error(), core::DiagnosticSeverity::Error,
-                                  "assets.resource.fallback_failed",
-                                  "Built-in fallback resource could not be acquired", id);
-            break;
-        }
-        case AssetType::Shader: {
-            auto fallback = state->fallback<ShaderTag>();
-            if (fallback) {
-                const auto handle = fallback->handle();
-                if (!addEntry(Entry{.type = type,
-                                    .requestedId = id,
-                                    .resolution = EntryResolution::Fallback,
-                                    .acquisitionPolicy = ResourcePolicy::Fallback,
-                                    .failureCause = loaded.error(),
-                                    .lease = std::move(*fallback)})) {
-                    appendErrorDiagnostic(diagnostics, loaded.error(),
-                                          core::DiagnosticSeverity::Error,
-                                          "assets.resource.scope_index_conflict",
-                                          "ResourceScope fallback key conflicts with an entry", id);
-                    break;
-                }
-                appendErrorDiagnostic(
-                    diagnostics, loaded.error(), core::DiagnosticSeverity::Warning,
-                    "assets.resource.fallback_used", "Built-in fallback resource was used", id);
-                diagnostics.sortDeterministically();
-                return {handle, std::move(diagnostics)};
-            }
-            appendErrorDiagnostic(diagnostics, fallback.error(), core::DiagnosticSeverity::Error,
-                                  "assets.resource.fallback_failed",
-                                  "Built-in fallback resource could not be acquired", id);
-            break;
-        }
-        }
-        break;
+        diagnostics.sortDeterministically();
+        return {std::move(*reused), std::move(diagnostics)};
+    }
     }
     diagnostics.sortDeterministically();
     return {std::nullopt, std::move(diagnostics)};

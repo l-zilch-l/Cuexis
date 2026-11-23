@@ -224,18 +224,26 @@ auto OpenGlBackend::renderPresentation(const playback::FrameSnapshot& snapshot,
 }
 
 auto OpenGlBackend::capabilities() const noexcept -> const playback::PresentationCapabilities& {
-    if (!capabilitiesReady_ && presentation_ != nullptr && window_.valid() && context_ != nullptr &&
-        SDL_IsMainThread() && ownerThread_.isCurrent()) {
-        auto* nativeWindow = static_cast<SDL_Window*>(window_.nativeHandle());
-        if (nativeWindow != nullptr &&
-            SDL_GL_MakeCurrent(nativeWindow, static_cast<SDL_GLContext>(context_))) {
-            GLint maxTextureSize = 0;
-            glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
-            const auto textureLimit = static_cast<std::uint32_t>(
-                std::clamp(maxTextureSize, 0, static_cast<int>(portableMaxTextureDimension)));
-            capabilities_ = builtInPresentationCapabilities(textureLimit, debugProgram_ != 0);
-            capabilitiesReady_ = true;
-        }
+    // A published cache is an ordinary read: every thread gets the same initialized set. Only the
+    // first query needs the owner thread, because only the owner may make the shared context
+    // current. A query that cannot initialize reports the uninitialized set instead of implying
+    // that the device has no capabilities.
+    if (capabilitiesReady_)
+        return capabilities_;
+    // The owner check precedes every member that validates its own thread: the window lease asserts
+    // its owner on access.
+    if (!SDL_IsMainThread() || !ownerThread_.isCurrent() || presentation_ == nullptr ||
+        !window_.valid() || context_ == nullptr)
+        return capabilities_;
+    auto* nativeWindow = static_cast<SDL_Window*>(window_.nativeHandle());
+    if (nativeWindow != nullptr &&
+        SDL_GL_MakeCurrent(nativeWindow, static_cast<SDL_GLContext>(context_))) {
+        GLint maxTextureSize = 0;
+        glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+        const auto textureLimit = static_cast<std::uint32_t>(
+            std::clamp(maxTextureSize, 0, static_cast<int>(portableMaxTextureDimension)));
+        capabilities_ = builtInPresentationCapabilities(textureLimit, debugProgram_ != 0);
+        capabilitiesReady_ = true;
     }
     return capabilities_;
 }
@@ -409,6 +417,11 @@ auto OpenGlBackend::resize(std::uint32_t width, std::uint32_t height) -> core::R
                                             "The OpenGL backend belongs to another thread"}
                                     .withContext("operation", "resize"));
     }
+    if (!window_.valid() || context_ == nullptr) {
+        return core::unexpected(core::Error{"render.opengl.backend_unavailable",
+                                            "The OpenGL presentation backend is closed"}
+                                    .withContext("operation", "resize"));
+    }
     surfaceWidth_ = width;
     surfaceHeight_ = height;
     return {};
@@ -424,16 +437,20 @@ auto OpenGlBackend::rebuild() -> core::Result<void> {
         return core::unexpected(core::Error{"presentation.renderer.generation_exhausted",
                                             "Presentation renderer generation is exhausted"});
     }
+    // A closed backend has released its window and context, so a rebuild cannot restore any
+    // presentation resource. Reporting success would claim a recovery that cannot present; the
+    // existing unavailable failure is returned before any state changes.
+    if (!window_.valid() || context_ == nullptr) {
+        return core::unexpected(core::Error{"render.opengl.backend_unavailable",
+                                            "The OpenGL presentation backend has no window or "
+                                            "context to rebuild"}
+                                    .withContext("operation", "rebuild"));
+    }
     const bool retainedResources =
         presentation_ != nullptr &&
         (presentation_->active.has_value() || presentation_->pending.has_value() ||
          presentation_->retired.has_value());
     if (retainedResources) {
-        if (!window_.valid() || context_ == nullptr) {
-            return core::unexpected(
-                core::Error{"render.opengl.cleanup_unavailable",
-                            "Presentation resources require their OpenGL context for cleanup"});
-        }
         auto* nativeWindow = static_cast<SDL_Window*>(window_.nativeHandle());
         if (nativeWindow == nullptr ||
             !SDL_GL_MakeCurrent(nativeWindow, static_cast<SDL_GLContext>(context_))) {
@@ -481,6 +498,12 @@ void OpenGlBackend::injectPresentFailure(
 void OpenGlBackend::detachCandidate(std::uint64_t rendererGeneration,
                                     std::uint64_t candidateGeneration,
                                     const playback::PresentationCandidateToken& token) noexcept {
+    // The candidate is destroyed by a public value type, so this may arrive on any thread. Only the
+    // owner may release the candidate: discardPresentation makes the context current and deletes
+    // GPU objects. A foreign-thread call terminates, like activate/discard, before touching the
+    // outstanding candidate.
+    if (!SDL_IsMainThread() || !ownerThread_.isCurrent())
+        std::terminate();
     if (!interfaceCandidate_) {
         return;
     }

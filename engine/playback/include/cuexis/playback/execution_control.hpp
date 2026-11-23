@@ -5,6 +5,11 @@
 #include <cuexis/playback/execution_coordination.hpp>
 #include <cuexis/playback/presentation_candidate.hpp>
 namespace cuexis::playback {
+namespace detail {
+// Build-only execution-host coordination entry; declared here so the proof token can grant it
+// access to the private constructor without becoming an installed surface.
+struct ExecutionHostAccess;
+} // namespace detail
 CUEXIS_ABI_WARNING_PUSH
 enum class Participant : std::uint8_t { capture, software, audio, renderer };
 enum class StepPhase : std::uint8_t {
@@ -158,6 +163,7 @@ class ExecutionFence final {
 
   private:
     friend class PlaybackSession;
+    friend struct detail::ExecutionHostAccess;
     ExecutionFence(std::uint64_t scope, std::uint64_t generation, std::uint64_t candidate,
                    std::uint64_t sequence) noexcept
         : scope_(scope), generation_(generation), candidateId_(candidate),

@@ -322,3 +322,18 @@ fromBytes成功只证明结构校验，不代替evidenceValid或完整结果比�
 候选安装consumer最低请求Cuexis 0.7.5并重建，matching-toolchain shared不承诺旧二进制可替换。
 production candidate-OFF无新API；新码可能随原content错误路径进入已有Result，category/context规则不变。
 失败原子性、generation、sealed前缀、GameplayAdvanceReceipt与公开Result承载均保持既有合同。
+
+## 实验 Gameplay 外观与构建期入口（候选安装）
+
+候选 SDK 额外安装三个实验头：`cuexis/playback/experimental/gameplay.hpp`（候选 source 工厂、
+prepare/submit/advance/query/control）、`gameplay_realtime.hpp`（realtime 时钟、capture、advance、
+pause/resume/control 与 reconciliation 身份）和 `gameplay_replay.hpp`（archive/snapshot/evaluate/
+restore/seek/checkpoint/replay cut）。每个自由函数把第一个参数作为原成员调用的会话对象，
+参数、默认值、返回类型与校验顺序不变，转发到同版本的候选成员或已装自由函数；旧成员、旧符号
+和旧头在本兼容窗口内继续保留。实验头只随 `-DCuexis_ALLOW_EXPERIMENTAL=ON` 的候选安装提供，
+默认安装不包含它们；名字与导出不构成稳定 SDK 承诺，晋升按 D-19 的版本机制另行处理。
+
+执行宿主与回放身份的构建期入口是 `cuexis/playback/execution_host_access.hpp`、
+`cuexis/playback/replay_identity.hpp` 和 `cuexis/playback/frame_layout_access.hpp`，只向具名的
+仓内 host/测试目标提供私有 include 根，不安装、不导出公共头，也不改变公共类布局。
+默认库不导出 `detail` 的这组符号；实验共享库只导出该表列出的成员。

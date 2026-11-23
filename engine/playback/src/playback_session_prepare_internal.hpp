@@ -257,18 +257,6 @@ void normalizeCapabilities(PlaybackCapabilitySet& capabilities);
 [[nodiscard]] auto projectDocuments(std::span<const PlaybackProjectDocument> sourceDocuments)
     -> std::vector<chart::ProjectDocument>;
 
-#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
-[[nodiscard]] auto candidateResourceRequirements(const chart::CanonicalResourceClosure& closure,
-                                                 core::Diagnostics& diagnostics)
-    -> std::optional<std::vector<chart::ChartResourceRequirement>>;
-#endif
-
-[[nodiscard]] auto prepareCandidateStage(const cxc::CandidateChart& candidate, bool gameplaySource,
-                                         const PlaybackPrepareOptions& options, bool replacement,
-                                         const chart::ChartLimits& limits,
-                                         PrepareArtifact& artifact, core::Diagnostics& diagnostics)
-    -> core::Result<chart::ChartRuntime>;
-
 [[nodiscard]] auto loadDocumentStage(const PrepareContext& context, PrepareArtifact& artifact,
                                      core::Diagnostics& diagnostics) -> core::Result<void>;
 
