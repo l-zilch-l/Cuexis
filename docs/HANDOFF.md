@@ -12,17 +12,17 @@ authority: owns
 
 ## 当前阶段与工作项
 
-当前为 Stage 7-RR，状态以 [CURRENT_STATUS](CURRENT_STATUS.md) 为准。[T-18 文档治理](stage_plans/active/stage-07-rr/tasks/T-18.md)、[T-01 基线、派单包与冷启动](stage_plans/active/stage-07-rr/tasks/T-01.md)、[T-03 合同与诊断](stage_plans/active/stage-07-rr/tasks/T-03.md)与 [T-04 构建隔离](stage_plans/active/stage-07-rr/tasks/T-04.md)已完成。T-01 把实施基线固定在 `a22e255f`；T-03 订正 8 篇合同、追加四个 `rr2_contract_*` 用例与两条 RPA 对照；T-04 拆开候选与默认闭包、Chart 基础/codec/tools 源表，交付隔离门禁、五档安装消费者与五组阴性对照，四个预设与两个独立配置的构建与门禁全部通过。
+当前为 Stage 7-RR，状态以 [CURRENT_STATUS](CURRENT_STATUS.md) 为准。[T-18 文档治理](stage_plans/active/stage-07-rr/tasks/T-18.md)、[T-01 基线、派单包与冷启动](stage_plans/active/stage-07-rr/tasks/T-01.md)、[T-03 合同与诊断](stage_plans/active/stage-07-rr/tasks/T-03.md)与 [T-04 构建隔离](stage_plans/active/stage-07-rr/tasks/T-04.md)已完成，波次 5 的 T-02、T-05、T-17 也已完成。T-01 把实施基线固定在 `a22e255f`；T-03 订正 8 篇合同、追加四个 `rr2_contract_*` 用例与两条 RPA 对照；T-04 拆开候选与默认闭包、Chart 基础/codec/tools 源表，交付隔离门禁、五档安装消费者与五组阴性对照；T-02 对齐四篇状态事实，T-05 交付像素几何与 GL 边界，T-17 修复会话层 F501/F508/F509/F203。
 
 ## 当前任务
 
-下一次接手的首项是波次 5 的 [T-02 状态事实对齐](stage_plans/active/stage-07-rr/tasks/T-02.md)、[T-05 像素几何与 GL 边界](stage_plans/active/stage-07-rr/tasks/T-05.md)与 [T-17 内容提交门禁](stage_plans/active/stage-07-rr/tasks/T-17.md)，三张卡按唯一调度可并行，之后进入波次 6 的 T-06。
+下一次接手的首项是波次 6 的 [T-06 帧桥与资源去重](stage_plans/active/stage-07-rr/tasks/T-06.md)（独占），之后是 T-08 的候选宏、安装面与逐符号迁移（等 T-06）。波次 5 的交付报告在 [T-02](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-02-state-facts.md)、[T-05](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-05-frame-layout.md)与 [T-17](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-17-session-correctness.md)。
 
 T-01 证据在 [基线与派单报告](stage_reports/stages/stage-07-rr/readiness/2026-11-23-t-01-dispatch-baseline.md)；T-03 证据在 [合同与诊断交付](stage_reports/stages/stage-07-rr/implementation/2026-11-23-t-03-contracts-and-diagnostics.md)；T-04 证据在 [构建闭包拆分与隔离门禁](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-04-build-isolation.md)。派单输入的规范哈希取基线 blob，见 [hashes.txt](stage_reports/stages/stage-07-rr/evidence/t-01-baseline/hashes.txt)，独立 checkout 复算不需要 `out/`。
 
 ## 下一步
 
-1. 按[唯一调度](stage_plans/active/stage-07-rr/schedule.md)启动波次 5：T-02、T-05、T-17 并行；T-06 等 T-05 与 T-17，T-08 等 T-03/T-04/T-06。
+1. 按[唯一调度](stage_plans/active/stage-07-rr/schedule.md)启动波次 6 的 T-06；T-08 等 T-06，T-10 等 T-07/T-08；T-09 的退出材料与设备项留给 owner。
 2. 每卡按其任务级验收取证并回写发现处置；文档变更收尾前运行文档总入口、事实、命名与生成物检查。
 3. 实际发布、SDK 晋升与旧 API 退役仍各自单独取得；设备与实体听音项留给 owner。
 
@@ -38,6 +38,8 @@ T-03：四个预设上 `rr2_contract_packed`、`rr2_contract_beat`、`rr2_contra
 
 T-04：四个预设（`debug`、`headless-debug`、`candidate-headless-debug`、`candidate-shared-debug`）构建退出 0，各 7 项测试全通过；`rr-f302-minimal` 与 `rr-f302-tools` 两个独立配置门禁通过；五档安装前缀与两种消费者接线 10 组配置-构建-运行退出 0；A1/A3/B 阴性成立，A2 在修复门禁依赖 id 读取（`92539ad4`）后成立；RR-F216/F217/F434 分别成立（F216 的非 Windows 分支未在本机核实）。
 
+波次 5：T-02 的四项文档门禁与负例注入退出 0，RR-F105 部分成立，`[packed]` 69 例全过（含修复 T-04b 遗留的 SPEC-02 源单元列表）；T-05 的 `rr_frame_layout` 在 `debug` 4/4、`headless-debug` 3/3 通过，真实 GL 上下文覆盖借用 FBO 与状态恢复，`framebuffer_incomplete` 本机不可构造；T-17 的四例与既有 override 集在 `candidate-headless-debug` 通过，`headless-debug` 默认闭包测试通过、隔离门禁未回退。合并树上重新跑过：candidate 预设 `[packed]` 69/69、T-17 三例与 override 集全过；`debug` 的 `rr_frame_layout` 4/4、`[packed]` 69/69、隔离门禁与 T-03/T-04 七项测试全过。
+
 CMake target 事实已可检查：`debug` 预设 fresh configure 生成的 `cuexis-targets.txt` 已同步到 `BUILDING.md` 目标块，`check_docs.py` 的 target contract 项退出 0。产品行为、设备与 hosted 证据随各责任任务取得。
 
 ## 接手沿用的产品决定
@@ -51,4 +53,4 @@ CMake target 事实已可检查：`debug` 预设 fresh configure 生成的 `cuex
 
 ## 最近改动
 
-本轮已提交：`a22e255f` 治理落盘、`3b8bf41e` T-01 派单与证据、`569253d8` T-13 复验、`03334ecd` 命名硬规则与检查器、`6c77a888` T-01 证据修正、`5dc55387` T-04 拆分与改名迁移、`3943fb13` 门禁依赖遍历修复、`0bb2d927` D-20 双侧重放证据、`92539ad4` 门禁帮助函数依赖 id 修复。T-04 的交付报告与状态回写随后提交。
+本轮已提交：`a22e255f` 治理落盘、`3b8bf41e` T-01 派单与证据、`569253d8` T-13 复验、`03334ecd` 命名硬规则与检查器、`6c77a888` T-01 证据修正、`5dc55387` T-04 拆分与改名迁移、`3943fb13` 门禁依赖遍历修复、`0bb2d927` D-20 双侧重放证据、`92539ad4` 门禁帮助函数依赖 id 修复、`8cfb302d` T-04 交付、`9c25a88f` 日期构建推进、`b07e20dc` T-05 几何与 GL、`5f1ef718` T-17 会话修复、`52f0d760` T-02 与 SPEC-02 修复。波次 5 的报告与状态回写随后提交。

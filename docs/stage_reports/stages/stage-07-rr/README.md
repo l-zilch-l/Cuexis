@@ -16,6 +16,9 @@ authority: index
 
 | 日期 | 报告 | 内容 |
 | --- | --- | --- |
+| 2026-11-24 | [T-02 RR-1 状态事实对齐](implementation/2026-11-24-t-02-state-facts.md) | 四篇状态事实与版本字面量对齐；RR-F105 部分成立，Packed 69 例全过 |
+| 2026-11-24 | [T-05 像素几何与 GL 边界](implementation/2026-11-24-t-05-frame-layout.md) | 几何/投影纯值成立，借用 FBO 与状态恢复成立，framebuffer_incomplete 本机不可达 |
+| 2026-11-24 | [T-17 会话层正确性修复](implementation/2026-11-24-t-17-session-correctness.md) | F501/F508/F509/F203 成立，候选与默认闭包测试通过 |
 | 2026-11-24 | [T-04 构建闭包拆分与隔离门禁](implementation/2026-11-24-t-04-build-isolation.md) | 四预设与两独立配置的构建、门禁、安装消费者、阴性与 F216/F217/F434 验收；A2 暴露的门禁缺陷已修复 |
 | 2026-11-24 | [T-04 安装消费者证据](evidence/t-04/t-04-install.md) | 五档前缀的清单、导出、泄漏检查与消费者运行 |
 | 2026-11-24 | [T-04 阴性证据](evidence/t-04/t-04-negatives.md) | A1/A3 结构阴性、A2 修复前后、B 链接 probe 与补充件 |

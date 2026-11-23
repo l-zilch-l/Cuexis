@@ -839,6 +839,18 @@ T-04 交付见[构建闭包拆分与隔离门禁](../../../stage_reports/stages/
 - 新发现（门禁自身）：`cuexis_target_dependency_names()` 把 File API `dependencies` 元素当字符串读取，导致基础 Chart 的链接边检查恒为空，A2 阴性在候选配置假通过；修复为读取 `id` 成员（`92539ad4`），修复后 A2 按预期失败。该缺陷由阴性对照发现，说明拆分门禁需要定期用反对照自检。
 - 遗留：候选 hook 文件拆分按 §32 移交 T-08；安装消费者的 `find_package` 接线由本卡脚本直接指向前缀，`VerifyGameplayInstalledConsumer` 只做前缀侧断言；全部运行是 Windows Debug，Release 与非 Windows 未覆盖；设备与实体输入不在本卡。
 
+## 35. 波次 5：T-02、T-05、T-17（2026-11-24）
+
+三张卡按唯一调度并行完成，交付报告分别是[T-02 状态事实对齐](../../../stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-02-state-facts.md)、[T-05 像素几何与 GL 边界](../../../stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-05-frame-layout.md)与[T-17 会话层正确性修复](../../../stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-17-session-correctness.md)。
+
+- RR-F001/F002/F101/F102/F103/F104/F424：**已修**。CURRENT_STATUS 版本与分支摘要、AGENTS 与 ROADMAP/V2 Spec 旧阶段叙述、SDK API `0.8.0`→`0.9.1`、MATERIAL_SHADER 当前与历史版本分离，四项文档门禁退出 0，负例注入按预期失败。
+- RR-F105：**部分成立**。Packed Reader/Writer 已实现、默认 Playback/Player 入口未消费；`[packed]` 69 例全过。真实外部 Packed 消费者与 Writer 互操作仍归 T-09。
+- 新发现（T-04 拆分遗漏）：`SPEC-02` 在 T-04b 后变红，原因是 guard 移入新单元 `packed_chart_tables_common.cpp`，`packed_budget_tests.cpp` 的源单元列表未同步。波次 5 集成时补入第五个单元，`[packed]` 恢复 69/69。以后移动源文件时要搜测试里的按文件读取列表。
+- RR-F203/F501/F508/F509：**已修**。Prepared owner 生命周期由 lease 守卫（失效 `host.rpa.context_stale`）；unload 清零五个宿主导出与授权字段；Presentation 有效性按实际 prepared 内容判断；临时覆盖在发布 token 前整批校验（失败 `world.property.value_invalid` 等，无部分覆盖）。新增 4 个用例，候选预设下新用例与既有 override 集全过，默认闭包未回退。
+- T-05 的 R5 几何与 GL：**部分成立**。几何/选择、Q/R/Pout 与完整逆算、借用 FBO 的 clear/draw/区域外 sentinel/状态归还、五类附件负例、draw failure 恢复与两 flavor 导出成立；`framebuffer_incomplete` 在本机驱动不可构造（驱动对 draw/read buffer 指向缺失附件仍返回 COMPLETE），记为无法核实，留 T-06 或设备/驱动 lane。
+- 集成验证：合并树上 `candidate-headless-debug` 的 T-17 三例、override 集与 `[packed]` 69/69 通过；`debug` 的 `rr_frame_layout` 4/4、`[packed]` 69/69、隔离门禁与 T-03/T-04 七项测试通过。
+- 遗留：T-04 卡预期的两个候选 hook 文件仍未拆分，维持 §32 移交 T-08；T-17 未跑 shared 与设备；T-05 的 `framebuffer_incomplete` 需要合同补可达条件或由 T-06 覆盖。
+
 ## 附录 处置记录（按日期保留，§12–§16）
 
 本附录保留各轮审查的处置记录，按当时时点成立，不改写结论；编号沿用历史顺序，故排在 §17 之后阅读。
