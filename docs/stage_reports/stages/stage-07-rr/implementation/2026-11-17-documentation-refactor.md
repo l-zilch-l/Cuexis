@@ -82,7 +82,7 @@ authority: none
    做过阴性对照。同时 MAP 增加 authority 列、`schemas/*.schema.json` 路由行与 `examples/` 入口，
    `DOCUMENTATION_POLICY` 的权威顺序补“代码与 schema 最高”。
 14. **外部审查交叉核对**：归档外部 59 条审查报告
-   （[2026-11-17-external-findings-review.md](2026-11-17-external-findings-review.md)），
+   （[2026-11-17-external-findings-review.md](../verification/2026-11-17-external-findings-review.md)），
    独立复核其 7 条 S1 全部属实，补登记 RR-F501–F510（见 findings §8），并列出 12 条与既有登记册的对应关系
    及 20 余条未复核项。
 15. **登记册全量核查（2026-11-17）**：6 个无上下文子代理分批核查 91 条未决项（内部 58 + 外部 33），   结果写回 findings，全册 112 条现在都有结论列、“未复核”归零：

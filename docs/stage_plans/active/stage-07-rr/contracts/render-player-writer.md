@@ -10,6 +10,7 @@
 id: PLAN-active.stage-07-rr.contract-render-player-writer
 status: candidate
 authority: owns
+topics: player.wait-policy, chart-v5.render-alpha
 -->
 
 初始代码核对基线：`9623efa3`；当前设计包含后续已接受修订。本页给定 P2/P4/P5 的实施规则，相关任务已按[计划采用入口](../plan.md#唯一派单授权入口)纳入本轮统一安排，不再单列 P4/P5 范围审批。旧内容布局、桥接和替代探针归 R5，其余作者数据、会话、Player 与 Writer 按对应任务验收；生产启动、正式发布和保护符号退出各依原门禁执行。`candidate` 表示未实施、未发布，已定行为见[架构设计附页](../architecture-design.md)。

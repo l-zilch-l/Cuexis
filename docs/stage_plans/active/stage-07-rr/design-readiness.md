@@ -24,7 +24,7 @@ authority: index
 
 2026-11-23 按 owner 决定采用第五条的统一安排：T-01–T-17 及具名全面结构清理均纳入本轮。新玩法先实现并实验验证，Stage 8 按后续续议以 v3 为正式主线并保留已承诺旧内容兼容；公开接口实际退役继续按组保留过渡条件。裁定与残余处置见[登记册 §24](findings.md#24-统一实施前设计裁定2026-11-23)。
 
-2026-11-23 的最新 plan/task 接手复查见[报告](../../../stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md)和[登记册 §25](findings.md#25-实施接手复查2026-11-23)。任务执行口径以修订后的卡为准；旧轮次的待审或阶段外移交记录不覆盖后续裁定。
+2026-11-23 的最新 plan/task 接手复查见[报告](../../../stage_reports/stages/stage-07-rr/handoffs/2026-11-23-execution-readiness-handoff.md)和[登记册 §25](findings.md#25-实施接手复查2026-11-23)。任务执行口径以修订后的卡为准；旧轮次的待审或阶段外移交记录不覆盖后续裁定。
 
 ## 七维闭合口径
 
@@ -40,9 +40,9 @@ authority: index
 
 「缺口追踪」一节的表列出技术合同与对应的验收向量。实施采用见计划，实施证据与逐组发布迁移见验收。
 
-Huygens、Nash、Epicurus、Bacon 分别复验 R1、R5 帧交付与 `NEXT` 合同，四组结论均成立；当期结论见[首轮设计报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md)。后续 Astra 九项的合同、责任卡和验收见[修订与交叉复验](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md#结果与证据)。A-01 的阶段 owner 接受和产品运行另按[验收](acceptance.md)登记。
+Huygens、Nash、Epicurus、Bacon 分别复验 R1、R5 帧交付与 `NEXT` 合同，四组结论均成立；当期结论见[首轮设计报告](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-design-readiness-review.md)。后续 Astra 九项的合同、责任卡和验收见[修订与交叉复验](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-review-resolution.md#结果与证据)。A-01 的阶段 owner 接受和产品运行另按[验收](acceptance.md)登记。
 
-独立 checkout 于 `8599c83a` 复审时暴露的新缺口与处置见[本轮复审处置](../../../stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md)，旧九项复验仅覆盖当次修订。四组审查的 `out/review/stage-07-rr/T-01/final-20261122/` 等路径是原工作区证据，独立 checkout 未取得时不得依此宣布本次门禁通过；按 T-01 重验当前修订。本轮必需回执与短检查输出随报告交付。
+独立 checkout 于 `8599c83a` 复审时暴露的新缺口与处置见[本轮复审处置](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-checkout-review-resolution.md)，旧九项复验仅覆盖当次修订。四组审查的 `out/review/stage-07-rr/T-01/final-20261122/` 等路径是原工作区证据，独立 checkout 未取得时不得依此宣布本次门禁通过；按 T-01 重验当前修订。本轮必需回执与短检查输出随报告交付。
 
 ## 缺口追踪
 

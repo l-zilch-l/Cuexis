@@ -8,6 +8,7 @@
 id: PLAN-active.stage-07-rr.plan
 status: active
 authority: owns
+topics: gameplay-v3.legacy-compatibility
 -->
 
 本计划覆盖 Stage 7 受限退出之后、Stage 7.5 产品实施之前的复核、合同收敛、架构减重、Gameplay v3 实验实现与交接；不覆盖 Stage 7.5 的能力演进、GE-R 性能整改与发布。阶段进度以 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 为准，当前任务与下一步以 [HANDOFF](../../../HANDOFF.md) 为准；问题清单以[发现登记册](findings.md)为准，报告入口见 [Stage 7-RR 报告索引](../../../stage_reports/stages/stage-07-rr/README.md)。
@@ -52,7 +53,7 @@ Stage 7（受限退出） -> Stage 7-RR（本阶段） -> Stage 7.5（Gameplay E
 
 | 依赖 | 当前状态 | 权威指针 | 不满足时的动作 |
 | --- | --- | --- | --- |
-| 历史研究绑定 `aac83e5e`（2026-11-16） | 保留历史基线 | [架构研究](../../../stage_reports/stages/stage-07-rr/2026-11-17-architecture-research.md)、[发现登记册](findings.md) | 按对象核对后继差异；有变化时重跑对应证据，不外推旧结论 |
+| 历史研究绑定 `aac83e5e`（2026-11-16） | 保留历史基线 | [架构研究](../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-architecture-research.md)、[发现登记册](findings.md) | 按对象核对后继差异；有变化时重跑对应证据，不外推旧结论 |
 | 设计核对基线 `9623efa3`（2026-11-21）；上一轮文档依据 `ed1537fd` | 有限静态差异核对，非构建验收 | [审查处置](findings.md#13-可实施性审查处置2026-11-21) | 构建图、安装面和当前版本的验证须另取证，不继承历史构建通过 |
 | SDK API | 版本文件为准 | [CuexisVersion.cmake](../../../../cmake/CuexisVersion.cmake) | 停止安装面/ABI 批次，先取得版本决定 |
 | 日期构建 | 当前权威 | 同上；早期报告中的构建字面量是历史写作时点 | 以版本文件为准，不回写旧报告 |
@@ -69,10 +70,10 @@ Stage 7（受限退出） -> Stage 7-RR（本阶段） -> Stage 7.5（Gameplay E
 | 证据路径冻结 | 新增报告、追加 findings 处置 | 移动证据套件目录、改写已归档报告或回填旧 SHA |
 
 ### 历史进展快照（2026-11-17）
-- RR-0 已完成：8 份专题结论见[研究](../../../stage_reports/stages/stage-07-rr/2026-11-17-architecture-research.md)与[证据](../../../stage_reports/stages/stage-07-rr/2026-11-17-architecture-evidence.md)，6 个减重选项 R1–R6 与建议路线已登记；当前路线选择见 §4 的 D-05，RR-3 尚未开始。
-- RR-1/RR-5 的文档治理机械层已完成（[报告](../../../stage_reports/stages/stage-07-rr/2026-11-17-documentation-refactor.md)）：170 篇合同/计划补元数据、生成 MAP/AGENTS 块、424 篇证据报告加统一头、计划状态纠偏、7 处假断言订正、`check_docs_facts.py` 接入；合同语义重写与 R3/R4/R5 相关正文仍未开始。
+- RR-0 已完成：8 份专题结论见[研究](../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-architecture-research.md)与[证据](../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-architecture-evidence.md)，6 个减重选项 R1–R6 与建议路线已登记；当前路线选择见 §4 的 D-05，RR-3 尚未开始。
+- RR-1/RR-5 的文档治理机械层已完成（[报告](../../../stage_reports/stages/stage-07-rr/implementation/2026-11-17-documentation-refactor.md)）：170 篇合同/计划补元数据、生成 MAP/AGENTS 块、424 篇证据报告加统一头、计划状态纠偏、7 处假断言订正、`check_docs_facts.py` 接入；合同语义重写与 R3/R4/R5 相关正文仍未开始。
 - 假保证扫描与登记册全量核查已完成：前者 48 条候选、26 条经 owner 复核确认（4 条文档过期已就地修正），其中两项最高危问题尚未修复：`ChartWriter` 保存丢数据（RR-F401）与三个常量诊断字段（RR-F419/F420）；处置顺序见扫描报告末节；后者条目全部有结论，复核中推翻或收窄了若干断言，未复核项已清零；具体计数与分级以 findings 为准。
-- tools/ 审计完成（[报告](../../../stage_reports/stages/stage-07-rr/2026-11-17-tools-audit.md)）：120 个脚本审计完成，证据套件原位冻结、门禁修补、报告来源登记，RR-F511–RR-F520 的已确认缺陷已修或登记；日期构建以版本文件为准，本阶段早期报告的构建字面量是历史值。
+- tools/ 审计完成（[报告](../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-tools-audit.md)）：120 个脚本审计完成，证据套件原位冻结、门禁修补、报告来源登记，RR-F511–RR-F520 的已确认缺陷已修或登记；日期构建以版本文件为准，本阶段早期报告的构建字面量是历史值。
 ## 4. 已确认方向与决策台账
 
 | 决策 ID | 决策 | 日期 | owner | 影响 |
@@ -111,11 +112,11 @@ Stage 7（受限退出） -> Stage 7-RR（本阶段） -> Stage 7.5（Gameplay E
 
 ### 排期与实施状态
 
-四组冷启动审查及差量复验的当期结论见[首轮设计报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md)。随后两名执行者[独立复审](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-executor-review.md)，九项设计修订与逐卡验收入口见[Astra 修订报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md)及[合同与任务卡](design-readiness.md)。技术选择沿用 D-01–D-25 已接受方向；`candidate` 表示未实施、未发布。A-01 阶段 owner 接受和产品运行验收按[阶段验收](acceptance.md)登记。
+四组冷启动审查及差量复验的当期结论见[首轮设计报告](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-design-readiness-review.md)。随后两名执行者[独立复审](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-executor-review.md)，九项设计修订与逐卡验收入口见[Astra 修订报告](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-review-resolution.md)及[合同与任务卡](design-readiness.md)。技术选择沿用 D-01–D-25 已接受方向；`candidate` 表示候选合同，可能已有实验实现，正式发布和实际验证须分别取证。A-01 阶段 owner 接受和产品运行验收按[阶段验收](acceptance.md)登记。
 
-正式实施前的计划检查与文档订正见[本轮报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-pre-implementation-plan-check.md)和[登记册 §23](findings.md#23-正式实施前计划检查2026-11-22)，当前待决与下一步见 [HANDOFF](../../../HANDOFF.md#下一步)。T-01–T-17 已纳入本轮统一实施安排；当前交付仍为设计与计划，生产实施启动按 owner 后续明确指示办理。实施采用与发布各自登记。设备/平台取证、逐 API 组的实际发布与退役条件仍按现行门禁执行。
+正式实施前的计划检查与文档订正见[本轮报告](../../../stage_reports/stages/stage-07-rr/readiness/2026-11-22-pre-implementation-plan-check.md)和[登记册 §23](findings.md#23-正式实施前计划检查2026-11-22)，当前待决与下一步见 [HANDOFF](../../../HANDOFF.md#下一步)。T-01–T-17 已纳入本轮统一实施安排；T-18 文档治理已完成；owner 已于 2026-11-23 授权下一次接手正式实施 T-01–T-17，先完成 T-01 基线绑定与采用登记，再按调度推进。实施采用与发布各自登记。设备/平台取证、逐 API 组的实际发布与退役条件仍按现行门禁执行。
 
-`8599c83a` 后独立 checkout 提交的缺口及修订见[本轮复审处置](../../../stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md)。日后取得 owner 明确启动指示后，T-01 先绑定修订后的输入并核对受影响卡；此前启动登记不代表下一次对话直接开工。旧 AX-01–09 报告不能替代本轮未完成的核对。结构检查分别输出 active/candidate，只有本节已采用的 active 卡可以按依赖派发。
+`8599c83a` 后独立 checkout 提交的缺口及修订见[本轮复审处置](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-checkout-review-resolution.md)。owner 本轮已明确授权下一次正式实施 RR，T-01 须先绑定修订后的输入并核对受影响卡；已获启动授权不代替实际基线、卡级验收或阶段退出。旧 AX-01–09 报告不能替代本轮未完成的核对。结构检查分别输出 active/candidate，只有本节已采用的 active 卡可以按依赖派发。
 
 ### 唯一派单授权入口
 
@@ -171,14 +172,21 @@ Stage 7（受限退出） -> Stage 7-RR（本阶段） -> Stage 7.5（Gameplay E
 | T-15 | [候选 Player 启动与交互](tasks/T-15.md) |
 | T-16 | [候选 Writer 与损失报告](tasks/T-16.md) |
 | T-17 | [会话层 P1 正确性修复](tasks/T-17.md) |
+| T-18 | [文档管理与整理](tasks/T-18.md) |
 
-[调度表](schedule.md)独占依赖关系；T-01–T-17 均为本阶段 active 任务，`NEXT` 仅区分实验能力写域。T-09 是全部任务的最终退出点，T-07 在产品改动汇合后整理文档；不能以 T-09 先退出再开始新能力。RR-0 已完成，是历史输入，见 §3、§11，不再派卡。
+[调度表](schedule.md)独占依赖关系；T-18 承接本轮文档治理，产品 T-01–T-17 继续按各卡状态采用；`NEXT` 仅区分实验能力写域。T-09 是全部任务的最终退出点，T-07 在产品改动汇合后整理文档；不能以 T-09 先退出再开始新能力。RR-0 已完成，是历史输入，见 §3、§11，不再派卡。
 
 本轮全部任务按一次基线采用分批派发；表内前置完成本身不代表运行验收或发布通过。源、头和 target 的创建归属见[分阶段构建](contracts/runtime-timing.md#构建头与安装)，任务不得提前引用后继才创建的产物。
 
 ## 7. 分批细化
 
 按 §6 发单并附卡上所链合同和证据输入；卡中规定写域、步骤和用例。阶段完成定义集中在[验收](acceptance.md)。
+
+### 文档管理与整理分册
+
+[文档管理与整理方案](documentation-governance.md)已由 [T-18](tasks/T-18.md)完成，覆盖状态与索引减重、命名分类、发现登记保护、权威来源和分层检查。实际证据见[治理交付报告](../../../stage_reports/stages/stage-07-rr/implementation/2026-11-23-documentation-governance.md)，产品实现尚未启动。
+
+T-18 在产品 T-01 绑定输入前完成本轮治理基线；T-02、T-07 继续处理产品改动引起的后续事实与文档汇合，T-09 核最终退出。分册 G-01–G-05 是 T-18 内部检查点，正式依赖只在调度维护。
 
 派单包绑定任务卡、合同 revision、基线清单及正反用例；每卡列出实际首改路径、注册测试名及其构建目标。尚未存在的目标或测试必须标为本卡新增，并包含注册文件；在它创建前只核对设计，不能把零匹配或未执行写成通过。`candidate-*` 的 CTest preset 自带名称过滤，新 `rr_*`/`cuexis_rr_*` 用例按卡用 `ctest --test-dir out/build/<preset> --no-tests=error -R '^<注册名>$'` 执行，先用同一路径的 `ctest -N -R` 核对注册。配置和定向构建按[BUILDING](../../../guides/BUILDING.md)选匹配工具链；长构建与 hosted/设备验证仍按 AGENTS 的单独执行约定。
 
@@ -225,15 +233,15 @@ Known gaps and next-task handoff
 | 报告 | 触发 | 路径 | 模板 |
 | --- | --- | --- | --- |
 | 报告索引 | 持续 | [README](../../../stage_reports/stages/stage-07-rr/README.md) | 索引页 |
-| 架构与实现研究 | RR-0（已完成） | [2026-11-17-architecture-research.md](../../../stage_reports/stages/stage-07-rr/2026-11-17-architecture-research.md) | `docs/templates/report.md` |
-| 架构与实现探索证据记录 | RR-0（已完成） | [2026-11-17-architecture-evidence.md](../../../stage_reports/stages/stage-07-rr/2026-11-17-architecture-evidence.md) | `docs/templates/report.md` |
-| 文档治理重构 | RR-1/RR-5 机械层（已完成） | [2026-11-17-documentation-refactor.md](../../../stage_reports/stages/stage-07-rr/2026-11-17-documentation-refactor.md) | `docs/templates/report.md` |
-| 假保证与假实现扫描 | RR-0/RR-2 输入（已完成） | [2026-11-17-false-guarantees-scan.md](../../../stage_reports/stages/stage-07-rr/2026-11-17-false-guarantees-scan.md) | `docs/templates/report.md` |
-| 外部审查（59 条） | RR-0/RR-2 输入（已完成） | [2026-11-17-external-findings-review.md](../../../stage_reports/stages/stage-07-rr/2026-11-17-external-findings-review.md) | `docs/templates/report.md` |
-| tools/ 目录审计 | RR-1/RR-4 输入（已完成） | [2026-11-17-tools-audit.md](../../../stage_reports/stages/stage-07-rr/2026-11-17-tools-audit.md) | `docs/templates/report.md` |
-| 设计可实施性审查 | 四组首轮冷启动与原审查者差量复验 | [2026-11-22-design-readiness-review.md](../../../stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md) | `docs/templates/report.md` |
-| Astra 执行者复审与修订 | 独立接卡及交叉复验 | [首次九项](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-executor-review.md)、[修订与复验](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md) | `docs/templates/report.md` |
-| 统一裁定与任务安排 | 2026-11-23 owner 续议及全范围设计细化 | [裁定与调度核验](../../../stage_reports/stages/stage-07-rr/2026-11-23-design-decisions-and-schedule.md) | [report.md](../../../templates/report.md) |
+| 架构与实现研究 | RR-0（已完成） | [2026-11-17-architecture-research.md](../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-architecture-research.md) | `docs/templates/report.md` |
+| 架构与实现探索证据记录 | RR-0（已完成） | [2026-11-17-architecture-evidence.md](../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-architecture-evidence.md) | `docs/templates/report.md` |
+| 文档治理重构 | RR-1/RR-5 机械层（已完成） | [2026-11-17-documentation-refactor.md](../../../stage_reports/stages/stage-07-rr/implementation/2026-11-17-documentation-refactor.md) | `docs/templates/report.md` |
+| 假保证与假实现扫描 | RR-0/RR-2 输入（已完成） | [2026-11-17-false-guarantees-scan.md](../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-false-guarantees-scan.md) | `docs/templates/report.md` |
+| 外部审查（59 条） | RR-0/RR-2 输入（已完成） | [2026-11-17-external-findings-review.md](../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-external-findings-review.md) | `docs/templates/report.md` |
+| tools/ 目录审计 | RR-1/RR-4 输入（已完成） | [2026-11-17-tools-audit.md](../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-tools-audit.md) | `docs/templates/report.md` |
+| 设计可实施性审查 | 四组首轮冷启动与原审查者差量复验 | [2026-11-22-design-readiness-review.md](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-design-readiness-review.md) | `docs/templates/report.md` |
+| Astra 执行者复审与修订 | 独立接卡及交叉复验 | [首次九项](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-executor-review.md)、[修订与复验](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-review-resolution.md) | `docs/templates/report.md` |
+| 统一裁定与任务安排 | 2026-11-23 owner 续议及全范围设计细化 | [裁定与调度核验](../../../stage_reports/stages/stage-07-rr/decisions/2026-11-23-design-decisions-and-schedule.md) | [report.md](../../../templates/report.md) |
 | 后续批次报告 | 每批退出 | `docs/stage_reports/stages/stage-07-rr/` 下带日期报告 | [report.md](../../../templates/report.md) |
 
 报告只记录实际执行的命令、结果与限制。阶段退出、超出已接受范围的删除/合并、合同语义变更和新的版本漂移豁免须由 owner 接受；已接受任务内的实施、验证与串行汇合由主代理按卡推进，不逐批重复请求设计批准。RR-F510、版本漂移策略与 particles/debug 的既有裁定按 §4、§12 执行；只有出现新事实、需要改变原裁定时才提交具体问题。公共接口退出与长任务仍分别遵守兼容门禁和仓库执行约定。不得用报告“下一步”推断当前工作；当前任务只看 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 与 [HANDOFF](../../../HANDOFF.md)。
@@ -270,10 +278,10 @@ Known gaps and next-task handoff
 | 2026-11-21 | 补齐 P1–P5 五项设计缺口的待审推荐，同步复核与交接状态 | owner 授权补完设计；新增选择仍待审，实施遵守 D-05 与原门禁 | [提案](simplification-proposal.md#整体设计基线2026-11-22)、[提案复核记录](findings.md#12-提案复核记录2026-11-21) | 现行 |
 | 2026-11-21 | 收敛候选合同并拆出任务、调度与阶段验收 | 回应 PR #47 可实施性审查；本轮不改 D-05、后继范围或生产实施状态 | [可实施性索引](design-readiness.md) | 现行 |
 | 2026-11-22 | 将技术选择按本日设计基线收敛；补任务写域、测试注册/构建、共享文档职责和源头创建顺序 | owner 授权自主完成设计；candidate 表示未实施/未发布，整体通过留最终冷启动审查，实施与发布独立采用 | 本轮 owner 指令；[调度](schedule.md)、[任务入口](#任务索引)、[验收](acceptance.md) | 现行 |
-| 2026-11-22 | 四组冷启动审查及差量复验均成立，记录当期技术设计基线闭合；接入审查报告和最终文档取证入口 | 主代理已转交最终回执，无设计阻断；候选实施、A-01 阶段 owner 接受及发布仍分别取证，D-05/NEXT 范围不变 | 主代理最终回执；[设计可实施性审查](../../../stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md)、[可实施性索引](design-readiness.md) | 现行 |
-| 2026-11-22 | 对齐 Astra 九项复审的合同、责任卡与验收入口；纠正 AX-05 的首错归属 | owner 授权修订文档，采用边界不变 | [修订与复验](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md)、[登记册 §15](findings.md#15-astra-执行者复审2026-11-22) | 现行 |
+| 2026-11-22 | 四组冷启动审查及差量复验均成立，记录当期技术设计基线闭合；接入审查报告和最终文档取证入口 | 主代理已转交最终回执，无设计阻断；候选实施、A-01 阶段 owner 接受及发布仍分别取证，D-05/NEXT 范围不变 | 主代理最终回执；[设计可实施性审查](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-design-readiness-review.md)、[可实施性索引](design-readiness.md) | 现行 |
+| 2026-11-22 | 对齐 Astra 九项复审的合同、责任卡与验收入口；纠正 AX-05 的首错归属 | owner 授权修订文档，采用边界不变 | [修订与复验](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-review-resolution.md)、[登记册 §15](findings.md#15-astra-执行者复审2026-11-22) | 现行 |
 | 2026-11-22 | owner 授权下一次对话启动现行图 T-01–T-09；先由 T-01 绑定本次交接提交、合同基线与已有证据，登记采用后依调度派单 | D-05 仍限 RR-3 的 R1/R5/R6；`NEXT` 在后继阶段单独采用。合同接受、版本与兼容窗口、长构建及设备验证仍按现行计划 | [采用入口](#唯一派单授权入口)、[T-01](tasks/T-01.md)、[调度](schedule.md) | 已取代 |
-| 2026-11-22 | owner 最新安排：下一次对话仅做文档描述优化，实施启动延后，须 owner 后续明确启动；保留前条授权登记供追溯 | 设计与任务范围不变；日后启动时沿用 T-01 基线绑定、采用登记及现行调度流程 | owner 本次交接指令；[HANDOFF](../../../HANDOFF.md#下一步)、[采用入口](#唯一派单授权入口) | 现行 |
+| 2026-11-22 | owner 最新安排：下一次对话仅做文档描述优化，实施启动延后，须 owner 后续明确启动；保留前条授权登记供追溯 | 设计与任务范围不变；日后启动时沿用 T-01 基线绑定、采用登记及现行调度流程 | owner 本次交接指令；[HANDOFF](../../../HANDOFF.md#下一步)、[采用入口](#唯一派单授权入口) | 已由 2026-11-23 下一次正式实施授权取代 |
 | 2026-11-22 | 按 RR-F523–RR-F529 修订设计与验收表述：等待态无自动超时、误差观测域回指、判定活跃命名、A-04 限定本阶段口径、F419 排入 T-06 与 F401 归 T-16、F420 待裁、无音轨终点状态订正 | 等待策略已由 2026-11-23 续议取代；本阶段不发布且实现延后，先把不可满足的门禁与隐式条件改成可核对表述；D-05、任务图与调度不变 | owner 2026-11-22 授权先改设计问题；[登记册](findings.md) | 现行 |
 | 2026-11-22 | 按旧问题承接表在 T-04/06/12/13/15/16 点名 F135/F142/F208/F214/F401/F402/F418/F420/F432/F433/F502/F505/F506/F508；关闭六条已修未标条目，订正 F522 与 D-05 的口径 | 只做文档登记，不改范围、调度或验收阈值 | owner 2026-11-22 授权按方案修改；[登记册](findings.md) | 现行 |
 | 2026-11-22 | 单独立项 T-17 承接 RR-F501/F508/F509（会话层 P1 正确性），调度排入波次 4，验收新增 A-06；D-05 的 R1/R5/R6 范围不变，本卡为独立修复项且未启动实施 | 三项均无既有卡承接，且新设计只绕开、不替换其对象；单卡便于按文件拆分给子代理 | owner 2026-11-22 授权立项；[T-17](tasks/T-17.md)、[登记册](findings.md) | 现行 |
@@ -282,7 +290,7 @@ Known gaps and next-task handoff
 | 2026-11-22 | 登记册新增 §22，把仍开放的旧问题按承接方归组（已关、T-02–T-17、NEXT、T-09 具名延后、后继阶段），T-09 改为按该表归口 | 只做归口，不改各条结论与调度 | owner 2026-11-22 要求做完文档类；[登记册](findings.md) | 现行 |
 | 2026-11-22 | 完成文档描述优化：O1–O14 按 owner 决定落地，两组 P 类订正应用 42 条，并收尾 HANDOFF、CURRENT_STATUS 与登记册 §20 | 只改措辞、术语、重复与引用；O2 用图例、O6 用定义、O12 用计划文字，调度表结构未改 | owner 2026-11-22 要求做完文档类；[登记册](findings.md) | 现行 |
 | 2026-11-22 | 交接改为正式实施前的计划检查：核对 D 项承接、卡与合同对齐、A-01–A-06 覆盖、候选包边界与三处轻量遗留，不启动实施 | 文档优化已完成，先把计划与设计预期对齐再授权实施 | owner 2026-11-22 指令；[HANDOFF](../../../HANDOFF.md#下一步) | 现行 |
-| 2026-11-22 | 按设计追踪完成计划检查：补 T-09 对 T-17 的前置，厘清旧问题切片与残余、F508 唯一责任，修正候选测试配置及跨卡验收顺序，补既有合同的正反例 | 使任务、调度与验收可按已接受范围执行；不新增产品层、观察系统或时间阈值 | owner 本轮检查与最小文档订正授权；[登记册 §23](findings.md#23-正式实施前计划检查2026-11-22)、[报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-pre-implementation-plan-check.md) | 现行 |
+| 2026-11-22 | 按设计追踪完成计划检查：补 T-09 对 T-17 的前置，厘清旧问题切片与残余、F508 唯一责任，修正候选测试配置及跨卡验收顺序，补既有合同的正反例 | 使任务、调度与验收可按已接受范围执行；不新增产品层、观察系统或时间阈值 | owner 本轮检查与最小文档订正授权；[登记册 §23](findings.md#23-正式实施前计划检查2026-11-22)、[报告](../../../stage_reports/stages/stage-07-rr/readiness/2026-11-22-pre-implementation-plan-check.md) | 现行 |
 | 2026-11-22 | owner 确认 D-09 等待策略：不新增统一超时，保留各设备原有失败或超时规则，其余等待由用户重开或退出结束 | 等待期间仍须受理重开与退出，按原事务规则收束；500ms 仅为观察窗口 | owner 本轮答复；[登记册 §23](findings.md#23-正式实施前计划检查2026-11-22) | 已取代 |
 | 2026-11-23 | owner 接受设备等待超时由各平台 Player 实现和决定；SDK 提供操作状态与实际结果，不实现设备等待超时计时、策略或默认期限 | Player 可选择无期限或平台适合期限；超时不代替取消、清理及实际终态。替代前条等待规则，验收归 T-14/T-15 | owner 本轮明确授权写入；[附页 D-09](architecture-design.md#会话控制串行化d-09已确认目标与验收场景非现状或实施授权)、[登记册 §23](findings.md#23-正式实施前计划检查2026-11-22) | 现行 |
 | 2026-11-23 | 按 D-04 接受 F501 的候选有效性修订，以及 F135 新稳定宿主码 allocation_failed 与容量/观测丢失区分；合同和验收同步，均未实现 | F501 沿用现有类型，valid 不保证 commit；F135 复用预留故障槽，报告不得再分配，单纯丢观测不停止 Gameplay | owner 本轮“按照你的推荐方案修改”；[有效性合同](../../../api/playback-session.md#preparedplayback-有效性修订f501已接受未实现)、[错误合同](../../../api/realtime-host-boundary.md#f135-观测桥错误分类修订已接受未实现)、T-03/T-06/T-17 | 现行 |
@@ -292,7 +300,11 @@ Known gaps and next-task handoff
 | 2026-11-23 | owner 接受 F203：临时属性覆盖登记前按已有类型和值域整批验证，失败不发布 token、不改变已有覆盖 | T-17 补 Runtime 修复和原子登记验收，合法 token 生命周期保持原规则；不新增值域、接口或回滚框架 | owner 本轮选择第一项；[登记册 §24](findings.md#24-统一实施前设计裁定2026-11-23) | 现行 |
 | 2026-11-23 | owner 选择结构清理方案 5：F302、F310、F313/F316、F207 全部纳入本轮 | 完整 Chart 构建隔离、公共面分类与可兼容清理、应用分层、ResourceScope 去重与 T-01–T-17 统一设计和排期；旧公共 API 退出沿既有实际发布窗口 | owner 本轮明确选择；[登记册 §24](findings.md#24-统一实施前设计裁定2026-11-23) | 现行 |
 | 2026-11-23 | owner 接受 Stage 8 以 Chart v5＋Gameplay v3 为正式主线，保留已承诺旧内容兼容 | RR 实验实现不变，Stage 7.5 以 v3 扩展能力，Stage 8 正式化及默认创作/播放组合；旧规则不自动重算，旧 API 退出和 SDK 成熟度仍独立核验 | owner 本轮“先修改文档”；[续议记录](findings.md#stage-8-正式主线续议2026-11-23)、[Stage 8](../../future/stage-08/plan.md) | 现行 |
-| 2026-11-23 | 复查全部 plan/task 的决策、输入、产物创建、验收和停止条件，订正重复审批、迁移阶段与任务合同偏差，重写接手入口 | owner 要求确认可执行性后编写接手文档；沿既有裁定，不启动产品实现 | [登记册 §25](findings.md#25-实施接手复查2026-11-23)、[复查报告](../../../stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md) | 现行 |
+| 2026-11-23 | 复查全部 plan/task 的决策、输入、产物创建、验收和停止条件，订正重复审批、迁移阶段与任务合同偏差，重写接手入口 | owner 要求确认可执行性后编写接手文档；沿既有裁定，不启动产品实现 | [登记册 §25](findings.md#25-实施接手复查2026-11-23)、[复查报告](../../../stage_reports/stages/stage-07-rr/handoffs/2026-11-23-execution-readiness-handoff.md) | 现行 |
+| 2026-11-23 | 文档管理与整理方案归入 RR 分册，精简当前状态和计划索引 | owner 明确文档整理属于 RR；仅调整归属、状态与导航，规则及实施仍待后续接受/启动 | [治理分册](documentation-governance.md)、[登记册 §26](findings.md#26-文档治理归属与当前状态整理2026-11-23) | 现行 |
+| 2026-11-23 | 接受并启动治理分册，以 T-18 完成文档治理后供产品任务绑定基线 | owner 要求按方案独立完成；允许常规规则实现、整理及短门禁，产品实施未随之启动 | [T-18](tasks/T-18.md)；输入基线 HEAD `ca5cbb9121b015ae0b3b5d681610ca94dac78184`，工作树补丁与原文另封存 | 现行 |
+| 2026-11-23 | T-18 文档治理完成，规则转入日常维护 | 原文保护、报告迁移、正反门禁和复核证据已交付；CMake target 事实缺输入项独立报告 | [治理交付报告](../../../stage_reports/stages/stage-07-rr/implementation/2026-11-23-documentation-governance.md)；产品任务和 RR 退出继续独立验收 | 现行 |
+| 2026-11-23 | owner 授权下一次接手正式实施 RR 的 T-01–T-17 | 本次只更新交接；下一次从 T-01 固定实际 HEAD/tree、工作树及旧内容独立预期，登记采用后按调度推进；长任务和实际发布沿现行单独门禁 | owner 本轮“修改接手文档，下一次开始正式实施 RR 任务”；[HANDOFF](../../../HANDOFF.md)、[T-01](tasks/T-01.md) | 现行 |
 
 ## 13. 排除项与旧路径
 - **不做纯行数拆分**：owner 已取消，详见 D-03 与 §2 非目标。

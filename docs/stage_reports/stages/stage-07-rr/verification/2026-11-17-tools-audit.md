@@ -59,7 +59,7 @@ CI 配置与文档，未运行任何脚本或构建，未读取 `out/`。
 4. 按 owner 决定移除 `tests/pd/CMakeLists.txt` 中零生效的 `cuexis_execution_acceptance_tool_tests`
    注册；复现方式改为人工 `unittest discover`，写入 `tools/README.md`。
 5. 归档 `tools/research/gameplay_fold_spike/`（19 文件）与 `compare_read_candidates.py`，新增
-   [tools/archive/README.md](../../../../tools/archive/README.md) 记录原路径与原因；同目录 README 引用同步更新。
+   [tools/archive/README.md](../../../../../tools/archive/README.md) 记录原路径与原因；同目录 README 引用同步更新。
 6. RR-F518：CI `documentation-contracts` 增加 `python3 -B tools/verification/check_docs_facts.py`。
 7. RR-F519：预推送 Quick checks 接入三个 `check_docs_*_contract_tests.py`；接入时发现 section 测试因
    stage-07 迁移已漂移出 11 个失败，路径同步到 `completed/stage-07` 后 19 个用例全过。

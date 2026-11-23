@@ -1517,15 +1517,7 @@ GameplayAdvanceReceipt::publicationFailureStage 为 optional，成功 absent。
 
 ## S7A-7 Graph source 首用（2026-10-07）
 
-Candidate ON 的 GameplayContent::fromGraph 与 PlaybackSource::fromGameplayGraph 明确消费
-Compiled Graph v1；后者携带 owning byte vector、显式 sourceId/entryPath、GameplayConfiguration、
-GameplayGraphDecodeBudget、typed assets/provider 与 prepare intent。
-GameplayGraphDecodeBudget 为七项无默认 size_t：maxBytes/maxDepth/maxStringBytes/maxValues/
-maxContainerElements/maxRowAtoms/maxRowDecodedStringBytes；configuration.testOnly 是唯一候选预算准入开关。
-这些不是生产阈值。公共边界不暴露 json_support 或 Packed/Kernel 类型。
-同一原始字节视图仅经 typed SAX 解码一次；Graph 不再编码成 Packed 后重读，不 fallback 到 author/JSON source。
-Graph 与 Packed 共享实际 content/configure/prepare 与生命周期，完整 owning Capsule/Prepared 留在内部。
-首用诊断沿 Graph 格式的中央登记及既有 prepare 公共投影，失败不发布部分 source 或改变旧 session。
+公共 Graph source 的载体、解码、预算及失败原子性以 [Playback 生命周期的 Graph source 首用](playback-session.md#s7a-7-graph-source-首用2026-10-07)为唯一正文；本 ABI 保留内部 typed 边界，避免重复维护公开入口合同。
 
 
 ## S7A-7/8 显式 configuration JSON 首用（2026-10-07）
@@ -1592,16 +1584,7 @@ This does not reorder Ruleset modules, control journals or admitted input sequen
 
 ## 诊断迁移与 SDK 0.7.5
 
-本候选SDK消费Spec的“诊断正式化与 Recovery revision2”合同。公开布局/签名/枚举不变；
-可观察code/sourceCode及两类legacy/query message按该合同改变，旧owning值保持。
-Replay/Snapshot Writer输出revision2；Reader拒绝revision1健康及故障原件，
-拒绝不兼容旧诊断值，不能以SDK patch号声称旧归档兼容。
-直接evaluateGameplayReplay/restoreGameplay/checkpointGameplay/seekGameplay执行各自校验，
-fromBytes成功只证明结构校验，不代替evidenceValid或完整结果比较；Checkpoint保留fallback。
-候选安装consumer最低请求Cuexis 0.7.5并重建，matching-toolchain shared不承诺旧二进制可替换。
-production candidate-OFF无新API；新码可能随原content错误路径进入已有Result，category/context规则不变。
-失败原子性、generation、sealed前缀、GameplayAdvanceReceipt与公开Result承载均保持既有合同。
-
+公开诊断迁移、Recovery 版本拒绝及候选安装消费者要求见 [Playback 生命周期的诊断迁移](playback-session.md#诊断迁移与-sdk-075)。本节随后保留仅属于内部恢复/查询的补充约束。
 
 已存在的未登记operation-state来源沿`restoreGameplay`后`archiveGameplay`可观察：
 Snapshot恢复不携带完整原journal，因此canArchive=false，原provisional生命周期错误经identity投影返回。

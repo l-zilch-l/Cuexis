@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "reportType": "independent-delta-review",
+  "reviewer": {
+    "role": "independent reviewer",
+    "independence": "Separate review from the implementing parent agent and authors."
+  },
+  "reviewDate": "2026-11-23",
+  "baselineHead": "ca5cbb9121b015ae0b3b5d681610ca94dac78184",
+  "observedHead": "ca5cbb9121b015ae0b3b5d681610ca94dac78184",
+  "worktree": "E:\\Cuexis-worktree",
+  "reviewInput": "Baseline HEAD plus authorized uncommitted changes in the shared worktree.",
+  "scope": "Final delta only: current-claim precedence over historical/example suffixes. The other four items retain the preceding independent review disposition, per the owner's unchanged-path statement.",
+  "fiveItemDisposition": "all_closed",
+  "items": [
+    {
+      "id": "CI_HISTORY_BASE",
+      "status": "closed",
+      "verificationRound": "preceding independent delta review; not rerun this round",
+      "evidence": "Actual workflow Bash: missing base rc=1, self base rc=1, older base rc=0, invalid ref rc=128. Only the valid older base wrote GITHUB_ENV. No github.sha fallback.",
+      "references": [
+        ".github/workflows/linux-quality.yml:251",
+        "docs/stage_reports/stages/stage-07-rr/evidence/documentation-governance/ci-history-controls.json"
+      ]
+    },
+    {
+      "id": "CURRENT_STATUS_IDENTITY",
+      "status": "closed",
+      "verificationRound": "preceding independent delta review; not rerun this round",
+      "evidence": "Exact docs/CURRENT_STATUS.md path, id STATUS and current/owns required. Status contract tests: 8 passed, exit 0.",
+      "references": [
+        "tools/verification/check_docs.py:386",
+        "tools/verification/check_docs.py:400"
+      ]
+    },
+    {
+      "id": "LEGACY_INDEX_AUTHORITY",
+      "status": "closed",
+      "verificationRound": "preceding independent delta review; not rerun this round",
+      "evidence": "Trusted-base document must already have authority none; same-change downgrade and fenced fake metadata rejected.",
+      "references": [
+        "tools/verification/check_docs_governance.py:312",
+        "tools/verification/check_docs_governance.py:316"
+      ]
+    },
+    {
+      "id": "TEMPLATE_NAMING_REGISTRATION",
+      "status": "closed",
+      "verificationRound": "preceding independent delta review; not rerun this round",
+      "evidence": "Lowercase kebab-case and actual README Markdown-link registration checked before metadata exclusion. Governance tests: 51 passed, exit 0. Real governance checker: 0 errors, 8 topics.",
+      "references": [
+        "tools/verification/check_docs_governance.py:45",
+        "tools/verification/check_docs_governance.py:247"
+      ]
+    },
+    {
+      "id": "FACTS_CURRENT_CLAIM_PRECEDENCE",
+      "status": "closed",
+      "verificationRound": "current resumed round",
+      "evidence": "Read current source: current/present prefix rejection at lines 129-130 now precedes history/example suffix exemption at lines 131-132. Added scan-level regressions reject current SDK claims followed by history, format-example, example and historical suffixes. Legitimate suffix-only history remains covered. All 13 facts tests pass; real version drift is zero.",
+      "references": [
+        "tools/verification/check_docs_facts.py:125",
+        "tools/verification/check_docs_facts.py:129",
+        "tools/verification/test_check_docs_facts.py:56",
+        "tools/verification/test_check_docs_facts.py:59",
+        "tools/verification/test_check_docs_facts.py:62"
+      ]
+    }
+  ],
+  "currentCommands": [
+    {
+      "command": "git rev-parse HEAD",
+      "exitCode": 0,
+      "stdout": "ca5cbb9121b015ae0b3b5d681610ca94dac78184"
+    },
+    {
+      "command": "python -B tools/verification/test_check_docs_facts.py",
+      "exitCode": 0,
+      "passedTests": 13,
+      "output": ".............\r\n----------------------------------------------------------------------\r\nRan 13 tests in 0.054s\r\n\r\nOK\r\nNOT CHECKED: CMake target facts are missing; set CUEXIS_TARGETS_FILE to fresh configure output\r\nNOT CHECKED: CMake target facts are missing; set CUEXIS_TARGETS_FILE to fresh configure output\r\n"
+    },
+    {
+      "command": "python -B tools/verification/check_docs_facts.py --list",
+      "exitCode": 1,
+      "versionDriftFindings": 0,
+      "output": "version-drift findings: 0 (current claims fail; see --list)\r\nFAIL: docs/MAP.md or the AGENTS.md state block is stale; run python -B tools/verification/gen_docs_map.py\r\n"
+    }
+  ],
+  "realFactsOverall": {
+    "status": "failed",
+    "exitCode": 1,
+    "cause": "docs/MAP.md or the AGENTS.md generated state block is stale.",
+    "relationToFiveItems": "The five scoped defects are closed. This separate generated-document freshness failure prevents claiming the real facts command passed."
+  },
+  "limits": [
+    "The prior four item outcomes and historical line references are carried from the preceding independent review, not newly re-read or rerun in this final delta.",
+    "No full repository re-review, full documentation checker, product build, Git mutation or hosted CI run was performed.",
+    "Product/CMake facts remain NOTCHECKED; the 13-test suite covers strict rejection of missing facts with isolated fixtures, not a real product configure.",
+    "Only the requested independent-review.json receipt is written by this resumed review; no shared implementation or generated documentation is repaired.",
+    "No blanket claim of complete documentation-gate or product-validation success is made."
+  ],
+  "recordedAtUtc": "2026-11-23T10:00:51.668652+00:00"
+}

@@ -44,7 +44,7 @@ date: 2026-11-22
 
 ### 设计承接
 
-下表是本次审查快照，执行责任仍由[任务卡](../../../stage_plans/active/stage-07-rr/plan.md#任务索引)和唯一调度维护。表中判断记录修订前的设计承接情况，处理列同时说明本轮补齐方式；不表达产品测试结果。
+下表是本次审查快照，执行责任仍由[任务卡](../../../../stage_plans/active/stage-07-rr/plan.md#任务索引)和唯一调度维护。表中判断记录修订前的设计承接情况，处理列同时说明本轮补齐方式；不表达产品测试结果。
 
 | 已接受要求 | 任务、合同与验收落点 | 基线判断 |
 | --- | --- | --- |
@@ -69,7 +69,7 @@ Studio 的未来边界和后续跳转能力继续按附页的明确未来范围�
 
 ### 任务验收与旧问题
 
-基线缺口及处置以[登记册 §23](../../../stage_plans/active/stage-07-rr/findings.md#23-正式实施前计划检查2026-11-22)为唯一列表。本轮不为每个文字调整另建报告或检查器。
+基线缺口及处置以[登记册 §23](../../../../stage_plans/active/stage-07-rr/findings.md#23-正式实施前计划检查2026-11-22)为唯一列表。本轮不为每个文字调整另建报告或检查器。
 
 | 主题 | 主代理复核依据与最小处理 | 结论 |
 | --- | --- | --- |
@@ -90,8 +90,8 @@ Studio 的未来边界和后续跳转能力继续按附页的明确未来范围�
 
 | 检查 | 落点与结果 | 结论 |
 | --- | --- | --- |
-| 每卡恰好出现一次、前置更早、独占波单任务、active 不依赖 candidate | [调度](../../../stage_plans/active/stage-07-rr/schedule.md)及现有检查器满足这些结构条件 | 成立 |
-| 全部现行任务在退出前汇合 | 基线 T-17 没有通向 T-09 的依赖链，与 [A-05/A-06](../../../stage_plans/active/stage-07-rr/acceptance.md#阶段验收矩阵)不一致；已补 T-09 的 T-17 前置，无波次或范围变化 | 成立 |
+| 每卡恰好出现一次、前置更早、独占波单任务、active 不依赖 candidate | [调度](../../../../stage_plans/active/stage-07-rr/schedule.md)及现有检查器满足这些结构条件 | 成立 |
+| 全部现行任务在退出前汇合 | 基线 T-17 没有通向 T-09 的依赖链，与 [A-05/A-06](../../../../stage_plans/active/stage-07-rr/acceptance.md#阶段验收矩阵)不一致；已补 T-09 的 T-17 前置，无波次或范围变化 | 成立 |
 | 阶段验收覆盖 | A-01 对应 T-01，A-02 对应 T-02/03，A-03 对应 T-04–07，A-04 对应 T-08，A-05 对应 T-09，A-06 对应 T-17；A-N 只验后继设计移交 | 成立 |
 | 后继范围 | T-10–T-16 保持 candidate/NEXT；调度前置完成不授权采用。Stage 7.5 的入场条件仍要求本阶段接受 | 成立 |
 
@@ -112,8 +112,8 @@ Studio 的未来边界和后续跳转能力继续按附页的明确未来范围�
 
 owner 于 2026-11-23 接受最终职责边界：各平台 Player 实现并决定设备等待的计时、超时判断和处置，SDK 仅提供操作状态与实际结果。该决定取代此前不新增统一超时、保留设备原有规则的表述，旧决定在计划中标为已取代。附页、呈现合同和 T-14/T-15 已同步；任务验收分别覆盖无期限、两个不同 Player 期限及窗口响应，测试期限仅作夹具，不指定发布默认。
 
-同日 owner 接受 F501 与 F135 推荐后，本轮将其写入[生命周期合同](../../../api/playback-session.md#preparedplayback-有效性修订f501已接受未实现)和[宿主错误合同](../../../api/realtime-host-boundary.md#f135-观测桥错误分类修订已接受未实现)，并同步 T-03/T-06/T-17 与 A-06。F501 沿用现有类型，合法 GameplayOnly 候选可被识别与读取；`valid()` 不承诺 `commit()` 成功，后者仍独立检查归属、generation、生命周期及 fence。实际复现入口为 typed Packed factory 的 GameplayOnly 意图后调用 `prepareLoad`，原测试只测提交及后续判定，缺候选有效性和访问器断言。
+同日 owner 接受 F501 与 F135 推荐后，本轮将其写入[生命周期合同](../../../../api/playback-session.md#preparedplayback-有效性修订f501已接受未实现)和[宿主错误合同](../../../../api/realtime-host-boundary.md#f135-观测桥错误分类修订已接受未实现)，并同步 T-03/T-06/T-17 与 A-06。F501 沿用现有类型，合法 GameplayOnly 候选可被识别与读取；`valid()` 不承诺 `commit()` 成功，后者仍独立检查归属、generation、生命周期及 fence。实际复现入口为 typed Packed factory 的 GameplayOnly 意图后调用 `prepareLoad`，原测试只测提交及后续判定，缺候选有效性和访问器断言。
 
 F135 新增已接受、未实现的 `host.rpa.allocation_failed`，与真实容量耗尽区分；复用预留故障槽并要求分配器持续失败时仍能报告，预建 owning Error 的复制也须验证。原登记中“吞成成功”不能覆盖所有观测丢失：纯记录缺失可标 Unknown/不完整并继续，实际未完成的操作须如实报失败，不得虚构 submit/present 成功。catch-all 不能一律归因为分配失败。这两项设计选择已完成裁定，产品修复仍待实施与运行验证。
 
-本轮发现与处置统一回写[登记册](../../../stage_plans/active/stage-07-rr/findings.md)，当前工作与下一步同步到 HANDOFF/CURRENT_STATUS。范围继续由计划的采用入口控制。
+本轮发现与处置统一回写[登记册](../../../../stage_plans/active/stage-07-rr/findings.md)，当前工作与下一步同步到 HANDOFF/CURRENT_STATUS。范围继续由计划的采用入口控制。

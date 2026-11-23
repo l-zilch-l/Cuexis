@@ -1,5 +1,11 @@
 # Stage 7.5: Gameplay Evolution Reports and Evidence
 
+<!-- cuexis-meta
+id: INDEX-stage_reports.stages.stage-07-5
+status: active
+authority: index
+-->
+
 状态：active index（Stage 7.5 规划中，产品实施未开始；证据以本目录报告为准）
 
 更新日期：2026-11-14

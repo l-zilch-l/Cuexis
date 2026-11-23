@@ -8,6 +8,7 @@
 id: FORMAT-CXT_V2_FORMAT
 status: candidate
 authority: owns
+topics: cxt-v2.authoring
 -->
 
 依据：[玩法抽象模型](../architecture/GAMEPLAY_ABSTRACTION_MODEL.md)、

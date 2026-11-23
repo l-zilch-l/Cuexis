@@ -1,5 +1,11 @@
 # Presentation Decoupling / pd-5/admission/stage-c
 
+<!-- cuexis-meta
+id: INDEX-stage_reports.stages.stage-07.04-pd.pd-5.admission.stage-c
+status: active
+authority: index
+-->
+
 状态：current index
 
 更新日期：2026-10-26

@@ -1,5 +1,11 @@
 # Stage 1 Reports
 
+<!-- cuexis-meta
+id: INDEX-stage_reports.stages.stage-01
+status: active
+authority: index
+-->
+
 状态：historical
 
 更新日期：2026-08-30

@@ -42,8 +42,8 @@
 - 依赖增删必须同步 [DEPENDENCY_POLICY](docs/guides/DEPENDENCY_POLICY.md) 要求的多处记录。
 - 构建、测试、格式检查、静态分析命令在 [BUILDING](docs/guides/BUILDING.md)；版本与发版规则在
   [VERSIONING](docs/guides/VERSIONING.md)。
-- 改 `docs/` 后跑 `python -B tools/check_docs.py`；改地图/预算/诊断码/版本后重新生成并跑
-  `python -B tools/verification/check_docs_facts.py`（生成器清单见 DOCUMENTATION_POLICY）。
+- 改 `docs/` 后、声明完成前运行 `python -B tools/check_docs.py` 与 `python -B tools/verification/check_docs_facts.py`，本轮不推送也要执行；
+  生成页变化先用对应生成器刷新。缺输入/未运行明确报告，不能计为通过；自测和严格模式见 BUILDING。
 - 长任务（完整构建、容量/内存探针、hosted 重跑）先说明范围、能否做、预计耗时，等 owner 选定后执行。
 - PR 纪律（owner 要求）：一条 PR 尽量承载多件事；只有“不开新 PR 就进行不下去”或“已有证据会作废”才另开。
 

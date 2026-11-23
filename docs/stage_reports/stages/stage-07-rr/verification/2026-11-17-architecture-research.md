@@ -11,10 +11,10 @@ date: 2026-11-17
 
 更新日期：2026-11-17
 
-返回[Stage 7-RR 报告索引](README.md)；计划见
-[Stage 7-RR 计划](../../../stage_plans/active/stage-07-rr/plan.md)，
-问题登记见[发现登记册](../../../stage_plans/active/stage-07-rr/findings.md)。
-当前进度唯一以 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 为准。
+返回[Stage 7-RR 报告索引](../README.md)；计划见
+[Stage 7-RR 计划](../../../../stage_plans/active/stage-07-rr/plan.md)，
+问题登记见[发现登记册](../../../../stage_plans/active/stage-07-rr/findings.md)。
+当前进度唯一以 [CURRENT_STATUS](../../../../CURRENT_STATUS.md) 为准。
 
 本文件是结论性摘要与减重方案；逐模块的原始证据、量化表、owner 抽查与推翻记录、
 以及上下文压缩后的复核命令，保存在[架构与实现探索证据记录](2026-11-17-architecture-evidence.md)。

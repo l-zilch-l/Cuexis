@@ -1,5 +1,11 @@
 # New RPA Reports and Evidence
 
+<!-- cuexis-meta
+id: INDEX-stage_reports.stages.stage-07.05-rpa-new
+status: active
+authority: index
+-->
+
 状态：current index
 
 更新日期：2026-11-14

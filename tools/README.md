@@ -14,9 +14,12 @@
 | --- | --- |
 | `tools/check_docs.py` | 包装 `verification/check_docs.py`；预推送 + CI `documentation-contracts` |
 | `tools/verification/check_docs.py` | 文档总门禁（链接/H1/可达性/状态合同） |
+| `tools/verification/check_findings.py` | 文档总门禁调用：发现定义/引用、字段、处置闭环和可信 Git 原文保护；可用 `--base-ref` 指定同一验收基线 |
+| `tools/verification/check_docs_governance.py` | 文档总门禁调用：命名、布局、元数据、唯一主题和重复疑点；遗留例外在 `docs/governance_rules.json` 逐路径登记 |
+| `tools/verification/test_check_findings.py` / `tools/verification/test_check_docs_governance.py` / `tools/verification/test_check_docs_facts.py` | 预推送 Quick 与 CI 的治理、登记册及事实正反回归 |
 | `tools/verification/check_plan_schedule.py` | 文档总门禁调用的 Stage 7-RR 调度检查；七段标题只认行首 0–3 个空格后的正式 H2，忽略围栏、注释和缩进代码中的伪标题；分列 active/candidate/completed，仅 active 列入当前派单，completed 可作 active 前置，active/completed 均不得依赖 candidate；独立运行 `python -B tools/verification/check_plan_schedule.py [--stage-dir PATH]` |
-| `tools/verification/check_docs_facts.py` | 预推送：生成物新鲜度与版本漂移；CI `documentation-contracts` 同步运行 |
-| `tools/verification/gen_docs_map.py` / `tools/verification/gen_docs_limits.py` / `tools/verification/gen_docs_codes.py` / `tools/verification/gen_player_options.py` | 不是独立门禁；由 `check_docs_facts.py` 导入校验，没有外部 `--check` 调用 |
+| `tools/verification/check_docs_facts.py` | 预推送与 CI：生成物新鲜度及代码派生事实；当前版本漂移失败，历史声明按局部语境解释 |
+| `tools/verification/gen_docs_map.py` / `tools/verification/gen_docs_limits.py` / `tools/verification/gen_docs_codes.py` / `tools/verification/gen_player_options.py` | 生成对应文档，由 `check_docs_facts.py` 导入校验；地图生成器另支持 `--check` 独立复验 |
 | `tools/check_version_gate.py` / `tools/check_version_gate_tests.py` | CI `version-gate`；CTest `cuexis_contract_version_gate` |
 | `tools/update_version.py` | CI Linux 与预推送的 `--check` |
 | `tools/check_pre_push.ps1` | 预推送编排入口（Quick/Linux/Full） |

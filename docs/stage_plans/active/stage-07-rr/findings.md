@@ -1,6 +1,6 @@
 # Stage 7-RR 发现登记册
 
-状态：active；登记复核发现与待审候选方案，不包含修复结论或实施授权
+状态：active；登记原始发现、核验与处置，不代替修复证据或实施授权
 
 更新日期：2026-11-23
 
@@ -34,15 +34,21 @@ authority: owns
 | P2 | 未文档化的收紧/放宽、未登记的受限行为、死字段或死码、可观测性缺失 |
 | P3 | 冗余、风格不一致、门禁过宽或过窄，不改变行为 |
 
-证据状态只有两种：
+核验状态固定为 **未复核 / 已核实**；已核实只表示有具名复核者和证据，不代表关闭。处置状态固定为 **开放 / 处理中 / 已修 / 已处置 / 延后 / 撤回**，不把核验与关闭混用。
 
-- **已核实**：owner 在本次复核中亲自读取过实现或文档原文。
-- **未复核**：来自 10 个并行子代理中对应模块的报告，本次未逐条独立确认。
+真正定义表以 `<!-- cuexis-findings: definitions -->` 标记，并使用七列。原始发现、原始依据和旧 ID 受保护；修复清单、承接表和历史处置表只引用定义。原严重度、判定与旧处置文字保存在原字段内，不因当前状态变化覆盖。事实纠正追加具名订正，保留旧断言及替代关系。
 
-处置状态只用五个值：**已核实**（读源码或文档原文并确认）、**已修**（对应改动已提交）、**已处置**（按接受范围关闭，含不修）、**延后**（写明责任阶段与恢复条件）、**撤回**（原判断不成立）。处置写在条目的证据列，不改写原结论。
-  处置前必须先补证；未复核条目不因"看起来很严重"自动升格。
+当前处置依据使用可检查的 `依据：` 字段；已核实另写 `复核者：`、`复核证据：`。已修另写 `改动修订：`、`实际验证：`、`理由：`、`决定依据：`；已处置或撤回写核验、理由与决定/反证；延后写 `责任阶段：`、`恢复条件：`、`决定依据：`。字段存在只证明记录完整，证据是否充分及接受是否有效仍须人工判断。
 
-本册**不是**修复记录。任何条目在 RR 批次里被关闭前，都应先有对应的 Spec/ADR 裁定或标注决定。
+### G02 首次迁移核对（2026-11-23）
+
+本轮仅转换真正定义表，原章节、发现、位置及旧结论保留。冻结输入见仓内[原件快照](../../../stage_reports/stages/stage-07-rr/evidence/documentation-governance/inputs.zip)、[输入清单](../../../stage_reports/stages/stage-07-rr/evidence/documentation-governance/manifest.json)及[原工作树补丁](../../../stage_reports/stages/stage-07-rr/evidence/documentation-governance/working-tree.patch)；适用 Git 输入为 `ca5cbb9121b015ae0b3b5d681610ca94dac78184`。逐行按旧 ID 对照原表，七列中的原始发现与原始依据共同保存旧行各信息列；§23 的旧处置保存在原始依据，F547 从 §24 原议题行提取，原表继续保留引用。不是按新摘要哈希自行批准转换。
+
+本轮按旧 ID 对照 §22 与 §23–§26，当前责任列采用其中仍有效的具名任务；T-18 承接本轮文档门禁，无法确认者由 T-09 核证。对 30 条旧修复说法逐条区分文档、工具/构建及混合问题：15 条文档订正在当前正文和 ca5 已提交对应段核对后恢复已核实/已修，3 条按已接受的文档收窄恢复已核实/已处置；F121、F209 的文档切片已核实但因实现残余保持开放。其余旧工具、构建或运行声明没有本单元完整关闭证据，保留原说法及缺口，不一律伪造验证或重新裁定设计。
+
+本轮具名复核者为 Codex-G02（2026-11-23）：直接读取当前文档，并独立读取 Git ca5 对应段作定向断言；执行 `check_docs_facts.scan` 的三篇版本文档检查及 `limits_is_current()`、`player_options_are_current()`、`frame_digest_is_current()`，均成立。ca5 只作为包含既有订正的已提交快照，不把本轮未提交的转换当修复提交。原核验、原处置和原证据留在受保护字段；当前已修只涵盖该行写明的文档问题，不能外推产品运行、旧消费者或正式发行通过。未闭合产品项保持原已接受设计与任务，后续按真实证据更新处置。
+
+`tools/verification/check_findings.py` 比较可信 Git 基线的旧表或七列表，不接受当前旧结构、删标记或删定义。默认基线取 `CUEXIS_DOCS_BASE_REF` 或 HEAD；CI 基准由集成入口提供，无法取得 Git 输入时报未检查并失败。
 
 ## 第一部分 现行问题（已实施）
 
@@ -50,10 +56,11 @@ authority: owns
 
 ### 1. P0（状态文档与仓库事实冲突）
 
-| ID | 位置 | 问题 | 证据状态 |
-| --- | --- | --- | --- |
-| RR-F001 | `docs/CURRENT_STATUS.md:5`、`:80` | 自称日期版本 `26.11.14-1`（历史记录），实际 `cmake/CuexisVersion.cmake:1-4` 与 `vcpkg.json:3` 均为 `26.11.16-1`（2026-11-16 提升后未回写） | 已修（2026-11-22 复核：CURRENT_STATUS 已写 26.11.18-1，与版本文件一致） |
-| RR-F002 | `docs/CURRENT_STATUS.md:26` | 自称"执行分支 `codex/r4-closeout`；唯一集成 PR 为 #44，Ready for review"；实际分支 `stage-7.5`，PR #44（`564e0d90`，2026-11-14）与 #45（`aac83e5e`，2026-11-16）均已合并 | 已修（2026-11-22 复核：现写分支 stage-7-rr、#44/#45 已合并） |
+<!-- cuexis-findings: definitions -->
+| ID | 原始发现 | 原始依据 | 核验状态 | 处置状态 | 责任/任务 | 当前处置依据 |
+| --- | --- | --- | --- | --- | --- | --- |
+| RR-F001 | 自称日期版本 `26.11.14-1`（历史记录），实际 `cmake/CuexisVersion.cmake:1-4` 与 `vcpkg.json:3` 均为 `26.11.16-1`（2026-11-16 提升后未回写） | `docs/CURRENT_STATUS.md:5`、`:80`<br>原证据状态：已修（2026-11-22 复核：CURRENT_STATUS 已写 26.11.18-1，与版本文件一致） | 已核实 | 已修 | T-02 | 依据：原字段与 §22 历史处置；复核者：Codex-G02（2026-11-23）；复核证据：[当前状态](../../../CURRENT_STATUS.md)（当前正文与 ca5 已提交对应段）；理由：当前摘要保留版本权威引用，未继续使用过期构建身份；只恢复文档订正状态；决定依据：§22 既有文档处置与原字段记录；实际验证：当前/ca5 状态字段与版本权威引用定向断言通过；改动修订：ca5cbb9121b015ae0b3b5d681610ca94dac78184（包含原文档订正的已提交快照） |
+| RR-F002 | 自称"执行分支 `codex/r4-closeout`；唯一集成 PR 为 #44，Ready for review"；实际分支 `stage-7.5`，PR #44（`564e0d90`，2026-11-14）与 #45（`aac83e5e`，2026-11-16）均已合并 | `docs/CURRENT_STATUS.md:26`<br>原证据状态：已修（2026-11-22 复核：现写分支 stage-7-rr、#44/#45 已合并） | 已核实 | 已修 | T-02 | 依据：原字段与 §22 历史处置；复核者：Codex-G02（2026-11-23）；复核证据：[当前状态](../../../CURRENT_STATUS.md)（当前正文与 ca5 已提交对应段）；理由：已删除旧执行分支及 PR 就绪的当前断言；ca5 已有后继分支及合并历史说明；未据此授权发布；决定依据：§22 既有文档处置与原字段记录；实际验证：当前/ca5 状态正文定向读取与旧错误断言缺席检查通过；改动修订：ca5cbb9121b015ae0b3b5d681610ca94dac78184（包含原文档订正的已提交快照） |
 
 两条都与同文件 `:22` 的"当前为 Stage 7.5"自相矛盾，属"唯一状态权威失效"，因此列 P0。
 
@@ -61,79 +68,85 @@ authority: owns
 
 #### 2.1 状态与文档漂移
 
-| ID | 位置 | 问题 | 证据状态 |
-| --- | --- | --- | --- |
-| RR-F101 | `AGENTS.md`（2026-11-17 前版本） | 已修：AGENTS 精简后原句与 `:261` 均不存在；`ROADMAP.md:48`、`GAMEPLAY_V2_SPEC.md:2595` 仍称“AGENTS 写 Stage 12”，本轮同日订正 | 已核实（已修） |
-| RR-F102 | `AGENTS.md`（2026-11-17 前版本） | 已修：AGENTS 精简后“Stage 7A 是当前实施准备线”“Stage 4-12 都是 future/deferred”均已删除 | 已核实（已修） |
-| RR-F103 | `docs/api/diagnostics-identity-and-compatibility.md:22`、`:64`；`docs/api/GAMEPLAY_V2_ABI.md:69` | 仍写"当前分支 SDK API 为 `0.8.0`"；实际 `cmake/CuexisVersion.cmake:8` 为 `0.9.1`，同目录其他页已写 0.9.1 | 已修（2026-11-22 复核：两页现均写 0.9.1，`check_docs_facts` 无版本漂移） |
-| RR-F104 | `docs/formats/MATERIAL_SHADER.md:632` | 仍写“当前分支为 0.7.5”，实际 `CuexisVersion.cmake:8` 为 0.9.1（`CURRENT_STATUS.md:115` 同） | 已修（文档：改为 0.9.1） |
-| RR-F105 | `docs/formats/README.md:40` | 权威矩阵把 Packed Chart v1 标为"未实现"；实际 Header/目录、字典/身份、ARCH/ENT0、TRN0/REN0/CAM0、REQ0/CNS0、语义 hash、Reader/Writer 与 40k 测试均已实现并接入 CMake | 已修（2026-11-22 复核：README 已改 candidate 并写明 Reader/Writer 已实现；同行误引 RR-F201 已改为 RR-F105） |
+<!-- cuexis-findings: definitions -->
+| ID | 原始发现 | 原始依据 | 核验状态 | 处置状态 | 责任/任务 | 当前处置依据 |
+| --- | --- | --- | --- | --- | --- | --- |
+| RR-F101 | 已修：AGENTS 精简后原句与 `:261` 均不存在；`ROADMAP.md:48`、`GAMEPLAY_V2_SPEC.md:2595` 仍称“AGENTS 写 Stage 12”，本轮同日订正 | `AGENTS.md`（2026-11-17 前版本）<br>原证据状态：已核实（已修） | 已核实 | 已修 | T-02 | 依据：原字段与 §22 历史处置；复核者：Codex-G02（2026-11-23）；复核证据：[路线图](../../../ROADMAP.md)、[V2 Spec](../../../formats/GAMEPLAY_V2_SPEC.md)（当前正文与 ca5 已提交对应段）；理由：原 AGENTS Stage 12 说法已改为带日期的删除历史，未再冒充现行指令；决定依据：§22 既有文档处置与原字段记录；实际验证：当前/ca5 两处订正与 AGENTS 定向断言通过；改动修订：ca5cbb9121b015ae0b3b5d681610ca94dac78184（包含原文档订正的已提交快照） |
+| RR-F102 | 已修：AGENTS 精简后“Stage 7A 是当前实施准备线”“Stage 4-12 都是 future/deferred”均已删除 | `AGENTS.md`（2026-11-17 前版本）<br>原证据状态：已核实（已修） | 已核实 | 已修 | T-02 | 依据：原字段与 §22 历史处置；复核者：Codex-G02（2026-11-23）；复核证据：[AGENTS](../../../../AGENTS.md)（当前正文与 ca5 已提交对应段）；理由：原 Stage 7A 当前线和 Stage 4–12 全 future/deferred 的断言均已移除；决定依据：§22 既有文档处置与原字段记录；实际验证：当前/ca5 AGENTS 原错误短句缺席检查通过；改动修订：ca5cbb9121b015ae0b3b5d681610ca94dac78184（包含原文档订正的已提交快照） |
+| RR-F103 | 仍写"当前分支 SDK API 为 `0.8.0`"；实际 `cmake/CuexisVersion.cmake:8` 为 `0.9.1`，同目录其他页已写 0.9.1 | `docs/api/diagnostics-identity-and-compatibility.md:22`、`:64`；`docs/api/GAMEPLAY_V2_ABI.md:69`<br>原证据状态：已修（2026-11-22 复核：两页现均写 0.9.1，`check_docs_facts` 无版本漂移） | 已核实 | 已修 | T-02 | 依据：原字段与 §22 历史处置；复核者：Codex-G02（2026-11-23）；复核证据：[诊断身份合同](../../../api/diagnostics-identity-and-compatibility.md)、[V2 ABI](../../../api/GAMEPLAY_V2_ABI.md)（当前正文与 ca5 已提交对应段）；理由：只恢复当前 SDK 版本文字订正，不外推 SDK 发布或运行通过；决定依据：§22 既有文档处置与原字段记录；实际验证：当前/ca5 版本段核对与 check_docs_facts.scan 定向版本扫描通过；改动修订：ca5cbb9121b015ae0b3b5d681610ca94dac78184（包含原文档订正的已提交快照） |
+| RR-F104 | 仍写“当前分支为 0.7.5”，实际 `CuexisVersion.cmake:8` 为 0.9.1（`CURRENT_STATUS.md:115` 同） | `docs/formats/MATERIAL_SHADER.md:632`<br>原证据状态：已修（文档：改为 0.9.1） | 已核实 | 已修 | T-02 | 依据：原字段与 §22 历史处置；复核者：Codex-G02（2026-11-23）；复核证据：[Shader 合同](../../../formats/MATERIAL_SHADER.md)（当前正文与 ca5 已提交对应段）；理由：历史类型基线与当前 SDK 已分开描述；决定依据：§22 既有文档处置与原字段记录；实际验证：当前/ca5 当前版本段核对与 check_docs_facts.scan 定向扫描通过；改动修订：ca5cbb9121b015ae0b3b5d681610ca94dac78184（包含原文档订正的已提交快照） |
+| RR-F105 | 权威矩阵把 Packed Chart v1 标为"未实现"；实际 Header/目录、字典/身份、ARCH/ENT0、TRN0/REN0/CAM0、REQ0/CNS0、语义 hash、Reader/Writer 与 40k 测试均已实现并接入 CMake | `docs/formats/README.md:40`<br>原证据状态：已修（2026-11-22 复核：README 已改 candidate 并写明 Reader/Writer 已实现；同行误引 RR-F201 已改为 RR-F105） | 已核实 | 已修 | T-02 | 依据：原字段与 §22 历史处置；复核者：Codex-G02（2026-11-23）；复核证据：[格式索引](../../../formats/README.md)（当前正文与 ca5 已提交对应段）；理由：索引已写 candidate、Reader/Writer 已实现并引用 F105；本轮仅核文档订正，不重验 Reader/Writer 或规模测试；决定依据：§22 既有文档处置与原字段记录；实际验证：当前/ca5 Packed 行状态及 F105 回指断言通过；改动修订：ca5cbb9121b015ae0b3b5d681610ca94dac78184（包含原文档订正的已提交快照） |
 
 #### 2.2 格式互操作与接受集
 
-| ID | 位置 | 问题 | 证据状态 |
-| --- | --- | --- | --- |
-| RR-F111 | [Packed §5.1](../../../formats/PACKED_CHART_FORMAT.md#51-fixed-header96-bytes)；`packed_chart_tables_writer.cpp` / `packed_chart_tables_inspect.cpp` | 原文规定完整 Header 置零计算，与 Reader/Writer 的前 92 字节算法不一致。owner 已接受按现行实现更正合同，Header 总长仍为 96 字节；兼容后果见 [D-25](architecture-design.md#d-25-兼容入口与格式合同收敛)。 | 合同更正已完成；实现未变；真实外部消费者及互操作情况未核实 |
-| RR-F112 | `packed_chart_tables_sections.cpp:55-57,489-490`；`decoder_tables.cpp:195-197`；`decoder_model.cpp:340-344` | Writer 硬写 descriptor 0；Reader 把 TIME mode 1 判 `packed.time.invalid`、REQ0 判 `packed.requirements.codec`。`writeBeatDescriptor/readBeatDescriptor` 全仓 0 调用者；GridDelta codec 仅测试调用 | 已修（文档：删除 mode 1 与 Writer 选择段） |
-| RR-F113 | `limits.hpp:58-59`；`canonical_chart_loader_primitives.cpp:325-330`；`CHART_FORMAT.md:159-167` | v1/v2/v3 生产 Reader 额外拒绝 `|分子| > 1e12`、`分母 > 1e9`（`chart.beat.limit_exceeded`）；`chart.beat.out_of_range` 来自 v4 reader 与 `rational_beat.cpp` 算术，不是这两个上限。两个上限已由 `guides/LIMITS.md:62-63` 生成登记，但未进格式合同 | 已修（2026-11-22 复核：已写入 CHART_FORMAT 的 Beat 上限段；改引具名常量归 T-03） |
-| RR-F114 | [CXC](../../../formats/CXC_FORMAT.md)；[Chart Entry §7](../../../formats/CHART_ENTRY_V1_FORMAT.md#7-behavior-source-candidate-profile)；`cxc_candidate.cpp` | 原合同对 candidate playback encoding 的范围不一致。owner 已接受按具名 profile 对齐：静态 profile 必须为 `packed-chart`，Behavior profile 必须为 `source-json`；普通 CXC v1 默认入口继续沿用原路径。 | 两份合同已对齐并移除冲突提示；实现未变；本轮未重跑候选播放验收 |
-| RR-F115 | `CXT_V2_FORMAT.md:317,323,326,690` | `cxtImports`/`cxtInstances` 全仓 0 命中；§6 写成合同未标未实现；§12:690 的“Chart invocation”同样过度声明。展开只由工具显式传参触发 | 已修（文档：§6 移入 proposals，§12 收窄） |
-| RR-F116 | `CHART_ENTRY_V1_FORMAT.md:126-145`；`cxc_candidate.cpp` | 文档声明 16 码中 2 个零产出（`resource_closure_invalid` 只有异命名空间的 `playback.candidate.*`）；实现另发 **12 个**未登记码（原文写 5 个，计数订正）。文档写“minimum stable set”，额外码本身不违约 | 已修（文档：删除 2 个零产出码） |
+<!-- cuexis-findings: definitions -->
+| ID | 原始发现 | 原始依据 | 核验状态 | 处置状态 | 责任/任务 | 当前处置依据 |
+| --- | --- | --- | --- | --- | --- | --- |
+| RR-F111 | 原文规定完整 Header 置零计算，与 Reader/Writer 的前 92 字节算法不一致。owner 已接受按现行实现更正合同，Header 总长仍为 96 字节；兼容后果见 [D-25](architecture-design.md#d-25-兼容入口与格式合同收敛)。 | [Packed §5.1](../../../formats/PACKED_CHART_FORMAT.md#51-fixed-header96-bytes)；`packed_chart_tables_writer.cpp` / `packed_chart_tables_inspect.cpp`<br>原证据状态：合同更正已完成；实现未变；真实外部消费者及互操作情况未核实 | 未复核 | 开放 | T-03 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F112 | Writer 硬写 descriptor 0；Reader 把 TIME mode 1 判 `packed.time.invalid`、REQ0 判 `packed.requirements.codec`。`writeBeatDescriptor/readBeatDescriptor` 全仓 0 调用者；GridDelta codec 仅测试调用 | `packed_chart_tables_sections.cpp:55-57,489-490`；`decoder_tables.cpp:195-197`；`decoder_model.cpp:340-344`<br>原证据状态：已修（文档：删除 mode 1 与 Writer 选择段） | 已核实 | 已处置 | T-03 | 依据：原字段与 §22 历史处置；复核者：Codex-G02（2026-11-23）；复核证据：[Packed 合同](../../../formats/PACKED_CHART_FORMAT.md)（当前正文与 ca5 已提交对应段）；理由：已按仅 mode 0 的已实现接受集收敛文档；不承诺实现 GridDelta 或 mode 1；决定依据：§22 既有文档处置与原字段记录；实际验证：当前/ca5 mode 0 表与非 0 拒绝段核对通过 |
+| RR-F113 | v1/v2/v3 生产 Reader 额外拒绝 `|分子| > 1e12`、`分母 > 1e9`（`chart.beat.limit_exceeded`）；`chart.beat.out_of_range` 来自 v4 reader 与 `rational_beat.cpp` 算术，不是这两个上限。两个上限已由 `guides/LIMITS.md:62-63` 生成登记，但未进格式合同 | `limits.hpp:58-59`；`canonical_chart_loader_primitives.cpp:325-330`；`CHART_FORMAT.md:159-167`<br>原证据状态：已修（2026-11-22 复核：已写入 CHART_FORMAT 的 Beat 上限段；改引具名常量归 T-03） | 已核实 | 已修 | T-03 | 依据：原字段与 §22 历史处置；复核者：Codex-G02（2026-11-23）；复核证据：[Chart 格式](../../../formats/CHART_FORMAT.md)、[生成限额](../../../guides/LIMITS.md)（当前正文与 ca5 已提交对应段）；理由：原 Beat 上限及稳定码已进格式合同；T-03 的具名常量回指仍按任务执行；决定依据：§22 既有文档处置与原字段记录；实际验证：当前/ca5 Beat 上限段断言和 check_docs_facts.limits_is_current() 通过；改动修订：ca5cbb9121b015ae0b3b5d681610ca94dac78184（包含原文档订正的已提交快照） |
+| RR-F114 | 原合同对 candidate playback encoding 的范围不一致。owner 已接受按具名 profile 对齐：静态 profile 必须为 `packed-chart`，Behavior profile 必须为 `source-json`；普通 CXC v1 默认入口继续沿用原路径。 | [CXC](../../../formats/CXC_FORMAT.md)；[Chart Entry §7](../../../formats/CHART_ENTRY_V1_FORMAT.md#7-behavior-source-candidate-profile)；`cxc_candidate.cpp`<br>原证据状态：两份合同已对齐并移除冲突提示；实现未变；本轮未重跑候选播放验收 | 未复核 | 开放 | T-03 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F115 | `cxtImports`/`cxtInstances` 全仓 0 命中；§6 写成合同未标未实现；§12:690 的“Chart invocation”同样过度声明。展开只由工具显式传参触发 | `CXT_V2_FORMAT.md:317,323,326,690`<br>原证据状态：已修（文档：§6 移入 proposals，§12 收窄） | 已核实 | 已处置 | T-07（文档状态）；T-11/T-13（后继能力按原卡另验） | 依据：原字段与 §22 历史处置；复核者：Codex-G02（2026-11-23）；复核证据：[CXT v2](../../../formats/CXT_V2_FORMAT.md)（当前正文与 ca5 已提交对应段）；理由：当前 §6 及 Chart invocation 明确标为候选设计、未实现；原“移入 proposals”说法保留但不作为本次动作描述；后继能力按 T-11/T-13 验收；决定依据：§22 既有文档处置与原字段记录；实际验证：当前/ca5 两处未实现状态断言通过 |
+| RR-F116 | 文档声明 16 码中 2 个零产出（`resource_closure_invalid` 只有异命名空间的 `playback.candidate.*`）；实现另发 **12 个**未登记码（原文写 5 个，计数订正）。文档写“minimum stable set”，额外码本身不违约 | `CHART_ENTRY_V1_FORMAT.md:126-145`；`cxc_candidate.cpp`<br>原证据状态：已修（文档：删除 2 个零产出码） | 已核实 | 已修 | T-03（诊断合同）；T-09（核旧处置） | 依据：原字段与 §22 历史处置；复核者：Codex-G02（2026-11-23）；复核证据：[Chart Entry](../../../formats/CHART_ENTRY_V1_FORMAT.md)（当前正文与 ca5 已提交对应段）；理由：minimum stable set 已删无产出条目；本轮只恢复诊断表订正，不声称新互操作测试通过；决定依据：§22 既有文档处置与原字段记录；实际验证：当前/ca5 表核对及当前 14 条最低诊断行计数通过；改动修订：ca5cbb9121b015ae0b3b5d681610ca94dac78184（包含原文档订正的已提交快照） |
 
 #### 2.3 SDK 与表现合同
 
-| ID | 位置 | 问题 | 证据状态 |
-| --- | --- | --- | --- |
-| RR-F121 | `frames-digests-and-timelines.md:56,67`；`frame_digest.hpp:18-20`；`frame_digest_internal.hpp:9-12` | 文档主句已改为“公开 API 不接受版本入参”；残留：同文件 `:67` 仍要求“指定版本 digest”的 parity，安装 API 不可达；测试把 `src/frame_digest_version.cpp` 编进测试目标 | 已修（2026-11-22 复核：文档主句已改，测试重复编译归 RR-F214/T-04） |
-| RR-F122 | `include/cuexis/playback/playback_session.hpp:250-254` | `materializePresentation` 无 `#if CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE` 门；production 构建的安装头暴露 RPA candidate 入口，错误码命名空间 `host.rpa.*` 也随之出现在 OFF 构建 | 已核实 |
-| RR-F123 | `docs/formats/MATERIAL_SHADER.md` §9；`engine/render_opengl/src/open_gl_presentation.cpp:105` | `builtInRendererProfileVersion` 只有写入点与测试读取，无任何生产读取点；`requiredRendererProfile` 与 adapter profile 不匹配时不构成失败，合同项静默通过 | 已核实 |
-| RR-F124 | `docs/formats/MATERIAL_SHADER.md` §5；`engine/playback/src/presentation_parse.cpp:404-414` | 实现额外要求 host-extension profile 必须出现在 `requiredHostExtensions` 中（文档无此规则）；同时 profile ID 走 `isUserIdentifier`，禁止 `.` 与 `cuexis` 前缀，与 §9 带点 ID 风格、`profileByteCount [1,64]` 三处互相矛盾 | 已核实 |
-| RR-F125 | `MATERIAL_SHADER.md` §5、§12；`shader_compiler_sources.cpp:113-138` | 子集预检只覆盖大小/BOM-CR/`#version 450`/`#include`；geometry/tess/compute 等子集项落到 shaderc → `shader.compile.failed`。但 `playback.presentation.shader.subset_invalid` **并非零产出**：`shader_compiler_sources.cpp:128,133`、`presentation_reader.cpp:549,563`、`presentation_parse.cpp:198,204` | 部分修（文档不再承诺“完整预检”；实现仍只做部分预检） |
-| RR-F126 | `MATERIAL_SHADER.md` §9；`playback_session_prepared.cpp:322-347`；`shader_pipeline_cache.cpp:148-153` | `shaderHotReloadEnabled` 由四个 capability 标志（version==2 且三份源码）推导；`render_opengl` 只调 `prepareCandidate()`/`candidate()`，全目录 0 处 `activate()`/`active()`，candidate 永不换入 active | 已修（文档：删除 warning/effective false 承诺） |
+<!-- cuexis-findings: definitions -->
+| ID | 原始发现 | 原始依据 | 核验状态 | 处置状态 | 责任/任务 | 当前处置依据 |
+| --- | --- | --- | --- | --- | --- | --- |
+| RR-F121 | 文档主句已改为“公开 API 不接受版本入参”；残留：同文件 `:67` 仍要求“指定版本 digest”的 parity，安装 API 不可达；测试把 `src/frame_digest_version.cpp` 编进测试目标 | `frames-digests-and-timelines.md:56,67`；`frame_digest.hpp:18-20`；`frame_digest_internal.hpp:9-12`<br>原证据状态：已修（2026-11-22 复核：文档主句已改，测试重复编译归 RR-F214/T-04） | 已核实 | 开放 | T-04/T-07 | 依据：§22 与 §24 的分项承接；复核者：Codex-G02（2026-11-23）；复核证据：[帧与摘要](../../../api/frames-digests-and-timelines.md)；理由：公开签名及 parity 说明已核对，重复编译残余由 T-04 按 F214 验收；本轮没有该构建证据；核验边界：仅确认文档订正及残余归属，不证明产品修复 |
+| RR-F122 | `materializePresentation` 无 `#if CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE` 门；production 构建的安装头暴露 RPA candidate 入口，错误码命名空间 `host.rpa.*` 也随之出现在 OFF 构建 | `include/cuexis/playback/playback_session.hpp:250-254`<br>原证据状态：已核实 | 未复核 | 开放 | T-08 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F123 | `builtInRendererProfileVersion` 只有写入点与测试读取，无任何生产读取点；`requiredRendererProfile` 与 adapter profile 不匹配时不构成失败，合同项静默通过 | `docs/formats/MATERIAL_SHADER.md` §9；`engine/render_opengl/src/open_gl_presentation.cpp:105`<br>原证据状态：已核实 | 未复核 | 开放 | T-09（核 profile 合同与实际读取，再确定实现责任） | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F124 | 实现额外要求 host-extension profile 必须出现在 `requiredHostExtensions` 中（文档无此规则）；同时 profile ID 走 `isUserIdentifier`，禁止 `.` 与 `cuexis` 前缀，与 §9 带点 ID 风格、`profileByteCount [1,64]` 三处互相矛盾 | `docs/formats/MATERIAL_SHADER.md` §5；`engine/playback/src/presentation_parse.cpp:404-414`<br>原证据状态：已核实 | 未复核 | 开放 | T-09（核 shader profile 接受集与既有裁定） | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F125 | 子集预检只覆盖大小/BOM-CR/`#version 450`/`#include`；geometry/tess/compute 等子集项落到 shaderc → `shader.compile.failed`。但 `playback.presentation.shader.subset_invalid` **并非零产出**：`shader_compiler_sources.cpp:128,133`、`presentation_reader.cpp:549,563`、`presentation_parse.cpp:198,204` | `MATERIAL_SHADER.md` §5、§12；`shader_compiler_sources.cpp:113-138`<br>原证据状态：部分修（文档不再承诺“完整预检”；实现仍只做部分预检） | 未复核 | 开放 | T-09（核文档订正后的实现残余及具名处置） | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F126 | `shaderHotReloadEnabled` 由四个 capability 标志（version==2 且三份源码）推导；`render_opengl` 只调 `prepareCandidate()`/`candidate()`，全目录 0 处 `activate()`/`active()`，candidate 永不换入 active | `MATERIAL_SHADER.md` §9；`playback_session_prepared.cpp:322-347`；`shader_pipeline_cache.cpp:148-153`<br>原证据状态：已修（文档：删除 warning/effective false 承诺） | 已核实 | 已处置 | T-07（文档边界）；T-09（确认未承诺热重载实现） | 依据：原字段与 §22 历史处置；复核者：Codex-G02（2026-11-23）；复核证据：[Shader 合同](../../../formats/MATERIAL_SHADER.md)（当前正文与 ca5 已提交对应段）；理由：合同已明确 capability 推导且没有 warning/生效保证；本项按文档收窄处置，热重载实现未被宣称完成；决定依据：§22 既有文档处置与原字段记录；实际验证：当前/ca5 热重载边界说明断言通过 |
 
 #### 2.4 运行时、判定与失败语义
 
-| ID | 位置 | 问题 | 证据状态 |
-| --- | --- | --- | --- |
-| RR-F131 | `docs/formats/GAMEPLAY_V2_SPEC.md:467-473`；`engine/judgement/src/input.cpp:182-184,191-205` | 同一 canonical 身份在同一 Tick 再次入场，Spec 要求 `judgement.input.same_tick_collision` / `invalid_relation`，实现返回 `late.duplicate_queue_entry` / `late_policy_incomplete`；同 Tick 不同身份又被报成 `same_tick_collision`。两个稳定码被互换，且被 `tests/judgement/execution_profile_tests.cpp:276-285` 固化 | 首次登记；入口与首错判断已在 [§15](#astra-九项设计修订) 纠正 |
-| RR-F132 | `gameplay-v2-execution-types.md:77-85`；`execution_kernel_prepare.cpp:61,77,92-93` | 实现把 `;gameplay.fold.finite.v1` 追加到 `judgementSemanticRevision`、`;grade.signed-interval.v1` 追加到 `factSemanticRevision`；Spec 规定前者应进 ruleset/session identity，后者写作 `signed-interval/1`（拼写不同） | 已核实（补充第一条位置偏差） |
-| RR-F133 | `CHART_FORMAT.md:483,496-497`；`behavior_system.cpp:174-177,210-238` | 旧 `chartTimeMs` 重载 `beat` 保持 0，含 v3 event/step track 的程序经该重载求值会按 Beat 0 采样。仅当全部事件 `startBeat>0` 时才是“基准值”；`startBeat≤0` 的事件会在 Beat 0 返回其值。头文件无限制声明、测试不覆盖 track | 已核实（“一律基准值”收窄） |
-| RR-F134 | `execution-coordination.md:39-44`；`sdl_audio_transport.cpp:490-518` | `activateReplacement()` 只 close/open，不重置 `clockAnchorUs/presentedSampleUs/clockErrorUs`，也不推进 discontinuity；`presentedClockObservation()` 在 Playing 下直接返回旧样本，`min(*clockAnchorUs, observedAnchor)` 让旧锚持续胜出 | 已核实（补充未推进 discontinuity） |
-| RR-F135 | `frame_observation.cpp:72,96,124,288,420,524` 对比 `:335,426,447` 对比 `:550,598,613` | 三种互斥处置并存；`bad_alloc` 被冒充为 `host.rpa.capacity_exceeded`（与预留故障槽同码，仅 message 不同），或被吞成成功 | 已核实（补 420/524；同码问题更严重） |
-| RR-F136 | `app/player/src/player_app.cpp:177-179` | candidate 执行路径在 `PlayerController` 之前分流，完全绕过 `PlayerCommand` 命令表与固定事务顺序；`PLAYER_APPLICATION.md:30,213` 的"所有控制面产生同一个 PlayerCommand"只对中立路径成立 | 已核实 |
+<!-- cuexis-findings: definitions -->
+| ID | 原始发现 | 原始依据 | 核验状态 | 处置状态 | 责任/任务 | 当前处置依据 |
+| --- | --- | --- | --- | --- | --- | --- |
+| RR-F131 | 同一 canonical 身份在同一 Tick 再次入场，Spec 要求 `judgement.input.same_tick_collision` / `invalid_relation`，实现返回 `late.duplicate_queue_entry` / `late_policy_incomplete`；同 Tick 不同身份又被报成 `same_tick_collision`。两个稳定码被互换，且被 `tests/judgement/execution_profile_tests.cpp:276-285` 固化 | `docs/formats/GAMEPLAY_V2_SPEC.md:467-473`；`engine/judgement/src/input.cpp:182-184,191-205`<br>原证据状态：首次登记；入口与首错判断已在 [§15](#astra-九项设计修订) 纠正 | 未复核 | 开放 | T-03 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F132 | 实现把 `;gameplay.fold.finite.v1` 追加到 `judgementSemanticRevision`、`;grade.signed-interval.v1` 追加到 `factSemanticRevision`；Spec 规定前者应进 ruleset/session identity，后者写作 `signed-interval/1`（拼写不同） | `gameplay-v2-execution-types.md:77-85`；`execution_kernel_prepare.cpp:61,77,92-93`<br>原证据状态：已核实（补充第一条位置偏差） | 未复核 | 开放 | T-03 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F133 | 旧 `chartTimeMs` 重载 `beat` 保持 0，含 v3 event/step track 的程序经该重载求值会按 Beat 0 采样。仅当全部事件 `startBeat>0` 时才是“基准值”；`startBeat≤0` 的事件会在 Beat 0 返回其值。头文件无限制声明、测试不覆盖 track | `CHART_FORMAT.md:483,496-497`；`behavior_system.cpp:174-177,210-238`<br>原证据状态：已核实（“一律基准值”收窄） | 未复核 | 开放 | T-07/T-12（旧采样限制说明与完整 sample 仓内迁移） | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F134 | `activateReplacement()` 只 close/open，不重置 `clockAnchorUs/presentedSampleUs/clockErrorUs`，也不推进 discontinuity；`presentedClockObservation()` 在 Playing 下直接返回旧样本，`min(*clockAnchorUs, observedAnchor)` 让旧锚持续胜出 | `execution-coordination.md:39-44`；`sdl_audio_transport.cpp:490-518`<br>原证据状态：已核实（补充未推进 discontinuity） | 未复核 | 开放 | T-14 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F135 | 三种互斥处置并存；`bad_alloc` 被冒充为 `host.rpa.capacity_exceeded`（与预留故障槽同码，仅 message 不同），或被吞成成功 | `frame_observation.cpp:72,96,124,288,420,524` 对比 `:335,426,447` 对比 `:550,598,613`<br>原证据状态：已核实（补 420/524；同码问题更严重） | 未复核 | 开放 | T-06 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F136 | candidate 执行路径在 `PlayerController` 之前分流，完全绕过 `PlayerCommand` 命令表与固定事务顺序；`PLAYER_APPLICATION.md:30,213` 的"所有控制面产生同一个 PlayerCommand"只对中立路径成立 | `app/player/src/player_app.cpp:177-179`<br>原证据状态：已核实 | 未复核 | 开放 | T-15 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
 
 #### 2.5 主机构建面与文档覆盖
 
-| ID | 位置 | 问题 | 证据状态 |
-| --- | --- | --- | --- |
-| RR-F141 | `PLAYER_APPLICATION.md:83-89,115-122,124` | 源文件清单只列 3 个；实际另有 4 个基础 .cpp + 条件编译的 `player_execution.cpp` + 5 个 `execution_host*.cpp`。选项表 6 项 vs 19 个 flag。`:124` 的“重复都返回 `player.arguments.*`”不成立：4 个布尔选项无重复检查，`:53/:93/:125` 返回 `player.candidate.disabled` | 已修（文档：选项表 19 项、源文件 13 个） |
-| RR-F142 | `player_execution.cpp:36-38` 及 `:110,115,120,139,608,630,632,642` | 该 `error()` 辅助的 9 类失败统一为 `player.execution.test_only`；文件另有 7 个 `player.execution.*` 码，`:632` 在 fault 自带码时透传 | 已核实（“统一”限定为这 9 类） |
-| RR-F143 | `check_docs.py`、`check_pe_export_gate.py`、`gnu_asset_mirror.py`；`worker_process.cpp:22-31,49,76,83` | `check_docs.py` 在 docs 有 251 处引用，“零引用”不成立；真正零/极少引用的是 `check_pe_export_gate.py`（仅 findings）与 `gnu_asset_mirror.py`。worker 逐字节 `static_cast<wchar_t>`，任何非 ASCII narrow 路径都会 mojibake | 已核实（“零引用”收窄） |
+<!-- cuexis-findings: definitions -->
+| ID | 原始发现 | 原始依据 | 核验状态 | 处置状态 | 责任/任务 | 当前处置依据 |
+| --- | --- | --- | --- | --- | --- | --- |
+| RR-F141 | 源文件清单只列 3 个；实际另有 4 个基础 .cpp + 条件编译的 `player_execution.cpp` + 5 个 `execution_host*.cpp`。选项表 6 项 vs 19 个 flag。`:124` 的“重复都返回 `player.arguments.*`”不成立：4 个布尔选项无重复检查，`:53/:93/:125` 返回 `player.candidate.disabled` | `PLAYER_APPLICATION.md:83-89,115-122,124`<br>原证据状态：已修（文档：选项表 19 项、源文件 13 个） | 已核实 | 已修 | T-07 | 依据：原字段与 §22 历史处置；复核者：Codex-G02（2026-11-23）；复核证据：[Player 应用](../../../architecture/PLAYER_APPLICATION.md)、[选项生成页](../../../guides/PLAYER_OPTIONS.md)（当前正文与 ca5 已提交对应段）；理由：基础与候选源文件分列，选项回链生成页；只恢复说明订正；决定依据：§22 既有文档处置与原字段记录；实际验证：当前/ca5 文件与选项段断言及 check_docs_facts.player_options_are_current() 通过；改动修订：ca5cbb9121b015ae0b3b5d681610ca94dac78184（包含原文档订正的已提交快照） |
+| RR-F142 | 该 `error()` 辅助的 9 类失败统一为 `player.execution.test_only`；文件另有 7 个 `player.execution.*` 码，`:632` 在 fault 自带码时透传 | `player_execution.cpp:36-38` 及 `:110,115,120,139,608,630,632,642`<br>原证据状态：已核实（“统一”限定为这 9 类） | 未复核 | 开放 | T-15 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F143 | `check_docs.py` 在 docs 有 251 处引用，“零引用”不成立；真正零/极少引用的是 `check_pe_export_gate.py`（仅 findings）与 `gnu_asset_mirror.py`。worker 逐字节 `static_cast<wchar_t>`，任何非 ASCII narrow 路径都会 mojibake | `check_docs.py`、`check_pe_export_gate.py`、`gnu_asset_mirror.py`；`worker_process.cpp:22-31,49,76,83`<br>原证据状态：已核实（“零引用”收窄） | 未复核 | 开放 | T-16 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
 
 ### 3. P2（登记但不阻塞本阶段退出）
 
-| ID | 位置 | 问题 | 证据状态 |
-| --- | --- | --- | --- |
-| RR-F201 | `docs/architecture/OVERVIEW.md:97-106` | 属性求值顺序漏掉 `GameplayOverride`（代码在 Animation 与 HostOverride 之间插入该层；`ANIMATION_MIXING.md` 正确） | 已核实 |
-| RR-F202 | `RUNTIME_SESSION.md:89-94`；`runtime_frame.hpp:10`；`runtime_session_evaluation.cpp:666` | 文档 7 态机在代码中不存在；`RuntimeSession` 无 state 枚举，`onTimeDiscontinuity` 全仓 0 命中，`ResourceState::Reloading` 从未赋值。但 `timeDiscontinuityId` 存在并在 evaluation 比较；`PlaybackSession::SessionState` 只有 4 态且无 Preparing/Reloading/Closing 迁移 | 已修（文档：删除 7 态机与回调描述） |
-| RR-F203 | `runtime_session_overrides.cpp:41-102`；`runtime_session.cpp:404-431` | `acquireOverride` 只校验线程/reentry/world/kind/空 writes/对象/mask，不校验 `PropertyValue` 值域；应用点在 `runtime_session.cpp:404-431`，失败即返回且 token 仍在 `evaluation_->hostOverrides`；只能靠 `releaseOverride` 恢复，错误不指出 token | 已核实（改为“无自动回滚、错误不定位 token”） |
-| RR-F204 | `property.hpp:63-70`；`GAMEPLAY_V2_SPEC.md:31`；`property_helpers.hpp:31-33` | 层域优先级是 Initial<Behavior<Animation<Gameplay<Host<Preview，枚举值只有 Gameplay 错位，不是“相反”；`seenLayers` 仅作同层重复写检测与 layerValue，不参与排序；实际顺序靠 `runtime_session.cpp:372-431` 显式调用序 | 已核实（“相反”改为“Gameplay 枚举值与优先级位置不符”） |
-| RR-F205 | `diagnostic.hpp:63,66`；`diagnostic.cpp:56-60,104-106` | `add/append` 返回 bool 但未标 `[[nodiscard]]`；engine+app 135 处调用中 88 处裸丢弃。但截断有兜底：达上限插入 limit diagnostic 且 `limitReached()` 公开（20 处调用）。CODE_POLICY 引用有误 | 已核实（删“无从得知”；修正引用） |
-| RR-F206 | `content_provider.cpp:144-145,213,241`、`:197` | 三处 `shared_ptr<X>{new X{...}}`，同文件已有 `make_shared<Data>`；但标准保证控制块分配失败会 delete 指针，不是“非异常安全”；真实问题是多一次控制块分配，且构造函数私有使 make_shared 不能直接替换 | 已核实（改为“多一次分配”，删除异常安全断言） |
-| RR-F207 | `resource_scope.cpp:79-472` | `request()` 394 行；五类 acquire 分支 `:218-307` 与五段 fallback `:332-465` 除 handle 类型外近乎逐字重复；小组件 `requestMesh` 等只是薄包装 | 已核实（补重复行数） |
-| RR-F208 | `playback_session_prepare.cpp:270-279,292-297,352-358`；`playback_session_prepare_stages.cpp:443-467` | capability 预检先于 chart 预算（compile 内 `chart_runtime.cpp:546-552`）与 presentation 预算；presentation 解析后还有第二次 capability 检查，文档阶段顺序未分列 | 已核实（位置与分列说明） |
-| RR-F209 | `playback_session.hpp:170-175`；`playback_session.cpp:165,347`；`docs/api/playback-session.md:55-62` | `sessionState` 只有 Running/Empty/Ready 写入点，无 Failed 赋值；文档赋予“不可继续”语义；参考宿主存在等待 Failed 的死分支 | 已修（文档：Failed 标为从不进入；宿主死分支待代码修） |
-| RR-F210 | `presentation.hpp:41-44,208` | `ShaderStage`、`shaderGlslEs300` 全仓仅声明处命中；`playback.presentation.shader.stage_unsupported` 在 C++ 0 命中，仅 `MATERIAL_SHADER.md:606` 说明未产出 | 已核实 |
-| RR-F211 | `sdl_audio_transport.cpp:371-399`、`:425-426`；`audio_transport.cpp:70-71` | `snapshot()` 的 `for(;;)` 无尝试上限，同类实现用 8 次；但 `publish()` 为 noexcept 且奇偶 sequence 间无可抛调用，正常路径不会永久停在奇序号，风险限于发布线程被永久挂起 | 已核实（收窄自旋条件） |
-| RR-F212 | `audio_transport.cpp:29-31,59-89`；`sdl_audio_transport.cpp:291,297,392-393` | validator 拒绝 Empty，但 transport unload 会发布 Empty 且 snapshot 原样返回；公共头未写清二者关系。`HostClock::snapshot` 的 thread_local 缓存以 `this` 为键，地址复用且 8 次全失败时返回旧对象 | 已核实（收窄“接口声明不得 Empty”） |
-| RR-F213 | `sdl_window.cpp:281-287`；`sdl_audio.cpp:78-82` | 两者非 owner 线程析构都 `std::terminate()`；但窗口公共头 `sdl_window.hpp:66-75,100-105` 已明确记录该约束，audio 子系统头没有 | 已核实（按类型拆分：platform 已记录、audio 缺说明） |
-| RR-F214 | `tests/playback/CMakeLists.txt:25-26,57,117` | 测试把 `frame_digest_version.cpp`、`presentation_extraction.cpp` 编进测试目标又链 playback；两文件本就在库源中，当前无宏差异故行为未分叉，属测试卫生问题 | 已核实（补“当前无宏差异”） |
-| RR-F215 | `tests/platform/sdl_window_tests.cpp:39-167`；`tests/platform/CMakeLists.txt:12-14`；`BUILDING.md:444` | 测试建窗并请求全屏，仅靠 `SDL_VIDEODRIVER=dummy` 缓解，无 CTest LABELS；规则出处是 `BUILDING.md:444`“算法单元测试不得依赖窗口”，平台适配器测试是否适用存疑 | 已核实（修正引用） |
-| RR-F216 | `CMakeLists.txt:92-97,155`；`CuexisLibraryType.cmake:1` | observer 门禁在 `CUEXIS_LIBRARY_TYPE` 定义前执行，全新 configure 未显式传参时必然 FATAL；已有 build dir 因 CMakeCache 有值可通过；官方 profile 脚本显式传参规避 | 已核实（补“仅全新 configure 必败”） |
-| RR-F217 | `engine/CMakeLists.txt:18-20`；`engine/shader/CMakeLists.txt:31-34`；`tests/CMakeLists.txt:30-31` | 默认构建下 `cuexis_shader_cache` 无条件存在，而 shader 测试只在 `if(TARGET cuexis_shader)` 且 SHADER_TOOLS 时编入 → 默认构建遗留零测试 target | 已核实 |
-| RR-F218 | `app/studio/CMakeLists.txt:1-2`；`engine/particles/CMakeLists.txt:1-3`；`VerifyArchitecture.cmake:579-606` | 只有 custom target / INTERFACE，均未 `add_subdirectory`，也不在 active 清单；一旦接入会触发 target allowlist FATAL | 已核实 |
-| RR-F219 | `VerifyArchitecture.cmake:117`；`MODULE_BOUNDARIES.md:19`；`sha256.cpp:11,13` | core 规则只匹配 `SDL|glad|GL/`，不覆盖 `<windows.h>/<intrin.h>/<cpuid.h>`；引用出处是 `MODULE_BOUNDARIES.md:19`（不是 AGENTS）；core 已有 intrin/cpuid 先例，当前无 windows.h | 已核实（修正引用与“可漏入”） |
-| RR-F220 | `CMakeLists.txt:1035-1044,1486-1497` | 两处 allowlist 条目宽于直接 LINK_LIBRARIES（shader→core、playback_tests→assets），但都在传递闭包内；门禁仍拒绝任何未预置的新依赖，属许可超集而非漏洞 | 已核实（改“冗余但非漏洞”） |
+<!-- cuexis-findings: definitions -->
+| ID | 原始发现 | 原始依据 | 核验状态 | 处置状态 | 责任/任务 | 当前处置依据 |
+| --- | --- | --- | --- | --- | --- | --- |
+| RR-F201 | 属性求值顺序漏掉 `GameplayOverride`（代码在 Animation 与 HostOverride 之间插入该层；`ANIMATION_MIXING.md` 正确） | `docs/architecture/OVERVIEW.md:97-106`<br>原证据状态：已核实 | 未复核 | 开放 | T-07 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F202 | 文档 7 态机在代码中不存在；`RuntimeSession` 无 state 枚举，`onTimeDiscontinuity` 全仓 0 命中，`ResourceState::Reloading` 从未赋值。但 `timeDiscontinuityId` 存在并在 evaluation 比较；`PlaybackSession::SessionState` 只有 4 态且无 Preparing/Reloading/Closing 迁移 | `RUNTIME_SESSION.md:89-94`；`runtime_frame.hpp:10`；`runtime_session_evaluation.cpp:666`<br>原证据状态：已修（文档：删除 7 态机与回调描述） | 已核实 | 已修 | T-07 | 依据：原字段与 §22 历史处置；复核者：Codex-G02（2026-11-23）；复核证据：[Runtime 会话](../../../architecture/RUNTIME_SESSION.md)（当前正文与 ca5 已提交对应段）；理由：状态段已明确无持久枚举，旧回调不存在；F203 后续已接受修订仍独立待实现；决定依据：§22 既有文档处置与原字段记录；实际验证：当前/ca5 状态与 discontinuity 段断言通过；改动修订：ca5cbb9121b015ae0b3b5d681610ca94dac78184（包含原文档订正的已提交快照） |
+| RR-F203 | `acquireOverride` 只校验线程/reentry/world/kind/空 writes/对象/mask，不校验 `PropertyValue` 值域；应用点在 `runtime_session.cpp:404-431`，失败即返回且 token 仍在 `evaluation_->hostOverrides`；只能靠 `releaseOverride` 恢复，错误不指出 token | `runtime_session_overrides.cpp:41-102`；`runtime_session.cpp:404-431`<br>原证据状态：已核实（改为“无自动回滚、错误不定位 token”） | 未复核 | 开放 | T-17 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F204 | 层域优先级是 Initial<Behavior<Animation<Gameplay<Host<Preview，枚举值只有 Gameplay 错位，不是“相反”；`seenLayers` 仅作同层重复写检测与 layerValue，不参与排序；实际顺序靠 `runtime_session.cpp:372-431` 显式调用序 | `property.hpp:63-70`；`GAMEPLAY_V2_SPEC.md:31`；`property_helpers.hpp:31-33`<br>原证据状态：已核实（“相反”改为“Gameplay 枚举值与优先级位置不符”） | 未复核 | 开放 | T-07 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F205 | `add/append` 返回 bool 但未标 `[[nodiscard]]`；engine+app 135 处调用中 88 处裸丢弃。但截断有兜底：达上限插入 limit diagnostic 且 `limitReached()` 公开（20 处调用）。CODE_POLICY 引用有误 | `diagnostic.hpp:63,66`；`diagnostic.cpp:56-60,104-106`<br>原证据状态：已核实（删“无从得知”；修正引用） | 未复核 | 开放 | T-07 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F206 | 三处 `shared_ptr<X>{new X{...}}`，同文件已有 `make_shared<Data>`；但标准保证控制块分配失败会 delete 指针，不是“非异常安全”；真实问题是多一次控制块分配，且构造函数私有使 make_shared 不能直接替换 | `content_provider.cpp:144-145,213,241`、`:197`<br>原证据状态：已核实（改为“多一次分配”，删除异常安全断言） | 未复核 | 开放 | T-07 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F207 | `request()` 394 行；五类 acquire 分支 `:218-307` 与五段 fallback `:332-465` 除 handle 类型外近乎逐字重复；小组件 `requestMesh` 等只是薄包装 | `resource_scope.cpp:79-472`<br>原证据状态：已核实（补重复行数） | 未复核 | 开放 | T-06 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F208 | capability 预检先于 chart 预算（compile 内 `chart_runtime.cpp:546-552`）与 presentation 预算；presentation 解析后还有第二次 capability 检查，文档阶段顺序未分列 | `playback_session_prepare.cpp:270-279,292-297,352-358`；`playback_session_prepare_stages.cpp:443-467`<br>原证据状态：已核实（位置与分列说明） | 未复核 | 开放 | T-04 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F209 | `sessionState` 只有 Running/Empty/Ready 写入点，无 Failed 赋值；文档赋予“不可继续”语义；参考宿主存在等待 Failed 的死分支 | `playback_session.hpp:170-175`；`playback_session.cpp:165,347`；`docs/api/playback-session.md:55-62`<br>原证据状态：已修（文档：Failed 标为从不进入；宿主死分支待代码修） | 已核实 | 开放 | T-07/T-08 | 依据：§22 与 §24 的分项承接；复核者：Codex-G02（2026-11-23）；复核证据：[Playback 会话](../../../api/playback-session.md)；理由：Failed 保留枚举且当前从不进入的文档已核对；宿主死分支仍由 T-07/T-08 承接，本轮没有实现验收；核验边界：仅确认文档订正及残余归属，不证明产品修复 |
+| RR-F210 | `ShaderStage`、`shaderGlslEs300` 全仓仅声明处命中；`playback.presentation.shader.stage_unsupported` 在 C++ 0 命中，仅 `MATERIAL_SHADER.md:606` 说明未产出 | `presentation.hpp:41-44,208`<br>原证据状态：已核实 | 未复核 | 开放 | T-07/T-08 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F211 | `snapshot()` 的 `for(;;)` 无尝试上限，同类实现用 8 次；但 `publish()` 为 noexcept 且奇偶 sequence 间无可抛调用，正常路径不会永久停在奇序号，风险限于发布线程被永久挂起 | `sdl_audio_transport.cpp:371-399`、`:425-426`；`audio_transport.cpp:70-71`<br>原证据状态：已核实（收窄自旋条件） | 未复核 | 开放 | T-14 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F212 | validator 拒绝 Empty，但 transport unload 会发布 Empty 且 snapshot 原样返回；公共头未写清二者关系。`HostClock::snapshot` 的 thread_local 缓存以 `this` 为键，地址复用且 8 次全失败时返回旧对象 | `audio_transport.cpp:29-31,59-89`；`sdl_audio_transport.cpp:291,297,392-393`<br>原证据状态：已核实（收窄“接口声明不得 Empty”） | 未复核 | 开放 | T-14 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F213 | 两者非 owner 线程析构都 `std::terminate()`；但窗口公共头 `sdl_window.hpp:66-75,100-105` 已明确记录该约束，audio 子系统头没有 | `sdl_window.cpp:281-287`；`sdl_audio.cpp:78-82`<br>原证据状态：已核实（按类型拆分：platform 已记录、audio 缺说明） | 未复核 | 开放 | T-14 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F214 | 测试把 `frame_digest_version.cpp`、`presentation_extraction.cpp` 编进测试目标又链 playback；两文件本就在库源中，当前无宏差异故行为未分叉，属测试卫生问题 | `tests/playback/CMakeLists.txt:25-26,57,117`<br>原证据状态：已核实（补“当前无宏差异”） | 未复核 | 开放 | T-04 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F215 | 测试建窗并请求全屏，仅靠 `SDL_VIDEODRIVER=dummy` 缓解，无 CTest LABELS；规则出处是 `BUILDING.md:444`“算法单元测试不得依赖窗口”，平台适配器测试是否适用存疑 | `tests/platform/sdl_window_tests.cpp:39-167`；`tests/platform/CMakeLists.txt:12-14`；`BUILDING.md:444`<br>原证据状态：已核实（修正引用） | 未复核 | 开放 | T-15 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F216 | observer 门禁在 `CUEXIS_LIBRARY_TYPE` 定义前执行，全新 configure 未显式传参时必然 FATAL；已有 build dir 因 CMakeCache 有值可通过；官方 profile 脚本显式传参规避 | `CMakeLists.txt:92-97,155`；`CuexisLibraryType.cmake:1`<br>原证据状态：已核实（补“仅全新 configure 必败”） | 未复核 | 开放 | T-04 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F217 | 默认构建下 `cuexis_shader_cache` 无条件存在，而 shader 测试只在 `if(TARGET cuexis_shader)` 且 SHADER_TOOLS 时编入 → 默认构建遗留零测试 target | `engine/CMakeLists.txt:18-20`；`engine/shader/CMakeLists.txt:31-34`；`tests/CMakeLists.txt:30-31`<br>原证据状态：已核实 | 未复核 | 开放 | T-04 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F218 | 只有 custom target / INTERFACE，均未 `add_subdirectory`，也不在 active 清单；一旦接入会触发 target allowlist FATAL | `app/studio/CMakeLists.txt:1-2`；`engine/particles/CMakeLists.txt:1-3`；`VerifyArchitecture.cmake:579-606`<br>原证据状态：已核实 | 未复核 | 开放 | T-07 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F219 | core 规则只匹配 `SDL|glad|GL/`，不覆盖 `<windows.h>/<intrin.h>/<cpuid.h>`；引用出处是 `MODULE_BOUNDARIES.md:19`（不是 AGENTS）；core 已有 intrin/cpuid 先例，当前无 windows.h | `VerifyArchitecture.cmake:117`；`MODULE_BOUNDARIES.md:19`；`sha256.cpp:11,13`<br>原证据状态：已核实（修正引用与“可漏入”） | 未复核 | 开放 | T-10/T-12 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F220 | 两处 allowlist 条目宽于直接 LINK_LIBRARIES（shader→core、playback_tests→assets），但都在传递闭包内；门禁仍拒绝任何未预置的新依赖，属许可超集而非漏洞 | `CMakeLists.txt:1035-1044,1486-1497`<br>原证据状态：已核实（改“冗余但非漏洞”） | 未复核 | 开放 | T-04 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
 
 ### 4. 源码拆分预算与超长文件
 #### 4.1 预算事实
@@ -192,27 +205,28 @@ authority: owns
 ### 6. 架构层发现（2026-11-17 研究）
 
 8 个无上下文研究子代理的结论已整理为
-[架构与实现研究](../../../stage_reports/stages/stage-07-rr/2026-11-17-architecture-research.md)；
+[架构与实现研究](../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-architecture-research.md)；
 本节只登记条目，细节与证据见该报告对应小节。
 
-| ID | 发现 | 证据状态 |
-| --- | --- | --- |
-| RR-F301 | 候选支线默认 OFF，却按第二产品线全量编译与挂接（约 27k 行：engine 候选面 4.4k + execution host 9.6k + 相关测试大头） | 已核实（规模与宏计数抽查） |
-| RR-F302 | `cuexis_chart` 无条件编译 packed/cxt_v2/candidate，40.9% 默认不可达 | 已核实（`engine/chart/CMakeLists.txt:6-60`） |
-| RR-F303 | `engine/gameplay_packed`；`engine/CMakeLists.txt:25`；`engine/playback/CMakeLists.txt:47-54` | 模块 4,821 非空行 / 5,009 物理行，无条件编译；产品目标 0 条链接边；playback 边只在 candidate 块；默认开发者工具 `gameplay_author` 有 1 条 PUBLIC 边 | 已核实（补注行数口径与“产品 0 边、默认工具 1 边”） |
-| RR-F304 | `cxt_v2_loader.hpp:49-52`；`docs/MAP.md:126`；`docs/formats/README.md:51` | 只有 `CxtV2Loader::expand`、无 v2 Writer；playback 对 cxt_v2 0 引用；文档以 candidate 登记并自述 reader/expander、未接入默认 Playback——“冒充 active”不成立 | 已核实（改写“按合同登记”的暗示） |
-| RR-F305 | `prepared/commit/generation/token/presentation revision` 对照表见报告 §3.3 | 三层各一份的只有 5 项（prepared、commit、active/candidate、诊断投影、线程守卫）；generation、matchingStep、token、presentation revision 仅两层重复（matchingStep 归一化后 IDENTICAL） | 已核实（拆为 5 项三层 / 4 项两层） |
-| RR-F306 | 公共类被一个宏切成两半：`PlaybackSession` 在同一安装头里按 `CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE` 提供两套类定义（OFF 39 条方法声明 / ON 90 条，其中 49 个方法名仅 ON 存在，两侧零重名），与 ADR 0042 S6-D01「开关不改变公开类定义或布局」直接冲突 | 已核实（`playback_session.hpp` 488 行；宏块 24-28/279-381/465-475；逐行计数） |
-| RR-F307 | `player_control_frame_loop.cpp:95-103`；`runtime_timeline.cpp:43`；`player_execution.cpp:116`；`realtime_clock.cpp:161-171` | 非 RPA 扣两次（outputCorrection + `TimingMap.offsetMs`），RPA 只扣 A 与 inputCompensation；`offsetMs` 与 A 无等式校验。重合条件是 `offsetMs + consumedCorrection == A`，不是全为 0 | 已核实（重合条件订正） |
-| RR-F308 | `player_control_frame_loop.cpp:32`；`realtime_clock.hpp:68`；`runtime_timeline.hpp:14`；`timing_map.hpp:41`；`timebase.hpp:97` | 4 个时间实现；Timebase 单列则为 5 个；两种舍入（llround vs half-even）；两份反向 seek；`simulationDeltaTimeMs` 生产侧只校验/哈希/CSV/置 0 | 已核实（补“4 或 5 取决于是否单列 Timebase”） |
-| RR-F309 | legacy 渲染链只剩启动清屏一个调用点、零测试；`renderPresentationFrame` 绕过帧校验 | 已核实（`player_app.cpp:284`、`player_smoke.cpp:339,346`） |
-| RR-F310 | 公共面 47/90 方法仅 candidate 构建存在；约 96 个类型无宿主消费者；`ShaderStage` 仅声明处命中 | 已核实（抽查 3 项） |
-| RR-F311 | `2026-11-17-architecture-evidence.md:261-273`；`2026-11-17-documentation-refactor.md:43-49` | 70.3% 可复现（当前同口径 70.8%）；基线时 5/22 合同含错，样例已在本轮订正；22 篇清单未留存，当前非计划非 ADR 合同为 43 篇，不得再按 5/22 描述当前状态 | 已核实（改为历史基线 + 已订正） |
-| RR-F312 | 代码 banner 注释失真 33%（抽样 12 条推翻 4 条）；`world.hpp:3` "thread-safe" 与实现相反 | 已核实（`world` 内 mutex/atomic 命中 0） |
-| RR-F313 | `cmake/VerifyArchitecture.cmake:109-563`；`check_docs_facts.py:99-144`；`check_docs.py:531-560` | 架构门禁不查 `cuexis_internal` 越界、通用 `src/` include、安装集合本身；文档事实已有生成页新鲜度与版本漂移（仅警告），合同正文引用仍不校验 | 已核实（第四条限定到具体门禁） |
-| RR-F314 | `tools/chart/chart_candidate/CMakeLists.txt:4-6`；`tools/gameplay/gameplay_assembler/CMakeLists.txt:9-14` | chart_candidate 无条件链接 playback（用 PlaybackSession），但不直编 src；gameplay_author 的链接与直编 `engine/playback/src/gameplay_entry.cpp` 仅在 `CUEXIS_ENABLE_CHART_V5_CANDIDATE` 内 | 已核实（拆分两件事并加开关限定） |
-| RR-F315 | 各模块 CMake 与消费者统计 | 死重量成立：particles（无源码、未接入）、debug（仅测试链接）、gameplay（9 行 tags，runtime 仍 PRIVATE 依赖）、app/studio（仅 custom target）。不成立：content 是 canonical 公共模块（进 `CUEXIS_PUBLIC_EXPORT_TARGETS`），不是门面；player_support（1,215 行）只 app+tests 用，属职责错位而非死码 | 已核实（删 content 表述；player_support 改为“应下沉 app”） |
-| RR-F316 | **应用层对 engine 无纪律（双向）**：① `app/` 直接 include `engine/playback/src/replay_identity.hpp` 6 处、`cuexis_internal/` 至少 11 处；② `cuexis_execution_host_support` 作为 app/ 库 PUBLIC 依赖 playback 并复制会话逻辑（app/execution_host 6,835 行 + app/player/src 7,794 行）；③ engine/ 内反向存放应用职责 `player_support`（唯一消费者是 app/player 与其测试）；④ 架构门禁对 app 只做 nlohmann/GL 全局扫描与 6 个 player 文件的 adapter 禁止，**不禁止** src/internal include | 已核实（include 命中与 CMakeLists 链接关系逐条查证） |
+<!-- cuexis-findings: definitions -->
+| ID | 原始发现 | 原始依据 | 核验状态 | 处置状态 | 责任/任务 | 当前处置依据 |
+| --- | --- | --- | --- | --- | --- | --- |
+| RR-F301 | 候选支线默认 OFF，却按第二产品线全量编译与挂接（约 27k 行：engine 候选面 4.4k + execution host 9.6k + 相关测试大头） | 首次证据定位：未知；原证据状态：已核实（规模与宏计数抽查） | 未复核 | 开放 | T-04 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F302 | `cuexis_chart` 无条件编译 packed/cxt_v2/candidate，40.9% 默认不可达 | 首次证据定位：未知；原证据状态：已核实（`engine/chart/CMakeLists.txt:6-60`） | 未复核 | 开放 | T-04 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F303 | 模块 4,821 非空行 / 5,009 物理行，无条件编译；产品目标 0 条链接边；playback 边只在 candidate 块；默认开发者工具 `gameplay_author` 有 1 条 PUBLIC 边 | `engine/gameplay_packed`；`engine/CMakeLists.txt:25`；`engine/playback/CMakeLists.txt:47-54`<br>原证据状态：已核实（补注行数口径与“产品 0 边、默认工具 1 边”） | 未复核 | 开放 | T-10/T-12/T-13 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F304 | 只有 `CxtV2Loader::expand`、无 v2 Writer；playback 对 cxt_v2 0 引用；文档以 candidate 登记并自述 reader/expander、未接入默认 Playback——“冒充 active”不成立 | `cxt_v2_loader.hpp:49-52`；`docs/MAP.md:126`；`docs/formats/README.md:51`<br>原证据状态：已核实（改写“按合同登记”的暗示） | 未复核 | 开放 | T-13 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F305 | 三层各一份的只有 5 项（prepared、commit、active/candidate、诊断投影、线程守卫）；generation、matchingStep、token、presentation revision 仅两层重复（matchingStep 归一化后 IDENTICAL） | `prepared/commit/generation/token/presentation revision` 对照表见报告 §3.3<br>原证据状态：已核实（拆为 5 项三层 / 4 项两层） | 未复核 | 开放 | T-06/T-13 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F306 | 公共类被一个宏切成两半：`PlaybackSession` 在同一安装头里按 `CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE` 提供两套类定义（OFF 39 条方法声明 / ON 90 条，其中 49 个方法名仅 ON 存在，两侧零重名），与 ADR 0042 S6-D01「开关不改变公开类定义或布局」直接冲突 | 首次证据定位：未知；原证据状态：已核实（`playback_session.hpp` 488 行；宏块 24-28/279-381/465-475；逐行计数） | 未复核 | 开放 | T-08/T-09 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F307 | 非 RPA 扣两次（outputCorrection + `TimingMap.offsetMs`），RPA 只扣 A 与 inputCompensation；`offsetMs` 与 A 无等式校验。重合条件是 `offsetMs + consumedCorrection == A`，不是全为 0 | `player_control_frame_loop.cpp:95-103`；`runtime_timeline.cpp:43`；`player_execution.cpp:116`；`realtime_clock.cpp:161-171`<br>原证据状态：已核实（重合条件订正） | 未复核 | 开放 | T-14 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F308 | 4 个时间实现；Timebase 单列则为 5 个；两种舍入（llround vs half-even）；两份反向 seek；`simulationDeltaTimeMs` 生产侧只校验/哈希/CSV/置 0 | `player_control_frame_loop.cpp:32`；`realtime_clock.hpp:68`；`runtime_timeline.hpp:14`；`timing_map.hpp:41`；`timebase.hpp:97`<br>原证据状态：已核实（补“4 或 5 取决于是否单列 Timebase”） | 未复核 | 开放 | T-10/T-12 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F309 | legacy 渲染链只剩启动清屏一个调用点、零测试；`renderPresentationFrame` 绕过帧校验 | 首次证据定位：未知；原证据状态：已核实（`player_app.cpp:284`、`player_smoke.cpp:339,346`） | 未复核 | 开放 | T-06 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F310 | 公共面 47/90 方法仅 candidate 构建存在；约 96 个类型无宿主消费者；`ShaderStage` 仅声明处命中 | 首次证据定位：未知；原证据状态：已核实（抽查 3 项） | 未复核 | 开放 | T-08 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F311 | 70.3% 可复现（当前同口径 70.8%）；基线时 5/22 合同含错，样例已在本轮订正；22 篇清单未留存，当前非计划非 ADR 合同为 43 篇，不得再按 5/22 描述当前状态 | `2026-11-17-architecture-evidence.md:261-273`；`2026-11-17-documentation-refactor.md:43-49`<br>原证据状态：已核实（改为历史基线 + 已订正） | 未复核 | 开放 | T-02/T-09 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F312 | 代码 banner 注释失真 33%（抽样 12 条推翻 4 条）；`world.hpp:3` "thread-safe" 与实现相反 | 首次证据定位：未知；原证据状态：已核实（`world` 内 mutex/atomic 命中 0） | 未复核 | 开放 | T-07 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F313 | 架构门禁不查 `cuexis_internal` 越界、通用 `src/` include、安装集合本身；文档事实已有生成页新鲜度与版本漂移（仅警告），合同正文引用仍不校验 | `cmake/VerifyArchitecture.cmake:109-563`；`check_docs_facts.py:99-144`；`check_docs.py:531-560`<br>原证据状态：已核实（第四条限定到具体门禁） | 未复核 | 开放 | T-08/T-14 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F314 | chart_candidate 无条件链接 playback（用 PlaybackSession），但不直编 src；gameplay_author 的链接与直编 `engine/playback/src/gameplay_entry.cpp` 仅在 `CUEXIS_ENABLE_CHART_V5_CANDIDATE` 内 | `tools/chart/chart_candidate/CMakeLists.txt:4-6`；`tools/gameplay/gameplay_assembler/CMakeLists.txt:9-14`<br>原证据状态：已核实（拆分两件事并加开关限定） | 未复核 | 开放 | T-10/T-12 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F315 | 死重量成立：particles（无源码、未接入）、debug（仅测试链接）、gameplay（9 行 tags，runtime 仍 PRIVATE 依赖）、app/studio（仅 custom target）。不成立：content 是 canonical 公共模块（进 `CUEXIS_PUBLIC_EXPORT_TARGETS`），不是门面；player_support（1,215 行）只 app+tests 用，属职责错位而非死码 | 各模块 CMake 与消费者统计<br>原证据状态：已核实（删 content 表述；player_support 改为“应下沉 app”） | 未复核 | 开放 | T-09（核原处置及缺失证据，按实际结果具名交接） | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F316 | **应用层对 engine 无纪律（双向）**：① `app/` 直接 include `engine/playback/src/replay_identity.hpp` 6 处、`cuexis_internal/` 至少 11 处；② `cuexis_execution_host_support` 作为 app/ 库 PUBLIC 依赖 playback 并复制会话逻辑（app/execution_host 6,835 行 + app/player/src 7,794 行）；③ engine/ 内反向存放应用职责 `player_support`（唯一消费者是 app/player 与其测试）；④ 架构门禁对 app 只做 nlohmann/GL 全局扫描与 6 个 player 文件的 adapter 禁止，**不禁止** src/internal include | 首次证据定位：未知；原证据状态：已核实（include 命中与 CMakeLists 链接关系逐条查证） | 未复核 | 开放 | T-08/T-14 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
 
 已推翻的子代理结论（避免按错情报动手）：`ChartTick` **不是**死类型（34 处使用）；
 `acquireHostOverride` 并非全仓 0 引用（5 个测试文件在用，但宿主消费者为 0）。
@@ -220,59 +234,61 @@ authority: owns
 ### 7. 假保证与假实现（2026-11-17 专班扫描）
 
 7 个无上下文子代理按模块扫描「承诺 vs 实现」，合并去重后 48 条候选，其中 26 条越过 owner 复核。
-完整证据、未复核清单与阴性对照见[扫描报告](../../../stage_reports/stages/stage-07-rr/2026-11-17-false-guarantees-scan.md)。
+完整证据、未复核清单与阴性对照见[扫描报告](../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-false-guarantees-scan.md)。
 
 #### 7.1 已复核（owner 亲自 grep/读码确认）
 
-| ID | 位置 | 摘要 | 判定 |
-| --- | --- | --- | --- |
-| RR-F401 | `engine/chart/src/chart_writer.cpp:676-685` | 保存把 `templates`/`timing.stops`/`tempoEvents` 写成空、`version` 恒 3，载入再保存丢数据 | 假实现（丢数据） |
-| RR-F402 | `engine/chart/src/chart_writer.cpp:693,699` | `writeV4/writeCanonical(limits)` 的 `limits` 是死参数 | 半实现 |
-| RR-F403 | `engine/chart/include/cuexis/chart/limits.hpp:3-6` | Chart 侧无 `min(requested, frozen)` 钳制，只有 Packed 有 | 假保证 |
-| RR-F404 | `engine/json_support/src/schema.cpp:50-51` | `validateAgainstSchema` 诊断后恒返回 Ok | 易误用（已自述） |
-| RR-F405 | `engine/playback/include/.../playback_session.hpp:250-254` | `materializePresentation` 在 candidate 宏外声明并导出 `host.rpa.*`，与 ADR 0042 冲突（这是**反方向**泄漏：candidate 入口漏进 OFF 面；类级切分见 RR-F306） | 假保证 |
-| RR-F406 | `engine/playback/src/playback_session_execution.cpp:484` | `FeedbackStatus` 唯一写入恒 `created` | 假实现 |
-| RR-F407 | `engine/playback/src/playback_session_execution.cpp:542-548` | `executionStepEffects()` 只填 4/9 字段 | 半实现 |
-| RR-F408 | `engine/playback/include/.../presentation.hpp:203,208` | `shaderGlslEs300`/`builtInRendererProfileVersion` 零消费 | 死字段 |
-| RR-F409 | `engine/judgement/src/execution_kernel_archive.cpp:332` | 每条记录 `make_shared<RuntimeState>(*active)` 深拷贝，与 O(1) 注释相反 | 假保证 |
-| RR-F410 | `engine/judgement/include/.../kernel_types.hpp:202` | `KernelSessionState::Created/Configured` 无写入/读取 | 死实现 |
-| RR-F411 | `engine/judgement/include/.../judgement_session.hpp:143-147` | 注释“永远 false”，实际 `prepared=true` 已写 | 过期陈述 |
-| RR-F412 | `engine/playback/include/.../playback_session.hpp:170-175` | `SessionState::Failed` 全模块无写入 | 死实现 |
-| RR-F413 | `engine/world/include/cuexis/world/world.hpp:3` | “thread-safe”与 0 mutex/atomic 矛盾 | 假保证 |
-| RR-F414 | `engine/runtime/include/.../runtime_session.hpp:274` | `transformCacheValid_` 由调用方维护，World 层机制缺失 | 假保证 |
-| RR-F415 | `engine/core/internal/.../presentation_revision.hpp:15` | `mutationEpoch` 只写不读 | 半实现 |
-| RR-F416 | `engine/world/src/property_resolver.cpp:494,531` | `commit/rollback` 生产零调用、`rollback` 空转 | 死实现 |
-| RR-F417 | `app/player/src/execution_host.cpp:71-78` | 析构排空是无终止条件的重试循环 | 假保证 |
-| RR-F418 | `app/player/src/player_app.cpp:177-180` | `--frame-stats` 在执行线被静默忽略 | 半实现 |
-| RR-F419 | `app/player/src/player_control_frame_loop.cpp:374,384` | 首帧 `render_us` 恒 0（钩子早于赋值） | 假实现 |
-| RR-F420 | `app/execution_host/frame_observation.cpp:240` | `exactLossCount` 是字面量 `false`。owner 2026-11-22 说明设计意图：新会话如实报告帧观测记录的缺失，并标明缺失计数是否精确，避免把不完整观测当成完整证据；按 D 并入新设计，归 T-14。旧路径恒 false 只是保守下界 | 成立（未实现，归 T-14） |
-| RR-F421 | `engine/render_opengl/src/open_gl_presentation_frame.cpp:226-241` | `capabilities()` 非主线程返回默认零能力集 | 假保证 |
-| RR-F422 | `engine/shader/src/shader_pipeline_cache.cpp:32-39` | “worker 线程编译”实为 `thread` + 立即 `join()` | 假保证 |
-| RR-F423 | `docs/api/frames-digests-and-timelines.md:62` | 文档写三参 digest，公开 API 两参 | 假保证（已修） |
-| RR-F424 | `docs/api/diagnostics-identity-and-compatibility.md:28,70`、`GAMEPLAY_V2_ABI.md:75` | 写当前 SDK 0.8.0，实际 0.9.1 | 过期陈述（已修） |
-| RR-F425 | `docs/formats/TIMING_MODEL.md:52` | `startRecording/loadReplay` 全仓 0 命中却被写成现行入口 | 过期陈述（已修） |
-| RR-F426 | `docs/guides/LIMITS.md` 生成器 | 只匹配 `std::size_t`，漏两个 `std::int64_t` Beat 上限 | 生成缺陷（已修） |
+<!-- cuexis-findings: definitions -->
+| ID | 原始发现 | 原始依据 | 核验状态 | 处置状态 | 责任/任务 | 当前处置依据 |
+| --- | --- | --- | --- | --- | --- | --- |
+| RR-F401 | 保存把 `templates`/`timing.stops`/`tempoEvents` 写成空、`version` 恒 3，载入再保存丢数据 | `engine/chart/src/chart_writer.cpp:676-685`<br>原判定：假实现（丢数据） | 未复核 | 开放 | T-16 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F402 | `writeV4/writeCanonical(limits)` 的 `limits` 是死参数 | `engine/chart/src/chart_writer.cpp:693,699`<br>原判定：半实现 | 未复核 | 开放 | T-16 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F403 | Chart 侧无 `min(requested, frozen)` 钳制，只有 Packed 有 | `engine/chart/include/cuexis/chart/limits.hpp:3-6`<br>原判定：假保证 | 未复核 | 开放 | T-16 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F404 | `validateAgainstSchema` 诊断后恒返回 Ok | `engine/json_support/src/schema.cpp:50-51`<br>原判定：易误用（已自述） | 未复核 | 开放 | T-07 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F405 | `materializePresentation` 在 candidate 宏外声明并导出 `host.rpa.*`，与 ADR 0042 冲突（这是**反方向**泄漏：candidate 入口漏进 OFF 面；类级切分见 RR-F306） | `engine/playback/include/.../playback_session.hpp:250-254`<br>原判定：假保证 | 未复核 | 开放 | T-08/T-09 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F406 | `FeedbackStatus` 唯一写入恒 `created` | `engine/playback/src/playback_session_execution.cpp:484`<br>原判定：假实现 | 未复核 | 开放 | T-07/T-14 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F407 | `executionStepEffects()` 只填 4/9 字段 | `engine/playback/src/playback_session_execution.cpp:542-548`<br>原判定：半实现 | 未复核 | 开放 | T-07/T-14 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F408 | `shaderGlslEs300`/`builtInRendererProfileVersion` 零消费 | `engine/playback/include/.../presentation.hpp:203,208`<br>原判定：死字段 | 未复核 | 开放 | T-07/T-08 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F409 | 每条记录 `make_shared<RuntimeState>(*active)` 深拷贝，与 O(1) 注释相反 | `engine/judgement/src/execution_kernel_archive.cpp:332`<br>原判定：假保证 | 未复核 | 开放 | T-07 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F410 | `KernelSessionState::Created/Configured` 无写入/读取 | `engine/judgement/include/.../kernel_types.hpp:202`<br>原判定：死实现 | 未复核 | 开放 | T-10/T-12 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F411 | 注释“永远 false”，实际 `prepared=true` 已写 | `engine/judgement/include/.../judgement_session.hpp:143-147`<br>原判定：过期陈述 | 未复核 | 开放 | T-07 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F412 | `SessionState::Failed` 全模块无写入 | `engine/playback/include/.../playback_session.hpp:170-175`<br>原判定：死实现 | 未复核 | 开放 | T-07/T-08 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F413 | “thread-safe”与 0 mutex/atomic 矛盾 | `engine/world/include/cuexis/world/world.hpp:3`<br>原判定：假保证 | 未复核 | 开放 | T-07 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F414 | `transformCacheValid_` 由调用方维护，World 层机制缺失 | `engine/runtime/include/.../runtime_session.hpp:274`<br>原判定：假保证 | 未复核 | 开放 | T-07 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F415 | `mutationEpoch` 只写不读 | `engine/core/internal/.../presentation_revision.hpp:15`<br>原判定：半实现 | 未复核 | 开放 | T-06 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F416 | `commit/rollback` 生产零调用、`rollback` 空转 | `engine/world/src/property_resolver.cpp:494,531`<br>原判定：死实现 | 未复核 | 开放 | T-07 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F417 | 析构排空是无终止条件的重试循环 | `app/player/src/execution_host.cpp:71-78`<br>原判定：假保证 | 未复核 | 开放 | T-14 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F418 | `--frame-stats` 在执行线被静默忽略 | `app/player/src/player_app.cpp:177-180`<br>原判定：半实现 | 未复核 | 开放 | T-15 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F419 | 首帧 `render_us` 恒 0（钩子早于赋值） | `app/player/src/player_control_frame_loop.cpp:374,384`<br>原判定：假实现 | 未复核 | 开放 | T-06 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F420 | `exactLossCount` 是字面量 `false`。owner 2026-11-22 说明设计意图：新会话如实报告帧观测记录的缺失，并标明缺失计数是否精确，避免把不完整观测当成完整证据；按 D 并入新设计，归 T-14。旧路径恒 false 只是保守下界 | `app/execution_host/frame_observation.cpp:240`<br>原判定：成立（未实现，归 T-14） | 未复核 | 开放 | T-14 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F421 | `capabilities()` 非主线程返回默认零能力集 | `engine/render_opengl/src/open_gl_presentation_frame.cpp:226-241`<br>原判定：假保证 | 未复核 | 开放 | T-06 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F422 | “worker 线程编译”实为 `thread` + 立即 `join()` | `engine/shader/src/shader_pipeline_cache.cpp:32-39`<br>原判定：假保证 | 未复核 | 开放 | T-07 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F423 | 文档写三参 digest，公开 API 两参 | `docs/api/frames-digests-and-timelines.md:62`<br>原判定：假保证（已修） | 已核实 | 已修 | T-07 | 依据：原字段与 §22 历史处置；复核者：Codex-G02（2026-11-23）；复核证据：[帧与摘要](../../../api/frames-digests-and-timelines.md)（当前正文与 ca5 已提交对应段）；理由：公开双输入与内部版本选择已区分；不把 F121 重复编译残余一并关闭；决定依据：§22 既有文档处置与原字段记录；实际验证：当前/ca5 digest 段断言及 check_docs_facts.frame_digest_is_current() 通过；改动修订：ca5cbb9121b015ae0b3b5d681610ca94dac78184（包含原文档订正的已提交快照） |
+| RR-F424 | 写当前 SDK 0.8.0，实际 0.9.1 | `docs/api/diagnostics-identity-and-compatibility.md:28,70`、`GAMEPLAY_V2_ABI.md:75`<br>原判定：过期陈述（已修） | 已核实 | 已修 | T-02 | 依据：原字段与 §22 历史处置；复核者：Codex-G02（2026-11-23）；复核证据：[诊断身份合同](../../../api/diagnostics-identity-and-compatibility.md)、[V2 ABI](../../../api/GAMEPLAY_V2_ABI.md)（当前正文与 ca5 已提交对应段）；理由：当前 SDK 文字订正同 F103；没有另造产品证据；决定依据：§22 既有文档处置与原字段记录；实际验证：当前/ca5 版本段核对与 check_docs_facts.scan 定向扫描通过；改动修订：ca5cbb9121b015ae0b3b5d681610ca94dac78184（包含原文档订正的已提交快照） |
+| RR-F425 | `startRecording/loadReplay` 全仓 0 命中却被写成现行入口 | `docs/formats/TIMING_MODEL.md:52`<br>原判定：过期陈述（已修） | 已核实 | 已修 | T-07 | 依据：原字段与 §22 历史处置；复核者：Codex-G02（2026-11-23）；复核证据：[时间模型](../../../formats/TIMING_MODEL.md)（当前正文与 ca5 已提交对应段）；理由：startRecording/loadReplay 已标旧概念名并明确无同名入口，不宣称新 API 已实现；决定依据：§22 既有文档处置与原字段记录；实际验证：当前/ca5 旧概念与实际入口说明断言通过；改动修订：ca5cbb9121b015ae0b3b5d681610ca94dac78184（包含原文档订正的已提交快照） |
+| RR-F426 | 只匹配 `std::size_t`，漏两个 `std::int64_t` Beat 上限 | `docs/guides/LIMITS.md` 生成器<br>原判定：生成缺陷（已修） | 未复核 | 开放 | T-18 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
 
 #### 7.2 未复核（子代理声称已读码，动代码前必须复核）
 
-| ID | 位置 | 摘要 |
-| --- | --- | --- |
-| RR-F427 | `presentation_renderer.cpp:521-536` | `detachCandidate` 是唯一没有 owner 校验的实现；唯一入站路径是公开值类型 `PreparedPresentation` 的析构/move-assign，跨线程时静默改 `pending/outstanding`，而 `activate/discard` 同场景会 terminate | 已核实（潜在，非已发生） |
-| RR-F428 | `presentation_renderer.cpp:464-480`；`open_gl_presentation_frame.cpp:417-454`；`open_gl_backend.cpp:680,706-711` | `rebuild()` 无 closed 守卫并置 `closed=false`；OpenGL 后端 close 后 context/window 已销毁，rebuild 仍返回成功，下一次 present 报 `render.opengl.backend_unavailable`；测试把该行为编码为预期 | 已核实（两处假成功） |
-| RR-F429 | `open_gl_backend.cpp:663-670`；文件头 `:6` | 注释承诺“非主线程泄漏日志”，实现两处静默 return；真正带告警的是 `:691-695`；两个入口都先做线程检查，故静默分支当前不可达，实质后果是错误线程 close 只返错、GPU 资源泄漏且无告警 | 已核实（注释与实现不符） |
-| RR-F430 | `audio_transport.cpp:59-89`；`audio_transport.hpp:62-64` | 8 次重试全失败时返回 thread-local 上次成功样本（陈旧）；首次调用返回 `Stopped/0` 的默认样本，不是 Empty；头文件只说“不分配不抛”，未声明 stale 回退 | 已核实 |
-| RR-F431 | `chart_v4_loader.cpp:132-155` | 动画条数预算超限只记 `chart.animation.generated_limit` 诊断、继续解析全部 clip，直到 `:185-188` 才整体拒绝；预算不约束工作量。行号订正为 132-155 | 已核实（行号订正） |
-| RR-F432 | `candidate_assembler.cpp:32-38`；`packed_limits_internal.hpp:23-34` | assembler 用未钳制的 `maxPackedEntities` 前检，先全量插入，再由 `encode` 的 `min(requested, frozen)` 在 `:60-63` 拒绝；`effectiveLimits` 已存在但未调用；风险是放宽上限时内存/工作量不受 40,000 约束 | 已核实 |
-| RR-F433 | `chart_migrator.cpp:216`；`chart_migrator.hpp:43` | `discardedFields = {}` 是全仓唯一写点，从无 push_back/非空赋值；迁移报告恒为空数组，与 writer 丢 templates 互相印证 | 已核实 |
-| RR-F434 | `frame_digest.cpp:8-15`；`frame_digest_version.cpp:77-82` | v1/v2 仅测试可达；`version_unsupported` 连测试都不覆盖、全仓无调用方可触发，是纯防御死分支 | 部分成立（比“仅测试可达”更弱） |
-| RR-F435 | `playback_session_prepare.cpp:422`；`playback_session_gameplay.cpp:180-185,318-322` | `:422` 无条件置 Ready；只有 GameplayOnly 候选路径能造出“Ready 且无 World”；RuntimeFrame 管线的 update/extractFrame/chartInfo/presentationManifest 全被 `playback.session.empty` 拒绝，但 gameplay tick 仍可用并把状态推进到 Running | 部分成立（“逐帧操作全被拒”限定为 World 帧管线） |
-| RR-F436 | `publication.hpp:45-47`；`publication.cpp:14-38` | read 本身有 `weak_ptr+epoch` 校验，但 `metadata()`/`fact()` 交出的借用（`PreparedIdentity&`、`core::Error*`、`RequirementIdentity*`）无任何类型/运行时强制，只能靠注释 | 已核实（限定：只保护 read 本身） |
-| RR-F437 | `runtime_session_overrides.cpp:243,375,380,385,390`；`thread_checker.cpp:19-22` | 恰好 5 个 const 观察函数仅 `assertCurrent()`，Release 下 assert 被 NDEBUG 编译掉 → 跨线程静默 UB | 已核实 |
-| RR-F438 | `math.hpp:57,65-66,70,71-72,75`；`math.cpp:111-135` | `noexcept` 函数内构造带堆存储的 `Error`，OOM 时 terminate；这是 math.hpp 全部 Result 入口的共同约定，不是单点 | 已核实（面扩大到全部 Result 入口） |
+<!-- cuexis-findings: definitions -->
+| ID | 原始发现 | 原始依据 | 核验状态 | 处置状态 | 责任/任务 | 当前处置依据 |
+| --- | --- | --- | --- | --- | --- | --- |
+| RR-F427 | `detachCandidate` 是唯一没有 owner 校验的实现；唯一入站路径是公开值类型 `PreparedPresentation` 的析构/move-assign，跨线程时静默改 `pending/outstanding`，而 `activate/discard` 同场景会 terminate | `presentation_renderer.cpp:521-536`<br>原证据状态：已核实（潜在，非已发生） | 未复核 | 开放 | T-06/T-14 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F428 | `rebuild()` 无 closed 守卫并置 `closed=false`；OpenGL 后端 close 后 context/window 已销毁，rebuild 仍返回成功，下一次 present 报 `render.opengl.backend_unavailable`；测试把该行为编码为预期 | `presentation_renderer.cpp:464-480`；`open_gl_presentation_frame.cpp:417-454`；`open_gl_backend.cpp:680,706-711`<br>原证据状态：已核实（两处假成功） | 未复核 | 开放 | T-06/T-14 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F429 | 注释承诺“非主线程泄漏日志”，实现两处静默 return；真正带告警的是 `:691-695`；两个入口都先做线程检查，故静默分支当前不可达，实质后果是错误线程 close 只返错、GPU 资源泄漏且无告警 | `open_gl_backend.cpp:663-670`；文件头 `:6`<br>原证据状态：已核实（注释与实现不符） | 未复核 | 开放 | T-07 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F430 | 8 次重试全失败时返回 thread-local 上次成功样本（陈旧）；首次调用返回 `Stopped/0` 的默认样本，不是 Empty；头文件只说“不分配不抛”，未声明 stale 回退 | `audio_transport.cpp:59-89`；`audio_transport.hpp:62-64`<br>原证据状态：已核实 | 未复核 | 开放 | T-14 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F431 | 动画条数预算超限只记 `chart.animation.generated_limit` 诊断、继续解析全部 clip，直到 `:185-188` 才整体拒绝；预算不约束工作量。行号订正为 132-155 | `chart_v4_loader.cpp:132-155`<br>原证据状态：已核实（行号订正） | 未复核 | 开放 | T-13 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F432 | assembler 用未钳制的 `maxPackedEntities` 前检，先全量插入，再由 `encode` 的 `min(requested, frozen)` 在 `:60-63` 拒绝；`effectiveLimits` 已存在但未调用；风险是放宽上限时内存/工作量不受 40,000 约束 | `candidate_assembler.cpp:32-38`；`packed_limits_internal.hpp:23-34`<br>原证据状态：已核实 | 未复核 | 开放 | T-13 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F433 | `discardedFields = {}` 是全仓唯一写点，从无 push_back/非空赋值；迁移报告恒为空数组，与 writer 丢 templates 互相印证 | `chart_migrator.cpp:216`；`chart_migrator.hpp:43`<br>原证据状态：已核实 | 未复核 | 开放 | T-16 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F434 | v1/v2 仅测试可达；`version_unsupported` 连测试都不覆盖、全仓无调用方可触发，是纯防御死分支 | `frame_digest.cpp:8-15`；`frame_digest_version.cpp:77-82`<br>原证据状态：部分成立（比“仅测试可达”更弱） | 未复核 | 开放 | T-04/T-07 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F435 | `:422` 无条件置 Ready；只有 GameplayOnly 候选路径能造出“Ready 且无 World”；RuntimeFrame 管线的 update/extractFrame/chartInfo/presentationManifest 全被 `playback.session.empty` 拒绝，但 gameplay tick 仍可用并把状态推进到 Running | `playback_session_prepare.cpp:422`；`playback_session_gameplay.cpp:180-185,318-322`<br>原证据状态：部分成立（“逐帧操作全被拒”限定为 World 帧管线） | 未复核 | 开放 | T-17 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F436 | read 本身有 `weak_ptr+epoch` 校验，但 `metadata()`/`fact()` 交出的借用（`PreparedIdentity&`、`core::Error*`、`RequirementIdentity*`）无任何类型/运行时强制，只能靠注释 | `publication.hpp:45-47`；`publication.cpp:14-38`<br>原证据状态：已核实（限定：只保护 read 本身） | 未复核 | 开放 | T-10/T-12 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F437 | 恰好 5 个 const 观察函数仅 `assertCurrent()`，Release 下 assert 被 NDEBUG 编译掉 → 跨线程静默 UB | `runtime_session_overrides.cpp:243,375,380,385,390`；`thread_checker.cpp:19-22`<br>原证据状态：已核实 | 未复核 | 开放 | T-07 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F438 | `noexcept` 函数内构造带堆存储的 `Error`，OOM 时 terminate；这是 math.hpp 全部 Result 入口的共同约定，不是单点 | `math.hpp:57,65-66,70,71-72,75`；`math.cpp:111-135`<br>原证据状态：已核实（面扩大到全部 Result 入口） | 未复核 | 开放 | T-07 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
 
 ### 8. 外部审查交叉核对（2026-11-17）
 
-来源：[外部审查报告（59 条）](../../../stage_reports/stages/stage-07-rr/2026-11-17-external-findings-review.md)，
+来源：[外部审查报告（59 条）](../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-external-findings-review.md)，
 基线 `aac83e5e`（与本阶段一致），只读审阅，未运行构建。下表只登记**本轮独立核对过证据**的条目；
 外部报告里未核对的条目保留原文，不得据其直接改代码。
 
@@ -296,18 +312,19 @@ authority: owns
 
 #### 8.2 本轮新核实并补登记
 
-| ID | 位置 | 事实 | 结论 |
-| --- | --- | --- | --- |
-| RR-F501 | `playback_session_prepared.cpp:109-111`；`playback_session_prepare.cpp:337-342` | GameplayOnly 分支不建 RuntimeSession，`valid()` 恒 false；`commit()` 不校验，测试只测 commit | 已核实（S1） |
-| RR-F502 | `packed_chart_tables_decoder_model.cpp:436`；`canonical_semantic_chart.hpp:156-157` | `componentMask()` 的 bit2 由 `requirements.empty()` 反推，检查条件恒假，双向校验不存在 | 已核实（S2） |
-| RR-F503 | `presentation_extraction.cpp:163`；`presentation_renderer/src/draw_command.cpp:24,480` | `normalizePresentationFrame` 仅测试调用；生产 renderer 另写一套，量化常量两份 | 已核实（S2） |
-| RR-F504 | `pattern_dfa_node.hpp:49-52` | `ConstructionBudget` 在节点循环内构造，预算是每节点而非整次调用 | 已核实（S2） |
-| RR-F505 | `timebase.cpp:707` | `mapBeatToTick` 仅头文件与测试引用，生产零调用 | 已核实（S2） |
-| RR-F506 | `player_app.cpp:171`、`:177-180` 对比 `:164-169` | candidate 分支在 `content` 被使用前返回，`openConfiguredPlaybackSource` 二次调用，首次结果丢弃 | 已核实（S1） |
-| RR-F507 | `execution_kernel_impl_phases.cpp:80-86` | 两个 `find_if` 结果未判 `end()` 即解引用；当前不可达 | 已核实（S1） |
-| RR-F508 | `playback_session.cpp:319-348`；`playback_session_internal.hpp:217,218,221,245,246` | `unload()` 未清 `hostFence`、`acceptedHostControl`、`confirmedHostContext`、`executionMapping`、`tailTransition` | 已核实（S1） |
-| RR-F509 | `playback_session_internal.hpp:268`；`playback_session_prepared.cpp:36` | `PreparedPlayback::State::owner` 为裸指针并在 materialize 时解引用，Session 先销毁即 UAF | 已核实（S1） |
-| RR-F510 | `docs/MAP.md` 路由表；ADR 0043、`api/GAMEPLAY_JUDGEMENT_ABI.md`、`formats/GAMEPLAY_JUDGEMENT_SPEC.md` | Judgement seek 有实现（`playback_session.hpp:348,352`，仅在 `CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE` 下编译），权威合同是 candidate：RPA 合同第 4 节、V2 Spec 的 Fact Ledger 重建段、V2 ABI 域 9。三份 historical 文档已于 2026-11-17 补路标、2026-11-22 订正语义指向；§3.19 只覆盖延迟承诺 | 部分成立（无 active 合同属候选状态，路标已订正） |
+<!-- cuexis-findings: definitions -->
+| ID | 原始发现 | 原始依据 | 核验状态 | 处置状态 | 责任/任务 | 当前处置依据 |
+| --- | --- | --- | --- | --- | --- | --- |
+| RR-F501 | GameplayOnly 分支不建 RuntimeSession，`valid()` 恒 false；`commit()` 不校验，测试只测 commit | `playback_session_prepared.cpp:109-111`；`playback_session_prepare.cpp:337-342`<br>原结论：已核实（S1） | 未复核 | 开放 | T-17 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F502 | `componentMask()` 的 bit2 由 `requirements.empty()` 反推，检查条件恒假，双向校验不存在 | `packed_chart_tables_decoder_model.cpp:436`；`canonical_semantic_chart.hpp:156-157`<br>原结论：已核实（S2） | 未复核 | 开放 | T-13 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F503 | `normalizePresentationFrame` 仅测试调用；生产 renderer 另写一套，量化常量两份 | `presentation_extraction.cpp:163`；`presentation_renderer/src/draw_command.cpp:24,480`<br>原结论：已核实（S2） | 未复核 | 开放 | T-06（既有合同范围内归一化；其余差异交 T-09 登记） | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F504 | `ConstructionBudget` 在节点循环内构造，预算是每节点而非整次调用 | `pattern_dfa_node.hpp:49-52`<br>原结论：已核实（S2） | 未复核 | 开放 | T-10/T-12 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F505 | `mapBeatToTick` 仅头文件与测试引用，生产零调用 | `timebase.cpp:707`<br>原结论：已核实（S2） | 未复核 | 开放 | T-12 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F506 | candidate 分支在 `content` 被使用前返回，`openConfiguredPlaybackSource` 二次调用，首次结果丢弃 | `player_app.cpp:171`、`:177-180` 对比 `:164-169`<br>原结论：已核实（S1） | 未复核 | 开放 | T-15 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F507 | 两个 `find_if` 结果未判 `end()` 即解引用；当前不可达 | `execution_kernel_impl_phases.cpp:80-86`<br>原结论：已核实（S1） | 未复核 | 开放 | T-10 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F508 | `unload()` 未清 `hostFence`、`acceptedHostControl`、`confirmedHostContext`、`executionMapping`、`tailTransition` | `playback_session.cpp:319-348`；`playback_session_internal.hpp:217,218,221,245,246`<br>原结论：已核实（S1） | 未复核 | 开放 | T-17 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F509 | `PreparedPlayback::State::owner` 为裸指针并在 materialize 时解引用，Session 先销毁即 UAF | `playback_session_internal.hpp:268`；`playback_session_prepared.cpp:36`<br>原结论：已核实（S1） | 未复核 | 开放 | T-17 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F510 | Judgement seek 有实现（`playback_session.hpp:348,352`，仅在 `CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE` 下编译），权威合同是 candidate：RPA 合同第 4 节、V2 Spec 的 Fact Ledger 重建段、V2 ABI 域 9。三份 historical 文档已于 2026-11-17 补路标、2026-11-22 订正语义指向；§3.19 只覆盖延迟承诺 | `docs/MAP.md` 路由表；ADR 0043、`api/GAMEPLAY_JUDGEMENT_ABI.md`、`formats/GAMEPLAY_JUDGEMENT_SPEC.md`<br>原结论：部分成立（无 active 合同属候选状态，路标已订正） | 未复核 | 开放 | T-08/T-09 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
 
 #### 8.3 外部条目核查覆盖
 
@@ -416,18 +433,19 @@ R4 / PD-5 套件的相对路径已进入验收哈希账本（`binding.py:73`、�
 
 #### 10.1 新发现（已核实）
 
-| ID | 位置 | 事实 | 结论 |
-| --- | --- | --- | --- |
-| RR-F511 | `tests/pd/CMakeLists.txt:54-58`；`CMakeLists.txt:44-45`；`CMakePresets.json` | `execution_acceptance` 的 22 个测试注册为 CTest，但整块被默认 OFF 的 `CUEXIS_ENABLE_CHART_V5_CANDIDATE` 包住；CI 的 `debug`/`release` 不打开，预推送只跑 `debug`/`release` → 实际生效数为 **0**；而 `tools/README.md` 又把它标为“冻结证据工具，不进 CI” | 已修（owner 2026-11-17 决定移除注册；复现改用人工 `unittest discover`） |
-| RR-F512 | `CMakePresets.json:527-555` | candidate preset 的测试过滤为 `[Cc]andidate\|reference_host`，`cuexis_gameplay_assembler_cli` 与 `cuexis_gameplay_installed_consumer` 的名字不匹配 → 候选构建里也不跑 | 已修（三个 candidate preset 的过滤加入 `assembler_cli\|installed_consumer`） |
-| RR-F513 | `tools/CMakeLists.txt`；`CMakeLists.txt:173`；shader-tools presets；`BUILDING.md:139-140` | `cuexis_asset_importer_tool_tests` 需要 `DEVELOPER_TOOLS` + `SHADER_TOOLS`，但 hosted shader-tools preset 显式 `DEVELOPER_TOOLS=OFF` → 仅本地可达；BUILDING 漏写该前提 | 已修（顶层与 `tools/CMakeLists.txt` 改为 `SHADER_TOOLS` 单独可进；importer 测试随 preset 可达） |
-| RR-F514 | `tools/gameplay/gameplay_assembler/generate_author_schema.py` | 生成 `schemas/candidate/*.schema.json` 合同产物，但无生成器新鲜度检查 | 已修（新增 `--check` 并接入预推送） |
-| RR-F515 | `tools/README.md`；`BUILDING.md:52-59` | README 只登记 Python 门禁；C++ 门禁 target（cxc/chart/media/gameplay）未登记，`cuexis_gameplay_assemble` 也不在 BUILDING 的 target 清单 | 已修（README 重写并补 C++ target） |
-| RR-F516 | `tools/verification/playback_performance/compare_read_candidates.py` | 无测试、无 `docs/` 引用、只服务已关闭的 C2 候选 → 唯一 archive 候选 | 已归档到 `tools/archive/verification/playback_performance/`（2026-11-17） |
-| RR-F517 | R4 套件 14 个归档文件；`audit_layout.py`、`build.py` | 文件头无“复现哪份报告”；两处硬编码本机 VS/vcpkg 路径，违反 `tools/README.md` 自有规则 | 已修（14 个文件加复现映射头；`--vcvars/--vcpkg` 改为参数或环境变量） |
-| RR-F518 | `linux-quality.yml:279-282`；`gen_docs_map.py:208` | CI 的 `documentation-contracts` 只跑 `check_docs.py`、`update_version.py --check`、`gnu_asset_mirror_tests.py`，**不跑** `check_docs_facts.py`；生成块却写“`--check` 会在 CI/预推送校验” | 已修（CI 加跑 `check_docs_facts.py`；生成文案改为“由 `check_docs_facts.py` 在预推送校验”） |
-| RR-F519 | `check_docs_{status,target,section}_contract_tests.py` | 三个活门禁的回归测试没有任何 CI/CTest/预推送入口，只能人工运行；其中 section 测试已因 stage-07 迁移漂移出 11 个失败 | 已修（接入预推送 Quick；section 测试路径同步 `completed/stage-07`） |
-| RR-F520 | `generate_author_schema.py:91`；`schemas/candidate/*.schema.json`；`execution-coordination.md:12` | 生成器把 `executionProfile` 写成单个 `const`，但已提交 schema 与合同允许 `gameplay.execution.t4-k4.rpa.v1`；直接重新生成会删掉该 enum（真实漂移，被新加的 `--check` 首次运行抓到） | 已修（生成器改为两项 enum；`--check` 进预推送） |
+<!-- cuexis-findings: definitions -->
+| ID | 原始发现 | 原始依据 | 核验状态 | 处置状态 | 责任/任务 | 当前处置依据 |
+| --- | --- | --- | --- | --- | --- | --- |
+| RR-F511 | `execution_acceptance` 的 22 个测试注册为 CTest，但整块被默认 OFF 的 `CUEXIS_ENABLE_CHART_V5_CANDIDATE` 包住；CI 的 `debug`/`release` 不打开，预推送只跑 `debug`/`release` → 实际生效数为 **0**；而 `tools/README.md` 又把它标为“冻结证据工具，不进 CI” | `tests/pd/CMakeLists.txt:54-58`；`CMakeLists.txt:44-45`；`CMakePresets.json`<br>原结论：已修（owner 2026-11-17 决定移除注册；复现改用人工 `unittest discover`） | 未复核 | 开放 | T-04 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F512 | candidate preset 的测试过滤为 `[Cc]andidate\|reference_host`，`cuexis_gameplay_assembler_cli` 与 `cuexis_gameplay_installed_consumer` 的名字不匹配 → 候选构建里也不跑 | `CMakePresets.json:527-555`<br>原结论：已修（三个 candidate preset 的过滤加入 `assembler_cli\|installed_consumer`） | 未复核 | 开放 | T-04 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F513 | `cuexis_asset_importer_tool_tests` 需要 `DEVELOPER_TOOLS` + `SHADER_TOOLS`，但 hosted shader-tools preset 显式 `DEVELOPER_TOOLS=OFF` → 仅本地可达；BUILDING 漏写该前提 | `tools/CMakeLists.txt`；`CMakeLists.txt:173`；shader-tools presets；`BUILDING.md:139-140`<br>原结论：已修（顶层与 `tools/CMakeLists.txt` 改为 `SHADER_TOOLS` 单独可进；importer 测试随 preset 可达） | 未复核 | 开放 | T-04 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F514 | 生成 `schemas/candidate/*.schema.json` 合同产物，但无生成器新鲜度检查 | `tools/gameplay/gameplay_assembler/generate_author_schema.py`<br>原结论：已修（新增 `--check` 并接入预推送） | 未复核 | 开放 | T-18 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F515 | README 只登记 Python 门禁；C++ 门禁 target（cxc/chart/media/gameplay）未登记，`cuexis_gameplay_assemble` 也不在 BUILDING 的 target 清单 | `tools/README.md`；`BUILDING.md:52-59`<br>原结论：已修（README 重写并补 C++ target） | 已核实 | 已修 | T-18 | 依据：原字段与 §22 历史处置；复核者：Codex-G02（2026-11-23）；复核证据：[工具职责](../../../../tools/README.md)、[构建指南](../../../guides/BUILDING.md)（当前正文与 ca5 已提交对应段）；理由：C++ 门禁 target 和候选 assembler 已登记；只恢复工具文档遗漏的订正；决定依据：§22 既有文档处置与原字段记录；实际验证：当前/ca5 工具 target 登记与 BUILDING 候选前提断言通过；改动修订：ca5cbb9121b015ae0b3b5d681610ca94dac78184（包含原文档订正的已提交快照） |
+| RR-F516 | 无测试、无 `docs/` 引用、只服务已关闭的 C2 候选 → 唯一 archive 候选 | `tools/verification/playback_performance/compare_read_candidates.py`<br>原结论：已归档到 `tools/archive/verification/playback_performance/`（2026-11-17） | 未复核 | 开放 | T-09（核原处置及缺失证据，按实际结果具名交接） | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F517 | 文件头无“复现哪份报告”；两处硬编码本机 VS/vcpkg 路径，违反 `tools/README.md` 自有规则 | R4 套件 14 个归档文件；`audit_layout.py`、`build.py`<br>原结论：已修（14 个文件加复现映射头；`--vcvars/--vcpkg` 改为参数或环境变量） | 未复核 | 开放 | T-09（核原处置及缺失证据，按实际结果具名交接） | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F518 | CI 的 `documentation-contracts` 只跑 `check_docs.py`、`update_version.py --check`、`gnu_asset_mirror_tests.py`，**不跑** `check_docs_facts.py`；生成块却写“`--check` 会在 CI/预推送校验” | `linux-quality.yml:279-282`；`gen_docs_map.py:208`<br>原结论：已修（CI 加跑 `check_docs_facts.py`；生成文案改为“由 `check_docs_facts.py` 在预推送校验”） | 未复核 | 开放 | T-18 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F519 | 三个活门禁的回归测试没有任何 CI/CTest/预推送入口，只能人工运行；其中 section 测试已因 stage-07 迁移漂移出 11 个失败 | `check_docs_{status,target,section}_contract_tests.py`<br>原结论：已修（接入预推送 Quick；section 测试路径同步 `completed/stage-07`） | 未复核 | 开放 | T-18 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F520 | 生成器把 `executionProfile` 写成单个 `const`，但已提交 schema 与合同允许 `gameplay.execution.t4-k4.rpa.v1`；直接重新生成会删掉该 enum（真实漂移，被新加的 `--check` 首次运行抓到） | `generate_author_schema.py:91`；`schemas/candidate/*.schema.json`；`execution-coordination.md:12`<br>原结论：已修（生成器改为两项 enum；`--check` 进预推送） | 未复核 | 开放 | T-18 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
 
 #### 10.2 分类统计
 
@@ -473,10 +491,11 @@ R4 / PD-5 套件的相对路径已进入验收哈希账本（`binding.py:73`、�
   `RenderFrame` 标 legacy 暂不删）。
 - 处置：阶段收尾把“删除/合并清单”列为交付物（文档政策）；空壳与测试专用模块登记为清理候选。
 
-| ID | 位置 | 事实 | 结论 |
-| --- | --- | --- | --- |
-| RR-F521 | `engine/particles/`（仅 `CMakeLists.txt:1-3`） | 空 INTERFACE 库，`engine/CMakeLists.txt` 从不 `add_subdirectory` | 已修（2026-11-17 删除目录；无构建引用） |
-| RR-F522 | `engine/debug/`（87 行） | 唯一链接方是 `cuexis_debug_tests`；`DebugDraw` 生产 0 引用 | 已处置（保留并标 test-only；模块删除不在 D-05 的 R1/R5/R6 范围，另行评估） |
+<!-- cuexis-findings: definitions -->
+| ID | 原始发现 | 原始依据 | 核验状态 | 处置状态 | 责任/任务 | 当前处置依据 |
+| --- | --- | --- | --- | --- | --- | --- |
+| RR-F521 | 空 INTERFACE 库，`engine/CMakeLists.txt` 从不 `add_subdirectory` | `engine/particles/`（仅 `CMakeLists.txt:1-3`）<br>原结论：已修（2026-11-17 删除目录；无构建引用） | 未复核 | 开放 | T-07 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F522 | 唯一链接方是 `cuexis_debug_tests`；`DebugDraw` 生产 0 引用 | `engine/debug/`（87 行）<br>原结论：已处置（保留并标 test-only；模块删除不在 D-05 的 R1/R5/R6 范围，另行评估） | 未复核 | 开放 | T-07 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
 
 ## 第二部分 候选设计与文档问题（未实施）
 
@@ -488,15 +507,16 @@ R4 / PD-5 套件的相对路径已进入验收哈希账本（`binding.py:73`、�
 
 ### 17.1 缺陷清单（RR-F523–RR-F529）
 
-| ID | 严重度 | 位置 | 事实与影响 | 结论 |
-| --- | --- | --- | --- | --- |
-| RR-F523 | P1 | 本节 §9.1、[计划](plan.md) §6 任务索引、[计划](plan.md#历史进展快照2026-11-17) | 保存丢数据（RR-F401）在 §9.1 有修法，两个常量诊断字段（RR-F419/F420）只在 §7.1 登记；三项在 T-01–T-16 中均无明文承接。计划自述"未开始修复"，阶段目标第 3 条只能靠"显式登记"兜底。P0 数据丢失因此不在本阶段任何验收口径内 | 成立 |
-| RR-F524 | P1 | [附页](architecture-design.md) §6 D-25、[验收](acceptance.md) §发布与迁移门禁、[计划](plan.md) §13 | 旧渲染入口退出要求"历史安装面"证据、仓外宿主验证与至少一个实际发布的过渡版本，而附页自述历史安装面尚未核实、计划明确本阶段不发布。三条合起来使 `RenderFrame`／`renderFrame` 在可预见路径上无法退出，"逐项替代并按门禁退出"退化为永久保留 | 成立 |
-| RR-F525 | P1 | [计划](plan.md) §4 D-09、[附页](architecture-design.md) §6 D-12／D-13、[呈现合同](contracts/render-player-writer.md) 向量 P4-03 | 三处等待型规则（必要参与方确认、安全续局"最终"判定、设备就绪）都只写"条件成立才继续"，全文无"超时/放弃"表述；唯一时间界是向量 P4-03 的"位置未知 500 ms 内零推进"。规则只能从测试反推，实现会各写魔数 | 部分成立 |
-| RR-F526 | P1 | [运行合同](contracts/runtime-timing.md) §事件与成绩、[附页](architecture-design.md) §6 D-21、[呈现合同](contracts/render-player-writer.md) 尾段分支 | 误差定义为 `observationTick − target`，而输入补偿、设备校正与谱面 offset 在会话换算链上应用，尾段分支还写明"输入和显示偏移各在分支转换时应用一次"；正文未说 `observationTick` 是校正前还是校正后。补偿方向一变，Early／Exact／Late 的分布整体平移 | 成立 |
-| RR-F527 | P2 | [附页](architecture-design.md) §2、§6 D-14／D-15、[运行合同](contracts/runtime-timing.md) 判定接入 | D-06／D-09／D-10 把普通播放与实机游玩收进一条执行线，D-14 自动续播、D-15 双事实结束、D-22／D-24 判定接入又按"用途"分叉，共四处；设计没有显式的"判定活跃"状态，合并后用途成为隐式条件 | 部分成立 |
-| RR-F528 | P2 | [附页](architecture-design.md) §6 D-13／D-15（续议）、本文 §4 | 跨局保留当前内容与健康音频，Reload 要求 A、B 并存且明令"禁止提前卸载 A 来腾空间"。owner 接受该开销但无上界，计划又明确不做预算测量，验收矩阵无内存项，只剩"资源不足即失败"兜底 | 成立 |
-| RR-F529 | P2 | [附页](architecture-design.md) §6 候选规则参考、[呈现合同](contracts/render-player-writer.md) 无音轨终点 | 附页写"不裁定无音轨自然终点"，同一合同已给出完整计算规则（连续行为取末点、无限绑定须显式 Stop、空内容尾为零）。两页对同一问题给出相反状态，读者无法判断是否已定 | 成立 |
+<!-- cuexis-findings: definitions -->
+| ID | 原始发现 | 原始依据 | 核验状态 | 处置状态 | 责任/任务 | 当前处置依据 |
+| --- | --- | --- | --- | --- | --- | --- |
+| RR-F523 | 原严重度：P1<br>保存丢数据（RR-F401）在 §9.1 有修法，两个常量诊断字段（RR-F419/F420）只在 §7.1 登记；三项在 T-01–T-16 中均无明文承接。计划自述"未开始修复"，阶段目标第 3 条只能靠"显式登记"兜底。P0 数据丢失因此不在本阶段任何验收口径内<br>原结论：成立 | 本节 §9.1、[计划](plan.md) §6 任务索引、[计划](plan.md#历史进展快照2026-11-17) | 未复核 | 开放 | T-06/T-14/T-16/T-09 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F524 | 原严重度：P1<br>旧渲染入口退出要求"历史安装面"证据、仓外宿主验证与至少一个实际发布的过渡版本，而附页自述历史安装面尚未核实、计划明确本阶段不发布。三条合起来使 `RenderFrame`／`renderFrame` 在可预见路径上无法退出，"逐项替代并按门禁退出"退化为永久保留<br>原结论：成立 | [附页](architecture-design.md) §6 D-25、[验收](acceptance.md) §发布与迁移门禁、[计划](plan.md) §13 | 未复核 | 开放 | T-08/T-09 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F525 | 原严重度：P1<br>三处等待型规则（必要参与方确认、安全续局"最终"判定、设备就绪）都只写"条件成立才继续"，全文无"超时/放弃"表述；唯一时间界是向量 P4-03 的"位置未知 500 ms 内零推进"。规则只能从测试反推，实现会各写魔数<br>原结论：部分成立 | [计划](plan.md) §4 D-09、[附页](architecture-design.md) §6 D-12／D-13、[呈现合同](contracts/render-player-writer.md) 向量 P4-03 | 未复核 | 开放 | T-14/T-15 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F526 | 原严重度：P1<br>误差定义为 `observationTick − target`，而输入补偿、设备校正与谱面 offset 在会话换算链上应用，尾段分支还写明"输入和显示偏移各在分支转换时应用一次"；正文未说 `observationTick` 是校正前还是校正后。补偿方向一变，Early／Exact／Late 的分布整体平移<br>原结论：成立 | [运行合同](contracts/runtime-timing.md) §事件与成绩、[附页](architecture-design.md) §6 D-21、[呈现合同](contracts/render-player-writer.md) 尾段分支 | 未复核 | 开放 | T-14 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F527 | 原严重度：P2<br>D-06／D-09／D-10 把普通播放与实机游玩收进一条执行线，D-14 自动续播、D-15 双事实结束、D-22／D-24 判定接入又按"用途"分叉，共四处；设计没有显式的"判定活跃"状态，合并后用途成为隐式条件<br>原结论：部分成立 | [附页](architecture-design.md) §2、§6 D-14／D-15、[运行合同](contracts/runtime-timing.md) 判定接入 | 未复核 | 开放 | T-14 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F528 | 原严重度：P2<br>跨局保留当前内容与健康音频，Reload 要求 A、B 并存且明令"禁止提前卸载 A 来腾空间"。owner 接受该开销但无上界，计划又明确不做预算测量，验收矩阵无内存项，只剩"资源不足即失败"兜底<br>原结论：成立 | [附页](architecture-design.md) §6 D-13／D-15（续议）、本文 §4 | 未复核 | 开放 | T-15 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F529 | 原严重度：P2<br>附页写"不裁定无音轨自然终点"，同一合同已给出完整计算规则（连续行为取末点、无限绑定须显式 Stop、空内容尾为零）。两页对同一问题给出相反状态，读者无法判断是否已定<br>原结论：成立 | [附页](architecture-design.md) §6 候选规则参考、[呈现合同](contracts/render-player-writer.md) 无音轨终点 | 未复核 | 开放 | T-14 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
 
 ### 17.2 候选完善方案（待审）
 
@@ -571,24 +591,26 @@ R4 / PD-5 套件的相对路径已进入验收哈希账本（`binding.py:73`、�
 
 ## 18. 口径与定义冲突（未实施设计）
 
-| ID | 严重度 | 位置 | 事实与影响 | 结论 |
-| --- | --- | --- | --- | --- |
-| RR-F530 | P1 | [计划](plan.md) §4 排期与实施状态、[ADR 0046](../../../adr/0046-realtime-playback-coordination.md) | 计划写"候选表示未实施、未发布"，ADR 写"已有 candidate 实施、未发行"，代码里 `app/player/src/execution_host_frame.cpp`、`engine/playback/src/playback_session_realtime.cpp` 即该批实施；16 张卡又用同一词表示"不进本阶段派单" | 成立 |
-| RR-F531 | P1 | [附页](architecture-design.md) D-19、[计划](plan.md) §4 兼容窗口、[验收](acceptance.md) 发布与迁移门禁、[运行合同](contracts/runtime-timing.md)、[呈现合同](contracts/render-player-writer.md)、[方案导读](simplification-proposal.md) | 旧 API 分组迁移规则在六处各写一遍，作用范围不同：计划只限 T-06／T-08，验收与运行合同推广到全部旧 API 组；且都与"本阶段不发布"并存 | 成立 |
-| RR-F532 | P2 | [呈现合同](contracts/render-player-writer.md) 命令与启动、`docs/architecture/PLAYER_APPLICATION.md` | 合同已写基线"当前 R 是 Reload"并闭合 D-13 的目标 R=Retry，但未说明这属已发布输入契约变更、需同步哪几页；现行为文档与源码仍是 R=Reload | 部分成立 |
+<!-- cuexis-findings: definitions -->
+| ID | 原始发现 | 原始依据 | 核验状态 | 处置状态 | 责任/任务 | 当前处置依据 |
+| --- | --- | --- | --- | --- | --- | --- |
+| RR-F530 | 原严重度：P1<br>计划写"候选表示未实施、未发布"，ADR 写"已有 candidate 实施、未发行"，代码里 `app/player/src/execution_host_frame.cpp`、`engine/playback/src/playback_session_realtime.cpp` 即该批实施；16 张卡又用同一词表示"不进本阶段派单"<br>原结论：成立 | [计划](plan.md) §4 排期与实施状态、[ADR 0046](../../../adr/0046-realtime-playback-coordination.md) | 未复核 | 开放 | T-07 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F531 | 原严重度：P1<br>旧 API 分组迁移规则在六处各写一遍，作用范围不同：计划只限 T-06／T-08，验收与运行合同推广到全部旧 API 组；且都与"本阶段不发布"并存<br>原结论：成立 | [附页](architecture-design.md) D-19、[计划](plan.md) §4 兼容窗口、[验收](acceptance.md) 发布与迁移门禁、[运行合同](contracts/runtime-timing.md)、[呈现合同](contracts/render-player-writer.md)、[方案导读](simplification-proposal.md) | 未复核 | 开放 | T-08/T-09 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F532 | 原严重度：P2<br>合同已写基线"当前 R 是 Reload"并闭合 D-13 的目标 R=Retry，但未说明这属已发布输入契约变更、需同步哪几页；现行为文档与源码仍是 R=Reload<br>原结论：部分成立 | [呈现合同](contracts/render-player-writer.md) 命令与启动、`docs/architecture/PLAYER_APPLICATION.md` | 未复核 | 开放 | T-07/T-15 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
 
 处置建议：RR-F530 与 RR-F531 待 owner 定口径后统一改写并回填本节；RR-F532 由 owner 决定是否按契约变更排入 T-15 并同步应用文档。
 
 ## 19. 方案层与门禁覆盖（未实施设计）
 
-| ID | 严重度 | 位置 | 事实与影响 | 结论 |
-| --- | --- | --- | --- | --- |
-| RR-F533 | P2 | [HANDOFF](../../../HANDOFF.md) Plan 拆分约定、[计划](plan.md) §4、[调度](schedule.md)、`tools/verification/check_plan_schedule.py` | 约定禁表内写状态、计划称候选波次不占排期、检查器强制四列，三者叠在一起使 active 的 1–8 波与 candidate 的 9–15 波混排且无法标注，读者会按表派候选卡 | 成立 |
-| RR-F534 | P2 | [验收](acceptance.md) 证据清单 | 同一页既写 `out/` 不能作为唯一可取得的通过证据，又把四组审查的"最终封存"指向 `out/review/stage-07-rr/T-01/final-20261122/`；独立 checkout 或清理构建目录后 A-01 证据不可取得 | 成立 |
-| RR-F535 | P2 | [验收](acceptance.md) 阶段验收矩阵 | A-02–A-05 的接受者列写"CI 验证可机械项"，但矩阵与 T-09 都没有机械项清单；A-N 明确不证明产品完成、不允许开工，实际不裁定任何对象 | 成立 |
-| RR-F536 | P3 | [HANDOFF](../../../HANDOFF.md) Plan 文档拆分 | 长期文档结构约定写在滚动交接页，而规则已落地为 `tasks/`、`schedule.md` 与检查器；下一次交接改写时无人维护该规则 | 成立 |
-| RR-F537 | P2 | 三份候选合同的 `cuexis-meta` 与附页行号锚、`docs/DOCUMENTATION_POLICY.md` | 合同 id 三种写法、运行合同缺"更新日期"、附页 11 处代码行号锚，均违反政策条目，而 `check_docs.py` 仍 exit 0；门禁未覆盖政策实际要求 | 成立 |
-| RR-F538 | P2 | `tools/verification/test_check_plan_schedule.py` | 调度检查器经 `tools/check_docs.py` 随预推送与 CI 运行，但其回归测试只在 `tools/README.md` 与 T-01 手工运行，同类 `check_docs_*_contract_tests.py` 均已入门禁 | 成立 |
+<!-- cuexis-findings: definitions -->
+| ID | 原始发现 | 原始依据 | 核验状态 | 处置状态 | 责任/任务 | 当前处置依据 |
+| --- | --- | --- | --- | --- | --- | --- |
+| RR-F533 | 原严重度：P2<br>约定禁表内写状态、计划称候选波次不占排期、检查器强制四列，三者叠在一起使 active 的 1–8 波与 candidate 的 9–15 波混排且无法标注，读者会按表派候选卡<br>原结论：成立 | [HANDOFF](../../../HANDOFF.md) Plan 拆分约定、[计划](plan.md) §4、[调度](schedule.md)、`tools/verification/check_plan_schedule.py` | 未复核 | 开放 | T-18 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F534 | 原严重度：P2<br>同一页既写 `out/` 不能作为唯一可取得的通过证据，又把四组审查的"最终封存"指向 `out/review/stage-07-rr/T-01/final-20261122/`；独立 checkout 或清理构建目录后 A-01 证据不可取得<br>原结论：成立 | [验收](acceptance.md) 证据清单 | 未复核 | 开放 | T-01/T-09 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F535 | 原严重度：P2<br>A-02–A-05 的接受者列写"CI 验证可机械项"，但矩阵与 T-09 都没有机械项清单；A-N 明确不证明产品完成、不允许开工，实际不裁定任何对象<br>原结论：成立 | [验收](acceptance.md) 阶段验收矩阵 | 未复核 | 开放 | T-09 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F536 | 原严重度：P3<br>长期文档结构约定写在滚动交接页，而规则已落地为 `tasks/`、`schedule.md` 与检查器；下一次交接改写时无人维护该规则<br>原结论：成立 | [HANDOFF](../../../HANDOFF.md) Plan 文档拆分 | 未复核 | 开放 | T-18 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F537 | 原严重度：P2<br>合同 id 三种写法、运行合同缺"更新日期"、附页 11 处代码行号锚，均违反政策条目，而 `check_docs.py` 仍 exit 0；门禁未覆盖政策实际要求<br>原结论：成立 | 三份候选合同的 `cuexis-meta` 与附页行号锚、`docs/DOCUMENTATION_POLICY.md` | 未复核 | 开放 | T-18 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F538 | 原严重度：P2<br>调度检查器经 `tools/check_docs.py` 随预推送与 CI 运行，但其回归测试只在 `tools/README.md` 与 T-01 手工运行，同类 `check_docs_*_contract_tests.py` 均已入门禁<br>原结论：成立 | `tools/verification/test_check_plan_schedule.py` | 未复核 | 开放 | T-18 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
 
 ## 20. 文档描述层待办（本轮，不新登记 ID）
 
@@ -647,18 +669,19 @@ R4 / PD-5 套件的相对路径已进入验收哈希账本（`binding.py:73`、�
 
 ## 23. 正式实施前计划检查（2026-11-22）
 
-输入为 `db6042b6`；方法、逐项落点与实际门禁见[检查报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-pre-implementation-plan-check.md)。本轮只订正文档承接和验收，不启动生产实现。下表的“成立”指所列基线缺口存在；文档补齐不代表对应产品缺陷已修。既有 RR-F 与 D 项编号保持原样。
+输入为 `db6042b6`；方法、逐项落点与实际门禁见[检查报告](../../../stage_reports/stages/stage-07-rr/readiness/2026-11-22-pre-implementation-plan-check.md)。本轮只订正文档承接和验收，不启动生产实现。下表的“成立”指所列基线缺口存在；文档补齐不代表对应产品缺陷已修。既有 RR-F 与 D 项编号保持原样。
 
-| ID | 级别 | 基线缺口与依据 | 结论 | 本轮处置与剩余条件 |
-| --- | --- | --- | --- | --- |
-| RR-F539 | P2 | [调度](schedule.md)中 T-17 没有进入 T-09 的前置闭包，但 A-05 要求 A-06 证据 | 成立 | 已核实；补 T-09 对 T-17 的直接前置，波次不变。修订后闭包覆盖其余全部现行卡 |
-| RR-F540 | P2 | [T-06](tasks/T-06.md)与[T-17](tasks/T-17.md)重复承接 F508；T-17 使用默认关闭候选功能的 headless 配置验证候选字段 | 成立 | 已核实；五字段卸载清理唯一归 T-17，T-06 保留本卡画幅清理；T-17 按候选配置核验注册、构建和执行 |
-| RR-F541 | P2 | T-06 的 F419 测试未进入执行命令，首帧必非零与合法零耗时冲突；F135 缺具名故障注入与预期 | 成立 | 已核实；在现有测试目标补执行入口和可控时间对照，F135 的稳定码修订已于 2026-11-23 按 D-04 接受，当前处置见下文。历史报告不按新读法改写 |
-| RR-F542 | P2 | §22 把 F306/F310/F316/F405–F407 全归 T-08，但卡只做兼容新增；其他卡也有 ID 归口宽于实际步骤、验收的问题 | 成立 | 已核实；§22 明确各卡切片与残余，现有范围内补追踪；T-09 对未覆盖项逐条提交具名处置，不能以窄迁移或候选替代自动关闭旧问题。D-20 发行语料单列交接 |
-| RR-F543 | P2 | [T-11](tasks/T-11.md)在[T-12](tasks/T-12.md)创建共享时间实现前要求量化后几何及运行结果验收；表 ID 唯一性与源/成品规范顺序分工未完整写入验收 | 成立 | 已核实；原始字段与几何归 T-11，共享量化、关系校验和实际输出归 T-12，成品规范顺序拒绝归 T-13；不提前创建或复制时间换算 |
-| RR-F544 | P2 | [T-10](tasks/T-10.md)未逐项验收合同的预检优先级、状态/槽不变及封定后结果交付不分配保证 | 成立 | 已核实；复用已有推进用例补拒绝矩阵、交付段分配观察与拥有型结果寿命。内部 Fold 等已有分配边界保持原合同 |
-| RR-F545 | P2 | F431 在 §22 分给 T-11/T-13，但两卡缺少原动画解析超限后停止后续工作的验收 | 成立 | 已核实；T-13 点名原问题路径及预算边界用例。新成品的限额检查不能替代原路径的修复证据 |
-| RR-F546 | P2 | [T-14](tasks/T-14.md)仅点名 F420，未执行已有精确计数/保守下界规则；D-12 音频对齐负例、D-13 Retry 各入口、D-14 双用途恢复亦缺明确卡级断言 | 成立 | 已核实；在 T-14/T-15 既有用例内补齐，不新建观察系统、时间阈值或结果队列 |
+<!-- cuexis-findings: definitions -->
+| ID | 原始发现 | 原始依据 | 核验状态 | 处置状态 | 责任/任务 | 当前处置依据 |
+| --- | --- | --- | --- | --- | --- | --- |
+| RR-F539 | 原严重度：P2<br>[调度](schedule.md)中 T-17 没有进入 T-09 的前置闭包，但 A-05 要求 A-06 证据<br>原结论：成立 | 原处置与剩余条件：已核实；补 T-09 对 T-17 的直接前置，波次不变。修订后闭包覆盖其余全部现行卡 | 未复核 | 开放 | T-09 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F540 | 原严重度：P2<br>[T-06](tasks/T-06.md)与[T-17](tasks/T-17.md)重复承接 F508；T-17 使用默认关闭候选功能的 headless 配置验证候选字段<br>原结论：成立 | 原处置与剩余条件：已核实；五字段卸载清理唯一归 T-17，T-06 保留本卡画幅清理；T-17 按候选配置核验注册、构建和执行 | 未复核 | 开放 | T-06/T-17 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F541 | 原严重度：P2<br>T-06 的 F419 测试未进入执行命令，首帧必非零与合法零耗时冲突；F135 缺具名故障注入与预期<br>原结论：成立 | 原处置与剩余条件：已核实；在现有测试目标补执行入口和可控时间对照，F135 的稳定码修订已于 2026-11-23 按 D-04 接受，当前处置见下文。历史报告不按新读法改写 | 未复核 | 开放 | T-06 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F542 | 原严重度：P2<br>§22 把 F306/F310/F316/F405–F407 全归 T-08，但卡只做兼容新增；其他卡也有 ID 归口宽于实际步骤、验收的问题<br>原结论：成立 | 原处置与剩余条件：已核实；§22 明确各卡切片与残余，现有范围内补追踪；T-09 对未覆盖项逐条提交具名处置，不能以窄迁移或候选替代自动关闭旧问题。D-20 发行语料单列交接 | 未复核 | 开放 | T-08/T-09 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F543 | 原严重度：P2<br>[T-11](tasks/T-11.md)在[T-12](tasks/T-12.md)创建共享时间实现前要求量化后几何及运行结果验收；表 ID 唯一性与源/成品规范顺序分工未完整写入验收<br>原结论：成立 | 原处置与剩余条件：已核实；原始字段与几何归 T-11，共享量化、关系校验和实际输出归 T-12，成品规范顺序拒绝归 T-13；不提前创建或复制时间换算 | 未复核 | 开放 | T-11/T-12/T-13 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F544 | 原严重度：P2<br>[T-10](tasks/T-10.md)未逐项验收合同的预检优先级、状态/槽不变及封定后结果交付不分配保证<br>原结论：成立 | 原处置与剩余条件：已核实；复用已有推进用例补拒绝矩阵、交付段分配观察与拥有型结果寿命。内部 Fold 等已有分配边界保持原合同 | 未复核 | 开放 | T-10 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F545 | 原严重度：P2<br>F431 在 §22 分给 T-11/T-13，但两卡缺少原动画解析超限后停止后续工作的验收<br>原结论：成立 | 原处置与剩余条件：已核实；T-13 点名原问题路径及预算边界用例。新成品的限额检查不能替代原路径的修复证据 | 未复核 | 开放 | T-13 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
+| RR-F546 | 原严重度：P2<br>[T-14](tasks/T-14.md)仅点名 F420，未执行已有精确计数/保守下界规则；D-12 音频对齐负例、D-13 Retry 各入口、D-14 双用途恢复亦缺明确卡级断言<br>原结论：成立 | 原处置与剩余条件：已核实；在 T-14/T-15 既有用例内补齐，不新建观察系统、时间阈值或结果队列 | 未复核 | 开放 | T-14/T-15 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
 
 文字订正不另分配 ID：计划的当前任务、目录路由、变更表缺列、T-09 对 F420 的过期待裁陈述和交接的当前 HEAD 均按现行事实订正。O2 改为区分接受状态与实现进度；O6 的现有定义和 O12 的计划说明足以用于本轮追踪，未增加术语表或调度列。
 
@@ -670,7 +693,12 @@ RR-F525 的当前决定以 2026-11-23 owner 续议为准：设备操作的等待
 
 ## 24. 统一实施前设计裁定（2026-11-23）
 
-owner 要求先解决影响 T-01–T-17 一同实施的未裁定事项，再安排实施顺序与实施安排。本节登记这一步的决定及必要事实条件；本轮裁定完成后已重排调度，生产实施与发布均未启动。既有 §23 的设计修订继续有效。 本轮核验记录见[裁定与任务安排报告](../../../stage_reports/stages/stage-07-rr/2026-11-23-design-decisions-and-schedule.md)。
+owner 要求先解决影响 T-01–T-17 一同实施的未裁定事项，再安排实施顺序与实施安排。本节登记这一步的决定及必要事实条件；本轮裁定完成后已重排调度，生产实施与发布均未启动。既有 §23 的设计修订继续有效。 本轮核验记录见[裁定与任务安排报告](../../../stage_reports/stages/stage-07-rr/decisions/2026-11-23-design-decisions-and-schedule.md)。
+
+<!-- cuexis-findings: definitions -->
+| ID | 原始发现 | 原始依据 | 核验状态 | 处置状态 | 责任/任务 | 当前处置依据 |
+| --- | --- | --- | --- | --- | --- | --- |
+| RR-F547 | owner 明确沿用原 [Chart v5 设计](../chart-format-update-for-v5/plan.md)，判定新候选的旧语法特许为错误；[成品合同](contracts/prepared-artifact.md#源输入与-lowering)、T-11/T-13 与夹具须统一为 CXT v2、Clip v2、Behavior Event v2 和 render.alpha，旧格式独立兼容 | 原议题：v5 作者表现语法（RR-F547）<br>原状态：2026-11-23 已裁定，合同与任务已订正；产品未实施 | 未复核 | 开放 | T-11/T-13 | 依据：[§22 归口](#22-旧问题承接2026-11-22)与[§24 后续处置](#24-统一实施前设计裁定2026-11-23)；迁移说明：保留原始字段，本轮未取得实现关闭证据；原设计接受继续有效，T-09 按证据核退出 |
 
 | 议题 | 当前依据与处理 | 状态 |
 | --- | --- | --- |
@@ -725,11 +753,25 @@ owner 已于 2026-11-23 选择全部纳入本轮；该决定取代上述结构�
 
 ## 25. 实施接手复查（2026-11-23）
 
-owner 要求再次检查 plan 与 task 中会阻碍 agent 执行的决策、待定项或不确定内容，确认后编写接手文档。本轮实读全部任务卡及对应合同，按输入、创建责任、依赖、正反验收、兼容与停止条件核对；报告和独立复核回执见[实施可执行性复查](../../../stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md)。
+owner 要求再次检查 plan 与 task 中会阻碍 agent 执行的决策、待定项或不确定内容，确认后编写接手文档。本轮实读全部任务卡及对应合同，按输入、创建责任、依赖、正反验收、兼容与停止条件核对；报告和独立复核回执见[实施可执行性复查](../../../stage_reports/stages/stage-07-rr/handoffs/2026-11-23-execution-readiness-handoff.md)。
 
 本次修订沿用既有裁定：清除 API 统一退役阶段、重复审批和候选另行移交的残留；补 T-01 的工作树原文交付及旧兼容资料处置；纠正任务验收与合同不一致的范围，并明确新用例的创建、构建、注册和执行。局部实现选择由 agent 决定；新事实确需改变产品规则、范围或兼容承诺时，只暂停受影响切片。
 
 最终核验结果见报告及 [HANDOFF](../../../HANDOFF.md)。任务卡完整不代表产品运行通过，旧交付资料与实际发布门禁不能预认证。历史待审记录保留当时时点，由 §23/§24 的后续裁定及本节指向的当前任务承接，不作为重复询问的理由。
+
+## 26. 文档治理归属与当前状态整理（2026-11-23）
+
+owner 明确文档管理与整理应归入 RR。方案现作为[文档治理分册](documentation-governance.md)收录，由 RR 总计划和阶段目录提供入口；G-01–G-05 仅是待审分册的拟议步骤，治理规则接受、任务卡/统一调度接入与实际实施仍待后续明确安排。
+
+本轮精简 CURRENT_STATUS 和计划总索引中的历史过程，保留仍有效的受限退出、性能、计时、内存/GPU/P8、P7 与 F3 限制，并链接原始责任及证据。状态合同此前要求 CURRENT_STATUS 保留 Stage 7A/S7A-3 的旧短句，本轮仅将该页对应检查项改为阶段/工作项/登记册元数据键和当前任务、阶段状态、遗留边界章节，避免重新硬锁具体阶段或“未启动”等临时状态；这些局部结构检查不证明值或行为正确，其余状态合同和通用检查器补强仍按待审分册处理。
+
+本项只记录文档归属、摘要与检查配置的局部订正，不声明治理检查器、报告迁移或产品修复完成；验证状态见 [HANDOFF](../../../HANDOFF.md#验证状态)。
+
+## 27. 文档治理实施（2026-11-23）
+
+owner 已接受文档治理推荐方案并要求独立完成，执行归 T-18；实际范围、原始输入、检查器回执、迁移对照与限制见[交付报告](../../../stage_reports/stages/stage-07-rr/implementation/2026-11-23-documentation-governance.md)。本轮只执行文档治理，产品任务另按既有调度采用。
+
+登记结构迁移保留原字段、旧处置说法和冻结输入。当前责任按已接受承接归口；可通过当前文档及已提交快照核实的文档订正恢复对应核验与处置，需产品运行或缺原始证据的项保持开放，不把原说法删除或补造验证。具体状态见定义行，交付报告解释本轮证明边界。
 
 ## 附录 处置记录（按日期保留，§12–§16）
 
@@ -768,25 +810,25 @@ owner 要求再次检查 plan 与 task 中会阻碍 agent 执行的决策、待�
 
 架构附页已接入运行、时间与判定，画幅、Player 与写回，以及后继成品和 CXC 源包的候选合同。任务与证据要求见[架构附页](architecture-design.md#6-已接受的行为边界与候选合同入口)、[可实施性索引](design-readiness.md)及[验收](acceptance.md)。
 
-三合同与 16 卡已对齐；四组无父上下文首轮审查发现、作者补全及原审查者最终复验记录在[本轮可实施性报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md)。设计判断为**成立**：Huygens、Epicurus、Bacon、Nash 全部成立，无本轮未决合同项。Epicurus 三处 fixture 与原六项规则均闭合；Bacon 定义体 typed span／stable merge 及关联 fixture 阻断关闭。报告转录四组 tool 回执作为耐久记录，并列出每卡首改、测试、正反例和停止条件的冷启动定位证据。
+三合同与 16 卡已对齐；四组无父上下文首轮审查发现、作者补全及原审查者最终复验记录在[本轮可实施性报告](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-design-readiness-review.md)。设计判断为**成立**：Huygens、Epicurus、Bacon、Nash 全部成立，无本轮未决合同项。Epicurus 三处 fixture 与原六项规则均闭合；Bacon 定义体 typed span／stable merge 及关联 fixture 阻断关闭。报告转录四组 tool 回执作为耐久记录，并列出每卡首改、测试、正反例和停止条件的冷启动定位证据。
 
 Einstein 独立调度阴性与集成路由核对在其快照内成立；主代理 18 项独立 Fraction/整数算例成立，位宽为 160/128 位。主代理本批链接／标题锚、尾空白与保护段检查成立，证据路径、哈希与限制见报告。主代理已生成 MAP／AGENTS 并完成最终组合文档检查，文档、正式事实检查、16 卡调度、17 项检查器测试及 diff 全部 exit 0；实际日志位于 `out/review/stage-07-rr/T-01/main-final-20261122/`。本次唯一补录已完成，设计收敛及本单元文档工作收尾并停止修改。Einstein 随后 `--capture` 封存最终文件及独立再验，固定证据目录 `out/review/stage-07-rr/T-01/final-20261122/` 的读取口径见报告，不再回写本批文件。本轮生产实现未开始，文档门禁、算术复算和设计审查不替代运行验收或阶段采用；D-05 与 NEXT 采用规则不变。验证路由见 [HANDOFF](../../../HANDOFF.md#验证状态)。
 
 ### 15. Astra 执行者复审（2026-11-22）
 
-首次复审时，合并结论为**部分成立**。[当期报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-executor-review.md#结果与证据)列出逐项证据、触发、最小修正和两项撤回记录。以下九项在首次登记时均待收敛。
+首次复审时，合并结论为**部分成立**。[当期报告](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-executor-review.md#结果与证据)列出逐项证据、触发、最小修正和两项撤回记录。以下九项在首次登记时均待收敛。
 
 - P1：AX-01 默认 shared 帧调用；AX-02 裸 Reader 身份参照；AX-03 RPA 作者测试依赖；AX-04 Retry 生产命令前置。
 - P2：AX-05 同 tick 接纳与提交；AX-06 成功窗阶段序号；AX-07 Graph 相机键；AX-08 迁移 CLI 验收配置；AX-09 其他打包工具帮助归属。
 
 #### Astra 九项设计修订
 
-AX-01 至 AX-09 均已写入候选合同或任务卡；逐项落点、实施时的正反例及交叉复验回执见[修订报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md)。生产未实施。
+AX-01 至 AX-09 均已写入候选合同或任务卡；逐项落点、实施时的正反例及交叉复验回执见[修订报告](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-review-resolution.md)。生产未实施。
 
-AX-05 / RR-F131：首次登记把两个入口的稳定码判作互换；首次复审又误以为同一原 tick 的不同 subject 能在旧 submit 触发 dispatch collision。普通规范化 (`false`) 与旧执行 (`true`) 各有既定首错；后者在路由前已拒绝同原 tick 的不同 subject。用原 tick 900/901 汇到 901 才触发本例的 dispatch collision。保留旧 profile §8 与既有生产输入逻辑，RPA occurrence 分开验收。见 [T-03](tasks/T-03.md#任务级验收)和[纠正依据](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md#结果与证据)。
+AX-05 / RR-F131：首次登记把两个入口的稳定码判作互换；首次复审又误以为同一原 tick 的不同 subject 能在旧 submit 触发 dispatch collision。普通规范化 (`false`) 与旧执行 (`true`) 各有既定首错；后者在路由前已拒绝同原 tick 的不同 subject。用原 tick 900/901 汇到 901 才触发本例的 dispatch collision。保留旧 profile §8 与既有生产输入逻辑，RPA occurrence 分开验收。见 [T-03](tasks/T-03.md#任务级验收)和[纠正依据](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-review-resolution.md#结果与证据)。
 
 ### 16. 独立 checkout 复审处置（2026-11-22）
 
-owner 转交对 `8599c83a` 的复审，按 IR-01–IR-20 分开核对类型与构建、数据生产、渲染接线、宿主控制、任务与证据。逐项裁定、修订及实际验证见[本轮报告](../../../stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md)。§14/15 保留原时点判断，旧九项通过不代表本轮新发现已经覆盖。
+owner 转交对 `8599c83a` 的复审，按 IR-01–IR-20 分开核对类型与构建、数据生产、渲染接线、宿主控制、任务与证据。逐项裁定、修订及实际验证见[本轮报告](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-checkout-review-resolution.md)。§14/15 保留原时点判断，旧九项通过不代表本轮新发现已经覆盖。
 
 主代理已复现七段卡结构的漏检并补检查器、对应反例及 active/candidate 区分；T-01 改为跨平台哈希和显式采用基线。候选 schema、诊断码与目标尚待任务交付的事实，按创建责任及前置是否完整判断，不把尚未实施本身登记为设计失败。A-N 仍只移交候选设计；本次核实不扩大 D-05 或后继采用范围。

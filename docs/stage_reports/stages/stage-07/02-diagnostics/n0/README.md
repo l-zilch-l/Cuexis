@@ -1,5 +1,11 @@
 # Diagnostics / n0
 
+<!-- cuexis-meta
+id: INDEX-stage_reports.stages.stage-07.02-diagnostics.n0
+status: active
+authority: index
+-->
+
 状态：current index
 
 更新日期：2026-10-26

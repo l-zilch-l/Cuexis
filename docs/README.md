@@ -8,7 +8,7 @@ authority: index
 
 状态：现行文档入口
 
-更新日期：2026-11-17
+更新日期：2026-11-23
 
 本文档是 Cuexis 文档的导航页，不复制产品合同、阶段证据或完整字段定义。当前项目状态只
 以 [CURRENT_STATUS.md](CURRENT_STATUS.md) 为准。
@@ -21,7 +21,7 @@ authority: index
 - 查RPA领域词义：[Glossary](api/GLOSSARY.md)。
 - 查当前进度：[CURRENT_STATUS](CURRENT_STATUS.md)。
 - 新对话先读[交接页](HANDOFF.md)：当前任务、下一步、阻塞与验证状态。
-- 写作模板：[templates/](templates/README.md)（plan / report / handoff）。
+- 写作模板：[templates/](templates/README.md)（plan / task / ADR / report / handoff）。
 - 查 Stage 7 后的复核发现与重构批次：[Stage 7-RR 计划](stage_plans/active/stage-07-rr/plan.md)；
   逐条问题、证据状态与拆分预算事实见[发现登记册](stage_plans/active/stage-07-rr/findings.md)。
 - 查 Stage 7A 历史实施与已接受交接：[plan-a S7A-7/8接手与决策](stage_plans/completed/stage-07/01-a/plan.md#34-s7a-78-下一轮决策首用合同与接手2026-10-07)；全局路线见[Stage 7总计划](stage_plans/completed/stage-07/plan.md)。

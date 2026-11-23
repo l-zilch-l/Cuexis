@@ -211,6 +211,15 @@ function Invoke-QuickChecks {
     Invoke-ExternalCommand -Label "Documentation section contract" -Executable $python -Arguments @(
         "-B", "tools/verification/check_docs_section_contract_tests.py"
     )
+    Invoke-ExternalCommand -Label "Documentation governance regressions" -Executable $python -Arguments @(
+        "-B", "tools/verification/test_check_docs_governance.py"
+    )
+    Invoke-ExternalCommand -Label "Finding ledger regressions" -Executable $python -Arguments @(
+        "-B", "tools/verification/test_check_findings.py"
+    )
+    Invoke-ExternalCommand -Label "Documentation fact regressions" -Executable $python -Arguments @(
+        "-B", "tools/verification/test_check_docs_facts.py"
+    )
     Invoke-ExternalCommand -Label "Tools inventory" -Executable $python -Arguments @(
         "-B", "tools/verification/check_tools_inventory.py"
     )

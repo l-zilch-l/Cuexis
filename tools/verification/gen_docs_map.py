@@ -40,22 +40,58 @@ STATUS_ORDER = {"active": 0, "current": 0, "accepted": 1, "candidate": 2, "futur
                 "completed": 5, "historical": 6, "unverified": 7}
 
 
+def unfenced_text(text: str) -> str:
+    """Blank fenced examples, retaining line positions for header/diagnostic parsing."""
+    lines: list[str] = []
+    fence = ""
+    width = 0
+    for line in text.splitlines():
+        marker = re.match(r"^ {0,3}(`{3,}|~{3,})", line)
+        if not fence and marker:
+            fence, width = marker.group(1)[0], len(marker.group(1))
+            lines.append("")
+        elif fence:
+            if re.fullmatch(r" {0,3}" + re.escape(fence) + "{" + str(width) + r",}\s*", line):
+                fence = ""
+            lines.append("")
+        else:
+            lines.append(line)
+    return "\n".join(lines)
+
+
+def header_meta_blocks(text: str) -> list[str]:
+    """Read unfenced comments before the first section, within the real header.
+
+    Existing headers include version/role notes and short provenance paragraphs.
+    The first section ends that header; fenced examples are never metadata.
+    """
+    header: list[str] = []
+    for line in unfenced_text(text).splitlines():
+        if re.match(r"^#{2,6}\s", line):
+            break
+        header.append(line)
+    return re.findall(r"<!--\s*cuexis-meta\s*\n(.*?)-->", "\n".join(header), re.DOTALL)
+
+
 def parse_meta(text: str) -> dict[str, str]:
-    # Metadata blocks live in the document header; limiting the search keeps fenced examples that
-    # quote the block format (for instance in DOCUMENTATION_POLICY.md) from being parsed as metadata.
-    match = META.search(text[:2000])
-    if match is None:
+    blocks = header_meta_blocks(text)
+    if len(blocks) != 1:
         return {}
     fields: dict[str, str] = {}
-    for line in match.group(1).splitlines():
-        if ":" in line:
-            key, value = line.split(":", 1)
-            fields[key.strip()] = value.strip()
+    for line in blocks[0].splitlines():
+        if not line.strip():
+            continue
+        if ":" not in line:
+            return {}
+        key, value = (part.strip() for part in line.split(":", 1))
+        if not key or key in fields:
+            return {}
+        fields[key] = value
     return fields
 
 
 def first_heading(text: str) -> str:
-    match = H1.search(text)
+    match = H1.search(unfenced_text(text))
     return match.group(1).strip() if match else "(无标题)"
 
 
@@ -78,7 +114,9 @@ def collect() -> list[dict[str, object]]:
     rows: list[dict[str, object]] = []
     for path in sorted(DOCS.rglob("*.md")):
         relative = path.relative_to(DOCS).as_posix()
-        if relative in {"MAP.md"}:
+        if relative == "MAP.md" or (relative.startswith("templates/") and path.name != "README.md"):
+            continue
+        if relative.startswith("stage_reports/") and "evidence" in path.relative_to(DOCS).parts:
             continue
         text = path.read_text(encoding="utf-8")
         meta = parse_meta(text)

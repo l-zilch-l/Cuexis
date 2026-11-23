@@ -8,6 +8,7 @@
 id: API-realtime-host-boundary
 status: candidate
 authority: owns
+topics: host.rpa.error-classification
 -->
 
 决策归 [ADR 0046](../adr/0046-realtime-playback-coordination.md)，执行/时间/控制语义归

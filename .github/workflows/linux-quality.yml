@@ -6,6 +6,11 @@ on:
       - '**'
   pull_request:
   workflow_dispatch:
+    inputs:
+      docs_base:
+        description: 'Trusted base commit for documentation history protection'
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -240,6 +245,23 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve trusted documentation history base
+        env:
+          DOCS_HISTORY_BASE: ${{ github.event.pull_request.base.sha || (github.event.before != '0000000000000000000000000000000000000000' && github.event.before) || inputs.docs_base }}
+        run: |
+          if [ -z "$DOCS_HISTORY_BASE" ]; then
+            echo 'Documentation history NOT CHECKED: an event base or explicit docs_base is required.'
+            exit 1
+          fi
+          docs_base_commit=$(git rev-parse --verify --end-of-options "${DOCS_HISTORY_BASE}^{commit}")
+          if [ "$docs_base_commit" = "$(git rev-parse HEAD)" ]; then
+            echo 'Documentation history NOT CHECKED: the base must differ from the checked tip.'
+            exit 1
+          fi
+          printf 'CUEXIS_DOCS_BASE_REF=%s\n' "$docs_base_commit" >> "$GITHUB_ENV"
 
       - name: Check out pinned vcpkg
         uses: actions/checkout@v4
@@ -276,9 +298,16 @@ jobs:
       - name: Check documentation and version contracts
         env:
           CUEXIS_TARGETS_FILE: out/build/debug/generated/cuexis-targets.txt
+          CUEXIS_DOCS_STRICT: '1'
         run: |
           python3 -B tools/check_docs.py
           python3 -B tools/verification/check_docs_facts.py
+          python3 -B tools/verification/test_check_docs_governance.py
+          python3 -B tools/verification/test_check_findings.py
+          python3 -B tools/verification/test_check_docs_facts.py
+          python3 -B tools/verification/check_docs_status_contract_tests.py
+          python3 -B tools/verification/check_docs_target_contract_tests.py
+          python3 -B tools/verification/check_docs_section_contract_tests.py
           python3 -B tools/update_version.py --check
           python3 -B tools/ci/gnu_asset_mirror_tests.py
 

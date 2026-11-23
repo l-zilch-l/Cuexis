@@ -8,6 +8,7 @@
 id: ARCH-RUNTIME_SESSION
 status: active
 authority: owns
+topics: runtime.override-registration
 -->
 
 ## 职责与所有权

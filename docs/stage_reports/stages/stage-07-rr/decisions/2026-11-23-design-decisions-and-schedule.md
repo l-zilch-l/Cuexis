@@ -12,7 +12,7 @@ authority: none
 
 ## 结论
 
-**成立**：owner 已完成本轮需要的范围和行为裁定，决定及逐项承接见[登记册 §24](../../../stage_plans/active/stage-07-rr/findings.md#24-统一实施前设计裁定2026-11-23)。v5 候选旧动画特许已订正，F203 采用登记前整批验证，完整结构清理与 T-10–T-16 纳入本轮。
+**成立**：owner 已完成本轮需要的范围和行为裁定，决定及逐项承接见[登记册 §24](../../../../stage_plans/active/stage-07-rr/findings.md#24-统一实施前设计裁定2026-11-23)。v5 候选旧动画特许已订正，F203 采用登记前整批验证，完整结构清理与 T-10–T-16 纳入本轮。
 
 **成立**：统一任务安排把 T-09 放在全部任务之后，阶段验收覆盖 T-01–T-17 的实现证据。设计接受、任务采用、运行通过与发布继续分别记录。具体结构检查结果见执行记录。
 
@@ -51,13 +51,13 @@ PASS: no whitespace errors
 
 | 结论 | 证据 | 状态 |
 | --- | --- | --- |
-| v2 正式目标与 v3 实验实现分别明确 | [范围与授权](../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#范围与授权) | 成立 |
-| v5 表现语法遵循原设计，CXT2 adapter 与能力拒绝有责任任务 | [源输入](../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md#源输入与-lowering)、[CXT2 映射](../../../formats/CXT_V2_FORMAT.md#91-chart-v5-动画导入与-animator-映射)、T-11/T-13 | 成立 |
-| F203 行为已接受，非法批次不发布覆盖 | [Runtime 修订](../../../architecture/RUNTIME_SESSION.md#临时覆盖登记修订f203已接受未实现)、T-17 | 成立 |
-| 全面结构清理有范围、落点与正反验收 | [当前残余处置](../../../stage_plans/active/stage-07-rr/findings.md#残余问题的实际承接)、T-04/T-06/T-08/T-14 | 成立 |
+| v2 正式目标与 v3 实验实现分别明确 | [范围与授权](../../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#范围与授权) | 成立 |
+| v5 表现语法遵循原设计，CXT2 adapter 与能力拒绝有责任任务 | [源输入](../../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md#源输入与-lowering)、[CXT2 映射](../../../../formats/CXT_V2_FORMAT.md#91-chart-v5-动画导入与-animator-映射)、T-11/T-13 | 成立 |
+| F203 行为已接受，非法批次不发布覆盖 | [Runtime 修订](../../../../architecture/RUNTIME_SESSION.md#临时覆盖登记修订f203已接受未实现)、T-17 | 成立 |
+| 全面结构清理有范围、落点与正反验收 | [当前残余处置](../../../../stage_plans/active/stage-07-rr/findings.md#残余问题的实际承接)、T-04/T-06/T-08/T-14 | 成立 |
 | 旧问题逐条分类，未统一包装成延期 | 同上；F404/F435/F438 等按现有接口/政策收窄原断言，F406/F407 核完整账本与参与方 | 成立 |
 | 旧谱兼容绑定独立预期，成品无需源工程重放 | T-01/T-10/T-13，最终由 T-09 核对实际证据；候选夹具与正式交付分开 | 成立 |
-| 调度与验收覆盖全部任务 | [调度](../../../stage_plans/active/stage-07-rr/schedule.md)、[A-01–A-09](../../../stage_plans/active/stage-07-rr/acceptance.md)、执行记录 | 成立 |
+| 调度与验收覆盖全部任务 | [调度](../../../../stage_plans/active/stage-07-rr/schedule.md)、[A-01–A-09](../../../../stage_plans/active/stage-07-rr/acceptance.md)、执行记录 | 成立 |
 
 ## 限制与未做
 

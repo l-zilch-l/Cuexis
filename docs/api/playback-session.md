@@ -12,6 +12,7 @@
 id: API-playback-session
 status: active
 authority: owns
+topics: playback.prepared-validity
 -->
 
 权威头文件：[playback_session.hpp](../../engine/playback/include/cuexis/playback/playback_session.hpp)

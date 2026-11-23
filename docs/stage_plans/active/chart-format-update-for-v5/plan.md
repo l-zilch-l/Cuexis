@@ -467,7 +467,7 @@ CXT 的 Track/Segment 字段权威就是外层 Chart / CXT 文件版本所绑定
   Writer 切到 v5 时，将 `CUEXIS_SDK_API_VERSION` 更新为经批准的 v5 发行 SDK 版本。
   以届时实际基线评估公共 API、capability 和默认行为变化；不兼容变更必须提升 minor，
   不得从历史 `0.7.0` 基线硬编码目标或仅以 patch 掩盖合同变化。日期构建版本门禁仍归
-  Stage 6，本阶段不纠正 `26.08.01-1` 滞后。删除旧 Reader 不在本阶段，故不为删除再升一次 SDK。
+  [版本政策](../../../guides/VERSIONING.md)，不在本计划固化日期构建值。删除旧 Reader 不在本阶段，故不为删除再升一次 SDK。
 
 只懂 v4 的已安装宿主必须在 Reader 或 prepare 最早可判定点稳定拒绝 v5，带版本与 capability 诊断，
 不得半加载或降级为 v4 语义。

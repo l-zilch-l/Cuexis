@@ -1,0 +1,129 @@
+{
+  "captured_at": "2026-11-23T07:44:29.962115+00:00",
+  "head": "ca5cbb9121b015ae0b3b5d681610ca94dac78184",
+  "tree": "2954fe3daabdec51b46e8f1de650299f5eaab2a1",
+  "status": " M docs/CURRENT_STATUS.md\n M docs/DOCUMENTATION_POLICY.md\n M docs/HANDOFF.md\n M docs/MAP.md\n M docs/README.md\n M docs/stage_plans/README.md\n M docs/stage_plans/active/stage-07-rr/README.md\n M docs/stage_plans/active/stage-07-rr/findings.md\n M docs/stage_plans/active/stage-07-rr/plan.md\n M docs/status_contract.json\n M docs/templates/README.md\n?? docs/stage_plans/active/stage-07-rr/documentation-governance.md\n?? docs/templates/adr.md\n?? docs/templates/task.md\n",
+  "inputs": [
+    {
+      "path": "docs/CURRENT_STATUS.md",
+      "sha256": "6e1f914b335bdff6e731b04a2abd46fe4c7f921cca35007b154ac4f90c14f163",
+      "bytes": 5541
+    },
+    {
+      "path": "docs/DOCUMENTATION_POLICY.md",
+      "sha256": "3d16deee387b8dc6f8fd9a7e7db28f427f7cfdae688aca020ba995293fe1edbe",
+      "bytes": 11871
+    },
+    {
+      "path": "docs/HANDOFF.md",
+      "sha256": "13a4b5cc05e0892a381a0f209655fc31ec2d6a37d8af161c800612aa9a3c6f79",
+      "bytes": 10162
+    },
+    {
+      "path": "docs/stage_plans/active/stage-07-rr/documentation-governance.md",
+      "sha256": "95118d6b3e2a40a37f2a4a21164dd980583085c807a1ed6dce841469fde07c71",
+      "bytes": 32859
+    },
+    {
+      "path": "docs/stage_plans/active/stage-07-rr/findings.md",
+      "sha256": "55d99c8827b57b63112c4b8549553a1777abcab88e4939854cc9d4c155ff3f74",
+      "bytes": 111932
+    },
+    {
+      "path": "docs/stage_plans/active/stage-07-rr/plan.md",
+      "sha256": "c4a8b9ec1c1aacee11f06858899378041e19fb459c0b2d79210b21192e1c4a8d",
+      "bytes": 57225
+    },
+    {
+      "path": "docs/stage_plans/active/stage-07-rr/schedule.md",
+      "sha256": "ab6625a1e3add6a96eb71958af7d9a82e4d277e13ae222b00aee5925f16f7ba8",
+      "bytes": 857
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/2026-11-17-architecture-evidence.md",
+      "sha256": "42f516c3b2c7456520e264c2d257f1b08e421a827a599ff462293e59611f3255",
+      "bytes": 25523
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/2026-11-17-architecture-research.md",
+      "sha256": "f597609f852fc24949b7a5096765c1f519f4b8a3ffb7716aed9ebc6c4cbecdaf",
+      "bytes": 19839
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/2026-11-17-documentation-refactor.md",
+      "sha256": "b0963104edcc4a6c5f50a68a6e6afac8fa330e699928fa7a1f24df8515180ead",
+      "bytes": 12410
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/2026-11-17-external-findings-review.md",
+      "sha256": "cdd2967f9c7fdcc316bc7e643209bc5791fa24a4ba4fe47c96f4a8efc9b30c35",
+      "bytes": 25243
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/2026-11-17-false-guarantees-scan.md",
+      "sha256": "240c975ad6e7a08101691c910264c9d85a2c23ec0f1950c8025f5a8c613c31c8",
+      "bytes": 11725
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/2026-11-17-tools-audit.md",
+      "sha256": "7f5a957ec93ca8c35ff96d0684f16ba7a4dc7b3aab5fbd14b13458ed13288f62",
+      "bytes": 5888
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/2026-11-22-astra-executor-review.md",
+      "sha256": "6a2df8a97dce10d618947acafe8f4fe836b26c434a2e8a4bf6a3e53b6e01ae5c",
+      "bytes": 7368
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md",
+      "sha256": "ad8ed5295ccd66c26a7705eb1cb1b3921e0d2c3ed1718deab99fa5ba75988be5",
+      "bytes": 10160
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md",
+      "sha256": "d85c04b1977156cfaab01958d3613ab0c7900e691c3974396f51f0ff266838a9",
+      "bytes": 10877
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md",
+      "sha256": "dab02c113008ab47991df9ebf8c90d94c63e96a80992737275c4c90d982d3c76",
+      "bytes": 33669
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/2026-11-22-pre-implementation-plan-check.md",
+      "sha256": "ce91a0c5cbe531e331cf25125c4b27ede86ac4d0fa304d054d5c239ec3915716",
+      "bytes": 14992
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/2026-11-23-design-decisions-and-schedule.md",
+      "sha256": "85c07fed2ca1bcd5763782ff8f24bdb02d1f952bb5e094d4d816a1141725fb03",
+      "bytes": 5184
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md",
+      "sha256": "5de14ac4183d7dd2a587dfd327ecae95a0c496794f2846809f897d8f8c9ea674",
+      "bytes": 9016
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/README.md",
+      "sha256": "f439c0d87bbdc435042eca8997cc301690698fdd672ab5831dea57051f1e5b23",
+      "bytes": 3865
+    },
+    {
+      "path": "docs/status_contract.json",
+      "sha256": "bf497f526c486fe54a6648c14069e303fd48d41f93aa8edfb0d914e3f6086090",
+      "bytes": 4870
+    },
+    {
+      "path": "docs/templates/adr.md",
+      "sha256": "607478ef78cb48a499e0f26f146cf5e428c99c019c6c5f7bf197e7071e368339",
+      "bytes": 1676
+    },
+    {
+      "path": "docs/templates/task.md",
+      "sha256": "5aff41ee0680700c22ba4216fe1803bdae741268721847f179e53bde962435c7",
+      "bytes": 1780
+    }
+  ],
+  "patch_sha256": "6a4c651e34c9fc54ae711b1d560b4e11235b94d7df1b661baeaa68266117df7d"
+}

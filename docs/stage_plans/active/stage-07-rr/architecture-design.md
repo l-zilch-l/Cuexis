@@ -484,7 +484,7 @@ Exact 由作者在判定表中配置为非零宽、包含 0、可非对称的半
 
 **Player 的支持选择。** 容器合法性与可播放能力分别判断。各 Player 开发者自行决定是否接受源包，可提供加载时编译，也可明确报告不支持。此决定不要求加载时编译或自动回退，不要求参考 Player 支持源包，也不承诺替各 Player 实现或维护。
 
-**技术合同入口。** 准备内容、动态表现与时序见[拥有关系与入口](contracts/prepared-artifact.md#拥有关系与入口)、[场景与动态表现](contracts/prepared-artifact.md#场景与动态表现)和[共享时间与运行时边界](contracts/prepared-artifact.md#共享时间与运行时边界)。身份校验、资源闭包和源包派发见[资源闭包与完整身份](contracts/prepared-artifact.md#资源闭包与完整身份)及 [CXC 条目、源包及派发](contracts/prepared-artifact.md#cxc-条目源包及派发)。设计复验进度见[Astra 修订与复验](../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md)，等价验证见 [T-13](tasks/T-13.md)。
+**技术合同入口。** 准备内容、动态表现与时序见[拥有关系与入口](contracts/prepared-artifact.md#拥有关系与入口)、[场景与动态表现](contracts/prepared-artifact.md#场景与动态表现)和[共享时间与运行时边界](contracts/prepared-artifact.md#共享时间与运行时边界)。身份校验、资源闭包和源包派发见[资源闭包与完整身份](contracts/prepared-artifact.md#资源闭包与完整身份)及 [CXC 条目、源包及派发](contracts/prepared-artifact.md#cxc-条目源包及派发)。设计复验进度见[Astra 修订与复验](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-review-resolution.md)，等价验证见 [T-13](tasks/T-13.md)。
 
 ### 其他音游的对照（调研，不是决定）
 

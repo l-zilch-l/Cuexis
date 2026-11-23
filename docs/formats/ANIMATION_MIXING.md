@@ -8,6 +8,7 @@
 id: FORMAT-ANIMATION_MIXING
 status: accepted
 authority: owns
+topics: animation.mixing
 -->
 
 CXC/Chart/CXT 文档负责持久化边界；本文只定义运行时求值与混合语义。ChartParameter、Clip、

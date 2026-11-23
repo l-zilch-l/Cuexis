@@ -1,0 +1,29 @@
+{
+  "scope": "actual CI shell step extracted from workflow, run locally in a temporary Git repository; not hosted CI",
+  "results": [
+    {
+      "case": "missing base",
+      "returncode": 1,
+      "stdout": "Documentation history NOT CHECKED: an event base or explicit docs_base is required.\n",
+      "stderr": ""
+    },
+    {
+      "case": "self base",
+      "returncode": 1,
+      "stdout": "Documentation history NOT CHECKED: the base must differ from the checked tip.\n",
+      "stderr": ""
+    },
+    {
+      "case": "valid older base",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "case": "invalid base",
+      "returncode": 128,
+      "stdout": "",
+      "stderr": "fatal: Needed a single revision\n"
+    }
+  ]
+}

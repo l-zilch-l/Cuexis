@@ -1,5 +1,11 @@
 # Stage 6 Reports
 
+<!-- cuexis-meta
+id: INDEX-stage_reports.stages.stage-06
+status: active
+authority: index
+-->
+
 状态：historical（Stage 6 已于 2026-09-27 关闭并归档）
 
 更新日期：2026-10-01

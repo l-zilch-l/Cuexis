@@ -30,8 +30,20 @@ TOP_LEVEL = ("CURRENT_STATUS.md", "PROJECT_GUIDE.md", "ROADMAP.md", "DOCUMENTATI
 
 BUILD_LITERAL = re.compile(r"\b\d{2}\.\d{2}\.\d{2}-\d+\b")
 SDK_LITERAL = re.compile(r"SDK API\s*`?(\d+\.\d+\.\d+)`?")
-HISTORICAL_MARKERS = ("历史", "归档", "historical", "已被取代", "旧", "基线", "baseline", "此前", "不外推", "不作为当前", "示例")
+HISTORICAL_MARKERS = ("历史版本", "历史构建", "历史 SDK", "历史sdk", "此前", "historical", "previously")
 FACTS_SKIP_STATUSES = {"historical", "evidence", "completed", "superseded", "archived", "deferred"}
+_MAP_MODULE = None
+
+
+def map_generator():
+    global _MAP_MODULE
+    if _MAP_MODULE is None:
+        spec = importlib.util.spec_from_file_location("facts_docs_map", Path(__file__).with_name("gen_docs_map.py"))
+        if spec is None or spec.loader is None:
+            raise ImportError("cannot load shared documentation metadata parser")
+        _MAP_MODULE = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(_MAP_MODULE)
+    return _MAP_MODULE
 
 
 def version_info() -> tuple[str, str]:
@@ -83,10 +95,8 @@ def candidate_files() -> list[Path]:
 
 
 def document_status(path: Path) -> str:
-    """Read the machine status from the cuexis-meta block, if present."""
-    head = "\n".join(path.read_text(encoding="utf-8").splitlines()[:40])
-    match = re.search(r"(?m)^status:\s*([A-Za-z_-]+)\s*$", head)
-    return match.group(1).lower() if match else ""
+    """Use the same real-header parser as routing and structure checks."""
+    return map_generator().parse_meta(path.read_text(encoding="utf-8")).get("status", "")
 
 
 def scan(files: list[Path], sdk: str, build: str) -> list[tuple[str, int, str, str]]:
@@ -97,27 +107,34 @@ def scan(files: list[Path], sdk: str, build: str) -> list[tuple[str, int, str, s
             continue
         if relative.startswith("docs/adr/"):
             continue
+        if path.name == "findings.md":
+            # A register preserves dated original claims and evidence, not live version declarations.
+            continue
         if document_status(path) in FACTS_SKIP_STATUSES:
             continue
-        in_fence = False
-        for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
-            if line.strip().startswith("```"):
-                in_fence = not in_fence
-                continue
-            if in_fence:
-                continue
-            lowered = line.lower()
-            if "cuexis-facts-exempt" in line:
-                continue
-            if any(marker in lowered or marker in line for marker in HISTORICAL_MARKERS):
-                continue
-            for literal in BUILD_LITERAL.findall(line):
-                if literal != build:
-                    findings.append((relative, number, literal, f"build identity is {build}"))
-            for literal in SDK_LITERAL.findall(line):
-                if literal != sdk:
-                    findings.append((relative, number, literal, f"SDK API is {sdk}"))
+        visible = map_generator().unfenced_text(path.read_text(encoding="utf-8"))
+        for number, line in enumerate(visible.splitlines(), start=1):
+            for pattern, expected, label in ((BUILD_LITERAL, build, "build identity"), (SDK_LITERAL, sdk, "SDK API")):
+                for match in pattern.finditer(line):
+                    literal = match.group(1) if pattern is SDK_LITERAL else match.group(0)
+                    if literal != expected and not historical_literal(line, match.start(), match.end()):
+                        findings.append((relative, number, literal, f"{label} is {expected}"))
     return findings
+
+
+def historical_literal(line: str, start: int, end: int) -> bool:
+    """Explicit local history/experimental evidence is allowed; generic baseline/archive words are not."""
+    prefix = re.split(r"[；;。|]", line[:start])[-1].lower()
+    suffix = re.split(r"[；;。|]", line[end:])[0].lower()
+    if re.search(r"当前|现行|current\b", prefix):
+        return False
+    if re.match(r"[`\s]*(?:（历史|\(historical|（格式示例|（示例)", suffix):
+        return True
+    history = any(marker in prefix for marker in HISTORICAL_MARKERS) or bool(
+        re.search(r"(?:历史|historical)[ \t：:]*$", prefix)
+    )
+    experiment = re.search(r"原型(?:实现|验证|证据)|(?:candidate|实验)(?:实现|验证|证据)", prefix)
+    return history or bool(experiment) or "例如" in prefix
 
 
 def limits_is_current() -> bool:
@@ -242,9 +259,9 @@ def main(argv: list[str]) -> int:
         for relative, number, literal, expected in findings:
             print(f"{relative}:{number}: found {literal}; {expected}")
 
-    # Version drift is reported as a warning: historical documents legitimately mention old builds and
-    # the allowlist is maintained by hand. Only the generated-block check is fatal.
-    print(f"version-drift findings: {len(findings)} (warning; see --list)")
+    if findings:
+        failures.append("current documentation contains version drift; see --list (historical values need local context)")
+    print(f"version-drift findings: {len(findings)} (current claims fail; see --list)")
     if failures:
         for failure in failures:
             print("FAIL: " + failure)

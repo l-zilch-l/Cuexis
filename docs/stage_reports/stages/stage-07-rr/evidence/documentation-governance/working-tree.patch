@@ -1,0 +1,625 @@
+diff --git a/docs/CURRENT_STATUS.md b/docs/CURRENT_STATUS.md
+index 88a30623..811ac2c1 100644
+--- a/docs/CURRENT_STATUS.md
++++ b/docs/CURRENT_STATUS.md
+@@ -19,132 +19,49 @@ current_register: stage_plans/active/stage-07-rr/findings.md
+ 
+ ## 当前任务
+ 
+-- **当前为 Stage 7-RR：Review and Refactoring After Stage-7**：owner 要求把 2026-11-17 全项目只读复核
+-  （10 个并行子代理按模块审查 + 抽查）的发现登记为一个位于 Stage 7 与 Stage 7.5 之间的独立阶段，
+-  路线为 Stage 7 → Stage 7-RR → Stage 7.5 → Stage 8，后续编号不变。计划见
+-  [Stage 7-RR 计划](stage_plans/active/stage-07-rr/plan.md)，逐条问题、证据状态与拆分预算事实见
+-  [发现登记册](stage_plans/active/stage-07-rr/findings.md)。登记结果为 P0 两项（本文件的日期版本与
+-  分支／PR 陈述过期，已就地订正）、P1 一批（文档-实现合同、格式互操作、诊断码与主机构建面）与
+-  P2 一批。owner 同日确定本阶段方向为**架构减重重构**（现行"2 条产品线 × 5 条格式线 × 3 套时间 ×
+-  2 条渲染路径"过于臃肿），并取消超行文件拆分（全仓仅 1 个 `.cpp` 超 800 行）；
+-  8 份架构研究已于同日完成，结论与 6 个减重选项见
+-  [架构与实现研究](stage_reports/stages/stage-07-rr/2026-11-17-architecture-research.md)；
+-  RR-3 范围已按[计划 D-05](stage_plans/active/stage-07-rr/plan.md#4-已确认方向与决策台账)限定为
+-  R1/R5/R6；原 R2/R3/R4 延期边界已由下述 2026-11-23 具名扩展取代，历史研究保留。
+-  两名 Astra [首次独立复审](stage_reports/stages/stage-07-rr/2026-11-22-astra-executor-review.md)及其[九项修订复验](stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md)保留当时范围。随后独立 checkout 复审发现合同接线与任务检查仍有缺口，当前处置、实际验证与限制见[本轮报告](stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md)。
+-  生产未实施；正式实施前的计划检查及最小文档订正已完成，见[本轮报告](stage_reports/stages/stage-07-rr/2026-11-22-pre-implementation-plan-check.md)，任务承接、调度和验收缺口归[登记册 §23](stage_plans/active/stage-07-rr/findings.md#23-正式实施前计划检查2026-11-22)，待决与下一步见 [HANDOFF](HANDOFF.md#下一步)。[T-01](stage_plans/active/stage-07-rr/tasks/T-01.md)及后续生产实施须 owner 后续明确启动；`NEXT` 已纳入本轮统一任务安排。
+-  2026-11-23 续议已明确设备等待超时由各平台 Player 实现和决定，SDK 不实现该机制；设计与验收以[附页 D-09](stage_plans/active/stage-07-rr/architecture-design.md#会话控制串行化d-09已确认目标与验收场景非现状或实施授权)为准。
+-  同日 owner 接受 F501 有效性与 F135 错误分类修订，已同步合同及 T-03/T-06/T-17、A-06；两项不再待设计裁定，实现与运行验证仍未完成，详见[登记册 §23](stage_plans/active/stage-07-rr/findings.md#23-正式实施前计划检查2026-11-22)。
+-  2026-11-23 已完成本轮范围与行为裁定：v3 本轮实现并实验验证；随后 owner 在未来路线续议中将 Stage 8 改为 Chart v5＋Gameplay v3 正式主线，保留已承诺旧内容兼容；v5 沿用原作者表现语法，F203 登记前整批验证，全面结构清理全部纳入。T-01–T-17 已统一排期、T-09 最终退出；组合文档检查通过，生产未启动，记录见[登记册 §24](stage_plans/active/stage-07-rr/findings.md#24-统一实施前设计裁定2026-11-23)。
+-  同日已按 RR 接受的方向调整[后续路线衔接](ROADMAP.md#rr-成果与后续阶段的衔接)及 Stage 7.5、8–14 计划：后续复用 RR 实际交付，分别保留高级能力、正式发行、创作工具、平台与稳定 SDK 的验收责任；未来阶段仍未启动。正式目标续议见[登记册](stage_plans/active/stage-07-rr/findings.md#stage-8-正式主线续议2026-11-23)，RR 的候选默认能力与实验验收不因此提前晋升。
+-  2026-11-23 按 owner 要求再次复查 plan 和全部任务的执行前提，订正审批/范围残留及验收偏差；[复查证据](stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md)与[接手入口](HANDOFF.md)记录当前结果和下一步，产品实施仍未启动。
+-  上一轮完成了[候选合同与任务](stage_plans/active/stage-07-rr/design-readiness.md)对齐、四组冷启动复验及主代理最终组合文档检查；
+-  当时的结论、通过记录和输入封存入口保留在[上一轮报告](stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md)。
+-- **文档治理第一批已完成（2026-11-17）**：文档入口新增生成式路由页 [docs/MAP.md](MAP.md)；
+-  170 篇合同/计划、424 篇证据报告、70 篇提案/示例/历史文档带 `cuexis-meta` 元数据块；
+-  `AGENTS.md` 顶部改为生成状态块；新增 `tools/verification/gen_docs_map.py`（生成 MAP 与 AGENTS 块）
+-  与 `tools/verification/check_docs_facts.py`（生成物新鲜度与版本字面量），已接入
+-  `tools/check_pre_push.ps1`。规则见 [DOCUMENTATION_POLICY.md](DOCUMENTATION_POLICY.md)；
+-  批次报告见[文档治理重构](stage_reports/stages/stage-07-rr/2026-11-17-documentation-refactor.md)。
+-  `docs/stage_reports/**` 与 `docs/archive/**` 为证据、非权威；结构保持不变。
+-- **假保证与假实现扫描已完成（2026-11-17）**：7 个无上下文子代理按模块比对「承诺 vs 实现」，
+-  48 条候选、26 条经复核确认、23 条未复核分类。最高危为 `ChartWriter` 保存丢 timing/模板/keyframe
+-  与三个恒为常量的诊断字段；报告见[扫描结果](stage_reports/stages/stage-07-rr/2026-11-17-false-guarantees-scan.md)。
+-  **修复未开始**，处置顺序见报告末节。
+-- **R4／Stage 7-RPA 已带限制退出**：owner 在审查九项推荐后接受裁决方向，O3 退出裁定已完成。
+-  PD-5／Stage 7-PD 的受限退出及原 Stage 7A 收尾包交接同时获接受；原失败、未认证范围和 testOnly 保留。
+-  唯一关闭及遗留责任入口见[受限退出与缺陷交接](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-14-limited-exit-and-defect-handoff.md)。
+-- **历史实现基线验证已完成，本次发布候选独立绑定**：已验证代码为 `d1951326b0f2683801fa5fe168f09c8dac43f957`，
+-  tree 为 `55ff54c9160c52de3cdb318687d5fd6bb8ba9623`。F1 十一行 local_pass、13,632 项执行、
+-  26 项 skip、0 失败；同 SHA 三平台 F2 及当时适用版本门通过。其日期版本为 `26.11.13-1`（历史），
+-  不代表本日新触发的 live 版本门通过。P5／设备正式测量仍绑定 `ce2a9a69`，原封存包不改。
+-  那轮发布（2026-11-14）只包含关闭／Stage 7.5 规划、文档检查器及日期版本 `26.11.14-1`（历史）；没有产品源码、SDK、
+-  profile 或 caps 变化。当前工作树日期版本见[版本权威](../cmake/CuexisVersion.cmake)，本轮交付文档与日期构建身份，
+-  不外推旧十一行 F1 或旧 hosted 结果到新日期版本。
+-- **P7 听音／O2 实体操作已获主观范围接受**：owner 本次反馈“没有出现异常”。
+-  不外推未提供细目的设备拔插、仪器或精确 AV 数值；此前持续降帧和卡顿记录保持。
+-- **Stage 7.5：Gameplay Evolution 仍为独立规划**：原 7B+ 已完整移出 Stage 7，计划和报告目录为
+-  `stage-07-5`。能力实施、局部重构与性能稳定独立管理，产品实施未开始；入场前置增加
+-  “Stage 7-RR 当前计划范围完成并取得 owner 接受”。
+-
+-当前工作树为 `E:/Cuexis-worktree`，分支为 `stage-7-rr`；HEAD 以 `git rev-parse --short HEAD` 为准，不在此页固化。
+-PR #44 已于 2026-11-14（`564e0d90`）合并，PR #45 已于 2026-11-16（`aac83e5e`）合并；
+-`codex/r4-closeout` 只作历史分支保留。当前计划检查处置与后续见 [HANDOFF](HANDOFF.md#下一步)；未取得 merge／release 授权。
+-Stage 7 的历史发布证据与评论回读仍保存在 `out/evidence/stage7-publication-20261114/`，
+-原样保留，不为回填自身 SHA 改写旧候选。
+-逐批历史与原始证据见[Stage 7 报告索引](stage_reports/stages/stage-07/README.md)及
+-[证据清单](stage_reports/stages/stage-07/05-rpa-new/evidence-catalog.md)。
++当前为 [Stage 7-RR](stage_plans/active/stage-07-rr/plan.md)，包含合同与正确性修正、架构减重、完整结构清理、Gameplay v3 实验实现，以及文档治理。发现与处置以[登记册](stage_plans/active/stage-07-rr/findings.md)为准，任务与依赖见[阶段目录](stage_plans/active/stage-07-rr/README.md)和[唯一调度](stage_plans/active/stage-07-rr/schedule.md)。
++
++当前处理 RR 的文档管理与整理：已编写[治理分册](stage_plans/active/stage-07-rr/documentation-governance.md)，并精简计划索引与本状态页。分册的治理规则仍待审，校验器补强和报告分类迁移尚未启动。
++
++RR 产品任务已完成本轮设计裁定与实施准备复查，生产未启动；后续明确启动后，从 T-01 绑定实际输入。当前计划准备的证据见[接手复查报告](stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md)，后续操作与验证状态只在 [HANDOFF](HANDOFF.md)维护。
+ 
+ ## 阶段状态
+ 
+ | 阶段 | 当前状态 | 入口 |
+ | --- | --- | --- |
+-| Stage 7A | S7A-3/4、5/6、7/8 既有受限功能及原 S7A-9 收尾包已随 RPA 获受限交接接受，不另回挂收尾任务；生产与未认证范围延期 | [Stage 7A 计划](stage_plans/completed/stage-07/01-a/plan.md) |
+-| Stage 7-RPA | R1–R4 已退出；R4 为 owner 接受的带缺陷／未认证范围退出，F3 生产仍延期，testOnly 保留 | [整改计划](stage_plans/completed/stage-07/05-rpa-new/plan.md)、[关闭与交接](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-14-limited-exit-and-defect-handoff.md) |
+-| Stage 7-PD | 带限制退出及遗留交接已接受；PD-5 历史“未通过但定案”保持 | [PD 计划](stage_plans/completed/stage-07/04-pd/plan.md) |
+-| Stage 7 | 按迁出原 7B+ 后的既有范围受限收束；历史失败、未认证范围与 testOnly 不改 | [Stage 7 计划](stage_plans/completed/stage-07/plan.md) |
+-| Stage 7-RR：Review and Refactoring After Stage-7 | RR-0 与文档治理第一批完成；2026-11-23 全部任务、实验能力与具名全面结构清理已统一安排；设计裁定完成，生产未实施 | [计划](stage_plans/active/stage-07-rr/plan.md)、[可实施性索引](stage_plans/active/stage-07-rr/design-readiness.md)、[本轮处置](stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md) |
+-| Stage 7.5：Gameplay Evolution | 独立阶段规划与交接准备；继承受限基线，产品实施未开始；入场前置含 Stage 7-RR 接受 | [独立计划](stage_plans/active/stage-07-5/plan.md) |
+-
+-Stage 0–6 已完成；Stage 7 按拆分后的范围受限收束，原高级能力不回写为已实施；Stage 7-RR 为当前阶段；
+-Stage 7.5 未开始实施；Stage 8–14 尚未开始。
+-阶段依赖与后续安排见[Stage 7 总计划](stage_plans/completed/stage-07/plan.md)、
+-[Stage 7-RR 计划](stage_plans/active/stage-07-rr/plan.md)和[路线图](ROADMAP.md)。
++| Stage 7-RR | 当前阶段；文档方案与状态整理中，生产未实施 | [总计划](stage_plans/active/stage-07-rr/plan.md)、[文档治理分册（待审）](stage_plans/active/stage-07-rr/documentation-governance.md) |
++| Stage 7.5 | 尚未实施；以 RR 完成并获接受为入场前置 | [计划](stage_plans/active/stage-07-5/plan.md) |
++| Stage 8–14 | 尚未启动；Stage 8 以 Chart v5＋Gameplay v3 为正式主线 | [路线图](ROADMAP.md)、[计划索引](stage_plans/README.md) |
++
++Stage 7 已按原范围受限退出，旧失败、未认证范围和 testOnly 状态继续有效；原高级能力由 Stage 7.5 承接。历史阶段和批次通过[计划索引](stage_plans/README.md)与[Stage 7 报告索引](stage_reports/stages/stage-07/README.md)追溯。
+ 
+ ## 当前遗留问题与生产关闭前置
+ 
+-- **输入累积降帧与状态复制／保活**：已定位 Gameplay evaluation 深复制、累积输入历史复制和 Replay
+-  历史状态保活；密集实体输入诊断末段约 120 FPS。原明显卡顿、renderer submit 差额及长期影响未全部解释。
+-  整改由独立 Stage 7.5 的 GE-R 在能力工作线后集中处理；期间若阻断功能实施只做必要最小修复，
+-  不得外推高频输入／长活动性能保证。
+-- **计时重复性限制保持**：普通 host 外层、P5 Close/load_host、P3 三项外层、capture-4 及 Seek
+-  fallback/cold 仍 inconclusive，本轮停止补跑。P5 已用 4/5，第五次未用；旧 CPU/device/P8 台账不重置。
+-- **完整内存／GPU／P8 未认证**：完整 ownership/lifetime 图、原点超额处置、prepare-only／释放边界、
+-  n2048 residency 与 GPU observer 准入仍缺；正式 memory/P8 qualification 继续 blocked，原 caps 保持。
+-  P8 额外 high 调用与 controller 来源缺口按历史例外结案，不追认、不恢复额度、不补造原字节。
+-- **原 P7 自动门仍有失败与缺证据**：旧 DFJK 40 分／19 hit／2 miss 未达 46／21／0；
+-  normal 三窗与适用 ExecutionHost ≥600 秒活动证据缺失。按未认证范围延期，新课程不替换原失败；
+-  音乐 retention 适用性独立。
+-- **F3 校准与生产参数延期**：保持 testOnly；代理准备逐 profile 的参数、设备／规模／retention、
+-  余量与超额行为，owner 在实际校准及证据齐备后接受。精确 AV 等未证实项目在需要对应保证时补证。
+-- **既有历史限制继续有效**：PD-0 慢态、R0 partial／旧 Q4 inconclusive、B5 capture_gap／重复 Pause、
+-  CXC 现场持有者未知等不因退出视为已修复。40K 不作为 240 FPS 适用规模；登记容量及既有例外不外推。
+-
+-以上均已作为退出限制处置，不是原门全部通过。逐项责任、证据及恢复条件集中保存在
+-[受限退出与缺陷交接](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-14-limited-exit-and-defect-handoff.md)，
+-后续责任与实施入口归[Stage 7.5](stage_plans/active/stage-07-5/plan.md)，
+-扩大保证范围或生产接受前须取得对应新证据，不重写旧结果。
+-
+-## 产品边界
+-
+-Cuexis 由可嵌入的 Playback SDK、独立 Cuexis Player 和 Cuexis Studio 构成。
+-外部宿主使用公共 Playback API；RuntimeSession、World、EnTT、SDL 和 OpenGL 属于内部或可选实现。
+-
+-产品决策见[ADR 0027](adr/0027-playback-sdk-product-boundary.md)，公共接口见[API reference](api/README.md)。
++以下限制仍有效，整理文档不能视为已修复或扩大保证范围。
++
++| 遗留或限制 | 当前处置与边界 |
++| --- | --- |
++| 输入累积降帧、状态复制和 Replay 保活 | 性能影响尚未全部解释；由 Stage 7.5 的 GE-R 在能力工作线后集中整改，期间仅处理阻断功能实施的必要修复 |
++| CPU/设备计时及 Seek 重复性 | 原 inconclusive 与停止补跑结论保留；既有采样额度和设备/P8 台账不因阶段退出或文档整理重置 |
++| 完整内存、GPU 与 P8 认证缺口 | ownership/lifetime、释放边界、residency 和 GPU observer 等证据仍不完整；正式 qualification 保持 blocked，原 caps 与历史例外保持 |
++| 原 P7 自动门失败和活动证据缺失 | 原失败及未认证范围继续延期；新课程和主观听音结果不替代原门，音乐 retention 适用性独立核实 |
++| F3 校准与生产参数 | 保持 testOnly；扩大保证范围前完成相应 profile、设备、规模、余量及超额行为的校准和接受；精确 AV 等缺证项目独立补证 |
++| 其他历史限制 | PD-0 慢态、R0 partial、旧 Q4 inconclusive、B5 capture_gap/重复 Pause、CXC 现场持有者未知及旧规模限制继续有效 |
++
++逐项责任、原始指标、证据额度和恢复条件见[受限退出与缺陷交接](stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-14-limited-exit-and-defect-handoff.md)，后续承接见 [Stage 7.5 计划](stage_plans/active/stage-07-5/plan.md)。既有报告中的提交、构建身份和通过结果只适用于其原受验对象，不能外推到当前工作树。
+ 
+ ## 当前格式与 SDK 合同
+ 
+-- 当前工作树 SDK API 与日期构建身份以[版本权威](../cmake/CuexisVersion.cmake)为准；SDK 仍处于 preview。
+-  此前 `26.11.14-1` 与 `26.11.13-1` 为历史构建身份，不作为当前值引用。
+-  历史实现点 `d1951326` 的 F1/F2 绑定 `26.11.13-1`；`26.11.14-1` 那次关闭落档形成独立发布候选，
+-  实际版本门与 hosted 结果按当时记录绑定核验。
+-  不把后继 SHA 写成旧十一行 F1 的受验点，原通过不外推为发行结论。
+-  R3 来源绑定新增 candidate 类型和 `StepTarget` 字段，消费者须整体重建，不能混用旧二进制。
+-  PD-4 历史基线仍为 0.9.0。版本决定见[版本政策](guides/VERSIONING.md#091-r3-candidate-来源绑定)，
+-  STATIC/SHARED、安装消费者及兼容门的本轮证据见关闭记录绑定的 d195 最终矩阵。
+-- Gameplay v2 是当前实施基线，顶层合同仍为 candidate；局部实现不等于整批验收。语义与运行边界见
+-  [Gameplay V2 Spec](formats/GAMEPLAY_V2_SPEC.md)、[ABI](api/GAMEPLAY_V2_ABI.md)及[RPA 补充合同](formats/rpa-execution-contract.md)。
+-- Chart v1–v4 的既有兼容路径保留；Chart v5、CXT v2、Packed Chart 与 Canonical Gameplay Graph 仍为显式候选路径，正式发行收敛归 Stage 8。
+-- 稳定 C ABI 归[Stage 14](stage_plans/future/stage-14/plan.md)，当前只提供 C++ typed preview。
+-
+-各格式的生产/候选状态与权威文档见[格式索引](formats/README.md)。
++- 当前 SDK API 与日期构建身份见[版本权威](../cmake/CuexisVersion.cmake)，SDK 仍处于 preview。当前消费者的兼容和重建要求见[版本政策](guides/VERSIONING.md)，稳定 C ABI 归 [Stage 14](stage_plans/future/stage-14/plan.md)。
++- Gameplay v2 是当前实施基线，顶层合同仍为 candidate；局部实现不等于整批验收。见 [V2 Spec](formats/GAMEPLAY_V2_SPEC.md)、[ABI](api/GAMEPLAY_V2_ABI.md)及 [RPA 合同](formats/rpa-execution-contract.md)。
++- Chart v1–v4 的既有兼容路径保留；Chart v5、CXT v2、Packed Chart 与 Canonical Gameplay Graph 仍为显式候选路径。RR 的 Gameplay v3 实验实现与 Stage 8 的正式发行分别验收；旧内容按已承诺规则、时间及身份兼容。
++
++格式能力状态与权威入口见[格式索引](formats/README.md)，Playback SDK、Player 与 Studio 的职责见[产品边界 ADR](adr/0027-playback-sdk-product-boundary.md)及 [API 索引](api/README.md)。
+ 
+ ## 延期和禁止边界
+ 
+-运行时脚本和逐帧 script callback 无限期延后，不预留字段、capability、bytecode、ABI 或 Playback hook。
+-离线 authoring generator 不会被 pack、prepare 或 Playback 隐式执行。
++运行时脚本和逐帧 script callback 无限期延后，不预留字段、capability、bytecode、ABI 或 Playback hook。离线 authoring generator 不会被 pack、prepare 或 Playback 隐式执行。
+ 
+ ## 更新规则
+ 
+-只更新当前结论，完成或被替代的状态应就地更新或删除。
+-测试轮次、命令、提交经过、授权沟通和历史问题处置保存在阶段报告中，不向本文追加过程日志。
++本文只保留当前阶段、任务进展和仍有效的限制。完成或被替代的过程描述从摘要中移除；历史测试、提交、授权与处置经过保存在原报告和计划，不向本页追加过程日志。
+diff --git a/docs/DOCUMENTATION_POLICY.md b/docs/DOCUMENTATION_POLICY.md
+index 524e9c42..7de41e83 100644
+--- a/docs/DOCUMENTATION_POLICY.md
++++ b/docs/DOCUMENTATION_POLICY.md
+@@ -2,7 +2,7 @@
+ 
+ 状态：已接受的文档整理政策
+ 
+-更新日期：2026-10-06
++更新日期：2026-11-23
+ 
+ <!-- cuexis-meta
+ id: GUIDE-DOC-POLICY
+@@ -19,6 +19,7 @@ authority: owns
+ | ADR | 背景、备选方案、决策、影响和接受门禁 | 当前构建结果、完整字段参考、逐次测试日志 |
+ | Spec | 字段、语义、版本、预算、错误和兼容合同 | 阶段进度、机器环境和一次性验证输出 |
+ | Plan | 目标、范围、批次、依赖、门禁和交接 | 重新定义已接受字段，复制全部 ADR 正文 |
++| Task | 一个独立任务的目标、输入、写域、步骤、验收、证据和停止条件 | 重复维护阶段依赖或擅自改变计划/ADR 合同 |
+ | Report | 某个时间点的实施、审查和证据 | 把历史快照冒充当前状态 |
+ | Guide/Policy | 操作步骤、编码规则、依赖和版本维护规则 | 维护产品路线图的第二份副本 |
+ | Index/Status | 导航和当前摘要 | 复制完整技术合同 |
+@@ -107,6 +108,8 @@ docs/stage_reports/sdk-transition/
+ 带日期的报告使用 `YYYY-MM-DD-topic.md`；ADR 继续使用 `NNNN-short-title.md`。根目录稳定入口和
+ 旧路径兼容页是明确例外，不要求改名。
+ 
++已启动阶段的任务卡放在 `stage_plans/active/<stage>/tasks/T-xx.md`，使用七段任务模板；任务依赖只在同阶段 `schedule.md` 维护。新 ADR 使用 `docs/templates/adr.md` 起草；未接受前标记为 candidate/none，接受后同步更新决策状态、元数据权威级别及 ADR 索引。
++
+ 单个文档移动可以保留旧路径兼容短页至少一个整理周期。兼容页只链接 canonical 文档，不复制正文，并标记
+ `状态：compatibility entry`。但是，批量 stage plan/report 重组不得用大量单页 stub 重新制造平铺目录；
+ 应在相应目录的 `legacy-paths.md` 中把旧逻辑路径以代码文字映射到 canonical 文档。该映射不承诺旧的
+diff --git a/docs/HANDOFF.md b/docs/HANDOFF.md
+index 77992692..ec25bacf 100644
+--- a/docs/HANDOFF.md
++++ b/docs/HANDOFF.md
+@@ -16,7 +16,11 @@ authority: owns
+ 
+ ## 当前任务
+ 
+-owner 最新要求是复查 plan 和 task 中可能阻碍 agent 执行的决策、待定项和不确定表述，确认后编写接手文档。本轮审查与订正记录见[接手复查报告](stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md)；本页是下一位 agent 的执行入口。
++owner 要求将文档管理与整理归入 RR，同时精简 CURRENT_STATUS 的历史描述；随后要求补充 task 和 ADR 模板。本轮新增[任务卡模板](templates/task.md)与[ADR 模板](templates/adr.md)，并更新模板索引、文档入口和政策指针。
++
++分册仍为 candidate，覆盖文档职责、命名分类、发现登记、权威来源、分层检查、报告迁移及验收。后续明确接受并启动后，再同步任务写域与唯一调度；本轮未实施治理检查器或报告迁移。
++
++此前 plan/task 可实施性复查已完成，记录见[接手复查报告](stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md)。该产品实施入口仍保留，不能把本轮治理方案编写视为产品实施授权。
+ 
+ 工作区为 `E:\Cuexis-worktree`，分支 `stage-7-rr`。本次审查时的历史 HEAD 为 `db6042b659139ac86bb52192e18132309c2aab27`，当时输入另含尚未提交的文档和三份新报告。owner 随后要求提交并推送，这些输入随本次文档提交一同交付；接手须取得包含本页及三份报告的后继提交，不能只 checkout 审查前的旧 HEAD。开始实施时重新核对实际 HEAD/tree 与工作树，按 T-01 绑定输入。生产实现尚未启动。
+ 
+@@ -56,13 +60,19 @@ stage_plans/active/<stage>/
+ 
+ ## 下一步
+ 
++本轮交付归入 RR 的治理分册及精简后的当前状态/计划索引，尚未接受和启动其 G-01–G-05。若 owner 后续明确要求按方案实施，先同步 RR 对应任务写域与唯一调度，再从 G-01 绑定实际输入、收敛正式规则；G 编号只作分册拟议步骤。
++
++以下为此前已准备好的产品实施路径，仅在 owner 明确启动产品实施时采用：
++
+ 1. 若 owner 下一条指令明确启动实施，直接执行 [T-01](stage_plans/active/stage-07-rr/tasks/T-01.md)：固定实际 HEAD/tree、文档修订、补丁及相关未跟踪原文/哈希，取得当前冷启动回执，登记一次采用。本次文档复查不代替实施时的基线绑定。
+ 2. 依[调度](stage_plans/active/stage-07-rr/schedule.md)推进。各卡先创建自己负责的 target/schema/测试，再按卡执行正反验收；后继卡只消费已交付的产物。T-02/T-05/T-17 允许按独立写域并行，共享 CMake、登记册、状态页和生成物由集成者串行汇合。
+ 3. 每卡留下对应修订的实际证据，T-07 在实现汇合后整理文档，T-09 核全部验收与发现并提交阶段退出接受。不要将本轮已纳入的实验能力或全面结构清理整体延期。
+ 
+ ## 阻塞与待决
+ 
+-本轮已完成 plan、全部任务卡及关联合同的复查和交叉复核；已发现的文档阻碍均已订正，未发现仍需 owner 先裁定的当前 RR 产品选择。具体修订与复核回执见上述报告。
++文档治理归属 RR 已确认，具体方案仍待审，本轮未启动实施。后续需分别验证结构完整性、代码派生事实和真实功能证据，现有门禁通过不代表未来新增约束已经交付。
++
++此前已完成产品 plan、全部任务卡及关联合同的复查和交叉复核；当轮已发现的文档阻碍均已订正，未发现仍需 owner 先裁定的当前 RR 产品选择。具体修订与复核回执见上述报告。该次复查不证明现有工具已能自动约束全部后续文档修改。
+ 
+ 实际运行失败、缺失的旧交付资料或新发现的合同冲突须据实记录。按 T-01 区分“有依据的不适用”和“已承诺但缺证据”，保持旧兼容行为；仅在需改变规则、兼容承诺或接受缺证据退出时询问 owner，暂停受影响切片，其余独立工作继续。不能把 future 提纲的发行矩阵、设备容量或版本决定当作当前 RR 的设计前置。
+ 
+@@ -70,12 +80,22 @@ stage_plans/active/<stage>/
+ 
+ ## 验证状态
+ 
+-本轮文档检查、事实检查（漂移 0）、生成物新鲜度、调度检查及其 27 项测试、diff 空白检查均通过；本地链接/章节锚无错误。调度副本的错误前置和缺失停止条件均按预期拒绝，正本哈希不变。两组独立复核及其增量复验均已返回，实际命令、修订与限制见[复查报告](stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md)。
++本轮分册归属、状态精简和局部配置订正的文档检查、事实检查、生成路由新鲜度、状态合同自测及 diff 空白检查均通过。独立复核已实际读取相关文件并对照 HEAD 版 CURRENT_STATUS，未发现有效限制遗漏、归属或旧路径残留问题。这些结果不代表治理分册的新增门禁已经实现；此前方案独立审阅发现的实验/正式状态区分及主题登记保护问题已订正并落盘。
+ 
+-提交前另验日期版本一致性与当前版本门通过；版本检查器整套自测受 Windows 进程内 Git 配置环境恢复影响，出现 `missing config value GIT_CONFIG_VALUE_0`。原用例逐个独立进程复验：24 项通过，2 项因缺少可用 POSIX shell 按原条件跳过；未修改检查器或放宽断言。
++此前产品计划复查的文档检查、事实检查（漂移 0）、生成物新鲜度、调度检查及其 27 项测试、diff 空白检查均通过；本地链接/章节锚无错误。调度副本的错误前置和缺失停止条件均按预期拒绝，正本哈希不变。两组独立复核及其增量复验均已返回，实际命令、修订与限制见[复查报告](stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md)。
+ 
+-本次提交交付文档，并按更新 PR 的仓库规则同步日期构建身份与生成路由；SDK API 与产品实现未改变。产品运行、安装消费者、窗口/设备和正式发行的通过状态必须由对应实施任务取得。提交和远端同步状态以当前 Git 记录为准。
++此前提交前另验日期版本一致性与当前版本门通过；版本检查器整套自测受 Windows 进程内 Git 配置环境恢复影响，出现 `missing config value GIT_CONFIG_VALUE_0`。原用例逐个独立进程复验：24 项通过，2 项因缺少可用 POSIX shell 按原条件跳过；未修改检查器或放宽断言。
++
++此前提交交付文档，并按更新 PR 的仓库规则同步日期构建身份与生成路由。产品运行、安装消费者、窗口/设备和正式发行的通过状态必须由对应实施任务取得。提交和远端同步状态以当前 Git 记录为准。
+ 
+ ## 最近改动
+ 
+-本次清除重复设计审批和候选范围移交的残留表述，统一逐组 API 迁移条件，并补齐工作树输入与旧兼容证据的交接规则。逐项修订及任务卡交叉复核见[复查报告](stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md)。
++新增 task 与 ADR 模板，并同步模板索引、文档入口及文档政策。
++
++治理分册归入 RR，补齐阶段目录、总计划及计划索引入口；精简 CURRENT_STATUS，保留仍有效的遗留边界，并局部同步状态合同的该页检查项。
++
++精简计划总索引，合并重复历史入口，把“修正工作包”改为简短的“历史复核计划”，移除已关闭阶段的重复背景长段。
++
++新增待审治理方案及导航，明确 RR 报告的推荐归类、登记册历史保护和分层门禁的拟议验收；检查器、正式政策和报告路径留待明确启动后修改。
++
++此前清除重复设计审批和候选范围移交的残留表述，统一逐组 API 迁移条件，并补齐工作树输入与旧兼容证据的交接规则。逐项修订及任务卡交叉复核见[复查报告](stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md)。
+diff --git a/docs/MAP.md b/docs/MAP.md
+index 9065ff2b..1d0f16d1 100644
+--- a/docs/MAP.md
++++ b/docs/MAP.md
+@@ -186,6 +186,7 @@ authority: index
+ | [stage_plans/active/stage-07-rr/contracts/render-player-writer.md](stage_plans/active/stage-07-rr/contracts/render-player-writer.md) | candidate | owns | Stage 7-RR 候选合同：渲染、Player 与写回 |
+ | [stage_plans/active/stage-07-rr/contracts/runtime-timing.md](stage_plans/active/stage-07-rr/contracts/runtime-timing.md) | candidate | references | P1 / P3：运行内核、谱面时间与成品合同 |
+ | [stage_plans/active/stage-07-rr/design-readiness.md](stage_plans/active/stage-07-rr/design-readiness.md) | candidate | index | Stage 7-RR 可实施性索引 |
++| [stage_plans/active/stage-07-rr/documentation-governance.md](stage_plans/active/stage-07-rr/documentation-governance.md) | candidate | none | RR 文档管理与整理方案 |
+ | [stage_plans/active/stage-07-rr/simplification-proposal.md](stage_plans/active/stage-07-rr/simplification-proposal.md) | candidate | summarizes | Stage 7-RR 架构精简方案基线索引 |
+ | [stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-result-candidate.md](stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-result-candidate.md) | candidate | owns | PD-5 C2: caller-owned neutral read result candidate |
+ | [stage_plans/completed/stage-07/05-rpa-new/r3/trusted-restore-candidate.md](stage_plans/completed/stage-07/05-rpa-new/r3/trusted-restore-candidate.md) | candidate | owns | R3b explicit trusted restore candidate |
+diff --git a/docs/README.md b/docs/README.md
+index 6d996802..c8edd0b7 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -8,7 +8,7 @@ authority: index
+ 
+ 状态：现行文档入口
+ 
+-更新日期：2026-11-17
++更新日期：2026-11-23
+ 
+ 本文档是 Cuexis 文档的导航页，不复制产品合同、阶段证据或完整字段定义。当前项目状态只
+ 以 [CURRENT_STATUS.md](CURRENT_STATUS.md) 为准。
+@@ -21,7 +21,7 @@ authority: index
+ - 查RPA领域词义：[Glossary](api/GLOSSARY.md)。
+ - 查当前进度：[CURRENT_STATUS](CURRENT_STATUS.md)。
+ - 新对话先读[交接页](HANDOFF.md)：当前任务、下一步、阻塞与验证状态。
+-- 写作模板：[templates/](templates/README.md)（plan / report / handoff）。
++- 写作模板：[templates/](templates/README.md)（plan / task / ADR / report / handoff）。
+ - 查 Stage 7 后的复核发现与重构批次：[Stage 7-RR 计划](stage_plans/active/stage-07-rr/plan.md)；
+   逐条问题、证据状态与拆分预算事实见[发现登记册](stage_plans/active/stage-07-rr/findings.md)。
+ - 查 Stage 7A 历史实施与已接受交接：[plan-a S7A-7/8接手与决策](stage_plans/completed/stage-07/01-a/plan.md#34-s7a-78-下一轮决策首用合同与接手2026-10-07)；全局路线见[Stage 7总计划](stage_plans/completed/stage-07/plan.md)。
+diff --git a/docs/stage_plans/README.md b/docs/stage_plans/README.md
+index b058ff0d..88d734f1 100644
+--- a/docs/stage_plans/README.md
++++ b/docs/stage_plans/README.md
+@@ -14,165 +14,72 @@ authority: index
+ [CURRENT_STATUS.md](../CURRENT_STATUS.md) 为准；完成证据只以
+ [stage_reports/README.md](../stage_reports/README.md) 为准。
+ 
+-目录约定：
++本页负责定位计划；详细范围、历史决策及验收经过见对应正文。阶段顺序见 [ROADMAP](../ROADMAP.md)。
+ 
+-```text
+-active
+-  当前正在执行或已确定即将执行的计划
++| 目录 | 用途 |
++| --- | --- |
++| `active/` | 当前执行或已确定即将执行的计划；是否启动以当前状态页为准 |
++| `future/` | 后续阶段提纲 |
++| `completed/` | 已完成或已按限制退出的计划 |
++| `deferred/` | 暂缓、等待触发条件的计划 |
++| `historical-inputs/` | 已并入主路线的旧设计输入 |
++| `reviews/` | 跨阶段审查后的整改计划；证据归报告目录 |
+ 
+-future
+-  已规划但尚未进入近期实施队列的阶段计划
+-
+-deferred
+-  暂不排期、等待触发条件或需要重新立项的设计输入
+-
+-historical-inputs
+-  已并入现行主路线、仅供追溯的旧计划输入
+-
+-reviews
+-  某次复核的整改计划；复核记录与其证据仍在 stage_reports/reviews/<review>/
+-```
+-
+-当前 `active` 目录的入口如下：
+-
+-```text
+-chart-format-update-for-v5
+-  Chart v5 跨阶段总工作包，维护 Foundation 至 RR、7.5 和 Stage 8 的设计与交接
+-
+-stage-07-rr
+-  独立 Stage 7-RR：Review and Refactoring After Stage-7，Stage 7 与 Stage 7.5 之间的
+-  复核修正、架构减重、完整结构清理及 Gameplay v3 实验实现与验证
+-
+-stage-07-5
+-  独立 Stage 7.5：Gameplay Evolution，能力演进、局部重构及性能稳定
+-```
+-
+-当前 `reviews` 目录中有两个复核整改计划：
+-
+-```text
+-full-review-2026-08
+-  260829 全项目审查的整改实施计划，已完成
++## 阶段路线
+ 
+-stage-06-review-remediation
+-  Stage 6 双轴复核（13dab93..eaaf375）发现项的修正工作包；2026-09-28 取得实施授权，
+-  批次 R0–R8 已退出并随 PR #30 合并进 master，交付证据见 stage_reports/reviews/stage-06-review-2026-09/；
+-  批次 R9（Reference Host 命令循环与 play/pause）另行开启，已实现并通过最终 tip `cc14fcd` 的
+-  hosted 验证（push 与 pull_request 两事件共 7 个运行全绿），**owner 已于 2026-09-29 接受退出**，
+-  `SPEC-27` 关闭依据完整并记为 closed；owner 同日接受关闭报告并一并接受 R9 契约（含 R9 报告 §5.1 的
+-  冗余 tick 预算守卫，保持现状、不合并），**本工作包已完成（completed）**
+-```
++| 计划 | 定位 |
++| --- | --- |
++| [Stage 7-RR](active/stage-07-rr/plan.md) | 当前复核与重构阶段，含[文档管理与整理方案（待审）](active/stage-07-rr/documentation-governance.md)；[任务与分册](active/stage-07-rr/README.md)、[发现登记](active/stage-07-rr/findings.md) |
++| [Stage 7.5](active/stage-07-5/plan.md) | 尚未实施；Gameplay Evolution 与性能稳定 |
++| [Stage 8](future/stage-08/plan.md) | Chart v5＋Gameplay v3 正式主线及格式发行收敛 |
++| [Stage 9](future/stage-09/plan.md) | Presentation Foundation、Chart v6 / Model v1 |
++| [Stage 10](future/stage-10/plan.md) | Studio 与创作/打包工作流 |
++| [Stage 11](future/stage-11/plan.md) | Chart v7 几何表现与 shader.json |
++| [Stage 12](future/stage-12/plan.md) | 规模化、桌面性能、Android 与 Vulkan |
++| [Stage 13](future/stage-13/plan.md) | Chart v8、后处理与确定性粒子 |
++| [Stage 14](future/stage-14/plan.md) | 稳定 ABI 与 Playback SDK v1 |
+ 
+-Stage 6 已于 2026-09-27 关闭并归档到 `completed/stage-06/`，见
+-[关闭报告](../stage_reports/stages/stage-06/completion.md)。
++## 跨阶段专题
+ 
+-定位入口：[Stage 7 分阶段与批次导航](completed/stage-07/README.md)；报告、批次与原始证据从该表直接进入。
++- [Chart v5 跨阶段计划](active/chart-format-update-for-v5/plan.md)：汇合格式设计与各阶段交接。
+ 
+ ## 已完成计划
+ 
+-- Stage 0：[completion report](../stage_reports/stages/stage-00/completion.md)
+-- Stage 1A：[completion report](../stage_reports/stages/stage-01/stage-1a-completion.md)
+-- Stage 1B：[plan](completed/stage-01/stage-1b-plan.md)
+-- Stage 1C：[plan](completed/stage-01/stage-1c-plan.md)
+-- Stage 1D：[plan](completed/stage-01/stage-1d-plan.md)
+-- Stage 1E：[plan](completed/stage-01/stage-1e-plan.md)
+-- Stage 2：[plan](completed/stage-02/plan.md)
+-- Stage 3：[plan](completed/stage-03/plan.md)
+-- Stage Chart Format Update：[plan](completed/chart-format-update/plan.md)
+-- Stage 4：[plan](completed/stage-04/plan.md)
+-- Stage 5：[plan](completed/stage-05/plan.md)
+-- Chart Format Foundation：[plan](completed/chart-format-foundation/plan.md)
+-- Foundation 交接加固（R0-R5）：[plan](completed/chart-format-foundation-hardening/plan.md)，
+-  完成证据见 [R5 报告](../stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)
+-- Stage 6：[plan](completed/stage-06/plan.md)，关闭于 2026-09-27，
+-  完成证据见 [关闭报告](../stage_reports/stages/stage-06/completion.md)
+-- Stage 7：[plan](completed/stage-07/plan.md)，2026-11-14 受限退出（R4 交接），
+-  完成证据见 [R4 受限退出与缺陷交接](../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-14-limited-exit-and-defect-handoff.md)
+-- 260830 follow-up：[plan](completed/260830-followup/plan.md)
+-
+-CFU 与 260830 follow-up 的当前状态：Chart/CXC parse-once 和关键模块分支覆盖率已完成，
+-具体证据仍以 [260830-followup plan](completed/260830-followup/plan.md) 为准。
+-
+-## 阶段路线
+-
+-当前阶段是 [Stage 7-RR](active/stage-07-rr/plan.md)。列表按“当前 → 未启动 → 已关闭背景”排序；
+-标 **[已关闭]** 的条目只说明背景与交接，不代表正在进行的工作。
+-
+-- **[当前]** [Stage 7-RR：Review and Refactoring After Stage-7](active/stage-07-rr/plan.md)：位于 Stage 7 与
+-  Stage 7.5 之间的独立复核与重构阶段（[目录入口](active/stage-07-rr/README.md)），登记 2026-11-17
+-  全项目复核发现（[发现登记册](active/stage-07-rr/findings.md)）；按当前 T-01–T-17 完成合同与正确性修正、
+-  会话与时间改造、完整结构清理和 v3 实验闭环。后续阶段消费实际验收成果。
+-- **[未启动]** [Stage 7.5：Gameplay Evolution](active/stage-07-5/plan.md)：独立高级输入／判定能力、局部重构和性能稳定；
+-  保留 S7B/S7C 批次追溯 ID，以 RR 完成并接受后的实现入场，处理剩余及新增成本，独立验收后交给 Stage 8。
+-- [Stage 8](future/stage-08/plan.md)：Chart v5 正式语义、CXT v2、Packed Chart 和 CXC 发行收敛；
+-  依赖 RR、Stage 7.5 依次完成并接受；复用 RR 实现，将 Chart v5＋Gameplay v3 收敛为正式主线、默认 Writer 与正式成品；保留已承诺旧内容兼容，实际发行仍须验收。
+-- [Stage 9](future/stage-09/plan.md)：Presentation Foundation 与 Chart v6 / Model v1。
+-- [Stage 10](future/stage-10/plan.md)：Studio 和完整创作/打包工作流。
+-- [Stage 11](future/stage-11/plan.md)：Chart v7 单轴几何表现与 shader.json 声明接口。
+-- [Stage 12](future/stage-12/plan.md)：规模化、桌面性能、Android 与 Vulkan。
+-- [Stage 13](future/stage-13/plan.md)：Chart v8、内置后处理与确定性粒子。
+-- [Stage 14](future/stage-14/plan.md)：稳定 ABI 与 Playback SDK v1。
+-
+-### 已关闭背景
+-
+-- **[已关闭]** Stage 6：[plan](completed/stage-06/plan.md)，2026-09-17 启动（首批 S6-A）、
+-  2026-09-27 关闭；当时以 Chart v5 Core/Packed 为开发基线的 Playback/Player/CXC candidate
+-  path，Chart v4 保留为兼容回退。前置的
+-  [Foundation 交接加固](completed/chart-format-foundation-hardening/plan.md) 已于 2026-09-17
+-  关闭并经 owner 接受，允许/禁止消费边界见其
+-  [R5 报告](../stage_reports/stages/chart-format-foundation/2026-09-17-r5-regression-and-handoff.md)。
+-  八项关键决策已在 [ADR 0042](../adr/0042-stage-6-productization-boundaries.md) 冻结；A1 至 F1
+-  全部批次退出，关闭报告、三个核验问题处置与 Stage 7A / Stage 8 交接清单经 owner 接受
+-  （见 [关闭报告](../stage_reports/stages/stage-06/completion.md)）。Stage 6 关闭本身**不**
+-  实现或授权后续阶段。
+-- **[已关闭]** [Stage 7 总计划](completed/stage-07/plan.md)：既有内核、诊断、RPA／PD 的受限关闭与历史边界，
+-  2026-11-14 受限退出；高级能力已迁出到独立 Stage 7.5。
+-  - [Stage 7A](completed/stage-07/01-a/plan.md)、[独立诊断 N0–N3](completed/stage-07/02-diagnostics/plan.md)。
+-  - [PD](completed/stage-07/04-pd/plan.md)、[RPA 整改](completed/stage-07/05-rpa-new/plan.md)。
+-  - [历史范围及批次导航](completed/stage-07/README.md)、[旧路径映射](completed/stage-07/legacy-paths.md)。
+-
+-历史编号专题（内容已并入新主阶段）：
+-
+-- Stage 9A：[旧桌面性能计划](historical-inputs/stage-09a/plan.md)，现归入 Stage 12。
+-- Stage 9B：[Android 设计输入](historical-inputs/stage-09b/plan.md)，现归入 Stage 12。
+-- 旧 Stage 10：[Vulkan 设计输入](historical-inputs/stage-10/plan.md)，现归入 Stage 12。
+-
+-## 修正工作包
+-
+-- [Stage 6 复核修正计划](reviews/stage-06-review-remediation/plan.md)：把
+-  [Stage 6 双轴复核](../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-summary.md) 的
+-  Standards 轴与 Spec 轴发现项整理为 R0–R8 批次、`RS-01`…`RS-10` 验收矩阵与验证方式。
+-  该工作包已于 2026-09-28 取得实施授权，R0–R8 批次全部退出并随 PR #30 合并进 `master`，
+-  交付证据见 [交付报告](../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-delivery-report.md)；
+-  owner 已于 2026-09-29 接受关闭报告，计划状态为 completed。该计划不改变 Stage 6 已关闭的事实，
+-  也不构成 Stage 7A / Stage 8 的实现授权。
+-- [R9：Reference Host 命令循环与 play/pause](reviews/stage-06-review-remediation/R9-reference-host-command-loop.md)：
+-  批次 R9 的实施文档与唯一规范来源，处理 SPEC-27。命令文件驱动、有状态分发、无 stdin；
+-  含命令合同、完整状态矩阵、限额、C01–C12/N01–N07 用例、变异清单与门禁接线。
+-  设计已获 owner 接受，**已实现并通过最终 tip `cc14fcd` 的 hosted 验证**（push 与 pull_request
+-  两事件共 7 个运行全绿）；
+-  **owner 已于 2026-09-29 接受 R9 退出**，`SPEC-27` 关闭依据完整并记为 **closed**（订正历史：此处
+-  曾写"尚未实现"，后改为"尚未获 owner 接受退出"——两处旧措辞均已被本次退出取代）。
+-  R9 报告 §5.1 记录的冗余 tick 预算守卫亦已于同日随契约接受一并裁定为**保持现状、不合并**。
+-
+-## 格式专题
+-
+-- [Chart v5 format plan](active/chart-format-update-for-v5/plan.md)：保留 active 的跨阶段总工作包，正式发行门禁归 Stage 8；
+-  Foundation 与 Stage 6 提供早期候选基线，RR 承担已纳入的 v3 成品及 CXT2 Animation 实验实现；
+-  RR、Stage 7.5 完成并接受后由 Stage 8 完成正式发行收敛。
+-- [Chart v6 / Model v1](historical-inputs/chart-format-update-for-v6/plan.md)：历史输入，已并入 Stage 9。
+-- [Chart v7](historical-inputs/chart-format-update-for-v7/plan.md)：历史输入，已并入 Stage 11。
+-- [Chart v8](historical-inputs/chart-format-update-for-v8/plan.md)：历史输入，已并入 Stage 13。
++- Stage 0：[完成报告](../stage_reports/stages/stage-00/completion.md)
++- Stage 1A：[完成报告](../stage_reports/stages/stage-01/stage-1a-completion.md)
++- Stage 1B：[计划](completed/stage-01/stage-1b-plan.md)
++- Stage 1C：[计划](completed/stage-01/stage-1c-plan.md)
++- Stage 1D：[计划](completed/stage-01/stage-1d-plan.md)
++- Stage 1E：[计划](completed/stage-01/stage-1e-plan.md)
++- Stage 2：[计划](completed/stage-02/plan.md)
++- Stage 3：[计划](completed/stage-03/plan.md)
++- Stage Chart Format Update：[计划](completed/chart-format-update/plan.md)
++- Stage 4：[计划](completed/stage-04/plan.md)
++- Stage 5：[计划](completed/stage-05/plan.md)
++- Chart Format Foundation：[计划](completed/chart-format-foundation/plan.md)
++- Foundation 交接加固：[计划](completed/chart-format-foundation-hardening/plan.md)
++- Stage 6：[计划](completed/stage-06/plan.md)、[关闭报告](../stage_reports/stages/stage-06/completion.md)
++- Stage 7：[受限退出计划](completed/stage-07/plan.md)、[批次导航](completed/stage-07/README.md)
++- 260830 follow-up：[Chart/CXC parse-once 与关键模块覆盖率计划](completed/260830-followup/plan.md)
++
++## 历史复核计划
++
++以下是已完成的审查整改记录，保留入口供追溯；批次、验证与关闭经过见原文。
++
++- [2026-08 全项目审查整改](reviews/full-review-2026-08/remediation-plan.md)
++- [Stage 6 审查整改](reviews/stage-06-review-remediation/plan.md)，含 [R9 宿主命令循环](reviews/stage-06-review-remediation/R9-reference-host-command-loop.md)
+ 
+ ## 已并入主阶段的历史输入
+ 
+-以下旧计划不再代表独立主阶段，但保留为兼容入口和历史设计输入：
+-
+-- [桌面性能](historical-inputs/stage-09a/plan.md)
+-- [Android](historical-inputs/stage-09b/plan.md)
+-- [Vulkan](historical-inputs/stage-10/plan.md)
+-- [确定性粒子](../proposals/deferred/PARTICLE_TIMELINE.md)，已并入 Stage 13
+-
+-这些文件的可执行范围已经在 Stage 9、11、12、13 中登记；它们不能继续被解释为独立主阶段。
++| 历史输入 | 现归属 |
++| --- | --- |
++| [Stage 9A 桌面性能](historical-inputs/stage-09a/plan.md) | Stage 12 |
++| [Stage 9B Android](historical-inputs/stage-09b/plan.md) | Stage 12 |
++| [旧 Stage 10 Vulkan](historical-inputs/stage-10/plan.md) | Stage 12 |
++| [Chart v6 / Model v1](historical-inputs/chart-format-update-for-v6/plan.md) | Stage 9 |
++| [Chart v7](historical-inputs/chart-format-update-for-v7/plan.md) | Stage 11 |
++| [Chart v8](historical-inputs/chart-format-update-for-v8/plan.md) | Stage 13 |
++| [确定性粒子](../proposals/deferred/PARTICLE_TIMELINE.md) | Stage 13 |
+ 
+ ## 文档规则
+ 
+diff --git a/docs/stage_plans/active/stage-07-rr/README.md b/docs/stage_plans/active/stage-07-rr/README.md
+index ea2db847..d367c6d9 100644
+--- a/docs/stage_plans/active/stage-07-rr/README.md
++++ b/docs/stage_plans/active/stage-07-rr/README.md
+@@ -17,6 +17,7 @@ authority: index
+ | 文档 | 职责 |
+ | --- | --- |
+ | [plan.md](plan.md) | 阶段目标、已接受决策、实施范围与采用入口、任务索引和停止条件 |
++| [文档管理与整理方案](documentation-governance.md) | RR 文档治理的待审分册；命名分类、登记册保护、权威来源、检查与整理方案，实施尚未启动 |
+ | [findings.md](findings.md) | 发现、证据状态、处置与旧问题承接 |
+ | [architecture-design.md](architecture-design.md) | 已接受的架构方向与行为边界，区分源码现状、候选细化与延期目标 |
+ | [方案基线索引](simplification-proposal.md) | 数据与 SDK、渲染、时间、Player、写回和迁移的设计导航 |
+diff --git a/docs/stage_plans/active/stage-07-rr/findings.md b/docs/stage_plans/active/stage-07-rr/findings.md
+index 34a85e39..5ee6c1d4 100644
+--- a/docs/stage_plans/active/stage-07-rr/findings.md
++++ b/docs/stage_plans/active/stage-07-rr/findings.md
+@@ -731,6 +731,14 @@ owner 要求再次检查 plan 与 task 中会阻碍 agent 执行的决策、待
+ 
+ 最终核验结果见报告及 [HANDOFF](../../../HANDOFF.md)。任务卡完整不代表产品运行通过，旧交付资料与实际发布门禁不能预认证。历史待审记录保留当时时点，由 §23/§24 的后续裁定及本节指向的当前任务承接，不作为重复询问的理由。
+ 
++## 26. 文档治理归属与当前状态整理（2026-11-23）
++
++owner 明确文档管理与整理应归入 RR。方案现作为[文档治理分册](documentation-governance.md)收录，由 RR 总计划和阶段目录提供入口；G-01–G-05 仅是待审分册的拟议步骤，治理规则接受、任务卡/统一调度接入与实际实施仍待后续明确安排。
++
++本轮精简 CURRENT_STATUS 和计划总索引中的历史过程，保留仍有效的受限退出、性能、计时、内存/GPU/P8、P7 与 F3 限制，并链接原始责任及证据。状态合同此前要求 CURRENT_STATUS 保留 Stage 7A/S7A-3 的旧短句，本轮仅将该页对应检查项改为阶段/工作项/登记册元数据键和当前任务、阶段状态、遗留边界章节，避免重新硬锁具体阶段或“未启动”等临时状态；这些局部结构检查不证明值或行为正确，其余状态合同和通用检查器补强仍按待审分册处理。
++
++本项只记录文档归属、摘要与检查配置的局部订正，不声明治理检查器、报告迁移或产品修复完成；验证状态见 [HANDOFF](../../../HANDOFF.md#验证状态)。
++
+ ## 附录 处置记录（按日期保留，§12–§16）
+ 
+ 本附录保留各轮审查的处置记录，按当时时点成立，不改写结论；编号沿用历史顺序，故排在 §17 之后阅读。
+diff --git a/docs/stage_plans/active/stage-07-rr/plan.md b/docs/stage_plans/active/stage-07-rr/plan.md
+index f29160db..50b12461 100644
+--- a/docs/stage_plans/active/stage-07-rr/plan.md
++++ b/docs/stage_plans/active/stage-07-rr/plan.md
+@@ -180,6 +180,12 @@ Stage 7（受限退出） -> Stage 7-RR（本阶段） -> Stage 7.5（Gameplay E
+ 
+ 按 §6 发单并附卡上所链合同和证据输入；卡中规定写域、步骤和用例。阶段完成定义集中在[验收](acceptance.md)。
+ 
++### 文档管理与整理分册（待审）
++
++[文档管理与整理方案](documentation-governance.md)归入 RR 的文档治理工作，覆盖状态与索引减重、命名分类、发现登记保护、权威来源和分层检查。方案规则仍为 candidate；本轮仅确认归属并订正当前状态/导航，不视为校验器与报告迁移已启动。
++
++后续接受方案并明确启动时，将对应内容接入 T-02 的事实对齐、T-07 的文档治理汇合和 T-09 的退出验收；新增检查器写域及迁移规则须同步相应任务卡和唯一调度后再执行。分册 G-01–G-05 是拟议步骤，不作为独立阶段或绕过现有卡写域的派单入口。
++
+ 派单包绑定任务卡、合同 revision、基线清单及正反用例；每卡列出实际首改路径、注册测试名及其构建目标。尚未存在的目标或测试必须标为本卡新增，并包含注册文件；在它创建前只核对设计，不能把零匹配或未执行写成通过。`candidate-*` 的 CTest preset 自带名称过滤，新 `rr_*`/`cuexis_rr_*` 用例按卡用 `ctest --test-dir out/build/<preset> --no-tests=error -R '^<注册名>$'` 执行，先用同一路径的 `ctest -N -R` 核对注册。配置和定向构建按[BUILDING](../../../guides/BUILDING.md)选匹配工具链；长构建与 hosted/设备验证仍按 AGENTS 的单独执行约定。
+ 
+ ### 实施组织
+@@ -293,6 +299,7 @@ Known gaps and next-task handoff
+ | 2026-11-23 | owner 选择结构清理方案 5：F302、F310、F313/F316、F207 全部纳入本轮 | 完整 Chart 构建隔离、公共面分类与可兼容清理、应用分层、ResourceScope 去重与 T-01–T-17 统一设计和排期；旧公共 API 退出沿既有实际发布窗口 | owner 本轮明确选择；[登记册 §24](findings.md#24-统一实施前设计裁定2026-11-23) | 现行 |
+ | 2026-11-23 | owner 接受 Stage 8 以 Chart v5＋Gameplay v3 为正式主线，保留已承诺旧内容兼容 | RR 实验实现不变，Stage 7.5 以 v3 扩展能力，Stage 8 正式化及默认创作/播放组合；旧规则不自动重算，旧 API 退出和 SDK 成熟度仍独立核验 | owner 本轮“先修改文档”；[续议记录](findings.md#stage-8-正式主线续议2026-11-23)、[Stage 8](../../future/stage-08/plan.md) | 现行 |
+ | 2026-11-23 | 复查全部 plan/task 的决策、输入、产物创建、验收和停止条件，订正重复审批、迁移阶段与任务合同偏差，重写接手入口 | owner 要求确认可执行性后编写接手文档；沿既有裁定，不启动产品实现 | [登记册 §25](findings.md#25-实施接手复查2026-11-23)、[复查报告](../../../stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md) | 现行 |
++| 2026-11-23 | 文档管理与整理方案归入 RR 分册，精简当前状态和计划索引 | owner 明确文档整理属于 RR；仅调整归属、状态与导航，规则及实施仍待后续接受/启动 | [治理分册](documentation-governance.md)、[登记册 §26](findings.md#26-文档治理归属与当前状态整理2026-11-23) | 现行 |
+ 
+ ## 13. 排除项与旧路径
+ - **不做纯行数拆分**：owner 已取消，详见 D-03 与 §2 非目标。
+diff --git a/docs/status_contract.json b/docs/status_contract.json
+index cfe22c36..4c8818c1 100644
+--- a/docs/status_contract.json
++++ b/docs/status_contract.json
+@@ -6,9 +6,12 @@
+       "docs/CURRENT_STATUS.md"
+     ],
+     "docs/CURRENT_STATUS.md": [
+-      "Stage 7A",
+-      "S7A-3",
+-      "关闭前置"
++      "current_stage:",
++      "current_item:",
++      "current_register:",
++      "## 当前任务",
++      "## 阶段状态",
++      "## 当前遗留问题与生产关闭前置"
+     ],
+     "docs/PROJECT_GUIDE.md": [
+       "CFU-F 已在最终实现 SHA 上关闭跨平台 consumer、确定性、安全与性能门禁",
+diff --git a/docs/templates/README.md b/docs/templates/README.md
+index 84fbc87a..c36ffce8 100644
+--- a/docs/templates/README.md
++++ b/docs/templates/README.md
+@@ -2,7 +2,7 @@
+ 
+ 状态：current
+ 
+-更新日期：2026-11-17
++更新日期：2026-11-23
+ 
+ <!-- cuexis-meta
+ id: INDEX-TEMPLATES
+@@ -17,12 +17,15 @@ authority: index
+ | --- | --- |
+ | [plan.md](plan.md) | 已启动阶段的详细计划 `docs/stage_plans/active/<stage>/plan.md`；项目开始时由规划模型一次填细 |
+ | [plan-outline.md](plan-outline.md) | 未启动阶段的提纲 `docs/stage_plans/future/<stage>/plan.md`；只写方向、入口条件与待决问题，不写任务看板/验收矩阵 |
++| [task.md](task.md) | 阶段计划下的独立任务卡 `docs/stage_plans/active/<stage>/tasks/T-xx.md`；依赖只写在 `schedule.md` |
++| [adr.md](adr.md) | 架构决策记录 `docs/adr/NNNN-short-title.md`；新决策从 proposed 开始，接受后再成为权威 |
+ | [report.md](report.md) | `docs/stage_reports/stages/<stage>/YYYY-MM-DD-<topic>.md` |
+ | [handoff.md](handoff.md) | `docs/HANDOFF.md`（对话级交接） |
+ 
+ 规则要点：
+ 
+ - 模板中的固定 H2 标题是门禁检查的对象（active plan 与 2026-11-17 之后的新报告），不要改名。
++- task 卡保留模板和调度检查器要求的七个固定章节；ADR 接受状态和权威级别须同步更新可见字段与机器元数据。
+ - 报告必须带日期、状态、authority 与 `file:line` 证据；结论用词只允许
+   “成立 / 部分成立 / 不成立 / 无法核实”。
+ - 交接页是对话级状态，不是阶段权威；阶段事实链接到 `CURRENT_STATUS.md`。

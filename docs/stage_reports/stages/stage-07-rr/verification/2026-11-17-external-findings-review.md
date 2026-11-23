@@ -14,7 +14,7 @@ authority: none
 
 > 来源：外部只读审查报告（`C:\Users\Zilch\Downloads\finding.md`，2026-11-17），基线 `master@aac83e5e`，
 > 共 59 条（S1 七条），未运行构建/CTest/GPU 测试。交叉核对见
-> [Stage 7-RR findings §8](../../../stage_plans/active/stage-07-rr/findings.md)。
+> [Stage 7-RR findings §8](../../../../stage_plans/active/stage-07-rr/findings.md)。
 > 本文件是**证据**，不是权威；条目未经仓库复核前不得作为修复依据。
 
 状态：active  

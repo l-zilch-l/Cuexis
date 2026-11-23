@@ -17,6 +17,7 @@ authority: index
 | 文档 | 职责 |
 | --- | --- |
 | [plan.md](plan.md) | 阶段目标、已接受决策、实施范围与采用入口、任务索引和停止条件 |
+| [文档管理与整理方案](documentation-governance.md) | RR 文档治理分册；T-18 已完成，覆盖命名分类、登记册保护、权威来源和检查/整理 |
 | [findings.md](findings.md) | 发现、证据状态、处置与旧问题承接 |
 | [architecture-design.md](architecture-design.md) | 已接受的架构方向与行为边界，区分源码现状、候选细化与延期目标 |
 | [方案基线索引](simplification-proposal.md) | 数据与 SDK、渲染、时间、Player、写回和迁移的设计导航 |
@@ -32,3 +33,5 @@ authority: index
 - 本阶段**不**发布、不合并、不提升 SDK minor；稳定 C ABI 归 Stage 14。
 - `findings.md` 记录的是问题，不是修复声明；修复结论只写入带日期的 Stage Report
   （[报告索引](../../../stage_reports/stages/stage-07-rr/README.md)）。
+
+文档治理按 [T-18](tasks/T-18.md)单独执行；产品任务的后续采用继续以总计划和唯一调度为准。

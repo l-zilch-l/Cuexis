@@ -197,6 +197,8 @@ authority: index
 | [stage_plans/future/stage-12/plan.md](stage_plans/future/stage-12/plan.md) | future | none | Stage 12 计划（提纲）：规模化、桌面性能与目标平台 |
 | [stage_plans/future/stage-13/plan.md](stage_plans/future/stage-13/plan.md) | future | none | Stage 13 计划（提纲）：高级表现与 Chart v8 |
 | [stage_plans/future/stage-14/plan.md](stage_plans/future/stage-14/plan.md) | future | none | Stage 14 计划（提纲）：稳定 ABI 与 Playback SDK v1 |
+| [stage_plans/active/stage-07-rr/documentation-governance.md](stage_plans/active/stage-07-rr/documentation-governance.md) | completed | owns | RR 文档管理与整理方案 |
+| [stage_plans/active/stage-07-rr/tasks/T-18.md](stage_plans/active/stage-07-rr/tasks/T-18.md) | completed | owns | T-18 文档管理与整理 |
 | [stage_plans/completed/260830-followup/plan.md](stage_plans/completed/260830-followup/plan.md) | completed | owns | 260830-followup 维护计划 |
 | [stage_plans/completed/260830-followup/task-2-chart-cxc-parse-once.md](stage_plans/completed/260830-followup/task-2-chart-cxc-parse-once.md) | completed | owns | 任务 2：Chart/CXC parse-once 实施计划 |
 | [stage_plans/completed/260830-followup/task-3-branch-backlog.md](stage_plans/completed/260830-followup/task-3-branch-backlog.md) | completed | owns | 任务 3 分支 backlog |
