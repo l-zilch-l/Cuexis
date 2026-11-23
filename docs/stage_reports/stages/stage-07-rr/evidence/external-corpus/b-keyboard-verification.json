@@ -1,0 +1,25 @@
+{
+  "packageSha256": "4d4a6bfd70bd288f3a6bc9a31fdac912b8d88c200847ee6a7eabcea705fb0bd3",
+  "objects": 104,
+  "behaviors": 22,
+  "assets": 37,
+  "requirements": 19,
+  "phases": 21,
+  "factBindings": 42,
+  "entry": "compiled/chart.v5.json",
+  "gameplayEntry": "compiled/gameplay.packed",
+  "profile": "gameplay.execution.t4-k4.rpa.v1",
+  "testOnly": true,
+  "productionBudgetAccepted": false,
+  "physicalKeyboardAccepted": false,
+  "logicalCases": "all-hit: score=46 hits=21 misses=0 replay=equal\nno-input: score=-21 hits=0 misses=21 replay=equal\nearly-hold-release: score=36 hits=19 misses=2 replay=equal\n",
+  "windowInjectedInput": {
+    "score": 46,
+    "hits": 21,
+    "misses": 0,
+    "physicalKeyboard": false,
+    "eofTailCompleted": true
+  },
+  "pauseRestartResumeVerified": true,
+  "repeatPackageIdentical": true
+}

@@ -1,0 +1,408 @@
+[
+  {
+    "name": "all-hit",
+    "end": 35000000,
+    "inputs": [
+      {
+        "tick": 3000000,
+        "action": "press",
+        "channel": "lane.d"
+      },
+      {
+        "tick": 3030000,
+        "action": "release",
+        "channel": "lane.d"
+      },
+      {
+        "tick": 4000000,
+        "action": "press",
+        "channel": "lane.f"
+      },
+      {
+        "tick": 4030000,
+        "action": "release",
+        "channel": "lane.f"
+      },
+      {
+        "tick": 5000000,
+        "action": "press",
+        "channel": "lane.j"
+      },
+      {
+        "tick": 5030000,
+        "action": "release",
+        "channel": "lane.j"
+      },
+      {
+        "tick": 6000000,
+        "action": "press",
+        "channel": "lane.k"
+      },
+      {
+        "tick": 6030000,
+        "action": "release",
+        "channel": "lane.k"
+      },
+      {
+        "tick": 7000000,
+        "action": "press",
+        "channel": "lane.d"
+      },
+      {
+        "tick": 7030000,
+        "action": "release",
+        "channel": "lane.d"
+      },
+      {
+        "tick": 7500000,
+        "action": "press",
+        "channel": "lane.f"
+      },
+      {
+        "tick": 7530000,
+        "action": "release",
+        "channel": "lane.f"
+      },
+      {
+        "tick": 8000000,
+        "action": "press",
+        "channel": "lane.j"
+      },
+      {
+        "tick": 8030000,
+        "action": "release",
+        "channel": "lane.j"
+      },
+      {
+        "tick": 8500000,
+        "action": "press",
+        "channel": "lane.k"
+      },
+      {
+        "tick": 8530000,
+        "action": "release",
+        "channel": "lane.k"
+      },
+      {
+        "tick": 10000000,
+        "action": "press",
+        "channel": "lane.d"
+      },
+      {
+        "tick": 10000000,
+        "action": "press",
+        "channel": "lane.j"
+      },
+      {
+        "tick": 10030000,
+        "action": "release",
+        "channel": "lane.d"
+      },
+      {
+        "tick": 10030000,
+        "action": "release",
+        "channel": "lane.j"
+      },
+      {
+        "tick": 11000000,
+        "action": "press",
+        "channel": "lane.f"
+      },
+      {
+        "tick": 11000000,
+        "action": "press",
+        "channel": "lane.k"
+      },
+      {
+        "tick": 11030000,
+        "action": "release",
+        "channel": "lane.f"
+      },
+      {
+        "tick": 11030000,
+        "action": "release",
+        "channel": "lane.k"
+      },
+      {
+        "tick": 13000000,
+        "action": "press",
+        "channel": "lane.k"
+      },
+      {
+        "tick": 17000000,
+        "action": "release",
+        "channel": "lane.k"
+      },
+      {
+        "tick": 20000000,
+        "action": "press",
+        "channel": "lane.d"
+      },
+      {
+        "tick": 20030000,
+        "action": "release",
+        "channel": "lane.d"
+      },
+      {
+        "tick": 22000000,
+        "action": "press",
+        "channel": "lane.f"
+      },
+      {
+        "tick": 22030000,
+        "action": "release",
+        "channel": "lane.f"
+      },
+      {
+        "tick": 24000000,
+        "action": "press",
+        "channel": "lane.j"
+      },
+      {
+        "tick": 24030000,
+        "action": "release",
+        "channel": "lane.j"
+      },
+      {
+        "tick": 26000000,
+        "action": "press",
+        "channel": "lane.k"
+      },
+      {
+        "tick": 26030000,
+        "action": "release",
+        "channel": "lane.k"
+      },
+      {
+        "tick": 31500000,
+        "action": "press",
+        "channel": "lane.d"
+      },
+      {
+        "tick": 31530000,
+        "action": "release",
+        "channel": "lane.d"
+      },
+      {
+        "tick": 32500000,
+        "action": "press",
+        "channel": "lane.j"
+      },
+      {
+        "tick": 32530000,
+        "action": "release",
+        "channel": "lane.j"
+      }
+    ],
+    "score": 46,
+    "hits": 21,
+    "misses": 0
+  },
+  {
+    "name": "no-input",
+    "end": 35000000,
+    "inputs": [],
+    "score": -21,
+    "hits": 0,
+    "misses": 21
+  },
+  {
+    "name": "early-hold-release",
+    "end": 35000000,
+    "inputs": [
+      {
+        "tick": 3000000,
+        "action": "press",
+        "channel": "lane.d"
+      },
+      {
+        "tick": 3030000,
+        "action": "release",
+        "channel": "lane.d"
+      },
+      {
+        "tick": 4000000,
+        "action": "press",
+        "channel": "lane.f"
+      },
+      {
+        "tick": 4030000,
+        "action": "release",
+        "channel": "lane.f"
+      },
+      {
+        "tick": 5000000,
+        "action": "press",
+        "channel": "lane.j"
+      },
+      {
+        "tick": 5030000,
+        "action": "release",
+        "channel": "lane.j"
+      },
+      {
+        "tick": 6000000,
+        "action": "press",
+        "channel": "lane.k"
+      },
+      {
+        "tick": 6030000,
+        "action": "release",
+        "channel": "lane.k"
+      },
+      {
+        "tick": 7000000,
+        "action": "press",
+        "channel": "lane.d"
+      },
+      {
+        "tick": 7030000,
+        "action": "release",
+        "channel": "lane.d"
+      },
+      {
+        "tick": 7500000,
+        "action": "press",
+        "channel": "lane.f"
+      },
+      {
+        "tick": 7530000,
+        "action": "release",
+        "channel": "lane.f"
+      },
+      {
+        "tick": 8000000,
+        "action": "press",
+        "channel": "lane.j"
+      },
+      {
+        "tick": 8030000,
+        "action": "release",
+        "channel": "lane.j"
+      },
+      {
+        "tick": 8500000,
+        "action": "press",
+        "channel": "lane.k"
+      },
+      {
+        "tick": 8530000,
+        "action": "release",
+        "channel": "lane.k"
+      },
+      {
+        "tick": 10000000,
+        "action": "press",
+        "channel": "lane.d"
+      },
+      {
+        "tick": 10000000,
+        "action": "press",
+        "channel": "lane.j"
+      },
+      {
+        "tick": 10030000,
+        "action": "release",
+        "channel": "lane.d"
+      },
+      {
+        "tick": 10030000,
+        "action": "release",
+        "channel": "lane.j"
+      },
+      {
+        "tick": 11000000,
+        "action": "press",
+        "channel": "lane.f"
+      },
+      {
+        "tick": 11000000,
+        "action": "press",
+        "channel": "lane.k"
+      },
+      {
+        "tick": 11030000,
+        "action": "release",
+        "channel": "lane.f"
+      },
+      {
+        "tick": 11030000,
+        "action": "release",
+        "channel": "lane.k"
+      },
+      {
+        "tick": 13000000,
+        "action": "press",
+        "channel": "lane.k"
+      },
+      {
+        "tick": 13100000,
+        "action": "release",
+        "channel": "lane.k"
+      },
+      {
+        "tick": 20000000,
+        "action": "press",
+        "channel": "lane.d"
+      },
+      {
+        "tick": 20030000,
+        "action": "release",
+        "channel": "lane.d"
+      },
+      {
+        "tick": 22000000,
+        "action": "press",
+        "channel": "lane.f"
+      },
+      {
+        "tick": 22030000,
+        "action": "release",
+        "channel": "lane.f"
+      },
+      {
+        "tick": 24000000,
+        "action": "press",
+        "channel": "lane.j"
+      },
+      {
+        "tick": 24030000,
+        "action": "release",
+        "channel": "lane.j"
+      },
+      {
+        "tick": 26000000,
+        "action": "press",
+        "channel": "lane.k"
+      },
+      {
+        "tick": 26030000,
+        "action": "release",
+        "channel": "lane.k"
+      },
+      {
+        "tick": 31500000,
+        "action": "press",
+        "channel": "lane.d"
+      },
+      {
+        "tick": 31530000,
+        "action": "release",
+        "channel": "lane.d"
+      },
+      {
+        "tick": 32500000,
+        "action": "press",
+        "channel": "lane.j"
+      },
+      {
+        "tick": 32530000,
+        "action": "release",
+        "channel": "lane.j"
+      }
+    ],
+    "score": 36,
+    "hits": 19,
+    "misses": 2
+  }
+]

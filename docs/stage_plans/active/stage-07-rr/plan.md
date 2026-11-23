@@ -307,6 +307,7 @@ Known gaps and next-task handoff
 | 2026-11-23 | owner 授权下一次接手正式实施 RR 的 T-01–T-17 | 本次只更新交接；下一次从 T-01 固定实际 HEAD/tree、工作树及旧内容独立预期，登记采用后按调度推进；长任务和实际发布沿现行单独门禁 | owner 本轮“修改接手文档，下一次开始正式实施 RR 任务”；[HANDOFF](../../../HANDOFF.md)、[T-01](tasks/T-01.md) | 现行 |
 | 2026-11-23 | T-01 完成：实施基线绑定 `a22e255f`，派单清单、调度正反例、独立冷启动与 D-20 旧内容清单交付；T-13 冷启动四项缺口补注 | 按采用入口从干净基线发起本轮实施；本轮只完成基线与派单，产品任务未执行，正式发行语料缺口交 T-09 | [T-01](tasks/T-01.md)、[基线与派单报告](../../../stage_reports/stages/stage-07-rr/readiness/2026-11-23-t-01-dispatch-baseline.md)、[登记册 §28](findings.md#28-t-01-基线与派单2026-11-23) | 现行 |
 | 2026-11-23 | T-03 完成：8 篇合同订正、`rr2_contract_*` 四用例与两条 RPA 对照在 candidate-debug 通过；RR-F131 分层纠正登记，F135 归 T-06 | 只改文档与测试源，生产输入逻辑、wire 与接受集不变 | [T-03](tasks/T-03.md)、[交付报告](../../../stage_reports/stages/stage-07-rr/implementation/2026-11-23-t-03-contracts-and-diagnostics.md)、[登记册 §30](findings.md#30-t-03-合同与诊断2026-11-23) | 现行 |
+| 2026-11-23 | 外部旧设备验收包清点：两套内部候选包提供 Chart/Gameplay、tick 输入与聚合期望；正式发行语料仍为空集 | 只登记外部语料与哈希，不写成发行通过；F132 历史身份字节改由改动前后 dump | [清点报告](../../../stage_reports/stages/stage-07-rr/readiness/2026-11-23-external-legacy-corpus.md)、[登记册 §31](findings.md#31-外部旧设备验收包与-d-20-口径2026-11-23) | 现行 |
 
 ## 13. 排除项与旧路径
 - **不做纯行数拆分**：owner 已取消，详见 D-03 与 §2 非目标。
