@@ -57,3 +57,9 @@ GL 桥：`rr_frame_layout_gl_bridge` 覆盖缺能力/非法表拒绝、target/to
 ## 对登记册与合同的影响
 
 登记册 §36 记录 T-06 的四档结论、F135 场景 4 的阻塞与 F508 的集成冲突。T-06 卡保持进行中，剩余范围转入后续任务；F508 需要 replay ledger 设计裁定后才能重新实施。
+
+## 9. 第二轮补充（2026-11-24）
+
+宿主/Player 帧链补齐：`FramePayload` 变体与 envelope 视图、worker 布局提取/重排、`FrameRequest` 的 target/framing 与指纹、Player 绑定同一 `OpenGlBackend`、宿主 deadline 与 target-changed 弃帧均成立；`rr_frame_layout_shared` 在两个 shared 预设的真实 Player smoke 与仓内消费者通过（两边 consumer digest 相同，真实 Player 完成 6 帧）。新增 4 个宿主用例与 1 个 shared 消费者。
+
+仍未闭环：`rr_frame_diagnostics`/F419、F207 五类资源去重、F427/F428/F421/F415、retained 两向与请求选择差异、非空作者画幅表端到端（依赖 T-11/T-13）；`FramePayload` 由 328 B 增至 904 B，PD-5 的尺寸/容量基线需要重生成。RR-F135 场景 4 与 RR-F508 继续等裁定。

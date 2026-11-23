@@ -16,7 +16,7 @@ authority: owns
 
 ## 当前任务
 
-T-06 第一轮只完成帧对象、GL 实验桥、安装面与 F135 场景 1/2/3/5，交付记为部分成立，见[部分交付](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-06-frame-bridge-partial.md)。下一次接手的首项是 T-06 剩余范围：ExecutionHost/Player 帧链接线、`rr_frame_layout_shared` 与 `rr_frame_diagnostics`、F207 资源去重；之后才是 T-08 的候选宏、安装面与逐符号迁移。波次 5 的交付报告在 [T-02](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-02-state-facts.md)、[T-05](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-05-frame-layout.md)与 [T-17](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-17-session-correctness.md)。
+T-06 第一轮只完成帧对象、GL 实验桥、安装面与 F135 场景 1/2/3/5，交付记为部分成立，见[部分交付](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-06-frame-bridge-partial.md)。T-06 的宿主/Player 帧链与 `rr_frame_layout_shared` 已在第二轮补齐；下一阶段由 T-08 的候选公共面（逐符号迁移、安装消费者、shared 导出）与 T-06 剩余范围（`rr_frame_diagnostics`/F419、F207 去重、F427/F428 等）并行推进。波次 5 的交付报告在 [T-02](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-02-state-facts.md)、[T-05](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-05-frame-layout.md)与 [T-17](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-17-session-correctness.md)。
 
 T-01 证据在 [基线与派单报告](stage_reports/stages/stage-07-rr/readiness/2026-11-23-t-01-dispatch-baseline.md)；T-03 证据在 [合同与诊断交付](stage_reports/stages/stage-07-rr/implementation/2026-11-23-t-03-contracts-and-diagnostics.md)；T-04 证据在 [构建闭包拆分与隔离门禁](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-04-build-isolation.md)。派单输入的规范哈希取基线 blob，见 [hashes.txt](stage_reports/stages/stage-07-rr/evidence/t-01-baseline/hashes.txt)，独立 checkout 复算不需要 `out/`。
 

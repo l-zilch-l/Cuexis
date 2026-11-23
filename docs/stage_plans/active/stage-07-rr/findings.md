@@ -871,6 +871,19 @@ T-06 按卡实施，交付范围只到 Playback 帧对象与 GL 实验桥，宿�
 - 覆盖率与 Release 构建：`cuexis_rr_playback_isolation` 在 clean configure 下没有 File API codemodel，测试固定失败。门禁改为仅当构建目录已有 codemodel 回执时注册测试，并在状态行说明启用方式（`6510d7c7`）；T-04 的专用 harness 配置仍跑门禁，普通预设不再误报。CI 侧的 codemodel 车道仍缺失，属后续补强项，不能按“CI 已覆盖隔离门禁”计。
 - `Documentation contracts` 的 PR 事件运行失败：PR 47 的基线是 `master` 的 `aac83e5e`，该提交还没有 `docs/MAP.md`、`docs/governance_rules.json` 与登记册；历史保护检查要求受保护文件与 legacy 豁免在可信基线中已存在，因此整个治理树在同一个 PR 中首次落地时必然失败。push 事件的运行以 `event.before` 为基线，能通过。这不是代码缺陷，不能用放宽门禁的方式绕过；需要 owner 决定治理树的合入顺序（例如先单独落入基线）或调整该 PR 的检查基线。
 
+## 38. T-06 第二轮：宿主/Player 帧链（2026-11-24）
+
+- `FramePayload` 变体、envelope 视图与 `payloadBytes`/`frameByteBound`：**成立**。`FramePayload` 尺寸由 328 B 增至 904 B（MSVC x64 debug），PD-5 的元素尺寸与容量基线需要按新口径重生成，本轮未做。
+- worker 布局提取/重排、同 target 别名、空目标 `skippedEmptyLayout`、模式不符 `noRetainedFrame`：**部分成立**。两向 retained 模式与请求选择差异没有独立用例。
+- `FrameRequest` 的 `target`/`framing`、指纹与准入忽略旧 viewport：**成立**。
+- Player binding 到同一 `OpenGlBackend`、普通循环与 ExecutionHost 装配、宿主 `prepareLaidOutOwned` 与画幅表私有传递：**成立**。
+- 宿主 deadline 弃帧与 target-changed 弃帧：**成立**。边界内一次 submit+present，到点零提交且保 retained；target 逐字段比较 extent/host/rotation，变化即弃帧，不挂起。
+- 非满区 host/旋转的嵌入来源、`resize` 触发弃帧、非空作者画幅表端到端：**部分成立**。只测了 `setFrameTarget`；正式 source 目前只产生空表，依赖 T-11/T-13。
+- `rr_frame_layout_shared`：**部分成立**。两个 shared 预设的真实 Player smoke 与仓内消费者通过（消费者 digest 一致，`Completed frames: 6`）；安装消费者 opt-in 与导出表负向变异未做。
+- RR-F419/`rr_frame_diagnostics`、F207、F427/F428、F421/F415：**不成立**（未实施）。`renderMicroseconds` 赋值先于 `notePresented` 的修复单独成立。
+- 验证：`cuexis_execution_host_tests` 68/68、candidate-headless `rpa` 182/182、`cuexis_playback_tests` debug 137 例、candidate 193 例、debug 布局 6/6、shared 两预设各 2/2、架构与隔离门禁 3/3。
+- 全局格式门禁：本轮改动的源码里 17 个文件未按 clang-format 输出，已统一格式化（`a977e01a`），`cuexis_format_check` 恢复通过。
+
 ## 附录 处置记录（按日期保留，§12–§16）
 
 本附录保留各轮审查的处置记录，按当时时点成立，不改写结论；编号沿用历史顺序，故排在 §17 之后阅读。
