@@ -12,7 +12,7 @@ status: active
 authority: owns
 -->
 
-更新日期：2026-08-14
+更新日期：2026-11-23
 
 ## 1. 范围
 
@@ -168,8 +168,11 @@ denominator 是大于 0 的整数
 
 阶段 1 历史方案 B 的十进制 beat 必须根据 JSON 原始十进制文本转换，不能先转成二进制浮点再猜测分数；该转换只用于移除前的一次性迁移。
 
-实现额外拒绝 `|numerator| > 1e12` 与 `denominator > 1e9`，报 `chart.beat.limit_exceeded`（来源
-`engine/chart/include/cuexis/chart/limits.hpp`，可读视图见 [guides/LIMITS.md](../guides/LIMITS.md)）。
+实现额外拒绝 `|numerator| > ChartLimits::maxBeatNumeratorMagnitude` 与
+`denominator > ChartLimits::maxBeatDenominator`，报 `chart.beat.limit_exceeded`。判定在
+`RationalBeat::create` 约分之后进行，所以上限按最简有理数计；分子在符号两侧同等受限。
+来源为 `engine/chart/include/cuexis/chart/limits.hpp` 的具名成员（默认可读视图见
+[guides/LIMITS.md](../guides/LIMITS.md)）。
 
 ## 4. Timing（v1/v2）
 

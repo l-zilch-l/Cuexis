@@ -320,6 +320,9 @@ index 是 `0..count-1` 的只读整数，lexical scope 限于 body；Repeat 深�
 本节的候选设计已移入
 [proposals/deferred/cxt-chart-v5-invocation.md](../proposals/deferred/cxt-chart-v5-invocation.md)；
 当前没有 `cxtImports` / `cxtInstances` 的 reader、writer 或 validator，Playback 默认路径不消费。
+当前唯一的显式展开入口是 `chart::CxtV2Loader::expand(source, CxtV2Invocation)`，由
+`tools/chart/chart_candidate` 以 `--template/--binding/--module/--export/--parameter` 显式调用；
+不存在从 Chart 自动读取 import/instance 的路径，发行 Playback 也不调用该入口。
 
 ## 7. 生成身份和确定性
 

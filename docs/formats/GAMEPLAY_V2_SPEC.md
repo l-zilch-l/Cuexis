@@ -43,7 +43,7 @@ filesystem 多产物使用内容派生 immutable generation、现有 manifest �
 
 状态：candidate
 
-更新日期：2026-10-22
+更新日期：2026-11-23
 
 本 Spec 是 Stage 7A 的候选合同正文，不是字段、公共头、Schema、Replay 或 Snapshot 的实现证据。
 
@@ -480,6 +480,16 @@ semantic 比较，**不能只比 hash**（FE §2 硬要求 1）。
 **不得**互相顶替。**负 `observationTick` 不在此表**（§3.7.3 第 4 条：负值合法、参与单调排序，只有
 **回退**被拒）；**不可表示的 calibrated clock 值**同样不在此新增行内，它按上表 Tick 溢出行复用
 `budget_exceeded`（§3.7.3 第 5 条，**不保留**独立令牌）。
+
+**入口分层（2026-11-23 T-03 取证）。** 上表的 same-tick 归属描述普通规范化入口
+（`normalizeObservation` 与 `prepareIngressBatch(..., resolveDomains=false)`）：该入口只生成
+有序观测，canonical 身份重复时整批拒绝，不产生 receipt、frontier 或 pending 队列变化。旧执行
+profile 的 `JudgementSession::submit` 走自己的首错次序，见
+[执行 profile §8](gameplay-v2-execution-profile.md#8-失败优先级诊断与关闭界限)：sequence 重复 →
+同 subject 重复（`judgement.late.duplicate_queue_entry`，`late_policy_incomplete`）→ 同原 Tick
+不同 subject（`judgement.input.same_tick_collision`，`invalid_relation`）→ dispatch collision。
+RPA 按 occurrence 槽与 T2 规则接纳，见 [RPA 执行合同](rpa-execution-contract.md)，不借用上述
+两个码。三个入口分别取证，不能把一个入口的首错次序写成另一个入口的规则。
 
 **注意区分"拒绝面"与"越界处置"。** R-01…R-19 是**能力级**拒绝面（能力、禁止项与迁移歧义），
 上述六类都不在其中；它们是**已声明范围 / 已声明能力内的值或参数不可满足**（第 5、6 行则是**声明结构
@@ -2730,6 +2740,9 @@ programPolicy 为 locked/extendable/open；outcomeScope declared/extended，exte
 本版均只执行已声明 hit/miss；未知枚举拒绝。package/Life/step route 保持 capability_disabled。
 legacy t4-k4.v1 无 Ruleset 时 Fold absent，不能显示零分成功；有 Ruleset 时使用
 `gameplay.fold.finite.v1` 首用语义，其实际配置进入 ruleset/session identity。
+`gameplay.fold.finite.v1` 本身是 engine 算法标记：`execution_kernel_prepare.cpp` 在实际运行身份
+里把它追加到 `engine.judgementSemanticRevision`；Ruleset 的 interfaceProjectionToken、
+compiledBuild、按声明顺序的 module id 与 Loadout 另写 ruleset/session 分量，两层不得互相顶替。
 
 | module | readSet / 时点 | writeSet / reducer / trigger |
 | --- | --- | --- |
@@ -2743,7 +2756,9 @@ Score 初值/min/max、checked或clamp、initialCombo、逐phase/outcome/optiona
 没有对应ScoreRule拒绝prepare；无grade匹配absent分支，不回退其它grade。
 
 MeasureComponent 的 optional `gradeTable` 由 chart 拥有：有序闭区间(minimum,maximum,grade)，
-engine 算法 signed-interval/1。无表所有profile合法，opaque tokens仍不是表。
+engine 算法标识为 `signed-interval/1`；实际运行身份在存在表时把后缀
+`;grade.signed-interval.v1` 追加到 `factSemanticRevision`，算法标识本身不是被拼接的字符串。
+无表所有profile合法，opaque tokens仍不是表。
 有表需端点有序/无交叠/无空洞，覆盖该phase实际可达 signed error，grade引用已声明token；
 允许多个区间引用同一grade。seal前只在真实error存在时求值一次；timer Miss等无error保持absent；真实body break Miss有error时按body表求grade。
 

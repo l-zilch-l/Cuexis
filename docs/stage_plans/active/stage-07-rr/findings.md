@@ -791,6 +791,16 @@ owner 要求生产源码、安装头与构建系统文件不使用阶段名或�
 - 四个既有 `cmake/Verify{S4GPerformance,S5HPerformance,CfuF3Determinism,CfuF4Performance}.cmake` 保留：约 107 处冻结验收清单按路径与内容 SHA-256 绑定，改名或改内容会让历史记录永久失配。它们按路径登记在 [source_naming_exceptions](../../../governance_rules.json)，不构成新文件的命名依据。
 - 本规则不改产品行为、wire 或兼容窗口，只约束新文件与后续重命名。
 
+## 30. T-03 合同与诊断（2026-11-23）
+
+T-03（scope `RR2`）完成既有合同对照与回归取证，见[交付报告](../../../stage_reports/stages/stage-07-rr/implementation/2026-11-23-t-03-contracts-and-diagnostics.md)。本轮只订正文档、追加对照测试，未改 `engine/`、`app/` 生产源码。
+
+- 合同订正 8 篇：packed Header CRC 只覆盖前 92 字节且旧算法值必须被拒；TIME/REQ0 非 0 mode 的稳定拒绝与 GridDelta 仅测试地位；Chart Beat 上限改用 `ChartLimits::maxBeatNumeratorMagnitude`/`maxBeatDenominator` 并写明约分后判定与分子符号两侧；帧摘要拆成宿主可观察默认版本与内部定版本；candidate chart entry 的 playback encoding 接受集。
+- 回归：新增 `rr2_contract_packed`、`rr2_contract_entry`、`rr2_contract_beat`、`rr2_contract_input`，在 candidate-debug 实测通过（CTest #121/#170/#326/#488，四次单测与两条 RPA B3 对照均退出 0）；既有旧 profile 断言未改。
+- **RR-F131 分层纠正（保留原记录）**：普通规范化只生成有序观测；旧执行 profile 按其 §8 在路由前拒绝同原 tick 的不同 subject；RPA 按 occurrence 槽与 T2 规则接纳。原登记把两个稳定码判作互换，来自入口混用后的错误归并；三个入口各自的稳定码与首错次序不变，生产输入逻辑不改。
+- 移交：F135 的生产修复与五类故障注入归 T-06；F132 的旧身份字节由 T-10 在改动前 dump 并比对；RR-4 安装/宏头 diff 与逐符号迁移归 T-08；RR-F142 归 T-15；RR-F121 的测试重复编译归 T-04。
+- 未执行：F135 故障注入、安装消费者、F132 旧回放字节对照；“通过”只覆盖上述四个用例与两条 RPA 对照。
+
 ## 附录 处置记录（按日期保留，§12–§16）
 
 本附录保留各轮审查的处置记录，按当时时点成立，不改写结论；编号沿用历史顺序，故排在 §17 之后阅读。

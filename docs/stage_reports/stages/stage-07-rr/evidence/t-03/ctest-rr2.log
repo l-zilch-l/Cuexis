@@ -1,0 +1,82 @@
+# rr2 contract run @ 6c77a888
+=== rr2_contract_packed ===
+[exit 0]
+Test project E:/Cuexis-worktree/out/build/candidate-debug
+    Start 121: rr2_contract_packed
+1/1 Test #121: rr2_contract_packed ..............   Passed    0.06 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   0.10 sec
+
+=== rr2_contract_entry ===
+[exit 0]
+Test project E:/Cuexis-worktree/out/build/candidate-debug
+    Start 326: rr2_contract_entry
+1/1 Test #326: rr2_contract_entry ...............   Passed    0.08 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   0.12 sec
+
+=== rr2_contract_beat ===
+[exit 0]
+Test project E:/Cuexis-worktree/out/build/candidate-debug
+    Start 170: rr2_contract_beat
+1/1 Test #170: rr2_contract_beat ................   Passed    0.08 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =   0.12 sec
+
+=== rr2_contract_input ===
+[exit 0]
+Test project E:/Cuexis-worktree/out/build/candidate-debug
+    Start 488: rr2_contract_input
+1/1 Test #488: rr2_contract_input ...............   Passed    0.07 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Label Time Summary:
+judgement    =   0.07 sec*proc (1 test)
+
+Total Test time (real) =   0.11 sec
+
+=== registration (ctest -N) ===
+[exit 0]
+Test project E:/Cuexis-worktree/out/build/candidate-debug
+  Test #121: rr2_contract_packed
+  Test #170: rr2_contract_beat
+  Test #326: rr2_contract_entry
+  Test #488: rr2_contract_input
+
+Total Tests: 4
+
+=== ^B3 different original Ticks forwarded to one dispatch retain canonical occurrence order$ ===
+[exit 0]
+Test project E:/Cuexis-worktree/out/build/candidate-debug
+    Start 580: B3 different original Ticks forwarded to one dispatch retain canonical occurrence order
+1/1 Test #580: B3 different original Ticks forwarded to one dispatch retain canonical occurrence order ...   Passed    0.06 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Label Time Summary:
+b3     =   0.06 sec*proc (1 test)
+rpa    =   0.06 sec*proc (1 test)
+
+Total Test time (real) =   0.10 sec
+
+=== ^B3 occurrence duplicate and slot conflict are atomic and distinguish content$ ===
+[exit 0]
+Test project E:/Cuexis-worktree/out/build/candidate-debug
+    Start 614: B3 occurrence duplicate and slot conflict are atomic and distinguish content
+1/1 Test #614: B3 occurrence duplicate and slot conflict are atomic and distinguish content ...   Passed    0.05 sec
+
+100% tests passed, 0 tests failed out of 1
+
+Label Time Summary:
+b3     =   0.05 sec*proc (1 test)
+rpa    =   0.05 sec*proc (1 test)
+
+Total Test time (real) =   0.09 sec
+

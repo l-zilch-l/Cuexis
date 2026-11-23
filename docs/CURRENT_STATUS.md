@@ -23,13 +23,13 @@ current_register: stage_plans/active/stage-07-rr/findings.md
 
 RR 的 [T-18 文档治理](stage_plans/active/stage-07-rr/tasks/T-18.md)已完成：规则、登记册保护、校验器、报告分类及证据追踪已落地，转入日常维护。实际通过范围与缺输入项见[交付报告](stage_reports/stages/stage-07-rr/implementation/2026-11-23-documentation-governance.md)。
 
-RR 产品任务已完成本轮设计裁定与实施准备复查。T-01 已完成：实施基线绑定提交 `a22e255f`，交付派单清单、调度正反例、独立冷启动与 D-20 旧内容清单，产品实现尚未开始；实际通过范围与缺口见[基线与派单报告](stage_reports/stages/stage-07-rr/readiness/2026-11-23-t-01-dispatch-baseline.md)，下一步按调度进入 T-03，状态见 [HANDOFF](HANDOFF.md)。
+RR 产品任务已完成本轮设计裁定与实施准备复查。T-01 已完成：实施基线绑定提交 `a22e255f`，交付派单清单、调度正反例、独立冷启动与 D-20 旧内容清单，见[基线与派单报告](stage_reports/stages/stage-07-rr/readiness/2026-11-23-t-01-dispatch-baseline.md)。T-03 已完成 8 篇合同订正与四个回归用例，并在 candidate-debug 实测通过，见[交付报告](stage_reports/stages/stage-07-rr/implementation/2026-11-23-t-03-contracts-and-diagnostics.md)；下一步按调度进入 T-04，状态见 [HANDOFF](HANDOFF.md)。
 
 ## 阶段状态
 
 | 阶段 | 当前状态 | 入口 |
 | --- | --- | --- |
-| Stage 7-RR | 当前阶段；T-01 基线完成，转入 T-03 | [总计划](stage_plans/active/stage-07-rr/plan.md)、[文档治理分册](stage_plans/active/stage-07-rr/documentation-governance.md) |
+| Stage 7-RR | 当前阶段；T-01、T-03 完成，转入 T-04 | [总计划](stage_plans/active/stage-07-rr/plan.md)、[文档治理分册](stage_plans/active/stage-07-rr/documentation-governance.md) |
 | Stage 7.5 | 尚未实施；以 RR 完成并获接受为入场前置 | [计划](stage_plans/active/stage-07-5/plan.md) |
 | Stage 8–14 | 尚未启动；Stage 8 以 Chart v5＋Gameplay v3 为正式主线 | [路线图](ROADMAP.md)、[计划索引](stage_plans/README.md) |
 

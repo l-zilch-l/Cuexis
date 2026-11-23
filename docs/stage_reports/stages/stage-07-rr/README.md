@@ -30,6 +30,7 @@ authority: index
 
 | 日期 | 报告 | 内容 |
 | --- | --- | --- |
+| 2026-11-23 | [T-03 合同与诊断](implementation/2026-11-23-t-03-contracts-and-diagnostics.md) | 8 篇合同订正、四个 `rr2_contract_*` 与两条 RPA 对照在 candidate-debug 通过；F131 分层、F135 基线表与移交 |
 | 2026-11-23 | [文档治理交付](implementation/2026-11-23-documentation-governance.md) | 规则、登记册、检查器、历史保护与报告分类迁移 |
 | 2026-11-17 | [文档治理重构（第一批）](implementation/2026-11-17-documentation-refactor.md) | 元数据、MAP/AGENTS 生成、证据统一头、计划状态纠偏、7 处假断言订正、新增事实检查器；含验证结果与未做清单 |
 

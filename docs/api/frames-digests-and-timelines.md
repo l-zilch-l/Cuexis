@@ -2,7 +2,7 @@
 
 状态：active
 
-更新日期：2026-10-28
+更新日期：2026-11-23
 
 适用版本：SDK API `0.9.1`
 
@@ -64,7 +64,12 @@ canonical bytes/order 和合法输入结果是兼容合同。
 
 - 新实现不得改变已有 digest version 的结果。
 - digest 用于确定性验证，不替代 snapshot 本身。
-- 跨 source parity 应同时比较 semantic identity、关键帧 snapshot 和 digest；需要指定 digest version 时由内部实现与测试承担，公开 API 不暴露版本入参。
+- 跨 source parity 应同时比较 semantic identity、关键帧 snapshot 和宿主可观察的默认版本 digest。
+  默认版本入口是 `computeFrameDigest`：它不接受版本入参，只返回 `algorithmVersion` 与 `value`；
+  当前默认版本为 3。内部定版本比较（v1、v2、v3 分别固定）由
+  `playback::detail::computeFrameDigestVersion` 承担，声明在
+  `engine/playback/src/frame_digest_internal.hpp`，不安装、不属于公开 API；测试为固定版本单独
+  编译 `src/frame_digest_version.cpp` 的安排归 T-04/RR-F214，不改变公开可达性。
 
 ## 时间线速查
 

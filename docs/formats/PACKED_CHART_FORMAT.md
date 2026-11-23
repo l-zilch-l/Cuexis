@@ -2,7 +2,7 @@
 
 状态：candidate；Chart v5 Foundation 的物理存储提案；v1 wire 已实现（Reader/Writer 仅 mode 0），尚未冻结为生产 wire format
 
-更新日期：2026-11-20
+更新日期：2026-11-23
 
 <!-- cuexis-meta
 id: FORMAT-PACKED_CHART_FORMAT
@@ -206,7 +206,10 @@ alignment 添加 padding。所有索引从 0 起；`IndexPlusOne` 的 0 表示 n
 | 0：Rational | `u8(0)` | `numerator: sv, denominator: uv64`，每条绝对值 |
 
 其他 descriptor 值非法：当前 Reader 对非 0 mode 报 `packed.time.invalid`，REQ0 非 0 报
-`packed.requirements.codec`。
+`packed.requirements.codec`。内置 primitives 另有 `BeatEncodingMode::GridDelta` 的
+descriptor/atom codec，仅由 `tests/chart/packed_chart_primitives_tests.cpp` 的
+“Packed GridDelta atoms use checked exact accumulation” 覆盖；它不是 temporal section 的
+接受集，Writer 不写 mode 1，Reader 仍按上一段拒绝。保留该测试覆盖不等于承诺 GridDelta wire。
 
 Rational atom 必须约分，零为 `0/1`。不能为适应 grid 舍入 Beat。
 
