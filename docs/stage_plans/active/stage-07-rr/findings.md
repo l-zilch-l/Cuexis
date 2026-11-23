@@ -865,6 +865,12 @@ T-06 按卡实施，交付范围只到 Playback 帧对象与 GL 实验桥，宿�
 - RR-F508 因此**保持开放**。清零与幂等重放需要同一个 replay ledger：保留已应用的 retire/close 回执（含 effects 与 generation），让重复步骤在不再持有 live control 时返回原记录。没有这层设计时，清零会破坏 R1 的关闭与重放合同；这是本合同冲突，不是测试问题。
 - GL 边界缺口：T-05 与 T-06 的渲染测试直接 `#include <glad/glad.h>` 并调用 `gl*`，违反 `VerifyArchitecture.cmake` 的“GL 头与调用只在 render_opengl”规则，`cuexis_architecture_tests` 变红。修复中（见 task-25）。
 
+## 37. CI 红灯与文档基线冲突（2026-11-24）
+
+- MinGW 与 GCC 构建：`open_gl_frame_layout_bridge.cpp` 的聚合初始化缺 `DrawSummary` 初值，`-Werror=missing-field-initializers` 直接失败。已补默认成员初值（`12d60eab`），MSVC 不报但 GCC/Clang 会报。
+- 覆盖率与 Release 构建：`cuexis_rr_playback_isolation` 在 clean configure 下没有 File API codemodel，测试固定失败。门禁改为仅当构建目录已有 codemodel 回执时注册测试，并在状态行说明启用方式（`6510d7c7`）；T-04 的专用 harness 配置仍跑门禁，普通预设不再误报。CI 侧的 codemodel 车道仍缺失，属后续补强项，不能按“CI 已覆盖隔离门禁”计。
+- `Documentation contracts` 的 PR 事件运行失败：PR 47 的基线是 `master` 的 `aac83e5e`，该提交还没有 `docs/MAP.md`、`docs/governance_rules.json` 与登记册；历史保护检查要求受保护文件与 legacy 豁免在可信基线中已存在，因此整个治理树在同一个 PR 中首次落地时必然失败。push 事件的运行以 `event.before` 为基线，能通过。这不是代码缺陷，不能用放宽门禁的方式绕过；需要 owner 决定治理树的合入顺序（例如先单独落入基线）或调整该 PR 的检查基线。
+
 ## 附录 处置记录（按日期保留，§12–§16）
 
 本附录保留各轮审查的处置记录，按当时时点成立，不改写结论；编号沿用历史顺序，故排在 §17 之后阅读。
