@@ -6,6 +6,7 @@ add_library(
     STATIC
         src/open_gl_backend.cpp
         src/open_gl_frame_layout.cpp
+        src/open_gl_frame_layout_bridge.cpp
         src/open_gl_frame_layout_internal.hpp
         src/open_gl_presentation.cpp
         src/open_gl_presentation_draws.cpp
@@ -20,6 +21,7 @@ target_include_directories(
     cuexis_render_opengl
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental_include>
     PRIVATE
         ${PROJECT_SOURCE_DIR}/engine/playback/experimental_include
 )

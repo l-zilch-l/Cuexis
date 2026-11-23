@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cuexis/chart/chart_runtime.hpp>
+#include <cuexis/playback/experimental/frame_layout.hpp>
 #include <cuexis/playback/playback_session.hpp>
 #include <cuexis/runtime/presentation_read.hpp>
 #include <map>
@@ -50,4 +51,9 @@ auto snapshotResourceMismatch(std::string_view objectId, std::string_view assetI
 auto presentationResourceTypeName(PresentationResourceType type) noexcept -> std::string_view;
 auto materializeSnapshot(const runtime::detail::PresentationRead&, const SnapshotLayout&,
                          const FrameViewport&, FrameSnapshot&) -> core::Result<void>;
+// Laid-out extraction: the same owner read writes the single final projection Pout and the
+// effective vertical FOV into the snapshot. The selected layout must already be validated.
+auto materializeSnapshot(const runtime::detail::PresentationRead&, const SnapshotLayout&,
+                         const FrameViewport&, FrameSnapshot&,
+                         const experimental::SelectedFrameLayout&) -> core::Result<void>;
 } // namespace cuexis::playback::detail

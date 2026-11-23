@@ -534,6 +534,7 @@ auto PlaybackSession::commit(PreparedPlayback&& prepared) -> core::Result<void> 
     auto mutation = internal::presentation::Mutation::reserve(state_->presentationClock, true);
     if (!mutation)
         return core::unexpected(std::move(mutation.error()));
+    const auto committedToken = prepared.presentationCandidateToken();
     detail::CommittedPresentationState descriptor;
     descriptor.source = candidate.replacement ? internal::presentation::Source::Restore
                                               : internal::presentation::Source::Prepared;
@@ -556,6 +557,9 @@ auto PlaybackSession::commit(PreparedPlayback&& prepared) -> core::Result<void> 
     state_->lastOperationDiagnostics = std::move(candidate.lastOperationDiagnostics);
     state_->sessionState = candidate.committedState;
     state_->presentation = std::move(candidate.presentation);
+    state_->framings = std::move(candidate.framings);
+    state_->committedPresentationToken =
+        committedToken ? std::optional<PresentationCandidateToken>{*committedToken} : std::nullopt;
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     state_->gameplayContent = std::move(candidate.gameplayContent);
     state_->gameplayProjectionIndex = std::move(candidate.gameplayProjectionIndex);

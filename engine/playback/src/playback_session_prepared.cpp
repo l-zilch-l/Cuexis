@@ -7,6 +7,17 @@ namespace cuexis::playback {
 
 using namespace prepare_detail;
 
+namespace {
+
+constexpr std::string_view frameLayoutCapability = "cuexis.presentation.frame-layout.v1";
+
+[[nodiscard]] auto declaresFrameLayout(const PresentationCapabilities& capabilities) -> bool {
+    return std::find(capabilities.hostExtensionIds.begin(), capabilities.hostExtensionIds.end(),
+                     frameLayoutCapability) != capabilities.hostExtensionIds.end();
+}
+
+} // namespace
+
 auto PreparedPlayback::materializePresentation(const PresentationCapabilities& capabilities,
                                                const PresentationRequest& request,
                                                std::uint64_t rendererInstance,
@@ -17,6 +28,13 @@ auto PreparedPlayback::materializePresentation(const PresentationCapabilities& c
     if (!prepared.valid() || !rendererInstance || !rendererGeneration || !sequence)
         return core::unexpected(
             core::Error{"host.rpa.context_stale", "Invalid owning candidate context"});
+    if (!prepared.state_->framings.empty() && !declaresFrameLayout(capabilities)) {
+        // The adapter must consume the same-frame layout and the rotated projection. An adapter
+        // that only runs the legacy submit cannot declare this capability.
+        return core::unexpected(
+            core::Error{"playback.presentation.layout.unsupported",
+                        "The active adapter does not declare the frame layout capability"});
+    }
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     auto ownerLease = prepared.state_->ownerLease.lock();
     if (!ownerLease || ownerLease->token != prepared.state_->ownerToken)
@@ -266,6 +284,14 @@ auto PreparedPlayback::validatePresentation(const PresentationCapabilities& capa
                                       "request.portable_profile",
                                       std::to_string(request.portableProfileVersion), "1");
         }
+        if (!state_->framings.empty() && !declaresFrameLayout(capabilities)) {
+            addPresentationDiagnostic(
+                result.diagnostics, core::DiagnosticSeverity::Error,
+                "playback.presentation.layout.unsupported",
+                "The active adapter does not declare the frame layout capability",
+                "$/capabilities/hostExtensionIds", "host_extension",
+                std::string{frameLayoutCapability}, "required");
+        }
 
         if (state_->presentation) {
             for (const auto& rule : presentationCapabilityRules) {
@@ -470,8 +496,8 @@ PlaybackSession::PlaybackSession() noexcept : PlaybackSession(allCapabilities())
 PlaybackSession::PlaybackSession(PlaybackCapabilitySet capabilities) noexcept
     : state_(std::make_unique<State>()) {
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
-    state_->preparedOwnerLease = std::make_shared<PreparedOwnerLease>(
-        PreparedOwnerLease{this, state_->sessionToken});
+    state_->preparedOwnerLease =
+        std::make_shared<PreparedOwnerLease>(PreparedOwnerLease{this, state_->sessionToken});
 #endif
     normalizeCapabilities(capabilities);
     state_->capabilities = std::move(capabilities);

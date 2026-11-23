@@ -39,6 +39,7 @@
 #include <cuexis/core/error.hpp>
 #include <cuexis/core/math.hpp>
 #include <cuexis/core/thread_checker.hpp>
+#include <cuexis/playback/experimental/frame_layout.hpp>
 #include <cuexis/runtime/runtime_frame.hpp>
 #include <cuexis/runtime/runtime_session.hpp>
 
@@ -194,6 +195,11 @@ struct PlaybackSession::State final {
     internal::presentation::RevisionClock presentationClock;
     const std::uint64_t presentationSessionScope{allocatePlaybackSessionToken()};
     std::optional<detail::CommittedPresentationState> committedPresentation;
+    // Committed reduced author framing table and the candidate token minted by the owning commit.
+    // Both are pure values copied from the prepared candidate; extraction reads them in the same
+    // owner/descriptor window as the snapshot and projection.
+    std::vector<experimental::FrameFraming> framings;
+    std::optional<PresentationCandidateToken> committedPresentationToken;
     void publishPresentation(internal::presentation::Mutation& mutation,
                              detail::CommittedPresentationState descriptor) noexcept {
         mutation.publish();
@@ -298,6 +304,9 @@ struct PreparedPlayback::State final {
     core::Diagnostics diagnostics;
     core::Diagnostics lastOperationDiagnostics;
     std::optional<RuntimeFrame> targetFrame;
+    // Prepared pure framing values. The source prepare path leaves this empty until an author
+    // Chart v5 reader or the library-internal test wiring attaches a validated table.
+    std::vector<experimental::FrameFraming> framings;
     SessionState committedState{SessionState::Ready};
     std::optional<detail::PreparedPresentation> presentation;
     std::uint64_t candidateGeneration{};

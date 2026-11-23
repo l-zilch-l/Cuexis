@@ -3,6 +3,8 @@ add_library(cuexis_playback ${CUEXIS_LIBRARY_TYPE}
     src/frame_digest_internal.hpp
     src/frame_digest_version.cpp
     src/frame_layout.cpp
+    src/frame_layout_access.hpp
+    src/frame_layout_bridge.cpp
     src/frame_layout_internal.hpp
     src/presentation.cpp
     src/presentation_identity.cpp
@@ -45,6 +47,17 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
     target_compile_definitions(cuexis_playback PRIVATE CUEXIS_ENABLE_CHART_V5_CANDIDATE=1)
     target_compile_definitions(cuexis_playback PUBLIC CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE=1)
     target_include_directories(cuexis_playback PRIVATE ${PROJECT_SOURCE_DIR}/engine/judgement/internal)
+    # Experimental R5 frame construction surface. Only the opt-in flavor publishes the same
+    # physical header through the SDK header file set and the build interface; the default flavor
+    # keeps its PRIVATE include root and its installed surface unchanged.
+    target_sources(cuexis_playback PUBLIC
+        FILE_SET HEADERS
+        BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/experimental_include"
+        FILES
+            "${CMAKE_CURRENT_SOURCE_DIR}/experimental_include/cuexis/playback/experimental/frame_layout.hpp"
+    )
+    target_include_directories(cuexis_playback PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental_include>")
     # Candidate-only implementation units. The ordinary source table above never compiles them;
     # each hook therefore has exactly one definition in either closure, never both. The codec and
     # tools include roots arrive only through this candidate-only link edge.

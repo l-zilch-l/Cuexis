@@ -50,6 +50,11 @@ if(CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
     target_include_directories(cuexis_playback_tests PRIVATE
         ${PROJECT_SOURCE_DIR}/engine/render/include
         ${PROJECT_SOURCE_DIR}/engine/world/include)
+    # The laid-out frame bridge keeps its builder and its attach access non-exported, so the
+    # private test unit is compiled into this executable in static configurations only.
+    target_sources(cuexis_playback_tests PRIVATE
+        frame_bridge_tests.cpp
+        "${PROJECT_SOURCE_DIR}/engine/playback/src/frame_layout_bridge.cpp")
 endif()
 
 target_link_libraries(cuexis_playback_tests

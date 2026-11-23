@@ -38,7 +38,24 @@ using ::cuexis::playback::StepTarget;
                                  const std::optional<core::Error>&) -> bool;
 struct FaultSlot final {
     enum class Reason : std::uint8_t { none, capacity, allocation, conflict, captureGap } reason{};
+    // Fixed failure stage of the observation bridge. Kept in the preallocated slot so a fault
+    // remains attributable after an allocation failure without building another diagnostic.
+    enum class Stage : std::uint8_t {
+        none,
+        create,
+        configure,
+        copyReceipt,
+        feedback,
+        publish,
+        recordAttempt,
+        takeLatest,
+        observe,
+        expire,
+        activate,
+        query,
+    };
     std::optional<StepKey> step;
+    Stage stage{};
 };
 // Fixed records are allocated at create; fault publication never allocates.
 class OwnerStepLedger final {

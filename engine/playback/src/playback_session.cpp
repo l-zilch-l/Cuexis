@@ -338,9 +338,16 @@ auto PlaybackSession::unload() -> core::Result<void> {
     state_->executionContext.reset();
     state_->executionMapping.reset();
     state_->tailTransition.reset();
-    state_->hostFence.reset();
+    // A directed close keeps the fence and the confirmed context until completeExecutionClose
+    // consumes them; clearing them here would make the terminal close unreleasable. Every other
+    // unload clears the stale host control state as RR-F508 requires.
+    const bool closeInFlight =
+        state_->acceptedHostControl && state_->acceptedHostControl->kind == ControlKind::close;
+    if (!closeInFlight) {
+        state_->hostFence.reset();
+        state_->confirmedHostContext.reset();
+    }
     state_->acceptedHostControl.reset();
-    state_->confirmedHostContext.reset();
     state_->hostCommitAuthorized = false;
     state_->realtimeWasStarted = false;
     state_->gameplay.reset();
@@ -352,6 +359,8 @@ auto PlaybackSession::unload() -> core::Result<void> {
 #endif
     state_->parameters = {};
     state_->presentation.reset();
+    state_->framings.clear();
+    state_->committedPresentationToken.reset();
     state_->sessionState = SessionState::Empty;
     state_->publishPresentation(*mutation, {});
     state_->bumpGeneration();

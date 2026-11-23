@@ -61,12 +61,15 @@ foreach(required_symbol IN ITEMS
         computeContentRect
         computeFrameDigest
         computeFrameLayout
+        extractLaidOutFrame
         fromCxcFile
         fromCxcMemory
         fromTypedProjectSource
         prepareLoad
         prepareReload
+        preparedFramings
         presentationManifest
+        relayoutRetainedFrame
         reload
         semanticIdentity
         validatePresentation)
@@ -74,13 +77,15 @@ foreach(required_symbol IN ITEMS
         message(FATAL_ERROR "Playback shared library does not export ${required_symbol}")
     endif()
 endforeach()
-set(public_class_pattern "ChartClock|RealtimeClock|PlaybackSession|PlaybackSource|PreparedPlayback|RuntimeTimeline")
-set(public_mangled_classes "10ChartClock|13RealtimeClock|15PlaybackSession|14PlaybackSource|16PreparedPlayback|15RuntimeTimeline")
+set(public_class_pattern "ChartClock|RealtimeClock|PlaybackSession|PlaybackSource|PreparedPlayback|RuntimeTimeline|LaidOutFrame")
+set(public_mangled_classes "10ChartClock|13RealtimeClock|15PlaybackSession|14PlaybackSource|16PreparedPlayback|15RuntimeTimeline|12LaidOutFrame")
 set(public_function_pattern "computeContentRect|computeFrameDigest|computeFrameLayout")
 set(public_mangled_functions
     "17computeContentRect|18computeFrameDigest|18computeFrameLayout")
-set(experimental_function_pattern "computeContentRect|computeFrameLayout")
-set(experimental_mangled_functions "17computeContentRect|18computeFrameLayout")
+set(experimental_function_pattern
+    "computeContentRect|computeFrameLayout|preparedFramings|extractLaidOutFrame|relayoutRetainedFrame")
+set(experimental_mangled_functions
+    "17computeContentRect|18computeFrameLayout|16preparedFramings|19extractLaidOutFrame|21relayoutRetainedFrame")
 if(CUEXIS_GAMEPLAY_CANDIDATE)
     string(APPEND public_class_pattern "|GameplayContent|GameplayResult|GameplayCheckpoint|GameplayReplay|GameplaySnapshot")
     string(APPEND public_mangled_classes "|15GameplayContent|14GameplayResult|18GameplayCheckpoint|14GameplayReplay|16GameplaySnapshot")
@@ -107,6 +112,25 @@ else()
         normalizePresentationFrame
         6cuexis8playback6detail)
 endif()
+if(CUEXIS_SYMBOL_TOOL_KIND STREQUAL "dumpbin")
+    # The moved/exported laid-out frame ABI members are required individually; a missing export
+    # annotation must fail here instead of being hidden by the class-level allowlist.
+    foreach(required_symbol IN ITEMS
+            "?snapshot@LaidOutFrame@experimental@playback@cuexis@@"
+            "?layout@LaidOutFrame@experimental@playback@cuexis@@"
+            "?source@LaidOutFrame@experimental@playback@cuexis@@"
+            "?resourceToken@LaidOutFrame@experimental@playback@cuexis@@"
+            "?framing@LaidOutFrame@experimental@playback@cuexis@@"
+            "??0LaidOutFrame@experimental@playback@cuexis@@"
+            "??1LaidOutFrame@experimental@playback@cuexis@@"
+            "??4LaidOutFrame@experimental@playback@cuexis@@")
+        string(FIND "${required_symbol_output}" "${required_symbol}" position)
+        if(position EQUAL -1)
+            message(FATAL_ERROR
+                "Playback shared library does not export ${required_symbol}")
+        endif()
+    endforeach()
+endif()
 set(export_count 0)
 string(REPLACE "\r\n" "\n" normalized_symbol_output "${symbol_output}")
 string(REPLACE "\n" ";" symbol_lines "${normalized_symbol_output}")
@@ -130,7 +154,8 @@ foreach(symbol_line IN LISTS symbol_lines)
                 "^\\?[^@]+@(${public_class_pattern})@playback@cuexis@@" OR
            exported_symbol MATCHES "^\\?(${public_function_pattern})@playback@cuexis@@" OR
            exported_symbol MATCHES
-                "^\\?(${experimental_function_pattern})@experimental@playback@cuexis@@")
+                "^\\?(${experimental_function_pattern})@experimental@playback@cuexis@@" OR
+           exported_symbol MATCHES "^\\?[^@]+@(LaidOutFrame)@experimental@playback@cuexis@@")
             continue()
         endif()
     else()
@@ -164,7 +189,9 @@ foreach(symbol_line IN LISTS symbol_lines)
                 "^_ZN[KVRrO]*6cuexis8playback(${public_mangled_classes})" OR
            exported_symbol MATCHES "^_ZN6cuexis8playback(${public_mangled_functions})(B5cxx11)?E" OR
            exported_symbol MATCHES
-                "^_ZN6cuexis8playback12experimental(${experimental_mangled_functions})(B5cxx11)?E")
+                "^_ZN6cuexis8playback12experimental(${experimental_mangled_functions})(B5cxx11)?E" OR
+           exported_symbol MATCHES
+                "^_ZN[KVRrO]*6cuexis8playback12experimental12LaidOutFrame")
             continue()
         endif()
     endif()

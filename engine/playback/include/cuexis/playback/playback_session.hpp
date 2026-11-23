@@ -42,6 +42,7 @@ namespace cuexis::playback {
 namespace detail {
 struct PresentationAccess;
 struct GameplayPublicationAccess;
+struct FrameLayoutAccess;
 } // namespace detail
 
 CUEXIS_ABI_WARNING_PUSH
@@ -268,6 +269,7 @@ class CUEXIS_PLAYBACK_API PreparedPlayback final {
   private:
     friend class PlaybackSession;
     friend struct detail::CandidateMetadataAccess;
+    friend struct detail::FrameLayoutAccess;
     struct State;
     explicit PreparedPlayback(std::unique_ptr<State> state) noexcept;
 
@@ -462,6 +464,7 @@ class CUEXIS_PLAYBACK_API PlaybackSession final {
     friend struct detail::CandidateMetadataAccess;
     friend struct detail::GameplayPublicationAccess;
     friend struct detail::HostCoordinationAccess;
+    friend struct detail::FrameLayoutAccess;
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     [[nodiscard]] auto validateExecutionControlProof(const StepRequest&,
                                                      const ControlReceipt&) const

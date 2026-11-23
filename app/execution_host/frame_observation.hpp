@@ -2,6 +2,8 @@
 #include "frame_storage.hpp"
 #include "host_protocol.hpp"
 #include <atomic>
+#include <exception>
+#include <new>
 
 namespace cuexis::player {
 class ExecutionHost;
@@ -110,9 +112,22 @@ template <typename Renderer, typename MonotonicNow>
         if (!presented)
             receipt.cause = presented.error();
         return receipt;
+    } catch (const std::bad_alloc&) {
+        // The operation did not complete. Report the actual failure stage instead of claiming
+        // success or an unknown present; a bad_alloc remains distinguishable from other faults.
+        receipt.status = PresentStatus::failed;
+        receipt.cause = core::Error{"host.rpa.allocation_failed",
+                                    "Renderer submit or present could not allocate"};
+        return receipt;
+    } catch (const std::exception& exception) {
+        receipt.status = PresentStatus::failed;
+        receipt.cause =
+            core::Error{"host.rpa.device_failed", "Renderer submit or present failed"}.withContext(
+                "exception", exception.what());
+        return receipt;
     } catch (...) {
-        receipt.status = PresentStatus::unknown;
-        receipt.cause = core::Error{"host.rpa.device_failed", "Renderer call outcome is unknown"};
+        receipt.status = PresentStatus::failed;
+        receipt.cause = core::Error{"host.rpa.device_failed", "Renderer submit or present failed"};
         return receipt;
     }
 }
@@ -185,6 +200,13 @@ class FrameObservationLedger final {
     [[nodiscard]] auto historyUnavailable() const noexcept -> bool {
         return historyLost_;
     }
+#if defined(CUEXIS_FRAME_OBSERVATION_FAULT_INJECTION)
+    // Test seam: the prebuilt owning error is exposed so the copy cost can be measured rather
+    // than presumed safe.
+    [[nodiscard]] auto allocationFailureTemplateForTest() const noexcept -> const core::Error& {
+        return allocationFailure_;
+    }
+#endif
 
   private:
     [[nodiscard]] auto publishImpl(FrameEnvelope, bool retained) -> core::Result<void>;
@@ -207,6 +229,12 @@ class FrameObservationLedger final {
     void dropFeedback(std::size_t) noexcept;
     void trim(std::size_t needed) noexcept;
     void rememberLoss(std::uint64_t first, std::uint64_t last) noexcept;
+    void reportAllocationFailure(FaultSlot::Stage stage) const noexcept {
+        fault_ = {FaultSlot::Reason::allocation, {}, stage};
+    }
+    void reportCapacityFailure(FaultSlot::Stage stage) const noexcept {
+        fault_ = {FaultSlot::Reason::capacity, {}, stage};
+    }
     core::ThreadChecker owner_;
     HostContext context_;
     std::uint64_t scope_, lastFrame_{}, unknownCount_{};
@@ -227,7 +255,15 @@ class FrameObservationLedger final {
     std::optional<std::int64_t> feedbackLossThrough_;
     std::uint64_t feedbackLossCommitThrough_{};
     mutable FaultSlot fault_;
-    mutable core::Error allocationFailure_{"host.rpa.capacity_exceeded",
-                                           "Reserved frame observation allocation fault"};
+    mutable core::Error allocationFailure_{"host.rpa.allocation_failed",
+                                           "Frame observation operation could not allocate"};
 };
+#if defined(CUEXIS_FRAME_OBSERVATION_FAULT_INJECTION)
+// Test-only switches consumed by the exact production allocation branch they fault. They live in
+// the test closure only; no alternative implementation is compiled into it.
+void armFrameObservationAllocationFault(FaultSlot::Stage) noexcept;
+void armFrameObservationCapacityFault(FaultSlot::Stage) noexcept;
+[[nodiscard]] auto takeFrameObservationInjectedFault(FaultSlot::Stage) noexcept -> bool;
+[[nodiscard]] auto frameObservationInjectedFaultAttempts() noexcept -> std::uint64_t;
+#endif
 } // namespace cuexis::playback::detail

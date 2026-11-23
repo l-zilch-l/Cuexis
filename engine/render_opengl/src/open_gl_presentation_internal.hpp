@@ -2,6 +2,7 @@
 
 #include <cuexis/render_opengl/open_gl_backend.hpp>
 
+#include <cuexis/playback/experimental/frame_layout.hpp>
 #include <cuexis/presentation_renderer/draw_command.hpp>
 
 #include <glad/glad.h>
@@ -154,6 +155,8 @@ struct PresentationResourceSet final {
     playback::PresentationResourceManifest manifest;
     std::vector<playback::PortableResourcePtr> resources;
     playback::EffectivePresentationSettings settings;
+    // Reduced author framing table committed with this candidate. Empty for the legacy path.
+    std::vector<playback::experimental::FrameFraming> framings;
     std::vector<GpuMesh> meshes;
     std::vector<GpuTexture> textures;
     std::vector<GpuMaterial> materials;
