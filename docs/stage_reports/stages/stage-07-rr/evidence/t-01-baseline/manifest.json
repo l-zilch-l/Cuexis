@@ -3134,5 +3134,10 @@
     "Baseline SHA equals the committed handoff HEAD; working-tree diff and untracked inventory are therefore expected empty and are recorded as verified emptiness, not as omitted evidence.",
     "Input hashes cover the dispatch package only. New targets, schemas and tests named by a card are created by that card and cannot be hashed before creation.",
     "Historical evidence under docs/stage_reports/** is read-only input; it is hashed here and never rewritten."
-  ]
+  ],
+  "adoption_snapshot": {
+    "note": "基线提交 a22e255f 的采用快照。sha256 取该提交的 blob 字节，可在任意 checkout 复现；sha256_worktree 与 worktree_variant 是采用当时的 Windows 工作树字节，之后 3b8bf41e、569253d8 等修订提交会改变部分输入，复核时以 BASE_SHA 的 blob 值为准。",
+    "hashes_file": "hashes.txt 覆盖 202 个路径，含全部 17 张任务卡",
+    "legacy_fixtures": "legacy-corpus/fixtures/** 在 .gitattributes 中标记为 binary，保持证据 zip 条目的原始字节（含 CRLF）"
+  }
 }

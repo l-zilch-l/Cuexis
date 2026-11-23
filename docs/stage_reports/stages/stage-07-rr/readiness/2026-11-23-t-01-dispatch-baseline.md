@@ -44,7 +44,7 @@ python -B tools/verification/test_check_plan_schedule.py -> 0 (Ran 27 tests, OK)
 git diff --check                                     -> 0
 ```
 
-派单清单由 [capture_baseline.py](#证据) 生成：120 个全局输入、17 张任务卡、191 个唯一输入路径，缺失 0。另保存设计基线到本次基线的逐文件差异（`9623efa3..a22e255f` 共 167 项：61 新增、100 修改、6 重命名）。
+派单清单由 [capture_baseline.py](#证据) 生成：120 个全局输入、17 张任务卡、191 个输入引用；[hashes.txt](../evidence/t-01-baseline/hashes.txt) 固定 202 个唯一路径（含全部 17 张卡），缺失 0。另保存设计基线到本次基线的逐文件差异（`9623efa3..a22e255f` 共 167 项：61 新增、100 修改、6 重命名）。
 
 ## 结果与证据
 
@@ -53,7 +53,7 @@ git diff --check                                     -> 0
 | 结论 | 证据 | 状态 |
 | --- | --- | --- |
 | 基线提交、tree、分支与干净工作树可复现 | [baseline.md](../evidence/t-01-baseline/baseline.md)、[manifest.json](../evidence/t-01-baseline/manifest.json) | 成立 |
-| 191 个派单输入哈希由 blob 复现，缺失 0 | [hashes.txt](../evidence/t-01-baseline/hashes.txt) | 成立 |
+| 202 个派单路径（含 17 张卡）的 blob 哈希复现，缺失 0 | [hashes.txt](../evidence/t-01-baseline/hashes.txt) | 成立 |
 | 17 张卡按 scope code（DOC/RR2/R1/R5/RR4/NEXT 与 T-17 独立修复）绑定到同一基线 | [baseline.md](../evidence/t-01-baseline/baseline.md)「逐卡采用绑定」 | 成立 |
 | 设计基线到本次基线无产品源码变化 | `history/name-status-9623efa3..a22e255f.txt`；`engine/`、`app/`、`tests/`、`schemas/` 0 项 | 成立 |
 | 版本文件变化仅构建日期 `26.11.18-1` → `26.11.22-1`，SDK API 仍 `0.9.1` | 同上 diff；[CuexisVersion.cmake](../../../../../cmake/CuexisVersion.cmake) | 成立 |
@@ -91,7 +91,9 @@ git diff --check                                     -> 0
 | 阴性 A：副本给 T-05 加 T-06 前置退出 1，唯一错误精确指到第 20 行 | 成立 | 同上；`prerequisite T-06 must be in an earlier wave` |
 | 阴性 B：删除、围栏、注释三种隐藏 T-05 `## 停止条件` 均退出 1，唯一错误为七段结构 | 成立 | 同上 |
 | 正本 `schedule.md` 哈希前后一致（`85cdee01…83b7`），30 个文件未变 | 成立 | 同上 |
-| 派单清单哈希、独立 checkout 与 167/61/100/6 差异 | 成立（复核后改口径） | 交叉复核 178/178 路径一致、5104 文件解出；行尾差异导致 3 个抽样文件字节不同，已把规范哈希改为 blob 口径 |
+| 派单清单哈希、独立 checkout 与 167/61/100/6 差异 | 成立（两轮复核后改口径与两处补正） | 交叉复核 178/178 路径一致、5104 文件解出；行尾差异导致 3 个抽样文件字节不同，已把规范哈希改为 blob 口径。第二轮复核又发现 `hashes.txt` 漏 11 张卡、4 个夹具文本被行尾归一化、工作树哈希随修订提交过期，均已修正并复验 |
+
+**第二轮交叉核验的处置。** 复核代理按基线 `a22e255f` 重算了 `hashes.txt` 的 191 项，全部一致，同时指出三处：哈希表只含 6 张任务卡，其余 11 张只在 `manifest.json` 的 `tasks[].card` 里；`legacy-corpus/fixtures/` 的 4 个文本夹具在提交时被 CRLF→LF 归一化，与语料清单记录的条目哈希不符；`sha256_worktree` 与 `worktree_variant` 是采用当时的工作树快照，后续修订提交会改变部分输入，若不注明会被误读成当前值。处置：`hashes.txt` 重建为 202 个路径并逐项对 `a22e255f` 的 blob 复算，0 不一致；`.gitattributes` 把 T-01 夹具目录标为 `binary`，重新入库后 6 个文件的 blob 哈希逐项等于 S7A-7/8 证据清单记录值；`manifest.json` 增加 `adoption_snapshot`，写明 blob 值为复核口径、工作树哈希属于采用快照。复核原始记录在 `out/review/stage-07-rr/T-01/schedule-controls/blobs/`。
 
 ### D-20 旧内容清单
 
@@ -125,7 +127,7 @@ D-20 结论只覆盖仓库内可得材料；仓库外是否曾发布过具名判
 
 - [baseline.md](../evidence/t-01-baseline/baseline.md)：基线身份、工作树清点、全局输入哈希、逐卡采用表。
 - [manifest.json](../evidence/t-01-baseline/manifest.json)：机器清单（blob 与工作树双哈希、逐卡输入与命令、七段结构）。
-- [hashes.txt](../evidence/t-01-baseline/hashes.txt)：191 个唯一输入的 blob SHA-256。
+- [hashes.txt](../evidence/t-01-baseline/hashes.txt)：202 个路径的 blob SHA-256（120 个全局输入、191 个输入引用去重、17 张任务卡）。
 - [fixtures/s7a78-host-fixture](../evidence/t-01-baseline/legacy-corpus/fixtures/s7a78-host-fixture/)：L1 旧成品与设置/输入/命令的字节副本。
 - 阶段索引：[Stage 7-RR 报告索引](../README.md)。
 
