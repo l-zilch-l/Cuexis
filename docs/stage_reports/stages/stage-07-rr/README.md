@@ -16,6 +16,7 @@ authority: index
 
 | 日期 | 报告 | 内容 |
 | --- | --- | --- |
+| 2026-11-24 | [RR-F132 身份字节基线](evidence/t-03/identity-baseline/identity-baseline.md) | T-10 改动前的两套 `judgementIdentity` 规范字节与哈希；仅当前实现，历史发布值仍无法核实 |
 | 2026-11-23 | [外部旧设备验收包清点](readiness/2026-11-23-external-legacy-corpus.md) | 仓库外两套内部候选验收包的哈希、期望值与可复现性；D-20 正式发行语料仍为空集 |
 | 2026-11-23 | [T-01 基线与派单](readiness/2026-11-23-t-01-dispatch-baseline.md) | 实施基线 `a22e255f`、派单清单、调度正反例、独立冷启动与采用绑定；产品实现未开始 |
 | 2026-11-23 | [旧谱兼容语料清单](readiness/2026-11-23-legacy-corpus-inventory.md) | 7 个旧内容组合的交付身份、输入、设置与独立预期；仓库内无正式发行判定组合，缺口交 T-09 |

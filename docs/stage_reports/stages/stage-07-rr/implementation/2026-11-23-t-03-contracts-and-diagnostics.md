@@ -261,7 +261,7 @@ ctest --test-dir out/build/candidate-debug --no-tests=error -R '^B3 occurrence d
 `d1951326` 源码存档中与当前 HEAD 逐字节相同，身份构造未变，因此旧字节可由当前代码复现。新增
 `rr_f132_identity_baseline`（`tests/judgement/rr_f132_identity_baseline_tests.cpp`）打印两套
 `judgementIdentity.canonicalBytes().toHex()`，T-10 改动前后各跑一次并解释差异；取证记录见
-[旧工作副本的身份代码与发行记录](../evidence/t-03/old-checkout-identity-and-release.md)。真实发布版在
+[旧工作副本的身份代码与发行记录](../evidence/t-03/old-checkout-identity-and-release.md)；改动前字节已按上述用例在 `debug` 预设采集，见[身份字节基线](../evidence/t-03/identity-baseline/identity-baseline.md)。真实发布版在
 设备上产生的身份值仍无记录。
 
 ### 新增测试源（上一版已实测，本轮补强待重跑）

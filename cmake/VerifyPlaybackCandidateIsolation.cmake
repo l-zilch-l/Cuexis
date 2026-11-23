@@ -246,7 +246,7 @@ function(cuexis_target_closure root reply_dir names ids json_files out_targets
         if(NOT dependency_error)
             set(dependency_index 0)
             while(dependency_index LESS dependency_count)
-                string(JSON dependency_id GET "${target_json}" dependencies ${dependency_index})
+                string(JSON dependency_id GET "${target_json}" dependencies ${dependency_index} id)
                 list(FIND ids "${dependency_id}" dependency_position)
                 if(NOT dependency_position EQUAL -1)
                     list(GET names ${dependency_position} dependency_name)
