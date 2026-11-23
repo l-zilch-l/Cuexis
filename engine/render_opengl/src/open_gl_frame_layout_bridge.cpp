@@ -177,7 +177,7 @@ struct BorrowedDrawState final {
     std::uint32_t debugVertexArray{};
     std::uint32_t debugVertexBuffer{};
     std::int32_t viewProjectionLocation{};
-    presentation_renderer::DrawSummary summary;
+    presentation_renderer::DrawSummary summary{};
 };
 
 auto borrowedDraw(void* context) -> core::Result<void> {
@@ -401,7 +401,7 @@ auto detail::OpenGlFrameLayoutAccess::submit(
         frame.layout().content.width, frame.layout().content.height};
     const auto content = detail::toGlRect(absoluteContent, target.extent);
 
-    presentation_renderer::DrawSummary summary;
+    presentation_renderer::DrawSummary summary{};
     {
         ScissorReset scissorReset;
         glViewport(0, 0, static_cast<GLsizei>(target.extent.width),
