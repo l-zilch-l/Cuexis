@@ -171,3 +171,9 @@ documentation facts are current (SDK 0.9.1, build 26.11.23-1)
 ## 7. 证据文件
 
 `build-candidate-playback.log`、`registration-playback.log`、`tests-playback.log`、`build-candidate-runtime.log`、`registration-runtime.log`、`tests-runtime-override.log`、`runtime-suite-candidate.log`、`playback-suite-candidate.log`、`build-default-closure.log`、`playback-suite-default.log`、`runtime-suite-default.log`、`isolation-default.log`、`isolation-candidate.log`、`docs-check.log`、`docs-facts.log`、`diff.patch`、`files.txt`。
+
+## 8. 集成补充（2026-11-24）
+
+合入波次 5 后，candidate 构建的宿主关闭与 retire 重放用例（B4、R0、B5 两例、C10、C4、R1 交付失败）变红。实测在 T-17 提交之前全部通过，根因是 `PlaybackSession::unload()` 清零 `hostFence` 与 `acceptedHostControl`：定向 Close 的 `completeExecutionClose` 需要保留的 fence，retire 幂等重放需要已接受的控制与回执，清零后两者失去依据。
+
+该清零已回退（提交 `8383672c`），7 个 worker 用例恢复通过；F501、F509、F203 的修复不受影响。RR-F508 因此保持开放：清零与幂等重放需要统一的 replay ledger（保留已应用 retire/close 回执的 effects 与 generation），在该设计落地前不重新清零。`rr_session_unload_state` 用例随回退一并移除。

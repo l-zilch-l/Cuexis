@@ -851,6 +851,20 @@ T-04 交付见[构建闭包拆分与隔离门禁](../../../stage_reports/stages/
 - 集成验证：合并树上 `candidate-headless-debug` 的 T-17 三例、override 集与 `[packed]` 69/69 通过；`debug` 的 `rr_frame_layout` 4/4、`[packed]` 69/69、隔离门禁与 T-03/T-04 七项测试通过。
 - 遗留：T-04 卡预期的两个候选 hook 文件仍未拆分，维持 §32 移交 T-08；T-17 未跑 shared 与设备；T-05 的 `framebuffer_incomplete` 需要合同补可达条件或由 T-06 覆盖。
 
+## 36. 波次 6：T-06 部分成立、F508 冲突与 GL 边界缺口（2026-11-24）
+
+T-06 按卡实施，交付范围只到 Playback 帧对象与 GL 实验桥，宿主/Player 接线不在本轮结果内，按四档记**部分成立**。
+
+- RR-F135 场景 1/2/3/5：**成立**。分配失败分类、实测预算容量、非致命丢失与 submit/present 真实性在 `rr_frame_observation_errors` 通过；固化 reason/stage 的故障槽读取 0 次分配。
+- RR-F135 场景 4：**不成立**。持续 OOM 下失败交付仍抛 `std::bad_alloc`，根因是 owning `core::Error` 的拷贝会分配。固定 `FaultSlot` 可用，但现有 owning 错误类型不是不分配表示；需要 D-04 先裁定错误表示，再谈闭环。
+- 帧对象与提帧：**成立**。`LaidOutFrame`、`preparedFramings`、`extractLaidOutFrame`、`relayoutRetainedFrame` 的同 owner 布局/快照/来源/token、Pout/fovY/viewport 与 retained 重排不重读 Runtime 均有 `rr_laid_out_frame` 覆盖；非法画幅在 validate 与物化前都拒绝。
+- GL 实验桥：**部分成立**。缺能力/非法表拒绝、target/token/画幅成员校验、借用 FBO 绘制与状态归还在 `rr_frame_layout_gl_bridge` 通过；窗口路径只编译，未做真实提交对照。
+- 实验安装面与共享导出：**成立**。仅实验 flavor 安装 Playback 实验头，默认不含；两个 `cuexis_shared_export_surface` 通过，dumpbin 实测 11 个新符号。
+- 未实施：ExecutionHost/Player 帧链（`FramePayload` variant、worker owner、`frame_delivery`、deadline、target-changed 弃帧）、`rr_frame_layout_shared`、`rr_frame_diagnostics`、F207 资源去重与 F419/F427/F428/F421/F415。这些仍是 T-06 卡内后续步骤，不能按通过计。
+- 集成更正：T-06 报告的 B4/R0“基线缺陷”不成立。实测在 T-17 提交之前两例通过，之后 7 个 worker 用例（B4、R0、B5×2、C10、C4、R1）一起变红，根因是 `PlaybackSession::unload` 清零 `hostFence`/`acceptedHostControl` 后，定向 Close 与 retire 幂等重放失去依据。回退该清零后 7 例全部恢复，其余 T-17 修复（F501/F509/F203）不受影响。
+- RR-F508 因此**保持开放**。清零与幂等重放需要同一个 replay ledger：保留已应用的 retire/close 回执（含 effects 与 generation），让重复步骤在不再持有 live control 时返回原记录。没有这层设计时，清零会破坏 R1 的关闭与重放合同；这是本合同冲突，不是测试问题。
+- GL 边界缺口：T-05 与 T-06 的渲染测试直接 `#include <glad/glad.h>` 并调用 `gl*`，违反 `VerifyArchitecture.cmake` 的“GL 头与调用只在 render_opengl”规则，`cuexis_architecture_tests` 变红。修复中（见 task-25）。
+
 ## 附录 处置记录（按日期保留，§12–§16）
 
 本附录保留各轮审查的处置记录，按当时时点成立，不改写结论；编号沿用历史顺序，故排在 §17 之后阅读。
