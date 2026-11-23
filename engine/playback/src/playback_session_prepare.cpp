@@ -407,6 +407,9 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
         auto prepared = std::make_unique<PreparedPlayback::State>();
         prepared->owner = &context.owner;
         prepared->ownerToken = state_->sessionToken;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+        prepared->ownerLease = state_->preparedOwnerLease;
+#endif
         prepared->expectedGeneration = state_->generation;
         prepared->replacement = context.replacement;
         prepared->contentProvider = std::move(sourceState.provider);

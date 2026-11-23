@@ -99,6 +99,16 @@ inline std::atomic<std::uint64_t> nextPlaybackSessionToken{1};
 }
 
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+// Minimal internal lease for the one candidate-path dereference of a PreparedPlayback owner.
+// The session owns the lease; a prepared candidate holds only a weak reference, so a destroyed
+// session expires it and the dereference is skipped instead of following a dangling pointer.
+struct PreparedOwnerLease final {
+    PlaybackSession* session{};
+    std::uint64_t token{};
+};
+#endif
+
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
 inline auto gameplayError(std::string_view detail) -> core::Error {
     return core::Error{"playback.gameplay.invalid", std::string{detail}}
         .withContext("category", "invalid_relation")
@@ -221,6 +231,7 @@ struct PlaybackSession::State final {
     std::optional<std::uint64_t> acceptedHostDecision;
     std::optional<HostContext> confirmedHostContext;
     bool hostCommitAuthorized{};
+    std::shared_ptr<PreparedOwnerLease> preparedOwnerLease;
 #endif
     void bumpGeneration() noexcept {
         if (++generation == 0) {
@@ -294,6 +305,9 @@ struct PreparedPlayback::State final {
     GameplayContent gameplayContent;
     std::unique_ptr<judgement::JudgementSession> gameplay;
     detail::PreparedProjection gameplayProjectionIndex;
+    // F509 lifetime guard and the candidate-path owner dereference counter it controls.
+    std::weak_ptr<PreparedOwnerLease> ownerLease;
+    std::uint64_t ownerDereferences{};
 #endif
 };
 

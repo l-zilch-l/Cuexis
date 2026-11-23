@@ -13,12 +13,45 @@
 namespace cuexis::playback::detail {
 
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+// Candidate-only fields that unload must clear. This mirrors their presence; it does not model
+// their lifetime or control semantics.
+struct CandidateSessionState final {
+    bool hostFence{};
+    bool acceptedHostControl{};
+    bool confirmedHostContext{};
+    bool executionMapping{};
+    bool tailTransition{};
+};
+
+// Internal test seam: exposes the candidate fields so the unload regression can seed and then
+// observe exactly the fields cleared by unload. Not part of the candidate SDK surface.
+struct CandidateSessionSlots final {
+    std::optional<ExecutionFence>& hostFence;
+    std::optional<ControlRequest>& acceptedHostControl;
+    std::optional<HostContext>& confirmedHostContext;
+    std::optional<ClockMappingConfiguration>& executionMapping;
+    std::optional<TailClockTransition>& tailTransition;
+    bool& hostCommitAuthorized;
+};
+
 struct CandidateMetadataAccess final {
     [[nodiscard]] static auto prepared(const PreparedPlayback& playback)
         -> const chart::CandidateRuntimeMetadata*;
 
     [[nodiscard]] static auto active(const PlaybackSession& session)
         -> const chart::CandidateRuntimeMetadata*;
+
+    [[nodiscard]] static auto candidateState(const PlaybackSession& session)
+        -> CandidateSessionState;
+
+    [[nodiscard]] static auto candidateSlots(PlaybackSession& session) -> CandidateSessionSlots;
+
+    [[nodiscard]] static auto preparedOwnerDereferences(const PreparedPlayback& playback) noexcept
+        -> std::uint64_t;
+
+    // Internal test seam for the F509 lifetime guard: expiring the lease models a session that
+    // is already gone without dereferencing it.
+    static void expirePreparedOwnerLease(PreparedPlayback& playback) noexcept;
 };
 #endif
 

@@ -1,8 +1,8 @@
 # Cuexis RuntimeSession 规范
 
-状态：阶段 1C/1D 会话合同、阶段 2 Timing/Behavior/表现属性和阶段 3C portable Snapshot 均已实现；F203 修订已接受、未实现
+状态：阶段 1C/1D 会话合同、阶段 2 Timing/Behavior/表现属性、阶段 3C portable Snapshot 与 F203 临时覆盖登记修订均已实现
 
-更新日期：2026-11-23
+更新日期：2026-11-24
 
 <!-- cuexis-meta
 id: ARCH-RUNTIME_SESSION
@@ -158,9 +158,13 @@ Transform/FOV/Visibility/Material resolver -> World transform update。Resolver 
 destination 的 `extractFrame()` 不分配；包含 Animation 的会话遵循 Stage 4 已定义的有界分配
 合同，本节不作全路径零分配承诺。
 
-### 临时覆盖登记修订（F203，已接受、未实现）
+<a id="临时覆盖登记修订f203已接受未实现"></a>
 
-2026-11-23 owner 已接受以下修订，尚未实现。内部 `RuntimeSession::acquireOverride` 保持既有线程、重入、会话、覆盖种类、对象和 mask 检查，在登记前按现有属性类型/值域逻辑校验全部 writes；不另建值域规范。只有整批通过才发布可用 token 及覆盖；失败返回既有受检错误，不留下部分覆盖，不改变已有覆盖和可观察状态。拒绝批次无需 release 清理，之后仍可正常更新或登记合法覆盖。
+### 临时覆盖登记修订（F203，已接受、已实现）
+
+2026-11-23 owner 已接受以下修订，2026-11-24 由
+[T-17](../stage_plans/active/stage-07-rr/tasks/T-17.md) 实现并以既有 Runtime 测试目标验证；
+证据见 `out/review/stage-07-rr/T-17/report.md`。内部 `RuntimeSession::acquireOverride` 保持既有线程、重入、会话、覆盖种类、对象和 mask 检查，在登记前按现有属性类型/值域逻辑校验全部 writes；不另建值域规范。只有整批通过才发布可用 token 及覆盖；失败返回既有受检错误，不留下部分覆盖，不改变已有覆盖和可观察状态。拒绝批次无需 release 清理，之后仍可正常更新或登记合法覆盖。实现复用现有 `PropertyResolver` 捕获基线的类型/值域解析；校验入口只在非安装内部头，公共接口与布局不变。
 
 合法 token 的释放和 lifetime 沿 [HostOverride 合同](../formats/ANIMATION_MIXING.md#hostoverride)。登记前校验只保证当时可判定的类型/值域条件，不等同于完整求值校验，也不保证之后的 update 成功；对象后续失效、同优先级冲突等仍沿原求值规则处理。此修订不新增公共接口、回滚框架、token ID 连续性或全部内部计数不变的保证。
 

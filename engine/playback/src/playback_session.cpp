@@ -336,6 +336,12 @@ auto PlaybackSession::unload() -> core::Result<void> {
     state_->executionScheduler.reset();
     state_->realtimeClock.reset();
     state_->executionContext.reset();
+    state_->executionMapping.reset();
+    state_->tailTransition.reset();
+    state_->hostFence.reset();
+    state_->acceptedHostControl.reset();
+    state_->confirmedHostContext.reset();
+    state_->hostCommitAuthorized = false;
     state_->realtimeWasStarted = false;
     state_->gameplay.reset();
     state_->gameplayContent = {};

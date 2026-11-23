@@ -2,7 +2,7 @@
 
 状态：active
 
-更新日期：2026-11-23
+更新日期：2026-11-24
 
 适用版本：SDK API `0.9.1`
 
@@ -165,11 +165,14 @@ resource closure、typed Asset index/provider、CPU资源与 exact content ident
 实际 kernel/Fold。H/T/RuntimeFrame 仍显式预检；RuntimeUpdated=false 明示没有 Runtime
 图，而不是错误。Frame/update/HostOverride 沿已有无 World 稳定拒绝。该意图不增加数值预算。
 
-### PreparedPlayback 有效性修订（F501，已接受、未实现）
+<a id="preparedplayback-有效性修订f501已接受未实现"></a>
 
-2026-11-23 owner 按 Stage 7-RR D-04 接受本节，实施与运行验收归
-[T-17](../stage_plans/active/stage-07-rr/tasks/T-17.md)。当前实现仍以 RuntimeSession 存在作为
-`valid()` 的必要条件，因此把合法 GameplayOnly 候选判为无效；本节定义待落实的修订。
+### PreparedPlayback 有效性修订（F501，已接受、已实现）
+
+2026-11-23 owner 按 Stage 7-RR D-04 接受本节。2026-11-24 由
+[T-17](../stage_plans/active/stage-07-rr/tasks/T-17.md) 实现并以候选构建验证；证据见
+`out/review/stage-07-rr/T-17/report.md`。候选路径对原会话的内部解引用另加最小寿命守卫，失效时
+返回既有 `host.rpa.context_stale`，不改变公共所有权边界。
 
 `valid()` 按候选实际内容类别判断是否已合法准备：普通表现候选保留对应 Runtime 条件，显式
 GameplayOnly 候选以其合法准备的 Gameplay 内容成立，不要求创建 World 或 RuntimeSession。

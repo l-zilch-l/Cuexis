@@ -14,10 +14,15 @@ auto PreparedPlayback::materializePresentation(const PresentationCapabilities& c
                                                std::uint64_t sequence)
     -> core::Result<PresentationCandidateInput> try {
     auto& prepared = *this;
-    if (!prepared.valid() || !prepared.state_->owner || !rendererInstance || !rendererGeneration ||
-        !sequence)
+    if (!prepared.valid() || !rendererInstance || !rendererGeneration || !sequence)
         return core::unexpected(
             core::Error{"host.rpa.context_stale", "Invalid owning candidate context"});
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    auto ownerLease = prepared.state_->ownerLease.lock();
+    if (!ownerLease || ownerLease->token != prepared.state_->ownerToken)
+        return core::unexpected(
+            core::Error{"host.rpa.context_stale", "Invalid owning candidate context"});
+#endif
     auto validation = prepared.validatePresentation(capabilities, request);
     if (!validation.hasValue())
         return core::unexpected(
@@ -33,8 +38,9 @@ auto PreparedPlayback::materializePresentation(const PresentationCapabilities& c
                      p.semanticIdentity};
     value.playbackOwnerToken = p.ownerToken;
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
-    if (p.owner && p.owner->state_->executionContext) {
-        const auto& execution = *p.owner->state_->executionContext;
+    ++prepared.state_->ownerDereferences;
+    if (ownerLease->session->state_->executionContext) {
+        const auto& execution = *ownerLease->session->state_->executionContext;
         value.context.sessionScope = execution.sessionScope;
         value.context.clockSegment = execution.clockSegment;
         value.context.runEpoch = execution.runEpoch;
@@ -107,7 +113,14 @@ auto PreparedPlayback::operator=(PreparedPlayback&& other) noexcept -> PreparedP
 }
 
 bool PreparedPlayback::valid() const noexcept {
-    return state_ && state_->ownerThread.isCurrent() && state_->runtimeSession != nullptr;
+    if (!state_ || !state_->ownerThread.isCurrent()) {
+        return false;
+    }
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    return state_->runtimeSession != nullptr || state_->gameplayContent.valid();
+#else
+    return state_->runtimeSession != nullptr;
+#endif
 }
 
 const PlaybackContentInfo* PreparedPlayback::contentInfo() const noexcept {
@@ -129,6 +142,43 @@ auto detail::CandidateMetadataAccess::active(const PlaybackSession& session)
         return nullptr;
     }
     return &*session.state_->candidateMetadata;
+}
+
+auto detail::CandidateMetadataAccess::candidateState(const PlaybackSession& session)
+    -> CandidateSessionState {
+    const auto& s = *session.state_;
+    return CandidateSessionState{
+        .hostFence = s.hostFence.has_value(),
+        .acceptedHostControl = s.acceptedHostControl.has_value(),
+        .confirmedHostContext = s.confirmedHostContext.has_value(),
+        .executionMapping = s.executionMapping.has_value(),
+        .tailTransition = s.tailTransition.has_value(),
+    };
+}
+
+auto detail::CandidateMetadataAccess::candidateSlots(PlaybackSession& session)
+    -> CandidateSessionSlots {
+    auto& s = *session.state_;
+    return CandidateSessionSlots{
+        .hostFence = s.hostFence,
+        .acceptedHostControl = s.acceptedHostControl,
+        .confirmedHostContext = s.confirmedHostContext,
+        .executionMapping = s.executionMapping,
+        .tailTransition = s.tailTransition,
+        .hostCommitAuthorized = s.hostCommitAuthorized,
+    };
+}
+
+auto detail::CandidateMetadataAccess::preparedOwnerDereferences(
+    const PreparedPlayback& playback) noexcept -> std::uint64_t {
+    return playback.state_ == nullptr ? 0 : playback.state_->ownerDereferences;
+}
+
+void detail::CandidateMetadataAccess::expirePreparedOwnerLease(
+    PreparedPlayback& playback) noexcept {
+    if (playback.state_ != nullptr) {
+        playback.state_->ownerLease.reset();
+    }
 }
 #endif
 
@@ -419,6 +469,10 @@ PlaybackSession::PlaybackSession() noexcept : PlaybackSession(allCapabilities())
 
 PlaybackSession::PlaybackSession(PlaybackCapabilitySet capabilities) noexcept
     : state_(std::make_unique<State>()) {
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    state_->preparedOwnerLease = std::make_shared<PreparedOwnerLease>(
+        PreparedOwnerLease{this, state_->sessionToken});
+#endif
     normalizeCapabilities(capabilities);
     state_->capabilities = std::move(capabilities);
 }
