@@ -401,22 +401,48 @@ if(CUEXIS_BUILD_TESTS)
     else()
         set(cuexis_rr_tests_enabled OFF)
     endif()
-    add_test(
-        NAME cuexis_rr_playback_isolation
-        COMMAND "${CMAKE_COMMAND}"
-            "-DCUEXIS_BINARY_DIR=${CMAKE_BINARY_DIR}"
-            "-DCUEXIS_ENABLE_CHART_V5_CANDIDATE=${CUEXIS_ENABLE_CHART_V5_CANDIDATE}"
-            "-DCUEXIS_PLAYER_TARGET=${cuexis_rr_player_target}"
-            "-DCUEXIS_LIBRARY_TYPE=${CUEXIS_LIBRARY_TYPE}"
-            "-DCUEXIS_BUILD_DEVELOPER_TOOLS=${CUEXIS_BUILD_DEVELOPER_TOOLS}"
-            "-DCUEXIS_BUILD_TESTS=${cuexis_rr_tests_enabled}"
-            "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
-            -P "${PROJECT_SOURCE_DIR}/cmake/VerifyPlaybackCandidateIsolation.cmake"
-    )
-    set_tests_properties(cuexis_rr_playback_isolation PROPERTIES
-        LABELS "r1;playback;isolation"
-        TIMEOUT 120
-    )
+    file(GLOB cuexis_codemodel_replies
+        "${CMAKE_BINARY_DIR}/.cmake/api/v1/reply/codemodel-v2-*.json")
+    if(cuexis_codemodel_replies)
+        add_test(
+            NAME cuexis_rr_playback_isolation
+            COMMAND "${CMAKE_COMMAND}"
+                "-DCUEXIS_BINARY_DIR=${CMAKE_BINARY_DIR}"
+                "-DCUEXIS_ENABLE_CHART_V5_CANDIDATE=${CUEXIS_ENABLE_CHART_V5_CANDIDATE}"
+                "-DCUEXIS_PLAYER_TARGET=${cuexis_rr_player_target}"
+                "-DCUEXIS_LIBRARY_TYPE=${CUEXIS_LIBRARY_TYPE}"
+                "-DCUEXIS_BUILD_DEVELOPER_TOOLS=${CUEXIS_BUILD_DEVELOPER_TOOLS}"
+                "-DCUEXIS_BUILD_TESTS=${cuexis_rr_tests_enabled}"
+                "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+                -P "${PROJECT_SOURCE_DIR}/cmake/VerifyPlaybackCandidateIsolation.cmake"
+        )
+        set_tests_properties(cuexis_rr_playback_isolation PROPERTIES
+            LABELS "r1;playback;isolation"
+            TIMEOUT 120
+        )
+    else()
+        message(STATUS
+            "cuexis_rr_playback_isolation: not registered; configure this build with the "
+            "CMake File API codemodel query to run the target-graph gate")
+    endif()
+    # R5 shared acceptance: the in-repo consumer and the real Player both run against the shared
+    # Playback binary this build produced. It needs a real GL context; headless presets do not
+    # build the Player and skip this registration.
+    if(TARGET cuexis_player AND TARGET cuexis_frame_layout_shared_consumer)
+        add_test(
+            NAME rr_frame_layout_shared
+            COMMAND "${CMAKE_COMMAND}"
+                "-DCUEXIS_PLAYER=$<TARGET_FILE:cuexis_player>"
+                "-DCUEXIS_PLAYER_DIR=$<TARGET_FILE_DIR:cuexis_player>"
+                "-DCUEXIS_CONSUMER=$<TARGET_FILE:cuexis_frame_layout_shared_consumer>"
+                -P "${PROJECT_SOURCE_DIR}/tests/player/run_frame_layout_shared.cmake"
+        )
+        set_tests_properties(rr_frame_layout_shared PROPERTIES
+            LABELS "shared;r5;device"
+            TIMEOUT 420
+            RESOURCE_LOCK cuexis_external_consumer
+        )
+    endif()
     if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND CMAKE_GENERATOR MATCHES "^Ninja"
        AND NOT CMAKE_CROSSCOMPILING)
         add_test(NAME cuexis_msvc_dependency_tracking
