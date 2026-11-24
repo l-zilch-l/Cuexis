@@ -119,7 +119,7 @@ CutApplied(cut,q,pauseEpoch)；当前未执行为 Pending，不能用裸 NotAppl
 2026-11-24 观测桥把分配失败改为预构建的 interned `core::Error` 交付，稳定码为
 `host.rpa.allocation_failed` 并携带固定失败阶段；其余宿主路径的分配失败保留
 `host.rpa.capacity_exceeded`，只改存储与交付方式。证据见
-[F135 报告](../../out/review/stage-07-rr/F135/report.md) 与 `tests/rpa` 的 F135 用例。
+F135 实现报告（`out/review/stage-07-rr/F135/report.md`，本地证据，不入库）与 `tests/rpa` 的 F135 用例。
 
 实际分配失败导致操作无法完成时使用 `host.rpa.allocation_failed`；配置预算或容量确实耗尽时
 保留 `host.rpa.capacity_exceeded`。复用现有预留 `FaultSlot` 的 allocation/capacity 原因，
@@ -140,7 +140,7 @@ CutApplied(cut,q,pauseEpoch)；当前未执行为 Pending，不能用裸 NotAppl
 [frame_observation.cpp](../../app/execution_host/frame_observation.cpp) 的只读取证，不是修复
 声明；“未执行验收”列链接 [T-06 任务级验收](../stage_plans/active/stage-07-rr/tasks/T-06.md#任务级验收)
 的 `rr_frame_observation_errors` 具名场景。2026-11-24 实施后本表只保留当时基线，当前实现以
-[F135 报告](../../out/review/stage-07-rr/F135/report.md) 与 `tests/rpa` 的 F135 用例为准。
+F135 实现报告（`out/review/stage-07-rr/F135/report.md`，本地证据，不入库）与 `tests/rpa` 的 F135 用例为准。
 
 | 场景 | 旧实现（当前触发与诊断） | 已接受目标 | 未执行验收（T-06 `rr_frame_observation_errors`；计划用例名，未实施） |
 | --- | --- | --- | --- |

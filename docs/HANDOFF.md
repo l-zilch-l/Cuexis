@@ -16,19 +16,19 @@ authority: owns
 
 ## 当前任务
 
-T-06 第一轮只完成帧对象、GL 实验桥、安装面与 F135 场景 1/2/3/5，交付记为部分成立，见[部分交付](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-06-frame-bridge-partial.md)。T-10 已完成九轮：值层、计分、作者 CLI、运行 records/Prepared 存储、`cuexis_judgement_compile` 骨架与 `runtime::AdvanceKernel`（编号/Stop、GP-02 四向量、单元耗尽 Fold、GP-04 多单元、最小 replay）；剩余 GP-03 故障矩阵、Playback owning DTO 与 legacy 输入切换。T-12 部分完成：timing 库、编译闭包、chart 时间适配与 beat-us 消费者成立，canonical 行、GP 轨迹与安装隔离未做。F508 已按登记册 §42 的拆分落地（§43）：内容卸载保留控制身份，Close 终态清理，`rr_session_unload_lifecycle` 六 SECTION 通过；F135 已按形状 2 实现并独立复核（§44），`Error` 112 B、零分配与持续 OOM 成立；SDK API 已升到 0.10.0。治理树引导 PR 48 已合并（`43eb0c94`），master 已并入分支并把 build 升到 26.11.24-2；推送 PR 47 与代发 owner 审批评论是下一步。波次 5 的交付报告在 [T-02](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-02-state-facts.md)、[T-05](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-05-frame-layout.md)与 [T-17](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-17-session-correctness.md)。
+T-06 第一轮只完成帧对象、GL 实验桥、安装面与 F135 场景 1/2/3/5，交付记为部分成立，见[部分交付](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-06-frame-bridge-partial.md)。T-10 已完成九轮：值层、计分、作者 CLI、运行 records/Prepared 存储、`cuexis_judgement_compile` 骨架与 `runtime::AdvanceKernel`（编号/Stop、GP-02 四向量、单元耗尽 Fold、GP-04 多单元、最小 replay）；剩余 GP-03 故障矩阵、Playback owning DTO 与 legacy 输入切换。T-12 部分完成：timing 库、编译闭包、chart 时间适配与 beat-us 消费者成立，canonical 行、GP 轨迹与安装隔离未做。F508 已按登记册 §42 的拆分落地（§43）：内容卸载保留控制身份，Close 终态清理，`rr_session_unload_lifecycle` 六 SECTION 通过；F135 已按形状 2 实现并独立复核（§44），`Error` 112 B、零分配与持续 OOM 成立；SDK API 已升到 0.10.0。治理树引导 PR 48 已合并（`43eb0c94`），master 已并入分支并把 build 升到 26.11.24-2；PR 47 已推送 `662b03e7` 并代发 owner 审批评论。CI 随后暴露四类问题：文档链接指向未入库的 `out/`、F135 探针的 `new int` 在 -O2 下被优化掉、只替换 plain new/delete 与 libstdc++ 的 nothrow 分配/ sized 释放不配对触发 ASan mismatch、MinGW 测试中途中断；前三类已在本地修复并通过 `debug` 验证，尚未推送。波次 5 的交付报告在 [T-02](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-02-state-facts.md)、[T-05](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-05-frame-layout.md)与 [T-17](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-17-session-correctness.md)。
 
 T-01 证据在 [基线与派单报告](stage_reports/stages/stage-07-rr/readiness/2026-11-23-t-01-dispatch-baseline.md)；T-03 证据在 [合同与诊断交付](stage_reports/stages/stage-07-rr/implementation/2026-11-23-t-03-contracts-and-diagnostics.md)；T-04 证据在 [构建闭包拆分与隔离门禁](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-04-build-isolation.md)。派单输入的规范哈希取基线 blob，见 [hashes.txt](stage_reports/stages/stage-07-rr/evidence/t-01-baseline/hashes.txt)，独立 checkout 复算不需要 `out/`。
 
 ## 下一步
 
-1. 按[唯一调度](stage_plans/active/stage-07-rr/schedule.md)继续波次 6/7 的 T-06、T-08；T-10 的 GP-03、Playback owning DTO 与 legacy 输入切换，T-12 的 canonical 行与安装隔离随后推进。F135 已完成；PR 48 已合并，master 已合入、build 已升到 26.11.24-2。接下来推送 PR 47、代发 owner 的 SDK 审批评论并重跑门禁到全绿。
+1. 恢复后先推送本地修复（文档外链、F135 探针）并重跑 PR 47 的失败 job，确认 MinGW 测试中断是否复发；推送会改变 head，绑定 `662b03e7` 的审批评论随之失效，恢复时若 UTC 日期已变，先把日期构建推进到当天再重发审批评论。之后按[唯一调度](stage_plans/active/stage-07-rr/schedule.md)继续波次 6/7 的 T-06、T-08，以及 T-10 的 GP-03、Playback owning DTO 与 legacy 输入切换、T-12 的 canonical 行与安装隔离。
 2. 每卡按其任务级验收取证并回写发现处置；文档变更收尾前运行文档总入口、事实、命名与生成物检查。
 3. 实际发布、SDK 晋升与旧 API 退役仍各自单独取得；设备与实体听音项留给 owner。
 
 ## 阻塞与待决
 
-PR 48 治理树引导已合并（`43eb0c94`），PR 47 的 PR 事件现在有含治理树的可信历史基线。F135 会让 SDK 公共布局变化，按 0.10.0 处理并需要 owner 的版本审批评论（已授权代理以 owner 名义代发，审批与 head sha、UTC 日期绑定）。GL 边界门禁已由 task-25 修复，`cuexis_rr_playback_isolation` 的 Chart 源表漂移已修（`f00439c3`）。F132 的旧身份字节需要 T-10 在改动前 dump（改动前基线已采集，见[身份字节基线](stage_reports/stages/stage-07-rr/evidence/t-03/identity-baseline/identity-baseline.md)）；F135 的五类故障注入与安装消费者分别归 T-06、T-08。D-20 的正式发行判定语料在仓库内为空集，历史发行资料是否存在无法核实，缺口已具名交 T-09；两套外部包的当前实现重放已完成，见[只读重放证据](stage_reports/stages/stage-07-rr/evidence/external-corpus/replay-current/replay-current.md)。
+owner 于 2026-11-24 暂停本阶段，预计下月流量恢复后继续；PR 47 保持未合并，恢复后先推送本地修复并重跑失败 job。F135 会让 SDK 公共布局变化，按 0.10.0 处理并需要 owner 的版本审批评论（已授权代理以 owner 名义代发，审批与 head sha、UTC 日期绑定）。GL 边界门禁已由 task-25 修复，`cuexis_rr_playback_isolation` 的 Chart 源表漂移已修（`f00439c3`）。F132 的旧身份字节需要 T-10 在改动前 dump（改动前基线已采集，见[身份字节基线](stage_reports/stages/stage-07-rr/evidence/t-03/identity-baseline/identity-baseline.md)）；F135 的五类故障注入与安装消费者分别归 T-06、T-08。D-20 的正式发行判定语料在仓库内为空集，历史发行资料是否存在无法核实，缺口已具名交 T-09；两套外部包的当前实现重放已完成，见[只读重放证据](stage_reports/stages/stage-07-rr/evidence/external-corpus/replay-current/replay-current.md)。
 
 ## 验证状态
 
@@ -48,6 +48,8 @@ F135：lead 在 `candidate-debug` 重跑 F135 七例通过；独立复核重做�
 
 CMake target 事实已可检查：`debug` 预设 fresh configure 生成的 `cuexis-targets.txt` 已同步到 `BUILDING.md` 目标块，`check_docs.py` 的 target contract 项退出 0。产品行为、设备与 hosted 证据随各责任任务取得。
 
+2026-11-24 暂停前：F135 探针改为整族替换，并用直接 `::operator new` 调用避免 -O2 优化；`debug` 的 F135 与 Diagnostics 11 例、格式门禁、文档／事实／命名／生成物检查均 exit 0。GCC Release、MinGW 与 ASan 上的修复结果要等下一次 CI 重跑。
+
 ## 接手沿用的产品决定
 
 - RR 完整实现并实验验证 Gameplay v3；Stage 7.5 完整验收后 Stage 8 以 Chart v5＋Gameplay v3 为正式主线，旧内容按原规则、时间和身份运行。
@@ -59,4 +61,4 @@ CMake target 事实已可检查：`debug` 预设 fresh configure 生成的 `cuex
 
 ## 最近改动
 
-本轮已提交：`a22e255f` 治理落盘、`3b8bf41e` T-01 派单与证据、`569253d8` T-13 复验、`03334ecd` 命名硬规则与检查器、`6c77a888` T-01 证据修正、`5dc55387` T-04 拆分与改名迁移、`3943fb13` 门禁依赖遍历修复、`0bb2d927` D-20 双侧重放证据、`92539ad4` 门禁帮助函数依赖 id 修复、`8cfb302d` T-04 交付、`9c25a88f` 日期构建推进、`b07e20dc` T-05 几何与 GL、`5f1ef718` T-17 会话修复、`52f0d760` T-02 与 SPEC-02 修复、`95de188d` 波次 5 交付与状态回写、`b2ad4cf8` T-06 帧对象与 GL 桥、`8383672c` F508 清零回退、`07eb42ea` T-10 第九轮、`77157702` T-12、`b2769f55` F508/F135 裁定、`c85cfa61` F508 生命周期拆分、`80c121b4` GCC/MSVC/Clang 编译修复、`f00439c3` 隔离源表对齐。以上后三项与 F135 相关文档更新尚未推送。T-06 的部分交付报告与状态回写随后提交。
+本轮已提交：`a22e255f` 治理落盘、`3b8bf41e` T-01 派单与证据、`569253d8` T-13 复验、`03334ecd` 命名硬规则与检查器、`6c77a888` T-01 证据修正、`5dc55387` T-04 拆分与改名迁移、`3943fb13` 门禁依赖遍历修复、`0bb2d927` D-20 双侧重放证据、`92539ad4` 门禁帮助函数依赖 id 修复、`8cfb302d` T-04 交付、`9c25a88f` 日期构建推进、`b07e20dc` T-05 几何与 GL、`5f1ef718` T-17 会话修复、`52f0d760` T-02 与 SPEC-02 修复、`95de188d` 波次 5 交付与状态回写、`b2ad4cf8` T-06 帧对象与 GL 桥、`8383672c` F508 清零回退、`07eb42ea` T-10 第九轮、`77157702` T-12、`b2769f55` F508/F135 裁定、`c85cfa61` F508 生命周期拆分、`80c121b4` GCC/MSVC/Clang 编译修复、`f00439c3` 隔离源表对齐。以上后三项与 F135 相关文档更新已随 PR 47 的 `662b03e7` 推送，审批评论同批发出；暂停前的探针与文档外链修复在本地，尚未推送。T-06 的部分交付报告与状态回写随后提交。
