@@ -489,3 +489,26 @@ TEST_CASE("PlayerController ChartClock transport commands publish one discontinu
     REQUIRE(end.has_value());
     CHECK(end->discontinuityId > startDiscontinuity);
 }
+
+TEST_CASE("PlayerController retries prepared content from zero without re-reading it",
+          "[player][control][command][retry]") {
+    Fixture fixture;
+    REQUIRE(fixture.loadAudio(audioProject).has_value());
+    REQUIRE(fixture.play().has_value());
+    REQUIRE(fixture.audio.transport != nullptr);
+    REQUIRE(fixture.seek(500.0).has_value());
+
+    std::size_t sourceReads = 0;
+    fixture.onMakeSource = [&sourceReads]() { ++sourceReads; };
+    const auto clipPreparationsBefore = fixture.clipPreparationCalls;
+    const auto deviceOpensBefore = fixture.audio.openCalls;
+
+    // Retry reuses the prepared content and the healthy audio seat: no source read, no decode,
+    // no device open, and the stream restarts at zero.
+    REQUIRE(fixture.apply(PlayerCommand{.kind = PlayerCommandKind::Retry}).has_value());
+    CHECK(sourceReads == 0);
+    CHECK(fixture.clipPreparationCalls == clipPreparationsBefore);
+    CHECK(fixture.audio.openCalls == deviceOpensBefore);
+    CHECK(fixture.controller->state() == PlayerAppState::Playing);
+    CHECK(fixture.audio.transport->snapshot().source.positionMs == Catch::Approx(0.0));
+}
