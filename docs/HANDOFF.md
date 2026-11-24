@@ -16,7 +16,7 @@ authority: owns
 
 ## 当前任务
 
-T-06 第一轮只完成帧对象、GL 实验桥、安装面与 F135 场景 1/2/3/5，交付记为部分成立，见[部分交付](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-06-frame-bridge-partial.md)。T-10 已完成九轮：值层、计分、作者 CLI、运行 records/Prepared 存储、`cuexis_judgement_compile` 骨架与 `runtime::AdvanceKernel`（编号/Stop、GP-02 四向量、单元耗尽 Fold、GP-04 多单元、最小 replay）；剩余 GP-03 故障矩阵、Playback owning DTO 与 legacy 输入切换。T-12 部分完成：timing 库、编译闭包、chart 时间适配与 beat-us 消费者成立，canonical 行、GP 轨迹与安装隔离未做。F508 已按登记册 §42 的拆分落地（§43）：内容卸载保留控制身份，Close 终态清理，`rr_session_unload_lifecycle` 六 SECTION 通过；F135 已按形状 2 实现并独立复核（§44），`Error` 112 B、零分配与持续 OOM 成立；SDK API 已升到 0.10.0。治理树引导 PR 48 已合并（`43eb0c94`），master 已并入分支并把 build 升到 26.11.24-2；PR 47 已推送 `662b03e7` 并代发 owner 审批评论。CI 随后暴露四类问题：文档链接指向未入库的 `out/`、F135 探针的 `new int` 在 -O2 下被优化掉、只替换 plain new/delete 与 libstdc++ 的 nothrow 分配/ sized 释放不配对触发 ASan mismatch、MinGW 测试中途中断；前三类已在本地修复并通过 `debug` 验证，尚未推送。波次 5 的交付报告在 [T-02](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-02-state-facts.md)、[T-05](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-05-frame-layout.md)与 [T-17](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-17-session-correctness.md)。
+T-06 第一轮只完成帧对象、GL 实验桥、安装面与 F135 场景 1/2/3/5，交付记为部分成立，见[部分交付](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-06-frame-bridge-partial.md)。T-10 已完成九轮：值层、计分、作者 CLI、运行 records/Prepared 存储、`cuexis_judgement_compile` 骨架与 `runtime::AdvanceKernel`（编号/Stop、GP-02 四向量、单元耗尽 Fold、GP-04 多单元、最小 replay）；剩余 GP-03 故障矩阵、Playback owning DTO 与 legacy 输入切换。T-12 部分完成：timing 库、编译闭包、chart 时间适配与 beat-us 消费者成立，canonical 行、GP 轨迹与安装隔离未做。F508 已按登记册 §42 的拆分落地（§43）：内容卸载保留控制身份，Close 终态清理，`rr_session_unload_lifecycle` 六 SECTION 通过；F135 已按形状 2 实现并独立复核（§44），`Error` 112 B、零分配与持续 OOM 成立；SDK API 已升到 0.10.0。治理树引导 PR 48 已合并（`43eb0c94`），master 已并入分支并把 build 升到 26.11.24-2；PR 47 已推送 `662b03e7` 并代发 owner 审批评论。CI 随后暴露三类问题：文档链接指向未入库的 `out/`、F135 探针的 `new int` 在 -O2 下被优化掉、只替换 plain new/delete 与 libstdc++ 的 nothrow 分配/ sized 释放不配对触发 ASan mismatch。MinGW release 的失败就是第二类，日志被截断才看起来像中断。三类已在本地修复，尚未推送。波次 5 的交付报告在 [T-02](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-02-state-facts.md)、[T-05](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-05-frame-layout.md)与 [T-17](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-17-session-correctness.md)。
 
 T-01 证据在 [基线与派单报告](stage_reports/stages/stage-07-rr/readiness/2026-11-23-t-01-dispatch-baseline.md)；T-03 证据在 [合同与诊断交付](stage_reports/stages/stage-07-rr/implementation/2026-11-23-t-03-contracts-and-diagnostics.md)；T-04 证据在 [构建闭包拆分与隔离门禁](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-04-build-isolation.md)。派单输入的规范哈希取基线 blob，见 [hashes.txt](stage_reports/stages/stage-07-rr/evidence/t-01-baseline/hashes.txt)，独立 checkout 复算不需要 `out/`。
 
@@ -49,6 +49,8 @@ F135：lead 在 `candidate-debug` 重跑 F135 七例通过；独立复核重做�
 CMake target 事实已可检查：`debug` 预设 fresh configure 生成的 `cuexis-targets.txt` 已同步到 `BUILDING.md` 目标块，`check_docs.py` 的 target contract 项退出 0。产品行为、设备与 hosted 证据随各责任任务取得。
 
 2026-11-24 暂停前：F135 探针改为整族替换，并用直接 `::operator new` 调用避免 -O2 优化；`debug` 的 F135 与 Diagnostics 11 例、格式门禁、文档／事实／命名／生成物检查均 exit 0。GCC Release、MinGW 与 ASan 上的修复结果要等下一次 CI 重跑。
+
+2026-11-24 修复验证：MinGW g++ `-O2` 的独立驱动上，旧 `new int` 写法 `threw=0`、`attempts=0`，新 `::operator new` 写法 `threw=1`、`attempts=1`；`std::stable_sort` 的临时缓冲经由替换后的 nothrow new 计数 1，说明分配与 sized 释放已成对。HEAD 归档到没有 `out/` 的目录后，`check_docs.py` 不再报断链，只报无 `.git` 时保护检查不可用。GCC Release、MinGW Release 与 ASan 的整树结果仍要等下一次推送后的 CI。
 
 ## 接手沿用的产品决定
 
