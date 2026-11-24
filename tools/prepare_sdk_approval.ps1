@@ -1,6 +1,7 @@
 param(
     [string]$Repository = 'l-zilch-l/Cuexis',
     [int]$PullRequest = 32,
+    [string]$Proxy = '',
     [switch]$PrepareOnly
 )
 
@@ -35,11 +36,15 @@ function Read-GitHubJson([string]$Endpoint) {
     return (Invoke-GhRequest 'GET' $Endpoint)
 }
 
-function Enable-ApprovalProxy {
+function Enable-ApprovalProxy([string]$ProxyUrl) {
     # Process-local only; never rewrite the user's Windows or Git settings.
-    $env:HTTPS_PROXY = 'http://127.0.0.1:7890'
-    $env:NO_PROXY = ''
-    Write-Host 'Using proxy http://127.0.0.1:7890 for this run.'
+    if ($ProxyUrl) {
+        $env:HTTPS_PROXY = $ProxyUrl
+        $env:NO_PROXY = ''
+        Write-Host "Using proxy $ProxyUrl for this run."
+    } else {
+        Write-Host 'No proxy override; using the process proxy environment as-is.'
+    }
 }
 
 function Read-RemoteText([string]$Repo, [string]$Path, [string]$Ref) {
@@ -258,7 +263,7 @@ if ($MyInvocation.InvocationName -ne '.') {
         try { $locked = $lock.WaitOne(0) }
         catch [Threading.AbandonedMutexException] { $locked = $true }
         if (-not $locked) { throw 'Another approval assistant is already running for this PR.' }
-        Enable-ApprovalProxy
+        Enable-ApprovalProxy $Proxy
         Start-ApprovalAssistant
         $exitCode = 0
     }
