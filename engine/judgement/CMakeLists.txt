@@ -5,6 +5,7 @@ set_target_properties(cuexis_judgement PROPERTIES EXPORT_NAME InternalJudgement)
 
 target_sources(cuexis_judgement
     PRIVATE
+        src/advance_kernel.cpp
         src/diagnostic.cpp
         src/derived_score.cpp
         src/execution_profile.cpp

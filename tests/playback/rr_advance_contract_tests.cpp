@@ -7,6 +7,7 @@
 // asserting a result the tree cannot produce.
 
 #include <cuexis/judgement/advance.hpp>
+#include <cuexis/judgement/advance_kernel.hpp>
 #include <cuexis/judgement/gameplay_assembler_identity.hpp>
 #include <cuexis/judgement/gameplay_graph_reference.hpp>
 #include <cuexis/judgement/normalized_score.hpp>
@@ -152,6 +153,47 @@ auto singleRequirementView(const runtime::PreparedTimebase& timebase,
         std::span<const runtime::PreparedResource>{},
         std::span<const runtime::PreparedTimerKey>{},
     };
+}
+
+auto preparedTapGameplay() -> runtime::PreparedGameplay {
+    std::vector<runtime::PreparedRequirement> requirements = {tapRequirement(0, 1000, 0)};
+    auto score = tapUnitScore(requirements, {ScoreUnit{{0}}});
+    score.basis = ScoreBasis{2, 1};
+    auto policy = runtimePolicy();
+    auto identities = runtimeIdentities();
+    const runtime::PreparedTimebase timebase{"engine.tick.us.v1", 1, 1, Tick{0}};
+    auto view = singleRequirementView(timebase, requirements, policy, identities, score);
+    auto prepared = runtime::prepareCompiledGameplay(view, runtime::PrepareGameplayLimits{});
+    REQUIRE(prepared);
+    return std::move(*prepared);
+}
+
+auto tickRecord(std::int64_t tick, runtime::InputAction action = runtime::InputAction::press)
+    -> runtime::TickRecord {
+    return runtime::TickRecord{Tick{tick}, "domain.binding.one", "keyboard", "channel.zero",
+                               action,     std::nullopt};
+}
+
+auto shortHoldRequirement() -> runtime::PreparedRequirement {
+    runtime::PreparedRequirement requirement;
+    requirement.stableId = StableDeclarationId{"doc.hold", 0};
+    requirement.identity = RequirementIdentity{
+        "chart.hold", "invocation.hold", "module.hold", "export.hold", {}, "hold.short"};
+    requirement.phases = {PhaseDeclaration{PhaseKind::head, 0},
+                          PhaseDeclaration{PhaseKind::body, 1},
+                          PhaseDeclaration{PhaseKind::tail, 2}};
+    requirement.timing.end = Tick{1040};
+    requirement.timing.successWindows = {
+        runtime::SuccessWindow{Tick{850}, Tick{901}, requirement.phases[0]},
+        runtime::SuccessWindow{Tick{850}, Tick{851}, requirement.phases[1]},
+        runtime::SuccessWindow{Tick{1000}, Tick{1010}, requirement.phases[2]},
+        runtime::SuccessWindow{Tick{1015}, Tick{1020}, requirement.phases[2]}};
+    requirement.timing.body = TimeInterval{Tick{850}, Tick{851}};
+    requirement.timing.phaseTargets = {runtime::PhaseTarget{PhaseKind::head, Tick{850}},
+                                       runtime::PhaseTarget{PhaseKind::body, Tick{851}},
+                                       runtime::PhaseTarget{PhaseKind::tail, Tick{1000}}};
+    requirement.deadline = Tick{1040};
+    return requirement;
 }
 
 } // namespace
@@ -596,5 +638,132 @@ TEST_CASE("cuexis_rr_advance_contract", "[playback][judgement][rr][advance]") {
             CHECK(empty->settlementCapacity() == 0);
             CHECK(empty->settlementDictionary().phases.empty());
         }
+    }
+
+    SECTION("the runtime advance kernel numbers before late and keeps the cursor") {
+        auto prepared = preparedTapGameplay();
+        auto kernel = runtime::AdvanceKernel::prepare(prepared, RunKey{7, 1});
+        REQUIRE(kernel);
+        CHECK_FALSE(kernel->acceptedIngressThrough().has_value());
+        CHECK(kernel->nextSequence().value() == 0);
+
+        REQUIRE(kernel->advance(Tick{100}));
+        auto batch = std::vector<runtime::TickRecord>{tickRecord(94), tickRecord(10)};
+        auto receipts = kernel->receiveCanonicalBatch(batch);
+        REQUIRE(receipts);
+        REQUIRE(receipts->size() == 2);
+        CHECK(receipts->at(0).sequence.value() == 0);
+        CHECK(receipts->at(0).accepted);
+        CHECK(receipts->at(0).forwarded);
+        CHECK(receipts->at(0).dispatchTick == Tick{98});
+        CHECK(receipts->at(1).sequence.value() == 1);
+        CHECK_FALSE(receipts->at(1).accepted);
+        CHECK(receipts->at(1).rejectionCode == "judgement.late.rejected");
+        CHECK(kernel->acceptedIngressThrough()->value() == 1);
+        CHECK(kernel->nextSequence().value() == 2);
+        CHECK(kernel->archivedRecords().size() == 2);
+
+        //  A backward horizon keeps frontier and records unchanged.
+        auto reversed = kernel->advance(Tick{99});
+        REQUIRE_FALSE(reversed);
+        CHECK(reversed.error().code() == "judgement.execution.horizon_reversed");
+        CHECK(kernel->frontier() == Tick{100});
+        CHECK(kernel->archivedRecords().size() == 2);
+    }
+
+    SECTION("CLK-02 Stop locks the prefix and drains only records at or before cutoff") {
+        auto prepared = preparedTapGameplay();
+        auto kernel = runtime::AdvanceKernel::prepare(prepared, RunKey{9, 2});
+        REQUIRE(kernel);
+        auto batch = std::vector<runtime::TickRecord>{tickRecord(105), tickRecord(90)};
+        auto receipts = kernel->receiveCanonicalBatch(batch);
+        REQUIRE(receipts);
+        CHECK(receipts->at(0).sequence.value() == 0);
+        CHECK(receipts->at(1).sequence.value() == 1);
+        CHECK(kernel->acceptedIngressThrough()->value() == 1);
+
+        //  The first-fault order is run, bound, cutoff, slots.
+        const runtime::StopCut wrongRun{RunKey{9, 3}, runtime::IngressSequence{0}, Tick{100}};
+        auto runError = kernel->advanceStopCut(wrongRun, std::span<SettlementEvent>{});
+        REQUIRE_FALSE(runError);
+        CHECK(runError.error().code() == "judgement.stop_cut.run_mismatch");
+        const runtime::StopCut wrongBound{RunKey{9, 2}, runtime::IngressSequence{0}, Tick{100}};
+        auto boundError = kernel->advanceStopCut(wrongBound, std::span<SettlementEvent>{});
+        REQUIRE_FALSE(boundError);
+        CHECK(boundError.error().code() == "judgement.stop_cut.bound_mismatch");
+        CHECK_FALSE(kernel->receiveClosed());
+        CHECK(kernel->acceptedIngressThrough()->value() == 1);
+
+        std::vector<SettlementEvent> slots(prepared.settlementCapacity());
+        auto stop = kernel->advanceStopCut(
+            runtime::StopCut{RunKey{9, 2}, runtime::IngressSequence{1}, Tick{100}}, slots);
+        REQUIRE(stop);
+        CHECK(stop->processedThrough == Tick{100});
+        CHECK(stop->processedRecords == 1);
+        CHECK(kernel->receiveClosed());
+        CHECK(kernel->frontier() == Tick{100});
+
+        const auto sequenceAfterStop = kernel->nextSequence().value();
+        auto closed =
+            kernel->receiveCanonicalBatch(std::vector<runtime::TickRecord>{tickRecord(95)});
+        REQUIRE_FALSE(closed);
+        CHECK(closed.error().code() == "judgement.stop_cut.closed");
+        CHECK(kernel->nextSequence().value() == sequenceAfterStop);
+        CHECK(kernel->archivedRecords().size() == 2);
+    }
+
+    SECTION("a StopCut validates cutoff and slots after run and bound") {
+        auto prepared = preparedTapGameplay();
+        auto makeKernel = [&] {
+            auto kernel = runtime::AdvanceKernel::prepare(prepared, RunKey{1, 1});
+            REQUIRE(kernel);
+            REQUIRE(kernel->advance(Tick{100}));
+            auto receipts =
+                kernel->receiveCanonicalBatch(std::vector<runtime::TickRecord>{tickRecord(99)});
+            REQUIRE(receipts);
+            return std::move(*kernel);
+        };
+
+        auto reversed = makeKernel();
+        auto cutoffError = reversed.advanceStopCut(
+            runtime::StopCut{RunKey{1, 1}, runtime::IngressSequence{0}, Tick{99}},
+            std::span<SettlementEvent>{});
+        REQUIRE_FALSE(cutoffError);
+        CHECK(cutoffError.error().code() == "judgement.stop_cut.cutoff_reversed");
+
+        auto shortSlots = makeKernel();
+        auto slotError = shortSlots.advanceStopCut(
+            runtime::StopCut{RunKey{1, 1}, runtime::IngressSequence{0}, Tick{100}},
+            std::span<SettlementEvent>{});
+        REQUIRE_FALSE(slotError);
+        CHECK(slotError.error().code() == "capability.budget_insufficient");
+        CHECK_FALSE(shortSlots.receiveClosed());
+    }
+
+    SECTION("the GP-02 short Hold shape prepares on the runtime records") {
+        auto requirement = shortHoldRequirement();
+        std::vector<runtime::PreparedRequirement> requirements{requirement};
+        auto policy = runtimePolicy();
+        auto identities = runtimeIdentities();
+        const runtime::PreparedTimebase timebase{"engine.tick.us.v1", 1, 1, Tick{0}};
+        auto score = tapUnitScore(requirements, {});
+        auto view = singleRequirementView(timebase, requirements, policy, identities, score);
+        auto prepared = runtime::prepareCompiledGameplay(view, runtime::PrepareGameplayLimits{});
+        REQUIRE(prepared);
+        CHECK(prepared->requirements().front().timing.body->end == Tick{851});
+        auto kernel = runtime::AdvanceKernel::prepare(*prepared);
+        REQUIRE(kernel);
+        CHECK(kernel->nextSequence().value() == 0);
+        CHECK((runtime::releaseObservationDomain(850, 851, 4)->end == 851));
+
+        //  press@850 -> advance(854) -> a late release observation 849 routes to dispatch 852.
+        REQUIRE(kernel->advance(Tick{854}));
+        auto receipts = kernel->receiveCanonicalBatch(
+            std::vector<runtime::TickRecord>{tickRecord(849, runtime::InputAction::release)});
+        REQUIRE(receipts);
+        REQUIRE(receipts->size() == 1);
+        CHECK(receipts->front().forwarded);
+        CHECK(receipts->front().dispatchTick == Tick{852});
+        CHECK(receipts->front().accepted);
     }
 }

@@ -39,6 +39,7 @@ add_executable(cuexis_judgement_tests
     prepared_gameplay_self_contained.cpp
     legacy_prepared_view_tests.cpp
     runtime_identity_tests.cpp
+    advance_kernel_self_contained.cpp
     identity_bytes_self_contained.cpp
     prepared_identity_bytes_self_contained.cpp
 )

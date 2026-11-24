@@ -466,7 +466,8 @@ function(cuexis_verify_source_architecture source_dir)
         prepared_gameplay_records.hpp
         prepared_gameplay.hpp
         identity_bytes.hpp
-        prepared_identity_bytes.hpp)
+        prepared_identity_bytes.hpp
+        advance_kernel.hpp)
     foreach(runtime_value_header IN LISTS judgement_runtime_value_headers)
         _cuexis_partition_text("${source_dir}" "engine/judgement/include/cuexis/judgement"
             "${runtime_value_header}" runtime_value_text)
