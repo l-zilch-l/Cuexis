@@ -16,16 +16,15 @@ authority: owns
 
 ## 当前任务
 
-T-06 第一轮只完成帧对象、GL 实验桥、安装面与 F135 场景 1/2/3/5，交付记为部分成立，见[部分交付](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-06-frame-bridge-partial.md)。T-10 已完成九轮：值层、计分、作者 CLI、运行 records/Prepared 存储、`cuexis_judgement_compile` 骨架与 `runtime::AdvanceKernel`（编号/Stop、GP-02 四向量、单元耗尽 Fold、GP-04 多单元、最小 replay）；剩余 GP-03 故障矩阵、Playback owning DTO 与 legacy 输入切换。T-12 部分完成：timing 库、编译闭包、chart 时间适配与 beat-us 消费者成立，canonical 行、GP 轨迹与安装隔离未做。F508 已按登记册 §42 的拆分落地（§43）：内容卸载保留控制身份，Close 终态清理，`rr_session_unload_lifecycle` 六 SECTION 通过；F135 采用形状 2 实施中，0.10.0 版本与 owner 审批评论等实施完成后处理。治理树引导 PR 48 已开，合并后 PR 47 的 PR 事件才有含治理树的可信历史基线。波次 5 的交付报告在 [T-02](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-02-state-facts.md)、[T-05](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-05-frame-layout.md)与 [T-17](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-17-session-correctness.md)。
+T-06 第一轮只完成帧对象、GL 实验桥、安装面与 F135 场景 1/2/3/5，交付记为部分成立，见[部分交付](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-06-frame-bridge-partial.md)。T-10 已完成九轮：值层、计分、作者 CLI、运行 records/Prepared 存储、`cuexis_judgement_compile` 骨架与 `runtime::AdvanceKernel`（编号/Stop、GP-02 四向量、单元耗尽 Fold、GP-04 多单元、最小 replay）；剩余 GP-03 故障矩阵、Playback owning DTO 与 legacy 输入切换。T-12 部分完成：timing 库、编译闭包、chart 时间适配与 beat-us 消费者成立，canonical 行、GP 轨迹与安装隔离未做。F508 已按登记册 §42 的拆分落地（§43）：内容卸载保留控制身份，Close 终态清理，`rr_session_unload_lifecycle` 六 SECTION 通过；F135 已按形状 2 实现并独立复核（§44），`Error` 112 B、零分配与持续 OOM 成立；SDK API 已升到 0.10.0，owner 审批评论与最终推送待 PR 48 合并后处理。治理树引导 PR 48 已开，合并后 PR 47 的 PR 事件才有含治理树的可信历史基线。波次 5 的交付报告在 [T-02](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-02-state-facts.md)、[T-05](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-05-frame-layout.md)与 [T-17](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-17-session-correctness.md)。
 
 T-01 证据在 [基线与派单报告](stage_reports/stages/stage-07-rr/readiness/2026-11-23-t-01-dispatch-baseline.md)；T-03 证据在 [合同与诊断交付](stage_reports/stages/stage-07-rr/implementation/2026-11-23-t-03-contracts-and-diagnostics.md)；T-04 证据在 [构建闭包拆分与隔离门禁](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-04-build-isolation.md)。派单输入的规范哈希取基线 blob，见 [hashes.txt](stage_reports/stages/stage-07-rr/evidence/t-01-baseline/hashes.txt)，独立 checkout 复算不需要 `out/`。
 
 ## 下一步
 
-1. 按[唯一调度](stage_plans/active/stage-07-rr/schedule.md)继续波次 6/7 的 T-06、T-08；T-10 的 GP-03、Playback owning DTO 与 legacy 输入切换，T-12 的 canonical 行与安装隔离随后推进。F135（task-34）完成后接 0.10.0 版本、element-size 基线与 owner 审批评论。
-2. PR 48 合并后把 master 合进 PR 47、重推，并确认 `Documentation contracts` 转绿；随后在合并后的树上重跑 F508、隔离门禁与 T-17 验收命令。
-3. 每卡按其任务级验收取证并回写发现处置；文档变更收尾前运行文档总入口、事实、命名与生成物检查。
-4. 实际发布、SDK 晋升与旧 API 退役仍各自单独取得；设备与实体听音项留给 owner。
+1. 按[唯一调度](stage_plans/active/stage-07-rr/schedule.md)继续波次 6/7 的 T-06、T-08；T-10 的 GP-03、Playback owning DTO 与 legacy 输入切换，T-12 的 canonical 行与安装隔离随后推进。F135 已完成，PR 48 合并后把 master 合进 PR 47、升 build 到 26.11.24-2、推送并代发 owner 的 SDK 审批评论，重跑门禁到全绿。
+2. 每卡按其任务级验收取证并回写发现处置；文档变更收尾前运行文档总入口、事实、命名与生成物检查。
+3. 实际发布、SDK 晋升与旧 API 退役仍各自单独取得；设备与实体听音项留给 owner。
 
 ## 阻塞与待决
 
@@ -44,6 +43,8 @@ T-04：四个预设（`debug`、`headless-debug`、`candidate-headless-debug`、
 T-06：帧对象、能力检查、GL 实验桥（窗口路径只编译）、安装面、共享导出与 F135 场景 1/2/3/5 通过；场景 4 与宿主/Player 帧链未闭环。B4/R0 等 7 个 worker 用例在 F508 清零回退后全部恢复，`cuexis_architecture_tests` 因渲染测试直接调用 GL 变红，修复在 task-25。
 
 F508 第二轮：`rr_session_unload_lifecycle` 六 SECTION 通过，`-L rpa` 186/186、`-L execution-host` 71/71、候选 playback 195/35794、默认闭包 137/17556；`cuexis_architecture_tests` 与 `cuexis_format_check` 退出 0，隔离门禁在 `candidate-debug`、`debug` 退出 0。PR 47 的编译修复在本地复现：GCC 全量构建、MSVC Release `cuexis_judgement_compile`、`candidate-debug` 的 `cuexis_chart_tools` 均退出 0；远端重跑待推送。
+
+F135：lead 在 `candidate-debug` 重跑 F135 七例通过；独立复核重做尺寸、零分配、OOM、负编译与基线重跑，12 项成立，MSVC Release `Error` 112、`optional<Error>` 120、`FaultSlot` 56，`audit_layout.py` 全量重跑的 sizes 键与提交 JSON 一致；shared、Release 全量与 Clang 项目内 ctest 未做。
 
 CMake target 事实已可检查：`debug` 预设 fresh configure 生成的 `cuexis-targets.txt` 已同步到 `BUILDING.md` 目标块，`check_docs.py` 的 target contract 项退出 0。产品行为、设备与 hosted 证据随各责任任务取得。
 
