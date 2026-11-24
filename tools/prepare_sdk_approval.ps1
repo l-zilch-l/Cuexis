@@ -138,12 +138,25 @@ function Save-ApprovalDraft($Record, [string]$Directory) {
     return $path
 }
 
+function Get-ApprovalTimestampText([object]$Value) {
+    # pwsh 7 converts ISO-8601 JSON strings into DateTime; Windows PowerShell keeps
+    # strings. Compare one canonical text form either way.
+    if ($Value -is [datetime]) {
+        return $Value.ToUniversalTime().ToString(
+            'yyyy-MM-ddTHH:mm:ssZ', [Globalization.CultureInfo]::InvariantCulture)
+    }
+    return [string]$Value
+}
+
 function Test-ApprovalComment($Comment, $Record, $Owners) {
-    if (-not $Comment -or $Comment.user.type -cne 'User' -or
+    if (-not $Comment) { return $false }
+    $createdAt = Get-ApprovalTimestampText $Comment.created_at
+    $updatedAt = Get-ApprovalTimestampText $Comment.updated_at
+    if ($Comment.user.type -cne 'User' -or
         $Owners -cnotcontains $Comment.user.login -or
         ($Comment.id -isnot [int] -and $Comment.id -isnot [long]) -or $Comment.id -le 0 -or
-        $Comment.created_at -cne $Comment.updated_at -or
-        -not ([string]$Comment.created_at).StartsWith($Record.utc_date + 'T')) { return $false }
+        $createdAt -cne $updatedAt -or
+        -not $createdAt.StartsWith($Record.utc_date + 'T')) { return $false }
     if ($Comment.body -isnot [string] -or $Comment.body.Length -gt 8192) { return $false }
     $body = $Comment.body.Replace("`r`n", "`n")
     $prefix = "cuexis-sdk-api-approval-v1`n"
