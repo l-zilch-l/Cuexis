@@ -291,6 +291,10 @@ struct CompiledGameplayView final {
     std::span<const PreparedRequirement> requirements;
     std::span<const PreparedResource> resources;
     std::span<const PreparedTimerKey> timers;
+    //  The exact chart-projection bytes of the source content (the bytes `writeChartProjection`
+    //  appends after the identity header). A compile-side producer fills it; the runtime identity
+    //  generator concatenates it without knowing any author type.
+    std::span<const std::byte> chartProjection{};
 };
 
 //  The budgets `prepareCompiledGameplay` applies. A pending dimension is not a number and is not

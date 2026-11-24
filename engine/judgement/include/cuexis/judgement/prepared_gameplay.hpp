@@ -40,6 +40,9 @@ class PreparedGameplay final {
     [[nodiscard]] auto timers() const noexcept -> std::span<const PreparedTimerKey>;
     [[nodiscard]] auto identityDeclarations() const noexcept -> const PreparedIdentityDeclarations&;
     [[nodiscard]] auto identity() const noexcept -> std::string_view;
+    //  The exact chart-projection bytes carried by the source content, or an empty span when the
+    //  source did not carry one. The runtime identity generator needs it.
+    [[nodiscard]] auto chartProjection() const noexcept -> std::span<const std::byte>;
 
     //  Pure prepared-window query, not a runtime state transition. At the deadline the timer wins,
     //  so a tick equal to the deadline is not admitted.

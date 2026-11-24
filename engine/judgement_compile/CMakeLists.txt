@@ -5,6 +5,7 @@ set_target_properties(cuexis_judgement_compile PROPERTIES EXPORT_NAME InternalJu
 target_sources(cuexis_judgement_compile
     PRIVATE
         src/legacy_prepared_view.cpp
+        src/legacy_runtime_identity.cpp
 )
 
 target_include_directories(cuexis_judgement_compile

@@ -43,6 +43,7 @@ target_sources(cuexis_judgement
         src/normalized_score.cpp
         src/phase_types.cpp
         src/prepared_gameplay.cpp
+        src/prepared_identity_bytes.cpp
         src/recovery_codec.cpp
         src/recovery.cpp
         src/ruleset.cpp

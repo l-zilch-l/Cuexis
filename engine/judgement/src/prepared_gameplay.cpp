@@ -19,6 +19,7 @@ class PreparedGameplayStorage final {
     std::vector<PreparedRequirement> requirements;
     std::vector<PreparedResource> resources;
     std::vector<PreparedTimerKey> timers;
+    std::vector<std::byte> chartProjection;
     std::optional<PreparedNormalizedScore> normalizedScore;
     SettlementDictionary dictionary;
 };
@@ -148,6 +149,7 @@ auto buildStorage(const CompiledGameplayView& view) -> detail::PreparedGameplayS
     storage.requirements.assign(view.requirements.begin(), view.requirements.end());
     storage.resources.assign(view.resources.begin(), view.resources.end());
     storage.timers.assign(view.timers.begin(), view.timers.end());
+    storage.chartProjection.assign(view.chartProjection.begin(), view.chartProjection.end());
     if (view.normalizedScore != nullptr) {
         storage.normalizedScore = *view.normalizedScore;
     }
@@ -173,6 +175,7 @@ auto PreparedGameplay::records() const noexcept -> CompiledGameplayView {
         storage_->requirements,
         storage_->resources,
         storage_->timers,
+        storage_->chartProjection,
     };
 }
 
@@ -195,6 +198,10 @@ auto PreparedGameplay::identityDeclarations() const noexcept
 
 auto PreparedGameplay::identity() const noexcept -> std::string_view {
     return storage_->preparedIdentity;
+}
+
+auto PreparedGameplay::chartProjection() const noexcept -> std::span<const std::byte> {
+    return storage_->chartProjection;
 }
 
 auto PreparedGameplay::admitsSuccess(std::size_t requirementIndex, Tick tick) const noexcept

@@ -1,5 +1,7 @@
 #include <cuexis/judgement/compile/legacy_prepared_view.hpp>
 
+#include <cuexis/judgement/compile/runtime_identity_inputs.hpp>
+
 #include <cuexis/judgement/gameplay_assembler_identity.hpp>
 #include <cuexis/judgement/gameplay_assembler_publication.hpp>
 #include <cuexis/judgement/prepared_gameplay_records.hpp>
@@ -217,6 +219,10 @@ auto preparedGameplayView(const PreparedGameplay& prepared)
 
     const auto timebase = convertTimebase(*graph.timebase);
     const auto policy = convertPolicy(*graph.latePolicy);
+    auto projection = chartProjectionBytes(prepared);
+    if (!projection) {
+        return core::unexpected(projection.error());
+    }
     const auto contentIdentity = assembled.content.canonicalBytes().toHex();
     const auto preparedIdentity = assembled.prepared.canonicalBytes().toHex();
     const runtime::CompiledGameplayView view{
@@ -231,6 +237,7 @@ auto preparedGameplayView(const PreparedGameplay& prepared)
         convertedRequirements,
         convertedResources,
         convertedTimers,
+        *projection,
     };
 
     //  `prepareCompiledGameplay` copies every record again into the owning runtime storage. The

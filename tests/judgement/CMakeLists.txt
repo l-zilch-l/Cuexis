@@ -38,6 +38,9 @@ add_executable(cuexis_judgement_tests
     prepared_gameplay_records_self_contained.cpp
     prepared_gameplay_self_contained.cpp
     legacy_prepared_view_tests.cpp
+    runtime_identity_tests.cpp
+    identity_bytes_self_contained.cpp
+    prepared_identity_bytes_self_contained.cpp
 )
 
 target_include_directories(cuexis_judgement_tests PRIVATE ${PROJECT_SOURCE_DIR}/engine/judgement/internal)
