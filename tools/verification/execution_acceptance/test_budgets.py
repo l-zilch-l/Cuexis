@@ -18,7 +18,10 @@ class BudgetTests(unittest.TestCase):
     def test_all_scales_cover_all_domains(self):
         validate(self.proposal)
         self.assertEqual([p["entities"] for p in self.proposal["profiles"]], [64, 2048, 40000])
-        self.assertEqual(self.proposal["profiles"][-1]["frame_byte_bound"], 163842128)
+        # Derived from the audited layout, not a coefficient. The 2026-11-24 re-audit raised the
+        # n=40000 bound by 576 bytes because FramePayload, which the F135 Error change does not
+        # touch, grew after commit 739b6f34 without refreshing this baseline.
+        self.assertEqual(self.proposal["profiles"][-1]["frame_byte_bound"], 163842704)
 
     def test_missing_domain_zero_unknown_and_self_acceptance_are_rejected(self):
         mutations = [
