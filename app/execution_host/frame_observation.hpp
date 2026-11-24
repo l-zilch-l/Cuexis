@@ -207,9 +207,11 @@ template <typename Renderer, typename MonotonicNow>
     } catch (const std::bad_alloc&) {
         // The operation did not complete. Report the actual failure stage instead of claiming
         // success or an unknown present; a bad_alloc remains distinguishable from other faults.
+        // The cause is interned so reporting it cannot allocate while the allocator is failing.
         receipt.status = PresentStatus::failed;
-        receipt.cause = core::Error{"host.rpa.allocation_failed",
-                                    "Renderer submit or present could not allocate"};
+        receipt.cause =
+            core::Error::interned(core::intern("host.rpa.allocation_failed"),
+                                  core::intern("Renderer submit or present could not allocate"));
         return receipt;
     } catch (const std::exception& exception) {
         receipt.status = PresentStatus::failed;
@@ -293,11 +295,10 @@ class FrameObservationLedger final {
         return historyLost_;
     }
 #if defined(CUEXIS_FRAME_OBSERVATION_FAULT_INJECTION)
-    // Test seam: the prebuilt owning error is exposed so the copy cost can be measured rather
-    // than presumed safe.
-    [[nodiscard]] auto allocationFailureTemplateForTest() const noexcept -> const core::Error& {
-        return allocationFailure_;
-    }
+    // Test seam: the fixed delivery error for a stage, so the zero-allocation copy cost and the
+    // carried stage can be measured instead of presumed.
+    [[nodiscard]] static auto allocationFailureForTest(FaultSlot::Stage stage) noexcept
+        -> core::Error;
 #endif
 
   private:
@@ -347,8 +348,6 @@ class FrameObservationLedger final {
     std::optional<std::int64_t> feedbackLossThrough_;
     std::uint64_t feedbackLossCommitThrough_{};
     mutable FaultSlot fault_;
-    mutable core::Error allocationFailure_{"host.rpa.allocation_failed",
-                                           "Frame observation operation could not allocate"};
 };
 #if defined(CUEXIS_FRAME_OBSERVATION_FAULT_INJECTION)
 // Test-only switches consumed by the exact production allocation branch they fault. They live in

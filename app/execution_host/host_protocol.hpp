@@ -39,21 +39,9 @@ using ::cuexis::playback::StepTarget;
 struct FaultSlot final {
     enum class Reason : std::uint8_t { none, capacity, allocation, conflict, captureGap } reason{};
     // Fixed failure stage of the observation bridge. Kept in the preallocated slot so a fault
-    // remains attributable after an allocation failure without building another diagnostic.
-    enum class Stage : std::uint8_t {
-        none,
-        create,
-        configure,
-        copyReceipt,
-        feedback,
-        publish,
-        recordAttempt,
-        takeLatest,
-        observe,
-        expire,
-        activate,
-        query,
-    };
+    // remains attributable after an allocation failure without building another diagnostic. The
+    // preallocated slot and an interned Error carry the same core::ErrorStage value.
+    using Stage = core::ErrorStage;
     std::optional<StepKey> step;
     Stage stage{};
 };
@@ -101,7 +89,10 @@ class OwnerStepLedger final {
     std::size_t reserve_;
     std::vector<std::optional<Record>> records_;
     mutable FaultSlot fault_;
-    core::Error allocationFailure_{"host.rpa.capacity_exceeded", "Reserved owner allocation fault"};
+    // Prebuilt interned error: copying it in a catch path never allocates.
+    core::Error allocationFailure_{
+        core::Error::interned(core::intern("host.rpa.capacity_exceeded"),
+                              core::intern("Reserved owner allocation fault"))};
     bool failNextCompletion_{};
 };
 enum class HostState : std::uint8_t {
@@ -153,7 +144,9 @@ class HostCoordinator final {
     std::optional<std::uint64_t> lastDecision_;
     bool resumeTerminated_{};
     mutable FaultSlot fault_;
-    core::Error allocationFailure_{"host.rpa.capacity_exceeded",
-                                   "Reserved coordinator allocation fault"};
+    // Prebuilt interned error: copying it in a catch path never allocates.
+    core::Error allocationFailure_{
+        core::Error::interned(core::intern("host.rpa.capacity_exceeded"),
+                              core::intern("Reserved coordinator allocation fault"))};
 };
 } // namespace cuexis::playback::detail

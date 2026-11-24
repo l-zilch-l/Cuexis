@@ -59,6 +59,8 @@ add_executable(cuexis_execution_host_tests
     rpa_b5_seek_host_tests.cpp
     rpa_b5_transcript_tests.cpp
     rr_frame_observation_errors_tests.cpp
+    f135_owner_channel_error_tests.cpp
+    ../support/f135_allocation_probe.cpp
     rr_host_frame_chain_tests.cpp
     rr_sdk_execution_host_shared_tests.cpp
     ../pd/retained_control_tests.cpp

@@ -39,9 +39,9 @@ static_assert(sizeof(core::Result<runtime::detail::ObjectVisualRead>) == 144 &&
               alignof(core::Result<runtime::detail::ObjectVisualRead>) == 8);
 static_assert(snapshotReadScratchBytes == 280);
 #else
-static_assert(sizeof(core::Result<runtime::detail::ObjectVisualRead>) == 120 &&
+static_assert(sizeof(core::Result<runtime::detail::ObjectVisualRead>) == 128 &&
               alignof(core::Result<runtime::detail::ObjectVisualRead>) == 8);
-static_assert(snapshotReadScratchBytes == 256);
+static_assert(snapshotReadScratchBytes == 264);
 #endif
 
 #endif

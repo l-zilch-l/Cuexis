@@ -938,6 +938,16 @@ T-10 第九轮（GP-04 多单元、最小 ReplayRecord/replay）与 T-12（timin
 - PR 48 治理树引导：**部分成立**。docs 快照加入 master 目标事实、四个旧命名豁免、检查脚本与日期版本后，`Documentation contracts` 与 `Version advancement (pre-merge)` 已通过；其余构建任务仍在运行。合并后 PR 47 的 PR 事件才有含治理树的可信 base。
 - 本轮本地提交 `c85cfa61`（F508 拆分）、`80c121b4`（编译修复）、`f00439c3`（隔离源表），均未推送。
 
+## 44. F135 interned Error 实施（2026-11-24）
+
+- Error 形状 2：**成立**。`core::Error` 改为单个 `std::variant<OwnedTextPair, InternedTextPair>`；MSVC Release `/MD /O2` 实测 `sizeof(Error)` 104→112、`optional<Error>` 112→120、`FaultSlot` 保持 56 B。`context` 改为惰性 `shared_ptr` 写时复制，避免 MSVC Debug STL 的 vector proxy 破坏零分配；move 构造/赋值 `noexcept` 并有 `static_assert`，旧 owning 构造语义保留。Debug 布局为 Error 128、optional 136，`presentation_materializer` 的断言按 Debug/Release 分列 144/280 与 128/264。
+- 零分配与静态存储期：**成立**。MSVC 重载全局 new 计数下，interned 构造/复制、`optional<Error>` 复制、`optional<Result<int>>` 错误态复制均为 0 次；GCC 16.1 与 Clang 22.1.8 独立探针一致且不抛。`InternedText` 只开放私有数组构造与 `consteval intern()`；string_view/std::string/c_str/自动数组/constexpr 局部数组/直接构造六类负例在三编译器均非零退出，字面量正例通过。
+- 持续 OOM 交付：**成立**。观测桥连续三次 query 故障注入在 fail-all 下每次 0 分配、不抛，三次 code 均为 `host.rpa.allocation_failed`、stage 均为 `query`、均为 interned；`frameObservationInjectedFaultAttempts` 增 3，Unknown/retained 计数不变，FaultSlot reason=allocation、stage=query。OwnerChannel::poll 对 interned 回复三次 fail-all 复制零分配，ack 后返回 `context_stale`。
+- 26 处预构建 `unexpected(allocationFailure_)`：**成立**。观测桥 5 处改为 `host.rpa.allocation_failed` 加固定 `ErrorStage`；其余 21 处（host_protocol 10、host_protocol_ledger 9、renderer_owner 2）按合同限定保留 `host.rpa.capacity_exceeded`，只改 interned 交付与阶段表达，未改稳定码；OOM 路径不调用 `withContext`/`withCause`。`presentOwnedFrame` 的 bad_alloc cause、`create`/`copyPresentReceipt` 与 OwnerChannel 三个 catch 同步改 interned。
+- element-size 基线：**成立**。按 `audit_layout.py` 在 MSVC Release 全量重生成，F135 行与探针一致（SessionChannelSlot 40000、ControlReceiptSlot 37240、JournalFrameSlot 464、optional_PresentReceipt 240 等）；同时带出与 F135 无关的既有 HEAD 漂移（FramePayload 304→880、HistorySlot 208→240、ConsumerSlot 1192→1224、DeliveryFingerprint 160→192、DispatchToken 1→16，基线自 `739b6f34` 后未更新），派生期望常量 163842128→163842704，预算乘数未改。
+- 验证：**成立（候选与默认闭包）**。lead 在 `candidate-debug` 重跑 `F135` 七例全过；子代理记录 `candidate-debug`/`candidate-headless-debug` 各 `-L rpa` 187/187、`debug` 70/70 与 core 42/2651、`mingw-headless-debug` 71/71、MinGW candidate 观测/通道两例通过，`cuexis_architecture_tests` 通过，格式门禁在修复既有 `beat_us_compile.cpp` 断行后通过。证据在 `out/review/stage-07-rr/F135/`。
+- 未做：Release 全量构建/ctest、shared/candidate-shared、Clang 的项目内 ctest 入口（只有独立探针与编译负例）；MSVC Debug `tl::expected` 下 owning Error 的异常拷贝会在未构造成员上析构，OOM 可复制保证限定 interned 错误态；26 处之外的 `rematerializeRetainedSnapshot`、audio_owner/capture_route 的 catch 仍为 owning 错误，不在持续 OOM 保证内。SDK API 按 0.10.0 推进，owner 审批评论在推送时补。
+
 ## 附录 处置记录（按日期保留，§12–§16）
 
 本附录保留各轮审查的处置记录，按当时时点成立，不改写结论；编号沿用历史顺序，故排在 §17 之后阅读。

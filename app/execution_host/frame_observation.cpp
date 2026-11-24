@@ -14,9 +14,18 @@ std::atomic<std::uint64_t> injectedFaultAttempts{};
 auto error(std::string_view code) -> core::Error {
     return {"host.rpa." + std::string{code}, "Frame observation protocol rejected"};
 }
+// Fixed, zero-allocation delivery for an actual allocation failure. The stage is read back from
+// the delivered Error and matches the value reported to the reserved fault slot.
+auto allocationFailure(core::ErrorStage stage) noexcept -> core::Error {
+    return core::Error::interned(core::intern("host.rpa.allocation_failed"),
+                                 core::intern("Frame observation operation could not allocate"),
+                                 stage);
+}
 auto capacityError() -> core::Error {
-    return {"host.rpa.capacity_exceeded",
-            "Frame observation configured capacity cannot hold the fixed journal"};
+    return core::Error::interned(
+        core::intern("host.rpa.capacity_exceeded"),
+        core::intern("Frame observation configured capacity cannot hold the fixed journal"),
+        FaultSlot::Stage::configure);
 }
 auto idBytes(const FeedbackId& id) noexcept -> std::size_t {
     return sizeof(FeedbackId) + id.targetId.capacity() + id.bindingId.capacity() + 2;
@@ -111,9 +120,7 @@ auto copyPresentReceipt(const PresentReceipt& input) -> core::Result<PresentRece
     result.cause = std::move(cause);
     return result;
 } catch (...) {
-    return core::unexpected(
-        core::Error{"host.rpa.allocation_failed", "Present receipt copy could not allocate"}
-            .withContext("stage", "copy_receipt"));
+    return core::unexpected(allocationFailure(FaultSlot::Stage::copyReceipt));
 }
 auto rematerializeRetainedSnapshot(const FrameSnapshot& retained, FrameViewport viewport)
     -> core::Result<FrameSnapshot> try {
@@ -175,7 +182,7 @@ auto FrameObservationLedger::configure(Limits limits) -> core::Result<void> try 
     return {};
 } catch (...) {
     reportAllocationFailure(FaultSlot::Stage::configure);
-    return core::unexpected(allocationFailure_);
+    return core::unexpected(allocationFailure(FaultSlot::Stage::configure));
 }
 void FrameObservationLedger::rememberLoss(std::uint64_t first, std::uint64_t last) noexcept {
     historyLost_ = true;
@@ -344,9 +351,7 @@ auto FrameObservationLedger::create(HostContext c, std::uint64_t scope, std::siz
         return core::unexpected(configured.error());
     return result;
 } catch (...) {
-    return core::unexpected(core::Error{"host.rpa.allocation_failed",
-                                        "Frame observation ledger could not allocate its journal"}
-                                .withContext("stage", "create"));
+    return core::unexpected(allocationFailure(FaultSlot::Stage::create));
 }
 auto FrameObservationLedger::feedback(FeedbackId id, std::int64_t created,
                                       std::optional<GameplayPresentationTick> expiry)
@@ -605,7 +610,7 @@ auto FrameObservationLedger::observe(const PresentReceipt& r) -> core::Result<vo
     receiptLost(r.context.sessionScope, r.context.sessionScope, r.projectionScope,
                 r.projectionScope, r.frameId, r.frameId);
     reportAllocationFailure(FaultSlot::Stage::observe);
-    return core::unexpected(allocationFailure_);
+    return core::unexpected(allocationFailure(FaultSlot::Stage::observe));
 }
 auto FrameObservationLedger::expire(std::int64_t tick) -> core::Result<void> try {
     if (!owner_.isCurrent())
@@ -631,7 +636,7 @@ auto FrameObservationLedger::expire(std::int64_t tick) -> core::Result<void> try
 } catch (...) {
     coverageLost();
     reportAllocationFailure(FaultSlot::Stage::expire);
-    return core::unexpected(allocationFailure_);
+    return core::unexpected(allocationFailure(FaultSlot::Stage::expire));
 }
 auto FrameObservationLedger::rebind(HostContext context) -> core::Result<void> {
     if (!owner_.isCurrent())
@@ -680,7 +685,7 @@ auto FrameObservationLedger::activate(HostContext context, std::uint64_t scope)
 } catch (...) {
     coverageLost();
     reportAllocationFailure(FaultSlot::Stage::activate);
-    return core::unexpected(allocationFailure_);
+    return core::unexpected(allocationFailure(FaultSlot::Stage::activate));
 }
 auto FrameObservationLedger::query(const FeedbackId& id) const
     -> core::Result<FeedbackObservation> try {
@@ -700,6 +705,12 @@ auto FrameObservationLedger::query(const FeedbackId& id) const
     return core::unexpected(error("context_stale").withContext("history", "unavailable"));
 } catch (...) {
     reportAllocationFailure(FaultSlot::Stage::query);
-    return core::unexpected(allocationFailure_);
+    return core::unexpected(allocationFailure(FaultSlot::Stage::query));
 }
+#if defined(CUEXIS_FRAME_OBSERVATION_FAULT_INJECTION)
+auto FrameObservationLedger::allocationFailureForTest(FaultSlot::Stage stage) noexcept
+    -> core::Error {
+    return allocationFailure(stage);
+}
+#endif
 } // namespace cuexis::playback::detail

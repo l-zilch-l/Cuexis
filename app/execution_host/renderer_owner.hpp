@@ -389,7 +389,9 @@ template <typename Renderer> class RendererOwner final {
     std::optional<std::uint64_t> operation_;
     std::optional<StepTarget> target_;
     bool retired_{}, closed_{}, uncertain_{}, fenced_{};
-    core::Error allocationFailure_{"host.rpa.capacity_exceeded",
-                                   "Reserved renderer allocation fault"};
+    // Prebuilt interned error: copying it in a catch path never allocates.
+    core::Error allocationFailure_{
+        core::Error::interned(core::intern("host.rpa.capacity_exceeded"),
+                              core::intern("Reserved renderer allocation fault"))};
 };
 } // namespace cuexis::playback::detail

@@ -1,6 +1,6 @@
 # 实时宿主边界合同
 
-状态：candidate contract；当前分支 SDK 0.9.1 preview；发行、设备与生产接受独立
+状态：candidate contract；当前分支 SDK 0.10.0 preview；发行、设备与生产接受独立
 
 更新日期：2026-11-23
 
@@ -88,7 +88,7 @@ Gameplay 的 Prepared/Running/Paused/Faulted 保持独立；Suspended 是禁止�
 | 时钟无效/超期/误差参数缺失 | `host.rpa.clock_invalid` | 撤销许可；显式新段恢复，不静默 fallback |
 | 配置预算未测量 | `host.rpa.profile_incomplete` | 生产启动拒绝；testOnly 明示 |
 | 配置预算或容量耗尽，可靠通道不能接纳 | `host.rpa.capacity_exceeded` | 未发送请求明确拒绝；已捕获无法保留则记录 gap 并 Suspended |
-| 观测桥操作因实际内存分配失败而未完成（F135 已接受、未实现） | `host.rpa.allocation_failed` | 由预留故障槽保留失败；按下节区分操作失败与单纯观测丢失，不伪报提交或呈现成功 |
+| 观测桥操作因实际内存分配失败而未完成（F135 已实现，2026-11-24） | `host.rpa.allocation_failed` | 由预留故障槽保留失败；按下节区分操作失败与单纯观测丢失，不伪报提交或呈现成功 |
 | PauseTrace 已确认不可补齐 | `host.rpa.capture_gap` | 拒绝直接续跑；保留结果，显式 Stop/reset/完整恢复 |
 | 已接纳操作迟迟无设备回执 | `host.rpa.device_pending` | 报实际阶段；超时不是回滚或 Closed |
 | renderer/audio 失败 | `host.rpa.device_failed`，cause 保留原码 | 按实际副作用收束；未生效步骤依B1取消；切段或软件提交后保留实际状态，不假回滚 |
@@ -111,12 +111,15 @@ host.rpa 码只属于宿主协议，不投影成 judgement.*，不增加 N3 九�
 CutApplied(cut,q,pauseEpoch)；当前未执行为 Pending，不能用裸 NotApplied 充当取消成功。
 超时/查询不到记录只表示未知，保持实际宿主状态和禁止推进要求，不授权撤销或重发新操作。
 
-### F135 观测桥错误分类修订（已接受、未实现）
+### F135 观测桥错误分类修订（已接受，2026-11-24 已实现）
 
 2026-11-23 owner 按 Stage 7-RR D-04 接受新增稳定宿主码 `host.rpa.allocation_failed`；
 [T-03](../stage_plans/active/stage-07-rr/tasks/T-03.md)绑定合同与旧新映射，
 [T-06](../stage_plans/active/stage-07-rr/tasks/T-06.md)落实观测桥及故障注入验收。
-当前观测桥仍把部分分配失败映射为 `host.rpa.capacity_exceeded`，本节不表示实现已修复。
+2026-11-24 观测桥把分配失败改为预构建的 interned `core::Error` 交付，稳定码为
+`host.rpa.allocation_failed` 并携带固定失败阶段；其余宿主路径的分配失败保留
+`host.rpa.capacity_exceeded`，只改存储与交付方式。证据见
+[F135 报告](../../out/review/stage-07-rr/F135/report.md) 与 `tests/rpa` 的 F135 用例。
 
 实际分配失败导致操作无法完成时使用 `host.rpa.allocation_failed`；配置预算或容量确实耗尽时
 保留 `host.rpa.capacity_exceeded`。复用现有预留 `FaultSlot` 的 allocation/capacity 原因，
@@ -131,12 +134,13 @@ CutApplied(cut,q,pauseEpoch)；当前未执行为 Pending，不能用裸 NotAppl
 该操作失败；不得用允许丢观测的规则掩盖操作失败。区分依据是实际副作用与该入口的职责。
 本次修订限定于 F135 观测桥切片；其他宿主路径的稳定码变更仍须各自的合同接受记录。
 
-#### F135 基线映射（2026-11-23，已接受、未实现）
+#### F135 基线映射（2026-11-23，实施前只读取证）
 
 下表与 T-03 证据 `out/review/stage-07-rr/T-03/report.md` 的同表同步。旧实现列是对
 [frame_observation.cpp](../../app/execution_host/frame_observation.cpp) 的只读取证，不是修复
 声明；“未执行验收”列链接 [T-06 任务级验收](../stage_plans/active/stage-07-rr/tasks/T-06.md#任务级验收)
-的 `rr_frame_observation_errors` 具名场景。本轮没有构建或运行该测试，合同接受不等于运行通过。
+的 `rr_frame_observation_errors` 具名场景。2026-11-24 实施后本表只保留当时基线，当前实现以
+[F135 报告](../../out/review/stage-07-rr/F135/report.md) 与 `tests/rpa` 的 F135 用例为准。
 
 | 场景 | 旧实现（当前触发与诊断） | 已接受目标 | 未执行验收（T-06 `rr_frame_observation_errors`；计划用例名，未实施） |
 | --- | --- | --- | --- |
@@ -314,7 +318,7 @@ Prepared、provider 回调或设备句柄。其物化使用原有 acquire 路径
 
 candidate OFF 不构建宿主支持模块、不安装 execution control，不保存 RPA 控制/fence 状态。
 ADR 0033 禁止私有导出的规则保留；共享库白名单仅登记实际公共类型/函数，不能放行 detail。
-上述接口首用于 SDK 0.8.0 preview；当前分支为 0.9.1 preview，版本沿革见
+上述接口首用于 SDK 0.8.0 preview；当前分支为 0.10.0 preview，版本沿革见
 [版本政策](../guides/VERSIONING.md)。本页不宣布生产 profile、设备验收或 Stage 7 关闭。
 
 ## 8. PD 候选修订：来源、许可与反馈寿命（2026-10-16）
