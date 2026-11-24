@@ -490,6 +490,7 @@ set(chart_base_sources
     chart_project_path_internal.cpp
     rational_beat.cpp
     timing_map.cpp
+    timing_source_adapter.cpp
     uuid.cpp
 )
 set(chart_codec_sources
@@ -504,9 +505,11 @@ set(chart_codec_sources
     packed_chart_read.cpp
     packed_profile.cpp
     packed_semantic_identity.cpp
+    compiled_chart_timing.cpp
 )
 set(chart_tools_sources
     chart_migrator.cpp
+    chart_v5_loader.cpp
     cxt_v2_loader.cpp
     cxt_v2_loader_expand.cpp
     cxt_v2_loader_parse_nodes.cpp
@@ -515,6 +518,7 @@ set(chart_tools_sources
     candidate_lowering.cpp
     candidate_assembler.cpp
     behavior_candidate.cpp
+    chart_v5_timing.cpp
     packed_chart_tables_sections.cpp
     packed_chart_tables_writer.cpp
     packed_chart_io.cpp
