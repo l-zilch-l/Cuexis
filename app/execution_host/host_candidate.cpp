@@ -130,6 +130,10 @@ auto HostCoordinationAccess::generation(const PlaybackSession& session)
         return core::unexpected(owner.error());
     return owner->generation;
 }
+auto HostCoordinationAccess::executionOwnerState(const PlaybackSession& session)
+    -> core::Result<ExecutionOwnerState> {
+    return ExecutionHostAccess::executionOwnerState(session);
+}
 auto HostCoordinationAccess::sessionScope(const PlaybackSession& session)
     -> core::Result<std::uint64_t> {
     auto owner = session.executionOwnerState();

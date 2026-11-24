@@ -13,14 +13,18 @@
 namespace cuexis::playback::detail {
 
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
-// Candidate-only fields that unload must clear. This mirrors their presence; it does not model
-// their lifetime or control semantics.
+// Candidate-only session fields observed around a content unload. This mirrors their presence; it
+// does not model their lifetime or control semantics.
 struct CandidateSessionState final {
     bool hostFence{};
     bool acceptedHostControl{};
     bool confirmedHostContext{};
     bool executionMapping{};
     bool tailTransition{};
+    // Content-scoped projection fields: the committed reduced framing table and the candidate
+    // presentation token minted by the owning commit.
+    std::size_t framings{};
+    bool committedPresentationToken{};
 };
 
 // Internal test seam: exposes the candidate fields so the unload regression can seed and then

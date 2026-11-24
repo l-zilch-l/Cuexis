@@ -104,6 +104,7 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
         playback_gameplay_fixture.hpp
         rr_advance_contract_tests.cpp
         rr_t17_session_tests.cpp
+        rr_session_unload_lifecycle_tests.cpp
         ../judgement/execution_reference.cpp
         "${PROJECT_SOURCE_DIR}/engine/playback/src/gameplay_entry.cpp")
     target_link_libraries(cuexis_playback_tests PRIVATE cuexis::gameplay_packed cuexis::judgement cuexis::json_support)

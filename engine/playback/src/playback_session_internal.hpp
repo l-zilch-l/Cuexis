@@ -218,8 +218,21 @@ struct PlaybackSession::State final {
     std::uint64_t hostDecision{};
     std::optional<std::uint64_t> acceptedHostDecision;
     std::optional<HostContext> confirmedHostContext;
+    // Content identity active when the control was admitted. The accepted proof survives the
+    // content unload of its own Close, but a different committed content invalidates it.
+    std::optional<PreparedSemanticIdentity> acceptedControlContentIdentity;
     bool hostCommitAuthorized{};
     std::shared_ptr<PreparedOwnerLease> preparedOwnerLease;
+#endif
+    // Content unload removes the active content and its execution projection. It deliberately
+    // keeps the accepted host control, its decision and the retained fence/context: a directed
+    // Close retires content before its terminal owner proof arrives, and retire replays must
+    // still validate the accepted proof. Control identity is cleared by the Close terminal.
+    [[nodiscard]] auto unloadContent() -> core::Result<void>;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    // Terminal Close acknowledgement: the retained control identity no longer anchors a replay.
+    // The host step ledger owns the applied retire/close receipts from this point on.
+    void clearControlIdentity() noexcept;
 #endif
     void bumpGeneration() noexcept {
         if (++generation == 0) {

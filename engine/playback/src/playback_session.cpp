@@ -290,6 +290,56 @@ auto PlaybackSession::reload(PlaybackSource&& replacement, const RuntimeFrame& t
     return commit(std::move(*prepared));
 }
 
+auto PlaybackSession::State::unloadContent() -> core::Result<void> {
+    if (sessionState == SessionState::Empty) {
+        return {};
+    }
+    auto mutation = internal::presentation::Mutation::reserve(presentationClock);
+    if (!mutation)
+        return core::unexpected(std::move(mutation.error()));
+    if (runtimeSession) {
+        if (auto result = runtimeSession->unload(); !result) {
+            return result;
+        }
+    }
+    runtimeSession.reset();
+    resourceManager.reset();
+    contentProvider.reset();
+    activeChartJson.clear();
+    snapshotLayout = {};
+    lastFrame.reset();
+    diagnostics.clear();
+    lastOperationDiagnostics.clear();
+    activeChartInfo.reset();
+    activeContentInfo.reset();
+    activeMode.reset();
+    semanticIdentity.reset();
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    candidateMetadata.reset();
+    pendingRetiredRequestFloor.reset();
+    executionScheduler.reset();
+    realtimeClock.reset();
+    executionContext.reset();
+    realtimeWasStarted = false;
+    gameplay.reset();
+    gameplayContent = {};
+    gameplayProjectionIndex = {};
+    gameplayState = GameplayState::Inactive;
+    gameplayReceipt.reset();
+    gameplayProjection = {};
+    executionMapping.reset();
+    tailTransition.reset();
+#endif
+    parameters = {};
+    presentation.reset();
+    framings.clear();
+    committedPresentationToken.reset();
+    sessionState = SessionState::Empty;
+    publishPresentation(*mutation, {});
+    bumpGeneration();
+    return {};
+}
+
 auto PlaybackSession::unload() -> core::Result<void> {
     if (!state_->ownerThread.isCurrent())
         return core::unexpected(ownerError("unload"));
@@ -298,59 +348,29 @@ auto PlaybackSession::unload() -> core::Result<void> {
         return core::unexpected(
             core::Error{"host.rpa.control_pending", "Commit fence blocks unload"});
 #endif
-    if (!state_->ownerThread.isCurrent()) {
-        return core::unexpected(ownerError("unload"));
-    }
     if (state_->operationActive) {
         return core::unexpected(reentryError("unload"));
     }
     SessionOperation operation{state_->operationActive};
-    if (state_->sessionState == SessionState::Empty) {
-        return {};
-    }
-    auto mutation = internal::presentation::Mutation::reserve(state_->presentationClock);
-    if (!mutation)
-        return core::unexpected(std::move(mutation.error()));
-    if (state_->runtimeSession) {
-        if (auto result = state_->runtimeSession->unload(); !result) {
-            return result;
-        }
-    }
-    state_->runtimeSession.reset();
-    state_->resourceManager.reset();
-    state_->contentProvider.reset();
-    state_->activeChartJson.clear();
-    state_->snapshotLayout = {};
-    state_->lastFrame.reset();
-    state_->diagnostics.clear();
-    state_->lastOperationDiagnostics.clear();
-    state_->activeChartInfo.reset();
-    state_->activeContentInfo.reset();
-    state_->activeMode.reset();
-    state_->semanticIdentity.reset();
+    if (auto result = state_->unloadContent(); !result)
+        return result;
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
-    state_->candidateMetadata.reset();
+    // Clearing the whole Session also terminates the retained host control identity. Directed
+    // Close paths use unloadContent() so retire replays keep a valid accepted proof.
+    state_->clearControlIdentity();
 #endif
-#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
-    state_->pendingRetiredRequestFloor.reset();
-    state_->executionScheduler.reset();
-    state_->realtimeClock.reset();
-    state_->executionContext.reset();
-    state_->realtimeWasStarted = false;
-    state_->gameplay.reset();
-    state_->gameplayContent = {};
-    state_->gameplayProjectionIndex = {};
-    state_->gameplayState = GameplayState::Inactive;
-    state_->gameplayReceipt.reset();
-    state_->gameplayProjection = {};
-#endif
-    state_->parameters = {};
-    state_->presentation.reset();
-    state_->sessionState = SessionState::Empty;
-    state_->publishPresentation(*mutation, {});
-    state_->bumpGeneration();
     return {};
 }
+
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+void PlaybackSession::State::clearControlIdentity() noexcept {
+    hostFence.reset();
+    acceptedHostControl.reset();
+    acceptedHostDecision.reset();
+    acceptedControlContentIdentity.reset();
+    confirmedHostContext.reset();
+}
+#endif
 
 auto PlaybackSession::chartInfo() const -> core::Result<ChartInfo> {
     if (!state_->ownerThread.isCurrent()) {

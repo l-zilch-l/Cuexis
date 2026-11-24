@@ -8,6 +8,20 @@
 
 namespace cuexis::playback::detail {
 
+auto CandidateMetadataAccess::candidateState(const PlaybackSession& session)
+    -> CandidateSessionState {
+    const auto& s = *session.state_;
+    return CandidateSessionState{
+        .hostFence = s.hostFence.has_value(),
+        .acceptedHostControl = s.acceptedHostControl.has_value(),
+        .confirmedHostContext = s.confirmedHostContext.has_value(),
+        .executionMapping = s.executionMapping.has_value(),
+        .tailTransition = s.tailTransition.has_value(),
+        .framings = s.framings.size(),
+        .committedPresentationToken = s.committedPresentationToken.has_value(),
+    };
+}
+
 auto CandidateMetadataAccess::preparedOwnerDereferences(const PreparedPlayback& playback) noexcept
     -> std::uint64_t {
     return playback.state_ == nullptr ? 0 : playback.state_->ownerDereferences;

@@ -37,6 +37,8 @@ struct HostCoordinationAccess final {
     [[nodiscard]] static auto leaveFence(PlaybackSession&, CommitFence, const ControlReceipt&)
         -> core::Result<void>;
     [[nodiscard]] static auto generation(const PlaybackSession&) -> core::Result<std::uint64_t>;
+    [[nodiscard]] static auto executionOwnerState(const PlaybackSession&)
+        -> core::Result<ExecutionOwnerState>;
     [[nodiscard]] static auto sessionScope(const PlaybackSession&) -> core::Result<std::uint64_t>;
     [[nodiscard]] static auto validateFrameContext(const PlaybackSession&, const HostContext&)
         -> core::Result<void>;

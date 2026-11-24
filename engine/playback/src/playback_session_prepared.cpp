@@ -171,6 +171,8 @@ auto detail::CandidateMetadataAccess::candidateState(const PlaybackSession& sess
         .confirmedHostContext = s.confirmedHostContext.has_value(),
         .executionMapping = s.executionMapping.has_value(),
         .tailTransition = s.tailTransition.has_value(),
+        .framings = s.framings.size(),
+        .committedPresentationToken = s.committedPresentationToken.has_value(),
     };
 }
 
