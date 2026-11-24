@@ -1,3 +1,9 @@
+# The gate also runs as a `cmake -P` script, where no project sets the policies; the CI-pinned
+# CMake needs CMP0057 before it treats IN_LIST as an operator.
+if(POLICY CMP0057)
+    cmake_policy(SET CMP0057 NEW)
+endif()
+
 # The declaration checks below read header text without running a preprocessor. Strip comments and
 # the branches a preprocessor would not compile, so a declaration has to be live code: a commented-out
 # definition, one inside `#if 0`, or one in the dead half of `#if 0 ... #else ... #endif` must not
