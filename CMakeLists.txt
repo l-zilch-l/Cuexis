@@ -438,6 +438,53 @@ if(CUEXIS_BUILD_TESTS)
             "cuexis_rr_playback_isolation: not registered; configure this build with the "
             "CMake File API codemodel query to run the target-graph gate")
     endif()
+    #  RR-F302: the static installation and the pure Chart codec consumer are the installed-prefix
+    #  half of the Chart source split. The install gate re-installs this configuration into a
+    #  scratch prefix and checks the archive/header/export shape; the consumer gate builds the
+    #  out-of-tree codec consumer and its Chart-tools negative translation units. A shared
+    #  installation exports public libraries only, so the archive assertions apply to static.
+    if(PROJECT_IS_TOP_LEVEL AND CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
+        add_test(
+            NAME cuexis_rr_timing_install_isolation
+            COMMAND "${CMAKE_COMMAND}"
+                "-DCUEXIS_BINARY_DIR=${CMAKE_BINARY_DIR}"
+                "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+                "-DCUEXIS_ENABLE_CHART_V5_CANDIDATE=${CUEXIS_ENABLE_CHART_V5_CANDIDATE}"
+                "-DCUEXIS_LIBRARY_TYPE=${CUEXIS_LIBRARY_TYPE}"
+                "-DCUEXIS_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+                "-DCUEXIS_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/rr-timing-install/prefix"
+                -P "${PROJECT_SOURCE_DIR}/cmake/VerifyTimingInstallIsolation.cmake"
+        )
+        set_tests_properties(cuexis_rr_timing_install_isolation PROPERTIES
+            LABELS "chart;isolation;install" TIMEOUT 300
+        )
+    endif()
+    if(PROJECT_IS_TOP_LEVEL AND CUEXIS_ENABLE_CHART_V5_CANDIDATE AND TARGET cuexis_chart_codec
+       AND TARGET cuexis_chart_tools)
+        add_test(
+            NAME cuexis_rr_chart_codec_consumer
+            COMMAND "${CMAKE_COMMAND}"
+                "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+                "-DCUEXIS_BINARY_DIR=${CMAKE_BINARY_DIR}"
+                "-DCUEXIS_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+                "-DCUEXIS_GENERATOR=${CMAKE_GENERATOR}"
+                "-DCUEXIS_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+                "-DCUEXIS_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}"
+                "-DCUEXIS_RC_COMPILER=${CMAKE_RC_COMPILER}"
+                "-DCUEXIS_MT=${CMAKE_MT}"
+                "-DCUEXIS_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}"
+                "-DCUEXIS_VCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET}"
+                "-DCUEXIS_VCPKG_INSTALLED_DIR=${VCPKG_INSTALLED_DIR}"
+                "-DCUEXIS_CONSUMER_WORK_ROOT=${CMAKE_BINARY_DIR}/rr-chart-codec-consumer"
+                "-DCUEXIS_REPORT_FILE=${CMAKE_BINARY_DIR}/rr-chart-codec-consumer-report.txt"
+                -P "${PROJECT_SOURCE_DIR}/cmake/VerifyChartCodecConsumer.cmake"
+        )
+        set_tests_properties(cuexis_rr_chart_codec_consumer PROPERTIES
+            LABELS "chart;isolation;external"
+            RESOURCE_LOCK cuexis_external_consumer
+            TIMEOUT 900
+        )
+    endif()
     # R5 shared acceptance: the in-repo consumer and the real Player both run against the shared
     # Playback binary this build produced. It needs a real GL context; headless presets do not
     # build the Player and skip this registration.
