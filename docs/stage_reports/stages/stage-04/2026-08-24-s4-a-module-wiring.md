@@ -1,5 +1,12 @@
 # Stage 4 S4-A Module Wiring Report
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-04.2026-08-24-s4-a-module-wiring
+status: evidence
+authority: none
+date: 2026-08-24
+-->
+
 状态：S4-A local checkpoint；Stage 4 仍为 unblocked / not started 的整体阶段，默认 Playback 未放开动画
 
 后续关闭证据：[Cuexis 阶段 4 验收报告](completion.md)。

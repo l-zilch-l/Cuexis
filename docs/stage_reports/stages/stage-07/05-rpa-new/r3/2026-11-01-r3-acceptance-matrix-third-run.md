@@ -1,5 +1,12 @@
 # R3 同源本地验收矩阵第三次运行（2026-11-01）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-r3-acceptance-matrix-third-run
+status: evidence
+authority: none
+date: 2026-11-01
+-->
+
 状态：local matrix；test-only；**不是** R3/R4 退出、设备验证、hosted 验证或 owner 接受
 
 日期：2026-11-01

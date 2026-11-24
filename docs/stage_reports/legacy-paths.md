@@ -1,5 +1,11 @@
 # Legacy Stage Report Paths
 
+<!-- cuexis-meta
+id: EVIDENCE-legacy-paths
+status: evidence
+authority: none
+-->
+
 状态：historical
 
 更新日期：2026-11-01

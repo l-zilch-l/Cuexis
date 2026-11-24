@@ -1,5 +1,12 @@
 # R0 observation and anchor
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r0.2026-10-24-r0-observation-and-anchor
+status: evidence
+authority: none
+date: 2026-10-24
+-->
+
 - 状态：completed
 - 日期：2026-10-24
 - 范围：Stage 7-RPA 的 R0-observation-and-anchor，覆盖 Close 首因/拒绝路径证据、Seek 相位与工作量账本、当前 F1 上的 Q4 重锚。
@@ -7,7 +14,7 @@
 
 ## 1. 结论与边界
 
-本批按 [性能整改方案](../../../../../stage_plans/active/stage-07/05-rpa-new/plan.md) §5 执行。没有启动 40k、ETW、pilot 或任何正式性能窗口；Q4 只是一次独立诊断重锚。
+本批按 [性能整改方案](../../../../../stage_plans/completed/stage-07/05-rpa-new/plan.md) §5 执行。没有启动 40k、ETW、pilot 或任何正式性能窗口；Q4 只是一次独立诊断重锚。
 
 已完成并复核：
 

@@ -1,5 +1,11 @@
 # S7A-3 P1-W1 Packed 设计选择记录
 
+<!-- cuexis-meta
+id: PROPOSALS-gameplay-v2-acceptance.S7A-3_PACKED_W1_CANDIDATE
+status: candidate
+authority: none
+-->
+
 状态：candidate 的设计选择已裁决；仅记录选择历史，不拥有物理字段，不表示实现验收。
 
 更新日期：2026-10-04

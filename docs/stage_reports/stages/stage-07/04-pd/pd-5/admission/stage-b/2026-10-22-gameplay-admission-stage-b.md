@@ -1,5 +1,12 @@
 # PD-5 Capsule revision 4 阶段 B 实施记录
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.admission.stage-b.2026-10-22-gameplay-admission-stage-b
+status: evidence
+authority: none
+date: 2026-10-22
+-->
+
 状态：active
 
 更新日期：2026-10-22

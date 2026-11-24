@@ -1,5 +1,11 @@
 # 2026-11-01 40K 启动可观测性与准备成本冻结档案
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-40k-startup-and-prepare-cost-evidence.index
+status: evidence
+authority: none
+-->
+
 本档案冻结 2026-11-01 的两组测量：**40K 极端压测项目**的启动阶段可观测性，以及同一项目上
 **canonical 直接序列化改写**前后的 prepare 成本拆分。项目本身是 40 000 实体、静态呈现、
 12 571 828 字节 chart 源，canonical 文本 32 180 288 字节。

@@ -1,12 +1,18 @@
 # S7A-5 Implementation Handoff
 
+<!-- cuexis-meta
+id: ARCHIVE-stage-07-planning.01-a.s7a-5-implementation-handoff
+status: historical
+authority: none
+-->
+
 状态：historical planning snapshot；保留854efa3的单批接手内容，已归档并被联合目标取代
 
 日期：2026-10-05
 
 > 归档日期：2026-10-06；来源为b5594cf保存的规划正文，链接随目录迁移修正。
 > 下文的接手入口和可复制指令均是历史快照；当前联合目标与决策见
-> [主计划§3.2](../../../stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)。
+> [主计划§3.2](../../../stage_plans/completed/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)。
 > 当前接手文档已导出到owner桌面，不再以active目录中的独立接手文件维护决策。
 
 > 2026-10-06：owner澄清下一轮需要多个批次，并要求未定决策4–5套方案及选优。
@@ -30,7 +36,7 @@ SDK0.7.0、build26.10.05-1；容量整体保持S7A-9 INCOMPLETE GATE。
 
 首先读取：
 
-1. AGENTS.md、CURRENT_STATUS、[Stage7计划](../../../stage_plans/active/stage-07/plan.md) 的5.1–5.5。
+1. AGENTS.md、CURRENT_STATUS、[Stage7计划](../../../stage_plans/completed/stage-07/plan.md) 的5.1–5.5。
 2. [V2 Spec](../../../formats/GAMEPLAY_V2_SPEC.md) §3.14–3.22、§7.2、§9.4，
    [V2 ABI](../../../api/GAMEPLAY_V2_ABI.md) 域5–7和S7A-5限定冻结范围。
 3. [execution profile](../../../formats/gameplay-v2-execution-profile.md)、
@@ -163,7 +169,7 @@ WSL Clang直接配置曾使用Linux专用prefix，与Windows包不可混用；�
 
 ## 6. 新对话可复制指令
 
-> 在D:\Cuexis-worktree、现有stage-7分支按docs/stage_plans/active/stage-07/s7a-5-implementation-handoff.md
+> 在D:\Cuexis-worktree、现有stage-7分支按docs/stage_plans/completed/stage-07/s7a-5-implementation-handoff.md
 > 完整实施S7A-5.1–5.5。先读CURRENT_STATUS、AGENTS、剩余批次评估、Spec§3.14–3.22、ABI及execution profile。
 > 先完成5A首用内存profile/字段选型并按既有裁定补充权威合同，再依次5B–5F；普通表示选择可在本批内完成，
 > 真正改变既有语义须最小反例与明确处置。复用已seal Fact，严格分开kernel回滚与Fold失败后的Fact保留。

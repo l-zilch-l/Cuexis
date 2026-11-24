@@ -1,5 +1,12 @@
 # R3 中立路径 CPU 成本与派生摘要
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-r3-neutral-path-cpu-lever
+status: evidence
+authority: none
+date: 2026-11-01
+-->
+
 状态：保留局部实现；普通物理 GPU 有限对照通过，完整最终矩阵、容量阶梯与本阶段接受仍开放。
 
 日期：2026-11-01。返回 [New RPA 索引](../README.md)。

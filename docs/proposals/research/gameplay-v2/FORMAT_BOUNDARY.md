@@ -1,5 +1,11 @@
 # Gameplay V2 格式边界与谱面语义图提案
 
+<!-- cuexis-meta
+id: PROPOSALS-research.gameplay-v2.FORMAT_BOUNDARY
+status: candidate
+authority: none
+-->
+
 状态：candidate research；未接受、未实施
 
 日期：2026-10-02

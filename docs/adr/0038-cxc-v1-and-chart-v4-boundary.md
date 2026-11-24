@@ -1,5 +1,11 @@
 # ADR 0038：CXC v1、Chart v4 与 CXT v1 动画序列化边界
 
+<!-- cuexis-meta
+id: ADR-0038
+status: accepted
+authority: owns
+-->
+
 日期：2026-08-10
 
 修订日期：2026-08-11

@@ -1,0 +1,7 @@
+{
+  "case": "IR17 missing required Stop heading",
+  "baseline": "8599c83a",
+  "exit": 0,
+  "stdout": "Plan schedule checks passed: 16 task cards scheduled.\n",
+  "stderr": ""
+}

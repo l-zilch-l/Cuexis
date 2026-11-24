@@ -1,5 +1,11 @@
 # R3 Pause 预热与适用 Seek 证据（2026-11-01）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-r3-pause-prime-and-seek-evidence.index
+status: evidence
+authority: none
+-->
+
 本目录保存两项门修复的全部字节：Pause 的交换链预热读数、预热后的初次 load 读数、适用 Seek 的新探针与
 12 个进程的 seek 读数。
 

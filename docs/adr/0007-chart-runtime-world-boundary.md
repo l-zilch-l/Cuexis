@@ -1,5 +1,11 @@
 # ADR 0007：Chart、Runtime 与 World 的边界
 
+<!-- cuexis-meta
+id: ADR-0007
+status: accepted
+authority: owns
+-->
+
 日期：2026-07-16
 
 状态：已接受

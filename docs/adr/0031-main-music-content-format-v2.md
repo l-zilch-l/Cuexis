@@ -2,6 +2,12 @@
 
 状态：已接受
 
+<!-- cuexis-meta
+id: ADR-0031
+status: accepted
+authority: owns
+-->
+
 日期：2026-07-27
 
 ## 背景

@@ -2,7 +2,13 @@
 
 状态：candidate；S7A-3 / S7A-4选定基线及RPA T2已裁定补充，不是运行验证或生产发布
 
-更新日期：2026-10-28（当前状态导航订正）
+更新日期：2026-11-23（当前状态导航订正）
+
+<!-- cuexis-meta
+id: FORMAT-gameplay-v2-execution-profile
+status: candidate
+authority: owns
+-->
 
 实现状态：分批实现与受限功能验收只由 [CURRENT_STATUS](../CURRENT_STATUS.md) 汇总；
 本候选合同的状态不等同于Stage 7A关闭或容量证明。
@@ -13,7 +19,7 @@ RPA T2 及 AD06-G1/Q1/K1 的后续分批实施不由本基线文档汇总；控�
 本文件是 [Gameplay V2 Spec](GAMEPLAY_V2_SPEC.md) 的补充 Spec。选择理由由
 [ADR 0045](../adr/0045-gameplay-v2-execution-profile.md) 拥有；字段所有权与接口由
 [typed 补充](../api/gameplay-v2-execution-types.md) 拥有；实施顺序由
-[Stage 7计划](../stage_plans/active/stage-07/plan.md) 拥有；原3/4执行卡见
+[Stage 7计划](../stage_plans/completed/stage-07/plan.md) 拥有；原3/4执行卡见
 [历史交接](../archive/stage-07-planning/01-a/s7a-3-4-implementation-handoff.md)。
 本文件补齐首次运行消费的空白，不重开 T4/K4、19 条拒绝面或已有第 1–7 轮裁定。
 引用“待首次消费冻结”的历史文字时，本文件在明确覆盖的字段上给出本轮选择；不冒充旧裁定。
@@ -643,6 +649,11 @@ submit([]) 在 Prepared 为成功空操作；不得推动 clock/ID/queue。batch
 重复先报既有 sequence duplicate；同 subject 重复其次（duplicate_queue_entry）；
 同原 Tick distinct 再报 same_tick_collision；
 只有这些全部通过才判断 dispatch collision。单条既有 normalization 的错误优先级保持。
+单条既有 normalization 入口（`normalizeObservation` 与
+`prepareIngressBatch(..., resolveDomains=false)`）不套用本段：它只生成有序观测，canonical 身份
+重复时直接报 `judgement.input.same_tick_collision`。本段的 sequence → 同 subject → 同 Tick
+distinct → dispatch 次序只属于旧执行 session 的整批提交。整批拒绝不返回半批 receipt、不推进
+frontier、不消费失败 ingress sequence，也不追加 Replay 记录。
 S7A-2 校验全部在 journal 中进行；任一 capturedTick 小于 live lastObservedTick 仍报
 既有 time_reversal，queueNextTick 不豁免校准时钟倒退。批内比较顺序按 capturedTick 和 canonical subject，
 不得使用 ingressSequence 决定成功候选。拒绝整批，pending receipt 不返回半批。
@@ -673,6 +684,11 @@ C++表示见[ABI首用补充](../api/GAMEPLAY_V2_ABI.md)。本profile不重复�
 legacy `gameplay.execution.t4-k4.v1` 无Ruleset时Fold absent；显式PreparedRuleset启用
 `gameplay.fold.finite.v1`。UTF8限制随该新profile用于prepare/live/canonical/Writer/Reader，
 不改变legacy输入准入。grade table缺省合法；表存在时实际算法与FactSemantic进入engine identity。
+实际运行身份由 `execution_kernel_prepare.cpp` 构造：有Ruleset时把算法标记
+`;gameplay.fold.finite.v1` 追加到 `judgementSemanticRevision`，Ruleset的
+interfaceProjectionToken/compiledBuild/module order与Loadout分别写入 ruleset/session分量；
+有grade table时把 `;grade.signed-interval.v1` 追加到 `factSemanticRevision`。T-10迁移前不得
+改后缀或搬移字段。
 首版只接受真实Fold consumer `fold.bonus.u64`；kernel/shared/step route稳定拒绝。
 所有生产容量阈值保持pending，仅允许显式testOnly codec budget。
 

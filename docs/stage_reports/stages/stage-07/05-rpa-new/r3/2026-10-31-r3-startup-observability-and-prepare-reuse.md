@@ -1,5 +1,12 @@
 # R3 启动可观测性与 prepare 复用
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-31-r3-startup-observability-and-prepare-reuse
+status: evidence
+authority: none
+date: 2026-10-31
+-->
+
 状态：有限本地启动诊断；相关实现已进入根树，但这不是 R3/R4 或 Stage 7 接受，也不是
 40K、240 FPS、首次加载时延或全配置矩阵的门槛通过。
 

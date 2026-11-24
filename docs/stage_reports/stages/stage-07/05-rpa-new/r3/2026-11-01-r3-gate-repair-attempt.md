@@ -1,5 +1,12 @@
 # R3 修复尝试：读取路径与首次 Pause（2026-11-01）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-r3-gate-repair-attempt
+status: evidence
+authority: none
+date: 2026-11-01
+-->
+
 状态：诊断与修复尝试记录。本批**没有留下代码改动**：一个假设被证伪后回滚，另一个被拆到具体位置但
 还不能安全修。两个失败项的状态不变。
 

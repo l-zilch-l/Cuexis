@@ -7,7 +7,7 @@
     "instrument": "out/build/rpa-candidate-release/bin/cuexis_execution_device_probe.exe",
     "instrument_build": "Release, STATIC, CUEXIS_ENABLE_CHART_V5_CANDIDATE=ON, CUEXIS_PD_METRICS_TEST_ONLY=OFF, developer tools OFF",
     "why_this_instrument": "tests/pd/pd5_device_probe.cpp defines CUEXIS_PD5_DEVICE and includes tests/pd/pd5_host_probe.cpp, so the seek runs through app/player ExecutionHost on OpenGlBackend. The plain cuexis_pd_host_probe target compiles the CPU TestPresentationRenderer instead and cannot stand for the 20 ms gate.",
-    "authority": "docs/stage_plans/active/stage-07/05-rpa-new/plan.md 9.2 (applicable Seek <= 20 ms) and the five pre-declared classes; docs/stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-01-r3-pause-prime-and-seek-gate.md section 2 (existing protocol for the hot and cold classes)"
+    "authority": "docs/stage_plans/completed/stage-07/05-rpa-new/plan.md 9.2 (applicable Seek <= 20 ms) and the five pre-declared classes; docs/stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-01-r3-pause-prime-and-seek-gate.md section 2 (existing protocol for the hot and cold classes)"
   },
   "classes": [
     {

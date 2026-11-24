@@ -1,5 +1,12 @@
 # PD-0 旧测量方法与诊断结论
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-0.2026-10-17-measurement-method-history
+status: evidence
+authority: none
+date: 2026-10-17
+-->
+
 状态：historical
 
 证据日期：2026-10-16 至 2026-10-17；整理日期：2026-10-17

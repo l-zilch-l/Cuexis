@@ -4,6 +4,12 @@
 
 更新日期：2026-10-28
 
+<!-- cuexis-meta
+id: ARCH-PLAYER_APPLICATION
+status: active
+authority: owns
+-->
+
 `cuexis_player` 是参考播放器，不是安装进 SDK 的组件。宿主集成走 `PlaybackSession`。Player 自己组合窗口、OpenGL backend、音频设备和帧循环。
 
 本页描述普通播放路径的应用结构。2026-10-09 的同步循环与 owner 耦合审查保留在
@@ -27,7 +33,7 @@ PlaybackSource
 
 CuexisAudio 使用后端无关的 `IAudioTransport`。SDL、OpenGL 和 AudioSDL 类型只出现在装配源文件和 smoke 源文件里。
 
-所有控制面（包括 smoke 剧本）都产生同一个 `PlayerCommand`，交给 `PlayerController::apply`。应用状态是 `Empty` / `Loaded` / `Playing` / `Paused` / `Stopped` / `Failed`，不扩展公共 `playback::SessionState`。命令表在 `cuexis_player_support`，控制器和固定事务顺序在 `player_control.cpp`。
+用户命令（包括 smoke 剧本）都产生同一个 `PlayerCommand`，交给 `PlayerController::apply`。唯一例外是启动 Load：它在设备创建前由 `preparePlayerLoadBundle` 准备，随后用 `adoptStartupLoad` 直接接管，不经过命令表。应用状态是 `Empty` / `Loaded` / `Playing` / `Paused` / `Stopped` / `Failed`，不扩展公共 `playback::SessionState`。命令表在 `cuexis_player_support`，控制器和固定事务顺序在 `player_control.cpp`。
 
 ## 1. 依赖
 
@@ -74,13 +80,20 @@ Player，并要求 `--bogus`、缺失 chart 参数与不可读 chart 分别返�
 
 `app/player/src/main.cpp` 创建 `PlayerLogger`，调用 `cuexis::player::run`，把 `Result` 错误和逃出的异常写成日志后返回进程退出码。播放逻辑从 `run` 开始。
 
-同一 target 里还有三份支撑文件：
+同一 target 共有 13 个 `.cpp`（`app/player/CMakeLists.txt:1-28`）。除下文各节单列的入口与控制器外，
+还有三份纯支撑文件：
 
 | 源文件 | 职责 |
 | --- | --- |
 | `player_log.cpp` | 进程日志。OpenGL 配置可以拿走它的 `LogSink` |
 | `frame_diagnostics.cpp` | `--frame-stats` 的帧和音频行导出 |
 | `snapshot_scene.cpp` | 把 `FrameSnapshot` 的调试轴追加到后端无关的 `RenderScene` |
+
+其余基础源文件：`player_app.cpp`（组合根）、`player_options.cpp`、`player_assembly.cpp`、
+`player_control.cpp`、`player_control_frame_loop.cpp`、`player_control_transaction.cpp`、
+`player_gameplay.cpp`、`player_smoke.cpp`、`player_state_name.cpp`。
+候选构建（`CUEXIS_ENABLE_CHART_V5_CANDIDATE`）再追加 `execution_host*.cpp` 与
+`player_execution.cpp`（`app/player/CMakeLists.txt:32-35`）。
 
 ## 3. 源文件
 
@@ -95,7 +108,7 @@ Player，并要求 `--bogus`、缺失 chart 参数与不可读 chart 分别返�
 3. 读取偏好和音频 profile。`--smoke-test` 与 `--audio-smoke-test` 使用临时目录 `cuexis-player-smoke-config`，并删除已知的 `preferences.json` 和 `system-default` profile，避免读到本机配置。普通启动使用 `userConfigDirectory`。
 4. 创建 `AudioClipStore`、SDL runtime、窗口、`PlayerSurface` 和 OpenGL backend。可选 `--shader-cache-dir` 在 backend 创建后设置。
 5. 构造 `PlayerControlPorts`：`makeSource` 是 `openConfiguredPlaybackSource`，`prepareClip` 是 `preparePlayerAudioClip`，`openAudio` 是 `makePlayerAudioOpener`。
-6. 构造 `PlayerController`，然后 `apply(Load)`。`Load` 是唯一会创建第一个 bundle 的入口；此时 Session 里还没有 commit 后的活动内容。
+6. 内容准备与接管：先用 `preparePlayerLoadBundle` 在设备/会话之外准备第一个 bundle，再构造 `PlayerController` 并调用 `adoptStartupLoad` 接管它；启动 Load 不经过命令表（`player_control.cpp` 明说“Adoption bypasses the command table only because the startup Load is not a user command”），接管后由控制器发布 `Loaded`。
 7. 记录一次 drawable 尺寸，并写出 effective window 日志（音频设备是否打开来自 `controller.audio()`）。
 8. `apply(Play)`。
 9. smoke 或 audio-smoke 时安装 `PlayerHooks`。`--frame-stats` 存在时创建 `FrameDiagnostics`。
@@ -106,16 +119,8 @@ Player，并要求 `--bogus`、缺失 chart 参数与不可读 chart 分别返�
 
 只解析命令行，不读取工程，也不包含 SDL。
 
-| 选项 | 含义 |
-| --- | --- |
-| `--smoke-test` | 六帧后退出，并安装表现 smoke hook |
-| `--audio-smoke-test` | 九十帧后退出，并安装音频 smoke hook |
-| `--chart <path>` | Chart 文本。与 `--project` 互斥 |
-| `--project <path>` | 文件系统工程。与 `--chart` 互斥 |
-| `--shader-cache-dir <path>` | OpenGL shader cache 目录 |
-| `--frame-stats <prefix>` | 帧诊断导出前缀 |
-
-重复选项、缺少路径、未知参数、同时给出 chart 与 project、同时打开两种 smoke，都返回 `player.arguments.*` 错误。
+完整选项表（19 项，含构建门控、重复规则与校验规则）见生成页
+[PLAYER_OPTIONS](../guides/PLAYER_OPTIONS.md)；本页不再复述选项。
 
 ### 3.3 `player_assembly.cpp`
 
@@ -198,7 +203,7 @@ Player，并要求 `--bogus`、缺失 chart 参数与不可读 chart 分别返�
 | ← | `SeekBackward` | `Seek` | 目标为 `max(0, 当前 chart time - 5000ms)` |
 | → | `SeekForward` | `Seek` | 目标为 `当前 chart time + 5000ms` |
 | S | `Stop` | `Stop` | ChartClock 回到 chart time 0 |
-| R | `Reload` | `Reload` | `KeepChartTime` |
+| R | `Reload` | `Reload` | `RestartAtZero`：回到 chart time 0（smoke 第 4 帧亦按此断言） |
 | B | `Rebuild` | `Rebuild` | 只有 `Failed` 或已加载内容时才有意义 |
 | Esc | `Quit` | 无 | 请求退出循环，不经过命令表 |
 

@@ -1,5 +1,12 @@
 # B2 存储与寿命实施证据
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.b2.2026-10-11-b2-storage-and-lifetime
+status: evidence
+authority: none
+date: 2026-10-11
+-->
+
 状态：implementation evidence；B2 隔离存储/寿命设施已实施并通过定向验证，RPA 产品协议仍未完成
 
 证据日期：2026-10-11（Asia/Shanghai）。本记录只覆盖 `tests/rpa/` 的 B2 test-only

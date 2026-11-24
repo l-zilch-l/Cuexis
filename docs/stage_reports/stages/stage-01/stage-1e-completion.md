@@ -1,5 +1,11 @@
 # Cuexis 阶段 1E 完成报告
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-01.stage-1e-completion
+status: evidence
+authority: none
+-->
+
 状态：实现与 Windows/MSVC、Windows/MinGW、Linux GCC/Clang 自动化验收完成
 报告日期：2026-07-29
 完成版本：`26.07.18.18-1`（Debug：`26.07.18.18-1-dev`）

@@ -1,7 +1,14 @@
 # PD-5 C2 单候选验证与交回核验
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.read-candidate.2026-10-21-c2-read-result-candidate
+status: evidence
+authority: none
+date: 2026-10-21
+-->
+
 日期：2026-10-21。当前实施状态由 [CURRENT_STATUS](../../../../../../CURRENT_STATUS.md) 汇总；
-冻结范围和验收条件由 [C2 计划](../../../../../../stage_plans/active/stage-07/04-pd/pd-5/pd5-read-result-candidate.md) 拥有。
+冻结范围和验收条件由 [C2 计划](../../../../../../stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-result-candidate.md) 拥有。
 本报告只承载本轮候选证据，不更改门禁，不是正式测量登记。
 
 ## 身份与隔离

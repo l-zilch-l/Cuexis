@@ -1,8 +1,15 @@
 # PD-5 evidence correction and finite follow-up
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.measurement.2026-10-21-pd5-followup
+status: evidence
+authority: none
+date: 2026-10-21
+-->
+
 日期：2026-10-21，Asia/Shanghai。角色：分批实施证据与交回核验材料。
 当前状态以 [CURRENT_STATUS](../../../../../../CURRENT_STATUS.md) 为准；
-[已接受协议](../../../../../../stage_plans/active/stage-07/04-pd/pd-5/pd5-measurement-proposal.md)不变。
+[已接受协议](../../../../../../stage_plans/completed/stage-07/04-pd/pd-5/pd5-measurement-proposal.md)不变。
 
 ## 起点与保护
 

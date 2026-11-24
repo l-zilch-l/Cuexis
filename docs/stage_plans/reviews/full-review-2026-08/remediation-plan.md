@@ -4,6 +4,12 @@
 
 更新日期：2026-08-30
 
+<!-- cuexis-meta
+id: PLAN-reviews.full-review-2026-08.remediation-plan
+status: completed
+authority: owns
+-->
+
 来源：[260829 全项目代码审查](../../../stage_reports/reviews/full-review-2026-08/2026-08-29-review.md)
 
 ## 1. 文档定位

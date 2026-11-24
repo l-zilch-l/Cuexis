@@ -2272,13 +2272,13 @@
         "bytes": 3592,
         "sha256": "1429c1d9cb9d5022aab034c878499d697beee6bd9b76e3153646fd98172c19d6"
       },
-      "cmake/VerifyCfuF3Determinism.cmake": {
-        "path": "D:\\Cuexis-worktree\\cmake\\VerifyCfuF3Determinism.cmake",
+      "cmake/VerifyContentDeterminism.cmake": {
+        "path": "D:\\Cuexis-worktree\\cmake\\VerifyContentDeterminism.cmake",
         "bytes": 5967,
         "sha256": "7614cd848e8e5c76bd770993b769ee3bf5876f2354f67e88db9e321e01b1cf7b"
       },
-      "cmake/VerifyCfuF4Performance.cmake": {
-        "path": "D:\\Cuexis-worktree\\cmake\\VerifyCfuF4Performance.cmake",
+      "cmake/VerifyContentIOPerformance.cmake": {
+        "path": "D:\\Cuexis-worktree\\cmake\\VerifyContentIOPerformance.cmake",
         "bytes": 2888,
         "sha256": "e79ad485b136c0b0d390110b48ebb9d2fea25b63578a2ac9b9e6f567ae60cb12"
       },
@@ -2357,13 +2357,13 @@
         "bytes": 39570,
         "sha256": "d2baa67e480ef0879d1a8d5b68e670df43fd93c69ab8ebc29c3f663bd66acf8d"
       },
-      "cmake/VerifyS4GPerformance.cmake": {
-        "path": "D:\\Cuexis-worktree\\cmake\\VerifyS4GPerformance.cmake",
+      "cmake/VerifyClipCompilePerformance.cmake": {
+        "path": "D:\\Cuexis-worktree\\cmake\\VerifyClipCompilePerformance.cmake",
         "bytes": 2554,
         "sha256": "61c95459a6d336c835abfb9062fba7d26ea2e43b2a1e1fa36db066d0c57e5540"
       },
-      "cmake/VerifyS5HPerformance.cmake": {
-        "path": "D:\\Cuexis-worktree\\cmake\\VerifyS5HPerformance.cmake",
+      "cmake/VerifyRulesetPreparePerformance.cmake": {
+        "path": "D:\\Cuexis-worktree\\cmake\\VerifyRulesetPreparePerformance.cmake",
         "bytes": 2579,
         "sha256": "1001d729460e8365cd67b2cce59e10d7f82a32efc2d7aba08469d1f468ae7f5c"
       },
@@ -3357,142 +3357,142 @@
         "bytes": 60550,
         "sha256": "e9bd37be22fb503dc3ae71769aa410547f3ec66c30c5a2ae97c8bfaf80020477"
       },
-      "docs/stage_plans/active/stage-07/01-a/README.md": {
+      "docs/stage_plans/completed/stage-07/01-a/README.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\01-a\\README.md",
         "bytes": 780,
         "sha256": "e5479b5c6b3837fc507517eebb8533a3279d708362a0fb86e01de42a9424ddf7"
       },
-      "docs/stage_plans/active/stage-07/01-a/plan.md": {
+      "docs/stage_plans/completed/stage-07/01-a/plan.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\01-a\\plan.md",
         "bytes": 125125,
         "sha256": "aa95b46e500b73e4041b758d6abbb611a6dc08d4ee84d1d01a52179dc05e0237"
       },
-      "docs/stage_plans/active/stage-07/02-diagnostics/README.md": {
+      "docs/stage_plans/completed/stage-07/02-diagnostics/README.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\02-diagnostics\\README.md",
         "bytes": 601,
         "sha256": "790816bb19f466cd1c26fcf8b6a5b6cc0d91ec451c0b271bcc132d176ea79625"
       },
-      "docs/stage_plans/active/stage-07/02-diagnostics/plan.md": {
+      "docs/stage_plans/completed/stage-07/02-diagnostics/plan.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\02-diagnostics\\plan.md",
         "bytes": 35551,
         "sha256": "3b8b550f098cdc7d8b3828ec2dfd558734cec5986accf3814f8aa14d09767530"
       },
-      "docs/stage_plans/active/stage-07/03-rpa-legacy/README.md": {
+      "docs/stage_plans/completed/stage-07/03-rpa-legacy/README.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\03-rpa-legacy\\README.md",
         "bytes": 919,
         "sha256": "2f07b586992f448aef3f19470ee79aeb3f49a8b0276ba49586ba0b1d90c1970b"
       },
-      "docs/stage_plans/active/stage-07/03-rpa-legacy/performance-modification-plan.md": {
+      "docs/stage_plans/completed/stage-07/03-rpa-legacy/performance-modification-plan.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\03-rpa-legacy\\performance-modification-plan.md",
         "bytes": 497,
         "sha256": "52385648cb4d2cbf4c080ce227f61e80a2779ff0ed9084a185ec92c3f439de64"
       },
-      "docs/stage_plans/active/stage-07/03-rpa-legacy/plan.md": {
+      "docs/stage_plans/completed/stage-07/03-rpa-legacy/plan.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\03-rpa-legacy\\plan.md",
         "bytes": 694,
         "sha256": "ffbeeecb31334dfad61587795d42c291dfa975b89de19c2d570d828a3fcfee40"
       },
-      "docs/stage_plans/active/stage-07/04-pd/README.md": {
+      "docs/stage_plans/completed/stage-07/04-pd/README.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\04-pd\\README.md",
         "bytes": 1285,
         "sha256": "4d668ca0086c0a09fb0667eb208b12a860de3baaa2edf979f3ed16a46c57ee34"
       },
-      "docs/stage_plans/active/stage-07/04-pd/design.md": {
+      "docs/stage_plans/completed/stage-07/04-pd/design.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\04-pd\\design.md",
         "bytes": 101335,
         "sha256": "f8931ba77dd2b0db127889c1e86c5c7537c09276f24c9a798734d1b42e76ea07"
       },
-      "docs/stage_plans/active/stage-07/04-pd/pd-5/pd5-gameplay-admission.md": {
+      "docs/stage_plans/completed/stage-07/04-pd/pd-5/pd5-gameplay-admission.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\04-pd\\pd-5\\pd5-gameplay-admission.md",
         "bytes": 5849,
         "sha256": "b322bb84aa687999e034c4cca248c3e8f46c2c0f9d5e0cd05392238c1922e8f3"
       },
-      "docs/stage_plans/active/stage-07/04-pd/pd-5/pd5-measurement-proposal.md": {
+      "docs/stage_plans/completed/stage-07/04-pd/pd-5/pd5-measurement-proposal.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\04-pd\\pd-5\\pd5-measurement-proposal.md",
         "bytes": 14580,
         "sha256": "82334dd243d34c7788ce171dffea736d856246a57ff83c3b53921d517371af96"
       },
-      "docs/stage_plans/active/stage-07/04-pd/pd-5/pd5-read-candidate-and-memory-domains-plan.md": {
+      "docs/stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-candidate-and-memory-domains-plan.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\04-pd\\pd-5\\pd5-read-candidate-and-memory-domains-plan.md",
         "bytes": 31269,
         "sha256": "aa431e5ffee9ab9e0327e0546705dc9416be0734443ca6d59e6551f48822119c"
       },
-      "docs/stage_plans/active/stage-07/04-pd/pd-5/pd5-read-result-candidate.md": {
+      "docs/stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-result-candidate.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\04-pd\\pd-5\\pd5-read-result-candidate.md",
         "bytes": 8135,
         "sha256": "7d16b15d527a10081908fc1bf5a8b2708433cd2a43010ec09adf1941a6f37a99"
       },
-      "docs/stage_plans/active/stage-07/04-pd/plan.md": {
+      "docs/stage_plans/completed/stage-07/04-pd/plan.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\04-pd\\plan.md",
         "bytes": 53525,
         "sha256": "847287b1483c959a2f94d10f264d4298fd736d57322bd892ad7a3b6aa157687d"
       },
-      "docs/stage_plans/active/stage-07/05-rpa-new/README.md": {
+      "docs/stage_plans/completed/stage-07/05-rpa-new/README.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\05-rpa-new\\README.md",
         "bytes": 1805,
         "sha256": "9991a7190931ef048c60e969585b55052ab407c7e791a570b0725a238dd12193"
       },
-      "docs/stage_plans/active/stage-07/05-rpa-new/plan.md": {
+      "docs/stage_plans/completed/stage-07/05-rpa-new/plan.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\05-rpa-new\\plan.md",
         "bytes": 126639,
         "sha256": "21c59544ccc8c3dcb24909184ad8921a83a6302d758375ded90c83ed9834a65a"
       },
-      "docs/stage_plans/active/stage-07/05-rpa-new/r1/plan.md": {
+      "docs/stage_plans/completed/stage-07/05-rpa-new/r1/plan.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\05-rpa-new\\r1\\plan.md",
         "bytes": 16936,
         "sha256": "39175509005b579004dead23887c96548686d274255b93eed0dbe282995921c1"
       },
-      "docs/stage_plans/active/stage-07/05-rpa-new/r3/plan.md": {
+      "docs/stage_plans/completed/stage-07/05-rpa-new/r3/plan.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\05-rpa-new\\r3\\plan.md",
         "bytes": 20998,
         "sha256": "54bdac10d8f384e0ebe967f29000c155def6836a4cf52ece6c54e92c0006397f"
       },
-      "docs/stage_plans/active/stage-07/05-rpa-new/r3/trusted-restore-candidate.md": {
+      "docs/stage_plans/completed/stage-07/05-rpa-new/r3/trusted-restore-candidate.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\05-rpa-new\\r3\\trusted-restore-candidate.md",
         "bytes": 6933,
         "sha256": "0ed7240b269eea98faa2fe0865cce15e5fd6ec1420124edd61c7eaf3a31036f2"
       },
-      "docs/stage_plans/active/stage-07/05-rpa-new/r4/caps-proposal.md": {
+      "docs/stage_plans/completed/stage-07/05-rpa-new/r4/caps-proposal.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\05-rpa-new\\r4\\caps-proposal.md",
         "bytes": 16986,
         "sha256": "0bf60a1f047f564a674f5c70676ae6be124b8b95523466e3444124e7fe9b1ac3"
       },
-      "docs/stage_plans/active/stage-07/05-rpa-new/r4/decision-proposal.md": {
+      "docs/stage_plans/completed/stage-07/05-rpa-new/r4/decision-proposal.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\05-rpa-new\\r4\\decision-proposal.md",
         "bytes": 17694,
         "sha256": "3035c3696b2d2c317ab4c571094d33cd48259e6115b71435186c0ecd8e9f7b56"
       },
-      "docs/stage_plans/active/stage-07/05-rpa-new/r4/formal-registration.md": {
+      "docs/stage_plans/completed/stage-07/05-rpa-new/r4/formal-registration.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\05-rpa-new\\r4\\formal-registration.md",
         "bytes": 10374,
         "sha256": "2fd8c041a73be1f9837b5d74ccca2feef71acd127ec2b9ed620357dfd9d5c6b3"
       },
-      "docs/stage_plans/active/stage-07/05-rpa-new/r4/plan.md": {
+      "docs/stage_plans/completed/stage-07/05-rpa-new/r4/plan.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\05-rpa-new\\r4\\plan.md",
         "bytes": 31387,
         "sha256": "889b18ffabf91e61b1bd6c1ac324ccde3663c2dbcfc8f1e9564d2fad9ca84e86"
       },
-      "docs/stage_plans/active/stage-07/06-b/README.md": {
+      "docs/stage_plans/completed/stage-07/06-b/README.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\06-b\\README.md",
         "bytes": 630,
         "sha256": "58cabb73820c6dd58bf0ac89e572c45e7d102b7b484ab9f747d0c5bc3d6879e6"
       },
-      "docs/stage_plans/active/stage-07/06-b/plan.md": {
+      "docs/stage_plans/completed/stage-07/06-b/plan.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\06-b\\plan.md",
         "bytes": 24571,
         "sha256": "cacb36d8b26873d4ff2e2a0e8f27c5e6bf019ab29fcd20d9327fbc8738f9ac5c"
       },
-      "docs/stage_plans/active/stage-07/README.md": {
+      "docs/stage_plans/completed/stage-07/README.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\README.md",
         "bytes": 2261,
         "sha256": "61042cc5c73093aeda5062d4a411bda39fe227ce255664919e31b2710db85ed5"
       },
-      "docs/stage_plans/active/stage-07/legacy-paths.md": {
+      "docs/stage_plans/completed/stage-07/legacy-paths.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\legacy-paths.md",
         "bytes": 5533,
         "sha256": "0c80b7c0d212a9607221e779d3ebf71684a93c6455a20a6f1e9fc4f8adae7c0a"
       },
-      "docs/stage_plans/active/stage-07/plan.md": {
+      "docs/stage_plans/completed/stage-07/plan.md": {
         "path": "D:\\Cuexis-worktree\\docs\\stage_plans\\active\\stage-07\\plan.md",
         "bytes": 31155,
         "sha256": "269312110cb933a66f4d70abbefe5e0a5e8c91a9054e9722278c19a28452ded7"

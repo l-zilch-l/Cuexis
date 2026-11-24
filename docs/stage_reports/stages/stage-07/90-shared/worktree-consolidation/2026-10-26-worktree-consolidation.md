@@ -1,5 +1,12 @@
 # 2026-10-26 Worktree consolidation and verification
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.90-shared.worktree-consolidation.2026-10-26-worktree-consolidation
+status: evidence
+authority: none
+date: 2026-10-26
+-->
+
 状态：整合和本地验证完成。本报告记录用户授权的工作树整合、工具合同修正和本地构建验证，
 不构成 R2 收益、PD-5、RPA、设备、生产或 Stage 7 接受。
 
@@ -83,9 +90,9 @@ untracked 是相对于旧树 HEAD 的状态，这 77 个路径在当前实施树
 | 主树文档位置 | 作用 |
 | --- | --- |
 | `docs/CURRENT_STATUS.md` | 当前阶段和实施状态的唯一摘要；旧树同名文件为历史版本 |
-| `docs/stage_plans/active/stage-07/04-pd/plan.md` | PD 总计划；旧路径为 `docs/stage_plans/active/stage-07/plan-presentation-decoupling.md` |
+| `docs/stage_plans/completed/stage-07/04-pd/plan.md` | PD 总计划；旧路径为 `docs/stage_plans/completed/stage-07/plan-presentation-decoupling.md` |
 | `docs/stage_reports/stages/stage-07/04-pd/README.md` | PD 报告导航；旧路径为 `docs/stage_reports/stages/stage-07/pd/README.md` |
-| `docs/stage_plans/active/stage-07/04-pd/pd-5/pd5-read-candidate-and-memory-domains-plan.md` | 读取候选和内存分域计划；旧路径位于 `docs/stage_plans/active/stage-07/` 根下 |
+| `docs/stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-candidate-and-memory-domains-plan.md` | 读取候选和内存分域计划；旧路径位于 `docs/stage_plans/completed/stage-07/` 根下 |
 | 报告根 `memory-attribution/2026-10-23-40k-memory-envelope-attribution.md` | 40k 分配包络的归因和观测口径 |
 | 报告根 `memory-attribution/2026-10-24-b0-memory-cap-ledger.md` | B0 静态容量 / 内存预算账本 |
 | 报告根 `memory-attribution/2026-10-24-b1-domain-attribution-tooling.md` | B1 内存分域工具和静态验证记录 |

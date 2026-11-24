@@ -1,5 +1,11 @@
 # Chart Format Foundation Reports
 
+<!-- cuexis-meta
+id: INDEX-stage_reports.stages.chart-format-foundation
+status: active
+authority: index
+-->
+
 状态：completed
 
 本目录保存 Chart Format Foundation 的带日期实施证据。项目所有者于 2026-09-16

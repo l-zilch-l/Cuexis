@@ -1,5 +1,12 @@
 # Cuexis README Consolidation Report
 
+<!-- cuexis-meta
+id: EVIDENCE-reviews.documentation-reorganization-2026-08.2026-08-30-readme-consolidation
+status: evidence
+authority: none
+date: 2026-08-30
+-->
+
 状态：completed
 
 快照日期：2026-08-30

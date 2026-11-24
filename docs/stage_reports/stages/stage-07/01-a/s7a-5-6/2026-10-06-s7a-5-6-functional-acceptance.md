@@ -1,5 +1,12 @@
 # S7A-5/6 Limited Functional Acceptance
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.01-a.s7a-5-6.2026-10-06-s7a-5-6-functional-acceptance
+status: evidence
+authority: none
+date: 2026-10-06
+-->
+
 状态：verification
 
 证据日期：2026-10-06；J0–J7本轮受限功能验收完成，十行本地证据回填完成；新SHA hosted及后续预算/设备证据待回填，非阶段关闭。
@@ -8,7 +15,7 @@
 
 实际开工HEAD `9f6803f1752650dffb576742ff4592b8f59c0b4b`，stage-7，clean。
 保留后续历史；未reset。日期版本26.10.06-1，SDK0.7.0。本轮源树指纹及最终提交另列。
-选择与决策归[计划§3.3](../../../../../stage_plans/active/stage-07/plan.md#33-s7a-56-本轮实施记录2026-10-06)，
+选择与决策归[计划§3.3](../../../../../stage_plans/completed/stage-07/plan.md#33-s7a-56-本轮实施记录2026-10-06)，
 字段归[Spec](../../../../../formats/GAMEPLAY_V2_SPEC.md)与[ABI](../../../../../api/GAMEPLAY_V2_ABI.md)。
 桌面接手只作输入，当前合同按U01–U13重审落定。
 IV=已实现且有本轮验证；IU=已实现待证据；M=测量；LB=环境限制。

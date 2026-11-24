@@ -1,5 +1,12 @@
 # Chart Format Foundation F4-F6: Packed Tables and IO
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.chart-format-foundation.2026-09-07-f4-f6-packed-tables-io
+status: evidence
+authority: none
+date: 2026-09-07
+-->
+
 日期：2026-09-07  
 状态：implemented candidate; hosted closure pending
 

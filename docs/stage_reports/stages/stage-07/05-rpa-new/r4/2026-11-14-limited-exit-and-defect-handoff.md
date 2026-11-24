@@ -1,12 +1,19 @@
 # R4／RPA 带限制退出与缺陷交接（2026-11-14）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-14-limited-exit-and-defect-handoff
+status: evidence
+authority: none
+date: 2026-11-14
+-->
+
 状态：completed；owner 已接受受限退出与交接，生产接受延期。
 
 更新日期：2026-11-14；快照日期：2026-11-14（Asia/Shanghai）。
 
 返回 [New RPA 报告索引](../README.md)。当前摘要归
 [CURRENT_STATUS](../../../../../CURRENT_STATUS.md)，后续能力范围归
-[Stage 7B+ 计划](../../../../../stage_plans/active/stage-07/06-b/plan.md)。
+[Stage 7B+ 计划](../../../../../stage_plans/completed/stage-07/06-b/plan.md)。
 本记录集中保存关闭裁定及遗留责任，不另建本轮整改计划。
 
 ## 1. owner 裁定与关闭范围

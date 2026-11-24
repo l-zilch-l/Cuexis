@@ -1,5 +1,12 @@
 # Chart Format Foundation Hardening R4：端到端、容量与回滚
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.chart-format-foundation.2026-09-17-r4-roundtrip-capacity-rollback
+status: evidence
+authority: none
+date: 2026-09-17
+-->
+
 日期：2026-09-17
 
 状态：R4 完成；`encode -> decode -> 完整语义比较 -> re-encode` 在 40,000 实体 profile、CXT 阶梯和真实 CXC candidate 包上闭环

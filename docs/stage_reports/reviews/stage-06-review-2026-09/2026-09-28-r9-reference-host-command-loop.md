@@ -1,5 +1,12 @@
 # R9 Reference Host Command Loop and Play/Pause
 
+<!-- cuexis-meta
+id: EVIDENCE-reviews.stage-06-review-2026-09.2026-09-28-r9-reference-host-command-loop
+status: evidence
+authority: none
+date: 2026-09-28
+-->
+
 Date: 2026-09-28
 Package: Stage 6 review remediation, R9
 Normative source: [R9-reference-host-command-loop.md](../../../stage_plans/reviews/stage-06-review-remediation/R9-reference-host-command-loop.md)

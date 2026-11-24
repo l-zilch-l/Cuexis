@@ -1,5 +1,12 @@
 # PD-2 Continuation Handoff
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-2.2026-10-18-pd2-continuation-handoff
+status: evidence
+authority: none
+date: 2026-10-18
+-->
+
 日期：2026-10-18。状态：PD-1 已提交；PD-2 尚未开始。
 
 ## 接手基线
@@ -13,7 +20,7 @@
 
 ## 下一批：PD-2
 
-用户已授权继续实施 PD。完成只读状态核对后，从 PD-2 开始。权威范围见 [PD 计划](../../../../../stage_plans/active/stage-07/04-pd/plan.md) 的 PD-2 条目；字段与顺序规则见[设计细则 §3](../../../../../stage_plans/active/stage-07/04-pd/design.md#3-projection-的确定性处理pd-2)。
+用户已授权继续实施 PD。完成只读状态核对后，从 PD-2 开始。权威范围见 [PD 计划](../../../../../stage_plans/completed/stage-07/04-pd/plan.md) 的 PD-2 条目；字段与顺序规则见[设计细则 §3](../../../../../stage_plans/completed/stage-07/04-pd/design.md#3-projection-的确定性处理pd-2)。
 
 实施重点是把绑定索引移至 prepare 阶段，并建立 Projection Adapter 候选状态：`projectionCursor`、active effects、group state、future queue 和 rejected group state。按 Fact ordinal 处理并用稳定 identity 去重；只有 Runtime 成功后才安装候选并推进 cursor。继续使用现有 golden，覆盖 any/all/groupCommit、partial-group、aliases/去重、目标缺失、future/到期、无新增 Fact 更新、scope 重建和 Runtime 失败重试；不得重生成 golden 掩盖差异，也不得改变 Judgement Kernel 或 Gameplay 语义。
 

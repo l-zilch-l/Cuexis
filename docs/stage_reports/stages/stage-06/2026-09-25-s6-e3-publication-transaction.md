@@ -1,5 +1,12 @@
 # S6-E3 资源身份、缓存与包原子发布
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-06.2026-09-25-s6-e3-publication-transaction
+status: evidence
+authority: none
+date: 2026-09-25
+-->
+
 状态：implemented（本地 `debug-media-tools` 全量验证与同 SHA hosted 四平台证据；不是批次退出、
 Stage 6 关闭、PR 合并或 owner acceptance）
 

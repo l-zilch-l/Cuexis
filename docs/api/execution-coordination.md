@@ -2,6 +2,12 @@
 
 适用版本：SDK API `0.9.1`；更新日期：2026-10-28。
 
+<!-- cuexis-meta
+id: API-execution-coordination
+status: candidate
+authority: owns
+-->
+
 本入口属于显式 candidate SDK，复用 PlaybackSession 内的唯一 JudgementSession。
 选择 `gameplay.execution.t4-k4.rpa.v1`、`late.window.batch.v1`、`fact.semantic.rpa.v1`
 及 `cuexis.gameplay.rpa.v1`，并使用 matching compiled content。

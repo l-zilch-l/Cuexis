@@ -1,17 +1,23 @@
 # S7A-5–9 Delivery Plan and Readiness Assessment
 
+<!-- cuexis-meta
+id: ARCHIVE-stage-07-planning.01-a.s7a-5-9-delivery-plan
+status: historical
+authority: none
+-->
+
 状态：historical planning snapshot；原S7A-5–9评估已归入Stage 7主计划
 
 更新日期：2026-10-06；初版日期：2026-10-05
 
 > 归档日期：2026-10-06；来源为b5594cf保存的规划正文，链接随目录迁移修正。
 > 本文保留当时的依赖评估和排期；当前5+6目标、剩余决策与执行卡见
-> [主计划§3.2](../../../stage_plans/active/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)。
+> [主计划§3.2](../../../stage_plans/completed/stage-07/plan.md#32-s7a-5--s7a-6-联合实施目标决策和准入)。
 
 ## 1. 基线、权威和评估方法
 
 当前状态只由 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 维护；本文件负责剩余批次的顺序、范围与门禁，
-不替代 [Stage 7 总计划](../../../stage_plans/active/stage-07/plan.md)、[V2 Spec](../../../formats/GAMEPLAY_V2_SPEC.md) 或
+不替代 [Stage 7 总计划](../../../stage_plans/completed/stage-07/plan.md)、[V2 Spec](../../../formats/GAMEPLAY_V2_SPEC.md) 或
 [V2 ABI](../../../api/GAMEPLAY_V2_ABI.md)。代码行为基线为
 `a0c8b7e4f783995bc19e626f3654ab11f845a0a7`，SDK0.7.0、日期build26.10.05-1。
 S7A-3/4 已达到“受限功能验收完成，容量整体证明未完成”；同源 head SHA 的7个 hosted runs 全绿，

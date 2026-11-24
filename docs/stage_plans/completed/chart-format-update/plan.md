@@ -4,6 +4,12 @@
 
 更新日期：2026-08-24
 
+<!-- cuexis-meta
+id: PLAN-completed.chart-format-update.plan
+status: completed
+authority: owns
+-->
+
 ## 1. 目标与边界
 
 本阶段的目标是为下一阶段的表现动画和后续 Studio 工作建立可迁移、可验证、可被外部宿主消费的谱面格式合同。ADR 0038 把 `.cxc` 定义为严格 ZIP32 Stored 交换包，并让动画语义进入 `cuexis.chart` v4；CXT v1 以 UTF-8 JSON 保存声明式局部动画模板，Chart 在 prepare 前解析并绑定它们。合同已接受，但只有对应实现和验收门禁关闭后才能对外声明生产支持。

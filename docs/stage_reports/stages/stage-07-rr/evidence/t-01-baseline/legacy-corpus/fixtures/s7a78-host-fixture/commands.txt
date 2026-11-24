@@ -1,0 +1,10 @@
+open
+play
+tick 4
+pause
+tick 2
+seek 1000
+reload
+play
+tick 4
+quit

@@ -1,5 +1,11 @@
 # Stage Chart Format Update Completion Report
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.chart-format-update.completion
+status: evidence
+authority: none
+-->
+
 状态：G6 complete；G5 report-SHA hosted revalidation 已通过，项目所有者已接受，CFU-G 已关闭
 
 报告日期：2026-08-24

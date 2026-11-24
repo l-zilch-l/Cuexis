@@ -1,9 +1,16 @@
 # 阶段 1C 实施计划：时间、基础行为与 Headless Playback 闭环
 
 状态：实现与最终验收完成；API、时间、Snapshot、采样和预算语义按 ADR 0028/0029 落地。260722 全量审查的 R01-R21 已于 2026-07-26/27 全部关闭，最终证据见审查报告与完成报告第 10 节
+
 规划日期：2026-07-18；SDK 调整：2026-07-20；实现完成：2026-07-22
 前置基线：[阶段 1B 完成报告](../../../stage_reports/stages/stage-01/stage-1b-completion.md)
 后续阶段：[阶段 1D 实施计划](stage-1d-plan.md)
+
+<!-- cuexis-meta
+id: PLAN-completed.stage-01.stage-1c-plan
+status: completed
+authority: owns
+-->
 
 后续取代说明：本文涉及的 Simple Chart 路径已由 ADR 0035 在阶段 2A.1 移除；相关内容仅是阶段 1C 历史事实。
 

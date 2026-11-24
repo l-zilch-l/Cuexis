@@ -1,0 +1,17 @@
+Test project E:/Cuexis-worktree/out/build/debug
+    Start 270: S5-F cache key changes with identity, profile, keyword, entry, and tools
+1/6 Test #270: S5-F cache key changes with identity, profile, keyword, entry, and tools ...   Passed    0.03 sec
+    Start 271: A2 cache key normalizes profiles, keywords, entries, and tools
+2/6 Test #271: A2 cache key normalizes profiles, keywords, entries, and tools .............   Passed    0.03 sec
+    Start 272: A2 cache store rejects an invalid record without creating its directory
+3/6 Test #272: A2 cache store rejects an invalid record without creating its directory ....   Passed    0.03 sec
+    Start 273: A2 cache rejects a nonempty keyword set without semantic source identity
+4/6 Test #273: A2 cache rejects a nonempty keyword set without semantic source identity ...   Passed    0.03 sec
+    Start 275: A2 cache key filename uses lowercase hexadecimal
+5/6 Test #275: A2 cache key filename uses lowercase hexadecimal ...........................   Passed    0.03 sec
+    Start 276: S5-F freezes cache diagnostic codes and tool identities
+6/6 Test #276: S5-F freezes cache diagnostic codes and tool identities ....................   Passed    0.03 sec
+
+100% tests passed, 0 tests failed out of 6
+
+Total Test time (real) =   0.25 sec

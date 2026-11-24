@@ -1,5 +1,12 @@
 # S6-C1 Candidate source、CXC 与 typed lowering
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-06.2026-09-22-s6-c1-candidate-source
+status: evidence
+authority: none
+date: 2026-09-22
+-->
+
 状态：in_progress（本地 MSVC 实现和测试已通过；本报告不是 C1 退出证据）
 
 日期：2026-09-22

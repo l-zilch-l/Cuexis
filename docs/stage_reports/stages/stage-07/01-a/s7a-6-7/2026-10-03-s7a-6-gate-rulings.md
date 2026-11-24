@@ -1,11 +1,18 @@
 # S7A-6 / S7A-7 准入门禁：第 6 轮（发布粒度、表现桥接与诊断）裁定落地记录
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.01-a.s7a-6-7.2026-10-03-s7a-6-gate-rulings
+status: evidence
+authority: none
+date: 2026-10-03
+-->
+
 状态：dated implementation record（第 6 轮裁定的文档落地证据；不是阶段关闭、不是 owner acceptance、
 不是实施证据、**不是** Judgement 实现完成声明）
 
 更新日期：2026-10-03
 
-上级文档：[Stage 7A 实施计划](../../../../../stage_plans/active/stage-07/plan.md) §S7A-7 ·
+上级文档：[Stage 7A 实施计划](../../../../../stage_plans/completed/stage-07/plan.md) §S7A-7 ·
 [Gameplay V2 acceptance package](../../../../../proposals/gameplay-v2-acceptance/README.md) ·
 [未决语义分轮裁决清单](../../../../../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md) §6、§8、§9 ·
 [批次门禁](../../../../../proposals/gameplay-v2-acceptance/BATCH_GATES.md) §1
@@ -219,7 +226,7 @@ S7A-7 **不得**消费（表示与行为，**11 项**）：
 | [BATCH_GATES.md](../../../../../proposals/gameplay-v2-acceptance/BATCH_GATES.md) | §S7A-7 行扩写（正例 / 负例 / 诊断类别 / golden / 命令含码表 CTest 项 / 停止条件六条）；新增 **§"第 6 轮裁定后的 S7A-7 门禁（2026-10-03）"**（provenance、批次表、11 项不得消费清单、门禁归属）；§S7A-6 停止条件关于 `CM-P04` 的表述改为**已随第 6 轮闭合（`S7A6-R03`）** |
 | [GAMEPLAY_V2_SPEC.md](../../../../../formats/GAMEPLAY_V2_SPEC.md) | §1.1 第 2 项第 6 轮标为已裁定；§3.6 三行（Graph entry / `author-source` / Ruleset package）加第 6 轮结论 + manifest 七项段；新增 **§3.23**（发布粒度 / 表现桥接 / 聚合）、**§3.24**（`P1-08` 映射）、**§3.25**（`P2-04`…`P2-09`）；§5.2 的 derived closure 行、新增 **§5.6**（`CapabilityRecord` 逐字段 identity 归属）；§6.4 改标第 6 轮并冻结字段集与归属；§9.1 / §9.2 加第 6 轮冻结段、§9.3 补判定闭包 vs 纯表现分界、§9.5 更新、新增 **§9.6 / §9.7 / §9.8**；§10 表 diagnostics 行与 §11.1 第 3 条；§11 引言与 §11 轮次表第 6 / 第 7 行；新增 **`## S7A-7 限定冻结范围与登记规则（2026-10-03）`**；§12 索引行。**§7.2 仍 19 条** |
 | [GAMEPLAY_V2_ABI.md](../../../../../api/GAMEPLAY_V2_ABI.md) | §类型清单 域 8 的 9 行语义文本（`CapabilityRecord` / `CapabilityState` / `DerivedCapabilityClosure` / `EntryKind` / `PlaybackEntryRef` / `JudgementError` / `DiagnosticCode` / `DiagnosticCategory` / `DiagnosticSeverity`；**其中 `CapabilityRecord` / `DiagnosticCode` / `DiagnosticCategory` / `DiagnosticSeverity` 四行首词仍为 `待冻结`，其余五行首词保持 `冻结目标`**）；§错误与诊断映射的 §诊断分层与 §码表位置改写、§码族来源保持；§稳定与非稳定声明 的 §仍待冻结 诊断码表行；§S7A-1 范围语句；§未决项 引言补第 6 轮段与"不新增条目"说明、#3 行补第 6 轮例外；新增 **`## S7A-7 限定冻结范围与登记规则（2026-10-03）`**（含 **9 域 / 126 = 96 + 30 不变** 声明）。**9 域 / 126 = 96 + 30、§未决项条目数均不变** |
-| [plan.md](../../../../../stage_plans/active/stage-07/plan.md) | §1.1 第 3 条 → 第 7 轮（第 2–6 轮已裁定）；§S7A-7 的"验证"段补一句码表 CTest 项与不得消费清单（**不新增工作项**） |
+| [plan.md](../../../../../stage_plans/completed/stage-07/plan.md) | §1.1 第 3 条 → 第 7 轮（第 2–6 轮已裁定）；§S7A-7 的"验证"段补一句码表 CTest 项与不得消费清单（**不新增工作项**） |
 | [CURRENT_STATUS.md](../../../../../CURRENT_STATUS.md) | L241 `第 6-7 轮` → `第 7 轮`、`第 2、3、4、5 轮已裁定` → `第 2、3、4、5、6 轮已裁定` |
 | [reading-order.md](../../../../../guides/reading-order.md) | L61 同上两处替换 |
 | [stage_reports README.md](../../../../README.md) | Stage 7A 区块新增本文索引行 |
@@ -331,7 +338,7 @@ ADR 0044 的第 7 轮缺陷行（`D-2` / `D-7`、`D-13` / `D-14` 附近）仍保
 
 ## 11. 相关索引
 
-- [Stage 7A 实施计划](../../../../../stage_plans/active/stage-07/plan.md)：批次、依赖与关闭标准
+- [Stage 7A 实施计划](../../../../../stage_plans/completed/stage-07/plan.md)：批次、依赖与关闭标准
 - [未决语义分轮裁决清单](../../../../../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md)：§6 第 6 轮登记块、§8、§9 第 6 行
 - [S7A-0.2 合同逐项台账](../../../../../proposals/gameplay-v2-acceptance/CONTRACT_MATRIX.md)：114 项与 **5 项 `open`**
 - [未决问题清单](../../../../../proposals/gameplay-v2-acceptance/OPEN_QUESTIONS.md)：§4.4 第 6 轮裁定登记

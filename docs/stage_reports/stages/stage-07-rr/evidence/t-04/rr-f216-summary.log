@@ -1,0 +1,41 @@
+== RR-F216 fresh-configure evidence summary ==
+host: Windows x64, CMake 4.3.3, Ninja, MSVC 19.51 (vcvars64)
+all binary directories are new and configured with --fresh
+
+[1] default (no explicit library type)
+dir:  out/build/rr-f216-default
+cmd:  cmake --preset headless-debug -B out/build/rr-f216-default --fresh -DCUEXIS_ALLOCATION_LIFETIME_OBSERVER=ON
+exit: 0
+cache:
+  CUEXIS_ALLOCATION_LIFETIME_OBSERVER:BOOL=ON
+  CUEXIS_LIBRARY_TYPE:STRING=STATIC
+  CUEXIS_BUILD_TESTS:BOOL=ON
+result: configure completed; default STATIC resolved before the observer gate.
+
+[2] explicit STATIC
+dir:  out/build/rr-f216-explicit-static
+cmd:  cmake --preset headless-debug -B out/build/rr-f216-explicit-static --fresh -DCUEXIS_ALLOCATION_LIFETIME_OBSERVER=ON -DCUEXIS_LIBRARY_TYPE=STATIC
+exit: 0
+cache:
+  CUEXIS_ALLOCATION_LIFETIME_OBSERVER:BOOL=ON
+  CUEXIS_LIBRARY_TYPE:STRING=STATIC
+result: configure completed.
+
+[3] explicit SHARED
+dir:  out/build/rr-f216-explicit-shared
+cmd:  cmake --preset headless-debug -B out/build/rr-f216-explicit-shared --fresh -DCUEXIS_ALLOCATION_LIFETIME_OBSERVER=ON -DCUEXIS_LIBRARY_TYPE=SHARED
+exit: 1
+first error:
+  CMake Error at CMakeLists.txt:100 (message):
+    PD allocation observer requires Windows STATIC
+cache (written despite the failure):
+  CUEXIS_ALLOCATION_LIFETIME_OBSERVER:BOOL=ON
+  CUEXIS_LIBRARY_TYPE:STRING=SHARED
+result: configure rejected.
+
+non-Windows branch: CMakeLists.txt:99 tests "NOT WIN32 OR NOT STATIC"; this host is
+Windows, so the NOT WIN32 arm was not executed and is not verified locally.
+
+rules checked:
+  cmake/CuexisLibraryType.cmake:6-8 resolves the default STATIC and validates the value.
+  CMakeLists.txt:32 includes it before the observer gate at CMakeLists.txt:98-103.

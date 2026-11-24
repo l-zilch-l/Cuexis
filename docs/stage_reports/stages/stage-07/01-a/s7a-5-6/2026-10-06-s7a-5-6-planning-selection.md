@@ -1,5 +1,12 @@
 # S7A-5 / S7A-6 Planning Selection and Handoff Revision
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.01-a.s7a-5-6.2026-10-06-s7a-5-6-planning-selection
+status: evidence
+authority: none
+date: 2026-10-06
+-->
+
 状态：dated planning record；多个批次选择与未定实现方案选优完成，无新增产品实现
 
 日期：2026-10-06

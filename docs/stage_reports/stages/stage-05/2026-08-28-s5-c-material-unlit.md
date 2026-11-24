@@ -1,5 +1,12 @@
 # Stage 5 S5-C Versioned Material and Unlit Coexistence
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-05.2026-08-28-s5-c-material-unlit
+status: evidence
+authority: none
+date: 2026-08-28
+-->
+
 状态：S5-C local checkpoint；S5-D 尚未开始；默认 Playback 仍只保证 Unlit v1
 
 报告日期：2026-08-28

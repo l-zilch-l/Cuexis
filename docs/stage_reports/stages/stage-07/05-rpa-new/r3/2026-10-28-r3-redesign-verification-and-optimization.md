@@ -1,5 +1,12 @@
 # R3 重构分支全量核验与后续优化登记
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-28-r3-redesign-verification-and-optimization
+status: evidence
+authority: none
+date: 2026-10-28
+-->
+
 日期：2026-10-28。状态：进行中；R3、R4、设备、生产和 Stage 7 均未因此报告退出。
 
 本报告记录 `D:/Cuexis-redesign`、分支 `Cuexis-redesign` 在提交

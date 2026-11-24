@@ -4,6 +4,12 @@
 
 更新日期：2026-10-05
 
+<!-- cuexis-meta
+id: FORMAT-gameplay-v2-author-profile
+status: candidate
+authority: owns
+-->
+
 实现状态：工具私有 owning author adapter、payload/inline candidate Schema 与 revision 3 已实现，聚焦验证中；整批验收未完成，不是生产 Schema
 
 本文件仅拥有源表达与 lowering，运行语义见

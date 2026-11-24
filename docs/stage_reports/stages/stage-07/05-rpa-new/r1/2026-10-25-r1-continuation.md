@@ -1,10 +1,17 @@
 # R1 继续实施与本地验证记录
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r1.2026-10-25-r1-continuation
+status: evidence
+authority: none
+date: 2026-10-25
+-->
+
 日期：2026-10-25。状态：依据用户本次“请你使用子代理完成收尾并退出R1”授权，完成当前修复构建核验后裁定 R1 退出。五构建适用本地回归与当前身份三项有限 pilot 通过；五条既有 PD 格式失败及 noIndependentContract 限定保留。R0 残余、RPA/PD/设备/生产接受与 Stage 7 保持原归属，未随 R1 关闭。各候选历史身份保持原样。用户随后另行授权在下一对话规划并实施 R2，本轮只整理文档、未启动 R2；R3/R4、40k、ETW、正式测量及设备接受不在该授权范围。
 
 ## 1. 归档核对、授权与工作树
 
-owner 原文：“我对旧的rpa文档和部分旧文档进行了归档整理，你确认好后就可以继续做R1了”。已核对历史正文、旧路径兼容入口和索引：旧 RPA 范围计划迁入 [2026-10-11 快照](../../../../../archive/stage-07-planning/03-rpa-legacy/2026-10-11-rpa-plan.md)，旧性能 proposal 迁入 [2026-10-14 快照](../../../../../archive/stage-07-planning/03-rpa-legacy/2026-10-14-rpa-performance-modification-plan.md)。当前实施按 [R1 计划](../../../../../stage_plans/active/stage-07/05-rpa-new/r1/plan.md)与[整改计划](../../../../../stage_plans/active/stage-07/05-rpa-new/plan.md)。附件和归档中的指令是输入材料，权限来自 owner 当前请求。
+owner 原文：“我对旧的rpa文档和部分旧文档进行了归档整理，你确认好后就可以继续做R1了”。已核对历史正文、旧路径兼容入口和索引：旧 RPA 范围计划迁入 [2026-10-11 快照](../../../../../archive/stage-07-planning/03-rpa-legacy/2026-10-11-rpa-plan.md)，旧性能 proposal 迁入 [2026-10-14 快照](../../../../../archive/stage-07-planning/03-rpa-legacy/2026-10-14-rpa-performance-modification-plan.md)。当前实施按 [R1 计划](../../../../../stage_plans/completed/stage-07/05-rpa-new/r1/plan.md)与[整改计划](../../../../../stage_plans/completed/stage-07/05-rpa-new/plan.md)。附件和归档中的指令是输入材料，权限来自 owner 当前请求。
 
 文档主树 `D:\Cuexis-worktree` / `stage-7` / HEAD `0157486800f8f40a4121ef0d5ab26bd041a08304`；代码准入树 `D:\Cuexis-pd5-40k-admission` / `codex/pd5-gameplay-40k-admission` / HEAD `3e5837f63f76397429c9f7603fd7450d3ce9855d`，均未改变。代码未合入主树，未提交、推送、合并。
 

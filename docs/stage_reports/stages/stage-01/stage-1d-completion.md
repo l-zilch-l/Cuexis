@@ -1,5 +1,11 @@
 # Cuexis 阶段 1D 完成报告
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-01.stage-1d-completion
+status: evidence
+authority: none
+-->
+
 状态：实现与自动化最终验收完成；GPU 和物理默认音频设备脚本门禁完成，主观听感仍需人工观察  
 报告日期：2026-07-27  
 完成版本：`26.07.18.18-1`（Debug：`26.07.18.18-1-dev`）  

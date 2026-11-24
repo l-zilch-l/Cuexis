@@ -1,11 +1,18 @@
 # S7A-3 实施裁定记录（第二半 part 1 第一轮实现复核修订 + 第 2、3 轮复审改正）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.01-a.s7a-3.2026-10-03-s7a-3-implementation-rulings
+status: evidence
+authority: none
+date: 2026-10-03
+-->
+
 状态：dated implementation record（S7A-3 第二半 part 1 的语义裁定、缺陷修订与文档落地证据；不是阶段关闭、
 不是 owner acceptance、不是实施验证、**不是发布或提交声明**，也**不表示 S7A-3 已实现完成**）
 
 更新日期：2026-10-03
 
-上级文档：[Stage 7A 实施计划](../../../../../stage_plans/active/stage-07/plan.md) §S7A-3 ·
+上级文档：[Stage 7A 实施计划](../../../../../stage_plans/completed/stage-07/plan.md) §S7A-3 ·
 [Gameplay V2 acceptance package](../../../../../proposals/gameplay-v2-acceptance/README.md) ·
 [未决语义分轮裁决清单](../../../../../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md) §3、§9
 

@@ -1,5 +1,12 @@
 # Player multi-transition Tick bridge repair
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.device.2026-10-09-player-multi-transition-tick-repair
+status: evidence
+authority: none
+date: 2026-10-09
+-->
+
 状态：受限 CPU 验证通过；修复后真实设备与新 SHA hosted 待回填
 
 证据日期：2026-10-09（Asia/Shanghai）
@@ -21,7 +28,7 @@ Controller Load→Play→一个 PlayerSurface poll 含同键 press/release：旧
 ## 合同修订与选择
 
 所属合同：[Playback Player 首用桥](../../../../../api/playback-session.md)（2026-10-09 多转换修订）；
-实施决策：[plan-a §3.4.16](../../../../../stage_plans/active/stage-07/01-a/plan.md)。
+实施决策：[plan-a §3.4.16](../../../../../stage_plans/completed/stage-07/01-a/plan.md)。
 Gameplay Spec/ABI v2 与 execution profile 既有规则不重开。
 
 原“每帧一个 H、保留全部转换”与“一个 Tick 至多一个 input”不能同时满足多转换 poll。

@@ -1,5 +1,12 @@
 # PD-5 小规模寿命诊断与读取噪声独立复算
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.memory-attribution.2026-10-23-memory-lifetime-and-read-noise-diagnostics
+status: evidence
+authority: none
+date: 2026-10-23
+-->
+
 状态：completed（本批有界诊断与工具准备）；PD-5 acceptance：not passed。
 
 快照日期及更新日期：2026-10-23，Asia/Shanghai。当前摘要见

@@ -1,0 +1,468 @@
+Stage 7-RR checkout review A - 本轮回执
+记录时间 UTC: 2026-11-22T04:18:08.575525+00:00
+本轮复用原代理进行核实、修订与交叉验证。不是新无上下文独立审查；不重写过去原始输出。
+基线 HEAD: 8599c83af82a2a74b074db387f1b3766d366b9e4
+范围: IR01/02/03/04/05/06/10；A 自核完成，交叉复验进行中。
+状态: 全部技术变更仅候选文档，生产未实施。本回执记录本轮实际阅读、修改、短探针及检查。
+
+IR01 裁定: 成立
+基线合同 prepared-artifact.md:56 把四个身份声明放 build-only internal，runtime-timing.md:40 还延至 T12；CompiledGameplayView 在 runtime-timing.md:135 持身份引用，T10:33 独立消费者只暴露 Core/Judgement。前置声明无法让消费者自己构造值。
+代码: engine/judgement/include/cuexis/judgement/gameplay_assembler_identity.hpp:102,121,135,145 定义四类型；同头:6 拉 gameplay_graph。kernel_types.hpp:40 当前按值持 PreparedIdentityDeclarations。
+修订: T10 原样提取运行 prepared_identity.hpp（只需标准库 optional/string/vector），records/prepared/kernel_types 直接包含；旧作者头转引。SessionConfiguration 保留按值，prepare 拷贝到 immutable storage。T12 context 只留 CompileCapabilityContext/ContentProfileLimits。
+验收: 仅 Core/Judgement 的消费者自行构造身份和完整 view 并 prepare，销毁源后读拥有值；作者/内部 context/timing 头阴性。生产消费者构建待 T10 实施。
+
+IR02 裁定: 成立
+基线 runtime-timing.md:115 PreparedRequirement 按值含 StableDeclarationId；:66 作者引用声明留编译侧而没有点名该纯值的唯一运行定义。
+代码: engine/judgement/include/cuexis/judgement/gameplay_graph_reference.hpp:115-123 定义 ID；:7 拉作者 timebase。gameplay_prepare.hpp:36 已按值使用 ID。
+修订: T10 把 ID 原样移到运行 phase_types.hpp，保留 sourceDocumentId/u32 ordinal 与默认 noexcept 比较；records 直接包含、旧 graph_reference 转引。T12/T13 只消费同一类型。
+验收: 新值头自包含、独立运行消费者实际构造 stableId，不可通过作者头链蒙混；本轮仅文档自核。
+
+IR03 裁定: 部分成立
+基线 runtime-timing.md:208 已规定 canonical 接收编号 producer 的语义，故“完全没有 producer 规定”不成立；但 :200 StopCut 缺具名读取/传递接线，不能让 Playback 从 capture 确认值猜出 ingress 上界。CLK02 的未来105场景还需区分内核与实时 capture。
+代码: engine/judgement/src/execution_scheduler.cpp:51-53 confirmedSequence 只读 confirmed_，:148 submitCanonical、:176-177 按 delivery 推 confirmed；engine/playback/src/playback_session_gameplay_seek.cpp:194-198 复制调用方 sequence；playback_session_realtime.cpp:186-194 拒未来观测；execution_scheduler.cpp:162-168 拒早于 maxCaptured 的 epoch end。
+修订: T10 kernel 单一游标及 receiveCanonicalBatch/acceptedIngressThrough 具名内部接口；整批规范化/去重/预留后分配，late拒绝也归档编号，Resume在同一seal提交。T14 完整capture→同一producer→query→StopCut→advanceStopCut，读取和锁定同owner事务。T10保留105/90内核用例；T14真实capture用六个无义务release、release89、press90生产0-7，delivery上界故意与7不同。
+残项: B 的 render-player-writer P4-05 需同步分层用例及生产query链；A未改B文件。新真实时钟向量未执行；代码依据证明不能放宽未来证明来伪造通过。
+
+IR04 裁定: 成立
+基线 runtime-timing.md:35 点名 cuexis_gameplay_author_cli，但分阶段/任务卡没有明确首创和完整搬移。T10泛指作者工具链接；T13只说增加beat-us。
+代码: tools/gameplay/gameplay_assembler/CMakeLists.txt:1-22 只有 author/assemble，candidate把 assembler_cli.cpp 和 playback/gameplay_entry.cpp 编进 author；tools/chart/chart_candidate/CMakeLists.txt:14-17 也直接链 author。根 CMakeLists.txt:1080-1092 仍守旧边。
+修订: T10首创真实 STATIC target cuexis_gameplay_author_cli + alias，developer-tools&&candidate 启用；搬旧CLI源/helper/私有根与Playback/CXC/asset_publish边，两个可执行消费者改链CLI，root active-target/ALLOWED同卡。author保留纯编译边。T13只追加gameplay_packed_source和beat-us。保持旧metadata helper源编译方式，不添shared导出。
+验收: 定向构建assemble/chart_candidate、既有cuexis_gameplay_assembler_cli，检查源码归属/依赖及tools OFF阴性；候选生产target尚未创建不作为已实现。
+
+IR05 裁定: 成立
+基线 runtime-timing.md:40、T12:29 声称创建 context；T13:27 又要求提取同头。
+代码: 现有定义仍在 gameplay_assembler_identity.hpp:85 与 gameplay_assembler_publication.hpp:57；当前尚无后继context头，符合候选状态。
+修订: T12唯一首创compiled_gameplay_context/rows并完成旧头转引；T13只消费，Graph limits/shared visitors仍由T13提取。运行身份由T10先交付。
+验收: T12编译消费者/T13纯Reader按同一头链，A已搜索移除双认领及旧前置声明措辞；未构建候选。
+
+IR06 裁定: 部分成立
+基线 runtime-timing.md:21 “按下表纳入子目录”混淆target职责表与目录拓扑。表里同目录多target不能逐行add_subdirectory。“仅因::alias后定义就必然configure失败”不成立。
+代码: engine/CMakeLists.txt:16 chart，:21 cxc，:24 judgement，:25 gameplay_packed，:32 playback；根CMakeLists.txt:168 engine、:174 tools、依赖守卫在后。cmake/VerifyArchitecture.cmake:622-657检查最终已创建target的直接边，不要求所有依赖在target_link_libraries之前定义。
+修订: 合同单列拓扑：timing在chart前、judgement_compile在judgement后；gameplay_packed只进入一次，内建legacy→read→source；engine先于tools，asset_publish先于author/CLI再chart_candidate；逐卡和开关不提前引入后继target。
+验证: 本轮无编译器LANGUAGES NONE的最小CMake INTERFACE前向alias探针 configure/generate exit0；仅验证该CMake说法，不代表Cuexis完整配置/链接通过。完整源/命令/输出附下。
+
+IR10 裁定: 不成立
+候选schema/码当前不存在属实，但任务已明确创建注册，不是设计未分工。基线T10:23/29容量码与运行测试，T11:23/27两Stop码和v5/v3；T11:31明确“实施时新增、当前未执行”。
+代码: schemas/candidate/cuexis.gameplay-author.t4-k4.v1.schema.json:17 version const2；新beat-us schema及三新码当前不在库。
+修订: 仅明确路径和阶段：T10注册output_capacity_insufficient，T11创建v3 payload和v5基础壳/注册两Stop码，T13扩展presentationBindings与CXT/成品adapter。未创建生产schema或注册新码。
+验收边界: T11交付时才运行新的schema测试，T12才验量化，T13才验成品。当前docs检查通过不能称v3验收通过。
+
+追加跨域输入：T14准入矩阵同步
+按B本轮render-player-writer.md“准入纯值与提交事实（T-14）”同步，未新造结构。T14写域加入tests/player_support/player_command_tests.cpp；Context五项、Decision effect/successPolicy；evaluate纯准入，唯一owner提交时读设备/pendingPause；apply撤末尾无条件状态赋值。P4-01命令矩阵和真实P4-07归T14，T15消费。
+代码依据: player_command.hpp:65-78当前仅state/busy、state/duplicate；player_control_transaction.cpp:70无条件state_=decision->state；tests/player_support/CMakeLists.txt:1真实target cuexis_player_support_tests，player_command_tests.cpp:97矩阵测试入口。
+该追加在下列完整docs/facts预检之后；本轮只另做差量读回及git diff --check，最终统一docs/facts由主代理执行。
+
+自核修订位置（当前文件行；以本段LF SHA256绑定）
+docs/stage_plans/active/stage-07-rr/contracts/runtime-timing.md LF-SHA256=a42d0ff2d6cddbdd50752194db26aa98a85203f1a93ac2bda7f4cea607c122c3
+  **配置拓扑 => 37
+  T-10 同卡在 => 42
+  [T-12] => 43,534
+  **T-10 首创 => 69
+  同卡把 => 71
+  **接收游标 => 209
+  T-14 把 => 211
+  同一 `stop_cut.hpp` => 213
+  CLK-02 分层构造 => 520
+docs/stage_plans/active/stage-07-rr/contracts/prepared-artifact.md LF-SHA256=55c2d9465a6f2b13e951981b993d7ac62c074c1273cf3c15b882e39efffed7cf
+  **头文件与链接隔离 => 56
+  T-12 独占首创 => 58
+  工具目标由 T-10 => 247
+  T-13 新增 => 249
+docs/stage_plans/active/stage-07-rr/tasks/T-10.md LF-SHA256=10dc5a3bbd9d71cf6097085de8639a58d329f843edbf4c1ee344e66c14d13ccf
+  本卡先创建 => 31
+  在 `execution_kernel_submit => 33
+  纯运行正向 => 39
+  CLK-02 的 => 51
+docs/stage_plans/active/stage-07-rr/tasks/T-11.md LF-SHA256=19b1cc1421badcb4bcea3e880fd97e668589aeb528ef1d53efd1dd386428bdb5
+  首创交付为 => 29
+docs/stage_plans/active/stage-07-rr/tasks/T-12.md LF-SHA256=f18e4bb868e79864b07743a45ec30e0c2d661e57d5efc9eb44f60ce76902eda6
+  本卡唯一首创 => 29
+docs/stage_plans/active/stage-07-rr/tasks/T-13.md LF-SHA256=f31a960b8c15e56383cf431fed78e6b047eea022a7ecedc9dfb028610aba1a6c
+  1. 按 => 27
+  5. 在原 => 31
+docs/stage_plans/active/stage-07-rr/tasks/T-14.md LF-SHA256=93bbfb209af090ced079a32216599e0bb17e358233ae2661d196aaae97ae36e4
+  按[完整准入矩阵 => 27
+  接收游标直接消费 => 34
+  P4-01 的命令矩阵 => 40
+  - 同样新增 => 45
+
+本轮实际验证输出（原样复制已保存输出；不充当历史输出）
+SOURCE out\review\stage-07-rr\checkout-review-A-20261122\check-docs.txt
+COMMAND: python -B tools/check_docs.py
+Documentation checks passed: 768 Markdown files and 20 candidate JSON/CXT files validated.
+EXIT: 0
+
+SOURCE out\review\stage-07-rr\checkout-review-A-20261122\check-docs-facts.txt
+COMMAND: python -B tools/verification/check_docs_facts.py
+version-drift findings: 0 (warning; see --list)
+documentation facts are current (SDK 0.9.1, build 26.11.18-1)
+EXIT: 0
+
+SOURCE out\review\stage-07-rr\checkout-review-A-20261122\cmake-forward-alias\probe-output.txt
+COMMAND: cmake -S out\review\stage-07-rr\checkout-review-A-20261122\cmake-forward-alias -B out\review\stage-07-rr\checkout-review-A-20261122\cmake-forward-alias\build -G Ninja
+-- Configuring done (0.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: E:/Cuexis-worktree/out/review/stage-07-rr/checkout-review-A-20261122/cmake-forward-alias/build
+EXIT: 0
+
+CMake探针源（无产品编译）
+CMakeLists.txt
+cmake_minimum_required(VERSION 3.25)
+project(rr_forward_alias LANGUAGES NONE)
+add_subdirectory(read)
+add_subdirectory(chart)
+add_custom_target(probe ALL COMMAND ${CMAKE_COMMAND} -E echo forward-alias-configured)
+
+read/CMakeLists.txt
+add_library(cuexis_gameplay_packed_read INTERFACE)
+target_link_libraries(cuexis_gameplay_packed_read INTERFACE cuexis::chart)
+
+chart/CMakeLists.txt
+add_library(cuexis_chart INTERFACE)
+add_library(cuexis::chart ALIAS cuexis_chart)
+
+检查调用修正: 曾误用git -c core.autocrlf=false diff --check，在现有CRLF工作树上把整文件CR当尾空白，exit1；工具输出被截断。没有据此改文件或宣称通过。以下按仓库配置重新运行并保存实际输出。
+COMMAND: git diff --check -- docs/stage_plans/active/stage-07-rr/contracts/runtime-timing.md docs/stage_plans/active/stage-07-rr/contracts/prepared-artifact.md docs/stage_plans/active/stage-07-rr/tasks/T-10.md docs/stage_plans/active/stage-07-rr/tasks/T-11.md docs/stage_plans/active/stage-07-rr/tasks/T-12.md docs/stage_plans/active/stage-07-rr/tasks/T-13.md docs/stage_plans/active/stage-07-rr/tasks/T-14.md
+warning: in the working copy of 'docs/stage_plans/active/stage-07-rr/contracts/prepared-artifact.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/stage_plans/active/stage-07-rr/contracts/runtime-timing.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/stage_plans/active/stage-07-rr/tasks/T-10.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/stage_plans/active/stage-07-rr/tasks/T-11.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/stage_plans/active/stage-07-rr/tasks/T-12.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/stage_plans/active/stage-07-rr/tasks/T-13.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/stage_plans/active/stage-07-rr/tasks/T-14.md', LF will be replaced by CRLF the next time Git touches it
+
+EXIT: 0
+COMMAND: git diff --name-only -- engine app schemas
+
+EXIT: 0
+未核实: 新运行头实际编译、候选target真实链接/安装/shared ABI、Stop生产行为及新增schema全部待任务实施。未做长构建/GPU/hosted。全仓并行改动不全属于A。
+交叉复验: 待追加B IR07-09/11-15及主代理checker/T01/acceptance的只读结果。
+
+
+追加：A 自核补充与 B/主代理交叉复验（本轮复用原代理进行核实、修订与交叉验证）
+本段只记录本轮当前文件、源码核对和实际短探针；不冒充过去原始输出。生产仍为候选未实施。
+
+自核状态：IR01/02/04/05 成立，IR03/06 部分成立，IR10 不成立；含义仍按前段逐ID裁定。A七份文档修订已落盘。T14的IR11同步完成，见T-14.md:23,27,29,40,42：原Context追加四bool/pauseAdmission，Decision追加effect/successPolicy；纯准入与owner提交分开；撤apply无条件状态赋值；命令矩阵与真实Retry/Pause归T14，T15只消费。
+
+IR03 后续自核纠正（依据B交叉反馈，裁定：成立）
+触发：Stop受理时最后合法批片尚在capture途中。旧runtime-timing.md:207/219仍要求先关kernel接收再送末批，与:209-213新producer/query冲突。
+本轮追加修订：runtime-timing.md:207/219统一为预检/acceptControl阻止普通推进→关capture并收齐最后完整批片及epoch end→kernel开放时receiveCanonicalBatch编号/记录→query→advanceStopCut原子核对后关闭kernel接收/seal。关闭后只排空已入核pending，终止前既有batch/admission/rejection直接保留，不补录或重编号。:221明确RPA调用唯一kernel编号器；T-14.md:32摘要同步。
+实际自检：读回两处全文，定向扫描旧措辞；git diff --check -- runtime-timing.md T-14.md退出0，仅LF/CRLF提示。未据此声称Stop生产实现已通过。交B差量复验所用LF哈希：
+  runtime-timing.md c0657efa01b06fb3d6e05b7e1b205af9030edd8aa6d96a07082b1b7efad3eb07
+  tasks/T-14.md b69946dcfc788751ddc4ffa1e7596fa2b11b9ad25e23fbb08fdd7cf4caec7765
+
+B写域逐项只读交叉复验
+IR07 原问题裁定：成立；当前修订可实施性：成立。
+证据：render-player-writer.md:83-89,178；T-05.md:23,30,37；T-06.md:33,41。代码engine/playback/src/presentation_materializer.cpp:137-162现有fillCamera写projectionMatrix，app/player/src/snapshot_scene.cpp:40-41已逆投影视图。
+核对：基础P与最终Pout=Q*R*P唯一；完整矩阵反算一次；T05先交非安装inline helper，T06才接materializer/renderer和retained。独立Fractions脚本核得Q=(960/959,1)、content=(958/7,800)、host=(1560/7,800)、单次逆还原(1/4,-1/2)，重复逆偏离。算式成立，不冒充GL通过。
+IR08 原问题裁定：部分成立；当前修订可实施性：成立。
+证据：render-player-writer.md:73,121,125-135；T-06.md:33,41。代码app/execution_host/frame_observation.hpp:13-19,47,87-106；session_worker_owner.cpp:169-185；frame_delivery.cpp:477-507；app/player/src/execution_host_frame.cpp:470-494。
+核对：FramePayload保留reservation首成员，variant只拥有一份snapshot或LaidOutFrame；worker用emplace移动；payload/envelope view完整；固定数组与值在sizeof，动态snapshot对象/字符串仍计容量；retained alias不重复计payload。presentOwnedFrame追加currentTarget并检测adapter能力；OverlayRenderer增加布局转发，同一binding/backend与同帧scene，scene在最后gate前完成，无桥不回退。现有代码足以定位全部迁移入口，未发现这部分仍需第二DTO/虚表/框架的缺口。
+IR09 原问题裁定：部分成立；当前修订可实施性：成立。
+证据：render-player-writer.md:83-85,175；T-05/T-06相关向量。旧谱Q=I、奇数转先reciprocal aspect再R，0度直接保存旧P。纯数值核对90/270点位(50,150)/(50,50)，只换aspect阴性(75,100)可区分；生产digest未跑。
+IR11 原问题裁定：成立；当前修订可实施性：成立。
+证据：render-player-writer.md:275-292；T-14.md:23,27,40,42；design-readiness.md:70-72。代码engine/player_support/include/cuexis/player_support/player_command.hpp:59-84、src/player_command.cpp:60-64，app/player/src/player_control_transaction.cpp:38-70。
+核对：八命令/六态及有无A/source、首装耗尽、实时Seek都有纯值输入；PendingNewRun与AlreadyHeld区分，pending重投不提前确认；成功策略在owner读设备及新Pause后提交；完整矩阵P4-01命令及P4-07真实通道归T14。T15仅路由外壳。无新增控制权。
+IR12 原问题裁定：成立；当前修订可实施性：部分成立（仅剩同卡构建边登记）。
+证据：render-player-writer.md:186-188；T-15.md:25,31,41；engine/platform/src/sdl_window.cpp:37,168-173；app/player/src/player_assembly.cpp:47-60。namedKey改SDL_Scancode、所有控制键及修饰过滤有明确落点；raw玩法释放与保留键双沿剔除均已说明。SDL_PushEvent的矛盾keycode/scancode可走真实入口。
+剩余P2：T-15.md:25新增tests/platform PRIVATE SDL3::SDL3，但未指定同步根ALLOWED；根CMakeLists.txt:1291-1296只准platform_sdl/Catch2，cmake/VerifyArchitecture.cmake:622-657实际逐边拒绝。仅按卡新增链接会在配置时触发non-allowlisted dependency。最小修订为T15写域补根CMake及cuexis_platform_sdl_tests的ALLOWED SDL3::SDL3。已报主代理/B，A未越域编辑；未跑产品configure。
+IR13 原问题裁定：不成立；当前澄清可实施性：成立。
+证据：architecture-design.md:177,188,266；render-player-writer.md:269,279,284,286。旧“未实现”不限制D16已接受恢复；Failed无A但有来源可F5恢复Paused@0，Empty无来源拒绝。当前源码旧表拒绝Failed Reload是待实施现状，不应再记目标矛盾。
+IR14 原问题裁定：部分成立；当前澄清可实施性：成立。
+证据：architecture-design.md:43,175与D16正文。F5/--judge/scancode标为授权行为内的候选技术选择，未伪造早期owner逐字批准，未将候选写成生产实现。
+IR15 原问题裁定：成立；当前修订可实施性：成立。
+证据：render-player-writer.md:384-386；T-16.md:25,33-39；engine/chart/include/cuexis/chart/chart_writer.hpp:13；src/chart_writer.cpp:703-734；chart_writer_internal.hpp:9-21；engine/chart/CMakeLists.txt:1；tests/chart/CMakeLists.txt:1,45-62。
+核对：现有ChartWriter静态方法无injector；在同TU checked-write用按调用栈hooks、生产nullptr、测试宏下非安装重载可实现。afterEncode只改产物，真实Reader/fidelity保留；三个checkpoint异常与实际预算分开；无全局注册器/伪造CLI注入。cuexis_chart为STATIC，现有测试已有src/json私有根和真实链接边。rr_chart_write与具名migrator进程分别有创建任务/target/preset；新增测试和Writer实现未运行。
+
+IR03/CLK02跨域差量复验：成立。
+本次实际读取render-player-writer.md:350，LF-SHA256=a00232249116b263a0d8025b00c94f476260d18adebe6c12695783aed5bbcf61，与主代理交付哈希一致。P4-05把105/90限定T10纯内核，T14 capture改六条release@10..60及release@89/press@90，observed<=91<=C100，真实编号0-7、prefix让delivery上界不同、query取得7、不放宽未来证明或epoch-end守卫。与runtime-timing.md:520及T-14.md:45一致。对应源码playback_session_realtime.cpp:186-194和execution_scheduler.cpp:162-168仍保持，生产未变。
+
+主代理工具/卡交叉复验
+IR16 修订可实施性：成立。T-01.md:27-35用跨平台Python原字节哈希，读HEAD/tree/status并以采用revision绑定BASE_SHA；9623研究/8599交接不自动覆盖接卡基线。独立checkout缺旧out如实记缺失，新增候选schema/target交付后再跑。验收与代码事实的界限清楚。
+IR17 修订可实施性：部分成立。check_plan_schedule.py:306-345检查七段唯一/有序/非空并排除围栏和注释；对应tests包含逐段删除、重复、空、乱序及伪标题。当前23项测试退出0，真实阶段9 active/7 candidate退出0；隔离实际阶段副本添加T05→T06仅报schedule.md:19的prerequisite T-06 must be in an earlier wave，正本SHA未变、其余副本文件未变。
+剩余P2（本轮应修最小边缘）：_card_sections在:316用raw.strip，:336把缩进代码H2当正式标题。把唯一停止条件标题改四空格或tab缩进仍返回[]，缺段漏检。最小修订是按原始缩进识别正式H2并加入两个反例，不需要完整Markdown解析。已交主代理；用户随后派B仅修此处及下面状态边缘，A只复验。
+IR18 修订可实施性：部分成立。单schedule依赖真实存在，active不能依赖candidate；成功输出分active/candidate且声明仍受采用及前置约束，未新增授权框架。但:379,432只接受两状态会拒政策允许的completed（DOCUMENTATION_POLICY.md:48,163）。真实fixture显示completed T03错误并CLI退出1。最小修订允许completed单列、从当前派单输出排除、仍检结构；active依赖completed应可通过。当前阶段没有completed，所以这是生命周期边缘，不冒充现行16卡失败。
+IR19 修订可实施性：成立。acceptance.md:17-23的A01-A05只验T01-T09，AN只交候选设计；:29-35说明独立回执、证据revision及新增未实现边界；:37起要求evidence随仓，out不得唯一证据。未扩大D05。
+
+当前剩余：B/主代理待补T15 ALLOWED与checker两个小边缘；A Stop旧概述已改并交B差量复验。本段总体交叉结论：部分成立。除上述具体项，未从本次所审差量证明出新增阻断；不外推全仓/全部候选生产行为。
+未核实范围：候选头/targets真实编译链接安装、共享导出、SDL/GL帧与设备时序、Writer和CLI产品运行、Stop/archive真实执行均待实施。没有长构建/GPU/hosted。docs/facts沿前段预检时点；最后T14/Stop修订后最终统一门禁由主代理执行，本段不冒称新全量通过。
+探针自身纠正：最初采集stdout遇Windows默认编码导致UnicodeEncodeError；随后探针误写T05所在行为20，实测为19而断言失败。只修本地探针为按实际行计算并固定UTF-8后重跑，完整输出如下。上述失败不是生产缺陷，也未当通过证据。独立checkout可将下方完整探针保存到同名out路径重跑。
+
+本次交叉快照记录时间 UTC: 2026-11-22T04:28:13.342049+00:00
+LF-SHA256清单（CRLF转LF，其余字节不变；绑定本次所审快照，随后编辑另追加）：
+c0657efa01b06fb3d6e05b7e1b205af9030edd8aa6d96a07082b1b7efad3eb07  docs/stage_plans/active/stage-07-rr/contracts/runtime-timing.md
+a00232249116b263a0d8025b00c94f476260d18adebe6c12695783aed5bbcf61  docs/stage_plans/active/stage-07-rr/contracts/render-player-writer.md
+230b247aa83823224fd205c4a559f86d2afa150af483fb1f536e21de635ff194  docs/stage_plans/active/stage-07-rr/architecture-design.md
+eabac0dc3a17c1300e1b41a744505b265e79a95644b35f3a805751c528d167ec  docs/stage_plans/active/stage-07-rr/tasks/T-01.md
+8ed2e230d8c4168363de8a97f242954bf6378a47976ff835b717b89ed6f65d5b  docs/stage_plans/active/stage-07-rr/tasks/T-05.md
+53263afa6aaefe788ed7cacfd9e179c04239e78d6666cfff85a669b651685882  docs/stage_plans/active/stage-07-rr/tasks/T-06.md
+b69946dcfc788751ddc4ffa1e7596fa2b11b9ad25e23fbb08fdd7cf4caec7765  docs/stage_plans/active/stage-07-rr/tasks/T-14.md
+19c4e273bb51dd4dac4259b024ba26046dab2f0d8356c677a7f39f62c89452a7  docs/stage_plans/active/stage-07-rr/tasks/T-15.md
+4def74e515717d64f2937f3f56033f3b540a0679f10d75f90fd57d7ec1aa090e  docs/stage_plans/active/stage-07-rr/tasks/T-16.md
+78eb10fc3411a57449372fa6d8ec63640bdeece4fb0b4fe0e007d7cc86afdc48  docs/stage_plans/active/stage-07-rr/acceptance.md
+8dbf639fddba992c00ab1026238a85a88cfd0b3bd3913febd6a464ce1eebad9b  docs/stage_plans/active/stage-07-rr/design-readiness.md
+06d9eee89c9d1265da42c39fcc482545f98ae02a2baa780ca75d67812e123059  docs/stage_plans/active/stage-07-rr/schedule.md
+2b40b2221b194a931f25503d46bd7856269c77e745c6bcc38e7d362fc45416e2  docs/DOCUMENTATION_POLICY.md
+f9199301b64986796c1025afe3eab015e03f851303f811059927ea89567e67d0  AGENTS.md
+d05badd83c89c3e7cc1785da7a5e777d2731ca0409c4f3ed5c62ea5f7ad3a43e  engine/player_support/include/cuexis/player_support/player_command.hpp
+f50dd6702209a938a6ca8b8318ad38e19f9bb8ebe271afefb162efa9da247691  engine/player_support/src/player_command.cpp
+f3ed4e44416d5d7c62e1629f516405f781a3a0c706f8e4aeb0cc409926e38388  app/player/src/player_control_transaction.cpp
+a137732f5d6453012a47e048bb016a32b2cfbccb495cad64e2c776211cbe09ed  app/execution_host/frame_observation.hpp
+c6c2fa53f496dbfd02efe73d8b3bfe91c7d8358ba02dab87745967e54478574b  app/execution_host/session_worker_owner.cpp
+a4fe8fbfa03d23b17ca7e76b20dfd33bdf5e7d175444c2de4ab93b63c781fa25  app/execution_host/frame_delivery.cpp
+fdefc7a735f9b4dbb67100598389fd42408364b9a5664d7cac782115f6bf9d4c  app/player/src/execution_host_frame.cpp
+6cdd0a91da6eaefb63166d6db99a5f60b66605b75b82684be1690fa373032d8e  app/player/src/snapshot_scene.cpp
+255999b0f448c1701c425cb7875513511c42ca93dad5b1e0b00b8fd2f6c90a51  engine/playback/src/presentation_materializer.cpp
+b8c3a26d2f1c7125d7c048ccd287821fffb8326b075c482a342f53d19e52eade  engine/playback/src/playback_session_realtime.cpp
+ef23bc49c6ac65540ff73ce48a3e9994718034cc048502cab24a8e1a9ac9fc00  engine/judgement/src/execution_scheduler.cpp
+2b7a311ac949c2a201bd0de29bc65ba13dc0616d8e8e2b0464d557138cc26d10  engine/platform/src/sdl_window.cpp
+d8680981757b9c348a1e68b331ce0de8de7c472592be187a474079e4ca24e765  app/player/src/player_assembly.cpp
+de94691ec5cb965cb7bf7d0691896bfd6cd5c70b8608001fa34f6f9c7237892b  tests/platform/CMakeLists.txt
+da88b7c1c6c974f55121203f332a269dbec2b81ebbe00ac76dec104149cb3c84  CMakeLists.txt
+e9b7c2a64e83738faf5247ad3d66f5822d5342864b92a46b412b51839495e936  cmake/VerifyArchitecture.cmake
+3ccca442839a28cc9705b9ab81a1b7118843e3a40a2a6f88363eb81e0309e52d  engine/chart/include/cuexis/chart/chart_writer.hpp
+c15b63e5e179036e3aa651ee6a8c64659ad158e3d0a6425281ea570317cf1918  engine/chart/src/chart_writer.cpp
+8608355dae815eb345302137f5574d4fd7436f8e77126aa5ce365753b4243963  engine/chart/src/chart_writer_internal.hpp
+4ad8d53fbfa58544b4e3b5caed6dbe98899701d51a02afcea7c1bad24ee7c606  engine/chart/CMakeLists.txt
+4ad56af782bb77b57463099300dc289c92fd6e29ccf2357900a6e4bf89d9130a  tests/chart/CMakeLists.txt
+a7136039703bcb081d3e4a19acbc1f042bbed42ffc0945f1746bd79c8cb5805d  engine/chart/include/cuexis/chart/limits.hpp
+3690fd0b5dabe000f9455e39ad1ba740a1aa5cf1976f41db4848f28a9753c9db  tools/chart/chart_migrator/main.cpp
+5096b0edc3f3277cc76aaae4750f8310c52d5532dee671ab85d8173df2219d08  CMakePresets.json
+afbdc10a1e8596904276909fec5c68038b6acc5cc52e6be6a963b112ae49523d  tools/verification/check_plan_schedule.py
+8c651ea330cb3dab73e65a9bb746e53d21786e67212f45a8e99e089389a4e9cd  tools/verification/test_check_plan_schedule.py
+71da6be828377a4a6c4a99abfc2d08fba100b4d6dd7c1616cb3cd9eb40fc8e73  tools/README.md
+
+本轮实际输出 SOURCE out\review\stage-07-rr\checkout-review-A-20261122\checker-tests.txt
+COMMAND: python -B tools/verification/test_check_plan_schedule.py
+.......................
+----------------------------------------------------------------------
+Ran 23 tests in 0.519s
+
+OK
+
+EXIT: 0
+
+本轮实际输出 SOURCE out\review\stage-07-rr\checkout-review-A-20261122\checker-stage.txt
+COMMAND: python -B tools/verification/check_plan_schedule.py
+Plan schedule checks passed: 9 active task cards; 7 candidate cards.
+Current-stage cards (adoption and prerequisites still apply): T-01, T-02, T-03, T-04, T-05, T-06, T-07, T-08, T-09
+Candidate-only cards (separate adoption required): T-10, T-11, T-12, T-13, T-14, T-15, T-16
+
+EXIT: 0
+
+本轮实际输出 SOURCE out\review\stage-07-rr\checkout-review-A-20261122\cross-review-probe.txt
+COMMAND: python -B out/review/stage-07-rr/checkout-review-A-20261122/cross-review-probe.py (PYTHONIOENCODING=utf-8)
+A current-turn probe; product behavior not executed
+four_space_heading []
+tab_heading []
+fenced_heading [('T-03.md', 'task sections must occur once in order: 目标, 输入, 写域, 步骤, 任务级验收, 证据, 停止条件')]
+comment_heading [('T-03.md', 'task sections must occur once in order: 目标, 输入, 写域, 步骤, 任务级验收, 证据, 停止条件')]
+completed_card [('T-03.md', 'task metadata status must be active or candidate')]
+COMMAND: C:\msys64\ucrt64\bin\python.exe -B E:\Cuexis-worktree\tools\verification\check_plan_schedule.py --stage-dir E:\Cuexis-worktree\out\review\stage-07-rr\checkout-review-A-20261122\checker-probe-m0rdv9h1\completed\docs\stage_plans\active\stage-07-rr
+Plan schedule checks failed:
+- E:\Cuexis-worktree\out\review\stage-07-rr\checkout-review-A-20261122\checker-probe-m0rdv9h1\completed\docs\stage_plans\active\stage-07-rr\tasks\T-03.md: task metadata status must be active or candidate
+EXIT: 1
+COMMAND: C:\msys64\ucrt64\bin\python.exe -B E:\Cuexis-worktree\tools\verification\check_plan_schedule.py --stage-dir E:\Cuexis-worktree\out\review\stage-07-rr\checkout-review-A-20261122\checker-probe-m0rdv9h1\real_copy
+Plan schedule checks passed: 9 active task cards; 7 candidate cards.
+Current-stage cards (adoption and prerequisites still apply): T-01, T-02, T-03, T-04, T-05, T-06, T-07, T-08, T-09
+Candidate-only cards (separate adoption required): T-10, T-11, T-12, T-13, T-14, T-15, T-16
+EXIT: 0
+COMMAND: C:\msys64\ucrt64\bin\python.exe -B E:\Cuexis-worktree\tools\verification\check_plan_schedule.py --stage-dir E:\Cuexis-worktree\out\review\stage-07-rr\checkout-review-A-20261122\checker-probe-m0rdv9h1\real_copy
+Plan schedule checks failed:
+- E:\Cuexis-worktree\out\review\stage-07-rr\checkout-review-A-20261122\checker-probe-m0rdv9h1\real_copy\schedule.md: line 19: prerequisite T-06 must be in an earlier wave
+EXIT: 1
+negative_copy_changed_only: ['schedule.md']
+original_schedule_raw_sha256_unchanged: 06d9eee89c9d1265da42c39fcc482545f98ae02a2baa780ca75d67812e123059
+Geometry arithmetic only:
+Q= ('960/959', '1') content_pixel= ('958/7', '800') host_pixel= ('1560/7', '800') single_inverse= ('1/4', '-1/2') double_inverse= ('1/2', '959/3840')
+legacy_rotation 90 pixel (Fraction(50, 1), Fraction(150, 1))
+legacy_rotation 270 pixel (Fraction(50, 1), Fraction(50, 1))
+Probe completed; reported checker edge cases require separate adjudication.
+
+EXIT: 0
+
+本轮短探针完整源 SOURCE out\review\stage-07-rr\checkout-review-A-20261122\cross-review-probe.py
+"""A's current-turn, read-only design/checker probes; no product execution."""
+from fractions import Fraction as F
+import hashlib
+import importlib.util
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import tempfile
+
+ROOT = Path(__file__).resolve().parents[4]
+WORK = Path(__file__).resolve().parent
+SPEC = importlib.util.spec_from_file_location(
+    "rr_checker_tests", ROOT / "tools/verification/test_check_plan_schedule.py")
+module = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(module)
+
+def digest(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+def cli(stage):
+    command = [sys.executable, "-B", str(ROOT / "tools/verification/check_plan_schedule.py"),
+               "--stage-dir", str(stage)]
+    result = subprocess.run(command, capture_output=True, text=True, encoding="utf-8")
+    print("COMMAND:", " ".join(command))
+    print(result.stdout, end="")
+    print(result.stderr, end="")
+    print("EXIT:", result.returncode)
+    return result
+
+print("A current-turn probe; product behavior not executed")
+with tempfile.TemporaryDirectory(prefix="checker-probe-", dir=WORK) as name:
+    base = Path(name)
+    for case, replacement in (
+        ("four_space_heading", "    ## 停止条件"),
+        ("tab_heading", "\t## 停止条件"),
+        ("fenced_heading", "```text\n## 停止条件\n```"),
+        ("comment_heading", "<!--\n## 停止条件\n-->"),
+    ):
+        stage = module.PlanScheduleTests().make_stage(base / case)
+        card = stage / "tasks/T-03.md"
+        card.write_text(module.card_text("T-03").replace("## 停止条件", replacement),
+                        encoding="utf-8")
+        result = module.checker.validate_stage_dir(stage)
+        print(case, [(p.name, message) for p, message in result])
+    stage = module.PlanScheduleTests().make_stage(base / "completed")
+    (stage / "tasks/T-03.md").write_text(module.card_text("T-03", "completed"),
+                                       encoding="utf-8")
+    print("completed_card", [(p.name, m) for p, m in module.checker.validate_stage_dir(stage)])
+    cli(stage)
+
+    real = ROOT / "docs/stage_plans/active/stage-07-rr"
+    original = digest(real / "schedule.md")
+    stage = base / "real_copy"
+    shutil.copytree(real, stage)
+    assert cli(stage).returncode == 0
+    schedule = stage / "schedule.md"
+    before = schedule.read_text(encoding="utf-8")
+    needle = "| 4 | T-05 | T-04 | 可并行 |"
+    assert before.count(needle) == 1
+    copied_hashes = {p.relative_to(stage): digest(p) for p in stage.rglob("*") if p.is_file()}
+    schedule.write_text(before.replace(needle, "| 4 | T-05 | T-04, T-06 | 可并行 |"),
+                        encoding="utf-8")
+    result = cli(stage)
+    failures = module.checker.validate_stage_dir(stage)
+    assert result.returncode == 1 and len(failures) == 1
+    changed_line = before.splitlines().index(needle) + 1
+    assert failures[0][1] == f"line {changed_line}: prerequisite T-06 must be in an earlier wave"
+    changed = [str(p.relative_to(stage)) for p in stage.rglob("*")
+               if p.is_file() and digest(p) != copied_hashes[p.relative_to(stage)]]
+    assert changed == ["schedule.md"]
+    assert original == digest(real / "schedule.md")
+    print("negative_copy_changed_only:", changed)
+    print("original_schedule_raw_sha256_unchanged:", original)
+
+print("Geometry arithmetic only:")
+w, h = 548, 1280
+r = F(9, 21)
+k = max(F(w) / r, F(h))
+qx, qy = k * r / w, k / h
+author = F(1, 4), F(-1, 2)
+rotated = author[1], -author[0]
+out = qx * rotated[0], qy * rotated[1]
+pixel = (out[0] + 1) * w / 2, (1 - out[1]) * h / 2
+assert (qx, qy) == (F(960, 959), F(1))
+assert pixel == (F(958, 7), F(800))
+assert (pixel[0] + 86, pixel[1]) == (F(1560, 7), F(800))
+inverse = lambda v: (-v[1] / qy, v[0] / qx)
+assert inverse(out) == author and inverse(inverse(out)) != author
+print("Q=", (str(qx), str(qy)), "content_pixel=", tuple(map(str, pixel)),
+      "host_pixel=", (str(pixel[0] + 86), str(pixel[1])),
+      "single_inverse=", tuple(map(str, inverse(out))),
+      "double_inverse=", tuple(map(str, inverse(inverse(out)))))
+for degrees, x, y in ((90, F(0), F(-1, 2)), (270, F(0), F(1, 2))):
+    print("legacy_rotation", degrees, "pixel", ((x + 1) * 50, (1 - y) * 100))
+print("Probe completed; reported checker edge cases require separate adjudication.")
+
+Stop修订后的A七文档短自检实际输出
+COMMAND: git diff --check -- docs/stage_plans/active/stage-07-rr/contracts/runtime-timing.md docs/stage_plans/active/stage-07-rr/contracts/prepared-artifact.md docs/stage_plans/active/stage-07-rr/tasks/T-10.md docs/stage_plans/active/stage-07-rr/tasks/T-11.md docs/stage_plans/active/stage-07-rr/tasks/T-12.md docs/stage_plans/active/stage-07-rr/tasks/T-13.md docs/stage_plans/active/stage-07-rr/tasks/T-14.md
+warning: in the working copy of 'docs/stage_plans/active/stage-07-rr/contracts/prepared-artifact.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/stage_plans/active/stage-07-rr/contracts/runtime-timing.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/stage_plans/active/stage-07-rr/tasks/T-10.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/stage_plans/active/stage-07-rr/tasks/T-11.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/stage_plans/active/stage-07-rr/tasks/T-12.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/stage_plans/active/stage-07-rr/tasks/T-13.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/stage_plans/active/stage-07-rr/tasks/T-14.md', LF will be replaced by CRLF the next time Git touches it
+
+EXIT: 0
+
+
+追加：B checker最小差量复验（2026-11-22T04:29:33.661612+00:00）
+本轮复用原代理进行核实、修订与交叉验证；A只读checker/test/tools README，未越域编辑。
+IR17/IR18后续差量裁定：成立。check_plan_schedule.py:336改从raw识别0-3空格后的H2，缩进code不补齐卡；:379允许completed，:433-444单列completed且当前派单只取active；:397-402保留candidate隔离（active/completed不得依赖candidate）。test_check_plan_schedule.py:281-296覆盖0-3空格正例、四空格/tab/混合缩进反例；:313-334覆盖completed前置合法、completed不派发及不得依赖candidate。tools/README.md:17说明同步。
+A实际复跑27项测试exit0；真实stage显示9 active/7 candidate/0 completed且exit0。原独立探针复跑：四空格/tab/围栏/注释均检出缺段；completed_card=[]、CLI exit0且T03不在Current-stage列表；真实副本T05加T06仅产生schedule:19的波次错误，原schedule哈希与其余副本文件保持。两个checker边缘在所审版本可关闭，不作完整Markdown解析器或其它状态管理保证。
+此时T15 ALLOWED待跨域同步；A Stop旧概述的修订及已给B哈希保持，生产验证待实施。前段原发现与输出按时点保留，不回写成过去已通过。
+afbdc10a1e8596904276909fec5c68038b6acc5cc52e6be6a963b112ae49523d  tools/verification/check_plan_schedule.py
+8c651ea330cb3dab73e65a9bb746e53d21786e67212f45a8e99e089389a4e9cd  tools/verification/test_check_plan_schedule.py
+71da6be828377a4a6c4a99abfc2d08fba100b4d6dd7c1616cb3cd9eb40fc8e73  tools/README.md
+
+SOURCE out\review\stage-07-rr\checkout-review-A-20261122\checker-tests-after-edge-fix.txt
+COMMAND: python -B tools/verification/test_check_plan_schedule.py
+...........................
+----------------------------------------------------------------------
+Ran 27 tests in 0.606s
+
+OK
+
+EXIT: 0
+
+SOURCE out\review\stage-07-rr\checkout-review-A-20261122\checker-stage-after-edge-fix.txt
+COMMAND: python -B tools/verification/check_plan_schedule.py
+Plan schedule checks passed: 9 active task cards; 7 candidate cards; 0 completed cards.
+Current-stage cards (adoption and prerequisites still apply): T-01, T-02, T-03, T-04, T-05, T-06, T-07, T-08, T-09
+Candidate-only cards (separate adoption required): T-10, T-11, T-12, T-13, T-14, T-15, T-16
+Completed cards: none
+
+EXIT: 0
+
+SOURCE out\review\stage-07-rr\checkout-review-A-20261122\cross-review-probe-after-edge-fix.txt
+COMMAND: python -B out/review/stage-07-rr/checkout-review-A-20261122/cross-review-probe.py (after edge fix; PYTHONIOENCODING=utf-8)
+A current-turn probe; product behavior not executed
+four_space_heading [('T-03.md', 'task sections must occur once in order: 目标, 输入, 写域, 步骤, 任务级验收, 证据, 停止条件')]
+tab_heading [('T-03.md', 'task sections must occur once in order: 目标, 输入, 写域, 步骤, 任务级验收, 证据, 停止条件')]
+fenced_heading [('T-03.md', 'task sections must occur once in order: 目标, 输入, 写域, 步骤, 任务级验收, 证据, 停止条件')]
+comment_heading [('T-03.md', 'task sections must occur once in order: 目标, 输入, 写域, 步骤, 任务级验收, 证据, 停止条件')]
+completed_card []
+COMMAND: C:\msys64\ucrt64\bin\python.exe -B E:\Cuexis-worktree\tools\verification\check_plan_schedule.py --stage-dir E:\Cuexis-worktree\out\review\stage-07-rr\checkout-review-A-20261122\checker-probe-8q03ot0a\completed\docs\stage_plans\active\stage-07-rr
+Plan schedule checks passed: 2 active task cards; 0 candidate cards; 1 completed cards.
+Current-stage cards (adoption and prerequisites still apply): T-01, T-02
+Candidate-only cards (separate adoption required): none
+Completed cards: T-03
+EXIT: 0
+COMMAND: C:\msys64\ucrt64\bin\python.exe -B E:\Cuexis-worktree\tools\verification\check_plan_schedule.py --stage-dir E:\Cuexis-worktree\out\review\stage-07-rr\checkout-review-A-20261122\checker-probe-8q03ot0a\real_copy
+Plan schedule checks passed: 9 active task cards; 7 candidate cards; 0 completed cards.
+Current-stage cards (adoption and prerequisites still apply): T-01, T-02, T-03, T-04, T-05, T-06, T-07, T-08, T-09
+Candidate-only cards (separate adoption required): T-10, T-11, T-12, T-13, T-14, T-15, T-16
+Completed cards: none
+EXIT: 0
+COMMAND: C:\msys64\ucrt64\bin\python.exe -B E:\Cuexis-worktree\tools\verification\check_plan_schedule.py --stage-dir E:\Cuexis-worktree\out\review\stage-07-rr\checkout-review-A-20261122\checker-probe-8q03ot0a\real_copy
+Plan schedule checks failed:
+- E:\Cuexis-worktree\out\review\stage-07-rr\checkout-review-A-20261122\checker-probe-8q03ot0a\real_copy\schedule.md: line 19: prerequisite T-06 must be in an earlier wave
+EXIT: 1
+negative_copy_changed_only: ['schedule.md']
+original_schedule_raw_sha256_unchanged: 06d9eee89c9d1265da42c39fcc482545f98ae02a2baa780ca75d67812e123059
+Geometry arithmetic only:
+Q= ('960/959', '1') content_pixel= ('958/7', '800') host_pixel= ('1560/7', '800') single_inverse= ('1/4', '-1/2') double_inverse= ('1/2', '959/3840')
+legacy_rotation 90 pixel (Fraction(50, 1), Fraction(150, 1))
+legacy_rotation 270 pixel (Fraction(50, 1), Fraction(50, 1))
+Probe completed; reported checker edge cases require separate adjudication.
+
+EXIT: 0
+
+
+追加：T15 ALLOWED 最终差量复验
+记录时间 UTC: 2026-11-22T04:33:00.724581+00:00
+本轮复用原代理进行核实、修订与交叉验证。本次仅只读复验T15指定差量及对应根依赖守卫，追加本回执；没有扩展审查范围。
+裁定：成立。此前IR12剩余P2的设计缺口可关闭。T-15.md:25已把根CMake该测试ALLOWED、SDL3用途/模块记录及依赖政策适用记录列入同卡写域；:33明确在cuexis_platform_sdl_tests原ALLOWED中追加SDL3::SDL3且保留原两项，沿用既有SDL3并记录测试目标不分发，重新配置candidate-debug通过实际逐边守卫后再构建/运行平台测试。
+对应代码：CMakeLists.txt:1291-1296为实际cuexis_platform_sdl_tests依赖白名单；cmake/VerifyArchitecture.cmake:650-657逐个拒绝未列入ALLOWED的直接依赖。任务卡已明确真实target、首改位置、链接与白名单同步以及配置验收顺序，执行者无需猜补哪条边。当前生产CMake尚未加该边是候选未实施事实，不再记为设计缺口。
+当前T15 LF-SHA256（CRLF转LF，其余字节不改）：47663e55489ec5a2f9a0b3d253e8d44392a45e2f41d157c96fedc213616c5046
+实际读取的差量正文：
+25: 物理键落点包括 `engine/platform/src/sdl_window.cpp`、`engine/platform/include/cuexis/platform_sdl/sdl_window.hpp`（仅追加枚举值，事件结构不改）、`tests/platform/sdl_window_tests.cpp` 及 `tests/platform/CMakeLists.txt`。平台测试 PRIVATE 链接 `SDL3::SDL3` 以注入真实 SDL 事件；同卡写域包括根 `CMakeLists.txt` 中该测试的依赖 `ALLOWED`、`THIRD_PARTY_NOTICES.md` 的 SDL3 用途/所属模块登记及[依赖政策](../../../../guides/DEPENDENCY_POLICY.md#依赖记录)要求的其它适用记录。生产 SDL 依赖和公开 SDK ABI 不扩展。
+33: 新增测试的 `PRIVATE SDL3::SDL3` 链接时，同卡在根 `cuexis_verify_target_dependencies(cuexis_platform_sdl_tests ALLOWED ...)` 追加 `SDL3::SDL3`，保留原两项。按依赖政策在既有 SDL3 登记中注明 `cuexis_platform_sdl_tests` 的事件注入用途及测试目标不进入分发；核验并记录现有 vcpkg feature/baseline、许可与安装清单的适用影响，沿用已有 SDL3，不因这一测试边新增 port 或修改公共传播边。重新配置 `candidate-debug` 通过实际逐边守卫后，再定向构建及执行下述平台测试。
+验证边界：仅文本/代码对照和哈希绑定；本次未运行configure或产品测试，未重跑此前已验证27项的checker。没有把卡内将来要求的configure写成已执行。
+本轮A负责核实/修订及指定交叉复验范围的可实施性结论：成立。此前报告的T15 ALLOWED为最后一个具体剩余阻断，本次差量后该范围内无已证实的具体剩余阻断。Stop顺序已按前段记录统一；checker两个边缘沿此前实测结果关闭。候选生产实现、实际编译/安装/运行验证仍按任务实施，本结论不外推为产品已实现或全仓无缺陷。

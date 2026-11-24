@@ -1,5 +1,12 @@
 # R3 owner 门裁定：阶段计时登记、40K 240 FPS 与内存上限（2026-11-02）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-02-r3-owner-gate-rulings
+status: evidence
+authority: none
+date: 2026-11-02
+-->
+
 状态：active；owner 裁定记录，自 2026-11-02 起生效
 
 日期：2026-11-02

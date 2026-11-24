@@ -1,5 +1,12 @@
 # R4 F4 技术门账与 PD-5 移交准备
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-07-f4-gate-and-handoff
+status: evidence
+authority: none
+date: 2026-11-07
+-->
+
 状态：prepared；不是退出接受记录
 
 日期：2026-11-07

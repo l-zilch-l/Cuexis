@@ -1,5 +1,11 @@
 # ADR 0014：统一 Chart Object 与 Component Schema
 
+<!-- cuexis-meta
+id: ADR-0014
+status: accepted
+authority: owns
+-->
+
 日期：2026-07-17；v3 补充：2026-08-04
 
 状态：已接受

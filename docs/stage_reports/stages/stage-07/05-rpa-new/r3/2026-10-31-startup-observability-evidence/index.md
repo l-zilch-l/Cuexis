@@ -1,5 +1,11 @@
 # 启动可观测性与 prepare 复用附件
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-31-startup-observability-evidence.index
+status: evidence
+authority: none
+-->
+
 状态：冻结证据索引。返回 [批次报告](../2026-10-31-r3-startup-observability-and-prepare-reuse.md)。
 
 - [复制来源、原始字节及哈希](manifest.json)

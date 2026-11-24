@@ -1,5 +1,12 @@
 # R3 最终本地验证与 R3c 采用决定（2026-11-04）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-04-r3-final-validation-and-r3c-decision
+status: evidence
+authority: none
+date: 2026-11-04
+-->
+
 状态：local verification + candidate disposition；test-only；**不是** R3 退出、hosted 验证、设备、
 生产或 owner 接受。
 

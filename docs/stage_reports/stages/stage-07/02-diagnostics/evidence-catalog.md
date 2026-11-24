@@ -1,5 +1,11 @@
 # Diagnostics Evidence Catalog
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.02-diagnostics.evidence-catalog
+status: evidence
+authority: none
+-->
+
 状态：current index
 
 更新日期：2026-10-26

@@ -1,5 +1,12 @@
 # R3 setup 波动与首次 Seek 的轻量探针归因
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-28-r3-seek-noise-attribution
+status: evidence
+authority: none
+date: 2026-10-28
+-->
+
 状态：diagnostic；定位热点，未完成两个历史现象的唯一根因裁定；R3 未退出
 
 日期：2026-10-28，Asia/Shanghai

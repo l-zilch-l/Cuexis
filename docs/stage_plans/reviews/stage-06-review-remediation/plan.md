@@ -1,5 +1,11 @@
 # stage-06-review-remediation：Stage 6 复核发现项修正计划
 
+<!-- cuexis-meta
+id: PLAN-reviews.stage-06-review-remediation.plan
+status: completed
+authority: owns
+-->
+
 本计划把 [Stage 6 双轴复核记录](../../../stage_reports/reviews/stage-06-review-2026-09/2026-09-28-summary.md)
 （区间 `13dab93..eaaf375`）的发现项整理为可执行、可验证的修正批次。两轴结果在记录中保持分离，
 本计划**只在批次内部按依赖排序**，不跨轴重新排序，也不把两轴合并成一张判定表。

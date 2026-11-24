@@ -1,5 +1,12 @@
 # S6-D2 最小化与恢复
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-06.2026-09-23-s6-d2-minimize-restore
+status: evidence
+authority: none
+date: 2026-09-23
+-->
+
 状态：本地补充证据（不是新的 D2 退出，也不是 Stage 6 关闭）
 
 日期：2026-09-23

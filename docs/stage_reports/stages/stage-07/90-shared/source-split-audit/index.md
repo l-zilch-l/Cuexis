@@ -1,5 +1,11 @@
 # 源码拆分安全网独立审计（2026-11-03）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.90-shared.source-split-audit.index
+status: evidence
+authority: none
+-->
+
 状态：archived evidence；独立复核原文与现状注记
 
 审计对象：`562f54d3`（`Cuexis-redesign` 分支）完成的超限源文件拆分

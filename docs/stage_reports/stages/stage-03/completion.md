@@ -1,5 +1,11 @@
 # Cuexis 阶段 3 验收报告
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-03.completion
+status: evidence
+authority: none
+-->
+
 状态：实现与本地/hosted 跨平台验收完成；阶段 3 已最终关闭
 报告日期：2026-08-08
 完成版本：`26.07.18.18-1`（Debug：`26.07.18.18-1-dev`）

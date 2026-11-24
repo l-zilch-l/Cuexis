@@ -1,5 +1,12 @@
 # R3 1080p 容量前缘区间（2026-11-01，诊断）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-r3-capacity-frontier-bracket
+status: evidence
+authority: none
+date: 2026-11-01
+-->
+
 状态：diagnostic only；**不是**容量接受、性能门通过、R3/R4 退出或生产接受
 
 日期：2026-11-01

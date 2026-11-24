@@ -1,9 +1,16 @@
 # Stage 7-RPA 性能整改候选设计审阅（2026-10-24）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.design.2026-10-24-performance-remediation-design-review
+status: evidence
+authority: none
+date: 2026-10-24
+-->
+
 状态：design review；本轮只读静态审阅，未构建、未运行 CTest、未登记或执行任何测量。
 下文 §1–§7 保留送审版的发现与建议；同日后续五点裁定及调用链校准见 §8。候选方案已按 §8 修订，以下送审行数/hash 不代表修订后文件。
 日期：2026-10-24（Asia/Shanghai）。
-审阅对象：[Stage 7-RPA 性能整改方案](../../../../../stage_plans/active/stage-07/05-rpa-new/plan.md)，
+审阅对象：[Stage 7-RPA 性能整改方案](../../../../../stage_plans/completed/stage-07/05-rpa-new/plan.md)，
 660 行，SHA-256 `557F5DD489C06447CDCA93BB0FAD2D80ACCE15A0CC012B4B4A2308847F23A4C2`。
 迁入前的外部设计稿为 655 行，SHA-256 `66CD46FF4F2FB76F78209C5D65562B7D57ADFC49F24EE1A6F88A9FC5BB49FED6`；
 迁入只改状态行、路径表述与链接，技术结论未改写。
@@ -14,7 +21,7 @@
 ## 结论
 
 方案可以作为 RPA 性能整改的 **candidate** 进入实施前评审：R0 先归因、R1 先修 Close 清理许可与续行、R2 用有界中性块处理读取、R3 按成本分三档、R4 才做集成的顺序，与
-[plan-rpa](../../../../../stage_plans/active/stage-07/03-rpa-legacy/plan.md) 的 B0–B5 批次、现有冻结证据和“维护性优先”的取舍一致。
+[plan-rpa](../../../../../stage_plans/completed/stage-07/03-rpa-legacy/plan.md) 的 B0–B5 批次、现有冻结证据和“维护性优先”的取舍一致。
 本轮未发现方向性错误，也没有发现需要推翻的既有裁定。
 
 需要在接受前裁定的有四点，另有一点属于记录性偏差：
@@ -87,7 +94,7 @@ R1 当前只有“清理许可”这一半：suspended Close 可以跳过正常 
 
 ### F3 136 B 与 128 B 口径未统一
 
-[pd5-read-result-candidate.md](../../../../../stage_plans/active/stage-07/04-pd/pd-5/pd5-read-result-candidate.md):10 记 F1 返回点写 128 bytes 中性值；
+[pd5-read-result-candidate.md](../../../../../stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-result-candidate.md):10 记 F1 返回点写 128 bytes 中性值；
 准入树工作区报告 `2026-10-23-read-regression-static-attribution`（未提交）:69,73,80 记 136 B DTO。设计 §1 与 §7 使用 136 B。
 按当前头文件字段推算（两个 `string_view` 32 + 四个标志位 `hasTransform`/`hasAppearance`/`hasRenderable`/`visible` + `Mat4` 64 + `double` 8 + `Vec3` 12 + 对齐）为 128 B；
 136 B 更可能对应 F1 冻结版本的多标志/对齐差异。两者都不是本轮可复算的常量。
@@ -140,7 +147,7 @@ cleanupComplete/softwareApplied，但 fence 拒绝原因、flush 失败阶段和
 - 设计文档从外部稿迁入时只改状态行、路径表述和链接；正文技术结论与其内部分节编号未改，可按 §1–§13 对读。
 - 本轮只读源码、合同、冻结工具与已保存证据；未修改产品、未构建、未运行 CTest、未登记或执行测量、未提交。
 - 2026-10-23/24 的 PD 40k、读取归因与 B0/B1 报告目前只在准入树工作区，尚未进入主树；本报告按文件名引用它们，不建仓库链接，以免产生断链。
-- 主树改动仅为本文、[候选设计](../../../../../stage_plans/active/stage-07/05-rpa-new/plan.md)与三处索引/交叉引用（计划总索引、RPA 分册、RPA 证据索引）；该轮未提交，两者随后由 `f0c7e3230e3abd479fda18e009a7688df89c7672` 入库。`git diff --check` 与 `tools/check_docs.py` 以最终工作区为准。
+- 主树改动仅为本文、[候选设计](../../../../../stage_plans/completed/stage-07/05-rpa-new/plan.md)与三处索引/交叉引用（计划总索引、RPA 分册、RPA 证据索引）；该轮未提交，两者随后由 `f0c7e3230e3abd479fda18e009a7688df89c7672` 入库。`git diff --check` 与 `tools/check_docs.py` 以最终工作区为准。
 
 ## 8. F1–F5 后续裁定（2026-10-24）
 

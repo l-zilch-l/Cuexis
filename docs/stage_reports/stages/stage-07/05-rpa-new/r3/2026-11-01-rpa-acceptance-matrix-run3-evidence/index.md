@@ -1,5 +1,11 @@
 # 同源本地验收矩阵第三次运行附件
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-rpa-acceptance-matrix-run3-evidence.index
+status: evidence
+authority: none
+-->
+
 状态：冻结证据索引。返回
 [第三次运行报告](../2026-11-01-r3-acceptance-matrix-third-run.md)。
 

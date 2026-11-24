@@ -1,5 +1,12 @@
 # SDK 0.9.1 与当前架构文档同步
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-28-sdk-091-architecture-sync
+status: evidence
+authority: none
+date: 2026-10-28
+-->
+
 状态：candidate；文档与版本定向核验记录，不构成发行或 R3 退出
 
 快照日期：2026-10-28

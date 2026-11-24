@@ -16,7 +16,7 @@
       "sha256": "6788ec77dfb790f85c2fcdae87b6c5942dbed2022d8222d92c6d3a3e81341216",
       "tool": "tools/verification/playback_performance/audit_element_sizes.py"
     },
-    "checklist_source": "docs/stage_plans/active/stage-07/pd5-measurement-proposal.md L119-120"
+    "checklist_source": "docs/stage_plans/completed/stage-07/pd5-measurement-proposal.md L119-120"
   },
   "checklist_coverage": {
     "cpu_payload": {

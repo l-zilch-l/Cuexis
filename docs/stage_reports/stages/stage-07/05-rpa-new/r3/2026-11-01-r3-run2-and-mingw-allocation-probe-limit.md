@@ -1,5 +1,12 @@
 # R3 第二次同源矩阵尝试与 MinGW 分配探针极限（2026-11-01）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-r3-run2-and-mingw-allocation-probe-limit
+status: evidence
+authority: none
+date: 2026-11-01
+-->
+
 状态：local diagnostic；test-only；**不是** R3/R4 退出、矩阵通过、hosted 验证或 owner 接受
 
 日期：2026-11-01

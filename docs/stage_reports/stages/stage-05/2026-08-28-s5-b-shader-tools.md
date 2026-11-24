@@ -1,5 +1,12 @@
 # Stage 5 S5-B Shader Tools Wiring
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-05.2026-08-28-s5-b-shader-tools
+status: evidence
+authority: none
+date: 2026-08-28
+-->
+
 状态：S5-B local checkpoint；S5-C 尚未开始；默认 Playback 仍只保证 Unlit v1
 
 报告日期：2026-08-28

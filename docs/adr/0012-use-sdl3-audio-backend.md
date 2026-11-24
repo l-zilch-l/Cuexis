@@ -1,5 +1,11 @@
 # ADR 0012：使用 SDL3 音频后端和采样帧时钟
 
+<!-- cuexis-meta
+id: ADR-0012
+status: accepted
+authority: owns
+-->
+
 日期：2026-07-17
 
 状态：已接受

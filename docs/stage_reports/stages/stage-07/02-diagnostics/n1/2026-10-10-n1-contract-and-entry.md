@@ -1,5 +1,12 @@
 # N1 Diagnostic Contract and Implementation Entry
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.02-diagnostics.n1.2026-10-10-n1-contract-and-entry
+status: evidence
+authority: none
+date: 2026-10-10
+-->
+
 证据日期：2026-10-10。base HEAD：`2ddbcafe22bd3facc63b4917cf99eeccc3d81cd1`，branch stage-7。
 当前实现状态归[CURRENT_STATUS](../../../../../CURRENT_STATUS.md)。本报告记录N1准入，不声称N2/N3通过。
 

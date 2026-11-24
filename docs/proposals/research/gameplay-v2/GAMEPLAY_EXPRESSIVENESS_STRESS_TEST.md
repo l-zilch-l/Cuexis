@@ -1,5 +1,11 @@
 # Gameplay V2 表达力压测报告
 
+<!-- cuexis-meta
+id: PROPOSALS-research.gameplay-v2.GAMEPLAY_EXPRESSIVENESS_STRESS_TEST
+status: candidate
+authority: none
+-->
+
 状态：candidate；研究证据，未接受，未实施
 
 更新日期：2026-10-02

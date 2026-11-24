@@ -1,5 +1,12 @@
 # `read_long` 整改：相机逆矩阵缓存（诊断轮，无正式结论）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-11-read-long-camera-inverse
+status: evidence
+authority: none
+date: 2026-11-11
+-->
+
 状态：candidate diagnostic；两轮单变量诊断，未消费正式额度
 
 日期：2026-11-11

@@ -1,0 +1,38 @@
+{
+  "positive_returncode": 0,
+  "positive_stdout": "NOT CHECKED: CMake target facts are missing; set CUEXIS_TARGETS_FILE to fresh configure output\nNOTICE: first migration: compared original rows from trusted legacy revision ca5cbb9121b015ae0b3b5d681610ca94dac78184\nNOTICE: Git protection checked against ca5cbb9121b015ae0b3b5d681610ca94dac78184: 149 definitions\nNOTICE: current definitions: 149; evidence sufficiency remains a human review\nNOTICE: topics covered: 8; unregistered/synonymous topics are not covered; semantic correctness is not checked\nNOTICE: Git base has no active topics; this run establishes coverage and cannot prove earlier ownership\nNOTICE: templates, fenced examples and original evidence attachments are excluded; functional semantics are not checked\nDocumentation checks passed: 778 Markdown files and 20 candidate JSON/CXT files validated.\n",
+  "negative_results": [
+    {
+      "case": "duplicate metadata ID",
+      "returncode": 1,
+      "required_diagnostic": "duplicate metadata id",
+      "stdout": "NOT CHECKED: CMake target facts are missing; set CUEXIS_TARGETS_FILE to fresh configure output\nNOTICE: first migration: compared original rows from trusted legacy revision ca5cbb9121b015ae0b3b5d681610ca94dac78184\nNOTICE: Git protection checked against ca5cbb9121b015ae0b3b5d681610ca94dac78184: 149 definitions\nNOTICE: current definitions: 149; evidence sufficiency remains a human review\nNOTICE: topics covered: 8; unregistered/synonymous topics are not covered; semantic correctness is not checked\nNOTICE: Git base has no active topics; this run establishes coverage and cannot prove earlier ownership\nNOTICE: templates, fenced examples and original evidence attachments are excluded; functional semantics are not checked\nDocumentation checks failed:\n- docs\\DOCUMENTATION_POLICY.md: duplicate metadata id GUIDE-DOC-POLICY: docs/api/playback-session.md\n"
+    },
+    {
+      "case": "duplicate finding definition",
+      "returncode": 1,
+      "required_diagnostic": "duplicate definition",
+      "stdout": "NOT CHECKED: CMake target facts are missing; set CUEXIS_TARGETS_FILE to fresh configure output\nNOTICE: first migration: compared original rows from trusted legacy revision ca5cbb9121b015ae0b3b5d681610ca94dac78184\nNOTICE: Git protection checked against ca5cbb9121b015ae0b3b5d681610ca94dac78184: 149 definitions\nNOTICE: current definitions: 148; evidence sufficiency remains a human review\nNOTICE: topics covered: 8; unregistered/synonymous topics are not covered; semantic correctness is not checked\nNOTICE: Git base has no active topics; this run establishes coverage and cannot prove earlier ownership\nNOTICE: templates, fenced examples and original evidence attachments are excluded; functional semantics are not checked\nDocumentation checks failed:\n- docs\\stage_plans\\active\\stage-07-rr\\findings.md: line 63: RR-F002: duplicate definition\n- docs\\stage_plans\\active\\stage-07-rr\\findings.md: undefined finding reference: RR-F001\n- docs\\stage_plans\\active\\stage-07-rr\\findings.md: protected definition removed or renumbered: RR-F001\n"
+    },
+    {
+      "case": "original finding rewritten",
+      "returncode": 1,
+      "required_diagnostic": "protected original changed",
+      "stdout": "NOT CHECKED: CMake target facts are missing; set CUEXIS_TARGETS_FILE to fresh configure output\nNOTICE: first migration: compared original rows from trusted legacy revision ca5cbb9121b015ae0b3b5d681610ca94dac78184\nNOTICE: Git protection checked against ca5cbb9121b015ae0b3b5d681610ca94dac78184: 149 definitions\nNOTICE: current definitions: 149; evidence sufficiency remains a human review\nNOTICE: topics covered: 8; unregistered/synonymous topics are not covered; semantic correctness is not checked\nNOTICE: Git base has no active topics; this run establishes coverage and cannot prove earlier ownership\nNOTICE: templates, fenced examples and original evidence attachments are excluded; functional semantics are not checked\nDocumentation checks failed:\n- docs\\stage_plans\\active\\stage-07-rr\\findings.md: RR-F001: protected original changed; append a dated correction instead\n"
+    },
+    {
+      "case": "illegal new template name",
+      "returncode": 1,
+      "required_diagnostic": "template name must be lowercase kebab-case.md",
+      "stdout": "NOT CHECKED: CMake target facts are missing; set CUEXIS_TARGETS_FILE to fresh configure output\nNOTICE: first migration: compared original rows from trusted legacy revision ca5cbb9121b015ae0b3b5d681610ca94dac78184\nNOTICE: Git protection checked against ca5cbb9121b015ae0b3b5d681610ca94dac78184: 149 definitions\nNOTICE: current definitions: 149; evidence sufficiency remains a human review\nNOTICE: topics covered: 8; unregistered/synonymous topics are not covered; semantic correctness is not checked\nNOTICE: Git base has no active topics; this run establishes coverage and cannot prove earlier ownership\nNOTICE: templates, fenced examples and original evidence attachments are excluded; functional semantics are not checked\nDocumentation checks failed:\n- docs\\templates\\Invalid_File.md: not reachable from docs/README.md\n- docs\\templates\\Invalid_File.md: template name must be lowercase kebab-case.md\n- docs\\templates\\Invalid_File.md: template must be linked from docs/templates/README.md\n"
+    },
+    {
+      "case": "strict real repository without generated CMake facts",
+      "returncode": 1,
+      "stdout": "NOT CHECKED: CMake target facts are missing; set CUEXIS_TARGETS_FILE to fresh configure output\nNOTICE: first migration: compared original rows from trusted legacy revision ca5cbb9121b015ae0b3b5d681610ca94dac78184\nNOTICE: Git protection checked against ca5cbb9121b015ae0b3b5d681610ca94dac78184: 149 definitions\nNOTICE: current definitions: 149; evidence sufficiency remains a human review\nNOTICE: topics covered: 8; unregistered/synonymous topics are not covered; semantic correctness is not checked\nNOTICE: Git base has no active topics; this run establishes coverage and cannot prove earlier ownership\nNOTICE: templates, fenced examples and original evidence attachments are excluded; functional semantics are not checked\nDocumentation checks failed:\n- docs\\guides\\BUILDING.md: strict documentation check requires generated target facts\n",
+      "stderr": ""
+    }
+  ],
+  "original_files_unchanged": true,
+  "method": "Real total entry; Path reads/listings substituted in memory only for fault cases. No original Markdown was written."
+}

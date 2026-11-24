@@ -1,5 +1,12 @@
 # RPA-N0 当前诊断码清单与额外命名复核
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.02-diagnostics.n0.2026-10-10-n0-diagnostic-inventory-review
+status: evidence
+authority: none
+date: 2026-10-10
+-->
+
 状态：dated audit；N0静态复核完成，N1合同与兼容策略未定，N2/N3未实施
 
 证据日期：2026-10-10（Asia/Shanghai）。分支：`stage-7`。
@@ -13,7 +20,7 @@
 不修改产品实现、格式/ABI合同、集中码表或版本，不执行提交、推送、PR或发行。
 原有未提交文档迁移全部保留；N0不授权架构产品实施或RPA-F关闭。
 
-以[RPA正式命名工作线](../../../../../stage_plans/active/stage-07/03-rpa-legacy/plan.md#正式命名工作线)
+以[RPA正式命名工作线](../../../../../stage_plans/completed/stage-07/03-rpa-legacy/plan.md#正式命名工作线)
 为范围，复用[历史审计](../audit/2026-10-09-diagnostic-phase-name-audit.md)，读取其中原始ZIP清单，
 按当前工作树扫描engine/app/tools/tests/schemas/cmake/docs的1538份受Git跟踪或非忽略文本。
 扫描常量及其符号引用、完整字符串、动态前后缀、码表family元数据，并手工核查关键调用。

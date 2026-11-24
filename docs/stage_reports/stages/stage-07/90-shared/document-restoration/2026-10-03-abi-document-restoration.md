@@ -1,11 +1,18 @@
 # `docs/api/GAMEPLAY_V2_ABI.md` 事故性截断与重建的证据报告
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.90-shared.document-restoration.2026-10-03-abi-document-restoration
+status: evidence
+authority: none
+date: 2026-10-03
+-->
+
 状态：dated evidence record（一次文件截断事故与随后的重建、以及双线独立交叉验证的带日期证据；
 **不是**实施证据、**不是** owner acceptance、**不是** Judgement 实现完成声明、**也不是** Stage 7A 完成声明）
 
 更新日期：2026-10-03
 
-上级文档：[Stage 7A 实施计划](../../../../../stage_plans/active/stage-07/plan.md) ·
+上级文档：[Stage 7A 实施计划](../../../../../stage_plans/completed/stage-07/plan.md) ·
 [Gameplay V2 acceptance package](../../../../../proposals/gameplay-v2-acceptance/README.md) ·
 [未决语义分轮裁决清单](../../../../../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md) ·
 [批次门禁](../../../../../proposals/gameplay-v2-acceptance/BATCH_GATES.md) ·

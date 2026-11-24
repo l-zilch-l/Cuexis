@@ -1,5 +1,12 @@
 # Cuexis RPA 目标架构初步设计稿（讨论版）
 
+<!-- cuexis-meta
+id: ARCHIVE-stage-07-planning.03-rpa-legacy.2026-10-10-rpa-target-architecture-draft
+status: historical
+authority: none
+date: 2026-10-10
+-->
+
 状态：archived；v0.5讨论快照，不是现行实施计划或已接受架构。
 
 归档日期：2026-10-10。
@@ -8,7 +15,7 @@
 `d6ea8dfc4f905bdcf337df575a5fd99abe8dada80465db23509b049c12e1b938`。
 本次仅增加归档说明并重定位Markdown链接，以下原稿正文保留。原稿中的“本次只维护此文件”、
 推荐组合和M0–M6属于当时讨论背景，不再定义后续编辑范围或执行顺序。
-现行范围、五方向比较及命名先行门禁归[RPA分册](../../../stage_plans/active/stage-07/03-rpa-legacy/plan.md)，
+现行范围、五方向比较及命名先行门禁归[RPA分册](../../../stage_plans/completed/stage-07/03-rpa-legacy/plan.md)，
 当前状态归[CURRENT_STATUS](../../../CURRENT_STATUS.md)。归档不代表本稿建议已接受、被全部否定或已实施。
 按owner要求项目根目录不保留跳转文件；旧路径登记在[兼容映射](../../../legacy-paths.md)。
 
@@ -953,7 +960,7 @@ v0.5 深化输入前缀停滞/时钟过期/消费者积压的运行策略，定�
 参考入口，均为已有来源：
 
 - [当前状态](../../../CURRENT_STATUS.md)：现状唯一摘要，本稿不承担该角色。
-- [RPA 分册](../../../stage_plans/active/stage-07/03-rpa-legacy/plan.md)：工作范围、归属、门禁。
+- [RPA 分册](../../../stage_plans/completed/stage-07/03-rpa-legacy/plan.md)：工作范围、归属、门禁。
 - [ADR 0027](../../../adr/0027-playback-sdk-product-boundary.md)：SDK 产品边界。
 - [ADR 0032](../../../adr/0032-playback-clock-and-prepared-audio-transaction.md)：现有时钟/准备事务。
 - [ADR 0046](../../../adr/0046-realtime-playback-coordination.md)：现有 RPA 候选决策输入。

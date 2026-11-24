@@ -1,10 +1,17 @@
 # 2026-10-24 P8 40k 单侧完整规模定案表
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.memory-attribution.2026-10-24-p8-40k-single-sided-complete-scale-ruling
+status: evidence
+authority: none
+date: 2026-10-24
+-->
+
 **状态**：定案（证据登记与判定）；**运行**：否，本表不重跑 40k、不补窗口、不重建冻结构建。**PD-5 acceptance**：not passed。**Stage C / RPA / 生产 / Stage 7**：均不因本表关闭。
 
 ## 1 边界与本表位置
 
-[测量方案](../../../../../../stage_plans/active/stage-07/04-pd/pd-5/pd5-measurement-proposal.md) §2 L46 把 P8 定义为「RPA-F3 回绑：40,000 两种 reuse 内容、Packed、Snapshot/Seek、Replay」，并要求「另行完整规模证据；不以 P0–P7 代替」。本表就是对这一项的单侧完整规模定案。
+[测量方案](../../../../../../stage_plans/completed/stage-07/04-pd/pd-5/pd5-measurement-proposal.md) §2 L46 把 P8 定义为「RPA-F3 回绑：40,000 两种 reuse 内容、Packed、Snapshot/Seek、Replay」，并要求「另行完整规模证据；不以 P0–P7 代替」。本表就是对这一项的单侧完整规模定案。
 
 三条 owner 裁决构成本表的前提，全部为 2026-10-24 的决定，本表不重新讨论：
 
@@ -12,7 +19,7 @@
 2. 不为 40k 补重复窗口，按单侧完整规模证据登记。
 3. 静态内存上限账本（B0）先做，正式窗口后置。
 
-「单侧」在这里是精确说法，不是修辞：完整规模只在一个时点上取证，low/high 两个进程各一次，是**两种 reuse 内容**而不是同一内容的重复。它因此能支持完整规模下的功能、格式与物理预算判据，以及 owner 已裁定计入的 seek 判据；它不能支持[测量方案](../../../../../../stage_plans/active/stage-07/04-pd/pd-5/pd5-measurement-proposal.md) §5 L129 的绝对延迟窗口统计（该窗口三个进程 p99 的中位数）与 L130 的相对回归配对区间。本表不产出任何窗口统计，也不使用 15% 重复性门——那两个门需要 3 窗口 × 3 对，40k 侧没有。
+「单侧」在这里是精确说法，不是修辞：完整规模只在一个时点上取证，low/high 两个进程各一次，是**两种 reuse 内容**而不是同一内容的重复。它因此能支持完整规模下的功能、格式与物理预算判据，以及 owner 已裁定计入的 seek 判据；它不能支持[测量方案](../../../../../../stage_plans/completed/stage-07/04-pd/pd-5/pd5-measurement-proposal.md) §5 L129 的绝对延迟窗口统计（该窗口三个进程 p99 的中位数）与 L130 的相对回归配对区间。本表不产出任何窗口统计，也不使用 15% 重复性门——那两个门需要 3 窗口 × 3 对，40k 侧没有。
 
 ## 2 证据身份
 

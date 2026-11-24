@@ -4,8 +4,14 @@
 
 更新日期：2026-10-01
 
+<!-- cuexis-meta
+id: ARCH-STAGE6_PRODUCTIZATION_BOUNDARIES
+status: completed
+authority: owns
+-->
+
 Status: S6-A2 dependency and installation contract. `cuexis_presentation_renderer` and
-`cuexis_player_support` exist as internal static libraries. `cuexis_media_import` remains planned.
+`cuexis_player_support` exist as internal static libraries. `cuexis_media_import` 已作为 default-OFF 的 `CUEXIS_BUILD_MEDIA_TOOLS` 目标存在（见 `CMakeLists.txt` 与本文第 127 行）。
 Player source boundaries are recorded in [PLAYER_APPLICATION.md](PLAYER_APPLICATION.md).
 
 ## 1. Direct Dependency Graph
@@ -108,7 +114,7 @@ metadata exposes display version, SDK API version, enabled flavor/components and
 files. A candidate package cannot be accepted by a production consumer accidentally: SDK API
 `0.7.0` installs one production flavor, the candidate switch `CUEXIS_ENABLE_CHART_V5_CANDIDATE` is a
 build-tree compile definition that is not installed and adds no consumer-visible switch, and the
-`Cuexis_ALLOW_EXPERIMENTAL` opt-in of the draft proposal is still not implemented.
+`Cuexis_ALLOW_EXPERIMENTAL` opt-in 已实现：`CMakeLists.txt` 设置 `CUEXIS_BUILD_FLAVOR`，包配置注入 `Cuexis_ALLOW_EXPERIMENTAL` 拒绝块，`cmake/CuexisConfig.cmake.in` 导出 `Cuexis_BUILD_FLAVOR`/`Cuexis_EXPERIMENTAL`。
 
 ## 5. Architecture Verification State
 

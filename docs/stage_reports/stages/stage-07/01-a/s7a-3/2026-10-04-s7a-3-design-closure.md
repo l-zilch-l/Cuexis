@@ -1,5 +1,12 @@
 # S7A-3 设计收口与实施交接报告
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.01-a.s7a-3.2026-10-04-s7a-3-design-closure
+status: evidence
+authority: none
+date: 2026-10-04
+-->
+
 状态：dated design evidence；S7A-3 文档与决策已收口，实施验收未完成
 
 日期：2026-10-04
@@ -29,7 +36,7 @@ candidate 物理合同不再留待实现时任选；未选方案只作历史比�
 | 竞争键、展开与 proof | 同 Spec §3.8.12；i64 priority / u64 tieRank 升序，同资源唯一，局部 first-eligible 唯一性证明 |
 | Packed 物理字段与结构 hash | [Gameplay Capsule v2 format](../../../../../formats/GAMEPLAY_CAPSULE_V2_FORMAT.md)；candidateRevision=2 |
 | C++ typed、所有权与异常 | [Gameplay V2 ABI](../../../../../api/GAMEPLAY_V2_ABI.md)；不把 wire opcode 当成公共 enum |
-| 范围、依赖与门禁 | [Stage 7 计划](../../../../../stage_plans/active/stage-07/plan.md) 与 [BATCH_GATES](../../../../../proposals/gameplay-v2-acceptance/BATCH_GATES.md) |
+| 范围、依赖与门禁 | [Stage 7 计划](../../../../../stage_plans/completed/stage-07/plan.md) 与 [BATCH_GATES](../../../../../proposals/gameplay-v2-acceptance/BATCH_GATES.md) |
 | 方案讨论与选择历史 | [决策登记](2026-10-03-s7a-3-decision-register.md) 与 [W1 选择历史](../../../../../proposals/gameplay-v2-acceptance/S7A-3_PACKED_W1_CANDIDATE.md)；不再复制物理表 |
 
 针对旧草案与跨文档矛盾，已作如下明确处置：

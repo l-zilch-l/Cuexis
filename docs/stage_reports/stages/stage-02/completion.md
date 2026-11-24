@@ -1,5 +1,11 @@
 # Cuexis 阶段 2 完成报告
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-02.completion
+status: evidence
+authority: none
+-->
+
 状态：实现与本地/hosted 跨平台验收完成；阶段 2 已最终关闭
 报告日期：2026-08-06
 完成版本：`26.07.18.18-1`（Debug：`26.07.18.18-1-dev`）

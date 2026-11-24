@@ -1,5 +1,11 @@
 # Compiled Gameplay Graph JSON candidate v1
 
+<!-- cuexis-meta
+id: FORMAT-GAMEPLAY_GRAPH_V1_FORMAT
+status: candidate
+authority: owns
+-->
+
 Status: candidate first-use contract, 2026-10-07 revision 1. This document does not certify
 a Reader, Writer, Entry consumer, production budget or Stage 7A exit. Current implementation
 status belongs to [CURRENT_STATUS](../CURRENT_STATUS.md).

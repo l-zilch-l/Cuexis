@@ -1,5 +1,12 @@
 # Stage 6 复核：二轮细化（范围判定与实测）
 
+<!-- cuexis-meta
+id: EVIDENCE-reviews.stage-06-review-2026-09.2026-09-28-refinement
+status: evidence
+authority: none
+date: 2026-09-28
+-->
+
 状态：historical review snapshot
 快照日期：2026-09-28
 更新日期：2026-09-28

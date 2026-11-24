@@ -1,5 +1,11 @@
 # ADR 0006：分离渲染前端与后端
 
+<!-- cuexis-meta
+id: ADR-0006
+status: accepted
+authority: owns
+-->
+
 日期：2026-07-17
 
 状态：已接受

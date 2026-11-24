@@ -1,5 +1,11 @@
 # Chart v5 Gameplay 修订案
 
+<!-- cuexis-meta
+id: PROPOSALS-research.gameplay-v2.CHART_V5_GAMEPLAY_AMENDMENT
+status: candidate
+authority: none
+-->
+
 状态：candidate；对 Chart v5 当前候选定义的研究性修订，未接受，未实施
 
 更新日期：2026-10-02

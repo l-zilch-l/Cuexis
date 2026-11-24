@@ -1,5 +1,12 @@
 # Stage 6 复核修正：交付报告
 
+<!-- cuexis-meta
+id: EVIDENCE-reviews.stage-06-review-2026-09.2026-09-28-delivery-report
+status: evidence
+authority: none
+date: 2026-09-28
+-->
+
 状态：completed
 快照日期：2026-09-28
 更新日期：2026-09-28
@@ -476,7 +483,7 @@ version.sdk_api.changed: SDK API changed from 0.7.0 to 0.7.1 without explicit ac
 为 additive 新名预留的位次。**阻塞全部来自门禁的放行通路未接线，不是兼容性问题。**
 
 经项目所有者于 2026-09-29 决定：**本批次不升版本**；`0.7.1` 连同本节实测的阻塞一并作为 Stage 7A 的
-关闭前置条件登记（[Stage 7 计划](../../../stage_plans/active/stage-07/plan.md)）。
+关闭前置条件登记（[Stage 7 计划](../../../stage_plans/completed/stage-07/plan.md)）。
 
 ## 11. 追加订正（2026-09-29）：owner 接受 R9 退出，`SPEC-27` 记为 closed
 

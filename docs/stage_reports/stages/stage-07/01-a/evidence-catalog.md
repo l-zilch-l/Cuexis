@@ -1,5 +1,11 @@
 # Stage 7A Evidence Catalog
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.01-a.evidence-catalog
+status: evidence
+authority: none
+-->
+
 状态：current index
 
 更新日期：2026-10-26

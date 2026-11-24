@@ -1,5 +1,12 @@
 # Documentation Role and Stage 7 Report Classification
 
+<!-- cuexis-meta
+id: EVIDENCE-reviews.documentation-reorganization-2026-10.2026-10-06-role-and-stage-report-classification
+status: evidence
+authority: none
+date: 2026-10-06
+-->
+
 状态：dated documentation record
 
 日期：2026-10-06

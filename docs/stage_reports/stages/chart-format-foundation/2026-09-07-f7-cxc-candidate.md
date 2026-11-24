@@ -1,5 +1,12 @@
 # Chart Format Foundation F7: CXC Candidate Entry
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.chart-format-foundation.2026-09-07-f7-cxc-candidate
+status: evidence
+authority: none
+date: 2026-09-07
+-->
+
 日期：2026-09-07  
 状态：implemented candidate validator; hosted and capacity closure pending
 

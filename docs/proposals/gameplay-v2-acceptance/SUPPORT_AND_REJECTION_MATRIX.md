@@ -1,11 +1,17 @@
 # 支持 / 拒绝矩阵与 capability registry 草案
 
+<!-- cuexis-meta
+id: PROPOSALS-gameplay-v2-acceptance.SUPPORT_AND_REJECTION_MATRIX
+status: candidate
+authority: none
+-->
+
 状态：candidate；S7A-0 准入产出，待 owner acceptance
 
 更新日期：2026-10-03（§6 登记与字段定义权威落点、§6.1 W-01…W-05 地位与门禁归属为 2026-10-03 第 3 轮裁定登记）
 
 上级文档：[Gameplay V2 acceptance package](README.md) ·
-[Stage 7A 实施计划](../../stage_plans/active/stage-07/plan.md)
+[Stage 7A 实施计划](../../stage_plans/completed/stage-07/plan.md)
 
 文档角色：能力边界表征。它把"Stage 7A 支持什么、拒绝什么、拒绝时用什么码"写成可核验的表，
 并给出 capability registry 的候选字段。它不是 Spec 正文，也不表示任何能力已经实现。
@@ -152,7 +158,7 @@ R-04 行的被拒绝能力描述，并在 §2 的资源行备注补上冻结子�
 
 ## 6. W 类缺口登记表（本轮定义）
 
-[Stage 7A 计划](../../stage_plans/active/stage-07/plan.md) 曾在正文使用"W 类缺口"，而**仓库内没有任何
+[Stage 7A 计划](../../stage_plans/completed/stage-07/plan.md) 曾在正文使用"W 类缺口"，而**仓库内没有任何
 文档定义它的编号、字段或登记位置**（该缺陷登记为 **D-3**，见
 [RULING_WORKSHEET.md](RULING_WORKSHEET.md) 第 1 轮 D-3 行；引用的计划行号以缺陷登记时的版本为准）。
 **D-3 落地后的分工（2026-10-03 第 3 轮裁定）：** 字段定义与具体登记项**以本节为权威**；Stage plan §5.3

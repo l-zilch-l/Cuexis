@@ -1,5 +1,12 @@
 # 260829 Full Review 整改 shared ABI gate
 
+<!-- cuexis-meta
+id: EVIDENCE-reviews.full-review-2026-08.2026-08-30-shared-abi
+status: evidence
+authority: none
+date: 2026-08-30
+-->
+
 状态：completed；2026-08-30 本地实现与门禁完成
 
 本报告记录 A2 完成后发现并修复的 MSVC shared-DLL 导出门禁问题。原始审查报告

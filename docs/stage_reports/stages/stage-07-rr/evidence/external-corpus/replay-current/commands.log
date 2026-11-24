@@ -1,0 +1,106 @@
+# Commands log：当前实现（3943fb13）重放两套历史语料
+
+日期：2026-11-24（Asia/Shanghai）
+工作树：`E:\Cuexis-worktree`，HEAD `3943fb1365853b6f5af5c8a41ef322d147863ee6`，`git status --porcelain` 为空。
+构建目录：`out\build\candidate-headless-debug`（preset `candidate-headless-debug`）。
+所有命令在 Windows PowerShell 7 中执行；构建命令通过 `cmd.exe` 调用 vcvars64。
+
+## 0. 目录
+
+```powershell
+New-Item -ItemType Directory -Force out\review\stage-07-rr\T-01\legacy-corpus-external\replay-current\outputs
+```
+
+## 1. 构建 gameplay assemble 目标
+
+```powershell
+cd E:\Cuexis-worktree
+cmd /d /c "call ""D:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars64.bat"" >nul && cmake --build --preset candidate-headless-debug --target cuexis_gameplay_assemble"
+```
+
+- 首次构建调用（输出因日志目录尚未创建而未保存）产出了 `out\build\candidate-headless-debug\bin\cuexis_gameplay_assemble.exe`（mtime 2026-11-24 00:57:39，20,219,904 B）；随后带日志的调用退出 0，只打印 `ninja: no work to do.`，见 `outputs/build-assemble.log`。
+- 更早的一次尝试（00:36:01，先于 candidate 目标图生效）报 `ninja: error: unknown target 'cuexis_gameplay_assemble'`，保留在 `outputs/build-assemble-first-failure.log`。
+
+## 2. 构建离线判定入口 compiler.exe
+
+```powershell
+python -B tools/practice/build_entity_practice_compiler.py `
+  --build out/build/candidate-headless-debug `
+  --output out/review/stage-07-rr/T-01/legacy-corpus-external/replay-current/compiler `
+  --vcvars "D:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars64.bat"
+```
+
+退出 0，产出 `compiler\compiler.exe`（20,009,984 B，SHA-256 `446dee548f1da34f38e7b38bd21ba20bbd9c74be0313ce267f2d91e08901bac1`）。脚本从 `cuexis_gameplay_assemble` 的编译/链接命令行借用库列表；`applocal.ps1` 把 `nlohmann_json_schema_validator.dll` 复制到同目录。编译输出见 `compiler\build.log`；有两条 `C4389` 有符号/无符号比较警告（`tools/practice/compile_entity_practice.cpp:122-123`），不影响退出码与结果。
+
+## 3. R4 dense v5：三例拆分运行
+
+```powershell
+$root = "E:\Cuexis-worktree\out\review\stage-07-rr\T-01\legacy-corpus-external\replay-current"
+$exe  = "$root\compiler\compiler.exe"
+$pkg  = "C:\Users\Zilch\Desktop\Cuexis-R4-P7-O2-2026-11-14\keyboard-dense-v5"
+foreach ($c in "all-hit", "no-input", "early-hold-release") {
+  & $exe --verify-gameplay "$pkg\practice.cxc" "$pkg\gameplay.packed" `
+    "$pkg\gameplay-configuration.json" "$root\cases\$c.json" `
+    1> "$root\outputs\r4-$c.stdout.txt" 2> "$root\outputs\r4-$c.stderr.txt"
+  "{0}: exit={1}" -f $c, $LASTEXITCODE
+}
+```
+
+| 用例 | 退出码 | 耗时 | stderr |
+| --- | ---: | ---: | --- |
+| all-hit | 0 | 20.24 s | 空 |
+| no-input | 0 | 7.62 s | 空 |
+| early-hold-release | 0 | 20.18 s | 空 |
+
+## 4. R4 dense v5：原样完整用例文件
+
+```powershell
+& $exe --verify-gameplay "$pkg\practice.cxc" "$pkg\gameplay.packed" `
+  "$pkg\gameplay-configuration.json" "$pkg\verification-cases.json" `
+  1> "$root\outputs\r4-full-cases.stdout.txt" 2> "$root\outputs\r4-full-cases.stderr.txt"
+"exit=$LASTEXITCODE"
+```
+
+退出 2，stdout 空，stderr 为 `json.parse.size_limit: JSON input exceeds the configured byte limit`，耗时 1.06 s。用例文件 160,354 B，工具内 `json::parse` 预算 131,072 B（128 KiB）。
+
+## 5. PD3c：keyboard 与 keyboard-release
+
+```powershell
+$pkgB = "C:\Users\Zilch\Desktop\Cuexis-PD3c-DeviceAcceptance-2026-10-19\keyboard"
+& $exe --verify-gameplay "$pkgB\practice.cxc" "$pkgB\gameplay.packed" `
+  "$pkgB\gameplay-configuration.json" "$pkgB\verification-cases.json" `
+  1> "$root\outputs\pd3c-keyboard.stdout.txt" 2> "$root\outputs\pd3c-keyboard.stderr.txt"
+"exit=$LASTEXITCODE"
+
+$pkgBR = "C:\Users\Zilch\Desktop\Cuexis-PD3c-DeviceAcceptance-2026-10-19\keyboard-release"
+& $exe --verify-gameplay "$pkgBR\practice.cxc" "$pkgBR\gameplay.packed" `
+  "$pkgBR\gameplay-configuration.json" "$pkgBR\verification-cases.json" `
+  1> "$root\outputs\pd3c-keyboard-release.stdout.txt" 2> "$root\outputs\pd3c-keyboard-release.stderr.txt"
+"exit=$LASTEXITCODE"
+```
+
+| 入口 | 退出码 | 耗时 | stderr |
+| --- | ---: | ---: | --- |
+| keyboard | 0 | 2.67 s | 空 |
+| keyboard-release | 0 | 2.55 s | 空 |
+
+## 6. 补充：d195 旧实现对 PD3c keyboard（replay-old 未涵盖此包）
+
+```powershell
+$env:PATH = "E:\Cuexis-replay-d195\out\build\replay\bin;" + $env:PATH
+& "E:\Cuexis-replay-d195\out\build\replay\entity-practice\compiler.exe" `
+  --verify-gameplay "$pkgB\practice.cxc" "$pkgB\gameplay.packed" `
+  "$pkgB\gameplay-configuration.json" "$pkgB\verification-cases.json" `
+  1> "$root\outputs\pd3c-keyboard.old-d195.stdout.txt" 2> "$root\outputs\pd3c-keyboard.old-d195.stderr.txt"
+"exit=$LASTEXITCODE"
+```
+
+退出 0，耗时 2.64 s，stderr 空。旧 worktree `E:\Cuexis-replay-d195` 处于 detached HEAD `d1951326b0f2683801fa5fe168f09c8dac43f957`，`git status --porcelain` 为空；旧 `compiler.exe` 20,003,328 B，SHA-256 `b65d5303d17609caa7c90f7430891374cf49d90d9a74f18204883c7c8d44e1d8`。
+
+## 7. 输入一致性与输出比对
+
+```powershell
+python -B "$root\scripts\check_inputs.py"
+```
+
+脚本只读两包文件与 `outputs\`，检查拆分用例与包内完整用例的逐对象相等、重建 PD3c 期望行、比较 CRLF 归一后的 stdout，并把所有哈希写入 `outputs/hash-check.json`。

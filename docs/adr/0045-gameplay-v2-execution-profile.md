@@ -4,6 +4,12 @@
 
 决策状态：本轮方案已选定；作为下一对话的实施输入，不冒充既往 owner 裁定或阶段验收
 
+<!-- cuexis-meta
+id: ADR-0045
+status: candidate
+authority: owns
+-->
+
 更新日期：2026-10-28（实施状态注释订正；原决定与授权范围保留）
 
 实现状态：本 ADR 保留 S7A-3/4 设计基线与当时授权；后续分批实施已发生，当前状态见
@@ -62,4 +68,4 @@ S7A-5/6/7/9 的范围和 Stage 6 owner-only 版本门禁仍按各自计划执行
 - [Author profile](../formats/gameplay-v2-author-profile.md)：本轮源字段和 lowering。
 - [Capsule](../formats/GAMEPLAY_CAPSULE_V2_FORMAT.md) §12：revision 3 物理字段。
 - [Typed supplement](../api/gameplay-v2-execution-types.md)：表示、所有权、错误与生命周期。
-- [历史实施交接](../archive/stage-07-planning/01-a/s7a-3-4-implementation-handoff.md)：原3/4顺序与验收门禁；当前排期归 [Stage 7计划](../stage_plans/active/stage-07/plan.md)。
+- [历史实施交接](../archive/stage-07-planning/01-a/s7a-3-4-implementation-handoff.md)：原3/4顺序与验收门禁；当前排期归 [Stage 7计划](../stage_plans/completed/stage-07/plan.md)。

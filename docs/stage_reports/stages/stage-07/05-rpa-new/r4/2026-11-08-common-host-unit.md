@@ -1,5 +1,12 @@
 # R4 普通 host 固定组（B-only）：已接受绝对预算通过
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-08-common-host-unit
+status: evidence
+authority: none
+date: 2026-11-08
+-->
+
 状态：candidate；attempt-2 三窗口九进程完成，request→ready p99 预算 9/9 通过；一条披露腿重复性 inconclusive
 
 日期：2026-11-08
@@ -15,7 +22,7 @@ pre-PD A 的 host harness 测的是 **request→receipt ACK** 边界，并输出
 `measurement.require_comparable` 只允许跨 schema 比较 `request_to_ready`，仍要求输出身份
 （digest/source/viewport/objects/warmup/measured/audio/gpu）逐字段一致。A 与 B 的帧内容
 不同，因此不满足“精确输出等价”，本单元按 `B-only` 登记：A 记 N/A，不填 0、不造比值。
-这与 [PD-5 提案](../../../../../stage_plans/active/stage-07/04-pd/pd-5/pd5-measurement-proposal.md#2-工作负载与不可混用项)中
+这与 [PD-5 提案](../../../../../stage_plans/completed/stage-07/04-pd/pd-5/pd5-measurement-proposal.md#2-工作负载与不可混用项)中
 “旧 host 的 request→receipt ACK 与 B 的 request→present-return 不同，禁止直接计算收益”
 一致，也解释了为什么本单元只能用绝对门裁定。
 

@@ -1,5 +1,12 @@
 # R3 完整 Packed 索引优化与规模复验
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-27-r3-packed-index-optimization
+status: evidence
+authority: none
+date: 2026-10-27
+-->
+
 日期：2026-10-27。状态：已实施并完成本地核验；R3 未退出。
 
 唯一实施工作区为 `D:/Cuexis-redesign`，分支 `Cuexis-redesign`。恢复点为

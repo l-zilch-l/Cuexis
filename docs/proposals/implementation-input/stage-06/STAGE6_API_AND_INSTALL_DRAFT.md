@@ -1,5 +1,11 @@
 # Stage 6 Candidate API And Install Draft
 
+<!-- cuexis-meta
+id: PROPOSALS-implementation-input.stage-06.STAGE6_API_AND_INSTALL_DRAFT
+status: candidate
+authority: none
+-->
+
 > 目录状态：Stage 6 implementation input。本文仍被 Stage 6 工具、阶段报告和门禁引用；不是 Gameplay I 收敛文档。
 
 状态：candidate（Stage 6 实施输入，已完成消费；不是已安装 SDK API）

@@ -4,6 +4,12 @@
 
 更新日期：2026-08-10
 
+<!-- cuexis-meta
+id: PLAN-historical-inputs.stage-10.plan
+status: historical
+authority: owns
+-->
+
 归档来源：[旧版 PROJECT_GUIDE](../../../archive/PROJECT_GUIDE_LEGACY_2026-08-10.md) 与
 [SDK transition plan 快照](../../../archive/CUEXIS_SDK_TRANSITION_PLAN_2026-08-10.md)。
 

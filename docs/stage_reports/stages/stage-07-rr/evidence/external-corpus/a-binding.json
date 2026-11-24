@@ -1,0 +1,187 @@
+{
+  "schema": "cuexis.r4.interactive-acceptance-binding.v1",
+  "normal_source_sha": "d1951326b0f2683801fa5fe168f09c8dac43f957",
+  "normal_source_tree": "55ff54c9160c52de3cdb318687d5fd6bb8ba9623",
+  "normal_player": {
+    "path": "D:\\w1\\out\\build\\r4-final-d195\\20261114-034522-9af69b96\\msvc-on-release\\bin\\cuexis_player.exe",
+    "bytes": 5768192,
+    "sha256": "03727446ac122d0d656c14e2d8d87d9ab8e40cdfe8fceac3730cf1930c761ca5"
+  },
+  "trace_source_sha": "ce2a9a6952fd4a9a4d82949544f7ef3482e204e6",
+  "trace_source_tree": "f2ec992cd94aa32c838d5ee863bdbca0b37033d2",
+  "trace_player": {
+    "path": "D:\\Cuexis-worktree\\out\\build\\r4\\candidate-ce2a9a69\\player-trace\\bin\\cuexis_player.exe",
+    "bytes": 5793280,
+    "sha256": "95e2cc205ee02da2695356c953918ad12350801c3ccffcee70ec636f23bd9e5b"
+  },
+  "trace_build_binding": {
+    "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\candidate-ce2a9a69\\player-trace\\cuexis_player-build-binding.json",
+    "bytes": 903179,
+    "sha256": "5e4e6c99a49080a223449948b8222637cc8b3274d3f3aac840839fbf04a72d58"
+  },
+  "trace_vs_final_cpp_delta": "git diff ce..HEAD -- engine app tests tools/practice empty; compiled trace flag differs and results remain separate",
+  "f1_binding": {
+    "path": "D:\\Cuexis-worktree\\out\\evidence\\r4\\closeout-20261113\\final-verification\\f1-terminal-audit-d195.json",
+    "bytes": 9628,
+    "sha256": "533c8d8ee388f609080ce45f13ef1d8f3c6eb2c02f1c03973e89e3e8e4f0ad4d"
+  },
+  "files": [
+    {
+      "path": "C:\\Users\\Zilch\\Desktop\\Cuexis-R4-P7-O2-2026-11-14\\music\\music.cxc",
+      "bytes": 22926040,
+      "sha256": "2092d8aa426802947d350d0705dce8579faa27af5bdb74334ad8a38f923d4b52"
+    },
+    {
+      "path": "C:\\Users\\Zilch\\Desktop\\Cuexis-R4-P7-O2-2026-11-14\\music\\settings\\Cuexis\\audio-profiles\\system-default.json",
+      "bytes": 174,
+      "sha256": "248167b49550ea80f4909de040c7b322ac0687c397fc08a9fab624e4b99fe98c"
+    },
+    {
+      "path": "C:\\Users\\Zilch\\Desktop\\Cuexis-R4-P7-O2-2026-11-14\\music\\settings\\Cuexis\\preferences.json",
+      "bytes": 214,
+      "sha256": "1502788cb2c7a00fff36c847f61b1d4d4f055574528ddc3591cfae23c89f0eed"
+    },
+    {
+      "path": "C:\\Users\\Zilch\\Desktop\\Cuexis-R4-P7-O2-2026-11-14\\keyboard\\course.json",
+      "bytes": 5307,
+      "sha256": "cdc19ac69fa58bbc77678380a3e8b54be1ffd3f0d15e9f183ec9cac4664c4640"
+    },
+    {
+      "path": "C:\\Users\\Zilch\\Desktop\\Cuexis-R4-P7-O2-2026-11-14\\keyboard\\gameplay-configuration.json",
+      "bytes": 24653,
+      "sha256": "6f3cc0742b3864a1f6f325ba24556284d3d34d546ed376a6eb0f3be6f90d62a7"
+    },
+    {
+      "path": "C:\\Users\\Zilch\\Desktop\\Cuexis-R4-P7-O2-2026-11-14\\keyboard\\gameplay.packed",
+      "bytes": 16095,
+      "sha256": "e0d88d785332bb7da10b413293c92ce83d48822cbc6473ed78cb2fff6f9b72dd"
+    },
+    {
+      "path": "C:\\Users\\Zilch\\Desktop\\Cuexis-R4-P7-O2-2026-11-14\\keyboard\\practice.cxc",
+      "bytes": 4879778,
+      "sha256": "978c73406a42181161a5f2203c508959587a4fca6a9516ab8a9d0e016b20b0eb"
+    },
+    {
+      "path": "C:\\Users\\Zilch\\Desktop\\Cuexis-R4-P7-O2-2026-11-14\\keyboard\\settings\\Cuexis\\audio-profiles\\system-default.json",
+      "bytes": 174,
+      "sha256": "248167b49550ea80f4909de040c7b322ac0687c397fc08a9fab624e4b99fe98c"
+    },
+    {
+      "path": "C:\\Users\\Zilch\\Desktop\\Cuexis-R4-P7-O2-2026-11-14\\keyboard\\settings\\Cuexis\\preferences.json",
+      "bytes": 214,
+      "sha256": "1502788cb2c7a00fff36c847f61b1d4d4f055574528ddc3591cfae23c89f0eed"
+    },
+    {
+      "path": "C:\\Users\\Zilch\\Desktop\\Cuexis-R4-P7-O2-2026-11-14\\keyboard\\verification-cases.json",
+      "bytes": 5804,
+      "sha256": "7a93e77726c8e32d93ea3d74a54af121b9ab3fac13114ad64bda657a5b031fab"
+    },
+    {
+      "path": "C:\\Users\\Zilch\\Desktop\\Cuexis-R4-P7-O2-2026-11-14\\keyboard\\verification.log",
+      "bytes": 160,
+      "sha256": "4b98cdea4ec26487c104717f98a2bfb0cb1b905aa1be139c06283aac8ce862c4"
+    },
+    {
+      "path": "C:\\Users\\Zilch\\Desktop\\Cuexis-R4-P7-O2-2026-11-14\\keyboard-dense-v5\\course.json",
+      "bytes": 139286,
+      "sha256": "6ace448e74796bf3295b4ba7d89e0f404d169a4e4ee07617a34a8e714e6c4879"
+    },
+    {
+      "path": "C:\\Users\\Zilch\\Desktop\\Cuexis-R4-P7-O2-2026-11-14\\keyboard-dense-v5\\density-registration.json",
+      "bytes": 1011,
+      "sha256": "4bb5777addc93d15a3e7988c61c44386279186fa6f32ea595bd7057b9e842f50"
+    },
+    {
+      "path": "C:\\Users\\Zilch\\Desktop\\Cuexis-R4-P7-O2-2026-11-14\\keyboard-dense-v5\\gameplay-configuration.json",
+      "bytes": 30413,
+      "sha256": "03cf0745b2651502b5e5b613ae45e352a3a549a91cedeeea0ab9033f4de146e3"
+    },
+    {
+      "path": "C:\\Users\\Zilch\\Desktop\\Cuexis-R4-P7-O2-2026-11-14\\keyboard-dense-v5\\gameplay.packed",
+      "bytes": 309961,
+      "sha256": "acfd31eef366f5cc9aa6e4d3559cb2ec6cc981d4f35f43840f2f8e886a671f16"
+    },
+    {
+      "path": "C:\\Users\\Zilch\\Desktop\\Cuexis-R4-P7-O2-2026-11-14\\keyboard-dense-v5\\practice.cxc",
+      "bytes": 10294067,
+      "sha256": "366ebff81233056c39bc9940b23d8a21e5a5d330ade5ec9bc02de77b6db86dd1"
+    },
+    {
+      "path": "C:\\Users\\Zilch\\Desktop\\Cuexis-R4-P7-O2-2026-11-14\\keyboard-dense-v5\\settings\\Cuexis\\audio-profiles\\system-default.json",
+      "bytes": 174,
+      "sha256": "248167b49550ea80f4909de040c7b322ac0687c397fc08a9fab624e4b99fe98c"
+    },
+    {
+      "path": "C:\\Users\\Zilch\\Desktop\\Cuexis-R4-P7-O2-2026-11-14\\keyboard-dense-v5\\settings\\Cuexis\\preferences.json",
+      "bytes": 214,
+      "sha256": "1502788cb2c7a00fff36c847f61b1d4d4f055574528ddc3591cfae23c89f0eed"
+    },
+    {
+      "path": "C:\\Users\\Zilch\\Desktop\\Cuexis-R4-P7-O2-2026-11-14\\keyboard-dense-v5\\verification-cases.json",
+      "bytes": 160354,
+      "sha256": "768cff0e3ec023bb52b19f9c9fc9d9184be24256230a522b0c18dee807b890e4"
+    },
+    {
+      "path": "C:\\Users\\Zilch\\Desktop\\Cuexis-R4-P7-O2-2026-11-14\\keyboard-dense-v5\\verification.log",
+      "bytes": 166,
+      "sha256": "3c6723af9c8fadd292ba1ac508beb6b5ac504aa425ec9413a78f035c97dd901c"
+    },
+    {
+      "path": "D:\\w1\\out\\build\\r4-final-d195\\20261114-034522-9af69b96\\msvc-on-release\\bin\\fmt.dll",
+      "bytes": 130048,
+      "sha256": "8219387a1b0de304630a67564a0ec30271e061c1e92cc77ae7cf9753a5f75214"
+    },
+    {
+      "path": "D:\\w1\\out\\build\\r4-final-d195\\20261114-034522-9af69b96\\msvc-on-release\\bin\\nlohmann_json_schema_validator.dll",
+      "bytes": 432128,
+      "sha256": "1c0a7cdcd718802c79052f323f52e63afcedac969dd7eb5a44d12c521502f248"
+    },
+    {
+      "path": "D:\\w1\\out\\build\\r4-final-d195\\20261114-034522-9af69b96\\msvc-on-release\\bin\\SDL3.dll",
+      "bytes": 2488832,
+      "sha256": "cedddd9456105f8b2df78c33a0282c170b86b0d16146a8ccbb0c6e01571ee783"
+    },
+    {
+      "path": "D:\\w1\\out\\build\\r4-final-d195\\20261114-034522-9af69b96\\msvc-on-release\\bin\\spdlog.dll",
+      "bytes": 281600,
+      "sha256": "a7c410914f4aff0cb84f642ff91da8a6b1a85d21cb0de11e88a3a37dc7575214"
+    },
+    {
+      "path": "C:\\Users\\Zilch\\Desktop\\Cuexis-R4-P7-O2-2026-11-14\\run_acceptance.py",
+      "bytes": 11225,
+      "sha256": "904a3182488d6fc9b65232632a4fa9acb5ef9651cace3981bf0fa25d14b9bcf6"
+    },
+    {
+      "path": "C:\\Users\\Zilch\\Desktop\\Cuexis-R4-P7-O2-2026-11-14\\launch.ps1",
+      "bytes": 577,
+      "sha256": "3ffbe13fefc283944179ee4649c70d8c85124ebdf2cbab2bf7300f8a8ced5cb5"
+    }
+  ],
+  "original_music_bytes_preserved": true,
+  "new_dense_course": "keyboard-dense-v5",
+  "formal_acceptance": false,
+  "human_observations": "not-observed until actual owner report",
+  "revision": {
+    "reason": "Explicit SDL activation and verified initial foreground PID; recorder now binds itself and activation variables.",
+    "previous_binding": {
+      "path": "C:\\Users\\Zilch\\Desktop\\Cuexis-R4-P7-O2-2026-11-14\\binding-history\\binding-1122aae4133668bec3429924731bfb0f8171d5050952e890601b75c15e6b3243.json",
+      "bytes": 7777,
+      "sha256": "1122aae4133668bec3429924731bfb0f8171d5050952e890601b75c15e6b3243"
+    },
+    "changes": [
+      {
+        "before": {
+          "path": "C:\\Users\\Zilch\\Desktop\\Cuexis-R4-P7-O2-2026-11-14\\run_acceptance.py",
+          "bytes": 10807,
+          "sha256": "508914509338736ff819c0a4880138ec7ce32ce62484170afe275f2c0d3e684f"
+        },
+        "after": {
+          "path": "C:\\Users\\Zilch\\Desktop\\Cuexis-R4-P7-O2-2026-11-14\\run_acceptance.py",
+          "bytes": 11225,
+          "sha256": "904a3182488d6fc9b65232632a4fa9acb5ef9651cace3981bf0fa25d14b9bcf6"
+        }
+      }
+    ],
+    "unchanged": "All charts, binaries, settings, runtime caps and thresholds; historical results retain previous binding hash."
+  }
+}

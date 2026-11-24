@@ -1,5 +1,11 @@
 # Chart v4 谱面编写指南
 
+<!-- cuexis-meta
+id: ARCHIVE-CHART_V4_AUTHORING_2026-09-02
+status: historical
+authority: none
+-->
+
 状态：现行 v4 手写指南
 
 更新日期：2026-09-02

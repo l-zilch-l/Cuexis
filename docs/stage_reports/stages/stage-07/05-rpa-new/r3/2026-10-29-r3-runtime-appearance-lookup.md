@@ -1,5 +1,12 @@
 # Runtime 外观属性重复查找优化
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-29-r3-runtime-appearance-lookup
+status: evidence
+authority: none
+date: 2026-10-29
+-->
+
 状态：保留局部优化；R3 未退出，正式及设备接受独立
 
 日期：2026-10-29

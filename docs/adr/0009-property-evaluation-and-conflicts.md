@@ -1,5 +1,11 @@
 # ADR 0009：Behavior 与 Animation 的属性求值和冲突规则
 
+<!-- cuexis-meta
+id: ADR-0009
+status: accepted
+authority: owns
+-->
+
 日期：2026-07-16
 
 状态：已接受

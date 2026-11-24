@@ -1,0 +1,1176 @@
+{
+  "reports": [
+    {
+      "old": "docs/stage_reports/stages/stage-07-rr/2026-11-17-architecture-research.md",
+      "new": "docs/stage_reports/stages/stage-07-rr/verification/2026-11-17-architecture-research.md",
+      "semantic_sha256": "1e84be8597de95a9e5da8ee20a44e1c5983dd35bb4af4faf102db0aef323e3be",
+      "navigation_edits": [
+        {
+          "from": "README.md",
+          "to": "../README.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/plan.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/plan.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/findings.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/findings.md"
+        },
+        {
+          "from": "../../../CURRENT_STATUS.md",
+          "to": "../../../../CURRENT_STATUS.md"
+        }
+      ],
+      "original_text_sha256": "f597609f852fc24949b7a5096765c1f519f4b8a3ffb7716aed9ebc6c4cbecdaf",
+      "result_text_sha256": "a2d2643cf5242781161856274bfa7a16c4bbf2f6e9403276d9988010a4ec031c",
+      "original_bytes_sha256": "f597609f852fc24949b7a5096765c1f519f4b8a3ffb7716aed9ebc6c4cbecdaf",
+      "result_bytes_sha256": "b6edeebffec281599a0d4d575cbf2e3be76f497de3545ea916351f718e65918a"
+    },
+    {
+      "old": "docs/stage_reports/stages/stage-07-rr/2026-11-17-architecture-evidence.md",
+      "new": "docs/stage_reports/stages/stage-07-rr/verification/2026-11-17-architecture-evidence.md",
+      "semantic_sha256": "3adefb723c869ad4a4c2d79e4ef9aa797ec5400f21311d4db545aa0d18d1ba3b",
+      "navigation_edits": [
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/findings.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/findings.md"
+        }
+      ],
+      "original_text_sha256": "42f516c3b2c7456520e264c2d257f1b08e421a827a599ff462293e59611f3255",
+      "result_text_sha256": "04cc9bf91666efdef4a000896fca983e9277cf2b2969c96a1c455ab589dbc912",
+      "original_bytes_sha256": "42f516c3b2c7456520e264c2d257f1b08e421a827a599ff462293e59611f3255",
+      "result_bytes_sha256": "36d3c96c75378d057411f39c6e07589be6034ad16540239c4bb3a0b8fe4ffdb4"
+    },
+    {
+      "old": "docs/stage_reports/stages/stage-07-rr/2026-11-17-documentation-refactor.md",
+      "new": "docs/stage_reports/stages/stage-07-rr/implementation/2026-11-17-documentation-refactor.md",
+      "semantic_sha256": "8152311bd85e0fb40ee93b3b797987f69f46cb3c452a31fff540ace57ed3cf86",
+      "navigation_edits": [
+        {
+          "from": "2026-11-17-external-findings-review.md",
+          "to": "../verification/2026-11-17-external-findings-review.md"
+        }
+      ],
+      "original_text_sha256": "b0963104edcc4a6c5f50a68a6e6afac8fa330e699928fa7a1f24df8515180ead",
+      "result_text_sha256": "810a3908979c2199ec11cafa4b72e4b79192f1ff423eea9d70d933c6e36ab5e2",
+      "original_bytes_sha256": "b0963104edcc4a6c5f50a68a6e6afac8fa330e699928fa7a1f24df8515180ead",
+      "result_bytes_sha256": "eac182d2861adf87686022bdc40bcb54bb1ec0c9d4eb4b853ccf816d1ac7c661"
+    },
+    {
+      "old": "docs/stage_reports/stages/stage-07-rr/2026-11-17-false-guarantees-scan.md",
+      "new": "docs/stage_reports/stages/stage-07-rr/verification/2026-11-17-false-guarantees-scan.md",
+      "semantic_sha256": "240c975ad6e7a08101691c910264c9d85a2c23ec0f1950c8025f5a8c613c31c8",
+      "navigation_edits": [],
+      "original_text_sha256": "240c975ad6e7a08101691c910264c9d85a2c23ec0f1950c8025f5a8c613c31c8",
+      "result_text_sha256": "240c975ad6e7a08101691c910264c9d85a2c23ec0f1950c8025f5a8c613c31c8",
+      "original_bytes_sha256": "240c975ad6e7a08101691c910264c9d85a2c23ec0f1950c8025f5a8c613c31c8",
+      "result_bytes_sha256": "5fb281b58035854b965a69a724d10e581d1e2a4a18fcc0e4a8f89a18ad505498"
+    },
+    {
+      "old": "docs/stage_reports/stages/stage-07-rr/2026-11-17-external-findings-review.md",
+      "new": "docs/stage_reports/stages/stage-07-rr/verification/2026-11-17-external-findings-review.md",
+      "semantic_sha256": "48f1054f0cf76ed325e3c879eb16eb13ec803681742c9df9ff722a4af83f88f3",
+      "navigation_edits": [
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/findings.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/findings.md"
+        }
+      ],
+      "original_text_sha256": "bdf6d472aae2015a9cc49dffae7a0e9edfd0e5b48819a6911d7bbdc7b245d7c3",
+      "result_text_sha256": "34a53224c54d9c5b9c3fe9e770bc84b1d5f4bfea7a5cc2626f276bf5dbd904b4",
+      "original_bytes_sha256": "cdd2967f9c7fdcc316bc7e643209bc5791fa24a4ba4fe47c96f4a8efc9b30c35",
+      "result_bytes_sha256": "559f744f19b363bc47913223a403cfd7f5c0a6ad8c44e614b7f3f10a4520d198"
+    },
+    {
+      "old": "docs/stage_reports/stages/stage-07-rr/2026-11-17-tools-audit.md",
+      "new": "docs/stage_reports/stages/stage-07-rr/verification/2026-11-17-tools-audit.md",
+      "semantic_sha256": "21a0b05b5b8d0b6d7aae5b7919f8666a770c301bd5d37f1f589bac5db5b2678a",
+      "navigation_edits": [
+        {
+          "from": "../../../../tools/archive/README.md",
+          "to": "../../../../../tools/archive/README.md"
+        }
+      ],
+      "original_text_sha256": "7f5a957ec93ca8c35ff96d0684f16ba7a4dc7b3aab5fbd14b13458ed13288f62",
+      "result_text_sha256": "1b607ed7c1a4f5a179ff68b6160bd57e67b7eb260c94a67c07ea6ebd6002463f",
+      "original_bytes_sha256": "7f5a957ec93ca8c35ff96d0684f16ba7a4dc7b3aab5fbd14b13458ed13288f62",
+      "result_bytes_sha256": "b770975a4ed8248e3c333cdf9d28831543c71bcaf5b53a2a3c3bc364283ed74a"
+    },
+    {
+      "old": "docs/stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md",
+      "new": "docs/stage_reports/stages/stage-07-rr/verification/2026-11-22-design-readiness-review.md",
+      "semantic_sha256": "1c7a631cd99217bf2163a407bc117b8a97dae62043eed7b523c4fc9e9f15a049",
+      "navigation_edits": [
+        {
+          "from": "../../../CURRENT_STATUS.md",
+          "to": "../../../../CURRENT_STATUS.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/plan.md#唯一派单授权入口",
+          "to": "../../../../stage_plans/active/stage-07-rr/plan.md#唯一派单授权入口"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/architecture-design.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/architecture-design.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/design-readiness.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/design-readiness.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/plan.md#任务索引",
+          "to": "../../../../stage_plans/active/stage-07-rr/plan.md#任务索引"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/schedule.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/schedule.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/acceptance.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/acceptance.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#构建头与安装",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#构建头与安装"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-10.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-10.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#rr-4-逐符号兼容迁移",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#rr-4-逐符号兼容迁移"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#安装与窗口",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#安装与窗口"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-08.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-08.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-12.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-12.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#归一化计分与-prepared-记录",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#归一化计分与-prepared-记录"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#谱面时间-api",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#谱面时间-api"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#playback-时钟与实时准入",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#playback-时钟与实时准入"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#验收向量与任务前置",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#验收向量与任务前置"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md#源输入与-lowering",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md#源输入与-lowering"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#成品reader-与身份派发",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#成品reader-与身份派发"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md#身份终结",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md#身份终结"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md#拥有关系与入口",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md#拥有关系与入口"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md#scn1-场景补量",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md#scn1-场景补量"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md#完整作者夹具",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md#完整作者夹具"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md#限额与稳定拒绝",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md#限额与稳定拒绝"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#提交资源与交付",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#提交资源与交付"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#兼容目标及向量",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#兼容目标及向量"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#实时调度的封定与单次回复",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#实时调度的封定与单次回复"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#所有权暂停与收尾",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#所有权暂停与收尾"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#playback-时钟与实时准入",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#playback-时钟与实时准入"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#命令与启动",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#命令与启动"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md#cxc-条目源包及派发",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md#cxc-条目源包及派发"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#写入规则",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#写入规则"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#损失定位与迁移映射",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#损失定位与迁移映射"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-01.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-01.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-02.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-02.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-03.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-03.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-04.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-04.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-05.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-05.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-06.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-06.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-07.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-07.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-08.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-08.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-09.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-09.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-10.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-10.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-11.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-11.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-12.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-12.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-13.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-13.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-14.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-14.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-15.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-15.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-16.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-16.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/findings.md#14-自主技术收敛与任务对齐2026-11-22",
+          "to": "../../../../stage_plans/active/stage-07-rr/findings.md#14-自主技术收敛与任务对齐2026-11-22"
+        }
+      ],
+      "original_text_sha256": "dab02c113008ab47991df9ebf8c90d94c63e96a80992737275c4c90d982d3c76",
+      "result_text_sha256": "18b297b6d7ac0cd477d0896ac68e45179c3a79d886861551e3c728f85c4f4f7f",
+      "original_bytes_sha256": "dab02c113008ab47991df9ebf8c90d94c63e96a80992737275c4c90d982d3c76",
+      "result_bytes_sha256": "203fe7cf32bbcc20ddedb574dc6a6aa3b11a8967f9763339b909f4984d4079b8"
+    },
+    {
+      "old": "docs/stage_reports/stages/stage-07-rr/2026-11-22-astra-executor-review.md",
+      "new": "docs/stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-executor-review.md",
+      "semantic_sha256": "3ffe4b7cdeadb8d558d1834cfcba551cb5a0dc77c8b91ace3cd00c7c209c8684",
+      "navigation_edits": [
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/findings.md#15-astra-执行者复审2026-11-22",
+          "to": "../../../../stage_plans/active/stage-07-rr/findings.md#15-astra-执行者复审2026-11-22"
+        }
+      ],
+      "original_text_sha256": "6a2df8a97dce10d618947acafe8f4fe836b26c434a2e8a4bf6a3e53b6e01ae5c",
+      "result_text_sha256": "ae669ed4311bc22ad2f873e352141bc464ea84105e6c7d21d0b2bc02bb20ad3c",
+      "original_bytes_sha256": "6a2df8a97dce10d618947acafe8f4fe836b26c434a2e8a4bf6a3e53b6e01ae5c",
+      "result_bytes_sha256": "edea2d4ebc8b472a34d093ba76914243869bb0cb37394f3c0160b44595c66c9c"
+    },
+    {
+      "old": "docs/stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md",
+      "new": "docs/stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-review-resolution.md",
+      "semantic_sha256": "724972e93b77d486e725ddc4491828c2904201d89723e62e05b0a41ddcf0a4cf",
+      "navigation_edits": [
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-06.md#任务级验收",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-06.md#任务级验收"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-08.md#任务级验收",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-08.md#任务级验收"
+        },
+        {
+          "from": "../../../../CMakeLists.txt",
+          "to": "../../../../../CMakeLists.txt"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#提交资源与交付",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#提交资源与交付"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#安装与窗口",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#安装与窗口"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-05.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-05.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-06.md#任务级验收",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-06.md#任务级验收"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-08.md#任务级验收",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-08.md#任务级验收"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md#源输入与-lowering",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md#源输入与-lowering"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md#载体验收",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md#载体验收"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-12.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-12.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-13.md#任务级验收",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-13.md#任务级验收"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#构建头与安装",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#构建头与安装"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-10.md#任务级验收",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-10.md#任务级验收"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#命令与启动",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#命令与启动"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-14.md#任务级验收",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-14.md#任务级验收"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-15.md#任务级验收",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-15.md#任务级验收"
+        },
+        {
+          "from": "../../../formats/gameplay-v2-execution-profile.md#8-失败优先级诊断与关闭界限",
+          "to": "../../../../formats/gameplay-v2-execution-profile.md#8-失败优先级诊断与关闭界限"
+        },
+        {
+          "from": "../../../formats/rpa-execution-contract.md",
+          "to": "../../../../formats/rpa-execution-contract.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-03.md#任务级验收",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-03.md#任务级验收"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#成品reader-与身份派发",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#成品reader-与身份派发"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-11.md#任务级验收",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-11.md#任务级验收"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-12.md#任务级验收",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-12.md#任务级验收"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md#场景与动态表现",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md#场景与动态表现"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-13.md#任务级验收",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-13.md#任务级验收"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#验收向量",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#验收向量"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-16.md#任务级验收",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-16.md#任务级验收"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#工具外部行为",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#工具外部行为"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-13.md#任务级验收",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-13.md#任务级验收"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-16.md#任务级验收",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-16.md#任务级验收"
+        },
+        {
+          "from": "../../../../engine/judgement/src/input.cpp",
+          "to": "../../../../../engine/judgement/src/input.cpp"
+        },
+        {
+          "from": "../../../../engine/judgement/src/execution_kernel_submit.cpp",
+          "to": "../../../../../engine/judgement/src/execution_kernel_submit.cpp"
+        },
+        {
+          "from": "../../../../tests/judgement/execution_kernel_oracle_tests.cpp",
+          "to": "../../../../../tests/judgement/execution_kernel_oracle_tests.cpp"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/findings.md#15-astra-执行者复审2026-11-22",
+          "to": "../../../../stage_plans/active/stage-07-rr/findings.md#15-astra-执行者复审2026-11-22"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/acceptance.md#阶段验收矩阵",
+          "to": "../../../../stage_plans/active/stage-07-rr/acceptance.md#阶段验收矩阵"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/plan.md#唯一派单授权入口",
+          "to": "../../../../stage_plans/active/stage-07-rr/plan.md#唯一派单授权入口"
+        }
+      ],
+      "original_text_sha256": "ad8ed5295ccd66c26a7705eb1cb1b3921e0d2c3ed1718deab99fa5ba75988be5",
+      "result_text_sha256": "31dca2c8ed2bda961e1a5cc6bb25b7eb8e349f3ddffdfb2b601c8046caa238e6",
+      "original_bytes_sha256": "ad8ed5295ccd66c26a7705eb1cb1b3921e0d2c3ed1718deab99fa5ba75988be5",
+      "result_bytes_sha256": "4f7b87b22322bc65321224a4f897532ed01155b1f174fc8d144d154dce7c1118"
+    },
+    {
+      "old": "docs/stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md",
+      "new": "docs/stage_reports/stages/stage-07-rr/verification/2026-11-22-checkout-review-resolution.md",
+      "semantic_sha256": "4d452e3c745108e85dd3982a2db5de477924473020fa110b12f8b7402abb69b7",
+      "navigation_edits": [
+        {
+          "from": "evidence/2026-11-22-checkout-review-A.txt",
+          "to": "../evidence/2026-11-22-checkout-review-A.txt"
+        },
+        {
+          "from": "evidence/2026-11-22-checkout-review-B.txt",
+          "to": "../evidence/2026-11-22-checkout-review-B.txt"
+        },
+        {
+          "from": "evidence/2026-11-22-checkout-validation.json",
+          "to": "../evidence/2026-11-22-checkout-validation.json"
+        },
+        {
+          "from": "evidence/2026-11-22-checkout-inputs.json",
+          "to": "../evidence/2026-11-22-checkout-inputs.json"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#judgement-运行与旧作者头链",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#judgement-运行与旧作者头链"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#prepared-与当次推进",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#prepared-与当次推进"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-10.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-10.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-12.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-12.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-13.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-13.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#构建头与安装",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#构建头与安装"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-11.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-11.md"
+        },
+        {
+          "from": "evidence/2026-11-22-checkout-review-A.txt",
+          "to": "../evidence/2026-11-22-checkout-review-A.txt"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#p2同提交布局与呈现",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#p2同提交布局与呈现"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-06.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-06.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#完整准入矩阵",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#完整准入矩阵"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-15.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-15.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/architecture-design.md#retryreload-与失败d-132026-11-19-owner-已确认的未来设计",
+          "to": "../../../../stage_plans/active/stage-07-rr/architecture-design.md#retryreload-与失败d-132026-11-19-owner-已确认的未来设计"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-16.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-16.md"
+        },
+        {
+          "from": "evidence/2026-11-22-checkout-review-B.txt",
+          "to": "../evidence/2026-11-22-checkout-review-B.txt"
+        },
+        {
+          "from": "evidence/2026-11-22-checkout-review-A.txt",
+          "to": "../evidence/2026-11-22-checkout-review-A.txt"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-01.md#步骤",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-01.md#步骤"
+        },
+        {
+          "from": "../../../../tools/verification/check_plan_schedule.py",
+          "to": "../../../../../tools/verification/check_plan_schedule.py"
+        },
+        {
+          "from": "evidence/2026-11-22-ir17-before.json",
+          "to": "../evidence/2026-11-22-ir17-before.json"
+        },
+        {
+          "from": "evidence/2026-11-22-ir17-after.json",
+          "to": "../evidence/2026-11-22-ir17-after.json"
+        },
+        {
+          "from": "../../../../tools/verification/test_check_plan_schedule.py",
+          "to": "../../../../../tools/verification/test_check_plan_schedule.py"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/acceptance.md#阶段验收矩阵",
+          "to": "../../../../stage_plans/active/stage-07-rr/acceptance.md#阶段验收矩阵"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/findings.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/findings.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/plan.md#唯一派单授权入口",
+          "to": "../../../../stage_plans/active/stage-07-rr/plan.md#唯一派单授权入口"
+        }
+      ],
+      "original_text_sha256": "d85c04b1977156cfaab01958d3613ab0c7900e691c3974396f51f0ff266838a9",
+      "result_text_sha256": "66d82e4a6db6e786386e0f7098d424e01a2323e805b1629fc9e3b271b5999321",
+      "original_bytes_sha256": "d85c04b1977156cfaab01958d3613ab0c7900e691c3974396f51f0ff266838a9",
+      "result_bytes_sha256": "bf13d74ab32680c74525e81cec15367c0e90fbf8d5a60bcf1947ddd6da8ec8ae"
+    },
+    {
+      "old": "docs/stage_reports/stages/stage-07-rr/2026-11-22-pre-implementation-plan-check.md",
+      "new": "docs/stage_reports/stages/stage-07-rr/readiness/2026-11-22-pre-implementation-plan-check.md",
+      "semantic_sha256": "e34a00ebd091f5c0a8d73b96e405c2af2b8d599deab335768ca2968a4eb122a6",
+      "navigation_edits": [
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/plan.md#任务索引",
+          "to": "../../../../stage_plans/active/stage-07-rr/plan.md#任务索引"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/findings.md#23-正式实施前计划检查2026-11-22",
+          "to": "../../../../stage_plans/active/stage-07-rr/findings.md#23-正式实施前计划检查2026-11-22"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/schedule.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/schedule.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/acceptance.md#阶段验收矩阵",
+          "to": "../../../../stage_plans/active/stage-07-rr/acceptance.md#阶段验收矩阵"
+        },
+        {
+          "from": "../../../api/playback-session.md#preparedplayback-有效性修订f501已接受未实现",
+          "to": "../../../../api/playback-session.md#preparedplayback-有效性修订f501已接受未实现"
+        },
+        {
+          "from": "../../../api/realtime-host-boundary.md#f135-观测桥错误分类修订已接受未实现",
+          "to": "../../../../api/realtime-host-boundary.md#f135-观测桥错误分类修订已接受未实现"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/findings.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/findings.md"
+        }
+      ],
+      "original_text_sha256": "8898b89677a68b2eecdf345afe3845a784120751f313f699413d0e77d7f514f6",
+      "result_text_sha256": "2922b61257858631204b51a329ace0e48cf7d483b7be0ab0dd030278af398476",
+      "original_bytes_sha256": "ce91a0c5cbe531e331cf25125c4b27ede86ac4d0fa304d054d5c239ec3915716",
+      "result_bytes_sha256": "8060d64c5ce4654cdb10807ca2ddd0d20153a97c3dae42c19a26ff28acf2110c"
+    },
+    {
+      "old": "docs/stage_reports/stages/stage-07-rr/2026-11-23-design-decisions-and-schedule.md",
+      "new": "docs/stage_reports/stages/stage-07-rr/decisions/2026-11-23-design-decisions-and-schedule.md",
+      "semantic_sha256": "6c48f7ceac1be644d4d9904e31018a3461a2c587fa2142514bbc10b5241d1a88",
+      "navigation_edits": [
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/findings.md#24-统一实施前设计裁定2026-11-23",
+          "to": "../../../../stage_plans/active/stage-07-rr/findings.md#24-统一实施前设计裁定2026-11-23"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#范围与授权",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#范围与授权"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md#源输入与-lowering",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/prepared-artifact.md#源输入与-lowering"
+        },
+        {
+          "from": "../../../formats/CXT_V2_FORMAT.md#91-chart-v5-动画导入与-animator-映射",
+          "to": "../../../../formats/CXT_V2_FORMAT.md#91-chart-v5-动画导入与-animator-映射"
+        },
+        {
+          "from": "../../../architecture/RUNTIME_SESSION.md#临时覆盖登记修订f203已接受未实现",
+          "to": "../../../../architecture/RUNTIME_SESSION.md#临时覆盖登记修订f203已接受未实现"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/findings.md#残余问题的实际承接",
+          "to": "../../../../stage_plans/active/stage-07-rr/findings.md#残余问题的实际承接"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/schedule.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/schedule.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/acceptance.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/acceptance.md"
+        }
+      ],
+      "original_text_sha256": "0808fd8cc38ebd8f63690d8f63bd162b5080ea1826af255e236ed5ebc357e23f",
+      "result_text_sha256": "da66245279fae9bed03df9e95b1e5ba34c207cb824ada30643694362372fc8a7",
+      "original_bytes_sha256": "85c07fed2ca1bcd5763782ff8f24bdb02d1f952bb5e094d4d816a1141725fb03",
+      "result_bytes_sha256": "74ee2a3c80e8a4b89b2f1010d4b781428999f800cc0af7188f68107b4db97b7b"
+    },
+    {
+      "old": "docs/stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md",
+      "new": "docs/stage_reports/stages/stage-07-rr/handoffs/2026-11-23-execution-readiness-handoff.md",
+      "semantic_sha256": "f734f3d6bde926052be1b93f9f95c49f250b0dc780c1f3ef9851a97eccc33455",
+      "navigation_edits": [
+        {
+          "from": "../../../HANDOFF.md",
+          "to": "../../../../HANDOFF.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/acceptance.md#发布与迁移门禁",
+          "to": "../../../../stage_plans/active/stage-07-rr/acceptance.md#发布与迁移门禁"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/architecture-design.md#d-19-sdk-示例与宿主试用",
+          "to": "../../../../stage_plans/active/stage-07-rr/architecture-design.md#d-19-sdk-示例与宿主试用"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/plan.md#11-证据与报告计划",
+          "to": "../../../../stage_plans/active/stage-07-rr/plan.md#11-证据与报告计划"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/plan.md#唯一派单授权入口",
+          "to": "../../../../stage_plans/active/stage-07-rr/plan.md#唯一派单授权入口"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/simplification-proposal.md#p6-迁移与验收",
+          "to": "../../../../stage_plans/active/stage-07-rr/simplification-proposal.md#p6-迁移与验收"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-01.md#步骤",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-01.md#步骤"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-01.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-01.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-09.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-09.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-10.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-10.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#prepared-与当次推进",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#prepared-与当次推进"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-11.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-11.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#作者版本stop比例和最小多等级",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/runtime-timing.md#作者版本stop比例和最小多等级"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-10.md#任务级验收",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-10.md#任务级验收"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-11.md#任务级验收",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-11.md#任务级验收"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-12.md#任务级验收",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-12.md#任务级验收"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-13.md#任务级验收",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-13.md#任务级验收"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#拆分与门禁",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#拆分与门禁"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-07.md#步骤",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-07.md#步骤"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/tasks/T-17.md#写域",
+          "to": "../../../../stage_plans/active/stage-07-rr/tasks/T-17.md#写域"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/schedule.md",
+          "to": "../../../../stage_plans/active/stage-07-rr/schedule.md"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#应用分层与内部入口f313f316",
+          "to": "../../../../stage_plans/active/stage-07-rr/contracts/render-player-writer.md#应用分层与内部入口f313f316"
+        },
+        {
+          "from": "../../../stage_plans/active/stage-07-rr/findings.md#25-实施接手复查2026-11-23",
+          "to": "../../../../stage_plans/active/stage-07-rr/findings.md#25-实施接手复查2026-11-23"
+        },
+        {
+          "from": "../../../HANDOFF.md",
+          "to": "../../../../HANDOFF.md"
+        }
+      ],
+      "original_text_sha256": "070bae0dd255c2c3af81392ba23fc6d332dbc59457346a77999fca3c26357a6f",
+      "result_text_sha256": "1bedd8512e3200d0e0569574b25d79dcc595f973d352690a17e80c4bccdad9cb",
+      "original_bytes_sha256": "5de14ac4183d7dd2a587dfd327ecae95a0c496794f2846809f897d8f8c9ea674",
+      "result_bytes_sha256": "d35cce552e30506bc2464125e3f703fbaa2f660c178259dc45304778e249e45a"
+    }
+  ],
+  "references": [
+    {
+      "path": "docs/CURRENT_STATUS.md",
+      "navigation_edits": [
+        {
+          "from": "stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md",
+          "to": "stage_reports/stages/stage-07-rr/handoffs/2026-11-23-execution-readiness-handoff.md"
+        }
+      ]
+    },
+    {
+      "path": "docs/HANDOFF.md",
+      "navigation_edits": [
+        {
+          "from": "stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md",
+          "to": "stage_reports/stages/stage-07-rr/handoffs/2026-11-23-execution-readiness-handoff.md"
+        },
+        {
+          "from": "stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md",
+          "to": "stage_reports/stages/stage-07-rr/handoffs/2026-11-23-execution-readiness-handoff.md"
+        },
+        {
+          "from": "stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md",
+          "to": "stage_reports/stages/stage-07-rr/handoffs/2026-11-23-execution-readiness-handoff.md"
+        }
+      ]
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/README.md",
+      "navigation_edits": [
+        {
+          "from": "2026-11-23-execution-readiness-handoff.md",
+          "to": "handoffs/2026-11-23-execution-readiness-handoff.md"
+        },
+        {
+          "from": "2026-11-23-design-decisions-and-schedule.md",
+          "to": "decisions/2026-11-23-design-decisions-and-schedule.md"
+        },
+        {
+          "from": "2026-11-22-pre-implementation-plan-check.md",
+          "to": "readiness/2026-11-22-pre-implementation-plan-check.md"
+        },
+        {
+          "from": "2026-11-22-checkout-review-resolution.md",
+          "to": "verification/2026-11-22-checkout-review-resolution.md"
+        },
+        {
+          "from": "2026-11-22-astra-review-resolution.md",
+          "to": "verification/2026-11-22-astra-review-resolution.md"
+        },
+        {
+          "from": "2026-11-22-astra-executor-review.md",
+          "to": "verification/2026-11-22-astra-executor-review.md"
+        },
+        {
+          "from": "2026-11-22-design-readiness-review.md",
+          "to": "verification/2026-11-22-design-readiness-review.md"
+        },
+        {
+          "from": "2026-11-17-architecture-research.md",
+          "to": "verification/2026-11-17-architecture-research.md"
+        },
+        {
+          "from": "2026-11-17-architecture-evidence.md",
+          "to": "verification/2026-11-17-architecture-evidence.md"
+        },
+        {
+          "from": "2026-11-17-documentation-refactor.md",
+          "to": "implementation/2026-11-17-documentation-refactor.md"
+        },
+        {
+          "from": "2026-11-17-false-guarantees-scan.md",
+          "to": "verification/2026-11-17-false-guarantees-scan.md"
+        },
+        {
+          "from": "2026-11-17-external-findings-review.md",
+          "to": "verification/2026-11-17-external-findings-review.md"
+        },
+        {
+          "from": "2026-11-17-tools-audit.md",
+          "to": "verification/2026-11-17-tools-audit.md"
+        }
+      ]
+    },
+    {
+      "path": "docs/stage_plans/active/stage-07-rr/acceptance.md",
+      "navigation_edits": [
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-design-readiness-review.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md#结果与证据",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-review-resolution.md#结果与证据"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-checkout-review-resolution.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md#执行记录",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-review-resolution.md#执行记录"
+        }
+      ]
+    },
+    {
+      "path": "docs/stage_plans/active/stage-07-rr/architecture-design.md",
+      "navigation_edits": [
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-review-resolution.md"
+        }
+      ]
+    },
+    {
+      "path": "docs/stage_plans/active/stage-07-rr/design-readiness.md",
+      "navigation_edits": [
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/handoffs/2026-11-23-execution-readiness-handoff.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-design-readiness-review.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md#结果与证据",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-review-resolution.md#结果与证据"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-checkout-review-resolution.md"
+        }
+      ]
+    },
+    {
+      "path": "docs/stage_plans/active/stage-07-rr/documentation-governance.md",
+      "navigation_edits": [
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-17-architecture-research.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-architecture-research.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-17-architecture-evidence.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-architecture-evidence.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-17-documentation-refactor.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/implementation/2026-11-17-documentation-refactor.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-17-false-guarantees-scan.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-false-guarantees-scan.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-17-external-findings-review.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-external-findings-review.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-17-tools-audit.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-tools-audit.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-design-readiness-review.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-executor-review.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-executor-review.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-review-resolution.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-checkout-review-resolution.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-pre-implementation-plan-check.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/readiness/2026-11-22-pre-implementation-plan-check.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-23-design-decisions-and-schedule.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/decisions/2026-11-23-design-decisions-and-schedule.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/handoffs/2026-11-23-execution-readiness-handoff.md"
+        }
+      ]
+    },
+    {
+      "path": "docs/stage_plans/active/stage-07-rr/plan.md",
+      "navigation_edits": [
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-17-architecture-research.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-architecture-research.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-17-architecture-research.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-architecture-research.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-17-architecture-evidence.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-architecture-evidence.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-17-documentation-refactor.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/implementation/2026-11-17-documentation-refactor.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-17-tools-audit.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-tools-audit.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-design-readiness-review.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-executor-review.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-executor-review.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-review-resolution.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-pre-implementation-plan-check.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/readiness/2026-11-22-pre-implementation-plan-check.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-checkout-review-resolution.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-17-architecture-research.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-architecture-research.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-17-architecture-evidence.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-architecture-evidence.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-17-documentation-refactor.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/implementation/2026-11-17-documentation-refactor.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-17-false-guarantees-scan.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-false-guarantees-scan.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-17-external-findings-review.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-external-findings-review.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-17-tools-audit.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-tools-audit.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-design-readiness-review.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-executor-review.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-executor-review.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-review-resolution.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-23-design-decisions-and-schedule.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/decisions/2026-11-23-design-decisions-and-schedule.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-design-readiness-review.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-review-resolution.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-pre-implementation-plan-check.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/readiness/2026-11-22-pre-implementation-plan-check.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/handoffs/2026-11-23-execution-readiness-handoff.md"
+        }
+      ]
+    },
+    {
+      "path": "docs/stage_plans/active/stage-07-rr/simplification-proposal.md",
+      "navigation_edits": [
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-design-readiness-review.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-review-resolution.md"
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-checkout-review-resolution.md"
+        }
+      ]
+    },
+    {
+      "path": "docs/stage_plans/active/stage-07-rr/findings.md",
+      "navigation_edits": [
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-17-architecture-research.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-architecture-research.md",
+          "occurrences": 1
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-17-false-guarantees-scan.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-false-guarantees-scan.md",
+          "occurrences": 1
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-17-external-findings-review.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-17-external-findings-review.md",
+          "occurrences": 1
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-design-readiness-review.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-design-readiness-review.md",
+          "occurrences": 1
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-executor-review.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-executor-review.md",
+          "occurrences": 1
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-astra-review-resolution.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-review-resolution.md",
+          "occurrences": 2
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-checkout-review-resolution.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-checkout-review-resolution.md",
+          "occurrences": 1
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-22-pre-implementation-plan-check.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/readiness/2026-11-22-pre-implementation-plan-check.md",
+          "occurrences": 1
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-23-design-decisions-and-schedule.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/decisions/2026-11-23-design-decisions-and-schedule.md",
+          "occurrences": 1
+        },
+        {
+          "from": "../../../stage_reports/stages/stage-07-rr/2026-11-23-execution-readiness-handoff.md",
+          "to": "../../../stage_reports/stages/stage-07-rr/handoffs/2026-11-23-execution-readiness-handoff.md",
+          "occurrences": 1
+        }
+      ]
+    }
+  ]
+}

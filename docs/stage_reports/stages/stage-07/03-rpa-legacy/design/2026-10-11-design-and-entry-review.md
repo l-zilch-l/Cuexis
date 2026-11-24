@@ -1,5 +1,12 @@
 # RPA A1–A3设计与准入审查
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.design.2026-10-11-design-and-entry-review
+status: evidence
+authority: none
+date: 2026-10-11
+-->
+
 状态：dated review；TB-07首版继续当前局目标已获owner选择，具体语义仍为候选，未实施原型或产品
 
 证据日期：2026-10-11（Asia/Shanghai）
@@ -15,8 +22,8 @@
 接手快照的base `2ddbcaf`及“诊断未提交”已过时；HEAD中的SDK声明为0.7.5、构建26.10.10-1。
 本轮未查询远端或新发行状态，不将本地提交等同于发行或新SHA验收。
 
-权威阅读：AGENTS、[状态页](../../../../../CURRENT_STATUS.md)、[总计划](../../../../../stage_plans/active/stage-07/plan.md)、
-[RPA计划](../../../../../stage_plans/active/stage-07/03-rpa-legacy/plan.md)、
+权威阅读：AGENTS、[状态页](../../../../../CURRENT_STATUS.md)、[总计划](../../../../../stage_plans/completed/stage-07/plan.md)、
+[RPA计划](../../../../../stage_plans/completed/stage-07/03-rpa-legacy/plan.md)、
 [归档v0.5](../../../../../archive/stage-07-planning/03-rpa-legacy/2026-10-10-rpa-target-architecture-draft.md)、
 [ADR0046](../../../../../adr/0046-realtime-playback-coordination.md)、
 [8.4受限关闭](../../01-a/s7a-8-4/2026-10-10-s7a-8-4-closure.md)、

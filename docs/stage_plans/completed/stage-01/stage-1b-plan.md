@@ -1,9 +1,16 @@
 # 阶段 1B 实施计划：资源生命周期闭环
 
 状态：实现完成  
+
 规划日期：2026-07-18  
 前置基线：[阶段 1A 完成报告](../../../stage_reports/stages/stage-01/stage-1a-completion.md)
 完成记录：[阶段 1B 完成报告](../../../stage_reports/stages/stage-01/stage-1b-completion.md)
+
+<!-- cuexis-meta
+id: PLAN-completed.stage-01.stage-1b-plan
+status: completed
+authority: owns
+-->
 
 SDK 转型说明：本文件保留阶段 1B 的历史实施事实。ADR 0027 和[SDK 转型方案](../../historical/sdk-transition/plan.md)不修改 ProjectConfig/Asset Index/Handle/Lease/Scope/事务回滚语义；ContentProvider、PlaybackSession 与安装包迁移分别在阶段 1C-1E 完成。
 

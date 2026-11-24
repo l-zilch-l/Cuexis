@@ -1,12 +1,19 @@
 # PD 设计演变与账本缺陷边界
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.design.2026-10-16-design-evolution
+status: evidence
+authority: none
+date: 2026-10-16
+-->
+
 状态：historical
 
 证据日期：2026-10-15 至 2026-10-16；整理日期：2026-10-17
 
 本页合并已被替代的帧账本修订、双层账本选型、逐更新完整结果选型和实施起步快照。
-现行范围与字段分别归[PD 计划](../../../../../stage_plans/active/stage-07/04-pd/plan.md)
-及[设计细则](../../../../../stage_plans/active/stage-07/04-pd/design.md)，不以本页重新定义合同。
+现行范围与字段分别归[PD 计划](../../../../../stage_plans/completed/stage-07/04-pd/plan.md)
+及[设计细则](../../../../../stage_plans/completed/stage-07/04-pd/design.md)，不以本页重新定义合同。
 
 ## 缺陷与已被替代的方向
 

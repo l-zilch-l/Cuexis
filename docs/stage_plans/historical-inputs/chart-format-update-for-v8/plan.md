@@ -4,6 +4,12 @@
 
 更新日期：2026-09-03
 
+<!-- cuexis-meta
+id: PLAN-historical-inputs.chart-format-update-for-v8.plan
+status: historical
+authority: owns
+-->
+
 归档来源：[Chart v7 历史输入](../chart-format-update-for-v7/plan.md)、
 [Chart v6 历史输入](../chart-format-update-for-v6/plan.md)、
 [Material/Shader v1](../../../formats/MATERIAL_SHADER.md)、

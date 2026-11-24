@@ -1,11 +1,18 @@
 # 第 7 轮（收尾澄清与缺陷）裁定与收尾落地记录
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.01-a.s7a-7-8.2026-10-03-s7a-7-wrapup-rulings
+status: evidence
+authority: none
+date: 2026-10-03
+-->
+
 状态：dated implementation record（第 7 轮裁定的文档落地证据；不是阶段关闭、不是 owner acceptance、
 不是实施证据、**不是** Judgement 实现完成声明）
 
 更新日期：2026-10-03
 
-上级文档：[Stage 7A 实施计划](../../../../../stage_plans/active/stage-07/plan.md) §1.1 / §S7A-3 / §S7A-4 / §S7A-8 / §S7A-9 ·
+上级文档：[Stage 7A 实施计划](../../../../../stage_plans/completed/stage-07/plan.md) §1.1 / §S7A-3 / §S7A-4 / §S7A-8 / §S7A-9 ·
 [Gameplay V2 acceptance package](../../../../../proposals/gameplay-v2-acceptance/README.md) ·
 [未决语义分轮裁决清单](../../../../../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md) §7、§8、§9 ·
 [批次门禁](../../../../../proposals/gameplay-v2-acceptance/BATCH_GATES.md) §1
@@ -125,7 +132,7 @@ R16=D-14→补最终证据指针`。因此本表**不需要推导**，也不存�
 | [CONTRACT_MATRIX.md](../../../../../proposals/gameplay-v2-acceptance/CONTRACT_MATRIX.md) | §0 统计（`accept` 52 / `open` 0 / **`open` 集合为空**）+ 第 7 轮计数变化段；`CM-V06`、`CM-V07`、`CM-V13`、`CM-I06`、`CM-X06` 五行 `open` → `accept` 并写裁定正文与落点；§5 `CM-P05` 依赖行补 `CM-I06` 闭合说明；§14 统计与批次表（S7A-1 行改为 `—`）、追加第 7 轮计数变化条、结尾句改为 `open` **0** |
 | [GAMEPLAY_V2_SPEC.md](../../../../../formats/GAMEPLAY_V2_SPEC.md) | §1.1 第 2 项改为"第 1–7 轮已全部裁定（无待裁定轮次）"；**新增 §3.8.7**（S7A-3 准入门禁三组规范文本）；§3.12 第 2 条与 §3.13 第 1 条改 `P2-02` 措辞；**新增 §5.1.1**（三项命名统一定义）；§5.2 `sourceMap` 行与 §6.5 闭包表按新命名对齐；§6.6 改为已裁定（`CM-X06`）；**新增 §8.5**（预算分层与成本归属）；`## S7A-3` 节补第 ⑧ 行与收尾段；`## S7A-4` / `## S7A-5` / `## S7A-6` 收尾段改"已于第 7 轮补齐"；`## S7A-7` 节范围外措辞；**新增 `## S7A-7 之后的收尾` 一节**；§11 前言与第 7 行 + 后续批次行；§12 索引措辞 |
 | [GAMEPLAY_V2_ABI.md](../../../../../api/GAMEPLAY_V2_ABI.md) | §边界声明沿用（D-11 的 Stage 14 口径）；域 4 solver / coordinator 段改 `P2-02` 措辞；域 7 三行 identity 语义文字对齐 `P2-07`（`IdentityProjection` / `InterchangeCompatibility` 的**登记首词仍为 `待冻结`**）；`## S7A-3` 节补第 ⑦ 行；§S7A-4 节 ④ 行改措辞；§S7A-7 节范围外措辞与 126 条追踪段计数（52 / 0）；**新增 `## S7A-7 之后的收尾` 一节**；§未决项 #1 / #2 / #17 语义文字与前言；§相关索引 |
-| [stage-07/plan.md](../../../../../stage_plans/active/stage-07/plan.md) | §1.1 未授权句改为"第 1–7 轮已裁定、无待裁定轮次"；§S7A-3 末补"第 7 轮准入门禁"段（四项，不新增工作项）；§S7A-4 第 ④ 项改 `P2-02` 措辞；§1.2 表与 §S7A-8.3 验证表、§S7A-8 工作内容第 3 条改六动词为 `open/play/pause/seek/reload/quit`（`D-2` / `D-7`） |
+| [stage-07/plan.md](../../../../../stage_plans/completed/stage-07/plan.md) | §1.1 未授权句改为"第 1–7 轮已裁定、无待裁定轮次"；§S7A-3 末补"第 7 轮准入门禁"段（四项，不新增工作项）；§S7A-4 第 ④ 项改 `P2-02` 措辞；§1.2 表与 §S7A-8.3 验证表、§S7A-8 工作内容第 3 条改六动词为 `open/play/pause/seek/reload/quit`（`D-2` / `D-7`） |
 | [CURRENT_STATUS.md](../../../../../CURRENT_STATUS.md) | Gameplay v2 收敛状态段：第 1–7 轮已裁定 / 无待裁定轮次 + 裁定不等于实现完成 + **稳定 C ABI 唯一归属 Stage 14**（`D-11`） |
 | [ROADMAP.md](../../../../../ROADMAP.md) | 主实施路线前言补**稳定 C ABI 唯一归属 Stage 14** 与 `AGENTS.md` 孤例说明（`D-11`） |
 | [ADR 0043](../../../../../adr/0043-gameplay-judgement-ruleset-convergence.md) | 后续边界补**阶段归属澄清（`D-11`）**段 |
@@ -205,7 +212,7 @@ Gameplay I 被标 `superseded` 后，研究稿中仍有把 I 当作现行权威�
 ## 8. `D-11`：稳定 C ABI 的阶段归属
 
 **以 Stage 14 为准。** `AGENTS.md` 第 21、260 行写 Stage 12 是**孤例**；`ROADMAP.md`、
-`docs/stage_plans/active/stage-07/plan.md`、`docs/adr/0043-*.md`、Gameplay I ABI 与 Spec 均写 Stage 14。
+`docs/stage_plans/completed/stage-07/plan.md`、`docs/adr/0043-*.md`、Gameplay I ABI 与 Spec 均写 Stage 14。
 
 **本轮动作。** 在**三处**（[CURRENT_STATUS.md](../../../../../CURRENT_STATUS.md)、[ROADMAP.md](../../../../../ROADMAP.md)、
 [ADR 0043](../../../../../adr/0043-gameplay-judgement-ruleset-convergence.md)）各加一句"稳定 C ABI **唯一归属
@@ -294,7 +301,7 @@ architecture / allowlist 校验与 CTest 全部通过；`git diff --check` 与"�
 
 ## 12. 相关索引
 
-- [Stage 7A 实施计划](../../../../../stage_plans/active/stage-07/plan.md)：批次、依赖与关闭标准（§1.1 / §S7A-3 / §S7A-4 / §S7A-8 / §S7A-9）
+- [Stage 7A 实施计划](../../../../../stage_plans/completed/stage-07/plan.md)：批次、依赖与关闭标准（§1.1 / §S7A-3 / §S7A-4 / §S7A-8 / §S7A-9）
 - [未决语义分轮裁决清单](../../../../../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md)：§7 第 7 轮登记块、§8、§9 第 7 行
 - [S7A-0.2 合同逐项台账](../../../../../proposals/gameplay-v2-acceptance/CONTRACT_MATRIX.md)：114 项、**`open` 0**（`accept` 52）
 - [未决问题清单](../../../../../proposals/gameplay-v2-acceptance/OPEN_QUESTIONS.md)：§4.5 第 7 轮裁定登记

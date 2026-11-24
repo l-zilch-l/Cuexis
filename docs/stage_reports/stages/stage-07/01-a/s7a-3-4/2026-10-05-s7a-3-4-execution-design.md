@@ -1,5 +1,12 @@
 # S7A-3 / S7A-4 complete execution design handoff
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.01-a.s7a-3-4.2026-10-05-s7a-3-4-execution-design
+status: evidence
+authority: none
+date: 2026-10-05
+-->
+
 状态：completed；仅本轮设计文档交付，不是实施验收
 
 更新日期：2026-10-05

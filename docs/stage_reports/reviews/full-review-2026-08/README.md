@@ -1,5 +1,11 @@
 # Full Review 2026-08 Reports
 
+<!-- cuexis-meta
+id: INDEX-stage_reports.reviews.full-review-2026-08
+status: active
+authority: index
+-->
+
 状态：historical
 
 更新日期：2026-08-30

@@ -1,0 +1,82 @@
+{
+  "baseline": "8599c83af82a2a74b074db387f1b3766d366b9e4",
+  "scope": "Documentation and Python gates; no product build",
+  "runs": [
+    {
+      "cwd": "submitted-inputs snapshot",
+      "command": [
+        "C:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "tools/check_docs.py"
+      ],
+      "exit_code": 0,
+      "stdout": "Documentation checks passed: 768 Markdown files and 20 candidate JSON/CXT files validated.\n",
+      "stderr": ""
+    },
+    {
+      "cwd": "submitted-inputs snapshot",
+      "command": [
+        "C:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "tools/verification/check_docs_facts.py"
+      ],
+      "exit_code": 0,
+      "stdout": "version-drift findings: 0 (warning; see --list)\ndocumentation facts are current (SDK 0.9.1, build 26.11.18-1)\n",
+      "stderr": ""
+    },
+    {
+      "cwd": "submitted-inputs snapshot",
+      "command": [
+        "C:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "tools/verification/check_plan_schedule.py"
+      ],
+      "exit_code": 0,
+      "stdout": "Plan schedule checks passed: 9 active task cards; 7 candidate cards; 0 completed cards.\nCurrent-stage cards (adoption and prerequisites still apply): T-01, T-02, T-03, T-04, T-05, T-06, T-07, T-08, T-09\nCandidate-only cards (separate adoption required): T-10, T-11, T-12, T-13, T-14, T-15, T-16\nCompleted cards: none\n",
+      "stderr": ""
+    },
+    {
+      "cwd": "submitted-inputs snapshot",
+      "command": [
+        "C:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "tools/verification/test_check_plan_schedule.py"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "...........................\n----------------------------------------------------------------------\nRan 27 tests in 0.692s\n\nOK\n"
+    },
+    {
+      "cwd": "original workspace",
+      "command": [
+        "git",
+        "-c",
+        "core.safecrlf=false",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "scan changed tracked and untracked Markdown/Python for trailing whitespace",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "compare HANDOFF Plan splitting section body with baseline after LF normalization",
+      "exit_code": 0,
+      "stdout": "{\"unchanged\": true, \"sha256\": \"020e3f68d810d79eb7e40496ac372489ad67356661f4ac0eae8b656b5881cae5\"}",
+      "stderr": ""
+    }
+  ],
+  "snapshot": "E:\\Cuexis-worktree\\out\\review\\stage-07-rr\\checkout-review-20261122\\submitted-inputs-ilrunrii",
+  "copied_files": 5077,
+  "snapshot_has_out": false,
+  "snapshot_has_git": false,
+  "platform": "win32",
+  "python": "3.14.6 (main, Jun 11 2026, 17:35:11)  [MINGW GCC UCRT 16.1.0 64 bit (AMD64)]",
+  "product_diff_paths": []
+}

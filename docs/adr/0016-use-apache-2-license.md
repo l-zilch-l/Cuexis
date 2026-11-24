@@ -1,5 +1,11 @@
 # ADR 0016：Cuexis 使用 Apache License 2.0
 
+<!-- cuexis-meta
+id: ADR-0016
+status: accepted
+authority: owns
+-->
+
 日期：2026-07-17
 
 状态：已接受

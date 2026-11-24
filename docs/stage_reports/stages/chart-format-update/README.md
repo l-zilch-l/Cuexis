@@ -1,5 +1,11 @@
 # Stage Chart Format Update Reports
 
+<!-- cuexis-meta
+id: INDEX-stage_reports.stages.chart-format-update
+status: active
+authority: index
+-->
+
 状态：historical
 
 更新日期：2026-08-30

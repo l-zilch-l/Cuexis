@@ -1,5 +1,12 @@
 # 40K 实体真实 GPU 吞吐核验
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-29-r3-40k-physical-gpu-throughput
+status: evidence
+authority: none
+date: 2026-10-29
+-->
+
 状态：有限本地设备诊断；不作为 R3/R4 或生产接受
 
 日期：2026-10-29

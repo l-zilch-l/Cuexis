@@ -1,5 +1,11 @@
 # Legacy RPA / design
 
+<!-- cuexis-meta
+id: INDEX-stage_reports.stages.stage-07.03-rpa-legacy.design
+status: active
+authority: index
+-->
+
 状态：current index
 
 更新日期：2026-10-26

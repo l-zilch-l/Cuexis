@@ -1,5 +1,11 @@
 # ADR 0037：Stage 3 可移植表现与渲染适配合同
 
+<!-- cuexis-meta
+id: ADR-0037
+status: accepted
+authority: owns
+-->
+
 日期：2026-08-07
 
 状态：已接受

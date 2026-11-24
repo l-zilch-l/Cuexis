@@ -1,5 +1,12 @@
 # R4 独立 stream observer 取证（2026-11-14）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-14-stage-and-gpu-observer
+status: evidence
+authority: none
+date: 2026-11-14
+-->
+
 状态：completed observer qualification；不是 normal 三窗正式计时、GPU observer 或生产整体接受。
 
 返回 [New RPA 报告索引](../README.md)。政策边界沿 [11/13 收尾裁定](2026-11-13-closeout-decisions.md)与 [工具实施报告](2026-11-13-closeout-implementation.md)：四阶段仅沿 2026-11-02 已接受的可开关归因、同负载、覆盖及开销披露例外；GPU 没有同类例外或已接受的新数值扰动门。

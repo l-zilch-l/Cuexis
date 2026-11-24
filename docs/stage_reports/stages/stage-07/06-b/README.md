@@ -1,5 +1,11 @@
 # Stage 7B+ Reports: Compatibility Entry
 
+<!-- cuexis-meta
+id: INDEX-stage_reports.stages.stage-07.06-b
+status: active
+authority: index
+-->
+
 状态：compatibility entry
 
 更新日期：2026-11-14

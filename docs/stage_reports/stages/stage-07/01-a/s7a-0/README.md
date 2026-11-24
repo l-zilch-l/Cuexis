@@ -1,5 +1,11 @@
 # Stage 7A / s7a-0
 
+<!-- cuexis-meta
+id: INDEX-stage_reports.stages.stage-07.01-a.s7a-0
+status: active
+authority: index
+-->
+
 状态：current index
 
 更新日期：2026-10-26

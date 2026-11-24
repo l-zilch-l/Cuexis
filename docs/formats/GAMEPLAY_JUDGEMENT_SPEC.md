@@ -2,7 +2,18 @@
 
 状态：superseded as field contract；retained as design-input history。Gameplay I 的字段与运行语义候选基线，未实施；字段与运行语义的唯一权威现为 [GAMEPLAY_V2_SPEC.md](GAMEPLAY_V2_SPEC.md)，其决策依据为 [ADR 0044](../adr/0044-gameplay-v2-semantic-kernel.md)。本文件保留为历史候选基线与差异对照，不删除、不再更新结论。
 
+<!-- cuexis-meta
+id: FORMAT-GAMEPLAY_JUDGEMENT_SPEC
+status: historical
+authority: owns
+-->
+
 日期：2026-10-01
+
+> **Seek 的当前入口（candidate）**：行为语义见 [RPA 执行与控制补充合同](rpa-execution-contract.md) 第 4 节与
+> [GAMEPLAY_V2_SPEC](GAMEPLAY_V2_SPEC.md) 的 Fact Ledger 重建段（seek／replay 不重新分配、不重编 timer ordinal），
+> 接口边界见 [GAMEPLAY_V2_ABI](../api/GAMEPLAY_V2_ABI.md) 域 9；[§3.19](GAMEPLAY_V2_SPEC.md) 只规定 `SeekLatencyCommitment` 的延迟承诺。
+> 默认构建与安装面不暴露。本文的 Seek／快照设计仅作历史对照，不构成当前合同。
 
 本文是 Gameplay 判定字段和运行语义的单一候选权威。研究背景、案例推演和缺陷发现保留在
 [Gameplay 设计压测](../proposals/research/gameplay/GAMEPLAY_STRESS_TEST_DRAFT.md)、[Fold Calculus 封闭性验证](../proposals/research/gameplay/GAMEPLAY_CALCULUS_CLOSURE_CHECK.md)

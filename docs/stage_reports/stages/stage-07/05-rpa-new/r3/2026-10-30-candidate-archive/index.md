@@ -1,5 +1,11 @@
 # R3 未选用候选的实验材料归档
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-30-candidate-archive.index
+status: evidence
+authority: none
+-->
+
 状态：archived；2026-10-30 暂停现场附件，不是产品实现或接受决定
 
 更新日期：2026-10-30

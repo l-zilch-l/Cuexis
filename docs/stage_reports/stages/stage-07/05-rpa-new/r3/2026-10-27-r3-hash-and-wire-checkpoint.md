@@ -1,5 +1,12 @@
 # R3 哈希实现与编码器恢复点
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-27-r3-hash-and-wire-checkpoint
+status: evidence
+authority: none
+date: 2026-10-27
+-->
+
 状态：本地候选，首次 Seek 总预算未通过。
 
 日期：2026-10-27。返回 [New RPA 报告索引](../README.md)。

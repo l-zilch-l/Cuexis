@@ -1,13 +1,20 @@
 # PD-2 Prepared Binding Index and Projection Adapter
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-2.2026-10-18-pd2-projection-adapter
+status: evidence
+authority: none
+date: 2026-10-18
+-->
+
 日期：2026-10-18。状态：PD-2 内部实施及本地适用门禁完成。
 
 ## 1. 范围与源码绑定
 
 本次用户明确要求完成 PD-2。[Desktop 接手摘要](2026-10-18-pd2-continuation-handoff.md)
 用于理解背景，不据其后续路线启动 PD-3 至 PD-5。
-范围归 [PD 计划](../../../../../stage_plans/active/stage-07/04-pd/plan.md) PD-2
-及[设计细则 §3](../../../../../stage_plans/active/stage-07/04-pd/design.md#3-projection-的确定性处理pd-2)。
+范围归 [PD 计划](../../../../../stage_plans/completed/stage-07/04-pd/plan.md) PD-2
+及[设计细则 §3](../../../../../stage_plans/completed/stage-07/04-pd/design.md#3-projection-的确定性处理pd-2)。
 既有聚合、来源身份、错误和恢复语义继续由 Gameplay Spec、ABI、Playback lifecycle 与 RPA 合同拥有。
 
 实施前基线为 `stage-7` / `d344088236ae589c0b49a4994ef0fbddd6567ce2`。

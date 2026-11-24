@@ -1,5 +1,12 @@
 # CRLF approval repair and device acceptance fixture
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.device.2026-10-09-crlf-and-device-fixture
+status: evidence
+authority: none
+date: 2026-10-09
+-->
+
 状态：实施与受限验证报告；设备观察、可信部署与阶段关闭独立保留
 
 证据日期：2026-10-09

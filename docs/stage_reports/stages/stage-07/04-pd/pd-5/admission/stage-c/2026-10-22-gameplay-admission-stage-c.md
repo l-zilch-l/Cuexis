@@ -1,5 +1,12 @@
 # PD-5 阶段 C：原样 40k R4 功能验收阻塞交回
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.admission.stage-c.2026-10-22-gameplay-admission-stage-c
+status: evidence
+authority: none
+date: 2026-10-22
+-->
+
 状态：failed / stopped / owner verification pending
 
 本轮原样 40000/low 在首次 `ExecutionHost::advance` 返回

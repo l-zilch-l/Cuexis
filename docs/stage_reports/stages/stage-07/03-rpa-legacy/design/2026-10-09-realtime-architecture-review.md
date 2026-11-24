@@ -1,11 +1,18 @@
 # S7A-7/8 实时架构重审与规划证据
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.design.2026-10-09-realtime-architecture-review
+status: evidence
+authority: none
+date: 2026-10-09
+-->
+
 状态：dated architecture review；规划交付，产品整改未实施
 
 证据日期：2026-10-09（Asia/Shanghai）
 
 归属更新（同日后续owner指令）：本报告的审计发现及测量有效范围保留；原S7A-7/8下RT78/DN78
-工作归属由[Stage 7-RPA子阶段](../../../../../stage_plans/active/stage-07/03-rpa-legacy/plan.md)取代；
+工作归属由[Stage 7-RPA子阶段](../../../../../stage_plans/completed/stage-07/03-rpa-legacy/plan.md)取代；
 RPA按owner最新指令归入Stage 7，原future独立阶段落点已被取代。
 原plan-a链接现为交接入口；不将迁移工作计为7/8新增缺口，不将原有设备失败改记通过。
 迁移记录与原规划文本归[拆分报告](2026-10-09-realtime-stage-separation.md)。
@@ -20,7 +27,7 @@ RPA按owner最新指令归入Stage 7，原future独立阶段落点已被取代�
 旧 CI 与旧 Replay=same 不能证明真实音频同步。本轮的决策方向在
 [ADR 0046](../../../../../adr/0046-realtime-playback-coordination.md)，字段职责在
 [宿主边界草案](../../../../../api/realtime-host-boundary.md)，未来实施顺序唯一归
-[plan-a](../../../../../stage_plans/active/stage-07/01-a/plan.md#3418-实时架构重审与规划2026-10-09)。
+[plan-a](../../../../../stage_plans/completed/stage-07/01-a/plan.md#3418-实时架构重审与规划2026-10-09)。
 
 评价：保留可嵌入 SDK、单 kernel/Fold、整数判定、事务和恢复边界；必须补齐实际输入/时钟的端到端
 语义与运行成本。模块依赖低不等于调度解耦；Stage 6 的表现产品化完成不替代 Stage 7 的实时集成。

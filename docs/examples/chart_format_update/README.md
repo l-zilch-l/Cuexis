@@ -1,5 +1,11 @@
 # Stage Chart Format Update 候选示例
 
+<!-- cuexis-meta
+id: EXAMPLES-chart_format_update.README
+status: candidate
+authority: none
+-->
+
 状态：CFU-B 评审入口；CFU-C1 已将接受示例复制为正式 fixture，本目录仍不直接参与生产测试
 
 更新日期：2026-08-11

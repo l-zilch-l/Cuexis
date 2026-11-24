@@ -2,7 +2,13 @@
 
 状态：candidate；S7A-3 / S7A-4 字段基线参考，RPA 增量按补充合同
 
-更新日期：2026-10-28
+更新日期：2026-11-23
+
+<!-- cuexis-meta
+id: API-gameplay-v2-execution-types
+status: candidate
+authority: owns
+-->
 
 本文件补充 [Gameplay V2 ABI](GAMEPLAY_V2_ABI.md)，只拥有表示、所有权和接口。
 运行语义以[执行 Spec](../formats/gameplay-v2-execution-profile.md) 为准。
@@ -48,7 +54,7 @@ Tick/Span/Delta 继续用现有 strong types；phase/action 继续用现有 enum
 | `InputReceiptPending` | owning observationKey、Tick dispatchTick、bool wasForwarded、optional<Tick> admissionFrontier/admissionHorizon；只 admission 确认 |
 | `ObservationRecord` | E、originKey、CommitTick、optional<CanonicalObservationKey>、bool progressed/accepted；observer inspection，非 Ledger |
 | `InputReceipt` | u64 consideredCount、optional<E> consumedBy、dispatchTick；无输入 receipt 不能假造原 observation |
-| `CoordinationCommit` | const-owned origin、phase/resource/contact/matcher patches 与 Fact descriptors；创建后只读 |
+| `CoordinationCommit` | const-owned origin、phase/resource/contact/matcher patches 与 Fact descriptors；创建后只读（**设计名**：当前 C++ 代码中没有该类型，现有对应物是 `kernel_types.hpp` 的 `CoordinationOrigin`） |
 | `KernelProjection` | owning immutable phase/resource/contact/observer/receipt/Fact prefix、optional<Tick> processedFrontier/lastAdvanceHorizon、KernelSessionState、optional fault diagnostic、optional failedTick/requestedHorizon、opaque self-owned runScope anchor；generation 不进入 identity |
 
 grade 字段不在 S7A-4 outcome 中编造值，S7A-5 首次消费再增加真实计算结果。
@@ -78,6 +84,13 @@ EngineIdentityDeclaration 增加 optional owning executionProfileToken/lateAlgor
 factSemanticRevision=`fact.semantic.phase-local.v1`、fixedPointTableId=`fixed-point.none.v1`、
 coordinationPhaseOrderToken=`coordination.six-eight.t4-k4.v1`。none 是本 kernel 不消费固定点表的
 算法声明，不是生产参数默认值；未实施 grade 不假冒引用 grading table。未知 engine token 拒绝执行。
+运行身份另分两层，实际构造见 `execution_kernel_prepare.cpp`：有 ruleset 时把 engine 算法标记
+`;gameplay.fold.finite.v1` 追加到 `judgementSemanticRevision`，同时把 Ruleset 的
+interfaceProjectionToken、compiledBuild、按声明顺序的 module id 与 Loadout 分别写入
+ruleset/session 分量；有 grade table 时把 `;grade.signed-interval.v1` 追加到
+`factSemanticRevision`。Ruleset/session 的实际配置不能只靠 engine 后缀表达，engine 后缀也不能
+冒充 ruleset/session 配置。迁移身份字段前先按这套 preimage 取旧字节，后缀与字段位置不在本补充
+内改动。
 PreparedGameplay 增加 const identityDeclarations() accessor，storage 自持有全部声明；
 prepare 要求 configuration 与 prepared 的全部 engine/ruleset/session 声明逐字段相等。
 运行 JudgementIdentity 保持该 engine/ruleset/chart 三分量，session 分量包含原 session 声明、

@@ -1,10 +1,17 @@
 # 阶段 1E 实施计划：SDK 封装与外部消费闭环
 
 状态：实现与 Windows/MSVC、Windows/MinGW、Linux GCC/Clang 自动化验收完成
+
 规划日期：2026-07-20  
 进展更新：2026-07-29
 最终验收前置：[阶段 1C 审查问题关闭](../../../stage_reports/stages/stage-01/2026-07-22-stage-1c-review.md)、[阶段 1D 实施计划](stage-1d-plan.md)；独立的 packaging/consumer 工作允许提前实施
 产品边界：[ADR 0027](../../../adr/0027-playback-sdk-product-boundary.md)、[ADR 0030](../../../adr/0030-playback-preview-api-version-and-result.md)、[ADR 0032](../../../adr/0032-playback-clock-and-prepared-audio-transaction.md)、[ADR 0033](../../../adr/0033-cpp-shared-library-preview-boundary.md)、[SDK 转型方案](../../historical/sdk-transition/plan.md)
+
+<!-- cuexis-meta
+id: PLAN-completed.stage-01.stage-1e-plan
+status: completed
+authority: owns
+-->
 
 ## 1. 阶段目标
 

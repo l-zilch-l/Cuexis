@@ -1,7 +1,14 @@
 # Stage 7-PD PD-3-b 状态修订、只读桥与按需物化
 
-日期：2026-10-19。范围：[PD 计划 PD-3-b](../../../../../../stage_plans/active/stage-07/04-pd/plan.md)
-及[细则 §4.1–4.3、§5、§12.2](../../../../../../stage_plans/active/stage-07/04-pd/design.md)。
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-3.b.2026-10-19-pd3b-state-read-and-materialization
+status: evidence
+authority: none
+date: 2026-10-19
+-->
+
+日期：2026-10-19。范围：[PD 计划 PD-3-b](../../../../../../stage_plans/completed/stage-07/04-pd/plan.md)
+及[细则 §4.1–4.3、§5、§12.2](../../../../../../stage_plans/completed/stage-07/04-pd/design.md)。
 状态：内部实施及本地适用门禁完成，GPT-6-Luna 独立复审 PASS，PD-3-b 可退出。
 当前状态唯一见 [CURRENT_STATUS](../../../../../../CURRENT_STATUS.md)。
 

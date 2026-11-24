@@ -1,5 +1,12 @@
 # 轻量回收进度、幂等退役与回复等待边界实施
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.performance.2026-10-17-retention-progress-and-wait-boundaries
+status: evidence
+authority: none
+date: 2026-10-17
+-->
+
 状态：implementation evidence / affected regressions verified；PD-0 最终源码计时组超噪声界，已停止追加测量。
 日期：2026-10-17（Asia/Shanghai）。PD-0 尚未退出。
 

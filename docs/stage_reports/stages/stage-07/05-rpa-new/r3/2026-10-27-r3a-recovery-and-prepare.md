@@ -1,8 +1,15 @@
 # R3a recovery closure and preparation verification
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-27-r3a-recovery-and-prepare
+status: evidence
+authority: none
+date: 2026-10-27
+-->
+
 状态：local implementation verified / R3 in progress，2026-10-27（Asia/Shanghai）。
 本报告不登记 R3 整体退出、R4 正式性能、40k、设备或生产接受；R3b 尚未实施，入口裁定待 owner。
-返回 [New RPA 报告索引](../README.md)。[实施登记](../../../../../stage_plans/active/stage-07/05-rpa-new/r3/plan.md)。
+返回 [New RPA 报告索引](../README.md)。[实施登记](../../../../../stage_plans/completed/stage-07/05-rpa-new/r3/plan.md)。
 
 ## 1. 范围与身份
 
@@ -112,7 +119,7 @@ sample/present，不能接受 20 ms 门。当前 RPA 不使用 checkpoint 恢复
 独立 patch variant 已单独编译，也不自动覆盖随后新增的本报告/导航/审计附件。
 不 reset/clean 主树，不将 R2-only patch 反套成 R3 回滚。
 
-R3b [受控候选提案](../../../../../stage_plans/active/stage-07/05-rpa-new/r3/trusted-restore-candidate.md)
+R3b [受控候选提案](../../../../../stage_plans/completed/stage-07/05-rpa-new/r3/trusted-restore-candidate.md)
 已由无上下文 max gpt-6-luna 审查。后续核对确认总计划 §8.2 已允许首版在最终 archive 工厂上生成，
 此前额外确认请求已经撤回；当前 R3b 已实施并在独立构建核验，不将其结果回填到本报告的 R3a 身份。
 R3c 条件门尚未进入，生产 checkpoint caps/间隔尚未登记。
