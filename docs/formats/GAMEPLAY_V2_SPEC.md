@@ -219,6 +219,70 @@ W 类缺口（W-class gap）的编号规则、字段定义与登记位置**不�
    且必须证明不影响判定（CM-X08）。
 3. 版本不匹配、identity 不匹配与 capability 不足都必须给出稳定诊断，不得回落到 v4 语义。
 
+### 2.6 Candidate Gameplay v3 author face (beat-us)
+
+本节是候选 `gameplay.version=3` 作者面的字段与约束投影，随 RR-FMT / RR-ADV 的 T-11 交付，
+**尚未**成为默认发行格式；旧 v2 与 Chart v4 路径的接受集不变。文件位置为
+`schemas/candidate/cuexis.gameplay-author.beat-us.v3.schema.json`，由
+`schemas/candidate/cuexis.chart.beat-us.v5.schema.json` 的根 `gameplay` 字段引用。外层 Chart 必须
+是 `format="cuexis.chart"`、`version=5`，且 `requiredExtensions` **只**声明格式扩展
+`{"id":"cuexis.gameplay.v3","version":3}`；不把 Playback 的 chart.v5/CXT2/Clip2/layers/event2
+capability ID 写入该字段，实际能力需求由资源闭包与 prepare 预检另行派生。
+
+**Payload。** `{version:3, authorProfile:"gameplay.author.beat-us.v1", sourceDocumentId, common,
+requirements, rankAssignment}`；除显式可选字段外均必填。版本先于 profile 派发，不从字段猜测或
+回退；缺少 v3 或 profile 不符报 `format.gameplay_version_unsupported`。`id` 类字段符合
+`^[A-Za-z_][A-Za-z0-9_.-]{0,63}$`。`i64/u64/u32` 只接受确切 JSON 整数 token，小数、指数与越界
+拒绝；毫秒是有限 binary64 JSON number。`Beat` 为 `{numerator:i64, denominator:i64>0}`，源可
+未约分，编译值约分；零为 `0/1`。
+
+**Common。** `graphRevision="3"`；移除 `timebase` 与 `rulesetRef`；新增
+`gradeTables:Table[]`、`noteTypes:NoteType[]`（各 id 唯一、可为空）与 `scoreMode:ScoreMode`。
+原 execution profile、协调、资源、grace、solver、fact binding、judgement domain、声明与 late
+策略字段保留。可选 `presentationBindings` 由 T-13 追加，本节不定义。
+
+**Timing 与 Stop。** Requirement 的 `timing` 为
+`{endBeat:Beat, phaseTargets:[{phase:PhaseKind, beat:Beat}],
+successWindows:[{phase:Phase, startMs:number, endMs:number}], body?:{startBeat:Beat, endBeat:Beat}}`；
+`PhaseKind` 为 `tap/head/body/tail`，每个声明的 phase 恰好一个 target；成功窗端点是相对同阶段
+target 的毫秒。`Phase` 为 `{kind, declarationOrdinal}`，`successWindows[].phase` 的 kind 与
+declarationOrdinal 必须一起保留，源解析不得按 kind 重建或覆盖作者 ordinal；该 ordinal 与实际
+实例的关系校验归编译阶段。Stop 仍只从 Chart 根 `timing.stops` 读取，每项只接受
+`{beat:Beat, durationMs:number}`，`durationMs` 为有限正数，**不接受** `endBeat`；`offsetMs` 独立
+保存且不参与积分。Stop 几何失败使用稳定码
+`judgement.timebase.stop_quantized_interval_invalid`（量化后区间为空或反向，`fieldPath` 指向该
+Stop）与 `judgement.timebase.stop_endpoint_collision`（不同拍的两个 Stop 量化端点相接，
+`fieldPath` 指后项、`relatedFieldPath` 指前项）。
+
+**Requirement 选表与计分单元。** Requirement 保留原 v2 形状的 identity、phases、pattern、
+measure、resource、grace 与 atom 字段，新增可选 `noteType:id`、`gradeTables?:GradeSelection[]`、
+`scoring?:ScoreSelection[]`。原 `measure.components[].gradeTokens` 仍必填但必须为空，编译期从
+已选表派生。`GradeSelection` 为 `{phase:PhaseKind, gradeTable:id}`，每种 phase 单选且引用必须
+存在；`NoteType` 为 `{id, gradeTables:GradeSelection[]}`。与实例无关的 NoteType phase 选择是
+合法可复用配置，必须原样保留。`ScoreSelection` 为互斥的 `{phase, unit:id}` 或
+`{phase, disabled:true}`，每个声明 phase 最多一条；缺省选择按 scorer 的默认单元处理，
+`disabled:false` 非法。规则键 `(phase, outcome, grade)` 唯一；`qualifies=false` 必须同时
+`judgePoints=0` 且 `combo=keep`。
+
+**Table。** `{id, exact:{startMs, endMs}, intervals:[{grade, startMs, endMs}, ...]}`。档数组非空，
+可复用等级名；每条区间原始端点 `startMs < endMs`，源顺序可乱序，解析值按 `startMs` 升序规范化，
+排序后相邻区间 `endMs == next.startMs`（无缝且不重叠）。`exact` 必填，量化前后满足
+`startMs <= 0 < endMs`、宽非零、允许非对称，端点独立于档区间。几何与档数组失败映射
+`invalid_relation`。
+
+**ScoreMode。** `{id, total:u32, mj:u32, mc:u32, onExhausted:"keep"|"reset",
+comboRewards:[{from:u32, rewardAtFrom:u64, slope:u32}, ...], rules:ScoreRuleRow[]}`。
+奖励表非空，首段 `from=1`，后段 `from` 严格递增，且相邻段在 `next.from-1` 处的值不高于下一段的
+`rewardAtFrom`（段衔接不下降、算术不得越界）；零奖励合法（`{from:1,rewardAtFrom:0,slope:0}`）。
+`ScoreRuleRow` 为 `{phase:PhaseKind, outcome:"hit"|"miss", grade:id|null, qualifies:boolean,
+judgePoints:u64, combo:"keep"|"increment"|"reset"}`；键唯一，非合格行强制零分且 keep。模式可原值
+跨谱复用；未被本谱使用的键保留。`rules` 与 `gradeTables` 的 id 或选择键仅乱序时按本合同顺序
+规范化，重复键不得靠排序吞掉。运行后的 grade/方向、多成员计分单元与积分/combo 结算语义仍归
+判定编译与运行合同，本候选作者面的通过不表示这些行为已成立。
+
+上述作者面只覆盖源字段形状、引用、原始毫秒/Beat 约束与源值规范化；不创建 `TimingMap`、不运行
+编译结果，也不把 schema 通过写成时间、方向或计分行为成立。
+
 ## 3. Canonical Gameplay Graph
 
 ### 3.1 归属裁决

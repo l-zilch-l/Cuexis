@@ -1366,6 +1366,42 @@
       ],
       "note": "RPA profile detailed rejection, unchanged category and R entry set.",
       "publicConsumptionSurface": "Existing Diagnostic / Result carrier (internal execution profile)."
+    },
+    {
+      "code": "judgement.timebase.stop_quantized_interval_invalid",
+      "family": "judgement.timebase",
+      "category": "invalid_relation",
+      "categoryBasis": "documented_mapping_row",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "RR-FMT",
+      "slot": "RR-ADV",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "GAMEPLAY_V2_SPEC.md#26-candidate-gameplay-v3-author-face-beat-us",
+        "stage_plans/active/stage-07-rr/contracts/runtime-timing.md#稳定诊断与迁移"
+      ],
+      "note": "New Stop code registered by RR-FMT / slot RR-ADV (T-11). A declared Stop whose quantized interval collapses to an empty or reversed half-open range (end <= start after the shared quantization) is a time-order relation error and maps to invalid_relation. The author fieldPath is the source JSON Pointer of the offending Stop, e.g. /timing/stops/i; the quantized end is derived from the author beat and duration, not re-read from the wire. It is not a capability reject code, so stableRejectCode stays null and no R entry is added.",
+      "publicConsumptionSurface": "Consumed through the existing DiagnosticCode carrier and its core::Error context (code / category / severity / faulted / fieldPath); no new ABI domain, type or public enum value is introduced."
+    },
+    {
+      "code": "judgement.timebase.stop_endpoint_collision",
+      "family": "judgement.timebase",
+      "category": "invalid_relation",
+      "categoryBasis": "documented_mapping_row",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "RR-FMT",
+      "slot": "RR-ADV",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "GAMEPLAY_V2_SPEC.md#26-candidate-gameplay-v3-author-face-beat-us",
+        "stage_plans/active/stage-07-rr/contracts/runtime-timing.md#稳定诊断与迁移"
+      ],
+      "note": "New Stop code registered by RR-FMT / slot RR-ADV (T-11). Two Stops at different author beats whose quantized endpoints meet (the earlier Stop's quantized end equals the later Stop's quantized start) is a time-order relation error and maps to invalid_relation. fieldPath points at the later Stop; relatedFieldPath points at the earlier Stop. It is not a capability reject code, so stableRejectCode stays null and no R entry is added.",
+      "publicConsumptionSurface": "Consumed through the existing DiagnosticCode carrier and its core::Error context (code / category / severity / faulted / fieldPath / relatedFieldPath); no new ABI domain, type or public enum value is introduced."
     }
   ],
   "rejectionEntries": [

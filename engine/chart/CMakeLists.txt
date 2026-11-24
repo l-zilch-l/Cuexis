@@ -124,11 +124,22 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE OR CUEXIS_BUILD_DEVELOPER_TOOLS OR
     add_library(cuexis::chart_tools ALIAS cuexis_chart_tools)
     set_target_properties(cuexis_chart_tools PROPERTIES EXPORT_NAME InternalChartTools)
 
+    # The explicit v5 candidate loader embeds the candidate Chart schema at configure
+    # time. The schema file stays the authority; the generated header only carries it into
+    # the build-only loader so the two cannot drift apart unnoticed.
+    set(CUEXIS_CHART_V5_SCHEMA_FILE
+        "${PROJECT_SOURCE_DIR}/schemas/candidate/cuexis.chart.beat-us.v5.schema.json")
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CUEXIS_CHART_V5_SCHEMA_FILE}")
+    file(READ "${CUEXIS_CHART_V5_SCHEMA_FILE}" CUEXIS_CHART_V5_SCHEMA)
+    configure_file(src/chart_v5_schema.hpp.in
+        "${CMAKE_CURRENT_BINARY_DIR}/generated/chart_v5_schema.hpp" @ONLY)
+
     # CXT2 expansion, candidate/Behavior source compilation, candidate assembly, migration and
     # the Packed file Writer. The old Resolver-facing chart_writer.cpp stays in the base target.
     target_sources(cuexis_chart_tools
         PRIVATE
             src/chart_migrator.cpp
+            src/chart_v5_loader.cpp
             src/cxt_v2_loader.cpp
             src/cxt_v2_loader_expand.cpp
             src/cxt_v2_loader_parse_nodes.cpp
@@ -149,6 +160,7 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE OR CUEXIS_BUILD_DEVELOPER_TOOLS OR
                 tools_include/cuexis/chart/candidate_assembler.hpp
                 tools_include/cuexis/chart/candidate_lowering.hpp
                 tools_include/cuexis/chart/chart_migrator.hpp
+                tools_include/cuexis/chart/chart_v5_document.hpp
                 tools_include/cuexis/chart/cxt_v2_loader.hpp
                 tools_include/cuexis/chart/packed_chart_io.hpp
                 tools_include/cuexis/chart/packed_chart_writer.hpp
@@ -159,6 +171,7 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE OR CUEXIS_BUILD_DEVELOPER_TOOLS OR
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/tools_include>
         PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}/src
+            ${CMAKE_CURRENT_BINARY_DIR}/generated
     )
 
     target_compile_features(cuexis_chart_tools PUBLIC cxx_std_20)

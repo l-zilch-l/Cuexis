@@ -26,7 +26,7 @@ authority: references
 | `late_policy_incomplete` | GAMEPLAY_V2_SPEC.md#9.2 |
 | `identity_closure_incomplete` | GAMEPLAY_V2_SPEC.md#9.2 |
 
-## 已注册码（71 条）
+## 已注册码（73 条）
 
 | 码 | 类别 | 严重度 | 会话影响 | 首个消费批次 |
 | --- | --- | --- | --- | --- |
@@ -81,6 +81,8 @@ authority: references
 | `judgement.kernel.transaction_failed` | invalid_relation | error | session_faulted | S7A-4 |
 | `judgement.late.dispatch_collision` | invalid_relation | error | session_unaffected | S7A-4 |
 | `judgement.session.lifecycle_order` | invalid_relation | error | session_unaffected | S7A-4 |
+| `judgement.timebase.stop_endpoint_collision` | invalid_relation | error | session_unaffected | RR-FMT |
+| `judgement.timebase.stop_quantized_interval_invalid` | invalid_relation | error | session_unaffected | RR-FMT |
 | `judgement.timebase.time_reversal` | invalid_relation | error | session_unaffected | S7A-2 |
 | `partial-group` | invalid_relation | error | session_unaffected | S7A-7 |
 | `pattern.relation_unsupported` | invalid_relation | error | session_unaffected | S7A-3 |

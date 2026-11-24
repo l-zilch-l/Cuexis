@@ -60,6 +60,10 @@ target_link_libraries(cuexis_chart_tests
         Catch2::Catch2WithMain
 )
 
+if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+    target_sources(cuexis_chart_tests PRIVATE rr_candidate_schema_tests.cpp)
+endif()
+
 include(Catch)
 catch_discover_tests(cuexis_chart_tests)
 
