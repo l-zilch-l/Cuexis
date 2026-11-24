@@ -100,8 +100,9 @@ v1 输入与结果保持原含义，不能直接当 v2 输入。保留的 v1 分
 ACK/present-return 原字段继续分别报告；enqueue/drain/GPU 无边界时仍 unavailable。
 `finite_followup.py` 的 host 汇总复用同一完整契约，拒绝将改名后的两个 native 日志计作三对进程；
 它的外层正常结束仍可能包含容量单元失败，须读取 run-result.json 的 failures，不能仅看控制器退出码。
-`compare_read_candidates.py` 是一候选、三侧固定进程的规模对照；先审计归档方法，再绑定新方法，
-不恢复旧正式窗口或修改其日志。全部结果仍是有限诊断。
+`compare_read_candidates.py`（2026-11-17 已归档到
+`tools/archive/verification/playback_performance/`）是一候选、三侧固定进程的规模对照；先审计归档方法，
+再绑定新方法，不恢复旧正式窗口或修改其日志。全部结果仍是有限诊断。
 
 `read_result_candidate.py bind` 只绑定已预登记的 F1/C2 候选与两套新正常 Release 树，要求独立
 语义/代码生成验证已经完成。它校验历史 F1 库存及原始归档，再比较编译输入并核对 CMake 源目录；
@@ -113,7 +114,7 @@ acceptance=false。数值自检通过也不授权保留候选或建立正式 pre
 bind 绑定新 Release 诊断构建，run 执行 N=1/64/40000×low/high 固定六配置。原 Writer 预算不改；
 提议布局 sizing、原 semantic hash 需求与 wire accepted 分别记录，不进入 Host 或正式测量。
 小规模实际输出校验 sizing/hash；40k 的提议 Gameplay payload 仅计数。工作量上限与 revision 4
-Reader/Writer 尚待合同接受，参见 docs/stage_plans/active/stage-07/04-pd/pd-5/pd5-gameplay-admission.md。
+Reader/Writer 尚待合同接受，参见 docs/stage_plans/completed/stage-07/04-pd/pd-5/pd5-gameplay-admission.md。
 
 ## F1 工具包（canary 与 F1 用例合并封包）
 

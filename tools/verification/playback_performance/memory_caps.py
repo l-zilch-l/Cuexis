@@ -483,7 +483,7 @@ def build():
                 "sha256": sha256(ELEMENT_SIZES),
                 "tool": "tools/verification/playback_performance/audit_element_sizes.py",
             } if ELEMENT_SIZES.is_file() else None,
-            "checklist_source": "docs/stage_plans/active/stage-07/pd5-measurement-proposal.md L119-120",
+            "checklist_source": "docs/stage_plans/completed/stage-07/pd5-measurement-proposal.md L119-120",
         },
         "checklist_coverage": checklist_coverage(contents),
         "contents": contents,

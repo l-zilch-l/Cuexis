@@ -1,3 +1,4 @@
+# Reproduction mapping: tools/verification/execution_acceptance/README.md (R4 evidence).
 """Preparation for one or more of the five pre-declared Seek classes.
 
 Every class is its own unit with its own gate and request count, because the classes differ by the

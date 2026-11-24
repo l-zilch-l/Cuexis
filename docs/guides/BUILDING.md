@@ -28,7 +28,6 @@ cuexis_audio
 cuexis_filesystem
 cuexis_content
 cuexis_json_support
-cuexis_timing
 cuexis_project
 cuexis_world
 cuexis_assets
@@ -38,17 +37,13 @@ cuexis_cxc
 cuexis_behavior
 cuexis_gameplay
 cuexis_judgement
+cuexis_gameplay_packed
 cuexis_render
 cuexis_debug
 cuexis_runtime
 cuexis_playback
 cuexis_presentation_renderer
 cuexis_player_support
-cuexis_judgement_compile
-cuexis_cxc_candidate
-cuexis_chart_codec
-cuexis_chart_tools
-cuexis_gameplay_packed
 cuexis_platform_sdl
 cuexis_audio_sdl
 cuexis_render_opengl
@@ -68,7 +63,6 @@ cuexis_audio_tests
 cuexis_filesystem_tests
 cuexis_content_tests
 cuexis_json_support_tests
-cuexis_timing_tests
 cuexis_project_tests
 cuexis_assets_tests
 cuexis_chart_tests
@@ -98,8 +92,6 @@ cuexis_audio_sdl_tests
 cuexis_render_opengl_tests
 cuexis_player_diagnostics_tests
 cuexis_player_control_tests
-cuexis_frame_layout_shared_consumer
-cuexis_shader_tests
 cuexis_asset_publish_tests
 cuexis_gameplay_author_tests
 cuexis_format_check

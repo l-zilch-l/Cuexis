@@ -605,5 +605,10 @@
     "docs/proposals/research/gameplay-v2/README.md": "legacy-index-authority",
     "docs/proposals/research/README.md": "legacy-index-authority"
   },
-  "source_naming_exceptions": {}
+  "source_naming_exceptions": {
+    "cmake/VerifyCfuF3Determinism.cmake": "master 引导快照保留的旧阶段命名；阶段 PR 已改名为 kebab 门禁脚本，合并时移除。",
+    "cmake/VerifyCfuF4Performance.cmake": "master 引导快照保留的旧阶段命名；阶段 PR 已改名为 kebab 门禁脚本，合并时移除。",
+    "cmake/VerifyS4GPerformance.cmake": "master 引导快照保留的旧阶段命名；阶段 PR 已改名为 kebab 门禁脚本，合并时移除。",
+    "cmake/VerifyS5HPerformance.cmake": "master 引导快照保留的旧阶段命名；阶段 PR 已改名为 kebab 门禁脚本，合并时移除。"
+  }
 }

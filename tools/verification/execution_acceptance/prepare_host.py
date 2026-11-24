@@ -1,3 +1,4 @@
+# Reproduction mapping: tools/verification/execution_acceptance/README.md (R4 evidence).
 """Bounded pilot, proofs and preparation for the B-only common-host delivery unit.
 
 The pre-PD counterpart measures a receipt-ACK boundary and reports a different frame digest, so

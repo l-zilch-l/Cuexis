@@ -1,3 +1,4 @@
+# Reproduction mapping: tools/verification/execution_acceptance/README.md (R4 evidence).
 """Claim and seal one admitted preparation. This file never launches a workload."""
 import argparse
 from pathlib import Path
