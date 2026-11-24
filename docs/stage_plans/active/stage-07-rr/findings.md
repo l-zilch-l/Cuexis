@@ -865,6 +865,8 @@ T-06 按卡实施，交付范围只到 Playback 帧对象与 GL 实验桥，宿�
 - RR-F508 因此**保持开放**。清零与幂等重放需要同一个 replay ledger：保留已应用的 retire/close 回执（含 effects 与 generation），让重复步骤在不再持有 live control 时返回原记录。没有这层设计时，清零会破坏 R1 的关闭与重放合同；这是本合同冲突，不是测试问题。
 - GL 边界缺口：T-05 与 T-06 的渲染测试直接 `#include <glad/glad.h>` 并调用 `gl*`，违反 `VerifyArchitecture.cmake` 的“GL 头与调用只在 render_opengl”规则，`cuexis_architecture_tests` 变红。修复中（见 task-25）。
 
+复核更正见 §42。原记的“七个 worker 用例”以复核为准为六条可独立复现的用例，R0 因观测宏在预设中关闭不能独立核实；逐字段隔离还表明只有 `hostFence`、`acceptedHostControl`/`acceptedHostDecision` 与关闭路径冲突。
+
 ## 37. CI 红灯与文档基线冲突（2026-11-24）
 
 - MinGW 与 GCC 构建：`open_gl_frame_layout_bridge.cpp` 的聚合初始化缺 `DrawSummary` 初值，`-Werror=missing-field-initializers` 直接失败。已补默认成员初值（`12d60eab`），MSVC 不报但 GCC/Clang 会报。
@@ -916,6 +918,16 @@ T-06 按卡实施，交付范围只到 Playback 帧对象与 GL 实验桥，宿�
 - `cuexis_judgement_compile`：**部分成立**。目标已真实创建（STATIC，PUBLIC 链 Judgement/Core），有 legacy→runtime 视图桥、默认启测与 RPA 私有边、架构方向检查；但运行内核仍消费旧 `PreparedGameplay`，作者/图/timebase 源仍在 `cuexis_judgement`（44 个源），消费者作者头阴性仍编译成功。
 - 运行内核 `advance`、`receiveCanonicalBatch`、编号先分配、`advanceStopCut`、`acceptedIngressThrough`、Resume 编号共用、Playback owning 结算投影、容量码与 shared 精确导出：**不成立**（未实施）。
 - 裁定：`PreparedRequirement` 同名冲突采用独立 `runtime` 命名空间，不改旧类型名与 element-size 基线。`cuexis_rr_advance_contract` 已注册并通过，覆盖值层、GP-02 域、GP-04 基数与存储寿命；GP-02 完整推进、GP-03、CLK-02 与 Stop 回放仍未覆盖。
+
+## 42. F508 与 F135 复核裁定（2026-11-24）
+
+外部复核结论按两部分采纳。
+
+- RR-F508 按“内容卸载”和“控制生命周期终结”分开处理。内容卸载清 Runtime、Gameplay、时钟映射、tail 转移、frame 布局与 committed presentation token；`hostFence`、accepted control/decision、`confirmedHostContext` 保留到 Close 终态确认，再由 `releaseExecutionFence`、`completeExecutionClose` 或无 fence 终态分支清理。PlaybackSession 不新增四槽终态回执，重放由宿主步骤账本按完整身份匹配负责，命中已完成记录直接返回旧结果，新内容提交后未命中旧回执的 proof 必须拒绝。无 fence Close 只在 accepted 身份匹配且账本证明参与者已清理时成立；未接纳归 stale，Suspended 或效果未知保留清理状态。
+- 复核更正：六条可独立复现的 worker 用例（B4、C10、C4、B5 两处、R1 两处），不是七条；R0 的观测宏在预设中关闭，不能独立核实。逐字段隔离表明只有 `hostFence`、`acceptedHostControl`/`acceptedHostDecision` 必须跨内容卸载保留，其余三个字段清零不冲突。T-17 删除的 `rr_session_unload_state` 直接写槽、绕过真实 fence 守卫，只证明清理代码会执行。`unload()` 目前也未清 `framings` 与 `committedPresentationToken`，归 T-06 内容卸载补验。
+- RR-F135 保留 interned Error 方向。实施前用尺寸探针比较“每字段 `variant<string, InternedText>`”与“`variant<OwnedTextPair, InternedTextPair>`”两种形状，按各工具链的 sizeof/alignof 选择；`InternedText` 必须静态存储期，保留 owning 构造与 nothrow move；OOM 路径不得调用 `withContext`、`withCause` 或 cause 深拷贝；失败阶段用固定枚举随故障回执传递。持续 OOM 测试要求连续三次交付的码与阶段一致、`optional<Result>` 复制零分配，并覆盖 MSVC、GCC、Clang。公开布局变化按 0.10.0 处理，重生成 element-size 基线，最终候选需 owner 的版本审批评论。
+
+T-10 第九轮（GP-04 多单元、最小 ReplayRecord/replay）与 T-12（timing 库、编译闭包、chart 时间适配、beat-us 消费者）已本地提交，未推送。
 
 ## 附录 处置记录（按日期保留，§12–§16）
 

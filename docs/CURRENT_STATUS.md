@@ -11,7 +11,7 @@ current_register: stage_plans/active/stage-07-rr/findings.md
 
 状态：current
 
-更新日期：2026-11-23
+更新日期：2026-11-24
 
 当前任务、下一步与阻塞见 [交接页](HANDOFF.md)。
 
@@ -23,7 +23,7 @@ current_register: stage_plans/active/stage-07-rr/findings.md
 
 RR 的 [T-18 文档治理](stage_plans/active/stage-07-rr/tasks/T-18.md)已完成：规则、登记册保护、校验器、报告分类及证据追踪已落地，转入日常维护。实际通过范围与缺输入项见[交付报告](stage_reports/stages/stage-07-rr/implementation/2026-11-23-documentation-governance.md)。
 
-RR 产品任务已完成本轮设计裁定与实施准备复查。T-01 已完成：实施基线绑定提交 `a22e255f`，交付派单清单、调度正反例、独立冷启动与 D-20 旧内容清单，见[基线与派单报告](stage_reports/stages/stage-07-rr/readiness/2026-11-23-t-01-dispatch-baseline.md)。T-03 已完成 8 篇合同订正与四个回归用例，并在四个预设实测通过，见[交付报告](stage_reports/stages/stage-07-rr/implementation/2026-11-23-t-03-contracts-and-diagnostics.md)。T-04 已完成构建闭包拆分与隔离门禁：四个预设与两个独立配置构建通过，安装消费者五档与阴性对照通过，见[交付报告](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-04-build-isolation.md)。波次 5 已完成：T-02 对齐四篇状态事实，T-05 交付像素几何与 GL 边界（`framebuffer_incomplete` 记无法核实），T-17 修复会话层 F501/F509/F203（F508 因与定向 Close/retire 重放冲突回退、保持开放），见[交付报告](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-17-session-correctness.md)。波次 6 的 T-06 部分完成：帧对象、GL 实验桥、安装面、F135 场景 1/2/3/5、宿主/Player 帧链与 shared Player smoke 成立；场景 4、诊断用例、F207 与去重未闭环，见[部分交付](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-06-frame-bridge-partial.md)。T-08 已完成独立 RR-4 公共面主体（候选 facade、逐符号导出、hooks 拆分、安装与共享导出对照），见[交付报告](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-08-rr4-surface.md)；`--fresh` 四配置与全量 CTest 留 T-09 补证。T-06 第三轮补齐诊断、资源去重与 retained 用例。T-10 进行中：值层、计分、作者 CLI、`runtime` records 与 Prepared 存储、`cuexis_judgement_compile` 骨架已落地，运行内核输入切换与 Advance 事务未完成；F508 与 F135 场景 4 等裁定，状态见 [HANDOFF](HANDOFF.md)。
+RR 产品任务已完成本轮设计裁定与实施准备复查。T-01 已完成：实施基线绑定提交 `a22e255f`，交付派单清单、调度正反例、独立冷启动与 D-20 旧内容清单，见[基线与派单报告](stage_reports/stages/stage-07-rr/readiness/2026-11-23-t-01-dispatch-baseline.md)。T-03 已完成 8 篇合同订正与四个回归用例，并在四个预设实测通过，见[交付报告](stage_reports/stages/stage-07-rr/implementation/2026-11-23-t-03-contracts-and-diagnostics.md)。T-04 已完成构建闭包拆分与隔离门禁：四个预设与两个独立配置构建通过，安装消费者五档与阴性对照通过，见[交付报告](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-04-build-isolation.md)。波次 5 已完成：T-02 对齐四篇状态事实，T-05 交付像素几何与 GL 边界（`framebuffer_incomplete` 记无法核实），T-17 修复会话层 F501/F509/F203（F508 因与定向 Close/retire 重放冲突回退、保持开放），见[交付报告](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-17-session-correctness.md)。波次 6 的 T-06 部分完成：帧对象、GL 实验桥、安装面、F135 场景 1/2/3/5、宿主/Player 帧链与 shared Player smoke 成立；场景 4、诊断用例、F207 与去重未闭环，见[部分交付](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-06-frame-bridge-partial.md)。T-08 已完成独立 RR-4 公共面主体（候选 facade、逐符号导出、hooks 拆分、安装与共享导出对照），见[交付报告](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-08-rr4-surface.md)；`--fresh` 四配置与全量 CTest 留 T-09 补证。T-06 第三轮补齐诊断、资源去重与 retained 用例。T-10 已完成九轮：值层、计分、作者 CLI、`runtime` records 与 Prepared 存储、`cuexis_judgement_compile` 骨架、`runtime::AdvanceKernel`（编号/Stop、GP-02 四向量、单元耗尽 Fold、GP-04 多单元、最小 replay）落地；GP-03、Playback owning DTO 与 legacy 输入切换未完成。T-12 部分完成：timing 库、编译闭包、chart 时间适配、beat-us 消费者与 RR-F133 成立，canonical 行与安装隔离未做。F508 与 F135 的处理裁定见登记册 §42；T-10 第九轮与 T-12 已本地提交，尚未推送，状态见 [HANDOFF](HANDOFF.md)。
 
 ## 阶段状态
 
