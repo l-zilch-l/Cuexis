@@ -523,7 +523,7 @@ else()
         set(sdk_version_minor "${CMAKE_MATCH_2}")
         math(EXPR sdk_next_patch "${CMAKE_MATCH_3} + 1")
         set(too_new_patch "${sdk_version_major}.${sdk_version_minor}.${sdk_next_patch}")
-        foreach(invalid_version IN ITEMS 0.7 0.8.1 "${too_new_patch}" 0.10 1.0)
+        foreach(invalid_version IN ITEMS 0.7 0.8.1 "${too_new_patch}" 0.11 1.0)
             cuexis_expect_configure_failure(
                 "Cuexis package version ${invalid_version} compatibility rejection"
                 "${CMAKE_COMMAND}"
