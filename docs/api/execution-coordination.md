@@ -1,6 +1,6 @@
 # Execution coordination preview
 
-适用版本：SDK API `0.9.1`；更新日期：2026-10-28。
+适用版本：SDK API `0.10.0`；更新日期：2026-11-24。
 
 <!-- cuexis-meta
 id: API-execution-coordination

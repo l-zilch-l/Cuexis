@@ -102,7 +102,7 @@ accepted 后，本计划可以为 v5 Core/Packed candidate path 实施必要的 
 
 ### 2.1 当前基线
 
-原计划开工时仓库事实如下，保留为迁移起点，不代表当前SDK版本。当前分支 SDK API 为 `0.9.1`，
+原计划开工时仓库事实如下，保留为迁移起点，不代表当前SDK版本。当前分支 SDK API 为 `0.10.0`，
 状态与证据归[CURRENT_STATUS](../../../CURRENT_STATUS.md)。关闭后的后续开发基线是 Chart v5；二者不得混用。
 
 ```text

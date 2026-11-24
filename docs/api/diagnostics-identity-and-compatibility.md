@@ -2,9 +2,9 @@
 
 状态：active
 
-更新日期：2026-10-28
+更新日期：2026-11-24
 
-适用版本：SDK API `0.9.1`
+适用版本：SDK API `0.10.0`
 
 文档角色：公共 API 参考
 
@@ -25,7 +25,7 @@ authority: owns
 - `Error` 描述一次操作失败；`Diagnostics` 描述一组可排序的问题。
 - 机器判断优先使用 code 和 fieldPath，不只匹配 message。
 - `PreparedSemanticIdentity`、`PresentationContentIdentity` 和 `FrameDigest` 含义不同。
-- 当前 SDK `0.9.1` 继续保持 Chart v1/v2/v3 Reader 与 FrameDigest v1-v3 兼容合同。
+- 当前 SDK `0.10.0` 继续保持 Chart v1/v2/v3 Reader 与 FrameDigest v1-v3 兼容合同。
 
 ## 错误与诊断速查
 
@@ -67,7 +67,7 @@ prepare 诊断按以下阶段形成并保持稳定顺序：
 
 ## 兼容合同
 
-- 当前分支 SDK API 为 `0.9.1`；交付状态见[CURRENT_STATUS](../CURRENT_STATUS.md)，版本递增与审批规则见[VERSIONING](../guides/VERSIONING.md)。
+- 当前分支 SDK API 为 `0.10.0`；交付状态见[CURRENT_STATUS](../CURRENT_STATUS.md)，版本递增与审批规则见[VERSIONING](../guides/VERSIONING.md)。
 - 0.7.5正式化诊断code/sourceCode及两类legacy/query message，candidate Recovery revision2明确拒绝revision1；消费者最低版本与回退见[具体兼容差异](../guides/VERSIONING.md#075具体兼容差异)。
 - Chart v1/v2/v3 Reader、迁移入口和已公开旧 API 按 ADR 0041 退出政策维护。
 - FrameDigest v1-v3 和 canonical bytes/order 保持稳定。

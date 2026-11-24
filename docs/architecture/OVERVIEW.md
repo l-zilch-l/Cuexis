@@ -2,7 +2,7 @@
 
 状态：现行架构总览
 
-更新日期：2026-10-28
+更新日期：2026-11-24
 
 <!-- cuexis-meta
 id: ARCH-OVERVIEW
@@ -47,7 +47,7 @@ candidate Gameplay / execution coordination (explicit opt-in)
 
 公共头不得暴露 EnTT、SDL、OpenGL/GLAD、JSON DOM、RuntimeSession、World 或实现日志类型。
 
-当前分支 SDK API 为 `0.9.1` preview，candidate Gameplay / 执行协调入口与普通播放路径显式区分，
+当前分支 SDK API 为 `0.10.0` preview，candidate Gameplay / 执行协调入口与普通播放路径显式区分，
 不把内部 Judgement 类型作为宿主 API。入口和所有权见 [API 索引](../api/README.md)与
 [实时宿主边界](../api/realtime-host-boundary.md)，当前交付/接受状态见
 [CURRENT_STATUS](../CURRENT_STATUS.md)。

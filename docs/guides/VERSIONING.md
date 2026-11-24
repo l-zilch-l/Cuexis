@@ -2,7 +2,7 @@
 
 状态：已接受
 
-更新日期：2026-10-28
+更新日期：2026-11-24
 
 <!-- cuexis-meta
 id: GUIDE-VERSIONING
@@ -82,7 +82,7 @@ suffix 只来自允许集合或 exp.<name>
 
 ```text
 Cuexis display version     仓库/发行构建身份
-C++ SDK API version        CMake package 与源码兼容版本；当前分支 static/shared preview 为 0.9.1
+C++ SDK API version        CMake package 与源码兼容版本；当前分支 static/shared preview 为 0.10.0
 C ABI version              稳定 shared-library 二进制契约，阶段 12 首次冻结
 Chart/Project/Asset format 各自持久化 format + version
 ReplayData format          阶段 11 冻结的独立持久化版本
@@ -134,8 +134,9 @@ Stage 7 originally prepared SDK `0.7.1` as a compatible patch candidate for expl
 factories and experimental package isolation. This repair preserves installed public layouts,
 signatures, vtables and default production source selection. `0.7.0` consumers rebuild against
 the new package; the original Entry additions required at least `0.7.1`. This is the historical
-Entry baseline, not the current package version. The branch now uses `0.9.1`; its diagnostic and
-Recovery compatibility changes and consumer minimum are specified below. Delivery status belongs
+Entry baseline, not the current package version. The branch now uses `0.10.0` for the F135
+interned Error layout change; the earlier 0.9.1 diagnostic and Recovery compatibility changes and
+consumer minimum remain specified below. Delivery status belongs
 to [CURRENT_STATUS](../CURRENT_STATUS.md); approval and release gates remain separate.
 
 2026-10-08 S7A-7/8 actual diff review retains this patch under the 0.x policy below:
@@ -313,7 +314,7 @@ Stage 14 必须另行冻结 `1.x` 的 API/ABI 兼容、弃用和版本递增政�
 owner明确指定[独立诊断正式化工作包](../stage_plans/completed/stage-07/02-diagnostics/plan.md)
 目标SDK API为`0.7.5`，同时保留此前已接受的新Recovery版本拒绝旧版本方向。
 这是本工作包的具体版本裁定；版本文件与消费者已在N2集成，N1/N3已退出，
-诊断基线为0.7.5；当前分支为0.9.1。具体证据与交付状态归[CURRENT_STATUS](../CURRENT_STATUS.md)。
+诊断基线为0.7.5；当前分支为0.10.0。具体证据与交付状态归[CURRENT_STATUS](../CURRENT_STATUS.md)。
 N1已记录production/candidate公共差异及迁移影响，不将patch数字当作可观察合同兼容证明。
 若实际差异属于常规规则要求升minor的不兼容公开变化，本工作包按owner指定的`0.7.5`
 记录限定例外及具体影响，不反向放宽Reader来制造兼容，也不推广为其他阶段可使用breaking patch。
@@ -363,10 +364,10 @@ configure/clean build 证据；版本变化不隐式升级 SDK API、内容格�
 
 ### 升级示例：从 `0.7.0` 基线重建宿主
 
-`examples/reference_host/` 是可执行的升级示例；它源于 `0.7.0` 基线，当前默认请求已更新为：
+`examples/reference_host/` 是可执行的升级示例；它源于 `0.7.0` 基线，当前默认请求为：
 
 ```cmake
-find_package(Cuexis 0.7.5 CONFIG REQUIRED COMPONENTS Playback)
+find_package(Cuexis 0.10.0 CONFIG REQUIRED COMPONENTS Playback)
 ```
 
 它显式声明自己编写时对齐的 API 版本，并在安装包记录的 API minor 不兼容时于 configure 阶段失败，

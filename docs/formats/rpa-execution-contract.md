@@ -1,8 +1,8 @@
 # RPA 执行与控制补充合同
 
-状态：candidate contract；当前分支 SDK 0.9.1 preview，未发行
+状态：candidate contract；当前分支 SDK 0.10.0 preview，未发行
 
-更新日期：2026-10-28
+更新日期：2026-11-24
 
 <!-- cuexis-meta
 id: FORMAT-rpa-execution-contract
@@ -349,7 +349,7 @@ Executed(receipt)、Failed(stage,error,actualPrefix)。前五项及 Retired 不�
 | fact semantic | `fact.semantic.rpa.v1` | 新 occurrence origin 与 reconciliation rank 进 engine identity |
 | state schema / event codec | schema `2` / `canonical.discrete.rpa.le.v1` | 当前 schema1 / canonical.discrete.le.v1 不承载新 occurrence/control；旧 snapshot 不冒充新状态 |
 | Recovery envelope | revision 3 | RPA reader/writer 只接纳 rev3；rev1/2 稳定 version_unsupported，原件保留，无隐式升级 |
-| SDK API | B3 首用 0.8.0；当前分支 0.9.1 preview | PD 迁移及本轮来源绑定沿革见[版本政策](../guides/VERSIONING.md)；0.9.1 按 owner 指定，candidate 消费者须整体重建，不保证旧二进制布局兼容 |
+| SDK API | B3 首用 0.8.0；当前分支 0.10.0 preview | PD 迁移及 R3 来源绑定的 0.9.1 沿革见[版本政策](../guides/VERSIONING.md)；0.9.1 为 owner 指定，0.10.0 为 F135 interned Error 公开布局变化的 minor 递增，candidate 消费者须整体重建，不保证旧二进制布局兼容 |
 
 RPA profile 与旧 engine identity 不相等，即使某条轨迹得到相同分数也不能混合 archive。
 未来实现保留显式 legacy 同步路径；新 Player 用显式 RPA 配置，不能让旧入口默认启用新语义。

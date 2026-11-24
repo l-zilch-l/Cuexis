@@ -2,7 +2,7 @@
 
 状态：candidate；当前分支的内部实现参考，不是稳定 SDK 或生产验收声明
 
-更新日期：2026-11-04
+更新日期：2026-11-24
 
 <!-- cuexis-meta
 id: ARCH-execution-state-and-recovery
@@ -89,7 +89,7 @@ Seek 的 canonical 与 source 两种绑定必须恰好选择一种，详细拒�
 非安装 `replay_identity.hpp` 桥负责内部访问，不能被描述为新增的安装版宿主 API。
 
 这次 candidate 改动改变了 `StepTarget` 及嵌套 request / proof / receipt 的 C++ 布局。
-消费者必须整体重新编译，不能声称旧二进制兼容。当前分支 SDK API 为 `0.9.1` preview，
+消费者必须整体重新编译，不能声称旧二进制兼容。当前分支 SDK API 为 `0.10.0` preview，
 不因此成为已发行接口；稳定 C ABI 仍属后续阶段。
 
 ## Runtime Transform 缓存

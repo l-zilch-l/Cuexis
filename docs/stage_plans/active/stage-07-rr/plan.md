@@ -148,7 +148,7 @@ Stage 7（受限退出） -> Stage 7-RR（本阶段） -> Stage 7.5（Gameplay E
 | 文档门禁通过等于文档正确 | 机械检查通过但正文仍与实现不符 | 批次报告人工复核 + 事实检查 + 阴性对照 | RR-1/RR-5 |
 | 默认构建的测试覆盖足以证明回归 | 关键测试只在 candidate 宏下注册或零生效 | 按报告记录的手工复现命令；在报告中显式写未覆盖 | RR-2/RR-6 |
 
-**不可逆点**：证据套件相对路径已进入验收哈希账本（`binding.py`、`prepare_*` 的 glob、`etw_safety` 逐文件封包哈希），移动目录会让历史验收记录永久失配；`docs/stage_reports/**` 与 `docs/archive/**` 是冻结证据，不重写历史结论、不回填自身 SHA；SDK `0.9.1` 的安装头/对象布局与 C ABI 一旦发布不能静默改变；格式 wire、语义 identity 与稳定诊断码一经接受即成为互操作契约，变更必须先有 ADR/Spec 并以 fixture/hash 固化；`findings.md` 的 ID 与结论列不删除、不重编号，处置只追加。
+**不可逆点**：证据套件相对路径已进入验收哈希账本（`binding.py`、`prepare_*` 的 glob、`etw_safety` 逐文件封包哈希），移动目录会让历史验收记录永久失配；`docs/stage_reports/**` 与 `docs/archive/**` 是冻结证据，不重写历史结论、不回填自身 SHA；SDK `0.10.0` 的安装头/对象布局与 C ABI 一旦发布不能静默改变；格式 wire、语义 identity 与稳定诊断码一经接受即成为互操作契约，变更必须先有 ADR/Spec 并以 fixture/hash 固化；`findings.md` 的 ID 与结论列不删除、不重编号，处置只追加。
 ## 6. 工作分解与依赖
 
 ### 任务索引
