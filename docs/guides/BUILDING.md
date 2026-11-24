@@ -193,17 +193,19 @@ CMake 原有处理；尚未验证其他代码页组合。
 日常构建从仓库根目录执行一个入口，标准预设会自动加载 MSVC 环境：
 
 ```powershell
-.\build.ps1                              # 需要时配置，然后构建 debug
-.\build.ps1 -Preset release              # 配置并构建 release
-.\build.ps1 -Action test -Filter F135    # 构建后只跑匹配的用例
-.\build.ps1 -Action all                  # 构建后跑完整 CTest
-.\build.ps1 -Preset mingw-debug -Action all
+.\build.ps1                                # 需要时配置，然后构建 debug 全部目标
+.\build.ps1 -Target cuexis_core_tests      # 只构建一个目标
+.\build.ps1 -Preset release                # 配置并构建 release
+.\build.ps1 -Action test -Filter F135      # 只跑匹配的用例
+.\build.ps1 -Action all -Label rpa -Parallel 4
+.\build.ps1 -Preset mingw-debug -Action build
 ```
 
-`-Action` 取 `configure`、`build`、`test`、`all`，默认 `build` 且目录未配置时先配置；`-Fresh`
-强制重新配置。`mingw-*` 预设不加载 MSVC 环境，沿用当前 shell 的 MSYS2 工具链。需要逐条命令或
-未封装的参数时，仍可按下面的预设命令执行，标准预设通过 `tools/with-msvc.ps1` 或
-`tools/with-msvc.cmd` 加载环境。
+`-Action` 取 `configure`、`build`、`test`、`all`；`test` 只运行 CTest，`all` 先构建再运行。目录未配置时
+`build`/`test`/`all` 会先配置；`-Fresh` 强制重新配置，`-CMakeArg` 追加配置参数。`-Filter` 对应
+CTest 的 `-R`，`-Label` 对应 `-L`，`-Parallel` 传给构建或测试。`mingw-*` 预设不加载 MSVC 环境，
+沿用当前 shell 的 MSYS2 工具链。需要逐条命令或未封装的参数时，仍可按下面的预设命令执行，
+标准预设通过 `tools/with-msvc.ps1` 或 `tools/with-msvc.cmd` 加载环境。
 
 ```powershell
 cmake --preset debug --fresh

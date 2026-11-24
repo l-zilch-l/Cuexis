@@ -6,9 +6,10 @@
 #
 # Examples:
 #   .\build.ps1
-#   .\build.ps1 -Preset release
+#   .\build.ps1 -Target cuexis_core_tests
 #   .\build.ps1 -Action test -Filter F135
-#   .\build.ps1 -Preset mingw-debug -Action all
+#   .\build.ps1 -Preset candidate-debug -Action all
+#   .\build.ps1 -Preset mingw-debug -Action build
 #   .\build.ps1 -Fresh
 
 [CmdletBinding()]
@@ -16,7 +17,11 @@ param(
     [string]$Preset = 'debug',
     [ValidateSet('configure', 'build', 'test', 'all')]
     [string]$Action = 'build',
+    [string]$Target = '',
     [string]$Filter = '',
+    [string]$Label = '',
+    [int]$Parallel = 0,
+    [string[]]$CMakeArg = @(),
     [switch]$Fresh
 )
 
@@ -36,18 +41,28 @@ try {
     }
 
     $configured = Test-Path (Join-Path $root "out/build/$Preset/CMakeCache.txt")
-    if ($Fresh -or $Action -eq 'configure' -or -not $configured) {
+    $needConfigure = $Fresh -or $Action -eq 'configure' -or
+        (-not $configured -and $Action -in @('build', 'test', 'all'))
+    if ($needConfigure) {
         Write-Host "== configure $Preset"
         $arguments = @('--preset', $Preset)
         if ($Fresh) {
             $arguments += '--fresh'
         }
+        $arguments += $CMakeArg
         Invoke-Tool 'cmake' $arguments
     }
 
-    if ($Action -in @('build', 'test', 'all')) {
+    if ($Action -in @('build', 'all')) {
         Write-Host "== build $Preset"
-        Invoke-Tool 'cmake' @('--build', '--preset', $Preset)
+        $arguments = @('--build', '--preset', $Preset)
+        if ($Target) {
+            $arguments += @('--target', $Target)
+        }
+        if ($Parallel -gt 0) {
+            $arguments += @('-j', $Parallel)
+        }
+        Invoke-Tool 'cmake' $arguments
     }
 
     if ($Action -in @('test', 'all')) {
@@ -55,6 +70,12 @@ try {
         $arguments = @('--preset', $Preset, '--no-tests=error', '--output-on-failure')
         if ($Filter) {
             $arguments += @('-R', $Filter)
+        }
+        if ($Label) {
+            $arguments += @('-L', $Label)
+        }
+        if ($Parallel -gt 0) {
+            $arguments += @('-j', $Parallel)
         }
         Invoke-Tool 'ctest' $arguments
     }
