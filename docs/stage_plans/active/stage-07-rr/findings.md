@@ -962,6 +962,14 @@ PR 47 以 `662b03e7` 推送后，PR 事件与 push 事件共 7 类 job 变红。
 
 同批补了本机构建入口：`build.ps1` 与 `tools/msvc-env.ps1` 用 vswhere 定位 VS，在当前进程导入 VsDevCmd 并保留 `VCPKG_ROOT`，标准预设不再需要手写 vcvars 路径；`mingw-*` 预设跳过导入。提交为 `ae503315`、`6ed02400`、`c7327d11`、`433817a8`。
 
+## 46. T-10 GP-03 内核面关闭（2026-11-25）
+
+GP-03 内核面经实现与两轮独立复核关闭，提交 `a0575ae9`。方向改为按选中 grade table 的 Exact 带推导、无表无方向；普通推进的 timer 落封用 `horizon − windowCloseThreshold`；F4 故障分级由真实异常产生（`bad_alloc`→resource、`overflow_error`→arithmetic、其余→invariant）；补齐 C 键 advance 的 `/run` 互拒、StopCut run mismatch、seal 前分配失败注入；`judgement.advance.output_capacity_insufficient` 注册并替换旧的 `capability.budget_insufficient`，逆行统一 `judgement.timebase.time_reversal`。
+
+验证：`cuexis_rr_timing_contract` 6900 assertions、`cuexis_rr_advance_contract` 629、judgement 241 cases/63265 assertions、playback 195 cases/36078 assertions，architecture、diagnostics codes、格式与文档门禁通过。T-12 的 GP-01/02/04 轨迹与 F302 安装隔离一并落地。
+
+未关闭：D2 同局恢复（无 restore）、Playback owning DTO/摘要投影、`AdvanceOutcome` 边界（采用方案 B：`AdvanceSummary` 留内核，session/Playback 边界 `toAdvanceOutcome`）、A1 平凡性与 I2 非空终局断言缺口、`frontier` 与 `processedThrough` 口径待钉死。`arithmetic` 分支目前只有注入可达；完全相同的 `(scope,epoch)` 没有实例 token，无法区分。
+
 ## 附录 处置记录（按日期保留，§12–§16）
 
 本附录保留各轮审查的处置记录，按当时时点成立，不改写结论；编号沿用历史顺序，故排在 §17 之后阅读。
