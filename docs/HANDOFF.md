@@ -16,19 +16,19 @@ authority: owns
 
 ## 当前任务
 
-T-06 第一轮只完成帧对象、GL 实验桥、安装面与 F135 场景 1/2/3/5，交付记为部分成立，见[部分交付](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-06-frame-bridge-partial.md)。T-10 已完成九轮：值层、计分、作者 CLI、运行 records/Prepared 存储、`cuexis_judgement_compile` 骨架与 `runtime::AdvanceKernel`（编号/Stop、GP-02 四向量、单元耗尽 Fold、GP-04 多单元、最小 replay）；剩余 GP-03 故障矩阵、Playback owning DTO 与 legacy 输入切换。T-12 部分完成：timing 库、编译闭包、chart 时间适配与 beat-us 消费者成立，canonical 行、GP 轨迹与安装隔离未做。F508 已按登记册 §42 的拆分落地（§43）：内容卸载保留控制身份，Close 终态清理，`rr_session_unload_lifecycle` 六 SECTION 通过；F135 已按形状 2 实现并独立复核（§44），`Error` 112 B、零分配与持续 OOM 成立；SDK API 已升到 0.10.0，owner 审批评论与最终推送待 PR 48 合并后处理。治理树引导 PR 48 已开，合并后 PR 47 的 PR 事件才有含治理树的可信历史基线。波次 5 的交付报告在 [T-02](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-02-state-facts.md)、[T-05](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-05-frame-layout.md)与 [T-17](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-17-session-correctness.md)。
+T-06 第一轮只完成帧对象、GL 实验桥、安装面与 F135 场景 1/2/3/5，交付记为部分成立，见[部分交付](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-06-frame-bridge-partial.md)。T-10 已完成九轮：值层、计分、作者 CLI、运行 records/Prepared 存储、`cuexis_judgement_compile` 骨架与 `runtime::AdvanceKernel`（编号/Stop、GP-02 四向量、单元耗尽 Fold、GP-04 多单元、最小 replay）；剩余 GP-03 故障矩阵、Playback owning DTO 与 legacy 输入切换。T-12 部分完成：timing 库、编译闭包、chart 时间适配与 beat-us 消费者成立，canonical 行、GP 轨迹与安装隔离未做。F508 已按登记册 §42 的拆分落地（§43）：内容卸载保留控制身份，Close 终态清理，`rr_session_unload_lifecycle` 六 SECTION 通过；F135 已按形状 2 实现并独立复核（§44），`Error` 112 B、零分配与持续 OOM 成立；SDK API 已升到 0.10.0。治理树引导 PR 48 已合并（`43eb0c94`），master 已并入分支并把 build 升到 26.11.24-2；推送 PR 47 与代发 owner 审批评论是下一步。波次 5 的交付报告在 [T-02](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-02-state-facts.md)、[T-05](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-05-frame-layout.md)与 [T-17](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-17-session-correctness.md)。
 
 T-01 证据在 [基线与派单报告](stage_reports/stages/stage-07-rr/readiness/2026-11-23-t-01-dispatch-baseline.md)；T-03 证据在 [合同与诊断交付](stage_reports/stages/stage-07-rr/implementation/2026-11-23-t-03-contracts-and-diagnostics.md)；T-04 证据在 [构建闭包拆分与隔离门禁](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-04-build-isolation.md)。派单输入的规范哈希取基线 blob，见 [hashes.txt](stage_reports/stages/stage-07-rr/evidence/t-01-baseline/hashes.txt)，独立 checkout 复算不需要 `out/`。
 
 ## 下一步
 
-1. 按[唯一调度](stage_plans/active/stage-07-rr/schedule.md)继续波次 6/7 的 T-06、T-08；T-10 的 GP-03、Playback owning DTO 与 legacy 输入切换，T-12 的 canonical 行与安装隔离随后推进。F135 已完成，PR 48 合并后把 master 合进 PR 47、升 build 到 26.11.24-2、推送并代发 owner 的 SDK 审批评论，重跑门禁到全绿。
+1. 按[唯一调度](stage_plans/active/stage-07-rr/schedule.md)继续波次 6/7 的 T-06、T-08；T-10 的 GP-03、Playback owning DTO 与 legacy 输入切换，T-12 的 canonical 行与安装隔离随后推进。F135 已完成；PR 48 已合并，master 已合入、build 已升到 26.11.24-2。接下来推送 PR 47、代发 owner 的 SDK 审批评论并重跑门禁到全绿。
 2. 每卡按其任务级验收取证并回写发现处置；文档变更收尾前运行文档总入口、事实、命名与生成物检查。
 3. 实际发布、SDK 晋升与旧 API 退役仍各自单独取得；设备与实体听音项留给 owner。
 
 ## 阻塞与待决
 
-PR 48 治理树引导需 owner 合并；它的文档与版本门禁已过，其余构建任务仍在跑，合并前不能视为完成。F135 会让 SDK 公共布局变化，按 0.10.0 处理并需要 owner 的版本审批评论（已授权代理以 owner 名义代发，审批与 head sha、UTC 日期绑定）。GL 边界门禁已由 task-25 修复，`cuexis_rr_playback_isolation` 的 Chart 源表漂移已修（`f00439c3`）。F132 的旧身份字节需要 T-10 在改动前 dump（改动前基线已采集，见[身份字节基线](stage_reports/stages/stage-07-rr/evidence/t-03/identity-baseline/identity-baseline.md)）；F135 的五类故障注入与安装消费者分别归 T-06、T-08。D-20 的正式发行判定语料在仓库内为空集，历史发行资料是否存在无法核实，缺口已具名交 T-09；两套外部包的当前实现重放已完成，见[只读重放证据](stage_reports/stages/stage-07-rr/evidence/external-corpus/replay-current/replay-current.md)。
+PR 48 治理树引导已合并（`43eb0c94`），PR 47 的 PR 事件现在有含治理树的可信历史基线。F135 会让 SDK 公共布局变化，按 0.10.0 处理并需要 owner 的版本审批评论（已授权代理以 owner 名义代发，审批与 head sha、UTC 日期绑定）。GL 边界门禁已由 task-25 修复，`cuexis_rr_playback_isolation` 的 Chart 源表漂移已修（`f00439c3`）。F132 的旧身份字节需要 T-10 在改动前 dump（改动前基线已采集，见[身份字节基线](stage_reports/stages/stage-07-rr/evidence/t-03/identity-baseline/identity-baseline.md)）；F135 的五类故障注入与安装消费者分别归 T-06、T-08。D-20 的正式发行判定语料在仓库内为空集，历史发行资料是否存在无法核实，缺口已具名交 T-09；两套外部包的当前实现重放已完成，见[只读重放证据](stage_reports/stages/stage-07-rr/evidence/external-corpus/replay-current/replay-current.md)。
 
 ## 验证状态
 
