@@ -43,6 +43,10 @@ class PreparedIdentityBytes final {
                                         const PreparedIdentityDeclarations&,
                                         std::span<const std::byte>)
         -> core::Result<PreparedIdentityBytes>;
+    friend auto composePreparedIdentityFromProjection(std::span<const std::byte>,
+                                                      const PreparedIdentityDeclarations&,
+                                                      std::span<const std::byte>)
+        -> core::Result<PreparedIdentityBytes>;
 
     std::vector<std::byte> bytes_;
 };
@@ -55,5 +59,12 @@ class PreparedIdentityBytes final {
                                            const PreparedIdentityDeclarations& declarations,
                                            std::span<const std::byte> executionSession)
     -> core::Result<PreparedIdentityBytes>;
+
+//  The same composition from an already-extracted chart projection. The kernel prepare path has
+//  the legacy chart identity bytes but not a runtime handle yet; this overload lets it use the
+//  runtime algorithm without fabricating a handle.
+[[nodiscard]] auto composePreparedIdentityFromProjection(
+    std::span<const std::byte> chartProjection, const PreparedIdentityDeclarations& declarations,
+    std::span<const std::byte> executionSession) -> core::Result<PreparedIdentityBytes>;
 
 } // namespace cuexis::judgement::runtime

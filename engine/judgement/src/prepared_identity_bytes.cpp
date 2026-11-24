@@ -67,20 +67,27 @@ auto PreparedIdentityBytes::toHex() const -> std::string {
     return rendered;
 }
 
-auto composePreparedIdentity(const PreparedGameplay& prepared,
-                             const PreparedIdentityDeclarations& declarations,
-                             std::span<const std::byte> executionSession)
+auto composePreparedIdentityFromProjection(std::span<const std::byte> chartProjection,
+                                           const PreparedIdentityDeclarations& declarations,
+                                           std::span<const std::byte> executionSession)
     -> core::Result<PreparedIdentityBytes> {
-    const auto projection = prepared.chartProjection();
-    if (projection.empty()) {
+    if (chartProjection.empty()) {
         return core::unexpected(error("the prepared gameplay carries no chart projection bytes"));
     }
     IdentityByteWriter writer{"cuexis.judgement.identity.prepared.v1"};
     writePreparedPrefix(writer, declarations);
-    writer.append(projection);
+    writer.append(chartProjection);
     writePreparedSession(writer, declarations);
     writer.append(executionSession);
     return PreparedIdentityBytes{writer.take()};
+}
+
+auto composePreparedIdentity(const PreparedGameplay& prepared,
+                             const PreparedIdentityDeclarations& declarations,
+                             std::span<const std::byte> executionSession)
+    -> core::Result<PreparedIdentityBytes> {
+    return composePreparedIdentityFromProjection(prepared.chartProjection(), declarations,
+                                                 executionSession);
 }
 
 } // namespace cuexis::judgement::runtime
