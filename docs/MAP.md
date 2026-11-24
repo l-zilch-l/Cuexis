@@ -158,6 +158,7 @@ authority: index
 | [stage_plans/active/stage-07-rr/README.md](stage_plans/active/stage-07-rr/README.md) | active | index | Stage 7-RR：Review and Refactoring After Stage-7 |
 | [stage_plans/active/stage-07-rr/acceptance.md](stage_plans/active/stage-07-rr/acceptance.md) | active | owns | Stage 7-RR 阶段验收 |
 | [stage_plans/active/stage-07-rr/architecture-design.md](stage_plans/active/stage-07-rr/architecture-design.md) | active | none | Stage 7-RR 架构设计附页：Player 实时执行与普通播放收敛 |
+| [stage_plans/active/stage-07-rr/design-readiness.md](stage_plans/active/stage-07-rr/design-readiness.md) | active | index | Stage 7-RR 可实施性索引 |
 | [stage_plans/active/stage-07-rr/findings.md](stage_plans/active/stage-07-rr/findings.md) | active | owns | Stage 7-RR 发现登记册 |
 | [stage_plans/active/stage-07-rr/plan.md](stage_plans/active/stage-07-rr/plan.md) | active | owns | Stage 7-RR Plan: Review and Refactoring After Stage-7 |
 | [stage_plans/active/stage-07-rr/schedule.md](stage_plans/active/stage-07-rr/schedule.md) | active | owns | Stage 7-RR 调度 |
@@ -185,7 +186,6 @@ authority: index
 | [stage_plans/active/stage-07-rr/contracts/prepared-artifact.md](stage_plans/active/stage-07-rr/contracts/prepared-artifact.md) | candidate | owns | P3：后继准备内容、成品与 CXC 源包 |
 | [stage_plans/active/stage-07-rr/contracts/render-player-writer.md](stage_plans/active/stage-07-rr/contracts/render-player-writer.md) | candidate | owns | Stage 7-RR 候选合同：渲染、Player 与写回 |
 | [stage_plans/active/stage-07-rr/contracts/runtime-timing.md](stage_plans/active/stage-07-rr/contracts/runtime-timing.md) | candidate | references | P1 / P3：运行内核、谱面时间与成品合同 |
-| [stage_plans/active/stage-07-rr/design-readiness.md](stage_plans/active/stage-07-rr/design-readiness.md) | candidate | index | Stage 7-RR 可实施性索引 |
 | [stage_plans/active/stage-07-rr/simplification-proposal.md](stage_plans/active/stage-07-rr/simplification-proposal.md) | candidate | summarizes | Stage 7-RR 架构精简方案基线索引 |
 | [stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-result-candidate.md](stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-result-candidate.md) | candidate | owns | PD-5 C2: caller-owned neutral read result candidate |
 | [stage_plans/completed/stage-07/05-rpa-new/r3/trusted-restore-candidate.md](stage_plans/completed/stage-07/05-rpa-new/r3/trusted-restore-candidate.md) | candidate | owns | R3b explicit trusted restore candidate |

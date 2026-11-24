@@ -13,8 +13,8 @@ authority: owns
 ## 当前仓库说明
 
 当前仓库已覆盖到 Stage 7-RR：阶段 0 工程基础、阶段 1A-1E Playback Core 闭环、阶段 2 的
-Chart/Behavior/迁移能力、阶段 3A-3G 的 Portable Presentation 与 OpenGL Player adapter、Stage 5
-Material/Shader、Stage 6 产品化边界，以及 Stage 7 的 Playback SDK、参考宿主与执行宿主。以下命令是受支持的
+Chart/Behavior/迁移能力、阶段 3A-3G 的 Portable Presentation 与 OpenGL Player adapter、Stage 4
+Animation runtime、Stage 5 Material/Shader、Stage 6 产品化边界，以及 Stage 7 的 Playback SDK、参考宿主与执行宿主。以下命令是受支持的
 标准入口，旧的 IDE 私有构建目录和手工编译产物不能作为验收依据。
 
 默认 `debug` 预设的正式 active target 如下。顶层 CMake 在 configure 时从

@@ -447,6 +447,6 @@ canonical SHA 绑定仍可选择，Seek 必须恰好选择一种绑定；没有�
 
 当前 SDK API 为 `0.10.0`：`core::Error` 使用 interned 文本变体与惰性 context/cause，安装头
 `cuexis/core/error.hpp` 的公开布局随之变化（MSVC Release：`Error` 112 B、`optional<Error>`
-120 B、`FaultSlot` 56 B）。shared 消费者须用同一套 0.10.0 头/库整体重建，`SameMinorVersion`
+120 B）；执行宿主内部 `FaultSlot` 保持 56 B。shared 消费者须用同一套 0.10.0 头/库整体重建，`SameMinorVersion`
 不表示旧 shared binary 可混用。owner 审批记录机制、PR 与交付状态见[当前状态](../CURRENT_STATUS.md)
 与[登记册](../stage_plans/active/stage-07-rr/findings.md)。

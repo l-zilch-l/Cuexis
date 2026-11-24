@@ -75,7 +75,7 @@ Judgement 是内部 STATIC 模块，只链接 core，不安装头文件，不进
 
 ## 路线澄清（2026-07-27）
 
-阶段 1E 的安装包和 external consumer 只构成 Playback Core C++ preview，不等于完整 Playback SDK v1 或稳定二进制产品。阶段 6 可以稳定 C++ 使用、弃用与升级政策，但不得在阶段 11 的必选 Input/Judgement/Replay 契约尚未实现和验证时冻结 C ABI。稳定 C ABI、语言绑定和正式宿主 adapter 进入阶段 12；完整 SDK v1 声明必须同时满足表现播放、内容、时间、Judgement、Replay、包分发和生命周期门禁。
+阶段 1E 的安装包和 external consumer 只构成 Playback Core C++ preview，不等于完整 Playback SDK v1 或稳定二进制产品。阶段 6 可以稳定 C++ 使用、弃用与升级政策，但不得在阶段 11 的必选 Input/Judgement/Replay 契约尚未实现和验证时冻结 C ABI。稳定 C ABI、语言绑定和正式宿主 adapter 进入阶段 12（阶段号现以 Stage 14 为准，见 [ROADMAP](../ROADMAP.md)）；完整 SDK v1 声明必须同时满足表现播放、内容、时间、Judgement、Replay、包分发和生命周期门禁。
 
 ## Shared Preview 澄清（2026-07-28）
 

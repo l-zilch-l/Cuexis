@@ -114,7 +114,7 @@ Stage 7（受限退出） -> Stage 7-RR（本阶段） -> Stage 7.5（Gameplay E
 
 四组冷启动审查及差量复验的当期结论见[首轮设计报告](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-design-readiness-review.md)。随后两名执行者[独立复审](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-executor-review.md)，九项设计修订与逐卡验收入口见[Astra 修订报告](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-review-resolution.md)及[合同与任务卡](design-readiness.md)。技术选择沿用 D-01–D-25 已接受方向；`candidate` 表示候选合同，可能已有实验实现，正式发布和实际验证须分别取证。A-01 阶段 owner 接受和产品运行验收按[阶段验收](acceptance.md)登记。
 
-T-01–T-17 已纳入统一实施安排，T-18 文档治理已完成。已完成 T-01、T-03、T-04、波次 5、T-06 部分、T-08 主体、T-10、T-11 主体与 T-12 部分；剩余 T-06、T-08、T-10、T-12 与 T-09 退出。F135 已实现并独立复核；实施状态与证据见 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 与[登记册](findings.md)，下一步见 [HANDOFF](../../../HANDOFF.md#下一步)。恢复后按[唯一调度](schedule.md)继续。实施采用与发布各自登记。设备/平台取证、逐 API 组的实际发布与退役条件仍按现行门禁执行。
+T-01–T-17 已纳入统一实施安排，T-18 文档治理已完成。已完成 T-01、T-03、T-04、波次 5、T-06 部分、T-08 主体、T-10 主体、T-11 主体与 T-12 部分；剩余 T-06、T-08、T-10、T-12 与 T-09 退出。F135 已实现并独立复核；实施状态与证据见 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 与[登记册](findings.md)，下一步见 [HANDOFF](../../../HANDOFF.md#下一步)。恢复后按[唯一调度](schedule.md)继续。实施采用与发布各自登记。设备/平台取证、逐 API 组的实际发布与退役条件仍按现行门禁执行。
 
 `8599c83a` 后独立 checkout 提交的缺口及修订见[本轮复审处置](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-checkout-review-resolution.md)。owner 本轮已明确授权下一次正式实施 RR，T-01 须先绑定修订后的输入并核对受影响卡；已获启动授权不代替实际基线、卡级验收或阶段退出。旧 AX-01–09 报告不能替代本轮未完成的核对。结构检查分别输出 active/candidate，只有本节已采用的 active 卡可以按依赖派发。
 

@@ -34,13 +34,13 @@ owner 于 2026-11-24 暂停本阶段，预计下月流量恢复后继续；PR 47
 
 T-01：文档总入口、事实、生成物、调度与 `git diff --check` 全部退出 0；独立代理复现调度正反例，正本哈希未变；交叉核验重算 202 个派单路径的 blob 哈希，0 不一致；冷启动 T-04/T-06 成立、T-13 补注后复验成立。
 
-T-03：四个预设上 `rr2_contract_packed`、`rr2_contract_beat`、`rr2_contract_entry`、`rr2_contract_input` 与两条 RPA B3 对照均退出 0；本轮修正了 input 用例里一处错误的 `wasForwarded` 断言。F135 故障注入与安装消费者未执行，不能按通过计。
+T-03：四个预设上 `rr2_contract_packed`、`rr2_contract_beat`、`rr2_contract_entry`、`rr2_contract_input` 与两条 RPA B3 对照均退出 0；本轮修正了 input 用例里一处错误的 `wasForwarded` 断言。F135 故障注入已由 T-06 执行并通过（登记册 §44），安装消费者验收未执行，不能按通过计。
 
 T-04：四个预设（`debug`、`headless-debug`、`candidate-headless-debug`、`candidate-shared-debug`）构建退出 0，各 7 项测试全通过；`rr-f302-minimal` 与 `rr-f302-tools` 两个独立配置门禁通过；五档安装前缀与两种消费者接线 10 组配置-构建-运行退出 0；A1/A3/B 阴性成立，A2 在修复门禁依赖 id 读取（`92539ad4`）后成立；RR-F216/F217/F434 分别成立（F216 的非 Windows 分支未在本机核实）。
 
 波次 5：T-02 的四项文档门禁与负例注入退出 0，RR-F105 部分成立，`[packed]` 69 例全过（含修复 T-04b 遗留的 SPEC-02 源单元列表）；T-05 的 `rr_frame_layout` 在 `debug` 4/4、`headless-debug` 3/3 通过，真实 GL 上下文覆盖借用 FBO 与状态恢复，`framebuffer_incomplete` 本机不可构造；T-17 的四例与既有 override 集在 `candidate-headless-debug` 通过，`headless-debug` 默认闭包测试通过、隔离门禁未回退。合并树上重新跑过：candidate 预设 `[packed]` 69/69、T-17 两例与 override 集全过；`debug` 的 `rr_frame_layout` 4/4、`[packed]` 69/69、隔离门禁与 T-03/T-04 七项测试全过。
 
-T-06：帧对象、能力检查、GL 实验桥（窗口路径只编译）、安装面、共享导出与 F135 场景 1/2/3/5 通过；第二轮补齐宿主/Player 帧链，场景 4、F207 两个不可达分支与 F427 子进程探针未闭环。B4/R0 等 7 个 worker 用例在 F508 清零回退后全部恢复，`cuexis_architecture_tests` 因渲染测试直接调用 GL 变红，修复在 task-25。
+T-06：帧对象、能力检查、GL 实验桥（窗口路径只编译）、安装面、共享导出与 F135 五类场景通过；第二轮补齐宿主/Player 帧链；非空作者画幅表端到端、F207 两个不可达分支与 F427 子进程探针未闭环。B4/R0 等 7 个 worker 用例在 F508 清零回退后全部恢复，`cuexis_architecture_tests` 因渲染测试直接调用 GL 变红，修复在 task-25。
 
 F508 第二轮：`rr_session_unload_lifecycle` 六 SECTION 通过，`-L rpa` 186/186、`-L execution-host` 71/71、候选 playback 195/35794、默认闭包 137/17556；`cuexis_architecture_tests` 与 `cuexis_format_check` 退出 0，隔离门禁在 `candidate-debug`、`debug` 退出 0。PR 47 的编译修复在本地复现：GCC 全量构建、MSVC Release `cuexis_judgement_compile`、`candidate-debug` 的 `cuexis_chart_tools` 均退出 0；这些修复已随 `662b03e7` 推送，远端编译项转为通过。
 
@@ -63,4 +63,4 @@ CMake target 事实已可检查：`debug` 预设 fresh configure 生成的 `cuex
 
 ## 最近改动
 
-本轮已提交：`a22e255f` 治理落盘、`3b8bf41e` T-01 派单与证据、`569253d8` T-13 复验、`03334ecd` 命名硬规则与检查器、`6c77a888` T-01 证据修正、`5dc55387` T-04 拆分与改名迁移、`3943fb13` 门禁依赖遍历修复、`0bb2d927` D-20 双侧重放证据、`92539ad4` 门禁帮助函数依赖 id 修复、`8cfb302d` T-04 交付、`9c25a88f` 日期构建推进、`b07e20dc` T-05 几何与 GL、`5f1ef718` T-17 会话修复、`52f0d760` T-02 与 SPEC-02 修复、`95de188d` 波次 5 交付与状态回写、`b2ad4cf8` T-06 帧对象与 GL 桥、`8383672c` F508 清零回退、`07eb42ea` T-10 第九轮、`77157702` T-12、`b2769f55` F508/F135 裁定、`c85cfa61` F508 生命周期拆分、`80c121b4` GCC/MSVC/Clang 编译修复、`f00439c3` 隔离源表对齐。以上后三项与 F135 相关文档更新已随 PR 47 的 `662b03e7` 推送，审批评论同批发出。推送后的 CI 修复为 `3af70852`（探针整族替换）、`06fb9751` 与 `2871bb49`（文档收尾、外链与 CI 证据）；本机构建入口为 `ae503315`、`6ed02400`、`c7327d11`、`433817a8`。这些仍未推送。
+本轮提交已完成并推送至 PR 47 的 `8bc2ec97`：CI 修复（`3af70852` 探针整族替换、`06fb9751` 与 `2871bb49` 文档与证据）、构建入口（`ae503315`、`6ed02400`、`c7327d11`、`433817a8`）、文档清理（`8bc2ec97`）；更早提交见 `git log`。审批评论 `7140867866` 绑定该 head。

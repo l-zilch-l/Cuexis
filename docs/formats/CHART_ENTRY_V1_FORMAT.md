@@ -178,7 +178,8 @@ Player `--candidate-entry path` requires exactly one `--project` or `--cxc` loca
 rejects it before opening input. Reference Host uses the same explicit Entry factories and
 reports package flavor. Legacy factories never select candidates implicitly. Consumers of
 the original Entry additions required SDK API `0.7.1` or newer in the same minor.
-The current Reference Host and Gameplay candidate consumers request `0.7.5`; its diagnostic
+The current Reference Host and Gameplay candidate consumers request the current SDK API version
+(see `cmake/CuexisVersion.cmake`); its diagnostic
 and Recovery changes follow [VERSIONING](../guides/VERSIONING.md#075具体兼容差异).
 
 The offline typed assembler supplies chart metadata, expanded entities, parent relations,
