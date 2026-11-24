@@ -73,6 +73,9 @@ struct AdvanceSummary final {
     std::optional<Tick> processedThrough;
     std::size_t processedRecords{0};
     std::size_t settledEvents{0};
+    std::int64_t j{0};
+    std::int64_t c{0};
+    std::uint32_t score{0};
 };
 
 class AdvanceKernel final {
@@ -92,8 +95,12 @@ class AdvanceKernel final {
     [[nodiscard]] auto acceptedIngressThrough() const noexcept -> std::optional<IngressSequence>;
 
     //  Advances the frontier and processes accepted records whose dispatch is at or before the
-    //  horizon. It never moves backwards and never allocates a sequence.
+    //  horizon. It never moves backwards and never allocates a sequence. The overload without
+    //  slots settles for counting only; the overload with slots rejects the whole transaction with
+    //  `capability.budget_insufficient` when the slots cannot hold the events.
     [[nodiscard]] auto advance(Tick horizon) -> core::Result<AdvanceSummary>;
+    [[nodiscard]] auto advance(Tick horizon, std::span<SettlementEvent> slots)
+        -> core::Result<AdvanceSummary>;
 
     //  Validates the caller's run, bound and cutoff, closes receive, and drains accepted records up
     //  to the cutoff. The upper bound must equal the current cursor exactly.
@@ -119,8 +126,38 @@ class AdvanceKernel final {
   private:
     AdvanceKernel(PreparedGameplay prepared, RunKey run, LatePolicyParameters late);
 
+    struct RequirementRun final {
+        enum class Stage : std::uint8_t { dormant, body, tail, done };
+        Stage stage{Stage::dormant};
+        Tick pressObservation{};
+        bool tapDone{false};
+    };
+
+    auto advanceInternal(Tick horizon, std::span<SettlementEvent> slots, bool enforceSlots)
+        -> core::Result<AdvanceSummary>;
     auto route(Tick observation, bool& forwarded) const -> std::optional<Tick>;
+    auto requirementIndexFor(const TickRecord& record) const -> std::optional<std::size_t>;
+    auto phaseOffset(std::size_t requirement) const -> std::size_t;
+    auto inWindow(const PreparedRequirement& requirement, PhaseKind kind, Tick tick) const -> bool;
+    auto targetOf(const PreparedRequirement& requirement, PhaseKind kind) const -> Tick;
+    auto lastTailEnd(const PreparedRequirement& requirement) const -> Tick;
+    auto gradeIndex(std::size_t requirement, PhaseKind phase, std::int64_t error) const
+        -> std::optional<std::uint32_t>;
+    auto emit(std::size_t requirement, PhaseKind phase, Tick tick, Outcome outcome,
+              std::optional<std::int64_t> error, std::optional<TimingDirection> direction)
+        -> SettlementEvent;
+    void settleRecord(std::size_t requirement, const TickRecord& record, Tick dispatch);
+    void settleTimers(Tick horizon);
+    void applyFold(const SettlementEvent& event);
+    auto computeScore() const -> std::uint32_t;
     auto processThrough(Tick horizon) -> std::size_t;
+
+    std::vector<RequirementRun> runs_;
+    std::vector<std::size_t> phaseOffsets_;
+    std::vector<SettlementEvent> staged_;
+    std::int64_t j_{0};
+    std::int64_t c_{0};
+    std::uint32_t score_{0};
 
     PreparedGameplay prepared_;
     RunKey run_{};
@@ -130,6 +167,7 @@ class AdvanceKernel final {
     IngressSequence nextSequence_{};
     bool receiveClosed_{false};
     std::vector<IngressReceipt> archive_;
+    std::vector<TickRecord> records_;
     std::vector<std::size_t> pending_;
 };
 

@@ -106,6 +106,9 @@ auto tapRequirement(std::size_t index, std::int64_t target,
         Tick{target - windowRadius}, Tick{target + windowRadius}, requirement.phases.front()}};
     requirement.timing.phaseTargets = {runtime::PhaseTarget{PhaseKind::tap, Tick{target}}};
     requirement.deadline = Tick{target + windowRadius};
+    requirement.atomBindings = {runtime::AtomBinding{"atom.press", "domain.binding.one", "keyboard",
+                                                     "channel.zero", runtime::InputAction::press,
+                                                     std::nullopt, false}};
     if (gradeTableIndex) {
         requirement.measure.push_back(
             runtime::CompiledMeasureComponent{PhaseKind::tap,
@@ -193,6 +196,11 @@ auto shortHoldRequirement() -> runtime::PreparedRequirement {
                                        runtime::PhaseTarget{PhaseKind::body, Tick{851}},
                                        runtime::PhaseTarget{PhaseKind::tail, Tick{1000}}};
     requirement.deadline = Tick{1040};
+    requirement.atomBindings = {
+        runtime::AtomBinding{"atom.press", "domain.binding.one", "keyboard", "channel.zero",
+                             runtime::InputAction::press, std::nullopt, false},
+        runtime::AtomBinding{"atom.release", "domain.binding.one", "keyboard", "channel.zero",
+                             runtime::InputAction::release, std::nullopt, false}};
     return requirement;
 }
 
@@ -765,5 +773,73 @@ TEST_CASE("cuexis_rr_advance_contract", "[playback][judgement][rr][advance]") {
         CHECK(receipts->front().forwarded);
         CHECK(receipts->front().dispatchTick == Tick{852});
         CHECK(receipts->front().accepted);
+    }
+
+    SECTION("the short Hold settles Tail Miss with the observation error") {
+        auto requirement = shortHoldRequirement();
+        std::vector<runtime::PreparedRequirement> requirements{requirement};
+        auto policy = runtimePolicy();
+        auto identities = runtimeIdentities();
+        const runtime::PreparedTimebase timebase{"engine.tick.us.v1", 1, 1, Tick{0}};
+        auto score = tapUnitScore(requirements, {});
+        auto view = singleRequirementView(timebase, requirements, policy, identities, score);
+        auto prepared = runtime::prepareCompiledGameplay(view, runtime::PrepareGameplayLimits{});
+        REQUIRE(prepared);
+        auto kernel = runtime::AdvanceKernel::prepare(*prepared, RunKey{1, 1});
+        REQUIRE(kernel);
+
+        auto press =
+            kernel->receiveCanonicalBatch(std::vector<runtime::TickRecord>{tickRecord(850)});
+        REQUIRE(press);
+        std::vector<SettlementEvent> slots(prepared->settlementCapacity());
+        auto first = kernel->advance(Tick{854}, slots);
+        REQUIRE(first);
+        CHECK(first->settledEvents == 2); // Head Hit and the Body timer Hit
+        auto release = kernel->receiveCanonicalBatch(
+            std::vector<runtime::TickRecord>{tickRecord(849, runtime::InputAction::release)});
+        REQUIRE(release);
+        REQUIRE(release->front().forwarded);
+        auto second = kernel->advance(Tick{854}, slots);
+        REQUIRE(second);
+        REQUIRE(second->settledEvents == 1);
+        const auto& event = slots.front();
+        CHECK(event.tick == Tick{852});
+        CHECK(event.phaseIndex == 2);
+        CHECK(event.outcome == Outcome::miss);
+        REQUIRE(event.error.has_value());
+        CHECK(event.error->value() == -151);
+        CHECK(event.direction == TimingDirection::early);
+    }
+
+    SECTION("the settlement slots reject the whole transaction when too small") {
+        auto prepared = preparedTapGameplay();
+        auto kernel = runtime::AdvanceKernel::prepare(prepared, RunKey{2, 2});
+        REQUIRE(kernel);
+        REQUIRE(kernel->receiveCanonicalBatch(std::vector<runtime::TickRecord>{tickRecord(1000)}));
+        auto rejected = kernel->advance(Tick{1000}, std::span<SettlementEvent>{});
+        REQUIRE_FALSE(rejected);
+        CHECK(rejected.error().code() == "capability.budget_insufficient");
+        CHECK_FALSE(kernel->frontier().has_value());
+        std::vector<SettlementEvent> slots(1);
+        auto accepted = kernel->advance(Tick{1000}, slots);
+        REQUIRE(accepted);
+        CHECK(accepted->settledEvents == 1);
+        CHECK(slots.front().outcome == Outcome::hit);
+        CHECK(accepted->j == 2);
+        CHECK(accepted->c == 1);
+        CHECK(accepted->score == 1000000);
+    }
+
+    SECTION("the per-tick settlement is idempotent after it is sealed") {
+        auto prepared = preparedTapGameplay();
+        auto kernel = runtime::AdvanceKernel::prepare(prepared, RunKey{3, 3});
+        REQUIRE(kernel);
+        REQUIRE(kernel->receiveCanonicalBatch(std::vector<runtime::TickRecord>{tickRecord(1000)}));
+        std::vector<SettlementEvent> slots(1);
+        REQUIRE(kernel->advance(Tick{1050}, slots));
+        auto again = kernel->advance(Tick{1060}, slots);
+        REQUIRE(again);
+        CHECK(again->settledEvents == 0);
+        CHECK(again->j == 2);
     }
 }
