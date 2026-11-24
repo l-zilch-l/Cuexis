@@ -488,7 +488,7 @@ FrameDigest v1–v3 继续哈希既有字段；合法 v4 输入结果不变
 project-document table、CXC file/memory source、per-prepare ParameterSet 的所有权不变
 缺 cuexis.chart.v5、cuexis.source.cxt.v2、cuexis.animation.clip.v2 或 cuexis.behavior.event.v2 时，
   在资源获取和 World 发布之前稳定失败（按文档实际需要）
-find_package(Cuexis 0.7) 的 SameMinorVersion 不得把 v5 prepare 当成已支持契约
+当前 SDK 0.10.0；v5 prepare 不是已发行契约，consumer 不得假定 SameMinorVersion 会接受它
 Playback 继续直接求值未迁移的 v1–v4；打开 v1–v3 不拒绝
 ```
 
@@ -728,7 +728,7 @@ Capsule rev5/Graph2、SCN1/BHV1/ANI1/TIM1/JPR1/RES1 等以实际通过的 RR 实
   `cuexis.chart.v5`、`cuexis.source.cxt.v2`、`cuexis.animation.clip.v2` 与
   `cuexis.behavior.event.v2`。
 - `FrameSnapshot` 布局未增字段；不新增 `HostPropertyId`；对象 alpha 进入既有
-  `materialOpacity [0,1]`；`0.7` consumer 不能把 v5 prepare 当成已支持契约。沿用字段预算与
+  `materialOpacity [0,1]`；`0.10` consumer 不能把 v5 prepare 当成已支持契约。沿用字段预算与
   v4/CXT v1 原表相同，Core/Packed 新增预算独立验收。`propertyCount` 仍为 10。
 
 ## 7. 明确不包含
@@ -799,8 +799,8 @@ Writer 默认 v5；--target 4 保留且拒绝 v5 输入；已去掉 --target 3
 ```
 
 上述清单是 Stage 8 关闭后的正式 v5/v3 交接目标。RR 的实验成果是其输入，正式 wire、具体播放组合和默认能力必须在 Stage 8 验证接受；Judgement 默认 SDK 晋升另经成熟度决定，旧 API 逐组过渡发布、稳定和退役条件不变。已承诺旧内容继续原路运行，不强制迁移为 v3。
-Stage 6 的 v5-first candidate path 使用 Foundation 已接受的 subset，保留 SDK `0.7.0`
-兼容基线；不得把主要开发基线改回 v4。正式默认 Writer 和发行入口仍要等 Stage 8 关闭。
+Stage 6 的 v5-first candidate path 使用 Foundation 已接受的 subset，保留当前 SDK API（见
+`cmake/CuexisVersion.cmake`）兼容基线；不得把主要开发基线改回 v4。正式默认 Writer 和发行入口仍要等 Stage 8 关闭。
 
 Stage 10 Studio 以正式 Chart v5 / Gameplay v3 的 typed authoring model 为新创作对象，接入 Stage 8 正式 v5 Writer，通过 PlaybackSession 预览；兼容旧内容按其版本处理。旋转与默认相机
 姿态必须与 v4/Playback 同一套求值，不得另造欧拉曲线或从 Quaternion 反推未展开角度，也不得维护第二套

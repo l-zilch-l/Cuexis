@@ -1,6 +1,6 @@
 # Building Cuexis
 
-状态：阶段 3 最终验收后的现行构建、安装与质量门禁规范
+状态：current；覆盖 Stage 7-RR 的现行构建、安装与质量门禁规范
 
 更新日期：2026-11-24
 
@@ -12,9 +12,9 @@ authority: owns
 
 ## 当前仓库说明
 
-当前仓库提供阶段 0 工程基础、阶段 1A-1E Playback Core 闭环、阶段 2 的 Chart/Behavior/迁移
-能力，以及阶段 3A-3G 的 Portable Presentation v1、Validation Sink、OpenGL Player adapter、外部
-package consumer 与性能 probe。阶段 3 本地和 hosted 跨平台矩阵已经关闭；以下命令是受支持的
+当前仓库已覆盖到 Stage 7-RR：阶段 0 工程基础、阶段 1A-1E Playback Core 闭环、阶段 2 的
+Chart/Behavior/迁移能力、阶段 3A-3G 的 Portable Presentation 与 OpenGL Player adapter、Stage 5
+Material/Shader、Stage 6 产品化边界，以及 Stage 7 的 Playback SDK、参考宿主与执行宿主。以下命令是受支持的
 标准入口，旧的 IDE 私有构建目录和手工编译产物不能作为验收依据。
 
 默认 `debug` 预设的正式 active target 如下。顶层 CMake 在 configure 时从
@@ -168,7 +168,7 @@ SDL/OpenGL。ADR 0033 的 matching-toolchain C++ shared preview
 
 ```text
 Windows 10/11 x64
-Visual Studio 2022，Desktop development with C++
+Visual Studio 2022 或更新版本（x64 C++ 工具链），Desktop development with C++
 MSVC 工具集和 Windows SDK
 CMake >= 3.25
 Ninja
@@ -179,7 +179,7 @@ vcpkg
 
 设置 `VCPKG_ROOT` 指向 vcpkg 根目录。不得在 Preset 中提交个人绝对路径。
 
-使用 Visual Studio Developer PowerShell/Command Prompt，或通过 `tools/with-msvc.ps1` 加载开发环境，或确保 `cl.exe`、Ninja 和 CMake 已处于 PATH。
+使用 Visual Studio Developer PowerShell/Command Prompt，或通过 `tools/with-msvc.ps1` 加载开发环境；仅有 `cl.exe` 在 PATH 上不够，MSVC 还需要 `VsDevCmd.bat` 设置的 `INCLUDE`、`LIB` 与 Windows SDK 变量。
 
 MSVC + Ninja 配置会探测 `/showIncludes` 前缀。当前复现环境的输入代码页为 936、输出代码页为
 65001：CMake 按输入代码页误解码 UTF-8 编译器输出，修复使用 UTF-8 前缀。非 UTF-8 输出保留
@@ -204,8 +204,8 @@ CMake 原有处理；尚未验证其他代码页组合。
 `-Action` 取 `configure`、`build`、`test`、`all`；`test` 只运行 CTest，`all` 先构建再运行。目录未配置时
 `build`/`test`/`all` 会先配置；`-Fresh` 强制重新配置，`-CMakeArg` 追加配置参数。`-Filter` 对应
 CTest 的 `-R`，`-Label` 对应 `-L`，`-Parallel` 传给构建或测试。`mingw-*` 预设不加载 MSVC 环境，
-沿用当前 shell 的 MSYS2 工具链。需要逐条命令或未封装的参数时，仍可按下面的预设命令执行，
-标准预设通过 `tools/with-msvc.ps1` 或 `tools/with-msvc.cmd` 加载环境。
+沿用当前 shell 的 MSYS2 工具链。下面的裸命令须在已加载 MSVC 环境的 shell 中执行；否则给每条命令加
+`pwsh -NoProfile -File tools/with-msvc.ps1` 前缀。
 
 ```powershell
 cmake --preset debug --fresh
@@ -363,7 +363,8 @@ python -B tools/verification/check_header_self_containment.py
 构建完全一致。全部通过时输出 `headers=27 failures=0`；任一失败会打印该头的首条错误并以退出码 1 结束。
 
 **它刻意不是 CTest**：MSVC 的系统头路径来自 Developer Shell 的 `INCLUDE` 变量，注册成测试会在没有该环境
-的机器上假失败，而"失败"与"环境缺失"在 CTest 报告里无法区分。因此在 Developer PowerShell 中手工执行；
+的机器上假失败，而"失败"与"环境缺失"在 CTest 报告里无法区分。因此在 Developer PowerShell（或
+`tools\with-msvc.cmd python -B tools/verification/check_header_self_containment.py`）中手工执行；
 修改公共头、调整 `include` 关系或再次拆分头文件之后都要跑一次。`pattern_dfa` 的四个分区头按构造只能经
 `pattern_dfa.hpp` 包含，不在清单内，其文件头已注明这一点。换编译器或换预设时用 `--build-dir` 指向对应构建
 目录，清单里的参考编译单元路径不变。
@@ -482,8 +483,9 @@ v4：
 迁移器要求输入、输出和报告路径互不冲突，失败不修改目标。无 `--target` 的旧调用继续拒绝
 v3 输入。`cuexis_chart_tool_tests` 会校验 v3 golden、v4 chart golden、报告字段、目标回滚和
 CLI 退出合同。Player 可使用 `--chart` 加载 Stage 2 示例进行 GPU smoke；算法、迁移和
-headless Playback 验收不依赖 GPU。Playback 已可 prepare/load 静态或参数化 v4；任意非空
-Clip/CXT/Binding/Layer/Instance 在 Stage 4 前仍以 capability 错误拒绝。
+headless Playback 验收不依赖 GPU。Stage 4 已关闭非空动画执行；默认 Playback Session 会求值
+非空 Clip/CXT/Binding/Layer/Instance，只有缺少 animation capability 的显式裁剪 Session 才以
+capability 错误拒绝。
 
 默认阶段 1D 项目包含 Chart v2、Asset Index v2、索引内非静音 WAV 和 typed
 `audio.mainMusic` 引用。Player 在 Window/GL/Audio device 创建前完成 Project、Index、Chart、

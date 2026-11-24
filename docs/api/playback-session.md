@@ -78,8 +78,8 @@ FrameSnapshot、semantic identity、active diagnostics 和 presentation 必须�
 
 ## S7A-7/8 candidate 组合事务 revision 1（2026-10-07）
 
-2026-10-09实时架构重审的[宿主边界草案](realtime-host-boundary.md)尚未冻结/实施，不改变下面的
-owner-thread和组合提交语义。未来若分开判定推进、表现采样或renderer准备，须先完成对应typed
+实时解耦与宿主时钟的合同见[实时宿主边界](realtime-host-boundary.md)：该边界是 candidate contract 并有 candidate
+实施，发行与设备验收未完成；它不改变下面的 owner-thread和组合提交语义。未来若分开判定推进、表现采样或renderer准备，须先完成对应typed
 合同与兼容证明；不能把本页的同步Prepared事务直接解释为多线程事务。
 
 本节按本轮 owner 实施授权落定 C78-01–04/08/09、R78-01–05/10b 的消费合同；
@@ -319,7 +319,7 @@ Replay/Snapshot Writer输出revision2；Reader拒绝revision1健康及故障原�
 拒绝不兼容旧诊断值，不能以SDK patch号声称旧归档兼容。
 直接evaluateGameplayReplay/restoreGameplay/checkpointGameplay/seekGameplay执行各自校验，
 fromBytes成功只证明结构校验，不代替evidenceValid或完整结果比较；Checkpoint保留fallback。
-候选安装consumer最低请求Cuexis 0.7.5并重建，matching-toolchain shared不承诺旧二进制可替换。
+候选安装consumer最低请求Cuexis 0.10.0并重建，matching-toolchain shared不承诺旧二进制可替换。
 production candidate-OFF无新API；新码可能随原content错误路径进入已有Result，category/context规则不变。
 失败原子性、generation、sealed前缀、GameplayAdvanceReceipt与公开Result承载均保持既有合同。
 

@@ -29,7 +29,7 @@ RR 产品任务已完成本轮设计裁定与实施准备复查。T-01 已完成
 
 | 阶段 | 当前状态 | 入口 |
 | --- | --- | --- |
-| Stage 7-RR | 当前阶段；T-01、T-03、T-04 与波次 5 完成；T-17 主体完成（F508 第二轮；shared 与设备未做），T-11 主体完成，T-06/T-08/T-10/T-12 部分完成，F135 实施中 | [总计划](stage_plans/active/stage-07-rr/plan.md)、[文档治理分册](stage_plans/active/stage-07-rr/documentation-governance.md) |
+| Stage 7-RR | 当前阶段；T-01、T-03、T-04 与波次 5 完成；T-17 主体完成（F508 第二轮；shared 与设备未做），T-11 主体完成，T-06/T-08/T-10/T-12 部分完成，F135 已实现并独立复核（余项为故障注入运行覆盖与安装消费者验收） | [总计划](stage_plans/active/stage-07-rr/plan.md)、[文档治理分册](stage_plans/active/stage-07-rr/documentation-governance.md) |
 | Stage 7.5 | 尚未实施；以 RR 完成并获接受为入场前置 | [计划](stage_plans/active/stage-07-5/plan.md) |
 | Stage 8–14 | 尚未启动；Stage 8 以 Chart v5＋Gameplay v3 为正式主线 | [路线图](ROADMAP.md)、[计划索引](stage_plans/README.md) |
 

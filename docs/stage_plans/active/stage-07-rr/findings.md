@@ -927,16 +927,16 @@ T-06 按卡实施，交付范围只到 Playback 帧对象与 GL 实验桥，宿�
 - 复核更正：六条可独立复现的 worker 用例（B4、C10、C4、B5 两处、R1 两处），不是七条；R0 的观测宏在预设中关闭，不能独立核实。逐字段隔离表明只有 `hostFence`、`acceptedHostControl`/`acceptedHostDecision` 必须跨内容卸载保留，其余三个字段清零不冲突。T-17 删除的 `rr_session_unload_state` 直接写槽、绕过真实 fence 守卫，只证明清理代码会执行。`unload()` 目前也未清 `framings` 与 `committedPresentationToken`，归 T-06 内容卸载补验。
 - RR-F135 保留 interned Error 方向。实施前用尺寸探针比较“每字段 `variant<string, InternedText>`”与“`variant<OwnedTextPair, InternedTextPair>`”两种形状，按各工具链的 sizeof/alignof 选择；`InternedText` 必须静态存储期，保留 owning 构造与 nothrow move；OOM 路径不得调用 `withContext`、`withCause` 或 cause 深拷贝；失败阶段用固定枚举随故障回执传递。持续 OOM 测试要求连续三次交付的码与阶段一致、`optional<Result>` 复制零分配，并覆盖 MSVC、GCC、Clang。公开布局变化按 0.10.0 处理，重生成 element-size 基线，最终候选需 owner 的版本审批评论。
 
-T-10 第九轮（GP-04 多单元、最小 ReplayRecord/replay）与 T-12（timing 库、编译闭包、chart 时间适配、beat-us 消费者）已本地提交，未推送。
+T-10 第九轮（GP-04 多单元、最小 ReplayRecord/replay）与 T-12（timing 库、编译闭包、chart 时间适配、beat-us 消费者）已随 `662b03e7` 推送。
 
 ## 43. F508 生命周期拆分落地与 PR 47 CI 修复（2026-11-24）
 
 - RR-F508 内容卸载与控制生命周期拆分：**成立**。内容卸载清 Runtime、Gameplay、调度器、时钟映射、`executionMapping`、`tailTransition`、`framings` 与 committed presentation token，保留 `hostFence`、accepted control/decision 与 `confirmedHostContext`；Session 变 Empty 且 generation 递增，Empty 再卸载不 bump。Close 终态由 `releaseExecutionFence`、`completeExecutionClose` 与无 fence 分支清理；`retireExecutionStep` 改走内容卸载，Close 前重放仍走完整 proof；新内容提交后旧 proof 归 `host.rpa.context_stale`。`rr_session_unload_lifecycle` 六个 SECTION 通过；`-L rpa` 186/186、`-L execution-host` 71/71；候选 playback 195 用例 / 35794 断言；默认闭包 137 用例 / 17556 断言；架构与格式门禁通过。证据在 `out/review/stage-07-rr/T-17/lifecycle-split/`。未做：shared 导出、设备、无 fence 独立 worker 用例。
 - 隔离门禁 Chart 源表漂移：**成立并已修复**。T-11/T-12 新增的 `chart_v5_loader.cpp`、`chart_v5_timing.cpp`、`compiled_chart_timing.cpp`、`timing_source_adapter.cpp` 未同步进 `cmake/VerifyPlaybackCandidateIsolation.cmake` 的三张源表，候选预设退出 8；补齐后 `candidate-debug` 与 `debug` 的 `cuexis_rr_playback_isolation` 退出 0（`f00439c3`）。
-- PR 47 远端编译红灯：**成立并已修复**。`advance_kernel.cpp` 缺 `<limits>` 被 GCC/Clang 拒绝；`legacy_prepared_view.cpp` 六个转换记录默认初始化触发 MSVC Release maybe-uninitialized；`chart_v5_loader.cpp` 的 82 KiB schema 字面量触发 Clang `-Woverlength-strings`。分别补 include、值初始化、按 TU 关闭该可移植性告警（`80c121b4`）；本地 GCC 全量构建、MSVC Release `cuexis_judgement_compile`、`candidate-debug` 的 `cuexis_chart_tools` 与格式检查退出 0。远端重跑待推送。
+- PR 47 远端编译红灯：**成立并已修复**。`advance_kernel.cpp` 缺 `<limits>` 被 GCC/Clang 拒绝；`legacy_prepared_view.cpp` 六个转换记录默认初始化触发 MSVC Release maybe-uninitialized；`chart_v5_loader.cpp` 的 82 KiB schema 字面量触发 Clang `-Woverlength-strings`。分别补 include、值初始化、按 TU 关闭该可移植性告警（`80c121b4`）；本地 GCC 全量构建、MSVC Release `cuexis_judgement_compile`、`candidate-debug` 的 `cuexis_chart_tools` 与格式检查退出 0。以上修复已随 `662b03e7` 推送；远端复跑后编译项转绿，GCC/MinGW 的新失败落在 F135 探针，见 §45。
 - F135 形状探针：**成立**。形状 2 在 MSVC/Clang/GCC 上 `Error` 104→112 B，会话槽位增量约为形状 1 的一半；零分配构造与复制、三次持续 OOM、nothrow move 与静态存储期负例通过，采用形状 2（task-34 实施中）。证据在 `out/review/stage-07-rr/investigations/f135-shape/`。
-- PR 48 治理树引导：**部分成立**。docs 快照加入 master 目标事实、四个旧命名豁免、检查脚本与日期版本后，`Documentation contracts` 与 `Version advancement (pre-merge)` 已通过；其余构建任务仍在运行。合并后 PR 47 的 PR 事件才有含治理树的可信 base。
-- 本轮本地提交 `c85cfa61`（F508 拆分）、`80c121b4`（编译修复）、`f00439c3`（隔离源表），均未推送。
+- PR 48 治理树引导：**成立（已合并）**。docs 快照加入 master 目标事实、四个旧命名豁免、检查脚本与日期版本后，`Documentation contracts` 与 `Version advancement (pre-merge)` 通过，PR 达 40 项通过、4 项跳过、0 失败；owner 合并为 `43eb0c94`，PR 47 的 PR 事件自此有含治理树的可信 base。
+- 本轮本地提交 `c85cfa61`（F508 拆分）、`80c121b4`（编译修复）、`f00439c3`（隔离源表），均已随 `662b03e7` 推送。
 
 ## 44. F135 interned Error 实施（2026-11-24）
 
@@ -947,8 +947,20 @@ T-10 第九轮（GP-04 多单元、最小 ReplayRecord/replay）与 T-12（timin
 - element-size 基线：**成立**。按 `audit_layout.py` 在 MSVC Release 全量重生成，F135 行与探针一致（SessionChannelSlot 40000、ControlReceiptSlot 37240、JournalFrameSlot 464、optional_PresentReceipt 240 等）；同时带出与 F135 无关的既有 HEAD 漂移（FramePayload 304→880、HistorySlot 208→240、ConsumerSlot 1192→1224、DeliveryFingerprint 160→192、DispatchToken 1→16，基线自 `739b6f34` 后未更新），派生期望常量 163842128→163842704，预算乘数未改。
 - 验证：**成立（候选与默认闭包）**。lead 在 `candidate-debug` 重跑 `F135` 七例全过；子代理记录 `candidate-debug`/`candidate-headless-debug` 各 `-L rpa` 187/187、`debug` 70/70 与 core 42/2651、`mingw-headless-debug` 71/71、MinGW candidate 观测/通道两例通过，`cuexis_architecture_tests` 通过，格式门禁在修复既有 `beat_us_compile.cpp` 断行后通过。证据在 `out/review/stage-07-rr/F135/`。
 - 独立复核：**成立（部分项无法核实）**。独立代理按复核报告（`out/review/stage-07-rr/F135/verify/report.md`，本地证据，不入库）重做尺寸、零分配、OOM、负编译与基线重跑，12 项检查通过，未发现高中严重度缺陷；MSVC Release `Error` 112、`optional<Error>` 120、`FaultSlot` 56，旧头 104/112 对照成立；`audit_layout.py` 全量重跑的 42 个 sizes 键与提交 JSON 一致，frame bound +576 只来自 `FramePayload`。观测桥 `.cpp` 实际有 7 个 `allocation_failed` 交付点（5 个预构建加 `create`/`copyPresentReceipt`），运行覆盖 `configure`/`query`/`create`，`observe`/`expire`/`activate` 只做代码核对；shared、Release 全量构建与 Clang 项目内 ctest 未做。子代理报告中“格式门禁仍失败”与“未改 docs/版本号”两处陈述不成立，已完成版本扫齐。
-- 版本推进：`cmake/CuexisVersion.cmake` 的 SDK API 升到 0.10.0（日期构建仍 26.11.24-1），文档当前声明、参考宿主默认值与外部消费者门禁同步；`2c4cc392`、`ecc40759` 覆盖文档与代码两侧，owner 审批评论在最终推送时按授权代发。
-- 未做：Release 全量构建/ctest、shared/candidate-shared、Clang 的项目内 ctest 入口（只有独立探针与编译负例）；MSVC Debug `tl::expected` 下 owning Error 的异常拷贝会在未构造成员上析构，OOM 可复制保证限定 interned 错误态；26 处之外的 `rematerializeRetainedSnapshot`、audio_owner/capture_route 的 catch 仍为 owning 错误，不在持续 OOM 保证内。SDK API 按 0.10.0 推进，owner 审批评论在推送时补。
+- 版本推进：`cmake/CuexisVersion.cmake` 的 SDK API 升到 0.10.0，日期构建随后因 master 合入推进到 26.11.24-2；文档当前声明、参考宿主默认值与外部消费者门禁同步；`2c4cc392`、`ecc40759` 覆盖文档与代码两侧，owner 审批评论已按授权代发，绑定 `662b03e7` 与 UTC 2026-11-24。
+- 未做：Release 全量构建/ctest、shared/candidate-shared、Clang 的项目内 ctest 入口（只有独立探针与编译负例）；MSVC Debug `tl::expected` 下 owning Error 的异常拷贝会在未构造成员上析构，OOM 可复制保证限定 interned 错误态；26 处之外的 `rematerializeRetainedSnapshot`、audio_owner/capture_route 的 catch 仍为 owning 错误，不在持续 OOM 保证内。SDK API 按 0.10.0 推进，owner 审批评论已代发。
+
+## 45. PR 47 推送后的 CI 失败与修复（2026-11-24）
+
+PR 47 以 `662b03e7` 推送后，PR 事件与 push 事件共 7 类 job 变红。逐条核对完整 workflow 日志后归为三类，均已在本地修复，尚未推送。
+
+- Documentation contracts：`docs/api/realtime-host-boundary.md` 两处、`docs/stage_plans/active/stage-07-rr/findings.md` 一处用相对链接指向未入库的 `out/` 证据。改为纯文本路径后，带 git 历史的完整检查通过，不含 `out/` 的 HEAD 归档也不再报断链（只报无 `.git` 时保护检查不可用）。
+- GCC Release、GCC Shared Release、MinGW release：同一用例 `F135 allocation probe fails every allocation and counts attempts`。用例里的 `new int(7); delete` 在 -O2 被整段优化，`threw` 与 `attempts` 都落空；MinGW release 的 job 日志被截断，看起来像测试中断，完整日志显示 1263 个用例都跑完，仅第 36 个失败。改用直接 `::operator new` 调用（`3af70852`）。
+- Clang ASan + UBSan（含 shader-tools、media-tools）：`Diagnostics sort by stable machine-readable fields` 触发 alloc-dealloc mismatch。探针只替换了 plain new/delete，而 libstdc++ 的 `stable_sort` 临时缓冲走 nothrow new、再经 sized delete 释放。把 nothrow new/delete 与 sized delete 一并替换后，分配与释放成对（同提交）。
+
+本地验证：MinGW g++ `-O2` 独立驱动上，旧写法 `threw=0`、`attempts=0`，新写法 `threw=1`、`attempts=1`；`std::stable_sort` 的临时缓冲经替换后的 nothrow new 计数 1，说明释放路径已配对。`debug` 的 F135 与 Diagnostics 11 例、MSVC Release 同类 11 例、格式与文档门禁通过；整套 GCC/Clang/MinGW 结果仍待推送后 CI 复跑。
+
+同批补了本机构建入口：`build.ps1` 与 `tools/msvc-env.ps1` 用 vswhere 定位 VS，在当前进程导入 VsDevCmd 并保留 `VCPKG_ROOT`，标准预设不再需要手写 vcvars 路径；`mingw-*` 预设跳过导入。提交为 `ae503315`、`6ed02400`、`c7327d11`、`433817a8`。
 
 ## 附录 处置记录（按日期保留，§12–§16）
 

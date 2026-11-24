@@ -111,8 +111,9 @@ reference-host staging (S6-C4)
 Production/experimental, static/shared and Debug/Release staging directories are independent.
 The runtime directory does not rely on source-tree assets or developer PATH. Installed package
 metadata exposes display version, SDK API version, enabled flavor/components and required license
-files. A candidate package cannot be accepted by a production consumer accidentally: SDK API
-`0.7.0` installs one production flavor, the candidate switch `CUEXIS_ENABLE_CHART_V5_CANDIDATE` is a
+files. A candidate package cannot be accepted by a production consumer accidentally: the current
+SDK API (see `cmake/CuexisVersion.cmake`) installs one production flavor, the candidate switch
+`CUEXIS_ENABLE_CHART_V5_CANDIDATE` is a
 build-tree compile definition that is not installed and adds no consumer-visible switch, and the
 `Cuexis_ALLOW_EXPERIMENTAL` opt-in 已实现：`CMakeLists.txt` 设置 `CUEXIS_BUILD_FLAVOR`，包配置注入 `Cuexis_ALLOW_EXPERIMENTAL` 拒绝块，`cmake/CuexisConfig.cmake.in` 导出 `Cuexis_BUILD_FLAVOR`/`Cuexis_EXPERIMENTAL`。
 
@@ -125,7 +126,7 @@ build-tree compile definition that is not installed and adds no consumer-visible
 | Player support separation | C2 local exit: config snapshots and enumerated device open exist and are not installed | C3 still consumes the exited batch |
 | Player source boundaries | Control, options, assembly, and smoke are separate translation units | C3 adds the typed command table |
 | Media importer isolation | E1/E2 local exit: `cuexis_media_import` and `cuexis_media_importer` exist behind default-OFF `CUEXIS_BUILD_MEDIA_TOOLS`; Playback/Player do not link them | Hosted four-platform byte equality and package tests |
-| Production/experimental staging | Contract only; no package flavor gate yet | B1/C4 clean staging |
+| Production/experimental staging | Implemented: flavor stamp and consumer opt-in; hosted package evidence remains | B1/C4 clean staging |
 | Reference Host | C4: `examples/reference_host/` builds against the installed `Cuexis::Playback` package only and runs from a clean staging copy; gate `cuexis_reference_host_staging` | Hosted evidence on the C4 SHA |
 | Player distribution | C4: `cuexis_player_dist` assembles one flavor-labelled self-contained directory; gate `cuexis_player_distribution` verifies contents, licenses and a sanitized-PATH start | Hosted evidence on the C4 SHA; Linux hosted presets do not build the Player |
 

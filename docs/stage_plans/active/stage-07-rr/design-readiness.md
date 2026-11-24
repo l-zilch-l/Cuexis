@@ -1,6 +1,6 @@
 # Stage 7-RR 可实施性索引
 
-状态：candidate；独立 checkout 复审后的修订与验证以本轮报告为准，未实施、未发布
+状态：active；设计已进入实施，实施与验收状态见 [CURRENT_STATUS](../../../CURRENT_STATUS.md)
 
 更新日期：2026-11-23
 
@@ -10,7 +10,7 @@ status: candidate
 authority: index
 -->
 
-输入：2026-11-21 PR #47 可实施性审查（`9623efa3`），编号按报告 §4.1–4.6、§5 保留。[发现登记册](findings.md)记录基线与核对状态。本页检查设计闭合；[计划](plan.md#唯一派单授权入口)单独登记实施采用；[验收](acceptance.md)单独登记证据。当前新增生产实现全部未开始。
+输入：2026-11-21 PR #47 可实施性审查（`9623efa3`），编号按报告 §4.1–4.6、§5 保留。[发现登记册](findings.md)记录基线与核对状态。本页检查设计闭合；[计划](plan.md#唯一派单授权入口)单独登记实施采用；[验收](acceptance.md)单独登记证据。本页只维护设计与缺口，已实施范围见 [CURRENT_STATUS](../../../CURRENT_STATUS.md)。
 
 ## 路线比较
 
@@ -46,7 +46,7 @@ Huygens、Nash、Epicurus、Bacon 分别复验 R1、R5 帧交付与 `NEXT` 合�
 
 ## 缺口追踪
 
-Player 与工具外部行为按 [D-16 已接受共识](architecture-design.md#外部行为2026-11-21-owner-已接受拟实施)记录；[P4 启动与退出](contracts/render-player-writer.md#命令与启动)由 T-14/T-15 分验，[P5 工具行为](contracts/render-player-writer.md#工具外部行为)由 T-13/T-16 分验，均纳入本轮安排，生产实施尚未启动。
+Player 与工具外部行为按 [D-16 已接受共识](architecture-design.md#外部行为2026-11-21-owner-已接受拟实施)记录；[P4 启动与退出](contracts/render-player-writer.md#命令与启动)由 T-14/T-15 分验，[P5 工具行为](contracts/render-player-writer.md#工具外部行为)由 T-13/T-16 分验，均纳入本轮安排；生产实施已部分启动，进度见 [CURRENT_STATUS](../../../CURRENT_STATUS.md)。
 
 | 审查编号 | 维度及唯一设计落点 | 任务 | 验收证据 |
 | --- | --- | --- | --- |
