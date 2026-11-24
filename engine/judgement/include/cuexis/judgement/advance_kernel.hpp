@@ -133,6 +133,12 @@ class AdvanceKernel final {
         bool tapDone{false};
     };
 
+    struct UnitRun final {
+        std::vector<std::uint32_t> phases;
+        std::size_t remaining{0};
+        bool settled{false};
+    };
+
     auto advanceInternal(Tick horizon, std::span<SettlementEvent> slots, bool enforceSlots)
         -> core::Result<AdvanceSummary>;
     auto route(Tick observation, bool& forwarded) const -> std::optional<Tick>;
@@ -153,11 +159,14 @@ class AdvanceKernel final {
     auto processThrough(Tick horizon) -> std::size_t;
 
     std::vector<RequirementRun> runs_;
+    std::vector<UnitRun> units_;
     std::vector<std::size_t> phaseOffsets_;
     std::vector<SettlementEvent> staged_;
     std::int64_t j_{0};
     std::int64_t c_{0};
     std::uint32_t score_{0};
+    std::uint32_t combo_{0};
+    std::uint32_t maxCombo_{0};
 
     PreparedGameplay prepared_;
     RunKey run_{};

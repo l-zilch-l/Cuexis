@@ -54,6 +54,13 @@ AdvanceKernel::AdvanceKernel(PreparedGameplay prepared, RunKey run, LatePolicyPa
         phaseOffsets_.push_back(offset);
         offset += requirement.phases.size();
     }
+    const auto* score = prepared_.records().normalizedScore;
+    if (score != nullptr) {
+        units_.reserve(score->units.size());
+        for (const auto& unit : score->units) {
+            units_.push_back(UnitRun{unit.phaseIndices, unit.phaseIndices.size(), false});
+        }
+    }
 }
 
 auto AdvanceKernel::prepare(PreparedGameplay prepared, RunKey run) -> core::Result<AdvanceKernel> {
@@ -191,19 +198,25 @@ auto AdvanceKernel::advanceInternal(Tick horizon, std::span<SettlementEvent> slo
                                             "the advance horizon moved backwards"));
     }
     auto runs = runs_;
+    auto units = units_;
     auto pending = pending_;
     auto j = j_;
     auto c = c_;
     auto score = score_;
+    auto combo = combo_;
+    auto maxCombo = maxCombo_;
     std::vector<SettlementEvent> staged;
     staged_.clear();
     const auto processed = processThrough(horizon);
     if (enforceSlots && staged_.size() > slots.size()) {
         runs_ = std::move(runs);
+        units_ = std::move(units);
         pending_ = std::move(pending);
         j_ = j;
         c_ = c;
         score_ = score;
+        combo_ = combo;
+        maxCombo_ = maxCombo;
         staged_.clear();
         return core::unexpected(kernelError("capability.budget_insufficient", "budget", "/slots",
                                             "the settlement slots are too small"));
@@ -252,10 +265,13 @@ auto AdvanceKernel::advanceStopCut(const StopCut& cut, std::span<SettlementEvent
                                             "the settlement slot count is too small"));
     }
     auto runs = runs_;
+    auto units = units_;
     auto pending = pending_;
     auto j = j_;
     auto c = c_;
     auto score = score_;
+    auto combo = combo_;
+    auto maxCombo = maxCombo_;
     std::vector<SettlementEvent> staged;
     receiveClosed_ = true;
     staged_.clear();
@@ -263,10 +279,13 @@ auto AdvanceKernel::advanceStopCut(const StopCut& cut, std::span<SettlementEvent
     if (staged_.size() > slots.size()) {
         receiveClosed_ = false;
         runs_ = std::move(runs);
+        units_ = std::move(units);
         pending_ = std::move(pending);
         j_ = j;
         c_ = c;
         score_ = score;
+        combo_ = combo;
+        maxCombo_ = maxCombo;
         staged_.clear();
         return core::unexpected(kernelError("capability.budget_insufficient", "budget", "/slots",
                                             "the settlement slots are too small"));
@@ -414,25 +433,57 @@ void AdvanceKernel::applyFold(const SettlementEvent& event) {
             grade = grades[event.gradeIndex];
         }
     }
-    for (const auto& rule : score->mode.rules) {
-        if (rule.phase != phase || rule.outcome != event.outcome || rule.grade != grade) {
-            continue;
-        }
-        if (!rule.qualifies) {
-            return;
-        }
-        j_ += rule.judgePoints;
-        switch (rule.combo) {
-        case ComboAction::increment:
-            ++c_;
+    const auto* rule = static_cast<const ScoreRuleRow*>(nullptr);
+    for (const auto& candidate : score->mode.rules) {
+        if (candidate.phase == phase && candidate.outcome == event.outcome &&
+            candidate.grade == grade) {
+            rule = &candidate;
             break;
+        }
+    }
+    auto unit = units_.end();
+    for (auto candidate = units_.begin(); candidate != units_.end(); ++candidate) {
+        if (std::find(candidate->phases.begin(), candidate->phases.end(), event.phaseIndex) !=
+            candidate->phases.end()) {
+            unit = candidate;
+            break;
+        }
+    }
+    if (unit == units_.end()) {
+        return;
+    }
+    if (rule != nullptr && rule->qualifies && !unit->settled) {
+        j_ += rule->judgePoints;
+        switch (rule->combo) {
+        case ComboAction::increment: {
+            ++combo_;
+            maxCombo_ = std::max(maxCombo_, combo_);
+            const auto reward = comboReward(score->mode, combo_);
+            if (reward) {
+                c_ += static_cast<std::int64_t>(*reward);
+            }
+            break;
+        }
         case ComboAction::reset:
-            c_ = 0;
+            combo_ = 0;
             break;
         case ComboAction::keep:
             break;
         }
+        unit->settled = true;
+        unit->remaining = 0;
         return;
+    }
+    if (unit->settled) {
+        return;
+    }
+    if (unit->remaining > 0) {
+        --unit->remaining;
+    }
+    if (unit->remaining == 0) {
+        if (score->mode.onExhausted == ComboAction::reset) {
+            combo_ = 0;
+        }
     }
 }
 
@@ -476,6 +527,7 @@ void AdvanceKernel::settleRecord(std::size_t requirement, const TickRecord& reco
         return;
     }
     const auto observation = record.observationTick;
+    bool bodyMissed = false;
     if (run.stage == RequirementRun::Stage::body) {
         const bool bodyHit =
             preparedRequirement.timing.body && observation >= preparedRequirement.timing.body->end;
@@ -486,10 +538,16 @@ void AdvanceKernel::settleRecord(std::size_t requirement, const TickRecord& reco
                  error < 0    ? std::optional<TimingDirection>{TimingDirection::early}
                  : error == 0 ? std::optional<TimingDirection>{TimingDirection::exact}
                               : std::optional<TimingDirection>{TimingDirection::late});
+            bodyMissed = true;
         } else {
             emit(requirement, PhaseKind::body, dispatch, Outcome::hit, std::nullopt, std::nullopt);
         }
         run.stage = RequirementRun::Stage::tail;
+    }
+    if (bodyMissed) {
+        emit(requirement, PhaseKind::tail, dispatch, Outcome::miss, std::nullopt, std::nullopt);
+        run.stage = RequirementRun::Stage::done;
+        return;
     }
     const auto tailTarget = targetOf(preparedRequirement, PhaseKind::tail);
     const auto tailEnd = lastTailEnd(preparedRequirement);

@@ -129,6 +129,110 @@ auto tapUnitScore(std::vector<runtime::PreparedRequirement>& requirements,
     return score;
 }
 
+auto gp02Score() -> PreparedNormalizedScore {
+    PreparedNormalizedScore score;
+    auto& mode = score.mode;
+    mode.id = "hold";
+    mode.total = 100;
+    mode.mj = 90;
+    mode.mc = 10;
+    mode.onExhausted = ComboAction::reset;
+    mode.comboRewards = {ComboRewardSegment{1, 1, 1}};
+    mode.rules = {
+        ScoreRuleRow{PhaseKind::head, Outcome::hit, std::nullopt, true, 2, ComboAction::increment},
+        ScoreRuleRow{PhaseKind::head, Outcome::miss, std::nullopt, false, 0, ComboAction::keep},
+        ScoreRuleRow{PhaseKind::body, Outcome::hit, std::nullopt, true, 2, ComboAction::increment},
+        ScoreRuleRow{PhaseKind::body, Outcome::miss, std::nullopt, false, 0, ComboAction::keep},
+        ScoreRuleRow{PhaseKind::body, Outcome::hit, std::string{"break"}, true, 2,
+                     ComboAction::increment},
+        ScoreRuleRow{PhaseKind::body, Outcome::miss, std::string{"break"}, true, 1,
+                     ComboAction::reset},
+        ScoreRuleRow{PhaseKind::body, Outcome::hit, std::string{"release"}, true, 2,
+                     ComboAction::increment},
+        ScoreRuleRow{PhaseKind::body, Outcome::miss, std::string{"release"}, true, 1,
+                     ComboAction::reset},
+        ScoreRuleRow{PhaseKind::tail, Outcome::hit, std::string{"break"}, true, 6,
+                     ComboAction::increment},
+        ScoreRuleRow{PhaseKind::tail, Outcome::miss, std::string{"break"}, true, 1,
+                     ComboAction::reset},
+        ScoreRuleRow{PhaseKind::tail, Outcome::hit, std::string{"release"}, true, 6,
+                     ComboAction::increment},
+        ScoreRuleRow{PhaseKind::tail, Outcome::miss, std::string{"release"}, true, 1,
+                     ComboAction::reset},
+        ScoreRuleRow{PhaseKind::tail, Outcome::miss, std::nullopt, false, 0, ComboAction::keep},
+    };
+    PreparedGradeTable table;
+    table.id = "main";
+    table.exactStart = -154;
+    table.exactEnd = 20;
+    table.intervals = {PreparedGradeInterval{-154, 0, "break"},
+                       PreparedGradeInterval{0, 20, "release"}};
+    score.gradeTables = {table};
+    score.units = {ScoreUnit{{0}}, ScoreUnit{{1}}, ScoreUnit{{2}}};
+    score.basis = ScoreBasis{10, 6};
+    return score;
+}
+
+auto gp02Requirement(bool shortHold) -> runtime::PreparedRequirement {
+    runtime::PreparedRequirement requirement;
+    requirement.stableId = StableDeclarationId{"doc.alpha", 77};
+    requirement.identity = RequirementIdentity{
+        "chart.one", "invocation.one", "module.one", "export.one", {}, "req.hold"};
+    requirement.phases = {PhaseDeclaration{PhaseKind::head, 0},
+                          PhaseDeclaration{PhaseKind::body, 0},
+                          PhaseDeclaration{PhaseKind::tail, 0}};
+    const Tick bodyStart{shortHold ? 850 : 900};
+    const Tick bodyEnd{shortHold ? 851 : 1000};
+    const Tick bodyTarget{shortHold ? 851 : 1000};
+    const Tick headTarget{shortHold ? 850 : 900};
+    requirement.timing.end = Tick{1040};
+    requirement.timing.body = TimeInterval{bodyStart, bodyEnd};
+    requirement.timing.successWindows = {
+        runtime::SuccessWindow{Tick{850}, Tick{901}, requirement.phases[0]},
+        runtime::SuccessWindow{bodyStart, bodyEnd, requirement.phases[1]},
+        runtime::SuccessWindow{Tick{1000}, Tick{1010}, requirement.phases[2]},
+        runtime::SuccessWindow{Tick{1015}, Tick{1020}, requirement.phases[2]}};
+    requirement.timing.phaseTargets = {runtime::PhaseTarget{PhaseKind::head, Tick{headTarget}},
+                                       runtime::PhaseTarget{PhaseKind::body, Tick{bodyTarget}},
+                                       runtime::PhaseTarget{PhaseKind::tail, Tick{1000}}};
+    requirement.deadline = Tick{1040};
+    requirement.atomBindings = {
+        runtime::AtomBinding{"atom.press", "domain.binding.one", "keyboard", "channel.zero",
+                             runtime::InputAction::press, std::nullopt, false},
+        runtime::AtomBinding{"atom.release", "domain.binding.one", "keyboard", "channel.zero",
+                             runtime::InputAction::release, std::nullopt, false}};
+    requirement.measure = {
+        runtime::CompiledMeasureComponent{
+            PhaseKind::body, FactCategory::holdBody, runtime::GradePresence::declared, {}, 0},
+        runtime::CompiledMeasureComponent{
+            PhaseKind::tail, FactCategory::holdTail, runtime::GradePresence::declared, {}, 0}};
+    return requirement;
+}
+
+auto gp02Prepared(bool shortHold) -> runtime::PreparedGameplay {
+    std::vector<runtime::PreparedRequirement> requirements = {gp02Requirement(shortHold)};
+    auto score = gp02Score();
+    auto policy = runtimePolicy();
+    auto identities = runtimeIdentities();
+    const runtime::PreparedTimebase timebase{"engine.tick.us.v1", 1, 1, Tick{0}};
+    runtime::CompiledGameplayView view{
+        timebase,
+        policy,
+        identities,
+        "content.one",
+        "prepared.one",
+        "execution.one",
+        nullptr,
+        &score,
+        requirements,
+        std::span<const runtime::PreparedResource>{},
+        std::span<const runtime::PreparedTimerKey>{},
+    };
+    auto prepared = runtime::prepareCompiledGameplay(view, runtime::PrepareGameplayLimits{});
+    REQUIRE(prepared);
+    return *prepared;
+}
+
 auto contextValue(const cuexis::core::Error& error, std::string_view key) -> std::string {
     for (const auto& entry : error.context()) {
         if (entry.key == key) {
@@ -841,5 +945,38 @@ TEST_CASE("cuexis_rr_advance_contract", "[playback][judgement][rr][advance]") {
         REQUIRE(again);
         CHECK(again->settledEvents == 0);
         CHECK(again->j == 2);
+    }
+
+    SECTION("the GP-02 Hold vectors settle their phase units") {
+        auto settle = [](std::optional<Tick> release) {
+            auto prepared = gp02Prepared(false);
+            auto kernel = runtime::AdvanceKernel::prepare(std::move(prepared), RunKey{9, 1});
+            REQUIRE(kernel);
+            std::vector<runtime::TickRecord> batch{tickRecord(900)};
+            if (release) {
+                batch.push_back(tickRecord(release->value(), runtime::InputAction::release));
+            }
+            REQUIRE(kernel->receiveCanonicalBatch(batch));
+            std::vector<SettlementEvent> slots(3);
+            auto advanced = kernel->advance(Tick{1103}, slots);
+            REQUIRE(advanced);
+            return *advanced;
+        };
+        const auto first = settle(Tick{950});
+        CHECK(first.j == 3);
+        CHECK(first.c == 1);
+        CHECK(first.score == 29);
+        const auto second = settle(Tick{1011});
+        CHECK(second.j == 5);
+        CHECK(second.c == 3);
+        CHECK(second.score == 50);
+        const auto third = settle(std::nullopt);
+        CHECK(third.j == 4);
+        CHECK(third.c == 3);
+        CHECK(third.score == 41);
+        const auto fourth = settle(Tick{1019});
+        CHECK(fourth.j == 10);
+        CHECK(fourth.c == 6);
+        CHECK(fourth.score == 100);
     }
 }
