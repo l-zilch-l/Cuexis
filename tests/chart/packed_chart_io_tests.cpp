@@ -2,9 +2,14 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include "packed_fixture_support.hpp"
+
 #include <array>
+#include <cuexis/chart/packed_chart_writer.hpp>
 #include <filesystem>
 #include <fstream>
+#include <span>
+#include <vector>
 
 namespace {
 
@@ -87,4 +92,66 @@ TEST_CASE("Packed reader rejects truncated bytes before semantic publication",
     const std::array<std::byte, 3> truncated{};
     const auto loaded = cuexis::chart::PackedChartReader::decode(truncated);
     REQUIRE_FALSE(loaded);
+}
+
+// The card-level name is the CTest name, so the Catch2 case keeps exactly this identifier and the
+// description lives in the tags and comments.
+TEST_CASE("rr2_contract_packed", "[chart][packed][rr2][crc][codec]") {
+    const auto encoded = cuexis::chart::packed::encode(tapChart());
+    REQUIRE(encoded);
+    const auto bytes = std::span<const std::byte>{encoded->data(), encoded->size()};
+
+    // The same readable sample passes and its stored Header CRC is exactly CRC-32 over [0,92).
+    REQUIRE(cuexis::chart::PackedChartReader::decode(*encoded));
+    const auto storedCrc = cuexis::chart::packed::test::readU32(bytes, 92U);
+    CHECK(storedCrc == cuexis::chart::packed::crc32(bytes.first(92U)));
+
+    // The superseded wording hashed the complete 96-byte Header with the CRC field zeroed. A file
+    // carrying that value in the CRC field must be rejected, not silently accepted as a valid
+    // first-92-byte checksum.
+    std::vector<std::byte> oldHeader(encoded->begin(), encoded->begin() + 96);
+    cuexis::chart::packed::test::writeU32(oldHeader, 92U, 0U);
+    const auto oldAlgorithmCrc =
+        cuexis::chart::packed::crc32(std::span<const std::byte>{oldHeader});
+    REQUIRE(oldAlgorithmCrc != storedCrc);
+    auto oldCrcFile = *encoded;
+    cuexis::chart::packed::test::writeU32(oldCrcFile, 92U, oldAlgorithmCrc);
+    const auto rejectedCrc = cuexis::chart::PackedChartReader::decode(oldCrcFile);
+    REQUIRE_FALSE(rejectedCrc);
+    CHECK(rejectedCrc.error().code() == "packed.header.crc");
+
+    // TIME starts with offsetMs, defaultBpm, tempoCount, stopCount and then three one-byte Beat
+    // codec modes; mode 1 is GridDelta and is not in the Foundation temporal acceptance set.
+    const auto time = cuexis::chart::packed::test::findSection(bytes, "TIME");
+    REQUIRE(time);
+    REQUIRE(time->offset + time->size <= bytes.size());
+    auto timePayload = std::vector<std::byte>(
+        bytes.begin() + static_cast<std::ptrdiff_t>(time->offset),
+        bytes.begin() + static_cast<std::ptrdiff_t>(time->offset + time->size));
+    REQUIRE(timePayload.size() > 24U);
+    timePayload[24] = std::byte{1};
+    auto timeMode = cuexis::chart::packed::test::replaceSection(bytes, time->index, timePayload);
+    REQUIRE_FALSE(timeMode.empty());
+    // The envelope, directory and every section CRC stay consistent; only the temporal mode fails.
+    CHECK(cuexis::chart::packed::inspect(timeMode).has_value());
+    const auto rejectedTime = cuexis::chart::PackedChartReader::decode(timeMode);
+    REQUIRE_FALSE(rejectedTime);
+    CHECK(rejectedTime.error().code() == "packed.time.invalid");
+
+    // REQ0 starts with the startBeat/endBeat Beat descriptors; a non-zero mode is unsupported.
+    const auto requirements = cuexis::chart::packed::test::findSection(bytes, "REQ0");
+    REQUIRE(requirements);
+    REQUIRE(requirements->offset + requirements->size <= bytes.size());
+    auto requirementPayload = std::vector<std::byte>(
+        bytes.begin() + static_cast<std::ptrdiff_t>(requirements->offset),
+        bytes.begin() + static_cast<std::ptrdiff_t>(requirements->offset + requirements->size));
+    REQUIRE_FALSE(requirementPayload.empty());
+    requirementPayload[0] = std::byte{1};
+    auto requirementMode =
+        cuexis::chart::packed::test::replaceSection(bytes, requirements->index, requirementPayload);
+    REQUIRE_FALSE(requirementMode.empty());
+    CHECK(cuexis::chart::packed::inspect(requirementMode).has_value());
+    const auto rejectedRequirements = cuexis::chart::PackedChartReader::decode(requirementMode);
+    REQUIRE_FALSE(rejectedRequirements);
+    CHECK(rejectedRequirements.error().code() == "packed.requirements.codec");
 }

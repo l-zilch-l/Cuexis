@@ -301,7 +301,9 @@ auto PlayerController::adoptStartupLoad(PlayerLoadBundle&& load) -> core::Result
         return committed;
     }
     // apply() publishes the decision state after a command. Adoption bypasses the command table
-    // only because the startup Load is not a user command, so it publishes the same state itself.
+    // only because the startup Load is not a user command, so it publishes the same state and
+    // spends the initial-install marker itself.
+    initialLoad_ = false;
     state_ = player_support::PlayerAppState::Loaded;
     return {};
 }

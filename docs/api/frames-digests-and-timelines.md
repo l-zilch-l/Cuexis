@@ -2,9 +2,9 @@
 
 状态：active
 
-更新日期：2026-11-23
+更新日期：2026-11-24
 
-适用版本：SDK API `0.9.1`
+适用版本：SDK API `0.10.0`
 
 文档角色：公共 API 参考
 
@@ -29,9 +29,10 @@ authority: owns
 
 这四类合同不可互换。identity 描述 prepared 内容，FrameDigest 描述指定输入下的帧观察结果。
 
-Stage 7-RPA子阶段实时解耦的首用设计见[宿主边界草案](realtime-host-boundary.md)和
-[ADR0046](../adr/0046-realtime-playback-coordination.md)。草案未实施，不改变本页API；owning
-FrameSnapshot可独立存活不等于已具备跨线程资源激活/代数校验协议，RuntimeFrame也不能反推判定Tick。
+实时解耦与宿主时钟的合同见[实时宿主边界](realtime-host-boundary.md)和
+[ADR0046](../adr/0046-realtime-playback-coordination.md)。该边界是 candidate contract 且已有
+candidate 实施；它不改变本页 active API，owning FrameSnapshot可独立存活不等于已具备跨线程
+资源激活/代数校验协议，RuntimeFrame也不能反推判定Tick。
 
 ## `RuntimeFrame` 速查
 
@@ -107,4 +108,4 @@ Runtime-only 更新有实际 frame，但不伪造 Gameplay cursor。该描述不
 读取结果独立存活；它不锁定随后另一次查询的修订。需要配对时，宿主在同一不重入 owner
 操作中读取来源和 Snapshot。Pause/Resume 控制完成及纯 clock 换段不更新来源；其后真正
 sample 才发布新描述。保留重绘继续携带原描述，不从当前 session 的较新 drain 前缀补字段。
-新 API 消费者应 `find_package(Cuexis 0.9.1 CONFIG REQUIRED COMPONENTS Playback)`。
+新 API 消费者应 `find_package(Cuexis 0.10.0 CONFIG REQUIRED COMPONENTS Playback)`。

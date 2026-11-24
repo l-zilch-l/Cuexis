@@ -25,6 +25,12 @@ include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 include(GenerateExportHeader)
 
+# Load the public library-type initialization before any option-dependent admission check reads
+# CUEXIS_LIBRARY_TYPE. The observer/tooling gates below compare the resolved type, and an
+# uninitialised cache variable would make a fresh observer-enabled Windows configuration fail
+# before the project has a chance to resolve the default.
+include("${PROJECT_SOURCE_DIR}/cmake/CuexisLibraryType.cmake")
+
 if(PROJECT_IS_TOP_LEVEL)
     set(CUEXIS_TOP_LEVEL_DEFAULT ON)
     set(CUEXIS_TESTS_DEFAULT "${BUILD_TESTING}")
@@ -152,7 +158,6 @@ configure_file(
 
 include("${PROJECT_SOURCE_DIR}/cmake/CuexisWarnings.cmake")
 include("${PROJECT_SOURCE_DIR}/cmake/VerifyArchitecture.cmake")
-include("${PROJECT_SOURCE_DIR}/cmake/CuexisLibraryType.cmake")
 
 # The execution host is one owner-thread state machine split across units, so every target that
 # exercises it compiles the same list. Keeping the list in one place is what stops a probe or a
@@ -170,7 +175,7 @@ if(CUEXIS_BUILD_PLAYER)
     add_subdirectory(app)
 endif()
 
-if(CUEXIS_BUILD_DEVELOPER_TOOLS OR CUEXIS_BUILD_MEDIA_TOOLS)
+if(CUEXIS_BUILD_DEVELOPER_TOOLS OR CUEXIS_BUILD_MEDIA_TOOLS OR CUEXIS_BUILD_SHADER_TOOLS)
     add_subdirectory(tools)
 endif()
 
@@ -195,7 +200,8 @@ if(BUILD_TESTING AND CUEXIS_BUILD_TESTS AND CUEXIS_ENABLE_CHART_V5_CANDIDATE
     target_compile_features(cuexis_execution_device_probe PRIVATE cxx_std_20)
     target_include_directories(cuexis_execution_device_probe PRIVATE
         "${PROJECT_SOURCE_DIR}/engine/judgement/internal"
-        "${PROJECT_SOURCE_DIR}/engine/render_opengl/internal")
+        "${PROJECT_SOURCE_DIR}/engine/render_opengl/internal"
+        "${PROJECT_SOURCE_DIR}/engine/playback/internal")
     target_compile_definitions(cuexis_execution_device_probe PRIVATE
         CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
         CUEXIS_PD5_CAPACITY_SOURCE_SHA="${CUEXIS_IMPLEMENTATION_SHA}"
@@ -227,6 +233,7 @@ set(CUEXIS_ACTIVE_TARGETS
     cuexis_filesystem
     cuexis_content
     cuexis_json_support
+    cuexis_timing
     cuexis_project
     cuexis_world
     cuexis_assets
@@ -236,7 +243,6 @@ set(CUEXIS_ACTIVE_TARGETS
     cuexis_behavior
     cuexis_gameplay
     cuexis_judgement
-    cuexis_gameplay_packed
     cuexis_render
     cuexis_debug
     cuexis_runtime
@@ -245,8 +251,24 @@ set(CUEXIS_ACTIVE_TARGETS
     cuexis_player_support
 )
 
+if(TARGET cuexis_judgement_compile)
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_judgement_compile)
+endif()
+
 if(TARGET cuexis_execution_host_support)
     list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_execution_host_support)
+endif()
+if(TARGET cuexis_cxc_candidate)
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_cxc_candidate)
+endif()
+if(TARGET cuexis_chart_codec)
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_chart_codec)
+endif()
+if(TARGET cuexis_chart_tools)
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_chart_tools)
+endif()
+if(TARGET cuexis_gameplay_packed)
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_gameplay_packed)
 endif()
 if(CUEXIS_BUILD_SDL_ADAPTER)
     list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_platform_sdl)
@@ -263,6 +285,9 @@ endif()
 if(TARGET cuexis_shader)
     list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_shader)
 endif()
+if(TARGET cuexis_asset_importer)
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_asset_importer)
+endif()
 if(CUEXIS_BUILD_PLAYER)
     list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_player)
 endif()
@@ -277,9 +302,9 @@ if(CUEXIS_BUILD_DEVELOPER_TOOLS)
         cuexis_gameplay_author
         cuexis_chart_candidate
     )
-    if(TARGET cuexis_asset_importer)
-        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_asset_importer)
-    endif()
+endif()
+if(TARGET cuexis_gameplay_author_cli)
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_gameplay_author_cli)
 endif()
 if(TARGET cuexis_gameplay_assemble)
     list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_gameplay_assemble)
@@ -301,6 +326,7 @@ if(CUEXIS_BUILD_TESTS)
         cuexis_filesystem_tests
         cuexis_content_tests
         cuexis_json_support_tests
+        cuexis_timing_tests
         cuexis_project_tests
         cuexis_assets_tests
         cuexis_chart_tests
@@ -359,6 +385,9 @@ if(CUEXIS_BUILD_TESTS)
     if(TARGET cuexis_player_control_tests)
         list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_player_control_tests)
     endif()
+    if(TARGET cuexis_frame_layout_shared_consumer)
+        list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_frame_layout_shared_consumer)
+    endif()
     if(TARGET cuexis_shader_tests)
         list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_shader_tests)
     endif()
@@ -375,6 +404,105 @@ if(CUEXIS_BUILD_TESTS)
             "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
             -P "${PROJECT_SOURCE_DIR}/cmake/VerifyArchitecture.cmake"
     )
+    if(TARGET cuexis_player)
+        set(cuexis_rr_player_target ON)
+    else()
+        set(cuexis_rr_player_target OFF)
+    endif()
+    if(BUILD_TESTING AND CUEXIS_BUILD_TESTS)
+        set(cuexis_rr_tests_enabled ON)
+    else()
+        set(cuexis_rr_tests_enabled OFF)
+    endif()
+    file(GLOB cuexis_codemodel_replies
+        "${CMAKE_BINARY_DIR}/.cmake/api/v1/reply/codemodel-v2-*.json")
+    if(cuexis_codemodel_replies)
+        add_test(
+            NAME cuexis_rr_playback_isolation
+            COMMAND "${CMAKE_COMMAND}"
+                "-DCUEXIS_BINARY_DIR=${CMAKE_BINARY_DIR}"
+                "-DCUEXIS_ENABLE_CHART_V5_CANDIDATE=${CUEXIS_ENABLE_CHART_V5_CANDIDATE}"
+                "-DCUEXIS_PLAYER_TARGET=${cuexis_rr_player_target}"
+                "-DCUEXIS_LIBRARY_TYPE=${CUEXIS_LIBRARY_TYPE}"
+                "-DCUEXIS_BUILD_DEVELOPER_TOOLS=${CUEXIS_BUILD_DEVELOPER_TOOLS}"
+                "-DCUEXIS_BUILD_TESTS=${cuexis_rr_tests_enabled}"
+                "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+                -P "${PROJECT_SOURCE_DIR}/cmake/VerifyPlaybackCandidateIsolation.cmake"
+        )
+        set_tests_properties(cuexis_rr_playback_isolation PROPERTIES
+            LABELS "r1;playback;isolation"
+            TIMEOUT 120
+        )
+    else()
+        message(STATUS
+            "cuexis_rr_playback_isolation: not registered; configure this build with the "
+            "CMake File API codemodel query to run the target-graph gate")
+    endif()
+    #  RR-F302: the static installation and the pure Chart codec consumer are the installed-prefix
+    #  half of the Chart source split. The install gate re-installs this configuration into a
+    #  scratch prefix and checks the archive/header/export shape; the consumer gate builds the
+    #  out-of-tree codec consumer and its Chart-tools negative translation units. A shared
+    #  installation exports public libraries only, so the archive assertions apply to static.
+    if(PROJECT_IS_TOP_LEVEL AND CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
+        add_test(
+            NAME cuexis_rr_timing_install_isolation
+            COMMAND "${CMAKE_COMMAND}"
+                "-DCUEXIS_BINARY_DIR=${CMAKE_BINARY_DIR}"
+                "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+                "-DCUEXIS_ENABLE_CHART_V5_CANDIDATE=${CUEXIS_ENABLE_CHART_V5_CANDIDATE}"
+                "-DCUEXIS_LIBRARY_TYPE=${CUEXIS_LIBRARY_TYPE}"
+                "-DCUEXIS_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+                "-DCUEXIS_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/rr-timing-install/prefix"
+                -P "${PROJECT_SOURCE_DIR}/cmake/VerifyTimingInstallIsolation.cmake"
+        )
+        set_tests_properties(cuexis_rr_timing_install_isolation PROPERTIES
+            LABELS "chart;isolation;install" TIMEOUT 300
+        )
+    endif()
+    if(PROJECT_IS_TOP_LEVEL AND CUEXIS_ENABLE_CHART_V5_CANDIDATE AND TARGET cuexis_chart_codec
+       AND TARGET cuexis_chart_tools)
+        add_test(
+            NAME cuexis_rr_chart_codec_consumer
+            COMMAND "${CMAKE_COMMAND}"
+                "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+                "-DCUEXIS_BINARY_DIR=${CMAKE_BINARY_DIR}"
+                "-DCUEXIS_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+                "-DCUEXIS_GENERATOR=${CMAKE_GENERATOR}"
+                "-DCUEXIS_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+                "-DCUEXIS_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}"
+                "-DCUEXIS_RC_COMPILER=${CMAKE_RC_COMPILER}"
+                "-DCUEXIS_MT=${CMAKE_MT}"
+                "-DCUEXIS_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}"
+                "-DCUEXIS_VCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET}"
+                "-DCUEXIS_VCPKG_INSTALLED_DIR=${VCPKG_INSTALLED_DIR}"
+                "-DCUEXIS_CONSUMER_WORK_ROOT=${CMAKE_BINARY_DIR}/rr-chart-codec-consumer"
+                "-DCUEXIS_REPORT_FILE=${CMAKE_BINARY_DIR}/rr-chart-codec-consumer-report.txt"
+                -P "${PROJECT_SOURCE_DIR}/cmake/VerifyChartCodecConsumer.cmake"
+        )
+        set_tests_properties(cuexis_rr_chart_codec_consumer PROPERTIES
+            LABELS "chart;isolation;external"
+            RESOURCE_LOCK cuexis_external_consumer
+            TIMEOUT 900
+        )
+    endif()
+    # R5 shared acceptance: the in-repo consumer and the real Player both run against the shared
+    # Playback binary this build produced. It needs a real GL context; headless presets do not
+    # build the Player and skip this registration.
+    if(TARGET cuexis_player AND TARGET cuexis_frame_layout_shared_consumer)
+        add_test(
+            NAME rr_frame_layout_shared
+            COMMAND "${CMAKE_COMMAND}"
+                "-DCUEXIS_PLAYER=$<TARGET_FILE:cuexis_player>"
+                "-DCUEXIS_PLAYER_DIR=$<TARGET_FILE_DIR:cuexis_player>"
+                "-DCUEXIS_CONSUMER=$<TARGET_FILE:cuexis_frame_layout_shared_consumer>"
+                -P "${PROJECT_SOURCE_DIR}/tests/player/run_frame_layout_shared.cmake"
+        )
+        set_tests_properties(rr_frame_layout_shared PROPERTIES
+            LABELS "shared;r5;device"
+            TIMEOUT 420
+            RESOURCE_LOCK cuexis_external_consumer
+        )
+    endif()
     if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND CMAKE_GENERATOR MATCHES "^Ninja"
        AND NOT CMAKE_CROSSCOMPILING)
         add_test(NAME cuexis_msvc_dependency_tracking
@@ -462,7 +590,7 @@ if(CUEXIS_BUILD_TESTS)
                 "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
                 "-DCUEXIS_BINARY_DIR=${PROJECT_BINARY_DIR}"
                 "-DCUEXIS_IMPLEMENTATION_SHA=${cuexis_implementation_sha}"
-                -P "${PROJECT_SOURCE_DIR}/cmake/VerifyCfuF3Determinism.cmake"
+                -P "${PROJECT_SOURCE_DIR}/cmake/VerifyContentDeterminism.cmake"
         )
         set_tests_properties(cuexis_cfu_f3_determinism PROPERTIES
             LABELS "cfu-f;cfu-f3;determinism;cxc;chart;playback"
@@ -619,6 +747,23 @@ if(CUEXIS_BUILD_TESTS)
                     -P "${PROJECT_SOURCE_DIR}/cmake/VerifyGameplayInstalledConsumer.cmake")
             set_tests_properties(cuexis_gameplay_installed_consumer PROPERTIES
                 LABELS "candidate;gameplay;external;package;headless"
+                RESOURCE_LOCK cuexis_external_consumer TIMEOUT 900)
+            add_test(NAME cuexis_rr_sdk_facade_compat
+                COMMAND "${CMAKE_COMMAND}"
+                    "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
+                    "-DCUEXIS_BINARY_DIR=${PROJECT_BINARY_DIR}"
+                    "-DCUEXIS_PLAYBACK_TESTS=$<TARGET_FILE:cuexis_playback_tests>"
+                    "-DCUEXIS_GENERATOR=${CMAKE_GENERATOR}"
+                    "-DCUEXIS_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+                    "-DCUEXIS_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+                    "-DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}"
+                    "-DCMAKE_RC_COMPILER=${CMAKE_RC_COMPILER}"
+                    "-DCMAKE_MT=${CMAKE_MT}"
+                    "-DCUEXIS_VCPKG_INSTALLED_DIR=${VCPKG_INSTALLED_DIR}"
+                    "-DCUEXIS_VCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET}"
+                    -P "${PROJECT_SOURCE_DIR}/cmake/VerifySdkFacadeCompat.cmake")
+            set_tests_properties(cuexis_rr_sdk_facade_compat PROPERTIES
+                LABELS "candidate;gameplay;external;package;headless;rpa"
                 RESOURCE_LOCK cuexis_external_consumer TIMEOUT 900)
             if(TARGET cuexis_gameplay_assemble)
                 add_test(NAME cuexis_gameplay_assembler_cli
@@ -840,6 +985,7 @@ set(CUEXIS_PUBLIC_EXPORT_TARGETS
 set(CUEXIS_STATIC_IMPLEMENTATION_TARGETS
     cuexis_filesystem
     cuexis_json_support
+    cuexis_timing
     cuexis_project
     cuexis_world
     cuexis_assets
@@ -853,7 +999,12 @@ set(CUEXIS_STATIC_IMPLEMENTATION_TARGETS
     cuexis_runtime
 )
 if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
-    list(APPEND CUEXIS_STATIC_IMPLEMENTATION_TARGETS cuexis_gameplay_packed)
+    list(APPEND CUEXIS_STATIC_IMPLEMENTATION_TARGETS
+        cuexis_gameplay_packed
+        cuexis_cxc_candidate
+        cuexis_chart_codec
+        cuexis_chart_tools
+    )
 endif()
 install(TARGETS ${CUEXIS_PUBLIC_EXPORT_TARGETS}
     EXPORT CuexisTargets
@@ -996,6 +1147,10 @@ cuexis_verify_target_dependencies(cuexis_json_support
         nlohmann_json::nlohmann_json
         nlohmann_json_schema_validator::validator
 )
+cuexis_verify_target_dependencies(cuexis_timing
+    ALLOWED
+        cuexis::core
+)
 cuexis_verify_target_dependencies(cuexis_project
     ALLOWED
         cuexis::core
@@ -1015,6 +1170,7 @@ cuexis_verify_target_dependencies(cuexis_assets
 cuexis_verify_target_dependencies(cuexis_chart
     ALLOWED
         cuexis::core
+        cuexis::timing
         cuexis::json_support
 )
 cuexis_verify_target_dependencies(cuexis_animation
@@ -1053,6 +1209,34 @@ cuexis_verify_target_dependencies(cuexis_cxc
         cuexis::json_support
         MINIZIP::minizip-ng
 )
+if(TARGET cuexis_cxc_candidate)
+    cuexis_verify_target_dependencies(cuexis_cxc_candidate
+        ALLOWED
+            cuexis::cxc
+            cuexis::core
+            cuexis::chart
+            cuexis::chart_codec
+            cuexis::chart_tools
+            cuexis::json_support
+    )
+endif()
+if(TARGET cuexis_chart_codec)
+    cuexis_verify_target_dependencies(cuexis_chart_codec
+        ALLOWED
+            cuexis::chart
+            cuexis::core
+            cuexis::timing
+    )
+endif()
+if(TARGET cuexis_chart_tools)
+    cuexis_verify_target_dependencies(cuexis_chart_tools
+        ALLOWED
+            cuexis::chart
+            cuexis::chart_codec
+            cuexis::core
+            cuexis::json_support
+    )
+endif()
 cuexis_verify_target_dependencies(cuexis_behavior
     ALLOWED
         cuexis::core
@@ -1066,30 +1250,49 @@ cuexis_verify_target_dependencies(cuexis_judgement
     ALLOWED
         cuexis::core
 )
-cuexis_verify_target_dependencies(cuexis_gameplay_packed
-    ALLOWED
-        cuexis::json_support
-        cuexis::chart
-        cuexis::judgement
-        cuexis::filesystem
-        cuexis::core
-)
+if(TARGET cuexis_judgement_compile)
+    cuexis_verify_target_dependencies(cuexis_judgement_compile
+        ALLOWED
+            cuexis::judgement
+            cuexis::timing
+            cuexis::core
+    )
+endif()
+if(TARGET cuexis_gameplay_packed)
+    cuexis_verify_target_dependencies(cuexis_gameplay_packed
+        ALLOWED
+            cuexis::json_support
+            cuexis::chart
+            cuexis::chart_codec
+            cuexis::chart_tools
+            cuexis::judgement
+            cuexis::filesystem
+            cuexis::core
+    )
+endif()
 if(TARGET cuexis_gameplay_author_tests)
-    cuexis_verify_target_dependencies(cuexis_gameplay_author_tests ALLOWED cuexis::gameplay_author Catch2::Catch2WithMain)
+    cuexis_verify_target_dependencies(cuexis_gameplay_author_tests
+        ALLOWED cuexis::gameplay_author cuexis::chart_tools Catch2::Catch2WithMain)
 endif()
 if(TARGET cuexis_gameplay_author)
     cuexis_verify_target_dependencies(cuexis_gameplay_author
-        ALLOWED cuexis::core cuexis::json_support cuexis::chart cuexis::judgement cuexis::gameplay_packed
-                cuexis::playback cuexis::cxc cuexis::asset_publish)
+        ALLOWED cuexis::core cuexis::json_support cuexis::chart cuexis::chart_codec
+                cuexis::chart_tools cuexis::judgement cuexis::gameplay_packed)
+endif()
+if(TARGET cuexis_gameplay_author_cli)
+    cuexis_verify_target_dependencies(cuexis_gameplay_author_cli
+        ALLOWED cuexis::gameplay_author cuexis::core cuexis::chart_tools cuexis::playback
+                cuexis::cxc cuexis::cxc_candidate cuexis::asset_publish)
 endif()
 if(TARGET cuexis_gameplay_assemble)
     cuexis_verify_target_dependencies(cuexis_gameplay_assemble ALLOWED
-        cuexis::gameplay_author)
+        cuexis::gameplay_author_cli)
 endif()
 if(TARGET cuexis_chart_candidate)
     cuexis_verify_target_dependencies(cuexis_chart_candidate
-        ALLOWED cuexis::chart cuexis::cxc cuexis::core cuexis::json_support
-                cuexis::asset_publish cuexis::playback cuexis::gameplay_author)
+        ALLOWED cuexis::chart cuexis::chart_codec cuexis::chart_tools cuexis::cxc
+                cuexis::cxc_candidate cuexis::core cuexis::json_support
+                cuexis::asset_publish cuexis::playback cuexis::gameplay_author_cli)
 endif()
 cuexis_verify_target_dependencies(cuexis_render
     ALLOWED
@@ -1147,6 +1350,9 @@ cuexis_verify_target_dependencies(cuexis_playback
         cuexis::world
         cuexis::judgement
         cuexis::gameplay_packed
+        cuexis::cxc_candidate
+        cuexis::chart_codec
+        cuexis::chart_tools
 )
 cuexis_verify_target_dependencies(cuexis_presentation_renderer
     ALLOWED
@@ -1179,6 +1385,7 @@ if(TARGET cuexis_chart_migrator)
     cuexis_verify_target_dependencies(cuexis_chart_migrator
         ALLOWED
             cuexis::chart
+            cuexis::chart_tools
     )
 endif()
 if(TARGET cuexis_chart_validator)
@@ -1191,6 +1398,7 @@ if(TARGET cuexis_cxc_tool_common)
     cuexis_verify_target_dependencies(cuexis_cxc_tool_common
         ALLOWED
             cuexis_cxc
+            cuexis::cxc_candidate
             cuexis::filesystem
             cuexis::json_support
             cuexis::project
@@ -1254,6 +1462,8 @@ if(TARGET cuexis_asset_publish_tests)
         ALLOWED
             cuexis::asset_publish
             cuexis::chart
+            cuexis::chart_codec
+            cuexis::chart_tools
             Catch2::Catch2WithMain
     )
 endif()
@@ -1308,6 +1518,11 @@ if(CUEXIS_BUILD_TESTS)
             cuexis::json_support
             Catch2::Catch2WithMain
     )
+    cuexis_verify_target_dependencies(cuexis_timing_tests
+        ALLOWED
+            cuexis::timing
+            Catch2::Catch2WithMain
+    )
     cuexis_verify_target_dependencies(cuexis_project_tests
         ALLOWED
             cuexis::project
@@ -1321,6 +1536,8 @@ if(CUEXIS_BUILD_TESTS)
     cuexis_verify_target_dependencies(cuexis_chart_tests
         ALLOWED
             cuexis::chart
+            cuexis::chart_codec
+            cuexis::chart_tools
             cuexis::json_support
             Catch2::Catch2WithMain
     )
@@ -1330,10 +1547,12 @@ if(CUEXIS_BUILD_TESTS)
             Catch2::Catch2WithMain
     )
     if(TARGET cuexis_shader_tests)
+        set(cuexis_shader_tests_allowed cuexis::shader_cache Catch2::Catch2WithMain)
+        if(TARGET cuexis_shader)
+            list(APPEND cuexis_shader_tests_allowed cuexis::shader)
+        endif()
         cuexis_verify_target_dependencies(cuexis_shader_tests
-            ALLOWED
-                cuexis::shader
-                Catch2::Catch2WithMain
+            ALLOWED ${cuexis_shader_tests_allowed}
         )
     endif()
     cuexis_verify_target_dependencies(cuexis_s4g_performance_probe
@@ -1349,8 +1568,11 @@ if(CUEXIS_BUILD_TESTS)
     cuexis_verify_target_dependencies(cuexis_cxc_tests
         ALLOWED
             cuexis_cxc
+            cuexis::cxc_candidate
             cuexis::cxc_tool_common
             cuexis::chart
+            cuexis::chart_codec
+            cuexis::chart_tools
             Catch2::Catch2WithMain
     )
     cuexis_verify_target_dependencies(cuexis_behavior_tests
@@ -1366,6 +1588,10 @@ if(CUEXIS_BUILD_TESTS)
     cuexis_verify_target_dependencies(cuexis_judgement_tests
         ALLOWED
             cuexis::judgement
+            cuexis::judgement_compile
+            cuexis::chart_tools
+            cuexis::json_support
+            cuexis::timing
             Catch2::Catch2WithMain
     )
     if(TARGET cuexis_pd_baseline_probe)
@@ -1386,6 +1612,7 @@ if(CUEXIS_BUILD_TESTS)
         ALLOWED
             cuexis::playback
             cuexis::judgement
+            cuexis::judgement_compile
             Catch2::Catch2WithMain
     )
     if(TARGET cuexis_host_protocol_tests)
@@ -1412,6 +1639,7 @@ if(CUEXIS_BUILD_TESTS)
     cuexis_verify_target_dependencies(cuexis_gameplay_packed_tests
         ALLOWED
             cuexis::gameplay_packed
+            cuexis::chart_tools
             cuexis::json_support
             Catch2::Catch2WithMain
     )
@@ -1423,6 +1651,8 @@ if(CUEXIS_BUILD_TESTS)
     if(TARGET cuexis_render_opengl_tests)
         cuexis_verify_target_dependencies(cuexis_render_opengl_tests
             ALLOWED
+                cuexis::playback
+                cuexis::platform_sdl
                 cuexis::render_opengl
                 Catch2::Catch2WithMain
         )
@@ -1472,6 +1702,7 @@ if(CUEXIS_BUILD_TESTS)
             cuexis::assets
             cuexis::behavior
             cuexis::chart
+            cuexis::chart_tools
             cuexis::gameplay
             cuexis::render
             cuexis::runtime
@@ -1486,9 +1717,14 @@ if(CUEXIS_BUILD_TESTS)
     cuexis_verify_target_dependencies(cuexis_playback_tests
         ALLOWED cuexis::execution_host_support
             cuexis::audio
+            # rr_r1_playback_sources includes the private session header, which includes the
+            # animation public header; test-only edge, the Playback library keeps its own list.
+            cuexis::animation
             cuexis::assets
             cuexis::chart
+            cuexis::chart_tools
             cuexis::cxc
+            cuexis::cxc_candidate
             cuexis::playback
             cuexis::gameplay_packed
             cuexis::judgement
@@ -1518,6 +1754,8 @@ if(CUEXIS_BUILD_TESTS)
     cuexis_verify_target_dependencies(cuexis_chart_capacity_probe
         ALLOWED
             cuexis::chart
+            cuexis::chart_codec
+            cuexis::chart_tools
             Psapi
     )
 endif()

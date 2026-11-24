@@ -43,7 +43,10 @@ endif()
 
 target_compile_features(cuexis_player PRIVATE cxx_std_20)
 target_include_directories(cuexis_player PRIVATE
-    "${PROJECT_SOURCE_DIR}/engine/render_opengl/internal")
+    "${PROJECT_SOURCE_DIR}/engine/render_opengl/internal"
+    "${PROJECT_SOURCE_DIR}/engine/render_opengl/experimental_include"
+    "${PROJECT_SOURCE_DIR}/engine/playback/experimental_include"
+    "${PROJECT_SOURCE_DIR}/engine/playback/internal")
 
 target_link_libraries(
     cuexis_player

@@ -2,6 +2,7 @@
 
 #include <cuexis/chart/canonical_semantic_chart.hpp>
 #include <cuexis/chart/packed_chart_tables.hpp>
+#include <cuexis/chart/packed_chart_writer.hpp>
 #include <cuexis/cxc/cxc_candidate.hpp>
 #include <cuexis/cxc/cxc_manifest_loader.hpp>
 #include <cuexis/cxc/cxc_writer.hpp>
@@ -54,9 +55,11 @@ namespace {
 
 [[nodiscard]] auto entryJson(std::string_view path, bool playback, std::string_view artifact,
                              std::string_view compiled, std::string_view profile,
-                             std::uint64_t entities, std::uint64_t requirements) -> std::string {
+                             std::uint64_t entities, std::uint64_t requirements,
+                             std::string_view encoding = "packed-chart") -> std::string {
     std::string json = std::string{"{\"path\":\""} + std::string{path} +
-                       "\",\"kind\":\"chart\",\"encoding\":\"packed-chart\",\"playback\":";
+                       "\",\"kind\":\"chart\",\"encoding\":\"" + std::string{encoding} +
+                       "\",\"playback\":";
     json += playback ? "true" : "false";
     json += std::string{",\"compiledSemanticIdentity\":\""} + std::string{compiled} +
             "\",\"artifactIdentity\":\"" + std::string{artifact} + "\",\"compilerProfile\":\"" +
@@ -210,6 +213,82 @@ TEST_CASE("Candidate bridge rejects profile, revision, count, order and path con
         "compiled/chart.packed");
     CHECK_FALSE(nested.hasValue());
     CHECK(hasCode(nested.diagnostics, "cxc.chart_entry.duplicate_path"));
+}
+
+TEST_CASE("rr2_contract_entry", "[cxc][candidate][entry][rr2][encoding]") {
+    using namespace cuexis;
+
+    // Static candidate profile: packed-chart is the only playback encoding that may pass.
+    const auto semanticChart = tapChart();
+    const auto encoded = chart::packed::encode(semanticChart);
+    REQUIRE(encoded.has_value());
+    const auto identity = chart::packed::semanticIdentity(semanticChart);
+    REQUIRE(identity.has_value());
+    const auto identityHex = chart::packed::semanticIdentityHex(*identity);
+    const auto packedArtifact = cxc::detail::sha256Hex(*encoded);
+    const std::string packedPath{"compiled/chart.packed"};
+    auto staticEntry = cxc::parseCandidateChartEntryExtension(
+        extensionJson(entryJson(packedPath, true, packedArtifact, identityHex,
+                                "candidate.static-tap-lanes4-v1", 1, 1)),
+        packedPath);
+    REQUIRE(staticEntry.hasValue());
+    const auto staticAccepted = cxc::validateCandidateChartBytes(*staticEntry.entry, *encoded);
+    REQUIRE(staticAccepted.hasValue());
+    CHECK(staticAccepted.candidate->semantic.entities.size() == 1);
+
+    // Behavior candidate profile: source-json is mandatory and the test uses the same authored
+    // fixture the package-level Behavior validation already exercises.
+    const auto fixture = std::filesystem::path{CUEXIS_SOURCE_DIR} /
+                         "tests/fixtures/chart_format_update/behavior_candidate.v5.json";
+    std::ifstream input{fixture, std::ios::binary};
+    REQUIRE(input.good());
+    std::string source{std::istreambuf_iterator<char>{input}, std::istreambuf_iterator<char>{}};
+    const auto compiled = chart::compileBehaviorCandidate(source);
+    REQUIRE(compiled.has_value());
+    const auto behaviorIdentity =
+        chart::packed::semanticIdentityHex(compiled->metadata.semanticIdentity);
+    const auto sourceBytes = cxc::test::bytesFromText(source);
+    const auto sourceArtifact = cxc::detail::sha256Hex(sourceBytes);
+    const std::string sourcePath{"compiled/z.v5.json"};
+    auto behaviorEntry = cxc::parseCandidateChartEntryExtension(
+        extensionJson(entryJson(
+            sourcePath, true, sourceArtifact, behaviorIdentity, chart::behaviorCandidateProfile,
+            static_cast<std::uint64_t>(compiled->runtime.objects.size()), 0, "source-json")),
+        sourcePath);
+    REQUIRE(behaviorEntry.hasValue());
+    const auto behaviorAccepted =
+        cxc::validateCandidateChartBytes(*behaviorEntry.entry, sourceBytes);
+    REQUIRE(behaviorAccepted.hasValue());
+    CHECK(static_cast<bool>(behaviorAccepted.candidate->behavior));
+
+    // Exchanging the two encodings is a selected-entry rejection, before content validation.
+    auto staticSwapped = cxc::parseCandidateChartEntryExtension(
+        extensionJson(entryJson(packedPath, true, packedArtifact, identityHex,
+                                "candidate.static-tap-lanes4-v1", 1, 1, "source-json")),
+        packedPath);
+    REQUIRE(staticSwapped.hasValue());
+    const auto staticRejected = cxc::validateCandidateChartBytes(*staticSwapped.entry, *encoded);
+    CHECK_FALSE(staticRejected.candidate.has_value());
+    CHECK(hasCode(staticRejected.diagnostics, "cxc.chart_entry.entry_invalid"));
+
+    auto behaviorSwapped = cxc::parseCandidateChartEntryExtension(
+        extensionJson(entryJson(
+            sourcePath, true, sourceArtifact, behaviorIdentity, chart::behaviorCandidateProfile,
+            static_cast<std::uint64_t>(compiled->runtime.objects.size()), 0, "packed-chart")),
+        sourcePath);
+    REQUIRE(behaviorSwapped.hasValue());
+    const auto behaviorRejected =
+        cxc::validateCandidateChartBytes(*behaviorSwapped.entry, sourceBytes);
+    CHECK_FALSE(behaviorRejected.candidate.has_value());
+    CHECK(hasCode(behaviorRejected.diagnostics, "cxc.chart_entry.entry_invalid"));
+
+    // The ordinary CXC v1 default path still loads and declares no candidate extension.
+    auto request = cxc::test::makeV4StaticRequest();
+    const auto written = cxc::CxcWriter::write(std::move(request));
+    REQUIRE(written.hasValue());
+    const auto loaded = cxc::CxcPackageLoader::loadMemory(*written.bytes);
+    REQUIRE(loaded.hasValue());
+    CHECK_FALSE(cxc::validateCandidateChartExtension(*loaded.package).hasErrors());
 }
 
 TEST_CASE("Package and selected entry validators share Behavior source validation",

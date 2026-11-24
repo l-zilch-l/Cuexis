@@ -85,7 +85,7 @@ auto detail::probeBuildDraws(const playback::FrameSnapshot& snapshot,
         snapshot, set.resources, set.manifest.entries.empty(), false, nullptr);
 }
 
-auto builtInPresentationCapabilities(std::uint32_t maxTextureDimension, bool debugPass) noexcept
+auto builtInPresentationCapabilities(std::uint32_t maxTextureDimension, bool debugPass)
     -> playback::PresentationCapabilities {
     playback::PresentationCapabilities capabilities{
         .version = 2,
@@ -113,6 +113,8 @@ auto builtInPresentationCapabilities(std::uint32_t maxTextureDimension, bool deb
         .maxMaterialParameters = playback::presentationMaxMaterialParameters,
         .maxTextureBindings = playback::presentationMaxTextureBindings,
     };
+    // The adapter consumes the same-frame laid-out projection and clips to its content rect.
+    capabilities.hostExtensionIds.emplace_back("cuexis.presentation.frame-layout.v1");
 #ifdef CUEXIS_HAS_SHADER_TOOLS
     capabilities.shaderGlsl450Source = true;
     capabilities.shaderSpirv = true;

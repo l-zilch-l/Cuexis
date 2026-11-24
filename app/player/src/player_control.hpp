@@ -9,6 +9,8 @@
 #include "player_options.hpp"
 #include "player_surface.hpp"
 
+#include "../../execution_host/frame_layout_binding.hpp"
+
 #include <cuexis/audio/audio_clip.hpp>
 #include <cuexis/audio/audio_transport.hpp>
 #include <cuexis/playback/playback_session.hpp>
@@ -160,7 +162,12 @@ class PlayerController final {
     [[nodiscard]] auto runPause() -> core::Result<void>;
     [[nodiscard]] auto runStop() -> core::Result<void>;
     [[nodiscard]] auto runSeek(double targetMs) -> core::Result<void>;
+    [[nodiscard]] auto runRetry() -> core::Result<void>;
 
+    // Fills the pure context from the facts this adapter actually owns: active content, locked
+    // source, initial-install marker, gameplay use, and the pause classification it can prove.
+    [[nodiscard]] auto commandContext(const PlayerCommand& command) const
+        -> player_support::PlayerCommandContext;
     [[nodiscard]] auto sourceFor(PlayerCommand& command) -> core::Result<playback::PlaybackSource>;
     // Steps 1 to 6 of the fixed transaction. `session` becomes the active bundle on success.
     [[nodiscard]] auto commitBundle(playback::PlaybackSession& session,
@@ -183,6 +190,11 @@ class PlayerController final {
 
     player_support::PlayerAppState state_{player_support::PlayerAppState::Empty};
     bool transactionInProgress_{};
+    // True once a bundle has been committed and until shutdown unloads it. The session object
+    // itself outlives shutdown so callers can still query its empty state.
+    bool hasActiveContent_{};
+    // True until the table accepts the initial Load. A failed transaction does not restore it.
+    bool initialLoad_{true};
     bool bundleReplaced_{};
     playback::PlaybackMode activeMode_{playback::PlaybackMode::ChartClock};
     player_support::ResolvedSessionConfig sessionConfig_{};
@@ -244,6 +256,9 @@ struct PlayerFrameLoop final {
     bool debugAxes{};
     bool showFps{};
     FrameDiagnostics* diagnostics{};
+    // Optional laid-out submit bridge installed by the assembly on the same backend as `renderer`.
+    // Without it the loop keeps the legacy snapshot path.
+    const playback::detail::FrameLayoutRendererBinding* layoutBinding{};
     PlayerHooks hooks{};
 #if defined(CUEXIS_PLAYBACK_TRACE_HARNESS)
     ScriptedPlaybackTrace* measurementTrace{};

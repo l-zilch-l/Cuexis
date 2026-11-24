@@ -1,3 +1,9 @@
+# The gate also runs as a `cmake -P` script, where no project sets the policies; the CI-pinned
+# CMake needs CMP0057 before it treats IN_LIST as an operator.
+if(POLICY CMP0057)
+    cmake_policy(SET CMP0057 NEW)
+endif()
+
 # The declaration checks below read header text without running a preprocessor. Strip comments and
 # the branches a preprocessor would not compile, so a declaration has to be live code: a commented-out
 # definition, one inside `#if 0`, or one in the dead half of `#if 0 ... #else ... #endif` must not
@@ -317,7 +323,7 @@ function(cuexis_verify_source_architecture source_dir)
             "gameplay_graph_reference.hpp|enum class ReferenceClosure"
             "gameplay_graph_reference.hpp|enum class ReferenceKind"
             "gameplay_graph_reference.hpp|declareReference"
-            "gameplay_graph_reference.hpp|struct StableDeclarationId"
+            "phase_types.hpp|struct StableDeclarationId"
             "gameplay_graph_reference.hpp|struct DeclarationRef"
             "gameplay_graph_reference.hpp|struct MergedDeclaration"
             "gameplay_graph_reference.hpp|struct MergedNamespace"
@@ -330,8 +336,8 @@ function(cuexis_verify_source_architecture source_dir)
             "gameplay_graph_reference.hpp|struct ResourceRef"
             "gameplay_graph_reference.hpp|struct ResourceClosure"
             "gameplay_graph_reference.hpp|struct ClosureContributions"
-            "gameplay_graph_pattern.hpp|struct EmissionPathStep"
-            "gameplay_graph_pattern.hpp|struct RequirementIdentity"
+            "phase_types.hpp|struct EmissionPathStep"
+            "phase_types.hpp|struct RequirementIdentity"
             "gameplay_graph_pattern.hpp|class RequiredActionRef"
             "gameplay_graph_pattern.hpp|class DomainBindingRef"
             "gameplay_graph_pattern.hpp|enum class PatternPrimitive"
@@ -340,12 +346,12 @@ function(cuexis_verify_source_architecture source_dir)
             "gameplay_graph_pattern.hpp|struct UnsupportedContentDeclaration"
             "gameplay_graph_pattern.hpp|struct PatternNodeDeclaration"
             "gameplay_graph_pattern.hpp|struct PatternDeclaration"
-            "gameplay_graph_phase.hpp|enum class PhaseKind"
-            "gameplay_graph_phase.hpp|enum class FactCategory"
-            "gameplay_graph_phase.hpp|enum class Outcome"
+            "phase_types.hpp|enum class PhaseKind"
+            "phase_types.hpp|enum class FactCategory"
+            "phase_types.hpp|enum class Outcome"
             "gameplay_graph_phase.hpp|enum class GradePresence"
-            "gameplay_graph_phase.hpp|factCategoryOfPhase"
-            "gameplay_graph_phase.hpp|factCategoryToken"
+            "phase_types.hpp|factCategoryOfPhase"
+            "phase_types.hpp|factCategoryToken"
             "gameplay_graph_phase.hpp|struct MeasureComponentDeclaration"
             "gameplay_graph_phase.hpp|struct MeasureSpecDeclaration"
             "gameplay_graph_phase.hpp|enum class ResourceClaimIntent"
@@ -404,11 +410,11 @@ function(cuexis_verify_source_architecture source_dir)
             "gameplay_assembler_identity.hpp|struct GameplaySourceDocument"
             "gameplay_assembler_identity.hpp|struct GameplaySource"
             "gameplay_assembler_identity.hpp|enum class EntryKind"
-            "gameplay_assembler_identity.hpp|struct CompileCapabilityContext"
-            "gameplay_assembler_identity.hpp|struct EngineIdentityDeclaration"
-            "gameplay_assembler_identity.hpp|struct RulesetIdentityDeclaration"
-            "gameplay_assembler_identity.hpp|struct SessionIdentityDeclaration"
-            "gameplay_assembler_identity.hpp|struct PreparedIdentityDeclarations"
+            "internal/cuexis/judgement/compiled_gameplay_context.hpp|struct CompileCapabilityContext"
+            "prepared_identity.hpp|struct EngineIdentityDeclaration"
+            "prepared_identity.hpp|struct RulesetIdentityDeclaration"
+            "prepared_identity.hpp|struct SessionIdentityDeclaration"
+            "prepared_identity.hpp|struct PreparedIdentityDeclarations"
             "gameplay_assembler_identity.hpp|class CanonicalIdentityBytes"
             "gameplay_assembler_identity.hpp|class ChartIdentity"
             "gameplay_assembler_identity.hpp|class ContentIdentity"
@@ -418,7 +424,7 @@ function(cuexis_verify_source_architecture source_dir)
             "gameplay_assembler_identity.hpp|makePreparedIdentity"
             "gameplay_assembler_identity.hpp|sharesJudgementIdentity"
             "gameplay_assembler_publication.hpp|struct ContentProfileCounts"
-            "gameplay_assembler_publication.hpp|struct ContentProfileLimits"
+            "internal/cuexis/judgement/compiled_gameplay_context.hpp|struct ContentProfileLimits"
             "gameplay_assembler_publication.hpp|enum class ContentProfileVerdict"
             "gameplay_assembler_publication.hpp|countContentProfile"
             "gameplay_assembler_publication.hpp|checkContentProfile"
@@ -444,8 +450,15 @@ function(cuexis_verify_source_architecture source_dir)
             "gameplay_assembler_compiled.hpp|compileMeasure"
             "gameplay_assembler.hpp|resolveResourceClaims")
         _cuexis_split_entry("${judgement_assembler_entry}" judgement_assembler_owner judgement_assembler_surface)
-        _cuexis_partition_text("${source_dir}" "engine/judgement/include/cuexis/judgement"
-            "${judgement_assembler_owner}" judgement_assembler_text)
+        if(judgement_assembler_owner MATCHES "^internal/")
+            #  The two shared compile-side types are owned by the internal context header. The
+            #  author headers re-include that header instead of repeating the definitions.
+            _cuexis_partition_text("${source_dir}" "engine/judgement"
+                "${judgement_assembler_owner}" judgement_assembler_text)
+        else()
+            _cuexis_partition_text("${source_dir}" "engine/judgement/include/cuexis/judgement"
+                "${judgement_assembler_owner}" judgement_assembler_text)
+        endif()
         _cuexis_declaration_pattern("${judgement_assembler_surface}" judgement_assembler_pattern)
         if(NOT judgement_assembler_text MATCHES "${judgement_assembler_pattern}")
             message(FATAL_ERROR
@@ -454,16 +467,59 @@ function(cuexis_verify_source_architecture source_dir)
         endif()
     endforeach()
 
+    #  The running value headers must not pull the author/compile chain back into the runtime. The
+    #  runtime records are consumed by an independent consumer that may link Judgement and Core
+    #  only, so none of these headers may include an author graph, assembler, prepared-artifact,
+    #  legacy timebase, ruleset, execution-profile or session header.
+    set(judgement_runtime_value_headers
+        prepared_identity.hpp
+        phase_types.hpp
+        normalized_score.hpp
+        advance.hpp
+        prepared_gameplay_records.hpp
+        prepared_gameplay.hpp
+        identity_bytes.hpp
+        prepared_identity_bytes.hpp
+        advance_kernel.hpp)
+    foreach(runtime_value_header IN LISTS judgement_runtime_value_headers)
+        _cuexis_partition_text("${source_dir}" "engine/judgement/include/cuexis/judgement"
+            "${runtime_value_header}" runtime_value_text)
+        if(runtime_value_text MATCHES
+           "#[ \t]*include[ \t]*[<\"]cuexis/judgement/(gameplay_assembler|gameplay_graph|gameplay_prepare|timebase\\.hpp|timebase_rational|timebase_profile|ruleset|execution_profile|input_boundary|recovery|kernel_types|judgement_session)")
+            message(FATAL_ERROR
+                "Judgement runtime value header includes a compile-side header: "
+                "${runtime_value_header}")
+        endif()
+    endforeach()
+
     file(GLOB_RECURSE judgement_sources
         "${source_dir}/engine/judgement/*.cpp"
         "${source_dir}/engine/judgement/*.hpp"
     )
+    set(judgement_shared_rows_header
+        "engine/judgement/internal/cuexis/judgement/compiled_gameplay_rows.hpp")
     foreach(source IN LISTS judgement_sources)
         file(READ "${source}" contents)
+        file(RELATIVE_PATH relative_judgement_source "${source_dir}" "${source}")
+        string(REPLACE "\\" "/" relative_judgement_source "${relative_judgement_source}")
+        if(NOT relative_judgement_source STREQUAL judgement_shared_rows_header AND
+           contents MATCHES "#[ \t]*include[ \t]*[<\"][^>\"\n]*compiled_gameplay_rows\\.hpp[>\"]")
+            message(FATAL_ERROR
+                "The running Judgement library includes the shared compile-side rows header: "
+                "${source}")
+        endif()
         string(REGEX MATCHALL "#[ \t]*include[ \t]*[<\"]cuexis/[^>\"]*[>\"]"
                judgement_includes "${contents}")
         foreach(judgement_include IN LISTS judgement_includes)
-            if(NOT judgement_include MATCHES "cuexis/(core|judgement)/")
+            if(relative_judgement_source STREQUAL judgement_shared_rows_header)
+                #  Only the named shared owning-product header may see the shared timing values;
+                #  every other runtime header and translation unit keeps the author/timing ban.
+                if(NOT judgement_include MATCHES "cuexis/(core|judgement|timing)/")
+                    message(FATAL_ERROR
+                        "Judgement shared rows header includes a non-timing Cuexis header: "
+                        "${judgement_include}")
+                endif()
+            elseif(NOT judgement_include MATCHES "cuexis/(core|judgement)/")
                 message(FATAL_ERROR
                     "Judgement includes a non-core Cuexis header: ${source} -> ${judgement_include}")
             endif()
@@ -474,6 +530,32 @@ function(cuexis_verify_source_architecture source_dir)
                 "Judgement includes a platform, backend or third-party implementation header: "
                 "${source}")
         endif()
+    endforeach()
+
+    #  Direction of the split: the running library never includes the compile side, and the compile
+    #  side only includes Core, Judgement and its own root.
+    foreach(source IN LISTS judgement_sources)
+        file(READ "${source}" contents)
+        if(contents MATCHES "#[ \t]*include[ \t]*[<\"]cuexis/judgement/compile/")
+            message(FATAL_ERROR
+                "The running Judgement library includes a compile-side header: ${source}")
+        endif()
+    endforeach()
+    file(GLOB_RECURSE judgement_compile_sources
+        "${source_dir}/engine/judgement_compile/*.cpp"
+        "${source_dir}/engine/judgement_compile/*.hpp"
+    )
+    foreach(source IN LISTS judgement_compile_sources)
+        file(READ "${source}" contents)
+        string(REGEX MATCHALL "#[ \t]*include[ \t]*[<\"]cuexis/[^>\"]*[>\"]"
+               compile_includes "${contents}")
+        foreach(compile_include IN LISTS compile_includes)
+            if(NOT compile_include MATCHES "cuexis/(core|judgement|timing)/")
+                message(FATAL_ERROR
+                    "Judgement compile side includes a non-Core/non-Judgement/non-timing header: "
+                    "${source} -> ${compile_include}")
+            endif()
+        endforeach()
     endforeach()
 
     file(GLOB_RECURSE all_project_sources
@@ -528,6 +610,62 @@ function(cuexis_verify_source_architecture source_dir)
         if(contents MATCHES "cuexis::runtime::RuntimeSession|cuexis::world::World[^T]")
             message(FATAL_ERROR
                 "PlaybackSession public header leaked internal Runtime/World type: ${source}")
+        endif()
+    endforeach()
+
+    # F313/F316: application units do not resolve engine implementation headers directly. The only
+    # cross-module internal entries are the named build-only bridges below, each with its actual
+    # consumer list; the list is closed, so a new app consumer or a new internal header fails here.
+    set(app_internal_entries
+        "replay_identity.hpp|app/execution_host/host_candidate.cpp,app/player/src/execution_host.cpp,app/player/src/execution_host_close.cpp,app/player/src/execution_host_frame.cpp,app/player/src/execution_host_replay.cpp,app/player/src/execution_host_rpa.cpp"
+        "execution_host_access.hpp|app/execution_host/host_candidate.cpp"
+        "frame_layout_access.hpp|app/execution_host/session_worker_owner.cpp"
+    )
+    set(app_cuexis_internal_headers
+        sha256.hpp
+        allocation_observer.hpp
+        presentation_metrics.hpp
+        execution_diagnostics.hpp
+        pixel_probe.hpp
+    )
+    file(GLOB_RECURSE app_sources "${source_dir}/app/*.cpp" "${source_dir}/app/*.hpp")
+    foreach(source IN LISTS app_sources)
+        file(READ "${source}" contents)
+        string(REPLACE "\\" "/" normalized_contents "${contents}")
+        if(normalized_contents MATCHES
+           "#[ \t]*include[ \t]*[<\"][^\">]*engine/[^\">]*/src/")
+            message(FATAL_ERROR
+                "Application source resolves an engine implementation source header directly: "
+                "${source}")
+        endif()
+        if(normalized_contents MATCHES
+           "#[ \t]*include[ \t]*[<\"][^\">]*engine/[^\">]*/internal/")
+            message(FATAL_ERROR
+                "Application source includes an unlisted engine internal header: ${source}")
+        endif()
+        file(RELATIVE_PATH relative_source "${source_dir}" "${source}")
+        foreach(entry IN LISTS app_internal_entries)
+            string(REPLACE "|" ";" entry_fields "${entry}")
+            list(GET entry_fields 0 entry_header)
+            list(GET entry_fields 1 entry_consumers)
+            string(REPLACE "," ";" entry_consumers "${entry_consumers}")
+            if(normalized_contents MATCHES
+               "#[ \t]*include[ \t]*[<\"]cuexis/playback/${entry_header}[>\"]")
+                if(NOT relative_source IN_LIST entry_consumers)
+                    message(FATAL_ERROR
+                        "Application source '${relative_source}' includes the unlisted internal "
+                        "entry '${entry_header}'; allowlisted consumers: ${entry_consumers}")
+                endif()
+            endif()
+        endforeach()
+        if(normalized_contents MATCHES
+           "#[ \t]*include[ \t]*[<\"]cuexis_internal/([^>\"]+)[>\"]")
+            set(included_internal "${CMAKE_MATCH_1}")
+            if(NOT included_internal IN_LIST app_cuexis_internal_headers)
+                message(FATAL_ERROR
+                    "Application source '${source}' includes the unlisted internal tool header "
+                    "'cuexis_internal/${included_internal}'")
+            endif()
         endif()
     endforeach()
 

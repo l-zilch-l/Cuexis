@@ -4,6 +4,7 @@
 
 #include <cuexis/core/result.hpp>
 #include <cuexis/judgement/input_boundary.hpp>
+#include <cuexis/judgement/phase_types.hpp>
 #include <cuexis/judgement/timebase.hpp>
 
 #include <array>
@@ -106,21 +107,10 @@ enum class ReferenceKind : std::uint8_t {
 //  Declaration namespace identity (P1-02)
 //  ---------------------------------------------------------------------------------------------
 
-//  The stable identity of one declaration (P1-02): the identity of the source document it was
-//  declared in, plus its declaration ordinal inside that document.
-//
-//  Both halves travel with the declaration. The ordinal is never a position in the array the
-//  assembler was handed, so permuting the input array cannot renumber anything, and the canonical
-//  order below is the stable id order rather than the input order.
-struct StableDeclarationId final {
-    std::string sourceDocumentId;
-    std::uint32_t declarationOrdinal;
-
-    friend auto operator==(const StableDeclarationId&, const StableDeclarationId&) noexcept
-        -> bool = default;
-    friend auto operator<=>(const StableDeclarationId&, const StableDeclarationId&) noexcept
-        -> std::strong_ordering = default;
-};
+//  `StableDeclarationId` moved to the judgement runtime value header
+//  `cuexis/judgement/phase_types.hpp`. This author-facing header re-includes the single complete
+//  definition instead of repeating it, so the author declarations and the runtime records share
+//  one type identity.
 
 //  What a named declaration declares. The merge treats every kind alike: a name is unique in the
 //  merged namespace whatever it names.

@@ -42,8 +42,8 @@ Session 与 reload 不得切换模式，初始化失败不得静默 fallback。
 
 显式Gameplay V2的canonical输入时间以[V2 Spec §3.7.3](GAMEPLAY_V2_SPEC.md)及
 [V2 ABI](../api/GAMEPLAY_V2_ABI.md)为准；本节的InputEvent/chartTimeMs叙述不能作为V2允许
-raw设备时间直接或回溯进入判定的依据。实际宿主时钟首用的未定项归
-[实时宿主边界草案](../api/realtime-host-boundary.md)，该草案未实施。
+raw设备时间直接或回溯进入判定的依据。宿主时钟的实时语义归
+[实时宿主边界](../api/realtime-host-boundary.md)；该 surface 已有 candidate 实施，生产参数与设备验收未完成。
 
 宿主采集的原始输入必须先规范化为带单调事件时间、arrival time、source 和 sequence 的 InputEvent，再映射到同一 `chartTimeMs` 域。判定使用事件发生时间，不使用处理事件的渲染帧时间。
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cuexis/judgement/prepared_identity.hpp>
 #include <cuexis/judgement/ruleset.hpp>
 #include <cuexis/judgement/shared_sequence.hpp>
 

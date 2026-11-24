@@ -17,6 +17,7 @@ target_include_directories(cuexis_gameplay_packed_tests PRIVATE
 )
 target_link_libraries(cuexis_gameplay_packed_tests PRIVATE
     cuexis::gameplay_packed
+    cuexis::chart_tools
     cuexis::json_support
     Catch2::Catch2WithMain
 )

@@ -13,6 +13,7 @@ set(cuexis_cxc_test_sources
     cxc_test_support.cpp
     cxc_test_support.hpp
     parse_characterization_tests.cpp
+    rr_r1_cxc_package_integrity_tests.cpp
     zip32_envelope_tests.cpp
 )
 
@@ -43,8 +44,17 @@ target_link_libraries(cuexis_cxc_tests
     PRIVATE
         cuexis_cxc
         cuexis::chart
+        cuexis::chart_codec
+        cuexis::chart_tools
         Catch2::Catch2WithMain
 )
+
+if(TARGET cuexis::cxc_candidate)
+    target_link_libraries(cuexis_cxc_tests
+        PRIVATE
+            cuexis::cxc_candidate
+    )
+endif()
 
 if(TARGET cuexis::cxc_tool_common)
     target_link_libraries(cuexis_cxc_tests

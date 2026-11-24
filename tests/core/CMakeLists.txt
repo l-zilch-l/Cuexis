@@ -1,6 +1,7 @@
 add_executable(cuexis_core_tests
     diagnostic_tests.cpp
     error_tests.cpp
+    f135_interned_error_tests.cpp
     log_sink_tests.cpp
     math_tests.cpp
     result_tests.cpp
@@ -8,6 +9,7 @@ add_executable(cuexis_core_tests
     thread_checker_tests.cpp
     uuid_tests.cpp
     version_tests.cpp
+    ../support/f135_allocation_probe.cpp
 )
 
 if(CUEXIS_PD_METRICS_TEST_ONLY)

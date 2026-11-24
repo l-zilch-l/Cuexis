@@ -1,7 +1,7 @@
 #include "execution_host.hpp"
 
-#include "../../../engine/playback/src/replay_identity.hpp"
 #include "execution_host_units_internal.hpp"
+#include <cuexis/playback/replay_identity.hpp>
 
 #include <algorithm>
 #include <cuexis_internal/execution_diagnostics.hpp>
@@ -344,8 +344,30 @@ auto ExecutionHost::resize(FrameViewport viewport) -> core::Result<void> try {
         return core::unexpected(error("control_pending"));
     Busy operation{busy_};
     take(renderer_.resize(viewport.width, viewport.height));
-    pendingFrame_.reset();
+    // The laid-out path keeps the transferred attempt so present can classify the changed target
+    // as a non-fault stale drop. Legacy presentation keeps the old immediate invalidation.
+    if (!(options_.frameLayout && options_.frameLayout->valid()))
+        pendingFrame_.reset();
     options_.viewport = viewport;
+    frameTarget_ = playback::experimental::FrameTarget{viewport,
+                                                       {0, 0, viewport.width, viewport.height},
+                                                       playback::experimental::FrameRotation::Deg0};
+    return {};
+} catch (const Failure& failure) {
+    failed();
+    return core::unexpected(failure.error);
+} catch (...) {
+    failed();
+    return core::unexpected(error("capacity_exceeded"));
+}
+
+auto ExecutionHost::setFrameTarget(playback::experimental::FrameTarget target)
+    -> core::Result<void> try {
+    checkOwner();
+    if (suspended_ || !host_)
+        return core::unexpected(error("control_pending"));
+    Busy operation{busy_};
+    frameTarget_ = std::move(target);
     return {};
 } catch (const Failure& failure) {
     failed();

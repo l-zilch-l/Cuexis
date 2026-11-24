@@ -57,7 +57,7 @@ template <typename Command, typename Reply> class OwnerChannel final {
         return core::unexpected(error("capacity_exceeded"));
     } catch (...) {
         markFault(Fault::allocation);
-        return core::unexpected(error("capacity_exceeded"));
+        return core::unexpected(allocationFaultError());
     }
     [[nodiscard]] auto take() -> std::optional<std::pair<std::uint64_t, Command>> {
         return takeIf([](const Command&) { return true; });
@@ -121,7 +121,7 @@ template <typename Command, typename Reply> class OwnerChannel final {
         return core::unexpected(error("context_stale"));
     } catch (...) {
         markFault(Fault::allocation);
-        return core::unexpected(error("capacity_exceeded"));
+        return core::unexpected(allocationFaultError());
     }
     [[nodiscard]] auto ack(std::uint64_t id) -> core::Result<void> try {
         std::lock_guard lock{mutex_};
@@ -136,7 +136,7 @@ template <typename Command, typename Reply> class OwnerChannel final {
         return core::unexpected(error("context_stale"));
     } catch (...) {
         markFault(Fault::allocation);
-        return core::unexpected(error("capacity_exceeded"));
+        return core::unexpected(allocationFaultError());
     }
     // Host reply waits use persistent target state, including completion before entry.
     // They do not consume replies, wake for queued commands, or steal a command notification.
@@ -195,6 +195,11 @@ template <typename Command, typename Reply> class OwnerChannel final {
     };
     static auto error(const char* reason) -> core::Error {
         return {std::string{"host.rpa."} + reason, "Owner channel rejected request"};
+    }
+    // Fixed zero-allocation delivery error for an exception raised while serving a request.
+    static auto allocationFaultError() noexcept -> core::Error {
+        return core::Error::interned(core::intern("host.rpa.capacity_exceeded"),
+                                     core::intern("Owner channel rejected request"));
     }
     void markFault(Fault reason) {
         std::lock_guard lock{mutex_};

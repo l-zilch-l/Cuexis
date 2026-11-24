@@ -21,36 +21,10 @@ namespace cuexis::judgement {
 //  ---------------------------------------------------------------------------------------------
 //  Requirement identity (Spec 4, ABI domain 7)
 //  ---------------------------------------------------------------------------------------------
-
-//  One step of an emission path: a stable node id and the repeat index that node was expanded at.
-struct EmissionPathStep final {
-    std::string nodeId;
-    std::uint64_t repeatIndex;
-
-    friend auto operator==(const EmissionPathStep&, const EmissionPathStep&) noexcept
-        -> bool = default;
-    friend auto operator<=>(const EmissionPathStep&, const EmissionPathStep&) noexcept
-        -> std::strong_ordering = default;
-};
-
-//  The canonical stable addressing identity of one requirement: the frozen six-tuple of Spec 4.
 //
-//  The comparison below is the canonical identity order of the graph tables. It is not the S7A-4
-//  fact sort key and not a same-tick tie rule: the unique canonical fact order of Spec 3.9 is owned
-//  by S7A-4 and is deliberately not represented here.
-struct RequirementIdentity final {
-    std::string chartEntryId;
-    std::string invocationId;
-    std::string moduleId;
-    std::string exportId;
-    std::vector<EmissionPathStep> emissionPath;
-    std::string requirementLocalId;
-
-    friend auto operator==(const RequirementIdentity&, const RequirementIdentity&) noexcept
-        -> bool = default;
-    friend auto operator<=>(const RequirementIdentity&, const RequirementIdentity&) noexcept
-        -> std::strong_ordering = default;
-};
+//  `EmissionPathStep` and `RequirementIdentity` moved to the judgement runtime value header
+//  `cuexis/judgement/phase_types.hpp`. This author-facing header re-includes the single complete
+//  definition instead of repeating it.
 
 //  The requirement-side action declaration (P2-05). It is a distinct type from the input-side
 //  `InputAction` of <cuexis/judgement/input_boundary.hpp>: the requirement declares what it

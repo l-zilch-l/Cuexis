@@ -2,6 +2,7 @@
 
 #include "../../execution_host/audio_worker.hpp"
 #include "../../execution_host/capture_route.hpp"
+#include "../../execution_host/frame_layout_binding.hpp"
 #include "../../execution_host/renderer_owner.hpp"
 #include "../../execution_host/session_worker.hpp"
 #include "snapshot_scene.hpp"
@@ -56,8 +57,25 @@ struct ExecutionHostOptions final {
     std::chrono::milliseconds replyDeadline{};
     std::optional<playback::detail::SessionRealtimeStart> realtime;
     playback::FrameViewport viewport{};
+    // Installed by the Player assembly on its final OpenGlBackend instance. When present, sampled
+    // requests carry the current laid-out target and present dispatches through the binding.
+    std::optional<playback::detail::FrameLayoutRendererBinding> frameLayout;
     bool showFps{};
     SeekIdentityPolicy seekIdentity{SeekIdentityPolicy::owningSource};
+};
+// Shape of one frame sample request. The ordinary loop and the Player leave every member at its
+// default, which is the request the installed layout binding and the contract's default selection
+// produce. An embedding owner can ask the same consumer for the other retained mode or another
+// framing selection; that is how the retained two-way rule and the request-selection rule are
+// exercised without a second host or a second consumer.
+struct FrameSampleShape final {
+    // True: this request carries no present target even when a layout binding is installed, so it
+    // is the legacy snapshot request.
+    bool legacyRequest{};
+    // Explicit present target for this request. It wins over the installed binding, which lets an
+    // embedding owner without a layout binding issue a laid-out request.
+    std::optional<playback::experimental::FrameTarget> target{};
+    playback::experimental::FramingRequest framing{};
 };
 struct ExecutionHostPorts final {
     playback::detail::AudioWorker::DeviceFactory audioDevice;
@@ -101,9 +119,11 @@ class ExecutionHost final {
                             playback::GameplayTick, const ClockSource&,
                             std::span<const playback::GameplayCheckpoint> checkpoints = {})
         -> core::Result<void>;
-    [[nodiscard]] auto sample(std::int64_t presentationTick, playback::RuntimeFrame, bool frozen)
+    [[nodiscard]] auto sample(std::int64_t presentationTick, playback::RuntimeFrame, bool frozen,
+                              FrameSampleShape shape = {})
         -> core::Result<playback::detail::FrameEnvelope>;
-    [[nodiscard]] auto trySample(std::int64_t presentationTick, playback::RuntimeFrame, bool frozen)
+    [[nodiscard]] auto trySample(std::int64_t presentationTick, playback::RuntimeFrame, bool frozen,
+                                 FrameSampleShape shape = {})
         -> core::Result<std::optional<playback::detail::FrameEnvelope>>;
     [[nodiscard]] auto revokeRetained() -> core::Result<void>;
     [[nodiscard]] auto deliveryStatus() const noexcept -> playback::detail::DeliveryStatus {
@@ -138,6 +158,12 @@ class ExecutionHost final {
         return closeFirstError_;
     }
     [[nodiscard]] auto resize(playback::FrameViewport) -> core::Result<void>;
+    // Applies the complete current target an embedding owner supplies to present. A target change
+    // between sampling and present ends the consumed attempt as a non-fault stale drop.
+    [[nodiscard]] auto setFrameTarget(playback::experimental::FrameTarget) -> core::Result<void>;
+    [[nodiscard]] auto frameTarget() const noexcept -> const playback::experimental::FrameTarget& {
+        return frameTarget_;
+    }
     [[nodiscard]] auto audioPublication() const -> core::Result<playback::detail::AudioPublication>;
     void waitFor(std::chrono::milliseconds duration);
     [[nodiscard]] auto hasAudio() const noexcept -> bool {
@@ -277,6 +303,8 @@ class ExecutionHost final {
     playback::detail::DeliveryStatus deliveryStatus_{playback::detail::DeliveryStatus::pending};
     std::uint64_t registrationOperation_{1};
     std::shared_ptr<const playback::detail::FrameEnvelope> pendingFrame_;
+    playback::experimental::FrameTarget frameTarget_{};
+    std::vector<playback::experimental::FrameFraming> preparedFramings_;
     std::vector<std::pair<playback::GameplayInput, bool>> clockTransitionInputs_;
     bool tailPreparing_{}, tailFrozen_{};
     std::optional<std::int64_t> lastObservedTick_;

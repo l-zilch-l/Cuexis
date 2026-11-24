@@ -12,5 +12,6 @@ struct IdentityFactory final {
     static auto runtime(const PreparedGameplay&, const PreparedIdentityDeclarations&,
                         const InputMappingProfile&, const LatePolicyParameters&, std::string_view)
         -> PreparedIdentity;
+    static auto fromBytes(std::vector<std::byte> bytes) -> PreparedIdentity;
 };
 } // namespace cuexis::judgement::detail

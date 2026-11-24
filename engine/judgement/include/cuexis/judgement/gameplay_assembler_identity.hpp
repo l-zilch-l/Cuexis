@@ -4,7 +4,10 @@
 
 #include <cuexis/core/result.hpp>
 #include <cuexis/judgement/gameplay_graph.hpp>
+#include <cuexis/judgement/prepared_identity.hpp>
 
+//  The shared compile-side context; see the context note below.
+#include "../../../internal/cuexis/judgement/compiled_gameplay_context.hpp"
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -77,78 +80,20 @@ enum class EntryKind : std::uint8_t {
 
 //  The capability context of one assembly.
 //
-//  The capability registry entry field set is unfrozen (CM-X01, first consumer S7A-7), so this
-//  batch does not invent a registry. What it consumes is the caller-supplied context: which
-//  capability ids the compiling toolchain recognises, and which of those this compile enabled. A
-//  derived capability that no context recognises is an unknown capability; one that is recognised
-//  but not enabled is a disabled capability; neither is silently added to the closure.
-struct CompileCapabilityContext final {
-    std::vector<std::string> recognisedCapabilityIds;
-    std::vector<std::string> enabledCapabilityIds;
-};
+//  The type moved to the shared compile-side context header
+//  `cuexis/judgement/compiled_gameplay_context.hpp`; this author-facing header re-includes the
+//  single definition so the author compiler and the prepared-artifact Reader share one type
+//  identity. The include lives at the top of this header, outside any namespace.
 
 //  ---------------------------------------------------------------------------------------------
 //  Canonical identity bytes (Spec 5.5)
 //  ---------------------------------------------------------------------------------------------
 
-//  The declared engine-side judgement semantics that take part in the *engine* component of the
-//  judgement identity (ABI domain 7, Spec 5.2).
-//
-//  Every member is a token the engine build or the caller declares. This batch invents no revision
-//  number, and the fact semantic revision is present while the snapshot state schema revision is
-//  deliberately absent: round 5 keeps `factSemanticRevision` inside the engine identity and keeps
-//  `stateSchemaRevision` out of it, and the cleanest way to obey that is to have no member that
-//  could carry it.
-struct EngineIdentityDeclaration final {
-    //  The engine judgement-semantics revision token.
-    std::string judgementSemanticRevision;
-    //  The Fact semantic revision. A change to the Fact ordering key or to the originKind priority
-    //  order has to raise it, and it takes part in the engine identity.
-    std::string factSemanticRevision;
-    //  The fixed-point table actually referenced by the judgement.
-    std::string fixedPointTableId;
-    //  The canonical coordination phase order semantics the engine applies. The eight-phase order
-    //  enters the engine component and never the chart or content projection.
-    std::string coordinationPhaseOrderToken;
-    std::optional<std::string> executionProfileToken;
-    std::optional<std::string> lateAlgorithmToken;
-
-    friend auto operator==(const EngineIdentityDeclaration&, const EngineIdentityDeclaration&)
-        -> bool = default;
-};
-
-//  The declared ruleset-side identity projection (ABI domain 7 `RulesetIdentity`).
-struct RulesetIdentityDeclaration final {
-    std::string interfaceProjectionToken;
-    //  The module / fold order. It is an ordered semantic list, which is why it is not sorted.
-    std::vector<std::string> moduleOrder;
-    std::string buildHash;
-    friend auto operator==(const RulesetIdentityDeclaration&, const RulesetIdentityDeclaration&)
-        -> bool = default;
-};
-
-//  The declared session-side identity projection (ABI domain 7 `SessionIdentity`).
-//
-//  The discrete-input normalization profile is here rather than in the engine component because
-//  Spec 5.2 makes the InputMapping profile a session identity component (CM-T09); the ABI's engine
-//  list names a normalization profile as well, and this batch keeps one location instead of two.
-struct SessionIdentityDeclaration final {
-    std::string loadoutToken;
-    std::string defaultGraceSourceToken;
-    std::string normalizationProfileToken;
-    std::string judgementConfigToken;
-    friend auto operator==(const SessionIdentityDeclaration&, const SessionIdentityDeclaration&)
-        -> bool = default;
-};
-
-//  The three declared components the assembler cannot derive from the graph.
-struct PreparedIdentityDeclarations final {
-    EngineIdentityDeclaration engine;
-    RulesetIdentityDeclaration ruleset;
-    SessionIdentityDeclaration session;
-    friend auto operator==(const PreparedIdentityDeclarations&, const PreparedIdentityDeclarations&)
-        -> bool = default;
-};
+//  The four identity declarations (`EngineIdentityDeclaration`, `RulesetIdentityDeclaration`,
+//  `SessionIdentityDeclaration`, `PreparedIdentityDeclarations`) moved to the judgement runtime
+//  value header `cuexis/judgement/prepared_identity.hpp`. This author-facing header re-includes the
+//  single complete definition instead of repeating it, so the compile side and the runtime records
+//  share one type identity.
 
 //  The three identity generators, declared first so that the identity carriers below can name them
 //  as the only producers of their bytes.

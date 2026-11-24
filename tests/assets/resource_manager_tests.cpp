@@ -51,6 +51,10 @@ class ResourceFixture final {
         std::filesystem::remove(root_ / std::filesystem::path{path});
     }
 
+    [[nodiscard]] auto root() const noexcept -> const std::filesystem::path& {
+        return root_;
+    }
+
     [[nodiscard]] auto database(std::vector<cuexis::assets::AssetRecord> records,
                                 std::uint32_t version = 1) const -> cuexis::assets::AssetDatabase {
         auto database = cuexis::assets::AssetDatabase::create({
@@ -488,4 +492,176 @@ TEST_CASE("ResourceManager rejects owner-thread operations from a worker",
     auto result = worker.get();
     REQUIRE_FALSE(result.has_value());
     CHECK(result.error().code() == "assets.resource.not_owner_thread");
+}
+
+TEST_CASE("ResourceScope loads all five kinds through the shared typed path",
+          "[assets][resource][scope][types]") {
+    using namespace cuexis::assets;
+    ResourceFixture fixture;
+    fixture.write("mesh.bin", "mesh");
+    fixture.write("material.bin", "material");
+    fixture.write("texture.bin", "texture");
+    fixture.write("audio.bin", "audio");
+    fixture.write("shader.bin", "shader");
+    auto database = fixture.database(
+        {
+            {.id = {"mesh.quads"},
+             .type = AssetType::Mesh,
+             .source = "mesh.bin",
+             .dependencies = {{"material.solid"}, {"texture.white"}}},
+            {.id = {"material.solid"},
+             .type = AssetType::Material,
+             .source = "material.bin",
+             .dependencies = {{"texture.white"}, {"shader.lit"}}},
+            {.id = {"texture.white"}, .type = AssetType::Texture, .source = "texture.bin"},
+            {.id = {"shader.lit"}, .type = AssetType::Shader, .source = "shader.bin"},
+            {.id = {"audio.beep"}, .type = AssetType::Audio, .source = "audio.bin"},
+        },
+        3);
+    ResourceManager manager{std::move(database)};
+    auto scope = manager.createScope();
+
+    // One mixed closure owns five entries: the shared texture is held once for both consumers.
+    const auto mesh = scope.requestMesh({"mesh.quads"});
+    REQUIRE(mesh.hasValue());
+    CHECK(scope.size() == 4);
+    const auto audio = scope.requestAudioSource({"audio.beep"});
+    REQUIRE(audio.hasValue());
+    CHECK(scope.size() == 5);
+    CHECK(scope.contains(AssetType::Mesh, {"mesh.quads"}));
+    CHECK(scope.contains(AssetType::Material, {"material.solid"}));
+    CHECK(scope.contains(AssetType::Texture, {"texture.white"}));
+    CHECK(scope.contains(AssetType::Shader, {"shader.lit"}));
+    CHECK(scope.contains(AssetType::Audio, {"audio.beep"}));
+    CHECK(scope.contains(*audio.handle));
+    CHECK(manager.metrics().ready == 5);
+    CHECK(manager.metrics().strongReferences == 5);
+
+    // A repeated request for a shared dependency keeps the same lease and adds no holding.
+    const auto texture = scope.requestTexture({"texture.white"});
+    REQUIRE(texture.hasValue());
+    const auto repeatedTexture = scope.requestTexture({"texture.white"});
+    REQUIRE(repeatedTexture.hasValue());
+    CHECK(*repeatedTexture.handle == *texture.handle);
+    CHECK(scope.size() == 5);
+    CHECK(manager.metrics().strongReferences == 5);
+
+    // Each kind reports the fallback built-in for a missing id, which is only reachable through the
+    // shared fallback path.
+    const auto meshFallback = scope.requestMesh({"mesh.absent"}, ResourcePolicy::Fallback);
+    REQUIRE(meshFallback.hasValue());
+    const auto materialFallback =
+        scope.requestMaterial({"material.absent"}, ResourcePolicy::Fallback);
+    REQUIRE(materialFallback.hasValue());
+    const auto textureFallback = scope.requestTexture({"texture.absent"}, ResourcePolicy::Fallback);
+    REQUIRE(textureFallback.hasValue());
+    const auto audioFallback = scope.requestAudioSource({"audio.absent"}, ResourcePolicy::Fallback);
+    REQUIRE(audioFallback.hasValue());
+    const auto shaderFallback = scope.requestShader({"shader.absent"}, ResourcePolicy::Fallback);
+    REQUIRE(shaderFallback.hasValue());
+    CHECK(scope.size() == 10);
+    for (const auto* code : {"assets.resource.fallback_used"}) {
+        CHECK(hasDiagnostic(meshFallback.diagnostics, code));
+        CHECK(hasDiagnostic(materialFallback.diagnostics, code));
+        CHECK(hasDiagnostic(textureFallback.diagnostics, code));
+        CHECK(hasDiagnostic(audioFallback.diagnostics, code));
+        CHECK(hasDiagnostic(shaderFallback.diagnostics, code));
+    }
+    const auto meshResource = manager.get(*meshFallback.handle);
+    REQUIRE(meshResource.has_value());
+    CHECK((*meshResource)->id.value == "cuexis.builtin.fallback.mesh");
+    const auto materialResource = manager.get(*materialFallback.handle);
+    REQUIRE(materialResource.has_value());
+    CHECK((*materialResource)->id.value == "cuexis.builtin.fallback.material");
+    const auto textureResource = manager.get(*textureFallback.handle);
+    REQUIRE(textureResource.has_value());
+    CHECK((*textureResource)->id.value == "cuexis.builtin.fallback.texture");
+    const auto audioResource = manager.get(*audioFallback.handle);
+    REQUIRE(audioResource.has_value());
+    CHECK((*audioResource)->id.value == "cuexis.builtin.fallback.audio");
+    const auto shaderResource = manager.get(*shaderFallback.handle);
+    REQUIRE(shaderResource.has_value());
+    CHECK((*shaderResource)->id.value == "cuexis.builtin.fallback.shader");
+
+    // Required and Optional never register; the fallback entries above stay untouched.
+    const auto requiredMesh = scope.requestMesh({"mesh.absent"});
+    CHECK_FALSE(requiredMesh.hasValue());
+    CHECK(hasDiagnostic(requiredMesh.diagnostics, "assets.resource.required_failed"));
+    const auto optionalAudio = scope.requestAudioSource({"audio.absent"}, ResourcePolicy::Optional);
+    CHECK_FALSE(optionalAudio.hasValue());
+    CHECK(optionalAudio.succeeded());
+    CHECK(hasDiagnostic(optionalAudio.diagnostics, "assets.resource.optional_skipped"));
+    CHECK(scope.size() == 10);
+
+    // Releasing the scope retires every kind and invalidates the old handles.
+    const auto meshHandle = *mesh.handle;
+    scope.clear();
+    CHECK(scope.empty());
+    CHECK(manager.metrics().ready == 0);
+    const auto stale = manager.get(meshHandle);
+    REQUIRE_FALSE(stale.has_value());
+    CHECK(stale.error().code() == "assets.resource.stale_handle");
+}
+
+TEST_CASE("ResourceScope rejects depth and type mismatches and fallback covers the refusal",
+          "[assets][resource][scope][rejection]") {
+    using namespace cuexis::assets;
+    ResourceFixture fixture;
+    fixture.write("a.bin", "a");
+    fixture.write("b.bin", "b");
+    fixture.write("c.bin", "c");
+    fixture.write("d.bin", "d");
+    // The AssetDatabase itself rejects a dependency cycle before a manager exists, so the scope's
+    // own cycle guard is defensive and cannot be reached from a valid database.
+    const auto cyclic = AssetDatabase::create({
+        .roots = {{.root = {.id = "main", .path = fixture.root()},
+                   .index = {.version = 3,
+                             .assets = {{.id = {"mesh.cycle-a"},
+                                         .type = AssetType::Mesh,
+                                         .source = "a.bin",
+                                         .dependencies = {{"material.cycle-b"}}},
+                                        {.id = {"material.cycle-b"},
+                                         .type = AssetType::Material,
+                                         .source = "b.bin",
+                                         .dependencies = {{"mesh.cycle-a"}}}}}}},
+    });
+    REQUIRE_FALSE(cyclic.has_value());
+    CHECK(cyclic.error().code() == "assets.database.dependency_cycle");
+
+    auto database = fixture.database(
+        {
+            {.id = {"mesh.deep"},
+             .type = AssetType::Mesh,
+             .source = "a.bin",
+             .dependencies = {{"mesh.mid"}}},
+            {.id = {"mesh.mid"},
+             .type = AssetType::Mesh,
+             .source = "b.bin",
+             .dependencies = {{"mesh.leaf"}}},
+            {.id = {"mesh.leaf"}, .type = AssetType::Mesh, .source = "c.bin"},
+            {.id = {"texture.wrong"}, .type = AssetType::Texture, .source = "d.bin"},
+        },
+        3);
+    ResourceManagerLimits limits;
+    limits.maxDependencyDepth = 2;
+    ResourceManager manager{std::move(database), limits};
+    auto scope = manager.createScope();
+
+    const auto depth = scope.requestMesh({"mesh.deep"});
+    CHECK_FALSE(depth.hasValue());
+    CHECK(hasDiagnostic(depth.diagnostics, "assets.resource.required_failed"));
+    CHECK(scope.empty());
+
+    // A texture id requested as a mesh is a type mismatch, not a load failure of that texture.
+    const auto mismatch = scope.requestMesh({"texture.wrong"});
+    CHECK_FALSE(mismatch.hasValue());
+    CHECK(hasDiagnostic(mismatch.diagnostics, "assets.resource.required_failed"));
+    CHECK(scope.empty());
+
+    // The same reject stays clean for the fallback policy: only the fallback entry appears.
+    const auto fallback = scope.requestMesh({"mesh.deep"}, ResourcePolicy::Fallback);
+    REQUIRE(fallback.hasValue());
+    CHECK(hasDiagnostic(fallback.diagnostics, "assets.resource.fallback_used"));
+    CHECK(scope.size() == 1);
+    CHECK(scope.contains(AssetType::Mesh, {"mesh.deep"}));
 }

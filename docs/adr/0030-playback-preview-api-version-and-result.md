@@ -38,7 +38,7 @@ Playback Core preview 采用独立的 C++ SDK API 版本，从 `0.1.0` 开始：
 ```text
 CUEXIS_VERSION_DISPLAY   构建身份，例如 26.08.01-1
 CUEXIS_SDK_API_VERSION   C++ package/source API，例如 0.1.0
-C ABI version            阶段 12 建立，当前不存在稳定版本
+C ABI version            阶段 12 建立（现为 Stage 14，见 [ROADMAP](../ROADMAP.md)），当前不存在稳定版本
 ```
 
 `CuexisConfigVersion.cmake` 使用 SDK API 版本和 `SameMinorVersion` 兼容规则。package config
@@ -72,7 +72,7 @@ Registry 或 RenderScene 的存储；后续 update、reload、unload 和 Session
 - SDK API 兼容变化和日期构建发布需要分别评审、更新和测试。
 - 安装包必须继续导出 `tl-expected` dependency，直到公共 C++ Result 表示发生显式迁移。
 - Snapshot 生命周期测试必须保留 reload、unload 和 Session 销毁后的读取覆盖。
-- 完整 Playback SDK v1 与稳定 C ABI 仍以阶段 11 和阶段 12 门禁为前提。
+- 完整 Playback SDK v1 与稳定 C ABI 仍以阶段 11 和 Stage 14 门禁为前提（阶段号以 [ROADMAP](../ROADMAP.md) 为准）。
 
 ## 被拒绝的方案
 

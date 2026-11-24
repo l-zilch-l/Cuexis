@@ -261,7 +261,8 @@ TEST_CASE("PD5 presentation workload matrix", "[.][pd][pd5][matrix]") {
             payload->storage = std::move(admission.reservation);
             const auto readStart = matrixNowNs();
             internal::pd::setRecording(measured);
-            matrixTake(session->extractFrame(request.viewport, payload->snapshot));
+            matrixTake(
+                session->extractFrame(request.viewport, std::get<FrameSnapshot>(payload->frame)));
             internal::pd::setRecording(false);
             const auto readEnd = matrixNowNs();
             REQUIRE(payloadBytes(*payload) <= payload->storage.bytes());

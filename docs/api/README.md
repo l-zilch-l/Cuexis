@@ -2,9 +2,9 @@
 
 状态：active
 
-更新日期：2026-10-28
+更新日期：2026-11-24
 
-适用版本：SDK API `0.9.1`
+适用版本：SDK API `0.10.0`
 
 文档角色：公共 API 导航
 
@@ -48,5 +48,5 @@ authority: index
 本目录解释 API 的使用顺序、所有权和稳定行为，不复制完整头文件声明。公共头文件、SDK API 版本、
 capability 或行为合同变化时，必须同步更新对应页面并运行 `python -B tools/check_docs.py`。
 
-- [执行协调 preview](execution-coordination.md)：SDK 0.8.0 首用，当前分支 0.9.1；显式 occurrence、prefix、控制、时钟与恢复。
+- [执行协调 preview](execution-coordination.md)：SDK 0.8.0 首用，当前分支 0.10.0；显式 occurrence、prefix、控制、时钟与恢复。
 - [执行状态、恢复与准备路径](../architecture/execution-state-and-recovery.md)：当前内部所有权、缓存与维护约束。

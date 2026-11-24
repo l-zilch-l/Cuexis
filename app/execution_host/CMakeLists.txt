@@ -6,5 +6,8 @@ add_library(cuexis_execution_host_support STATIC
     frame_storage.cpp frame_delivery.cpp)
 add_library(cuexis::execution_host_support ALIAS cuexis_execution_host_support)
 target_compile_features(cuexis_execution_host_support PUBLIC cxx_std_20)
-target_include_directories(cuexis_execution_host_support PRIVATE "${PROJECT_SOURCE_DIR}/engine/core/internal")
+target_include_directories(cuexis_execution_host_support PRIVATE
+    "${PROJECT_SOURCE_DIR}/engine/core/internal"
+    "${PROJECT_SOURCE_DIR}/engine/playback/experimental_include"
+    "${PROJECT_SOURCE_DIR}/engine/playback/internal")
 target_link_libraries(cuexis_execution_host_support PUBLIC cuexis::playback)

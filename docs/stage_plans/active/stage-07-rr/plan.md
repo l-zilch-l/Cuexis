@@ -2,7 +2,7 @@
 
 状态：active；Stage 7 与 Stage 7.5 之间的独立复核与架构减重重构阶段
 
-更新日期：2026-11-23
+更新日期：2026-11-24
 
 <!-- cuexis-meta
 id: PLAN-active.stage-07-rr.plan
@@ -114,7 +114,7 @@ Stage 7（受限退出） -> Stage 7-RR（本阶段） -> Stage 7.5（Gameplay E
 
 四组冷启动审查及差量复验的当期结论见[首轮设计报告](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-design-readiness-review.md)。随后两名执行者[独立复审](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-executor-review.md)，九项设计修订与逐卡验收入口见[Astra 修订报告](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-astra-review-resolution.md)及[合同与任务卡](design-readiness.md)。技术选择沿用 D-01–D-25 已接受方向；`candidate` 表示候选合同，可能已有实验实现，正式发布和实际验证须分别取证。A-01 阶段 owner 接受和产品运行验收按[阶段验收](acceptance.md)登记。
 
-正式实施前的计划检查与文档订正见[本轮报告](../../../stage_reports/stages/stage-07-rr/readiness/2026-11-22-pre-implementation-plan-check.md)和[登记册 §23](findings.md#23-正式实施前计划检查2026-11-22)，当前待决与下一步见 [HANDOFF](../../../HANDOFF.md#下一步)。T-01–T-17 已纳入本轮统一实施安排；T-18 文档治理已完成；T-01 已于 2026-11-23 完成基线绑定、派单包、调度正反例与独立冷启动（基线 `a22e255f`，见[基线与派单报告](../../../stage_reports/stages/stage-07-rr/readiness/2026-11-23-t-01-dispatch-baseline.md)）；T-03 完成 8 篇合同订正与四个回归用例，见[交付报告](../../../stage_reports/stages/stage-07-rr/implementation/2026-11-23-t-03-contracts-and-diagnostics.md)；T-04 完成候选/默认闭包拆分、Chart 源表隔离、五档安装消费者与阴性对照，见[交付报告](../../../stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-04-build-isolation.md)；波次 5 的 T-02 状态事实对齐、T-05 像素几何与 GL 边界、T-17 会话层正确性修复已完成，见[T-02 报告](../../../stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-02-state-facts.md)、[T-05 报告](../../../stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-05-frame-layout.md)与[T-17 报告](../../../stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-17-session-correctness.md)。按[唯一调度](schedule.md)进入波次 6 的 T-06。实施采用与发布各自登记。设备/平台取证、逐 API 组的实际发布与退役条件仍按现行门禁执行。
+T-01–T-17 已纳入统一实施安排，T-18 文档治理已完成。已完成 T-01、T-03、T-04、波次 5、T-06 部分、T-08 主体、T-10 主体、T-11 主体与 T-12 部分；剩余 T-06、T-08、T-10、T-12 与 T-09 退出。F135 已实现并独立复核；实施状态与证据见 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 与[登记册](findings.md)，下一步见 [HANDOFF](../../../HANDOFF.md#下一步)。恢复后按[唯一调度](schedule.md)继续。实施采用与发布各自登记。设备/平台取证、逐 API 组的实际发布与退役条件仍按现行门禁执行。
 
 `8599c83a` 后独立 checkout 提交的缺口及修订见[本轮复审处置](../../../stage_reports/stages/stage-07-rr/verification/2026-11-22-checkout-review-resolution.md)。owner 本轮已明确授权下一次正式实施 RR，T-01 须先绑定修订后的输入并核对受影响卡；已获启动授权不代替实际基线、卡级验收或阶段退出。旧 AX-01–09 报告不能替代本轮未完成的核对。结构检查分别输出 active/candidate，只有本节已采用的 active 卡可以按依赖派发。
 
@@ -148,7 +148,7 @@ Stage 7（受限退出） -> Stage 7-RR（本阶段） -> Stage 7.5（Gameplay E
 | 文档门禁通过等于文档正确 | 机械检查通过但正文仍与实现不符 | 批次报告人工复核 + 事实检查 + 阴性对照 | RR-1/RR-5 |
 | 默认构建的测试覆盖足以证明回归 | 关键测试只在 candidate 宏下注册或零生效 | 按报告记录的手工复现命令；在报告中显式写未覆盖 | RR-2/RR-6 |
 
-**不可逆点**：证据套件相对路径已进入验收哈希账本（`binding.py`、`prepare_*` 的 glob、`etw_safety` 逐文件封包哈希），移动目录会让历史验收记录永久失配；`docs/stage_reports/**` 与 `docs/archive/**` 是冻结证据，不重写历史结论、不回填自身 SHA；SDK `0.9.1` 的安装头/对象布局与 C ABI 一旦发布不能静默改变；格式 wire、语义 identity 与稳定诊断码一经接受即成为互操作契约，变更必须先有 ADR/Spec 并以 fixture/hash 固化；`findings.md` 的 ID 与结论列不删除、不重编号，处置只追加。
+**不可逆点**：证据套件相对路径已进入验收哈希账本（`binding.py`、`prepare_*` 的 glob、`etw_safety` 逐文件封包哈希），移动目录会让历史验收记录永久失配；`docs/stage_reports/**` 与 `docs/archive/**` 是冻结证据，不重写历史结论、不回填自身 SHA；SDK `0.10.0` 的安装头/对象布局与 C ABI 一旦发布不能静默改变；格式 wire、语义 identity 与稳定诊断码一经接受即成为互操作契约，变更必须先有 ADR/Spec 并以 fixture/hash 固化；`findings.md` 的 ID 与结论列不删除、不重编号，处置只追加。
 ## 6. 工作分解与依赖
 
 ### 任务索引
@@ -184,7 +184,7 @@ Stage 7（受限退出） -> Stage 7-RR（本阶段） -> Stage 7.5（Gameplay E
 
 ### 文档管理与整理分册
 
-[文档管理与整理方案](documentation-governance.md)已由 [T-18](tasks/T-18.md)完成，覆盖状态与索引减重、命名分类、发现登记保护、权威来源和分层检查。实际证据见[治理交付报告](../../../stage_reports/stages/stage-07-rr/implementation/2026-11-23-documentation-governance.md)，产品实现尚未启动。
+[文档管理与整理方案](documentation-governance.md)已由 [T-18](tasks/T-18.md)完成，覆盖状态与索引减重、命名分类、发现登记保护、权威来源和分层检查。实际证据见[治理交付报告](../../../stage_reports/stages/stage-07-rr/implementation/2026-11-23-documentation-governance.md)，产品实现已部分启动，进度与未完成项见 [CURRENT_STATUS](../../../CURRENT_STATUS.md)。
 
 T-18 在产品 T-01 绑定输入前完成本轮治理基线；T-02、T-07 继续处理产品改动引起的后续事实与文档汇合，T-09 核最终退出。分册 G-01–G-05 是 T-18 内部检查点，正式依赖只在调度维护。
 
@@ -203,7 +203,8 @@ T-18 在产品 T-01 绑定输入前完成本轮治理基线；T-02、T-07 继续
 
 不在缺少构建基线时承诺日期或耗时。实施时先交付本卡定向检查；完整构建、容量探针、hosted 或实体设备长任务按仓库规则先说明范围、环境可行性和预计时长，待 owner 选定后执行。实际发布、跨平台/设备证据与旧 API 退出仍各自取证。
 
-各卡把 finding ID、合同差异和实际证据写入自己的证据目录，主代理在汇合时串行回写 [findings](findings.md)。阶段状态、HANDOFF、ROADMAP 和 MAP/AGENTS 生成物由集成者统一维护；T-02 负责事实订正，T-07 汇总删并，T-09 负责退出。任务可并行时不写这些共享文件，交付差异清单后由集成者落盘并运行生成器。[HANDOFF 的 Plan 文档拆分约定](../../../HANDOFF.md#plan-文档拆分长期约定)保留原规则和结构。
+各卡把 finding ID、合同差异和实际证据写入自己的证据目录，主代理在汇合时串行回写 [findings](findings.md)。阶段状态、HANDOFF、ROADMAP 和 MAP/AGENTS 生成物由集成者统一维护；T-02 负责事实订正，T-07 汇总删并，T-09 负责退出。任务可并行时不写这些共享文件，交付差异清单后由集成者落盘并运行生成器。[文档治理分册](documentation-governance.md)记录现行规则与结构。
+
 ## 8. 统一任务交付模板
 每个任务/PR 必须包含：
 
@@ -293,7 +294,7 @@ Known gaps and next-task handoff
 | 2026-11-22 | 按设计追踪完成计划检查：补 T-09 对 T-17 的前置，厘清旧问题切片与残余、F508 唯一责任，修正候选测试配置及跨卡验收顺序，补既有合同的正反例 | 使任务、调度与验收可按已接受范围执行；不新增产品层、观察系统或时间阈值 | owner 本轮检查与最小文档订正授权；[登记册 §23](findings.md#23-正式实施前计划检查2026-11-22)、[报告](../../../stage_reports/stages/stage-07-rr/readiness/2026-11-22-pre-implementation-plan-check.md) | 现行 |
 | 2026-11-22 | owner 确认 D-09 等待策略：不新增统一超时，保留各设备原有失败或超时规则，其余等待由用户重开或退出结束 | 等待期间仍须受理重开与退出，按原事务规则收束；500ms 仅为观察窗口 | owner 本轮答复；[登记册 §23](findings.md#23-正式实施前计划检查2026-11-22) | 已取代 |
 | 2026-11-23 | owner 接受设备等待超时由各平台 Player 实现和决定；SDK 提供操作状态与实际结果，不实现设备等待超时计时、策略或默认期限 | Player 可选择无期限或平台适合期限；超时不代替取消、清理及实际终态。替代前条等待规则，验收归 T-14/T-15 | owner 本轮明确授权写入；[附页 D-09](architecture-design.md#会话控制串行化d-09已确认目标与验收场景非现状或实施授权)、[登记册 §23](findings.md#23-正式实施前计划检查2026-11-22) | 现行 |
-| 2026-11-23 | 按 D-04 接受 F501 的候选有效性修订，以及 F135 新稳定宿主码 allocation_failed 与容量/观测丢失区分；合同和验收同步，均未实现 | F501 沿用现有类型，valid 不保证 commit；F135 复用预留故障槽，报告不得再分配，单纯丢观测不停止 Gameplay | owner 本轮“按照你的推荐方案修改”；[有效性合同](../../../api/playback-session.md#preparedplayback-有效性修订f501已接受未实现)、[错误合同](../../../api/realtime-host-boundary.md#f135-观测桥错误分类修订已接受未实现)、T-03/T-06/T-17 | 现行 |
+| 2026-11-23 | 按 D-04 接受 F501 的候选有效性修订，以及 F135 新稳定宿主码 allocation_failed 与容量/观测丢失区分；合同和验收同步，两项均已实现 | F501 沿用现有类型，valid 不保证 commit；F135 复用预留故障槽，报告不得再分配，单纯丢观测不停止 Gameplay | owner 本轮“按照你的推荐方案修改”；[有效性合同](../../../api/playback-session.md#preparedplayback-有效性修订f501已接受已实现)、[错误合同](../../../api/realtime-host-boundary.md#f135-观测桥错误分类修订已接受并实现)、T-03/T-06/T-17 | 现行 |
 | 2026-11-23 | owner 要求先解决影响 T-01–T-17 统一实施的未裁定事项，再安排实施顺序与实施安排 | 先核对发行 delta、SDK 已决兼容规则及旧问题残余；决定完成前不重排调度，不把候选设计自动视为已采用或已发布 | owner 本轮明确指令；[登记册 §24](findings.md#24-统一实施前设计裁定2026-11-23) | 现行 |
 | 2026-11-23 | owner 选择 A：v2 保留 Stage 8 正式目标，v3 本轮完整实现并通过实验入口验证 | 接受 Chart v5 的显式 Gameplay v3 候选分支；不等于 v3 正式发行、默认 SDK 晋升或接受旧动画语法例外。其余裁定完成后再安排统一实施 | owner 本轮明确选择；[运行合同](contracts/runtime-timing.md#范围与授权)、[登记册 §24](findings.md#24-统一实施前设计裁定2026-11-23) | v2 正式目标已由后续续议取代；RR 实验范围仍有效 |
 | 2026-11-23 | owner 明确沿用原 Chart v5 设计，判定新候选允许旧动画语法为错误 | 订正 v5/v3 的 CXT/Clip/Behavior/alpha 接受集和验收；T-11/T-13 明确缺失的 CXT v2 Animation 解析与绑定工作，复用既有运行时；旧格式兼容保留 | owner 本轮明确裁定；[登记册 §24](findings.md#24-统一实施前设计裁定2026-11-23) | 现行 |

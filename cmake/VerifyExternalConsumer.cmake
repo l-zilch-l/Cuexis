@@ -335,6 +335,27 @@ else()
                     "Static Cuexis package is missing ${required_internal_target}")
             endif()
         endforeach()
+        if(CUEXIS_EXPERIMENTAL)
+            # The experimental static SDK exports the Chart support archives the candidate
+            # closure actually links; a missing archive breaks an installed candidate consumer.
+            foreach(required_chart_archive IN ITEMS InternalChartCodec InternalChartTools)
+                if(NOT installed_targets MATCHES "Cuexis::${required_chart_archive}")
+                    message(FATAL_ERROR
+                        "Experimental static Cuexis package is missing ${required_chart_archive}")
+                endif()
+            endforeach()
+        else()
+            # The default SDK must not export the Chart codec/tools archives or the candidate
+            # package/Gameplay archives even when developer tools were configured.
+            foreach(forbidden_internal_archive IN ITEMS
+                    InternalChartCodec InternalChartTools InternalCxcCandidate
+                    InternalGameplayPacked)
+                if(installed_targets MATCHES "Cuexis::${forbidden_internal_archive}")
+                    message(FATAL_ERROR
+                        "Default static Cuexis package leaks ${forbidden_internal_archive}")
+                endif()
+            endforeach()
+        endif()
         string(REGEX MATCH
             "set_target_properties\\(Cuexis::Playback PROPERTIES[^)]*\\)"
             installed_playback_target_block
@@ -502,7 +523,7 @@ else()
         set(sdk_version_minor "${CMAKE_MATCH_2}")
         math(EXPR sdk_next_patch "${CMAKE_MATCH_3} + 1")
         set(too_new_patch "${sdk_version_major}.${sdk_version_minor}.${sdk_next_patch}")
-        foreach(invalid_version IN ITEMS 0.7 0.8.1 "${too_new_patch}" 0.10 1.0)
+        foreach(invalid_version IN ITEMS 0.7 0.8.1 "${too_new_patch}" 0.11 1.0)
             cuexis_expect_configure_failure(
                 "Cuexis package version ${invalid_version} compatibility rejection"
                 "${CMAKE_COMMAND}"
@@ -528,6 +549,47 @@ else()
             "-DCUEXIS_EXPECTED_LIBRARY_TYPE=${CUEXIS_LIBRARY_TYPE}"
             ${component_arguments}
         )
+    endif()
+    if(CUEXIS_CONSUMER_MODE STREQUAL "find_package_playback" AND NOT CUEXIS_EXPERIMENTAL)
+        # Default installed prefix: the experimental Gameplay headers are not part of this
+        # package, so including one must fail at the include and never reach the compiler's
+        # candidate declarations.
+        if(EXISTS "${package_prefix}/include/cuexis/playback/experimental")
+            message(FATAL_ERROR
+                "Default Cuexis package installed the experimental Playback header directory")
+        endif()
+        foreach(candidate_header IN ITEMS
+                gameplay_candidate.hpp execution_control.hpp execution_coordination.hpp)
+            if(EXISTS "${package_prefix}/include/cuexis/playback/${candidate_header}")
+                message(FATAL_ERROR
+                    "Default Cuexis package installed the candidate header ${candidate_header}")
+            endif()
+        endforeach()
+        cuexis_run_checked(
+            "default-prefix experimental header configure"
+            "${CMAKE_COMMAND}"
+            -S "${CUEXIS_SOURCE_DIR}/tests/external/experimental_header_negative"
+            -B "${work_dir}/default-prefix-negative"
+            ${consumer_configure_arguments}
+            "-DCuexis_DIR=${package_prefix}/lib/cmake/Cuexis"
+            "-DCMAKE_PREFIX_PATH=${dependency_prefix}"
+        )
+        execute_process(
+            COMMAND "${CMAKE_COMMAND}" --build "${work_dir}/default-prefix-negative"
+                --config "${CUEXIS_BUILD_TYPE}"
+            RESULT_VARIABLE negative_result
+            OUTPUT_VARIABLE negative_output
+            ERROR_VARIABLE negative_errors
+        )
+        if(negative_result EQUAL 0)
+            message(FATAL_ERROR
+                "Default prefix compiled an experimental Playback header; the header must be absent")
+        endif()
+        if(NOT "${negative_output}${negative_errors}" MATCHES "experimental/gameplay.hpp")
+            message(FATAL_ERROR
+                "Default-prefix experimental header negative did not fail at the missing include:\n"
+                "${negative_output}\n${negative_errors}")
+        endif()
     endif()
     if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
         if(CUEXIS_BUILD_TYPE STREQUAL "Debug")

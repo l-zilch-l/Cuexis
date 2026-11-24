@@ -9,6 +9,7 @@ add_executable(cuexis_judgement_tests
     publication_tests.cpp
     execution_profile_tests.cpp
     execution_kernel_oracle_tests.cpp
+    rr_f132_identity_baseline_tests.cpp
     execution_kernel_phase_tests.cpp
     execution_kernel_test_fixture.hpp
     execution_reference.cpp
@@ -30,15 +31,36 @@ add_executable(cuexis_judgement_tests
     timebase_mapping_tests.cpp
     timebase_policy_tests.cpp
     timebase_test_fixture.hpp
+    prepared_identity_self_contained.cpp
+    phase_types_self_contained.cpp
+    normalized_score_self_contained.cpp
+    advance_self_contained.cpp
+    prepared_gameplay_records_self_contained.cpp
+    prepared_gameplay_self_contained.cpp
+    legacy_prepared_view_tests.cpp
+    runtime_identity_tests.cpp
+    advance_kernel_self_contained.cpp
+    identity_bytes_self_contained.cpp
+    prepared_identity_bytes_self_contained.cpp
 )
 
 target_include_directories(cuexis_judgement_tests PRIVATE ${PROJECT_SOURCE_DIR}/engine/judgement/internal)
 target_include_directories(cuexis_judgement_tests PRIVATE ${PROJECT_SOURCE_DIR}/engine/judgement/src)
 
+# The candidate contract test exercises the build-only Chart v5 timing source and the author
+# compiler; the default build does not compile either of them.
+if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+    target_sources(cuexis_judgement_tests PRIVATE rr_timing_contract_tests.cpp)
+    #  The v5 source values also expose the opaque JSON value they carry, which the Chart tools
+    #  target keeps as a private dependency; the test names the directly used edge.
+    target_link_libraries(cuexis_judgement_tests PRIVATE cuexis::chart_tools cuexis::json_support)
+endif()
+
 target_compile_features(cuexis_judgement_tests PRIVATE cxx_std_20)
 target_link_libraries(cuexis_judgement_tests
     PRIVATE
         cuexis::judgement
+        cuexis::judgement_compile
         Catch2::Catch2WithMain
 )
 

@@ -1,0 +1,13 @@
+#pragma once
+
+//  Embedded Chart v5 candidate schema. Generated from
+//  `schemas/candidate/cuexis.chart.beat-us.v5.schema.json` at configure time so the
+//  build-only loader and the repository schema artifact cannot drift apart silently.
+
+#include <string_view>
+
+namespace cuexis::chart::detail {
+
+inline constexpr std::string_view kChartV5Schema = R"cuexis_schema(@CUEXIS_CHART_V5_SCHEMA@)cuexis_schema";
+
+} // namespace cuexis::chart::detail

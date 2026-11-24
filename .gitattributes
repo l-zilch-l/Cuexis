@@ -39,3 +39,6 @@ tests/pd/pd_allocation_probe.hpp text eol=lf
 # checkout on a machine with core.autocrlf=true materialises the recorded bytes instead of CRLF.
 docs/stage_reports/stages/stage-07/90-shared/source-split-audit/** text eol=lf
 docs/stage_reports/stages/stage-07/05-rpa-new/r3/2026-11-04-r3c-formal-adoption-v4/inputs/** text eol=lf
+# T-01 legacy corpus fixtures are byte copies of the S7A-7/8 evidence zip entries; the
+# corpus inventory binds their exact bytes, so keep CRLF and any other byte as stored.
+docs/stage_reports/stages/stage-07-rr/evidence/t-01-baseline/legacy-corpus/fixtures/** binary

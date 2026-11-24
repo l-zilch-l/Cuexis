@@ -13,6 +13,7 @@ enum class DeliveryStatus : std::uint8_t {
     canceled,
     expiredRequest,
     skippedNoCredit,
+    skippedEmptyLayout,
     versionUnavailable,
     noRetainedFrame,
     historyUnavailable,
@@ -42,6 +43,10 @@ struct FrameRequest final {
     std::uint64_t consumerId{}, requestId{}, projectionScope{};
     HostContext context;
     FrameViewport viewport;
+    // A present target selects the committed laid-out frame path; the legacy viewport is then
+    // ignored completely, including the admission shape check.
+    std::optional<experimental::FrameTarget> target;
+    experimental::FramingRequest framing;
     std::optional<std::uint64_t> exactVersion;
     std::int64_t deadlineMonotonicUs{};
     RetainedPresentation retained;
@@ -59,6 +64,13 @@ struct DeliveryFingerprint final {
     std::optional<std::uint64_t> exactVersion;
     std::int64_t deadline{};
     bool frozen{};
+    bool layout{};
+    std::uint32_t targetExtentWidth{}, targetExtentHeight{};
+    std::uint32_t hostX{}, hostY{}, hostWidth{}, hostHeight{};
+    std::uint16_t rotation{};
+    std::uint8_t selection{};
+    bool hasExact{};
+    std::uint32_t exactWidth{}, exactHeight{};
     friend auto operator==(const DeliveryFingerprint&, const DeliveryFingerprint&)
         -> bool = default;
 };
@@ -92,6 +104,10 @@ class FrameDelivery final {
         -> core::Result<ConsumerRegistration>;
     [[nodiscard]] auto admit(const FrameRequest&, std::uint64_t currentVersion, std::int64_t now,
                              bool reusePayload) -> core::Result<DeliveryAdmission>;
+    // Records a request the owner refused before admission. The record keeps the request identity
+    // and the terminal status, so a later take reports no frame and a poll reports this status
+    // instead of historyUnavailable. No frame id, attempt or storage reservation is created.
+    [[nodiscard]] auto refuse(const FrameRequest&, DeliveryStatus) -> core::Result<DeliveryInfo>;
     [[nodiscard]] auto publish(const FrameRequest&, FrameEnvelope, std::int64_t now)
         -> core::Result<DeliveryInfo>;
     [[nodiscard]] auto cancel(std::uint64_t consumerId, std::uint64_t requestId,
@@ -152,6 +168,11 @@ class RendererConsumerGate final {
     [[nodiscard]] auto revoke(const ConsumerRegistration&) -> core::Result<RegistrationReceipt>;
     [[nodiscard]] auto begin(const FrameEnvelope&, const HostContext& expected, std::uint64_t scope,
                              std::uint64_t rendererInstance) -> core::Result<void>;
+    // Ends a consumed attempt that never reached submit (stale deadline or changed target). The
+    // retained presentation and its serial stay untouched; only the transient success wait ends.
+    void dropAttempt() noexcept {
+        awaitingSuccess_ = false;
+    }
     [[nodiscard]] auto succeeded(const FrameEnvelope&) -> core::Result<std::uint64_t>;
     [[nodiscard]] auto revokeRetained(std::uint64_t consumerId, std::uint64_t serial) -> bool;
     [[nodiscard]] auto permitsRetained(const FrameEnvelope&) const noexcept -> bool;

@@ -2,7 +2,7 @@
 
 状态：已接受
 
-更新日期：2026-10-28
+更新日期：2026-11-24
 
 <!-- cuexis-meta
 id: GUIDE-VERSIONING
@@ -82,10 +82,10 @@ suffix 只来自允许集合或 exp.<name>
 
 ```text
 Cuexis display version     仓库/发行构建身份
-C++ SDK API version        CMake package 与源码兼容版本；当前分支 static/shared preview 为 0.9.1
-C ABI version              稳定 shared-library 二进制契约，阶段 12 首次冻结
+C++ SDK API version        CMake package 与源码兼容版本；当前分支 static/shared preview 为 0.10.0
+C ABI version              稳定 shared-library 二进制契约，Stage 14 首次冻结
 Chart/Project/Asset format 各自持久化 format + version
-ReplayData format          阶段 11 冻结的独立持久化版本
+ReplayData format          尚未冻结；随正式 Replay 合同与 Stage 14 稳定化处理
 simulationVersion          粒子等确定性算法版本
 ```
 
@@ -121,11 +121,11 @@ Presentation 类型 `Shader` / `ParameterizedMaterial`，因此 preview 提升�
 
 shared `0.x` 只支持使用匹配 SDK minor、编译器工具链、标准库、运行时、架构和 Debug/Release
 配置重新构建的 consumer。CMake `SameMinorVersion` 继续表达源码/package 请求兼容，绝不表示
-可以替换一个已部署 shared binary 而不重新编译 host。C ABI version 仍不存在，直至阶段 12 在
+可以替换一个已部署 shared binary 而不重新编译 host。C ABI version 仍不存在，直至 Stage 14 在
 Judgement/Replay 和完整生命周期证据基础上冻结。
 
 升级项目显示版本不得隐式升级 SDK API、内容格式或 ABI。安装包必须提供可查询的显示版本、
-SDK API 版本和已启用组件；稳定 C ABI 在阶段 12 建立后再提供独立可查询版本。不兼容 API/ABI、
+SDK API 版本和已启用组件；稳定 C ABI 在 Stage 14 建立后再提供独立可查询版本。不兼容 API/ABI、
 未来内容版本和不支持的 ReplayData 版本必须稳定失败。
 
 ## SDK 版本递增规范
@@ -134,8 +134,9 @@ Stage 7 originally prepared SDK `0.7.1` as a compatible patch candidate for expl
 factories and experimental package isolation. This repair preserves installed public layouts,
 signatures, vtables and default production source selection. `0.7.0` consumers rebuild against
 the new package; the original Entry additions required at least `0.7.1`. This is the historical
-Entry baseline, not the current package version. The branch now uses `0.9.1`; its diagnostic and
-Recovery compatibility changes and consumer minimum are specified below. Delivery status belongs
+Entry baseline, not the current package version. The branch now uses `0.10.0` for the F135
+interned Error layout change; the earlier 0.9.1 diagnostic and Recovery compatibility changes and
+consumer minimum remain specified below. Delivery status belongs
 to [CURRENT_STATUS](../CURRENT_STATUS.md); approval and release gates remain separate.
 
 2026-10-08 S7A-7/8 actual diff review retains this patch under the 0.x policy below:
@@ -218,15 +219,17 @@ owner未编辑评论准确绑定base/head/tree、版本及UTC日期。checker仍
 
 ### Windows double-click approval assistant
 
-Windows用户可直接双击仓库内的 `tools/prepare_sdk_approval.cmd`（默认本仓库PR #32）。
+Windows用户可直接双击仓库内的 `tools/prepare_sdk_approval.cmd`。脚本默认 PR #32 只是历史默认值；
+当前候选为 PR 47，运行时须显式传 `-PullRequest 47`（或届时 PR 号），并在发布前确认 PR 头与 UTC 日期。
 需要已安装并登录GitHub CLI；当前账号须在可信base的owner名单中。助手会读取**线上当前PR**的
 base、head、tree、SDK版本及UTC日期，核对版本递增，再生成LF-only UTF-8文本到
 `out/sdk-approval/`，并以当前登录的owner账号直接发布新审批评论，随后读取API核验结果。
 双击即表示本人授权发布该次线上当前候选的审批；无需复制粘贴或再打开PowerShell。
 
 最新owner记录已完整匹配时不重复发布；较新的无效记录不会被较早有效记录掩盖。同一PR的本机
-并发运行会被阻止。助手在当前进程固定使用 `http://127.0.0.1:7890` 代理，并清空代理绕过列表；
-退出时恢复环境变量，不修改Windows或Git的全局代理设置。
+并发运行会被阻止。助手默认沿用当前进程的代理环境变量，可用 `-Proxy <代理地址>` 在本次运行内覆盖
+并清空代理绕过列表（例如本机 VPN 的 `http://127.0.0.1:7890` 或加速器的 `http://127.0.0.1:26561`）；
+退出时恢复环境变量，不修改 Windows 或 Git 的全局代理设置。
 读取连接失败最多尝试三次。POST失败不自动重发，而是读取评论确认是否已被GitHub接收；无法确认
 时保留错误，请检查PR后重试。
 
@@ -313,7 +316,7 @@ Stage 14 必须另行冻结 `1.x` 的 API/ABI 兼容、弃用和版本递增政�
 owner明确指定[独立诊断正式化工作包](../stage_plans/completed/stage-07/02-diagnostics/plan.md)
 目标SDK API为`0.7.5`，同时保留此前已接受的新Recovery版本拒绝旧版本方向。
 这是本工作包的具体版本裁定；版本文件与消费者已在N2集成，N1/N3已退出，
-诊断基线为0.7.5；当前分支为0.9.1。具体证据与交付状态归[CURRENT_STATUS](../CURRENT_STATUS.md)。
+诊断基线为0.7.5；当前分支为0.10.0。具体证据与交付状态归[CURRENT_STATUS](../CURRENT_STATUS.md)。
 N1已记录production/candidate公共差异及迁移影响，不将patch数字当作可观察合同兼容证明。
 若实际差异属于常规规则要求升minor的不兼容公开变化，本工作包按owner指定的`0.7.5`
 记录限定例外及具体影响，不反向放宽Reader来制造兼容，也不推广为其他阶段可使用breaking patch。
@@ -363,10 +366,10 @@ configure/clean build 证据；版本变化不隐式升级 SDK API、内容格�
 
 ### 升级示例：从 `0.7.0` 基线重建宿主
 
-`examples/reference_host/` 是可执行的升级示例；它源于 `0.7.0` 基线，当前默认请求已更新为：
+`examples/reference_host/` 是可执行的升级示例；它源于 `0.7.0` 基线，当前默认请求为：
 
 ```cmake
-find_package(Cuexis 0.7.5 CONFIG REQUIRED COMPONENTS Playback)
+find_package(Cuexis 0.10.0 CONFIG REQUIRED COMPONENTS Playback)
 ```
 
 它显式声明自己编写时对齐的 API 版本，并在安装包记录的 API minor 不兼容时于 configure 阶段失败，
@@ -439,3 +442,11 @@ canonical SHA 绑定仍可选择，Seek 必须恰好选择一种绑定；没有�
 新字段或旧 shared binary 可混用。所有 candidate consumer 使用同一套新头/库干净重建；
 依赖公开结构大小、聚合分解等假设的源码须重新检查。不支持仅替换 DLL。
 本次只改独立 SDK API 版本，日期构建身份和 vcpkg `version-string` 保持 `26.10.19-1`（历史）。
+
+### 0.10.0 F135 interned Error 布局
+
+当前 SDK API 为 `0.10.0`：`core::Error` 使用 interned 文本变体与惰性 context/cause，安装头
+`cuexis/core/error.hpp` 的公开布局随之变化（MSVC Release：`Error` 112 B、`optional<Error>`
+120 B）；执行宿主内部 `FaultSlot` 保持 56 B。shared 消费者须用同一套 0.10.0 头/库整体重建，`SameMinorVersion`
+不表示旧 shared binary 可混用。owner 审批记录机制、PR 与交付状态见[当前状态](../CURRENT_STATUS.md)
+与[登记册](../stage_plans/active/stage-07-rr/findings.md)。

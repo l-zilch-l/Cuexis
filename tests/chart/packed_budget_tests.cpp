@@ -21,6 +21,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <cuexis/chart/packed_chart_writer.hpp>
 #include <filesystem>
 #include <fstream>
 #include <iterator>
@@ -585,9 +586,10 @@ TEST_CASE("SPEC-02 wire-range representability has its own code, not a budget co
     // behavioural test cannot construct the state that would exercise it.
     // The writer is split across four units; the guards below are named by their message, so every
     // unit is read into one text.
-    constexpr std::array<std::string_view, 4> units{
+    constexpr std::array<std::string_view, 5> units{
         "packed_chart_tables_writer.cpp", "packed_chart_tables_sections.cpp",
-        "packed_chart_tables_inspect.cpp", "packed_chart_tables_decoder.cpp"};
+        "packed_chart_tables_inspect.cpp", "packed_chart_tables_decoder.cpp",
+        "packed_chart_tables_common.cpp"};
     std::string text;
     for (const auto unit : units) {
         const auto source =

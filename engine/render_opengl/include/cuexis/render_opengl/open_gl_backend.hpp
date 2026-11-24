@@ -22,6 +22,7 @@
 #include <filesystem>
 #include <memory>
 #include <optional>
+#include <span>
 #include <string>
 #include <utility>
 #include <vector>
@@ -31,6 +32,7 @@ namespace cuexis::render_opengl {
 namespace detail {
 struct OpenGlPresentationBackendState;
 struct OpenGlDiagnosticsAccess;
+struct OpenGlFrameLayoutAccess;
 } // namespace detail
 
 struct OpenGlConfig final {
@@ -78,6 +80,7 @@ class OpenGlPresentationCandidate final {
 
   private:
     friend class OpenGlBackend;
+    friend struct detail::OpenGlFrameLayoutAccess;
 
     OpenGlPresentationCandidate(playback::PresentationCandidateToken token,
                                 playback::EffectivePresentationSettings settings,
@@ -115,7 +118,7 @@ class OpenGlContextConfiguration final {
 // Built-in Renderer Profile v1 capabilities. GPU-free: does not query GL.
 // shaderGlsl450Source / shaderSpirv are true only when CUEXIS_HAS_SHADER_TOOLS is defined.
 [[nodiscard]] auto builtInPresentationCapabilities(std::uint32_t maxTextureDimension,
-                                                   bool debugPass) noexcept
+                                                   bool debugPass)
     -> playback::PresentationCapabilities;
 
 // Prepares SDL's process-wide GL attributes on the SDL main thread and returns a one-shot token.
@@ -196,6 +199,7 @@ class OpenGlBackend final : public render::RenderBackend,
 
   private:
     friend struct detail::OpenGlDiagnosticsAccess;
+    friend struct detail::OpenGlFrameLayoutAccess;
     OpenGlBackend(platform_sdl::SdlWindowLease window, void* context, OpenGlInfo info,
                   std::uint32_t debugProgram, std::uint32_t debugVertexArray,
                   std::uint32_t debugVertexBuffer, int viewProjectionLocation,

@@ -13,6 +13,7 @@ if(CUEXIS_BUILD_AUDIO_SDL_ADAPTER)
 endif()
 add_subdirectory(world)
 add_subdirectory(assets)
+add_subdirectory(timing)
 add_subdirectory(chart)
 add_subdirectory(animation)
 if(CUEXIS_BUILD_SHADER_TOOLS OR CUEXIS_BUILD_OPENGL_ADAPTER)
@@ -22,7 +23,18 @@ add_subdirectory(cxc)
 add_subdirectory(behavior)
 add_subdirectory(gameplay)
 add_subdirectory(judgement)
-add_subdirectory(gameplay_packed)
+# The compile side (author/graph/timebase sources and their private headers) is created for the
+# candidate, the developer tools and the enabled tests. The running judgement library never links
+# it; only consumers that prepare legacy author content do.
+if(CUEXIS_ENABLE_CHART_V5_CANDIDATE OR CUEXIS_BUILD_DEVELOPER_TOOLS OR CUEXIS_BUILD_TESTS)
+    add_subdirectory(judgement_compile)
+endif()
+# The legacy Packed read/write adapter needs the Chart codec and tools, so it shares their
+# creation condition instead of being built for the ordinary Playback/Player graph.
+if(CUEXIS_ENABLE_CHART_V5_CANDIDATE OR CUEXIS_BUILD_DEVELOPER_TOOLS OR
+   (BUILD_TESTING AND CUEXIS_BUILD_TESTS))
+    add_subdirectory(gameplay_packed)
+endif()
 add_subdirectory(render)
 add_subdirectory(debug)
 add_subdirectory(runtime)

@@ -1,6 +1,82 @@
 #include "execution_kernel_internal.hpp"
 
+#include <cuexis/judgement/identity_bytes.hpp>
+#include <cuexis/judgement/prepared_identity_bytes.hpp>
+
+#include <algorithm>
+#include <cstddef>
+#include <vector>
+
 namespace cuexis::judgement::detail {
+namespace {
+
+auto chartProjectionOf(const PreparedGameplay& prepared) -> core::Result<std::vector<std::byte>> {
+    IdentityByteWriter prefix{"cuexis.judgement.identity.chart.v1"};
+    prefix.beginComponent("chart");
+    const auto header = prefix.take();
+    const auto& bytes = prepared.assembled().chart.canonicalBytes().bytes();
+    if (bytes.size() < header.size() || !std::equal(header.begin(), header.end(), bytes.begin())) {
+        return core::unexpected(kernel_detail::error(
+            "execution.relation_invalid", "the prepared chart identity lacks its header"));
+    }
+    return std::vector<std::byte>{bytes.begin() + static_cast<std::ptrdiff_t>(header.size()),
+                                  bytes.end()};
+}
+
+auto executionSessionOf(const InputMappingProfile& mapping, const LatePolicyParameters& late,
+                        std::string_view calibration) -> std::vector<std::byte> {
+    IdentityByteWriter writer;
+    writer.writeText("cuexis.judgement.identity.session.execution.v1");
+    writer.writeText(mapping.profileId);
+    writer.writeText(mapping.profileVersion);
+    writer.writeText(mapping.sourceClass.token());
+    auto domains = mapping.domains;
+    std::sort(domains.begin(), domains.end(),
+              [](const auto& a, const auto& b) { return a.domainToken < b.domainToken; });
+    writer.writeCount(domains.size());
+    for (const auto& domain : domains) {
+        writer.writeText(domain.domainToken);
+        writer.writeSigned(domain.amount.scale.numerator());
+        writer.writeSigned(domain.amount.scale.denominator());
+        writer.writeSigned(domain.amount.minimum);
+        writer.writeSigned(domain.amount.maximum);
+        writer.writeText(domain.amount.boundaryPolicy == AmountBoundaryPolicy::inclusive
+                             ? "inclusive"
+                             : "exclusive");
+    }
+    for (const auto& parameter : {late.finalizationWatermark, late.maxQueueHop,
+                                  late.windowCloseThreshold, late.windowOpenThreshold}) {
+        writer.writeBool(parameter.isMeasured());
+        if (parameter.isMeasured()) {
+            writer.writeSigned(parameter.measuredValue()->value());
+        }
+    }
+    writer.writeBool(late.policy.has_value());
+    if (late.policy) {
+        writer.writeText(*late.policy == LateEventPolicy::rejectLate ? "reject_late"
+                                                                     : "queue_next_tick");
+    }
+    writer.writeText(calibration);
+    return writer.take();
+}
+
+auto kernelIdentity(const PreparedGameplay& prepared,
+                    const PreparedIdentityDeclarations& declarations,
+                    const InputMappingProfile& mapping, const LatePolicyParameters& late,
+                    std::string_view calibration) -> core::Result<PreparedIdentity> {
+    auto projection = chartProjectionOf(prepared);
+    if (!projection) {
+        return core::unexpected(projection.error());
+    }
+    auto bytes = runtime::composePreparedIdentityFromProjection(
+        *projection, declarations, executionSessionOf(mapping, late, calibration));
+    if (!bytes) {
+        return core::unexpected(bytes.error());
+    }
+    return IdentityFactory::fromBytes(bytes->bytes());
+}
+
+} // namespace
 
 using namespace kernel_detail;
 
@@ -76,29 +152,32 @@ auto ExecutionKernel::prepare(const SessionConfiguration& c, const PreparedGamep
     if (hasGradeTables) {
         actual.engine.factSemanticRevision += ";grade.signed-interval.v1";
     }
+    auto identity =
+        kernelIdentity(prepared, actual, mapping, c.latePolicy, c.calibrationIdentityToken);
+    if (!identity) {
+        return core::unexpected(identity.error());
+    }
     SharedSequence<MatcherState> matchers;
-    KernelProjection projection{
-        .phases = {},
-        .resources = {},
-        .contacts = {},
-        .ownership = {},
-        .observers = {},
-        .receipts = {},
-        .facts = {},
-        .processedFrontier = {},
-        .lastAdvanceHorizon = {},
-        .state = KernelSessionState::Prepared,
-        .faultDiagnostic = {},
-        .judgementIdentity = IdentityFactory::runtime(prepared, actual, mapping, c.latePolicy,
-                                                      c.calibrationIdentityToken),
-        .runScope = {},
-        .failedTick = {},
-        .requestedHorizon = {},
-        .kernelWorkTick = {},
-        .sealedFactCursor = 0,
-        .fold = {},
-        .effectiveFactSemanticRevision = {},
-        .faultStage = {}};
+    KernelProjection projection{.phases = {},
+                                .resources = {},
+                                .contacts = {},
+                                .ownership = {},
+                                .observers = {},
+                                .receipts = {},
+                                .facts = {},
+                                .processedFrontier = {},
+                                .lastAdvanceHorizon = {},
+                                .state = KernelSessionState::Prepared,
+                                .faultDiagnostic = {},
+                                .judgementIdentity = std::move(*identity),
+                                .runScope = {},
+                                .failedTick = {},
+                                .requestedHorizon = {},
+                                .kernelWorkTick = {},
+                                .sealedFactCursor = 0,
+                                .fold = {},
+                                .effectiveFactSemanticRevision = {},
+                                .faultStage = {}};
     projection.effectiveFactSemanticRevision = actual.engine.factSemanticRevision;
     if (c.executionProfileToken == "gameplay.execution.t4-k4.rpa.v1") {
         projection.rpa.emplace();

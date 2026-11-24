@@ -1,15 +1,7 @@
-#include "playback_candidate_internal.hpp"
-
-#include <cuexis/chart/behavior_candidate.hpp>
-#include <cuexis/chart/candidate_lowering.hpp>
-#include <cuexis/chart/packed_chart_tables.hpp>
-#include <cuexis/cxc/cxc_writer.hpp>
-#include <cuexis/playback/playback_session.hpp>
-#include <cuexis/playback/playback_source.hpp>
-#include <cuexis_internal/sha256.hpp>
-
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
+
+#include <cuexis/playback/playback_source.hpp>
 
 #include <algorithm>
 #include <atomic>
@@ -28,6 +20,18 @@
 #include <process.h>
 #else
 #include <unistd.h>
+#endif
+
+#ifdef CUEXIS_ENABLE_CHART_V5_CANDIDATE
+#include "playback_candidate_internal.hpp"
+
+#include <cuexis/chart/behavior_candidate.hpp>
+#include <cuexis/chart/candidate_lowering.hpp>
+#include <cuexis/chart/packed_chart_writer.hpp>
+#include <cuexis/cxc/cxc_writer.hpp>
+#include <cuexis/playback/playback_session.hpp>
+#include <cuexis/playback/playback_source.hpp>
+#include <cuexis_internal/sha256.hpp>
 #endif
 
 namespace {

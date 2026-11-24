@@ -31,6 +31,7 @@ add_executable(cuexis_chart_tests
     packed_roundtrip_tests.cpp
     packed_semantic_identity_tests.cpp
     prepared_semantic_identity_tests.cpp
+    rr_f302_chart_boundaries.cpp
     rational_beat_tests.cpp
     timing_map_tests.cpp
     behavior_track_tests.cpp
@@ -53,9 +54,15 @@ target_include_directories(cuexis_chart_tests
 target_link_libraries(cuexis_chart_tests
     PRIVATE
         cuexis::chart
+        cuexis::chart_codec
+        cuexis::chart_tools
         cuexis::json_support
         Catch2::Catch2WithMain
 )
+
+if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+    target_sources(cuexis_chart_tests PRIVATE rr_candidate_schema_tests.cpp)
+endif()
 
 include(Catch)
 catch_discover_tests(cuexis_chart_tests)
@@ -85,6 +92,8 @@ target_compile_definitions(cuexis_chart_capacity_probe
 target_link_libraries(cuexis_chart_capacity_probe
     PRIVATE
         cuexis::chart
+        cuexis::chart_codec
+        cuexis::chart_tools
 )
 
 if(WIN32)

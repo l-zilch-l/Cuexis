@@ -465,6 +465,12 @@ auto TestPresentationRenderer::rebuild() -> core::Result<void> {
     if (auto owner = requireOwner("rebuild"); !owner) {
         return core::unexpected(std::move(owner.error()));
     }
+    // Close is terminal: the surface is gone and a rebuild would report a recovery that cannot
+    // present. Reject before any state change so no caller can continue on a closed renderer.
+    if (state_->closed) {
+        return core::unexpected(
+            core::Error{"presentation.renderer.closed", "The presentation renderer is closed"});
+    }
     if (state_->generation == std::numeric_limits<std::uint64_t>::max()) {
         return core::unexpected(core::Error{"presentation.renderer.generation_exhausted",
                                             "Presentation renderer generation is exhausted"});
@@ -521,6 +527,11 @@ void TestPresentationRenderer::failNextPresent(PresentationFailureClass failureC
 void TestPresentationRenderer::detachCandidate(
     std::uint64_t rendererGeneration, std::uint64_t candidateGeneration,
     const playback::PresentationCandidateToken& token) noexcept {
+    // The only inbound path is the destructor or move-assign of the public value type, so a
+    // candidate can be destroyed on any thread. Detaching mutates owner-only pending state, so a
+    // foreign-thread detach terminates before touching that state, exactly like activate/discard.
+    if (!state_->owner.isCurrent())
+        std::terminate();
     if (!state_->outstanding) {
         return;
     }

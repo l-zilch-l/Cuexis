@@ -10,6 +10,7 @@
 
 #include <cuexis/chart/canonical_semantic_chart.hpp>
 #include <cuexis/chart/packed_chart_tables.hpp>
+#include <cuexis/chart/packed_chart_writer.hpp>
 #include <cuexis/cxc/cxc_package.hpp>
 #include <cuexis/cxc/cxc_writer.hpp>
 #include <cuexis/tools/cxc_candidate.hpp>

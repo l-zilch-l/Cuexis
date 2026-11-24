@@ -6,7 +6,6 @@
 
 #include <cuexis/playback/playback_session.hpp>
 
-#include "playback_candidate_internal.hpp"
 #include "playback_source_state.hpp"
 #include "presentation_internal.hpp"
 #include "presentation_materializer.hpp"
@@ -18,15 +17,15 @@
 #include <cuexis_internal/sha256.hpp>
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
 #include "gameplay_internal.hpp"
+#include "playback_candidate_internal.hpp"
 #include "presentation_projection.hpp"
-#include "replay_identity.hpp"
 #include <cuexis/judgement/execution_scheduler.hpp>
+#include <cuexis/playback/replay_identity.hpp>
 #endif
 
 #include <cuexis/animation/animation_compiler.hpp>
 #include <cuexis/assets/asset_database.hpp>
 #include <cuexis/assets/resource_manager.hpp>
-#include <cuexis/chart/candidate_lowering.hpp>
 #include <cuexis/chart/chart_loader.hpp>
 #include <cuexis/chart/chart_runtime.hpp>
 #include <cuexis/chart/chart_v4_loader.hpp>
@@ -40,6 +39,7 @@
 #include <cuexis/core/error.hpp>
 #include <cuexis/core/math.hpp>
 #include <cuexis/core/thread_checker.hpp>
+#include <cuexis/playback/experimental/frame_layout.hpp>
 #include <cuexis/runtime/runtime_frame.hpp>
 #include <cuexis/runtime/runtime_session.hpp>
 
@@ -100,6 +100,16 @@ inline std::atomic<std::uint64_t> nextPlaybackSessionToken{1};
 }
 
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+// Minimal internal lease for the one candidate-path dereference of a PreparedPlayback owner.
+// The session owns the lease; a prepared candidate holds only a weak reference, so a destroyed
+// session expires it and the dereference is skipped instead of following a dangling pointer.
+struct PreparedOwnerLease final {
+    PlaybackSession* session{};
+    std::uint64_t token{};
+};
+#endif
+
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
 inline auto gameplayError(std::string_view detail) -> core::Error {
     return core::Error{"playback.gameplay.invalid", std::string{detail}}
         .withContext("category", "invalid_relation")
@@ -155,26 +165,8 @@ class SessionOperation final {
     bool& active_;
 };
 
-#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
-[[nodiscard]] auto makeGameplaySession(const GameplayContent& content)
-    -> core::Result<judgement::JudgementSession>;
-
-[[nodiscard]] auto internalContext(GameplayExecutionContext context) -> judgement::RpaContext;
-
-[[nodiscard]] auto canonicalOccurrence(const GameplayOccurrence& occurrence,
-                                       const judgement::SessionConfiguration& config)
-    -> core::Result<judgement::CanonicalInput>;
-
-[[nodiscard]] auto publicDecision(const judgement::AdvanceDecision& decision)
-    -> GameplayAdvanceDecision;
-
-// Shared by the gameplay and gameplay Seek translation units.
-[[nodiscard]] auto publicTick(std::optional<judgement::Tick> tick) -> std::optional<GameplayTick>;
-#endif
-
 struct PlaybackSession::State final {
     State() = default;
-
     core::ThreadChecker ownerThread;
     // ResourceManager must outlive RuntimeSession and its ResourceScope.
     std::shared_ptr<content::IContentProvider> contentProvider;
@@ -185,6 +177,11 @@ struct PlaybackSession::State final {
     internal::presentation::RevisionClock presentationClock;
     const std::uint64_t presentationSessionScope{allocatePlaybackSessionToken()};
     std::optional<detail::CommittedPresentationState> committedPresentation;
+    // Committed reduced author framing table and the candidate token minted by the owning commit.
+    // Both are pure values copied from the prepared candidate; extraction reads them in the same
+    // owner/descriptor window as the snapshot and projection.
+    std::vector<experimental::FrameFraming> framings;
+    std::optional<PresentationCandidateToken> committedPresentationToken;
     void publishPresentation(internal::presentation::Mutation& mutation,
                              detail::CommittedPresentationState descriptor) noexcept {
         mutation.publish();
@@ -209,7 +206,9 @@ struct PlaybackSession::State final {
     std::optional<PlaybackContentInfo> activeContentInfo;
     std::optional<PlaybackMode> activeMode;
     std::optional<PreparedSemanticIdentity> semanticIdentity;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     std::optional<chart::CandidateRuntimeMetadata> candidateMetadata;
+#endif
     ChartParameterSet parameters;
     std::uint64_t sessionToken{allocatePlaybackSessionToken()};
     std::uint64_t generation{1};
@@ -219,7 +218,21 @@ struct PlaybackSession::State final {
     std::uint64_t hostDecision{};
     std::optional<std::uint64_t> acceptedHostDecision;
     std::optional<HostContext> confirmedHostContext;
+    // Content identity active when the control was admitted. The accepted proof survives the
+    // content unload of its own Close, but a different committed content invalidates it.
+    std::optional<PreparedSemanticIdentity> acceptedControlContentIdentity;
     bool hostCommitAuthorized{};
+    std::shared_ptr<PreparedOwnerLease> preparedOwnerLease;
+#endif
+    // Content unload removes the active content and its execution projection. It deliberately
+    // keeps the accepted host control, its decision and the retained fence/context: a directed
+    // Close retires content before its terminal owner proof arrives, and retire replays must
+    // still validate the accepted proof. Control identity is cleared by the Close terminal.
+    [[nodiscard]] auto unloadContent() -> core::Result<void>;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    // Terminal Close acknowledgement: the retained control identity no longer anchors a replay.
+    // The host step ledger owns the applied retire/close receipts from this point on.
+    void clearControlIdentity() noexcept;
 #endif
     void bumpGeneration() noexcept {
         if (++generation == 0) {
@@ -279,11 +292,16 @@ struct PreparedPlayback::State final {
     PlaybackContentInfo contentInfo;
     ChartParameterSet parameters;
     PreparedSemanticIdentity semanticIdentity;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     std::optional<chart::CandidateRuntimeMetadata> candidateMetadata;
+#endif
     std::optional<assets::AudioSourceLease> audioSourceLease;
     core::Diagnostics diagnostics;
     core::Diagnostics lastOperationDiagnostics;
     std::optional<RuntimeFrame> targetFrame;
+    // Prepared pure framing values. The source prepare path leaves this empty until an author
+    // Chart v5 reader or the library-internal test wiring attaches a validated table.
+    std::vector<experimental::FrameFraming> framings;
     SessionState committedState{SessionState::Ready};
     std::optional<detail::PreparedPresentation> presentation;
     std::uint64_t candidateGeneration{};
@@ -291,6 +309,9 @@ struct PreparedPlayback::State final {
     GameplayContent gameplayContent;
     std::unique_ptr<judgement::JudgementSession> gameplay;
     detail::PreparedProjection gameplayProjectionIndex;
+    // F509 lifetime guard and the candidate-path owner dereference counter it controls.
+    std::weak_ptr<PreparedOwnerLease> ownerLease;
+    std::uint64_t ownerDereferences{};
 #endif
 };
 

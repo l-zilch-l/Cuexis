@@ -42,6 +42,10 @@ namespace cuexis::playback {
 namespace detail {
 struct PresentationAccess;
 struct GameplayPublicationAccess;
+struct FrameLayoutAccess;
+// Build-only execution-host coordination entry. It is declared, never installed, and forwards
+// to the same-version candidate members without changing any class layout.
+struct ExecutionHostAccess;
 } // namespace detail
 
 CUEXIS_ABI_WARNING_PUSH
@@ -236,7 +240,6 @@ namespace detail {
 struct CandidateMetadataAccess;
 struct HostCoordinationAccess;
 } // namespace detail
-
 class CUEXIS_PLAYBACK_API PreparedPlayback final {
   public:
     PreparedPlayback() noexcept;
@@ -268,6 +271,8 @@ class CUEXIS_PLAYBACK_API PreparedPlayback final {
   private:
     friend class PlaybackSession;
     friend struct detail::CandidateMetadataAccess;
+    friend struct detail::FrameLayoutAccess;
+    friend struct detail::ExecutionHostAccess;
     struct State;
     explicit PreparedPlayback(std::unique_ptr<State> state) noexcept;
 
@@ -462,6 +467,8 @@ class CUEXIS_PLAYBACK_API PlaybackSession final {
     friend struct detail::CandidateMetadataAccess;
     friend struct detail::GameplayPublicationAccess;
     friend struct detail::HostCoordinationAccess;
+    friend struct detail::FrameLayoutAccess;
+    friend struct detail::ExecutionHostAccess;
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     [[nodiscard]] auto validateExecutionControlProof(const StepRequest&,
                                                      const ControlReceipt&) const

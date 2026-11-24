@@ -53,23 +53,25 @@ TEST_CASE("B4 owning frames call actual renderer without advancing Playback",
     frame.frameId = 1;
     frame.projectionScope = 1;
     frame.snapshot = *snapshot;
-    auto presented = presentOwnedFrame(frame, frame.context, 1, renderer.identity().instance,
-                                       renderer, [] { return 42; });
+    auto presented = presentOwnedFrame(
+        frame, frame.context, 1, renderer.identity().instance, renderer, [] { return 42; },
+        std::nullopt);
     REQUIRE(presented);
     CHECK(presented->status == PresentStatus::succeeded);
     CHECK(presented->callMonotonicUs == 42);
     CHECK(*HostCoordinationAccess::generation(session) == *generation);
     renderer.failNextPresent(presentation_renderer::PresentationFailureClass::Recoverable);
-    auto failed = presentOwnedFrame(frame, frame.context, 1, renderer.identity().instance, renderer,
-                                    [] { return 43; });
+    auto failed = presentOwnedFrame(
+        frame, frame.context, 1, renderer.identity().instance, renderer, [] { return 43; },
+        std::nullopt);
     REQUIRE(failed);
     CHECK(failed->status == PresentStatus::failed);
     REQUIRE(failed->cause);
     CHECK(*HostCoordinationAccess::generation(session) == *generation);
     auto next = frame.context;
     ++next.controlSequence;
-    REQUIRE_FALSE(presentOwnedFrame(frame, next, 1, renderer.identity().instance, renderer,
-                                    [] { return 44; }));
+    REQUIRE_FALSE(presentOwnedFrame(
+        frame, next, 1, renderer.identity().instance, renderer, [] { return 44; }, std::nullopt));
     REQUIRE(renderer.close());
     REQUIRE(session.unload());
     CHECK_FALSE(frame.snapshot.objects.empty());

@@ -47,7 +47,7 @@ add_test(
         "-DCUEXIS_CFU_F4_OUTPUT=${CMAKE_BINARY_DIR}/cfu-f4/performance.txt"
         "-DCUEXIS_IMPLEMENTATION_SHA=${CUEXIS_IMPLEMENTATION_SHA}"
         "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
-        -P "${PROJECT_SOURCE_DIR}/cmake/VerifyCfuF4Performance.cmake"
+        -P "${PROJECT_SOURCE_DIR}/cmake/VerifyContentIOPerformance.cmake"
 )
 
 set_tests_properties(cuexis_cfu_f4_performance PROPERTIES

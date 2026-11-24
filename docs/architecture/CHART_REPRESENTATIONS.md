@@ -29,7 +29,7 @@ authority: none
 
 三条族共用 `ChartDocument` 与 `ChartRuntime` 两个节点，但入口不同；把五者画成一条链会掩盖
 “v4 与 Packed 各自有独立中间层”这一事实。分支选择见
-`engine/playback/src/playback_session_prepare.cpp:222`（candidate）与 `:243`（document）。
+`engine/playback/src/playback_session_prepare.cpp:229-253`（candidate/document 分支）。
 
 ## 2. 内容型表示（7 个）
 

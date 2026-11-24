@@ -32,14 +32,117 @@ using control_internal::TransactionGuard;
     }
     return text;
 }
+
+// The owner publishes a success state from the policy instead of writing `decision.state`
+// unconditionally. This synchronous adapter still holds the pre-owner state machine, so the
+// policies it cannot yet prove keep the legacy publication; the owner slice supplies the pending
+// pause sources and fault facts those policies read at commit time.
+[[nodiscard]] auto publishedState(player_support::PlayerSuccessStatePolicy policy,
+                                  player_support::PlayerAppState decisionState,
+                                  player_support::PlayerAppState previousState)
+    -> player_support::PlayerAppState {
+    switch (policy) {
+    case player_support::PlayerSuccessStatePolicy::Fixed:
+        return decisionState;
+    case player_support::PlayerSuccessStatePolicy::ResumeAfterReasons:
+        // No pause-reason registry exists here, so the requesting source is the only one.
+        return player_support::PlayerAppState::Playing;
+    case player_support::PlayerSuccessStatePolicy::RetryAfterDevices:
+        // A retry starts at zero once its own devices are confirmed and no independent pause is
+        // pending; this adapter records neither, so the confirmed retry plays.
+        return player_support::PlayerAppState::Playing;
+    case player_support::PlayerSuccessStatePolicy::ReloadPaused:
+        // The legacy Reload keeps the previous application state; the owner publishes the
+        // contract's silent Paused@0 when pending pauses bind to the new content.
+        return previousState;
+    case player_support::PlayerSuccessStatePolicy::RebuildAfterFacts:
+        // The legacy rebuild re-prepares content and re-attaches the device path, so success
+        // clears the recorded failure. A faulted run without that repair keeps Failed in the
+        // owner slice.
+        return previousState == player_support::PlayerAppState::Failed
+                   ? player_support::PlayerAppState::Loaded
+                   : previousState;
+    }
+    return decisionState;
+}
 } // namespace
 
-auto PlayerController::apply(PlayerCommand command) -> core::Result<void> {
-    auto decision = player_support::evaluatePlayerCommand(
-        {.state = state_, .transactionInProgress = transactionInProgress_}, command.kind);
-    if (!decision) {
-        return core::unexpected(std::move(decision.error()));
+auto PlayerController::commandContext(const PlayerCommand& command) const
+    -> player_support::PlayerCommandContext {
+    player_support::PlayerCommandContext context;
+    context.state = state_;
+    context.transactionInProgress = transactionInProgress_;
+    context.hasActiveContent = hasActiveContent_;
+    context.hasConfiguredSource =
+        command.source.has_value() || static_cast<bool>(ports_.makeSource);
+    context.initialLoad = initialLoad_;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+    context.realtimeGameplay = gameplay_.has_value();
+#endif
+    // This adapter has no pause-source registry: only a Playing Pause adds the window source, and
+    // it cannot register a source while its own synchronous transaction owns the application. An
+    // already paused application stays unclassified and keeps the table's duplicate rejection.
+    if (!transactionInProgress_ && state_ == player_support::PlayerAppState::Playing) {
+        context.pauseAdmission = player_support::PlayerPauseAdmission::CurrentRun;
     }
+    return context;
+}
+
+auto PlayerController::apply(PlayerCommand command) -> core::Result<void> {
+    const auto context = commandContext(command);
+    auto decision = player_support::evaluatePlayerCommand(context, command.kind);
+
+    // The synchronous adapter still owns two legacy entries that the owner migration replaces:
+    // explicit replacement Load in a non-Empty application, and Rebuild on a Failed application
+    // that never published content (which keeps its old fresh-Load fallback). Their old outcomes
+    // stay until the owner slice takes over. The table remains authoritative for the new owner.
+    if (!decision) {
+        const auto code = decision.error().code();
+        if (command.kind == player_support::PlayerCommandKind::Load &&
+            code == "player.command.load_initial_only") {
+            decision = player_support::PlayerCommandDecision{
+                .state = player_support::PlayerAppState::Loaded,
+                .duplicate = false,
+                .effect = player_support::PlayerCommandEffect::Execute,
+                .successPolicy = player_support::PlayerSuccessStatePolicy::Fixed};
+        } else if (command.kind == player_support::PlayerCommandKind::Rebuild &&
+                   context.state == player_support::PlayerAppState::Failed &&
+                   !context.hasActiveContent && code == "player.command.not_loaded") {
+            decision = player_support::PlayerCommandDecision{
+                .state = player_support::PlayerAppState::Loaded,
+                .duplicate = false,
+                .effect = player_support::PlayerCommandEffect::Execute,
+                .successPolicy = player_support::PlayerSuccessStatePolicy::Fixed};
+        } else {
+            return core::unexpected(std::move(decision.error()));
+        }
+    }
+
+    // A Failed application still rejects Reload in this adapter; the owner uses the locked source
+    // to build the new content bundle instead of appending to the failed run.
+    if (context.state == player_support::PlayerAppState::Failed &&
+        command.kind == player_support::PlayerCommandKind::Reload) {
+        return core::unexpected(
+            core::Error{"player.command.failed", "A failed application requires recovery first"});
+    }
+
+    // Consume the effect: an already held pause source needs no second freeze and publishes
+    // nothing; RegisterPause and Execute both run the command's own transaction below.
+    switch (decision->effect) {
+    case player_support::PlayerCommandEffect::AlreadySatisfied:
+        return {};
+    case player_support::PlayerCommandEffect::RegisterPause:
+    case player_support::PlayerCommandEffect::Execute:
+        break;
+    }
+
+    // The initial-install marker is spent as soon as the table accepts the Load; a failed
+    // transaction does not restore it.
+    if (command.kind == player_support::PlayerCommandKind::Load) {
+        initialLoad_ = false;
+    }
+
+    const auto previousState = state_;
     core::Result<void> result = {};
     switch (command.kind) {
     case player_support::PlayerCommandKind::Load:
@@ -63,11 +166,14 @@ auto PlayerController::apply(PlayerCommand command) -> core::Result<void> {
     case player_support::PlayerCommandKind::Seek:
         result = runSeek(command.seekTargetMs);
         break;
+    case player_support::PlayerCommandKind::Retry:
+        result = runRetry();
+        break;
     }
     if (!result) {
         return core::unexpected(std::move(result.error()));
     }
-    state_ = decision->state;
+    state_ = publishedState(decision->successPolicy, decision->state, previousState);
     return {};
 }
 
@@ -305,6 +411,23 @@ auto PlayerController::runSeek(double targetMs) -> core::Result<void> {
     return seekChartClock(targetMs);
 }
 
+auto PlayerController::runRetry() -> core::Result<void> {
+    if (session_ == nullptr) {
+        return core::unexpected(
+            core::Error{"player.command.not_loaded", "Retry needs prepared active content"});
+    }
+    // Retry reuses the prepared content and the healthy audio seat; this adapter has no separate
+    // run epoch, so it rewinds the existing transport to zero and starts again. Stop returns the
+    // audio stream to frame zero and the chart clock to zero, and Play starts from there.
+    if (auto stopped = runStop(); !stopped) {
+        return core::unexpected(std::move(stopped.error()).withContext("command", "retry"));
+    }
+    if (auto played = runPlay(); !played) {
+        return core::unexpected(std::move(played.error()).withContext("command", "retry"));
+    }
+    return {};
+}
+
 auto PlayerController::seekChartClock(double targetMs) -> core::Result<void> {
     pendingChartSeekMs_ = targetMs;
     chartResumeMs_ = targetMs;
@@ -501,6 +624,7 @@ auto PlayerController::commitBundle(playback::PlaybackSession& session,
     bundleReplaced_ = true;
     const auto identity = player_support::resolvedSessionConfigIdentity(sessionConfig_);
     logger_.info("player.config", std::string{"Session identity "} + identityText(identity));
+    hasActiveContent_ = true;
     if (auto chartInfo = session_->chartInfo(); chartInfo) {
         if (chartInfo->objectCount == 0) {
             logger_.warn("player.chart", "The committed chart contains no objects");
@@ -539,6 +663,7 @@ auto PlayerController::shutdown() -> core::Result<void> {
         }
     }
     // The application owns no bundle after this point, so no later command may report content.
+    hasActiveContent_ = false;
     state_ = player_support::PlayerAppState::Empty;
     return first;
 }

@@ -1,5 +1,7 @@
 #include "presentation_materializer.hpp"
+#include "frame_layout_internal.hpp"
 #include <algorithm>
+#include <cmath>
 
 namespace cuexis::playback::detail {
 [[nodiscard]] auto presentationResourceTypeName(PresentationResourceType type) noexcept
@@ -135,7 +137,8 @@ auto fillObjects(const runtime::detail::PresentationRead& view, const SnapshotLa
     return {};
 }
 auto fillCamera(const runtime::detail::CameraPresentation& camera, const FrameViewport& viewport,
-                FrameSnapshot::CameraSnapshot& destination) -> core::Result<void> {
+                FrameSnapshot::CameraSnapshot& destination,
+                const experimental::SelectedFrameLayout* selected) -> core::Result<void> {
     if (!camera.selected) {
         return {};
     }
@@ -143,23 +146,54 @@ auto fillCamera(const runtime::detail::CameraPresentation& camera, const FrameVi
         return core::unexpected(
             core::Error{"playback.snapshot.camera_missing", "Active camera is unavailable"});
     }
-    const auto projection = core::makePerspective(
-        camera.fovY * 3.14159265358979323846 / 180.0,
-        static_cast<double>(viewport.width) / viewport.height, camera.nearPlane, camera.farPlane);
-    if (!projection) {
+    double aspect = 0.0;
+    if (selected != nullptr && selected->framing) {
+        aspect = static_cast<double>(selected->framing->aspect.width) /
+                 static_cast<double>(selected->framing->aspect.height);
+    } else if (selected != nullptr &&
+               (selected->layout.target.rotation == experimental::FrameRotation::Deg90 ||
+                selected->layout.target.rotation == experimental::FrameRotation::Deg270)) {
+        // The legacy quarter turn swaps the projected aspect; the rotation itself is applied by
+        // composeFrameProjection after this base projection.
+        aspect = static_cast<double>(viewport.height) / static_cast<double>(viewport.width);
+    } else {
+        aspect = static_cast<double>(viewport.width) / static_cast<double>(viewport.height);
+    }
+    const auto baseProjection = core::makePerspective(camera.fovY * 3.14159265358979323846 / 180.0,
+                                                      aspect, camera.nearPlane, camera.farPlane);
+    if (!baseProjection) {
         return core::unexpected(
             core::Error{"playback.snapshot.camera_invalid", "Active camera parameters are invalid"}
-                .withCause(projection.error()));
+                .withCause(baseProjection.error()));
+    }
+
+    core::Mat4 projection = *baseProjection;
+    double effectiveFovY = camera.fovY;
+    if (selected != nullptr && selected->framing) {
+        auto composed = composeFrameProjection(*baseProjection, *selected);
+        if (!composed) {
+            return core::unexpected(std::move(composed.error()));
+        }
+        projection = *composed;
+        const auto halfAngle = camera.fovY * 3.14159265358979323846 / 360.0;
+        effectiveFovY = 2.0 * std::atan(selected->framing->verticalScale * std::tan(halfAngle)) *
+                        180.0 / 3.14159265358979323846;
+    } else if (selected != nullptr) {
+        auto composed = composeFrameProjection(*baseProjection, *selected);
+        if (!composed) {
+            return core::unexpected(std::move(composed.error()));
+        }
+        projection = *composed;
     }
 
     destination.active = true;
-    destination.fovY = camera.fovY;
+    destination.fovY = effectiveFovY;
     destination.nearPlane = camera.nearPlane;
     destination.farPlane = camera.farPlane;
     destination.pitch = camera.pitch;
     destination.yaw = camera.yaw;
     destination.roll = camera.roll;
-    copyMatrix(*projection, destination.projectionMatrix);
+    copyMatrix(projection, destination.projectionMatrix);
 
     core::Mat4 viewMatrix{};
     if (camera.hasTransform) {
@@ -192,9 +226,12 @@ auto fillCamera(const runtime::detail::CameraPresentation& camera, const FrameVi
     return {};
 }
 } // namespace
-auto materializeSnapshot(const runtime::detail::PresentationRead& view,
-                         const SnapshotLayout& layout, const FrameViewport& viewport,
-                         FrameSnapshot& snapshot) -> core::Result<void> {
+namespace {
+auto materializeSnapshotImpl(const runtime::detail::PresentationRead& view,
+                             const SnapshotLayout& layout, const FrameViewport& viewport,
+                             FrameSnapshot& snapshot,
+                             const experimental::SelectedFrameLayout* selected)
+    -> core::Result<void> {
     auto state = view.state();
     if (!state)
         return core::unexpected(std::move(state.error()));
@@ -214,6 +251,18 @@ auto materializeSnapshot(const runtime::detail::PresentationRead& view,
     auto camera = view.readCamera();
     if (!camera)
         return core::unexpected(std::move(camera.error()));
-    return fillCamera(*camera, viewport, snapshot.camera);
+    return fillCamera(*camera, viewport, snapshot.camera, selected);
+}
+} // namespace
+auto materializeSnapshot(const runtime::detail::PresentationRead& view,
+                         const SnapshotLayout& layout, const FrameViewport& viewport,
+                         FrameSnapshot& snapshot) -> core::Result<void> {
+    return materializeSnapshotImpl(view, layout, viewport, snapshot, nullptr);
+}
+auto materializeSnapshot(const runtime::detail::PresentationRead& view,
+                         const SnapshotLayout& layout, const FrameViewport& viewport,
+                         FrameSnapshot& snapshot, const experimental::SelectedFrameLayout& selected)
+    -> core::Result<void> {
+    return materializeSnapshotImpl(view, layout, viewport, snapshot, &selected);
 }
 } // namespace cuexis::playback::detail

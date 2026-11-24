@@ -630,7 +630,7 @@ Portable v1 已有 presentation code 保持含义。Stage 5 新增 code 不得�
 
 ## 13. SDK、Digest 与 package（S5A-12）
 
-下表 SDK 版本记录 S5-C 公开类型引入时的历史基线；当前 SDK API 为 0.9.1，见 [CURRENT_STATUS](../CURRENT_STATUS.md)。
+下表 SDK 版本记录 S5-C 公开类型引入时的历史基线；当前 SDK API 为 0.10.0，见 [CURRENT_STATUS](../CURRENT_STATUS.md)。
 
 ```text
 CUEXIS_SDK_API_VERSION: 0.7.0            public types landed in S5-C

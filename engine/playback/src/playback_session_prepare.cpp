@@ -2,6 +2,9 @@
 
 #include "playback_session_internal.hpp"
 #include "playback_session_prepare_internal.hpp"
+#if defined(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+#include "playback_session_prepare_hooks.hpp"
+#endif
 #if defined(CUEXIS_EXECUTION_ALLOCATION_OBSERVER)
 #include <cuexis/runtime/transaction_access.hpp>
 #endif
@@ -187,7 +190,11 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
         }
         auto& sourceState = *source.state_;
         const auto* entryChart = sourceState.entryChart();
+#if defined(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
         const bool candidateSource = sourceState.candidate.has_value();
+#else
+        const bool candidateSource = false;
+#endif
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
         const bool gameplayOnly = sourceState.gameplayContent.valid() &&
                                   sourceState.gameplayIntent == GameplayPrepareIntent::GameplayOnly;
@@ -219,6 +226,7 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
 
         std::optional<chart::ChartRuntime> chartRuntimeStorage;
         std::optional<animation::AnimationProgram> compiledAnimation;
+#if defined(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
         if (candidateSource) {
             auto candidateRuntime =
                 prepareCandidateStage(*sourceState.candidate,
@@ -240,7 +248,9 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
             }
             compiledAnimation = animation::AnimationProgram{};
             chartRuntimeStorage = std::move(*candidateRuntime);
-        } else {
+        } else
+#endif
+        {
             auto loaded = [&] {
                 const internal::PrepareTraceScope trace{"load_document"};
                 return loadDocumentStage(context, artifact, diagnostics);
@@ -400,6 +410,9 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
         auto prepared = std::make_unique<PreparedPlayback::State>();
         prepared->owner = &context.owner;
         prepared->ownerToken = state_->sessionToken;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
+        prepared->ownerLease = state_->preparedOwnerLease;
+#endif
         prepared->expectedGeneration = state_->generation;
         prepared->replacement = context.replacement;
         prepared->contentProvider = std::move(sourceState.provider);
@@ -416,7 +429,9 @@ auto PlaybackSession::prepare(PlaybackSource&& source, PlaybackMode mode,
                                    : std::nullopt};
         prepared->parameters = context.options.parameters;
         prepared->semanticIdentity = toPublicIdentity(*assembledIdentity);
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
         prepared->candidateMetadata = std::move(artifact.candidateMetadata);
+#endif
         prepared->audioSourceLease = std::move(audioSourceLease);
         prepared->targetFrame = committedFrame;
         prepared->committedState = replacement ? state_->sessionState : SessionState::Ready;
@@ -522,6 +537,7 @@ auto PlaybackSession::commit(PreparedPlayback&& prepared) -> core::Result<void> 
     auto mutation = internal::presentation::Mutation::reserve(state_->presentationClock, true);
     if (!mutation)
         return core::unexpected(std::move(mutation.error()));
+    const auto committedToken = prepared.presentationCandidateToken();
     detail::CommittedPresentationState descriptor;
     descriptor.source = candidate.replacement ? internal::presentation::Source::Restore
                                               : internal::presentation::Source::Prepared;
@@ -535,13 +551,18 @@ auto PlaybackSession::commit(PreparedPlayback&& prepared) -> core::Result<void> 
     state_->activeContentInfo = std::move(candidate.contentInfo);
     state_->activeMode = state_->activeContentInfo->mode;
     state_->semanticIdentity = candidate.semanticIdentity;
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     state_->candidateMetadata = std::move(candidate.candidateMetadata);
+#endif
     state_->parameters = std::move(candidate.parameters);
     state_->lastFrame = candidate.targetFrame;
     state_->diagnostics = std::move(candidate.diagnostics);
     state_->lastOperationDiagnostics = std::move(candidate.lastOperationDiagnostics);
     state_->sessionState = candidate.committedState;
     state_->presentation = std::move(candidate.presentation);
+    state_->framings = std::move(candidate.framings);
+    state_->committedPresentationToken =
+        committedToken ? std::optional<PresentationCandidateToken>{*committedToken} : std::nullopt;
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     state_->gameplayContent = std::move(candidate.gameplayContent);
     state_->gameplayProjectionIndex = std::move(candidate.gameplayProjectionIndex);

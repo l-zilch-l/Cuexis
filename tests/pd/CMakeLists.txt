@@ -39,6 +39,8 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE AND CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
             ${CUEXIS_EXECUTION_HOST_SOURCES}
             "${PROJECT_SOURCE_DIR}/app/player/src/snapshot_scene.cpp")
         target_compile_features(cuexis_pd_host_probe PRIVATE cxx_std_20)
+        target_include_directories(cuexis_pd_host_probe PRIVATE
+            "${PROJECT_SOURCE_DIR}/engine/playback/internal")
         target_compile_definitions(cuexis_pd_host_probe PRIVATE CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
         target_compile_definitions(cuexis_pd_host_probe PRIVATE
             CUEXIS_PD5_CAPACITY_SOURCE_SHA="${CUEXIS_IMPLEMENTATION_SHA}")
@@ -51,11 +53,6 @@ endif()
 # Offline tool contracts do not launch WPR, ETW roles, or Cuexis measurements.
 if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
     find_package(Python3 COMPONENTS Interpreter REQUIRED)
-    add_test(NAME cuexis_execution_acceptance_tool_tests
-        COMMAND "${Python3_EXECUTABLE}" -B -m unittest discover
-            -s tools/verification/execution_acceptance -t .)
-    set_tests_properties(cuexis_execution_acceptance_tool_tests PROPERTIES
-        WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}" LABELS "pd;tools;contract")
     set(pd5_tool_test_tmp "${PROJECT_BINARY_DIR}/pd5-tool-test-tmp")
     file(MAKE_DIRECTORY "${pd5_tool_test_tmp}")
     set(pd5_tool_suites

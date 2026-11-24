@@ -155,13 +155,23 @@ using namespace worker_detail;
                 }
                 return reply(std::move(retired));
             } else if constexpr (std::is_same_v<T, SessionConfirmControl>) {
-                if (job.proof.request.kind == ControlKind::close) {
-                    const auto& closed =
-                        job.proof.steps[static_cast<unsigned>(Participant::software)]
-                                       [static_cast<unsigned>(StepPhase::close)];
-                    if (!closed)
+                const bool closing = job.proof.request.kind == ControlKind::close;
+                const StepReceipt* closed = nullptr;
+                if (closing) {
+                    const auto& step = job.proof.steps[static_cast<unsigned>(Participant::software)]
+                                                      [static_cast<unsigned>(StepPhase::close)];
+                    if (!step)
                         return core::unexpected(
                             workerError("device_pending", "Software close proof absent"));
+                    closed = &*step;
+                }
+                auto owner = HostCoordinationAccess::executionOwnerState(session);
+                if (!owner)
+                    return core::unexpected(owner.error());
+                // The retained accepted identity anchors the first terminal acknowledgement.
+                // After that terminal the identity is gone and the host step ledger below is the
+                // replay protection for a repeated confirmation.
+                if (closing && owner->acceptedControl) {
                     auto binding = HostCoordinationAccess::validateControlProof(
                         session, closed->request, job.proof);
                     if (!binding)
@@ -169,28 +179,39 @@ using namespace worker_detail;
                 }
                 auto current = HostCoordinationAccess::currentFence(session);
                 if (!current) {
-                    if (job.proof.request.kind != ControlKind::close ||
-                        !controlFullyApplied(job.proof) || session.state() != SessionState::Empty ||
-                        !software)
+                    if (!closing || !controlFullyApplied(job.proof) ||
+                        session.state() != SessionState::Empty || !software)
                         return core::unexpected(current.error());
-                    const auto& closed =
-                        job.proof.steps[static_cast<unsigned>(Participant::software)]
-                                       [static_cast<unsigned>(StepPhase::close)];
-                    if (!closed)
-                        return core::unexpected(
-                            workerError("device_pending", "Software close proof absent"));
-                    auto binding =
-                        HostCoordinationAccess::validateControlBinding(session, closed->request);
-                    if (!binding)
-                        return core::unexpected(binding.error());
                     auto actual = software->query(closed->request.key);
+                    if (!owner->acceptedControl &&
+                        (!actual || actual->status != StepStatus::applied))
+                        return core::unexpected(
+                            workerError("context_stale", "No accepted Close owns this terminal"));
                     if (!actual || actual->status != StepStatus::applied ||
                         actual->request != closed->request || actual->effects != closed->effects)
                         return core::unexpected(workerError(
                             "device_pending", "Software close differs from owner history"));
+                    if (!owner->acceptedControl) {
+                        // Idempotent repeat: the applied host ledger record already proves the
+                        // accepted Close terminal and no session identity remains to acknowledge.
+                        return SessionReply{std::monostate{}};
+                    }
+                    auto binding =
+                        HostCoordinationAccess::validateControlBinding(session, closed->request);
+                    if (!binding)
+                        return core::unexpected(binding.error());
+                    // Directed Close cleanup retires content without a software fence. Clearing
+                    // the whole Session acknowledges the terminal and drops the retained
+                    // identity; the host ledger keeps the applied receipt.
+                    auto terminal = session.unload();
+                    if (!terminal)
+                        return core::unexpected(terminal.error());
                     return SessionReply{std::monostate{}};
                 }
-                if (job.proof.request.kind == ControlKind::close &&
+                if (closing && !owner->acceptedControl)
+                    return core::unexpected(workerError(
+                        "context_stale", "A retained fence requires its accepted control"));
+                if (closing &&
                     job.proof.request.context.controlSequence != current->controlSequence())
                     return reply(
                         HostCoordinationAccess::completeClose(session, *current, job.proof));
@@ -278,6 +299,14 @@ using namespace worker_detail;
                                     coverage.historyMisses}};
             } else if constexpr (std::is_same_v<T, SessionDeliveryMetrics>) {
                 return SessionReply{delivery->storageMetrics()};
+            } else if constexpr (std::is_same_v<T, SessionPreparedFramings>) {
+                if (!prepared)
+                    return core::unexpected(
+                        workerError("context_stale", "A Prepared candidate is not retained"));
+                auto framings = experimental::preparedFramings(*prepared);
+                if (!framings)
+                    return core::unexpected(framings.error());
+                return SessionReply{std::move(*framings)};
             } else if constexpr (std::is_same_v<T, SessionSample>) {
                 if (framePath == FramePath::requested)
                     return core::unexpected(
@@ -312,7 +341,8 @@ using namespace worker_detail;
                         frame.retainedSnapshot =
                             retained->payload
                                 ? std::shared_ptr<const FrameSnapshot>{retained->payload,
-                                                                       &retained->payload->snapshot}
+                                                                       &retained->payload
+                                                                            ->snapshotView()}
                             : retained->retainedSnapshot ? retained->retainedSnapshot
                                                          : std::shared_ptr<const FrameSnapshot>{
                                                                retained, &retained->snapshot};

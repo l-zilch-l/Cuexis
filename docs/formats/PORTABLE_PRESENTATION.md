@@ -679,7 +679,7 @@ Package topology 提案：
 - OpenGL package component 延期到存在不依赖内部 header 的 surface/context 合同后重新评审，不在
   Stage 3 中以不完整闭包发布。
 
-Stage 3 继续使用 matching-toolchain C++ shared preview；稳定 C ABI 仍属于阶段 12。
+Stage 3 继续使用 matching-toolchain C++ shared preview；稳定 C ABI 仍属于 Stage 14（见 [ROADMAP](../ROADMAP.md)）。
 
 ## 14. Implementation status
 

@@ -334,10 +334,10 @@ TEST_CASE("PD4 host updates without credit and reports NoRetainedFrame after exp
     auto backing = next->payload;
     REQUIRE(host.close());
     CHECK(host.storageMetrics().retiredCount == 1);
-    CHECK_FALSE(backing->snapshot.objects.empty());
+    CHECK_FALSE(std::get<FrameSnapshot>(backing->frame).objects.empty());
     next->payload.reset();
     made->reset(); // external storage is independent of the joined/destroyed Worker
-    CHECK_FALSE(backing->snapshot.objects.empty());
+    CHECK_FALSE(std::get<FrameSnapshot>(backing->frame).objects.empty());
     backing.reset();
 }
 TEST_CASE("PD4 actual host long steady state reclaims frames with a tiny observation journal",

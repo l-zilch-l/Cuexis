@@ -231,9 +231,13 @@ artifact identity 与解码计数须分别核对。
 Windows / 已有 MSVC candidate 构建：
 
 ```powershell
+$vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" `
+  -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
+  -property installationPath
+
 python -B tools/practice/build_entity_practice_compiler.py `
   --build out/build/candidate-debug --output out/entity-v5/compiler `
-  --vcvars "D:/Program Files/Microsoft Visual Studio/18/Community/VC/Auxiliary/Build/vcvars64.bat"
+  --vcvars "$vs\VC\Auxiliary\Build\vcvars64.bat"
 
 python -B tools/practice/make_entity_practice_chart.py `
   --output out/entity-v5 --compiler out/entity-v5/compiler/compiler.exe `

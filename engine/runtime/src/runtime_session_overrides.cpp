@@ -90,6 +90,14 @@ auto RuntimeSession::acquireOverride(world::OverrideKind kind, std::string owner
                                         .withContext("object_id", write.objectId.value)
                                         .withContext("owner", token.ownerId));
         }
+        // Validate the complete batch against the existing captured baseline rules before any
+        // token or override becomes observable. The update path still performs its own full
+        // evaluation; this only rejects batches that are already known to be refused there.
+        if (auto valid = world::detail::ResolverAccess::validatePropertyValue(
+                evaluation_->resolver, *entity, write.property, write.value);
+            !valid) {
+            return core::unexpected(std::move(valid.error()));
+        }
         token.writes.push_back(world::OverrideWrite{
             .entity = *entity, .property = write.property, .value = write.value});
     }

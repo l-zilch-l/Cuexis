@@ -254,6 +254,37 @@ auto PropertyResolver::validateAndStore(Entry& entry, PropertyId property,
     return {};
 }
 
+auto detail::ResolverAccess::validatePropertyValue(const PropertyResolver& resolver,
+                                                   entt::entity entity, PropertyId property,
+                                                   const PropertyValue& value)
+    -> core::Result<void> {
+    const auto* entry = resolver.findEntry(entity);
+    if (entry == nullptr) {
+        if (isTransformProperty(property)) {
+            return core::unexpected(entityError("world.property.transform_missing",
+                                                "Transform property target has no baseline",
+                                                entity));
+        }
+        if (isCameraProperty(property)) {
+            return core::unexpected(core::Error{"runtime.camera.binding_missing",
+                                                "camera.fovY target has no CameraComponent"});
+        }
+        if (isAppearanceProperty(property)) {
+            return core::unexpected(core::Error{"runtime.appearance.binding_missing",
+                                                "Appearance target has no Renderable component"});
+        }
+        return core::unexpected(entityError("world.property.baseline_missing",
+                                            "Property target has no baseline", entity));
+    }
+    const auto& state = entry->properties[propertyIndex(property)];
+    auto parsed = parsedPropertyValue(entity, entry->hasTransform, state.present, property,
+                                      writeValue(value));
+    if (!parsed) {
+        return core::unexpected(std::move(parsed.error()));
+    }
+    return {};
+}
+
 auto PropertyResolver::applyWrite(const PropertyWrite& write, PropertyLayer layer,
                                   bool duplicateIsError) -> core::Result<void> {
     if (write.entity == entt::null) {

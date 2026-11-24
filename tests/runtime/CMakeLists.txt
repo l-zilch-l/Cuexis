@@ -14,6 +14,7 @@ target_link_libraries(cuexis_runtime_tests
         cuexis::assets
         cuexis::behavior
         cuexis::chart
+        cuexis::chart_tools
         cuexis::gameplay
         cuexis::render
         cuexis::runtime

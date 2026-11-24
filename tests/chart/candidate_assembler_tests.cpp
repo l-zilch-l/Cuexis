@@ -3,6 +3,7 @@
 #include <cuexis/chart/candidate_assembler.hpp>
 #include <cuexis/chart/cxt_v2_loader.hpp>
 #include <cuexis/chart/packed_chart_tables.hpp>
+#include <cuexis/chart/packed_chart_writer.hpp>
 #include <filesystem>
 #include <fstream>
 #include <sstream>

@@ -1,3 +1,4 @@
+#include "../../engine/judgement/src/ingress_transaction.hpp"
 #include "execution_kernel_test_fixture.hpp"
 
 // Reset, invariant, trace-oracle and containment cases.
@@ -610,4 +611,163 @@ TEST_CASE("Contact subjects include source class even with identical channel and
     CHECK(a->kernelView().contacts[0] != b->kernelView().contacts[0]);
     CHECK(a->kernelView().contacts[0].startPressKey.sourceClass == "keyboard");
     CHECK(b->kernelView().contacts[0].startPressKey.sourceClass == "controller");
+}
+
+TEST_CASE("rr2_contract_input", "[judgement][execution][input][rr2][atomic][late]") {
+    // Ordinary normalization: the entry only produces ordered observations. Distinct subjects at
+    // one tick are admitted; a duplicate canonical subject at that tick is a same-tick collision;
+    // a duplicate ingress ordinal keeps precedence over it.
+    const auto mapping = InputMappingProfile{
+        "rr2.mapping",
+        "v1",
+        *SourceClass::fromToken("keyboard"),
+        {{"domain.binding.one", {makeDuration(1, 1), -100, 100, AmountBoundaryPolicy::inclusive}}}};
+    const auto ingress = [](std::int64_t tick, std::uint64_t sequence, InputAction action) {
+        return ClockedIngress{ObservationTick{Tick{tick}},
+                              {IngressSequence{sequence},
+                               action,
+                               *ChannelRef::fromToken("lane.one"),
+                               "domain.binding.one",
+                               {0, 0, 0, 0},
+                               {false, false, false},
+                               ContinuityKind::discrete,
+                               {}}};
+    };
+    {
+        SessionIngressState state;
+        const auto journal = detail::prepareIngressBatch(
+            state, mapping,
+            std::vector<ClockedIngress>{ingress(-10, 1, InputAction::press),
+                                        ingress(-10, 2, InputAction::release)},
+            false);
+        REQUIRE(journal);
+        REQUIRE(journal->entries.size() == 2U);
+        CHECK(journal->entries[0].subject.action == InputAction::press);
+        CHECK(journal->entries[1].subject.action == InputAction::release);
+        CHECK(state.lastObservedTick() == nullptr);
+    }
+    {
+        SessionIngressState state;
+        const auto duplicate = detail::prepareIngressBatch(
+            state, mapping,
+            std::vector<ClockedIngress>{ingress(-10, 1, InputAction::press),
+                                        ingress(-10, 2, InputAction::press)},
+            false);
+        REQUIRE_FALSE(duplicate);
+        CHECK(duplicate.error().code() == "judgement.input.same_tick_collision");
+        CHECK(contextValue(duplicate.error(), "category") == "invalid_relation");
+        CHECK(state.lastObservedTick() == nullptr);
+    }
+    {
+        SessionIngressState state;
+        REQUIRE(normalizeObservation(state, mapping, ObservationTick{Tick{-10}},
+                                     ingress(-10, 1, InputAction::press).declaration));
+        const auto duplicate =
+            normalizeObservation(state, mapping, ObservationTick{Tick{-10}},
+                                 ingress(-10, 2, InputAction::press).declaration);
+        REQUIRE_FALSE(duplicate);
+        CHECK(duplicate.error().code() == "judgement.input.same_tick_collision");
+        const auto sequence = normalizeObservation(state, mapping, ObservationTick{Tick{-10}},
+                                                   ingress(-10, 1, InputAction::press).declaration);
+        REQUIRE_FALSE(sequence);
+        CHECK(sequence.error().code() == "judgement.input.ingress_sequence_duplicate");
+        CHECK(contextValue(sequence.error(), "category") == "late_policy_incomplete");
+    }
+
+    // Legacy execution profile: sequence -> duplicate subject -> same original Tick -> dispatch.
+    {
+        KernelFixture f;
+        auto session = f.session();
+        const auto rejected = session.submit(
+            {input(900, 1, InputAction::press), input(901, 1, InputAction::release)});
+        REQUIRE_FALSE(rejected);
+        CHECK(rejected.error().code() == "judgement.input.ingress_sequence_duplicate");
+        CHECK(contextValue(rejected.error(), "category") == "late_policy_incomplete");
+    }
+    {
+        KernelFixture f;
+        auto session = f.session();
+        const auto rejected =
+            session.submit({input(900, 1, InputAction::press), input(900, 2, InputAction::press)});
+        REQUIRE_FALSE(rejected);
+        CHECK(rejected.error().code() == "judgement.late.duplicate_queue_entry");
+        CHECK(contextValue(rejected.error(), "category") == "late_policy_incomplete");
+    }
+    {
+        KernelFixture f;
+        auto session = f.session();
+        const auto rejected = session.submit(
+            {input(900, 1, InputAction::press), input(900, 2, InputAction::release)});
+        REQUIRE_FALSE(rejected);
+        CHECK(rejected.error().code() == "judgement.input.same_tick_collision");
+        CHECK(contextValue(rejected.error(), "category") == "invalid_relation");
+    }
+    {
+        KernelFixture f;
+        auto session = f.session();
+        REQUIRE(session.advance(Tick{903}));
+        const auto rejected = session.submit(
+            {input(900, 1, InputAction::press), input(901, 2, InputAction::release)});
+        REQUIRE_FALSE(rejected);
+        CHECK(rejected.error().code() == "judgement.late.dispatch_collision");
+        CHECK(contextValue(rejected.error(), "category") == "invalid_relation");
+    }
+
+    // Cross-batch re-submission: the original pending entry survives a rejection, and the rejected
+    // ordinal is not consumed. One session submits a native 901 press, the other forwards 900 to
+    // 901, so the two sessions separately prove the native and the forwarded receipt.
+    for (const bool forwarded : {false, true}) {
+        INFO("forwarded=" << forwarded);
+        KernelFixture f;
+        auto session = f.session();
+        REQUIRE(session.advance(Tick{903}));
+        const auto originalTick = forwarded ? 900 : 901;
+        const auto first = session.submit({input(originalTick, 1, InputAction::press)});
+        REQUIRE(first);
+        REQUIRE(first->size() == 1U);
+        CHECK(first->front().dispatchTick == Tick{901});
+        if (forwarded) {
+            // The 900 press is forwarded to 901; the receipt must say so.
+            CHECK(first->front().wasForwarded);
+        } else {
+            // The native 901 press is already at the dispatch tick; it must not be marked
+            // forwarded.
+            CHECK_FALSE(first->front().wasForwarded);
+        }
+
+        const auto before = session.query();
+        REQUIRE(before);
+        const auto rejected = session.submit({input(originalTick, 9, InputAction::press)});
+        REQUIRE_FALSE(rejected);
+        CHECK(rejected.error().code() == "judgement.late.duplicate_queue_entry");
+        CHECK(contextValue(rejected.error(), "category") == "late_policy_incomplete");
+        const auto afterRejection = session.query();
+        REQUIRE(afterRejection);
+        CHECK(afterRejection->kernelView().facts == before->kernelView().facts);
+        CHECK(afterRejection->kernelView().lastAdvanceHorizon ==
+              before->kernelView().lastAdvanceHorizon);
+
+        // The native/forwarded pending entry still executes exactly once.
+        // 上一版 rr2_contract_input 已在 candidate-debug 实测 receipts 为 1；本轮新增 receipt 对象
+        // 断言待重建重跑。
+        REQUIRE(session.advance(Tick{905}));
+        const auto executed = session.query();
+        REQUIRE(executed);
+        REQUIRE(executed->kernelView().receipts.size() == 1U);
+        // Size alone would accept a phantom receipt; bind the settled receipt to the original
+        // pending key and dispatch tick so this distinguishes "executed exactly once" from "one
+        // receipt of some other content".
+        CHECK(executed->kernelView().receipts.front().dispatchTick == Tick{901});
+        CHECK(executed->kernelView().receipts.front().observationKey ==
+              first->front().observationKey);
+
+        // The rejected ordinal was never consumed: it is accepted at another legal tick. The
+        // submission sits behind the advanced horizon, so the kernel forwards it from 902 to the
+        // next legal dispatch tick 903; that forwarding is the expected behaviour, not a reuse of
+        // the rejected entry.
+        const auto reused = session.submit({input(902, 9, InputAction::press)});
+        REQUIRE(reused);
+        CHECK(reused->front().dispatchTick == Tick{903});
+        CHECK(reused->front().wasForwarded);
+    }
 }

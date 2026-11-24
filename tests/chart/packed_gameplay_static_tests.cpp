@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cuexis/chart/packed_chart_writer.hpp>
 #include <limits>
 
 namespace {

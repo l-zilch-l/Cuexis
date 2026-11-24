@@ -150,22 +150,8 @@ auto declareReference(ReferenceKind kind, ReferenceClosure requested)
 }
 
 //  ---------------------------------------------------------------------------------------------
-//  Fact category spelling (Spec 3.20 rule 3)
+//  Fact category spelling moved to `phase_types.cpp`.
 //  ---------------------------------------------------------------------------------------------
-
-auto factCategoryToken(FactCategory category) noexcept -> std::string_view {
-    switch (category) {
-    case FactCategory::tap:
-        return "tap";
-    case FactCategory::holdHead:
-        return "hold_head";
-    case FactCategory::holdBody:
-        return "hold_body";
-    case FactCategory::holdTail:
-        return "hold_tail";
-    }
-    return "?";
-}
 
 //  ---------------------------------------------------------------------------------------------
 //  Declaration-scoped names (P2-05)

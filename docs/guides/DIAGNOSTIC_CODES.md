@@ -26,7 +26,7 @@ authority: references
 | `late_policy_incomplete` | GAMEPLAY_V2_SPEC.md#9.2 |
 | `identity_closure_incomplete` | GAMEPLAY_V2_SPEC.md#9.2 |
 
-## 已注册码（73 条）
+## 已注册码（74 条）
 
 | 码 | 类别 | 严重度 | 会话影响 | 首个消费批次 |
 | --- | --- | --- | --- | --- |
@@ -34,6 +34,7 @@ authority: references
 | `migration.ambiguous` | ambiguous_migration | error | session_unaffected | S7A-3 |
 | `capability.budget_insufficient` | budget_exceeded | error | session_unaffected | S7A-3 |
 | `graph.budget.exceeded` | budget_exceeded | error | session_unaffected | S7A-7 |
+| `judgement.advance.output_capacity_insufficient` | budget_exceeded | error | session_unaffected | RR-ADV |
 | `judgement.input.amount_narrowed` | budget_exceeded | error | session_unaffected | S7A-2 |
 | `judgement.input.amount_out_of_range` | budget_exceeded | error | session_unaffected | S7A-2 |
 | `judgement.timebase.tick_overflow` | budget_exceeded | error | session_unaffected | S7A-2 |

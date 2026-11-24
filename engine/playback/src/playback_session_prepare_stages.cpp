@@ -6,62 +6,6 @@
 namespace cuexis::playback {
 namespace prepare_detail {
 
-[[nodiscard]] auto prepareCandidateStage(const cxc::CandidateChart& candidate, bool gameplaySource,
-                                         const PlaybackPrepareOptions& options, bool replacement,
-                                         const chart::ChartLimits& limits,
-                                         PrepareArtifact& artifact, core::Diagnostics& diagnostics)
-    -> core::Result<chart::ChartRuntime> {
-    if (!options.parameters.values.empty()) {
-        for (std::size_t index = 0; index < options.parameters.values.size(); ++index) {
-            diagnostics.add(
-                core::Diagnostic{core::DiagnosticSeverity::Error, "chart.parameter.unknown",
-                                 "Host parameter input is not supported by this Chart version",
-                                 "$/parameterInputs/" + std::to_string(index) + "/id"});
-        }
-        diagnostics.sortDeterministically();
-        return core::unexpected(operationError(
-            replacement ? "playback.chart.reload_load_failed" : "playback.chart.load_failed",
-            "Chart parameter resolution produced errors", diagnostics));
-    }
-
-    auto lowered =
-        candidate.behavior ? chart::CandidateRuntimeArtifactResult{*candidate.behavior, {}}
-        : gameplaySource   ? chart::lowerGameplayPresentationRuntime(candidate.semantic, limits)
-                           : chart::lowerCandidateRuntime(candidate.semantic, limits);
-    diagnostics.append(std::move(lowered.diagnostics));
-    if (!lowered.hasValue()) {
-        diagnostics.sortDeterministically();
-        return core::unexpected(operationError(replacement ? "playback.chart.reload_compile_failed"
-                                                           : "playback.chart.compile_failed",
-                                               "Candidate lowering produced errors", diagnostics));
-    }
-
-    auto requirements =
-        candidateResourceRequirements(lowered.artifact->metadata.resourceClosure, diagnostics);
-    if (!requirements) {
-        return core::unexpected(operationError("playback.candidate.resource_closure_invalid",
-                                               "Candidate resource closure could not be prepared",
-                                               diagnostics));
-    }
-    const bool renderable = std::ranges::any_of(lowered.artifact->runtime.objects,
-                                                [](const chart::RuntimeObject& object) {
-                                                    return object.components.renderable.has_value();
-                                                });
-    if (candidate.behavior) {
-        artifact.additionalCapabilities.emplace_back(capabilityBehaviorEventV2);
-        for (const auto& behavior : lowered.artifact->runtime.behaviors)
-            for (const auto& track : behavior.stepTracks)
-                if (track.property == chart::BehaviorStepProperty::RenderVisible)
-                    artifact.additionalCapabilities.emplace_back(capabilityRenderVisibilityV1);
-    }
-    if (renderable) {
-        artifact.additionalCapabilities.emplace_back(capabilityMaterialSnapshotV1);
-    }
-    artifact.resourceRequirements = std::move(*requirements);
-    artifact.candidateMetadata = std::move(lowered.artifact->metadata);
-    return std::move(lowered.artifact->runtime);
-}
-
 [[nodiscard]] auto loadDocumentStage(const PrepareContext& context, PrepareArtifact& artifact,
                                      core::Diagnostics& diagnostics) -> core::Result<void> {
     const internal::pd::memory::ExecutionDomainScope memoryScope{
@@ -492,6 +436,7 @@ assembleResourceIdentities(std::span<const chart::ChartResourceRequirement> requ
 
 [[nodiscard]] auto assembleIdentityStage(PrepareArtifact& artifact, core::Diagnostics& diagnostics)
     -> core::Result<chart::CanonicalContentIdentity> {
+#if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
     if (artifact.candidateMetadata) {
         auto resourceIdentities =
             assembleResourceIdentities(artifact.resourceRequirements, artifact.audioSourceLease,
@@ -512,6 +457,7 @@ assembleResourceIdentities(std::span<const chart::ChartResourceRequirement> requ
         }
         return std::move(*identity);
     }
+#endif
     if (!artifact.v4Artifact) {
         if (artifact.audioSourceLease && artifact.audioSourceLease->valid()) {
             artifact.resourceRequirements.push_back(chart::ChartResourceRequirement{

@@ -1,6 +1,7 @@
 param(
     [string]$Repository = 'l-zilch-l/Cuexis',
     [int]$PullRequest = 32,
+    [string]$Proxy = '',
     [switch]$PrepareOnly
 )
 
@@ -35,11 +36,15 @@ function Read-GitHubJson([string]$Endpoint) {
     return (Invoke-GhRequest 'GET' $Endpoint)
 }
 
-function Enable-ApprovalProxy {
+function Enable-ApprovalProxy([string]$ProxyUrl) {
     # Process-local only; never rewrite the user's Windows or Git settings.
-    $env:HTTPS_PROXY = 'http://127.0.0.1:7890'
-    $env:NO_PROXY = ''
-    Write-Host 'Using proxy http://127.0.0.1:7890 for this run.'
+    if ($ProxyUrl) {
+        $env:HTTPS_PROXY = $ProxyUrl
+        $env:NO_PROXY = ''
+        Write-Host "Using proxy $ProxyUrl for this run."
+    } else {
+        Write-Host 'No proxy override; using the process proxy environment as-is.'
+    }
 }
 
 function Read-RemoteText([string]$Repo, [string]$Path, [string]$Ref) {
@@ -133,12 +138,25 @@ function Save-ApprovalDraft($Record, [string]$Directory) {
     return $path
 }
 
+function Get-ApprovalTimestampText([object]$Value) {
+    # pwsh 7 converts ISO-8601 JSON strings into DateTime; Windows PowerShell keeps
+    # strings. Compare one canonical text form either way.
+    if ($Value -is [datetime]) {
+        return $Value.ToUniversalTime().ToString(
+            'yyyy-MM-ddTHH:mm:ssZ', [Globalization.CultureInfo]::InvariantCulture)
+    }
+    return [string]$Value
+}
+
 function Test-ApprovalComment($Comment, $Record, $Owners) {
-    if (-not $Comment -or $Comment.user.type -cne 'User' -or
+    if (-not $Comment) { return $false }
+    $createdAt = Get-ApprovalTimestampText $Comment.created_at
+    $updatedAt = Get-ApprovalTimestampText $Comment.updated_at
+    if ($Comment.user.type -cne 'User' -or
         $Owners -cnotcontains $Comment.user.login -or
         ($Comment.id -isnot [int] -and $Comment.id -isnot [long]) -or $Comment.id -le 0 -or
-        $Comment.created_at -cne $Comment.updated_at -or
-        -not ([string]$Comment.created_at).StartsWith($Record.utc_date + 'T')) { return $false }
+        $createdAt -cne $updatedAt -or
+        -not $createdAt.StartsWith($Record.utc_date + 'T')) { return $false }
     if ($Comment.body -isnot [string] -or $Comment.body.Length -gt 8192) { return $false }
     $body = $Comment.body.Replace("`r`n", "`n")
     $prefix = "cuexis-sdk-api-approval-v1`n"
@@ -258,7 +276,7 @@ if ($MyInvocation.InvocationName -ne '.') {
         try { $locked = $lock.WaitOne(0) }
         catch [Threading.AbandonedMutexException] { $locked = $true }
         if (-not $locked) { throw 'Another approval assistant is already running for this PR.' }
-        Enable-ApprovalProxy
+        Enable-ApprovalProxy $Proxy
         Start-ApprovalAssistant
         $exitCode = 0
     }

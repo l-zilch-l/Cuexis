@@ -50,13 +50,13 @@ A-01–A-10 覆盖本轮 T-01–T-18；T-09 是统一退出任务，必须核对
 
 ## 合同与实际验证追踪
 
-本表区分已有测试入口、拟新增验收和实际执行证据。产品任务未启动，本轮不以治理门禁宣称产品行为通过；未来运行时须绑定具体修订、命令、独立预期和结果。
+本表区分已有测试入口、拟新增验收和实际执行证据。产品任务已部分启动，本表只记证据状态，治理门禁不宣称产品行为通过；未来运行时须绑定具体修订、命令、独立预期和结果。
 
 | 关键承诺 | 合同与实现入口 | 正反验证与责任 | 本轮证据状态 |
 | --- | --- | --- | --- |
 | v5 接受集、整数 alpha 与拒绝旧作者语法 | [CXT2](../../../formats/CXT_V2_FORMAT.md)、[呈现合同](contracts/render-player-writer.md)；`tests/chart/behavior_candidate_tests.cpp` 的 `V5 Behavior alpha uses integers and rejects unsupported source forms` 提供已有局部样例 | T-11/T-13 完整覆盖源/成品拒绝集；已有局部样例不代替完整新链路 | 已核对现有测试源；完整行为待产品任务实现与运行 |
 | 旧内容按原规则/时间/身份运行 | [D-20](architecture-design.md#d-20-旧谱判定兼容)、运行合同；既有 Chart Reader 与 Gameplay 基线 | T-01 冻结独立预期，T-10 回归旧内核，T-13 无源直读旧成品，T-09 合验 | 语料身份及实际通过仍随产品任务取得 |
 | Player 决定等待超时，SDK 不实现机制 | [呈现合同](contracts/render-player-writer.md)及 T-14/T-15 的 owner/控制路径 | T-14 软件状态与取消，T-15 平台交互/ACK 正反例 | 接受设计，完整改造及设备验证待执行 |
-| F203 覆盖登记前整批验证 | [Runtime 合同](../../../architecture/RUNTIME_SESSION.md)、`engine/runtime/src/runtime_session_overrides.cpp`；`tests/runtime/animation_runtime_tests.cpp` 有既有覆盖寿命/冲突测试 | T-17 新增合法混合/非法整批及已有覆盖保持用例；不能把现有寿命测试冒充原子登记证明 | 实现修复与新用例待执行 |
+| F203 覆盖登记前整批验证 | [Runtime 合同](../../../architecture/RUNTIME_SESSION.md)、`engine/runtime/src/runtime_session_overrides.cpp`；`tests/runtime/animation_runtime_tests.cpp` 有既有覆盖寿命/冲突测试 | T-17 新增合法混合/非法整批及已有覆盖保持用例；不能把现有寿命测试冒充原子登记证明 | 已实现并通过 T-17 第二轮用例 |
 | 公共边界及旧 API 过渡 | [D-19](architecture-design.md#d-19-sdk-示例与宿主试用)、T-08 安装/导出及 T-15 架构阴性 | 安装消费者、默认/实验与 static/shared、逐组真实过渡发布证据 | 产品构建与实际发布待取得，治理通过不触发退役 |
 | 文档结构与历史保护 | [T-18](tasks/T-18.md)、文档政策、治理/发现检查器 | 独立预期的临时 fixture、双修订历史及实际仓库阴性对照 | T-18 已完成；通过范围、独立复核及 CMake 缺输入项见[治理交付报告](../../../stage_reports/stages/stage-07-rr/implementation/2026-11-23-documentation-governance.md) |

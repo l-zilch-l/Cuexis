@@ -1,6 +1,10 @@
 // PlaybackSession realtime gameplay: the scheduling clock, capture delivery and advance requests.
 
+#include "playback_session_gameplay_hooks.hpp"
 #include "playback_session_internal.hpp"
+
+#include <cuexis/playback/experimental/gameplay.hpp>
+#include <cuexis/playback/experimental/gameplay_realtime.hpp>
 
 namespace cuexis::playback {
 
@@ -528,5 +532,60 @@ auto PlaybackSession::controlGameplay(GameplayControl control) -> core::Result<v
 } catch (...) {
     return core::unexpected(gameplayError("Gameplay control allocation failed"));
 }
+
+// Experimental facade entries. Each one forwards the same-version session member; the old members
+// above keep their declarations, symbols and behavior during the compatibility window.
+namespace experimental {
+auto beginRealtimeGameplay(PlaybackSession& session, SchedulingProfile profile,
+                           ClockMappingConfiguration mapping, GameplayExecutionContext context,
+                           std::string monotonicDomain) -> core::Result<void> {
+    return session.beginRealtimeGameplay(profile, mapping, context, std::move(monotonicDomain));
+}
+auto beginRealtimeTail(PlaybackSession& session, const ClockObservation& eof,
+                       std::uint64_t tailSegment, TailProfile profile, std::int64_t nowMonotonicUs)
+    -> core::Result<TailClockTransition> {
+    return session.beginRealtimeTail(eof, tailSegment, profile, nowMonotonicUs);
+}
+auto deliverGameplayCapture(PlaybackSession& session, const GameplayCaptureDelivery& delivery,
+                            const ClockObservation& clock, std::int64_t monotonicNowUs)
+    -> core::Result<void> {
+    return session.deliverGameplayCapture(delivery, clock, monotonicNowUs);
+}
+auto requestGameplayAdvance(PlaybackSession& session, GameplayAdvanceRequest request,
+                            const ClockObservation& clock, std::int64_t nowMonotonicUs)
+    -> core::Result<GameplayAdvanceDecision> {
+    return session.requestGameplayAdvance(std::move(request), clock, nowMonotonicUs);
+}
+auto queryGameplayAdvance(const PlaybackSession& session, std::uint64_t requestId)
+    -> core::Result<GameplayAdvanceDecision> {
+    return session.queryGameplayAdvance(requestId);
+}
+auto retireGameplayAdvance(PlaybackSession& session, std::uint64_t requestId)
+    -> core::Result<void> {
+    return session.retireGameplayAdvance(requestId);
+}
+auto acceptGameplayControl(PlaybackSession& session, GameplayExecutionContext context,
+                           std::uint64_t commandOrdinal) -> core::Result<void> {
+    return session.acceptGameplayControl(context, commandOrdinal);
+}
+auto pauseRealtimeGameplay(PlaybackSession& session, std::int64_t nowMonotonicUs)
+    -> core::Result<void> {
+    return session.pauseRealtimeGameplay(nowMonotonicUs);
+}
+auto resumeRealtimeGameplay(PlaybackSession& session, const GameplayReconciliation& reconciliation,
+                            GameplayExecutionContext context, const ClockObservation& clock,
+                            std::int64_t nowMonotonicUs, bool finalRouteApplied,
+                            std::optional<std::int64_t> tailResumeAt) -> core::Result<void> {
+    return session.resumeRealtimeGameplay(reconciliation, context, clock, nowMonotonicUs,
+                                          finalRouteApplied, tailResumeAt);
+}
+auto gameplayExecutionLag(const PlaybackSession& session, GameplayTick clockHorizon)
+    -> core::Result<GameplayExecutionLag> {
+    return session.gameplayExecutionLag(clockHorizon);
+}
+auto controlGameplay(PlaybackSession& session, GameplayControl control) -> core::Result<void> {
+    return session.controlGameplay(control);
+}
+} // namespace experimental
 #endif
 } // namespace cuexis::playback

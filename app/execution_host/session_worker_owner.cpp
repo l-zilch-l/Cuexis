@@ -1,5 +1,7 @@
 #include "session_worker_internal.hpp"
 
+#include <cuexis/playback/frame_layout_access.hpp>
+
 // Frame binding, presentation membership, coherent advance retention and the software ledger.
 
 namespace cuexis::playback::detail {
@@ -115,25 +117,45 @@ SessionOwner::SessionOwner(SessionWorkerConfiguration& config,
         if (!refreshed)
             return core::unexpected(refreshed.error());
     }
+    const bool layout = request.target.has_value();
     const auto& original = request.retained.frame();
-    if (request.frozen && original &&
-        (original->projectionScope != request.projectionScope ||
-         original->context.sessionScope != request.context.sessionScope ||
-         original->context.contentIdentity != request.context.contentIdentity ||
-         original->context.resourceGeneration != request.context.resourceGeneration ||
-         original->context.rendererGeneration != request.context.rendererGeneration))
-        return DeliveryInfo{request.consumerId, request.requestId, 0, 0,
-                            DeliveryStatus::noRetainedFrame};
+    if (request.frozen && original) {
+        // Every refusal below is recorded as the request's terminal state before any frame id,
+        // attempt or storage reservation exists, so the take reports no frame and the poll reports
+        // the same status instead of historyUnavailable.
+        const auto refuseNoRetained = [&]() -> core::Result<DeliveryInfo> {
+            return delivery->refuse(request, DeliveryStatus::noRetainedFrame);
+        };
+        if (original->projectionScope != request.projectionScope ||
+            original->context.sessionScope != request.context.sessionScope ||
+            original->context.contentIdentity != request.context.contentIdentity ||
+            original->context.resourceGeneration != request.context.resourceGeneration ||
+            original->context.rendererGeneration != request.context.rendererGeneration)
+            return refuseNoRetained();
+        // A retained handle keeps its mode. A legacy handle cannot produce a layout frame and a
+        // layout handle is never stripped back to a snapshot frame. A laid-out handle also keeps
+        // the framing selection that produced it: relayout re-selects with the retained frame's own
+        // request, so a request with another selection cannot silently reuse a layout it did not
+        // ask for.
+        if (layout != (original->laidOutView() != nullptr))
+            return refuseNoRetained();
+        if (original->laidOutView() != nullptr &&
+            !FrameLayoutAccess::matchesRequest(*original->laidOutView(), request.framing))
+            return refuseNoRetained();
+    }
     const auto& members =
         request.frozen && original ? original->membershipView() : currentMembership;
     if (std::any_of(members.begin(), members.end(), [](const auto& id) {
             return id.targetId.size() > 256 || id.bindingId.size() > 256;
         }))
-        return DeliveryInfo{request.consumerId, request.requestId, 0, 0,
-                            DeliveryStatus::skippedNoCredit};
-    const bool reuse = request.frozen && original && original->payload &&
-                       original->snapshotView().viewportWidth == request.viewport.width &&
-                       original->snapshotView().viewportHeight == request.viewport.height;
+        return delivery->refuse(request, DeliveryStatus::skippedNoCredit);
+    const bool reuse =
+        request.frozen && original && original->payload &&
+        (layout ? original->layoutView() != nullptr &&
+                      sameFrameTarget(original->layoutView()->target, *request.target)
+                : original->laidOutView() == nullptr &&
+                      original->snapshotView().viewportWidth == request.viewport.width &&
+                      original->snapshotView().viewportHeight == request.viewport.height);
     auto admitted = delivery->admit(request, source->resultVersion, now(), reuse);
     if (!admitted)
         return core::unexpected(admitted.error());
@@ -168,13 +190,36 @@ SessionOwner::SessionOwner(SessionWorkerConfiguration& config,
             internal::pd::memory::ownerPlaybackWorker, internal::pd::memory::domainPayload};
         auto payload = std::make_shared<FramePayload>();
         payload->storage = std::move(admitted->reservation);
-        auto extracted = request.frozen ? rematerializeRetainedSnapshot(original->snapshotView(),
-                                                                        request.viewport)
-                                        : session.extractFrame(request.viewport);
-        if (!extracted)
-            return delivery->finishRequest(request.consumerId, request.requestId,
-                                           DeliveryStatus::rejected);
-        payload->snapshot = std::move(*extracted);
+        if (layout) {
+            auto extracted =
+                request.frozen
+                    ? experimental::relayoutRetainedFrame(*original->laidOutView(), *request.target)
+                    : experimental::extractLaidOutFrame(session, *request.target,
+                                                        request.exactVersion);
+            if (!extracted)
+                return delivery->finishRequest(request.consumerId, request.requestId,
+                                               DeliveryStatus::rejected);
+            if (!*extracted)
+                return delivery->finishRequest(request.consumerId, request.requestId,
+                                               DeliveryStatus::skippedEmptyLayout);
+            // The committed source, snapshot and layout come from this extraction, not from a
+            // second read or a copied envelope fallback.
+            frame.source = (**extracted).source();
+            frame.presentationTick = frame.source->presentationTick;
+            frame.runtimeFrame = frame.source->frame;
+            frame.foldedFactCursor = frame.source->factCursor;
+            frame.foldedWorkTick = frame.source->workTick;
+            payload->frame.emplace<experimental::LaidOutFrame>(std::move(**extracted));
+        } else {
+            auto extracted =
+                request.frozen
+                    ? rematerializeRetainedSnapshot(original->snapshotView(), request.viewport)
+                    : session.extractFrame(request.viewport);
+            if (!extracted)
+                return delivery->finishRequest(request.consumerId, request.requestId,
+                                               DeliveryStatus::rejected);
+            payload->frame.emplace<FrameSnapshot>(std::move(*extracted));
+        }
         payload->resources = request.frozen
                                  ? original->resourcesView()
                                  : (activeCandidate ? activeCandidate->resources
@@ -187,6 +232,7 @@ SessionOwner::SessionOwner(SessionWorkerConfiguration& config,
     }
     if (frame.frameId) {
         frame.dispatch = std::make_shared<DispatchToken>();
+        frame.dispatch->deadlineMonotonicUs = request.deadlineMonotonicUs;
         auto recorded = frames->recordAttempt(frame);
         if (!recorded)
             return core::unexpected(recorded.error());

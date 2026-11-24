@@ -1,6 +1,7 @@
 """Generate the private candidate payload schema from the selected author leaf grammar."""
 
 import json
+import sys
 from pathlib import Path
 
 
@@ -87,7 +88,7 @@ def schema():
     defs["MeasureDefinition"] = obj({"declaration": ref("Measure")}, {"id": text})
     defs["Common"] = obj({"chartEntryId": text, "graphRevision": {"const": "2"}, "rulesetRef": text,
                           "normalizationProfileToken": text, "coordinatorPolicy": {"const": "coordinator.policy.greedy_v1"},
-                          "executionProfile": {"const": "gameplay.execution.t4-k4.v1"}, "timebase": ref("Timebase"), "latePolicy": ref("Late"),
+                          "executionProfile": {"enum": ["gameplay.execution.t4-k4.v1", "gameplay.execution.t4-k4.rpa.v1"]}, "timebase": ref("Timebase"), "latePolicy": ref("Late"),
                           "graceInputs": array(obj({"requirement": ref("StableId"), "inputs": ref("GraceInputs")})),
                           "declarations": array(ref("Declaration")), "resources": array(ref("Resource")), "relations": array(ref("Relation")),
                           "solverProfiles": array(ref("Solver")), "factBindings": array(text), "judgementDomains": array(ref("Domain")),
@@ -143,9 +144,36 @@ def inline_schema():
         "requiredExtensions": {"const": ["cuexis.gameplay.v2"]}, "gameplay": ref("Payload")}, {"mainMusic": text}), "definitions": defs}
 
 
-if __name__ == "__main__":
-    target = Path(__file__).resolve().parents[3] / "schemas/candidate/cuexis.gameplay-author.t4-k4.v1.schema.json"
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(json.dumps(schema(), indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+def render() -> dict[Path, str]:
+    root = Path(__file__).resolve().parents[3]
+    target = root / "schemas/candidate/cuexis.gameplay-author.t4-k4.v1.schema.json"
+    return {
+        target: json.dumps(schema(), indent=2, ensure_ascii=True) + "\n",
+        target.with_name("cuexis.gameplay-inline.t4-k4.v1.schema.json"): json.dumps(
+            inline_schema(), indent=2, ensure_ascii=True
+        ) + "\n",
+    }
 
-    target.with_name("cuexis.gameplay-inline.t4-k4.v1.schema.json").write_text(json.dumps(inline_schema(), indent=2) + "\n", encoding="utf-8")
+
+def main(argv: list[str]) -> int:
+    expected = render()
+    if "--check" in argv:
+        stale = [
+            item for item, body in expected.items()
+            if not item.is_file() or item.read_text(encoding="utf-8") != body
+        ]
+        if stale:
+            print("stale candidate schema: " + ", ".join(item.name for item in stale))
+            print("run python -B tools/gameplay/gameplay_assembler/generate_author_schema.py")
+            return 1
+        print("candidate author schemas are current")
+        return 0
+    for item, body in expected.items():
+        item.parent.mkdir(parents=True, exist_ok=True)
+        item.write_text(body, encoding="utf-8")
+    print(f"wrote {len(expected)} candidate author schemas")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

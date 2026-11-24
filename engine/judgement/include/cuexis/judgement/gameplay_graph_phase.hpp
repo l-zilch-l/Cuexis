@@ -6,6 +6,7 @@
 
 #include <cuexis/core/result.hpp>
 #include <cuexis/judgement/input_boundary.hpp>
+#include <cuexis/judgement/phase_types.hpp>
 #include <cuexis/judgement/timebase.hpp>
 
 #include <array>
@@ -22,35 +23,7 @@ namespace cuexis::judgement {
 //  Measure declarations (ABI domain 3)
 //  ---------------------------------------------------------------------------------------------
 
-//  The phase classification of one requirement, as far as Stage 7A fixes it: a Tap segment, Hold
-//  head / body and the explicitly declared Release / tail. The phase *registry* and the phase
-//  priority weights are CM-F06 and are not frozen, so no priority value is representable.
-//
-//  `tap` is the one-segment case: Spec 3.20 rule 3 ties `FactCategory` to the phase one to one, and
-//  the frozen category set contains `tap`, so a requirement whose single segment is a Tap declares
-//  that phase here instead of having a category with no phase.
-enum class PhaseKind : std::uint8_t {
-    tap,
-    head,
-    body,
-    tail,
-};
-
-//  One declared phase of a requirement. Release / tail is only ever an explicitly declared optional
-//  phase of the same requirement and never an automatically generated second requirement (Spec
-//  3.8.3, Q-18).
-struct PhaseDeclaration final {
-    PhaseKind kind;
-    //  Declaration ordinal of the phase inside its requirement. It is a declaration index, not a
-    //  priority.
-    std::uint32_t declarationOrdinal;
-
-    friend auto operator==(const PhaseDeclaration&, const PhaseDeclaration&) noexcept
-        -> bool = default;
-    friend auto operator<=>(const PhaseDeclaration&, const PhaseDeclaration&) noexcept
-        -> std::strong_ordering = default;
-};
-
+//  ^ `PhaseKind` and `PhaseDeclaration` moved
 struct PhaseTarget final {
     PhaseKind phase;
     Tick chartTick;
@@ -82,51 +55,8 @@ struct AtomBinding final {
     friend auto operator==(const AtomBinding&, const AtomBinding&) noexcept -> bool = default;
 };
 
-//  ABI domain 5 `FactCategory`: the fact classification layer, one to one with the phase (Spec 3.20
-//  rule 3). The category is *derived* from the phase and is never assigned by a caller, so a
-//  component that spells a different category than its phase implies is refused rather than
-//  accepted with two names for one fact.
-enum class FactCategory : std::uint8_t {
-    tap,
-    holdHead,
-    holdBody,
-    holdTail,
-};
-
-//  The frozen Stage 7A fact category set, in canonical order. A category outside this set is not
-//  representable at all.
-inline constexpr std::array<FactCategory, 4> kStage7AFactCategories{
-    FactCategory::tap, FactCategory::holdHead, FactCategory::holdBody, FactCategory::holdTail};
-
-//  The one-to-one derivation of Spec 3.20 rule 3: the phase decides the category.
-[[nodiscard]] constexpr auto factCategoryOfPhase(PhaseKind phase) noexcept -> FactCategory {
-    switch (phase) {
-    case PhaseKind::tap:
-        return FactCategory::tap;
-    case PhaseKind::head:
-        return FactCategory::holdHead;
-    case PhaseKind::body:
-        return FactCategory::holdBody;
-    case PhaseKind::tail:
-        return FactCategory::holdTail;
-    }
-    return FactCategory::tap;
-}
-
-//  ABI domain 5 `Outcome`: the Stage 7A result layer. The set is exactly these two values (Spec
-//  3.20 rule 1 and rule 2); a Hold head / body / tail outcome is a *phase-local* outcome, it is not
-//  a member here and it does not add a second result dimension.
-enum class Outcome : std::uint8_t {
-    hit,
-    miss,
-};
-
-inline constexpr std::array<Outcome, 2> kStage7AOutcomes{Outcome::hit, Outcome::miss};
-
-//  The stable spelling of one fact category, as declared by the content in a component's
-//  `categoryToken`. Declared here and defined in the implementation, so the header itself carries
-//  no string table.
-[[nodiscard]] auto factCategoryToken(FactCategory category) noexcept -> std::string_view;
+//  ^ `FactCategory`, `Outcome`, `factCategoryOfPhase` and `factCategoryToken` moved to the
+//  judgement runtime value header `cuexis/judgement/phase_types.hpp`.
 
 //  The optional grade table result of one component. The grade scale, the tolerance and the
 //  aggregation rule are CM-S10 / P1-07 and are not frozen, so the only thing Stage 7A fixes is the

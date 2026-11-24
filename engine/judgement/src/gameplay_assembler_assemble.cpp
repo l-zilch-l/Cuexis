@@ -159,6 +159,10 @@ auto detail::IdentityFactory::assemble(const CanonicalGameplayGraph& graph,
     return {std::move(chart), std::move(contentIdentity), std::move(preparedIdentity)};
 }
 
+auto detail::IdentityFactory::fromBytes(std::vector<std::byte> bytes) -> PreparedIdentity {
+    return PreparedIdentity{CanonicalIdentityBytes{std::move(bytes)}};
+}
+
 auto detail::IdentityFactory::runtime(const PreparedGameplay& prepared,
                                       const PreparedIdentityDeclarations& declarations,
                                       const InputMappingProfile& mapping,

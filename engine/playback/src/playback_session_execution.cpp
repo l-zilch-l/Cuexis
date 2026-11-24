@@ -3,6 +3,10 @@
 
 #include "playback_session_internal.hpp"
 
+#include <cuexis/playback/experimental/gameplay.hpp>
+#include <cuexis/playback/experimental/gameplay_realtime.hpp>
+#include <cuexis/playback/experimental/gameplay_replay.hpp>
+
 namespace cuexis::playback {
 
 #if defined(CUEXIS_PLAYBACK_GAMEPLAY_CANDIDATE)
@@ -137,6 +141,11 @@ auto PlaybackSession::releaseExecutionFence(ExecutionFence fence, const ControlR
     s.confirmedHostContext = confirmed.finalizedContext.value_or(
         confirmed.request.target.nextContext.value_or(confirmed.request.context));
     s.hostFence.reset();
+    if (confirmed.request.kind == ControlKind::close) {
+        // The Close fence release is the terminal acknowledgement of the whole control identity:
+        // the applied Close receipt stays in the host step ledger for replay protection.
+        s.clearControlIdentity();
+    }
     return {};
 }
 auto PlaybackSession::validateExecutionControlBinding(const StepRequest& request) const
@@ -152,6 +161,13 @@ auto PlaybackSession::validateExecutionControlBinding(const StepRequest& request
         s.acceptedHostControl && request.key.operationId == s.acceptedHostControl->operationId;
     const bool target = s.acceptedHostControl && request.target == s.acceptedHostControl->target;
     const bool accepted = s.acceptedHostControl.has_value();
+    // Content identity guard: the accepted control stays replayable while its content is unloaded
+    // (the directed Close retires before its terminal proof), but a proof accepted for one content
+    // must not authorize steps once a different content is committed in the same Session. The
+    // marker is the session content identity observed at acceptance, not the request context, so
+    // synthetic zero-identity contexts keep their existing binding semantics.
+    const bool contentCurrent = !s.acceptedControlContentIdentity || !s.semanticIdentity ||
+                                *s.acceptedControlContentIdentity == *s.semanticIdentity;
 #if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
     if (auto* sink = internal::execution_diagnostics::rpa::fenceSink) {
         sink->bindingChecked = true;
@@ -181,6 +197,9 @@ auto PlaybackSession::validateExecutionControlBinding(const StepRequest& request
     if (!accepted || !participant || !scope || !operation || !target)
         return core::unexpected(
             core::Error{"host.rpa.context_stale", "Software step lacks accepted target"});
+    if (!contentCurrent)
+        return core::unexpected(
+            core::Error{"host.rpa.context_stale", "Accepted control belongs to replaced content"});
     return {};
 }
 auto PlaybackSession::validateExecutionControlProof(const StepRequest& request,
@@ -305,6 +324,7 @@ auto PlaybackSession::acceptExecutionControl(const ControlRequest& request)
         s.hostDecision = decision + 1;
         s.acceptedHostControl = std::move(binding);
         s.acceptedHostDecision = decision;
+        s.acceptedControlContentIdentity = s.semanticIdentity;
         return decision;
     }
 #endif
@@ -314,6 +334,7 @@ auto PlaybackSession::acceptExecutionControl(const ControlRequest& request)
     const auto decision = s.hostDecision++;
     s.acceptedHostControl = std::move(binding);
     s.acceptedHostDecision = decision;
+    s.acceptedControlContentIdentity = s.semanticIdentity;
     return decision;
 } catch (...) {
     return core::unexpected(
@@ -412,7 +433,7 @@ auto PlaybackSession::completeExecutionClose(ExecutionFence fence, const Control
         !controlFullyApplied(proof) || s.sessionState != SessionState::Empty)
         return core::unexpected(
             core::Error{"host.rpa.device_pending", "Close has not retired every fenced owner"});
-    s.hostFence.reset();
+    s.clearControlIdentity();
     return {};
 }
 auto PlaybackSession::invalidateGameplayClock() -> core::Result<void> {
@@ -609,7 +630,9 @@ auto PlaybackSession::retireExecutionStep(const StepRequest& request, const Cont
     if (!audioCleared)
         return core::unexpected(core::Error{"host.rpa.device_pending", "Audio is active"});
     HostMutationPermission permission{state_->hostCommitAuthorized};
-    auto unloaded = unload();
+    // Retire drops content only: the accepted Close identity, its decision and the retained fence
+    // stay valid so the terminal close step and repeated retires still match the original proof.
+    auto unloaded = state_->unloadContent();
 #if defined(CUEXIS_RPA_OBSERVATION_TEST_ONLY)
     if (auto* sink = internal::execution_diagnostics::rpa::fenceSink)
         sink->retireApplied = bool(unloaded);
@@ -713,6 +736,34 @@ auto PlaybackSession::seekExecutionStep(const StepRequest& request, const Contro
 } catch (...) {
     return core::unexpected(core::Error{"host.rpa.capacity_exceeded", "Seek reservation failed"});
 }
+
+// Experimental facade entries. The reconciliation identity entry forwards the same algorithm and
+// the old installed free function keeps its declaration and export.
+namespace experimental {
+auto computeGameplayReconciliationIdentity(const GameplayReconciliation& reconciliation)
+    -> core::Result<PreparedSemanticIdentity> {
+    return cuexis::playback::computeGameplayReconciliationIdentity(reconciliation);
+}
+auto invalidateGameplayClock(PlaybackSession& session) -> core::Result<void> {
+    return session.invalidateGameplayClock();
+}
+auto mapGameplayClock(PlaybackSession& session, const ClockObservation& clock, std::int64_t now)
+    -> core::Result<ClockTicks> {
+    return session.mapGameplayClock(clock, now);
+}
+auto gameplayFeedback(const PlaybackSession& session, std::uint64_t scope)
+    -> core::Result<std::vector<FeedbackObservation>> {
+    return session.gameplayFeedback(scope);
+}
+auto sampleGameplayPresentation(PlaybackSession& session, GameplayPresentationTick tick,
+                                const RuntimeFrame& frame) -> core::Result<void> {
+    return session.sampleGameplayPresentation(tick, frame);
+}
+auto gameplayReplayCut(const PlaybackSession& session, const GameplayReplay& replay,
+                       GameplayTick horizon) -> core::Result<GameplayReplayCut> {
+    return session.gameplayReplayCut(replay, horizon);
+}
+} // namespace experimental
 
 #endif
 

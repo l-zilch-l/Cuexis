@@ -1,6 +1,7 @@
 add_executable(cuexis_playback_tests
     ../pd/presentation_state_tests.cpp
     frame_digest_tests.cpp
+    frame_layout_tests.cpp
     mode_parity_tests.cpp
     playback_candidate_tests.cpp
     playback_identity_tests.cpp
@@ -15,6 +16,7 @@ add_executable(cuexis_playback_tests
     presentation_tests.cpp
     presentation_extraction_tests.cpp
     presentation_fixture.hpp
+    rr_r1_playback_sources_tests.cpp
     runtime_timeline_tests.cpp
     ../presentation/validation_sink.cpp
     ../presentation/validation_sink_canonical.hpp
@@ -26,6 +28,19 @@ add_executable(cuexis_playback_tests
     ${PROJECT_SOURCE_DIR}/engine/playback/src/presentation_extraction.cpp
 )
 
+# The ordinary prepare-hook rejection lives only in this test executable: the ordinary Playback
+# closure neither declares nor defines a candidate hook, and the candidate build has its single
+# real definition in the library.
+if(NOT CUEXIS_ENABLE_CHART_V5_CANDIDATE AND CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
+    target_sources(cuexis_playback_tests PRIVATE playback_candidate_hook_rejection.cpp)
+endif()
+
+# The Prepared-owner introspection seams are deliberately unexported. A candidate shared test
+# executable compiles the identical private-access definitions locally instead of importing them.
+if(CUEXIS_ENABLE_CHART_V5_CANDIDATE AND CUEXIS_LIBRARY_TYPE STREQUAL "SHARED")
+    target_sources(cuexis_playback_tests PRIVATE playback_candidate_metadata_access.cpp)
+endif()
+
 target_compile_definitions(cuexis_playback_tests
     PRIVATE
         CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
@@ -36,6 +51,8 @@ target_include_directories(cuexis_playback_tests
         ${PROJECT_SOURCE_DIR}/engine/assets/include
         ${PROJECT_SOURCE_DIR}/engine/core/internal
         ${PROJECT_SOURCE_DIR}/engine/json_support/src
+        ${PROJECT_SOURCE_DIR}/engine/playback/experimental_include
+        ${PROJECT_SOURCE_DIR}/engine/playback/internal
         ${PROJECT_SOURCE_DIR}/engine/playback/src
         ${PROJECT_SOURCE_DIR}/engine/runtime/internal
         ${PROJECT_SOURCE_DIR}/engine/runtime/include
@@ -47,19 +64,36 @@ if(CUEXIS_LIBRARY_TYPE STREQUAL "STATIC")
     target_include_directories(cuexis_playback_tests PRIVATE
         ${PROJECT_SOURCE_DIR}/engine/render/include
         ${PROJECT_SOURCE_DIR}/engine/world/include)
+    # The laid-out frame bridge keeps its builder and its attach access non-exported, so the
+    # private test unit is compiled into this executable in static configurations only.
+    target_sources(cuexis_playback_tests PRIVATE
+        frame_bridge_tests.cpp
+        "${PROJECT_SOURCE_DIR}/engine/playback/src/frame_layout_bridge.cpp")
 endif()
 
 target_link_libraries(cuexis_playback_tests
     PRIVATE
         cuexis::audio
+        cuexis::animation
         cuexis::chart
+        cuexis::chart_tools
         cuexis::cxc
         cuexis::playback
         Catch2::Catch2WithMain
 )
 
+# The R1 source-table test calls the private prepare rejection hook in static default builds,
+# which needs the complete candidate type. This is a test-only include/link edge; the Playback
+# library and the Player never acquire it.
+if(TARGET cuexis::cxc_candidate)
+    target_link_libraries(cuexis_playback_tests PRIVATE cuexis::cxc_candidate)
+endif()
+
 if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
     target_include_directories(cuexis_playback_tests PRIVATE ${PROJECT_SOURCE_DIR}/engine/judgement/internal)
+    # The GP-03 contract case drives the runtime kernel's test-only seal/Fold failure points through
+    # the real transaction; that internal seam is not installed and is not part of any public header.
+    target_include_directories(cuexis_playback_tests PRIVATE ${PROJECT_SOURCE_DIR}/engine/judgement/src)
     target_sources(cuexis_playback_tests PRIVATE ../pd/publication_integration_tests.cpp
         ../pd/projection_adapter_tests.cpp ../pd/projection_integration_tests.cpp
         ../pd/software_transaction_integration_tests.cpp
@@ -71,6 +105,9 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
         playback_gameplay_diagnostics_tests.cpp
         playback_gameplay_execution_tests.cpp
         playback_gameplay_fixture.hpp
+        rr_advance_contract_tests.cpp
+        rr_t17_session_tests.cpp
+        rr_session_unload_lifecycle_tests.cpp
         ../judgement/execution_reference.cpp
         "${PROJECT_SOURCE_DIR}/engine/playback/src/gameplay_entry.cpp")
     target_link_libraries(cuexis_playback_tests PRIVATE cuexis::gameplay_packed cuexis::judgement cuexis::json_support)
@@ -174,7 +211,7 @@ add_test(
         "-DCUEXIS_S5H_OUTPUT=${CMAKE_BINARY_DIR}/s5-h/performance.txt"
         "-DCUEXIS_IMPLEMENTATION_SHA=${CUEXIS_IMPLEMENTATION_SHA}"
         "-DCUEXIS_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
-        -P "${PROJECT_SOURCE_DIR}/cmake/VerifyS5HPerformance.cmake"
+        -P "${PROJECT_SOURCE_DIR}/cmake/VerifyRulesetPreparePerformance.cmake"
 )
 
 set_tests_properties(cuexis_s5h_performance PROPERTIES

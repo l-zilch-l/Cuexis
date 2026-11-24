@@ -58,10 +58,10 @@ Compiled Runtime
 | Material/Shader v1 | [MATERIAL_SHADER.md](MATERIAL_SHADER.md) | accepted contract; S5-A through S5-H completed; Stage 5 closed and merged into `master` 2026-08-28 |
 | Stage 6 chart entry extension v1 | [CHART_ENTRY_V1_FORMAT.md](CHART_ENTRY_V1_FORMAT.md) | candidate contract recorded by A2; explicit Playback entry factories implemented (`fromFilesystemProjectEntry`/`fromCxcFileEntry`); candidate gameplay entry factories behind flag |
 | Stage 6 configuration and media contract | [STAGE6_CONFIG_AND_MEDIA.md](STAGE6_CONFIG_AND_MEDIA.md) | candidate contract recorded by A2; media importer present behind default-OFF `CUEXIS_BUILD_MEDIA_TOOLS` |
-| Gameplay Judgement | [GAMEPLAY_JUDGEMENT_SPEC.md](GAMEPLAY_JUDGEMENT_SPEC.md) | candidate；I 收敛工作稿，未实施，待 ADR 0043 owner acceptance |
+| Gameplay Judgement | [GAMEPLAY_JUDGEMENT_SPEC.md](GAMEPLAY_JUDGEMENT_SPEC.md) | superseded；历史候选基线，现行字段与语义见 Gameplay V2 Spec 与 ADR 0044 |
 | Gameplay V2 | [GAMEPLAY_V2_SPEC.md](GAMEPLAY_V2_SPEC.md) | candidate；Stage 7A 的 V2 字段与运行语义唯一权威 Spec；分批设计与部分实现不等于整批验收，现状只见 [CURRENT_STATUS](../CURRENT_STATUS.md)；与 [ADR 0044](../adr/0044-gameplay-v2-semantic-kernel.md)、[Gameplay V2 ABI](../api/GAMEPLAY_V2_ABI.md) 协同 |
-| RPA execution/control supplement | [RPA补充Spec](rpa-execution-contract.md) | candidate；已选实施设计，控制/时钟/T2/R2/Replay与版本闭包；未实施 |
-| Gameplay V2 execution / author profile | [execution](gameplay-v2-execution-profile.md)、[authoring](gameplay-v2-author-profile.md) | candidate；2026-10-05 补齐 S7A-3/4 首次消费，Capsule revision3，未实施 |
+| RPA execution/control supplement | [RPA补充Spec](rpa-execution-contract.md) | candidate；已选实施设计，facade、实时入口、execution host 与 `tests/rpa` 已有 candidate 实施；生产/设备验收与发行未完成 |
+| Gameplay V2 execution / author profile | [execution](gameplay-v2-execution-profile.md)、[authoring](gameplay-v2-author-profile.md) | candidate；首批执行语义与作者 CLI 已实现；GP-03、Playback owning DTO 与 legacy 输入切换未做 |
 
 ADR 记录选择理由，格式文档记录字段和语义。手写 v4 谱面可先阅读
 [Chart v5 谱面编写指南](../guides/CHART_V5_AUTHORING.md)。CXC 不重新定义 Chart/CXT；CXT 不重新定义

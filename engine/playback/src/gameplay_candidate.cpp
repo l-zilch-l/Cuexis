@@ -1,8 +1,8 @@
 #include "gameplay_internal.hpp"
-#include "replay_identity.hpp"
 #include <algorithm>
 #include <cuexis/core/error.hpp>
 #include <cuexis/judgement/recovery_codec.hpp>
+#include <cuexis/playback/replay_identity.hpp>
 #include <cuexis_internal/allocation_observer.hpp>
 #include <cuexis_internal/presentation_metrics.hpp>
 #include <exception>

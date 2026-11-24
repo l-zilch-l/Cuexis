@@ -20,6 +20,7 @@ target_link_libraries(cuexis_rpa_tests
     PRIVATE
         cuexis::playback
         cuexis::judgement
+        cuexis::judgement_compile
         Catch2::Catch2WithMain
 )
 
@@ -37,6 +38,8 @@ add_executable(cuexis_host_protocol_tests
     execution_boundary_tests.cpp
     ../pd/control_binding_tests.cpp ../pd/delivery_retirement_tests.cpp)
 target_compile_features(cuexis_host_protocol_tests PRIVATE cxx_std_20)
+target_include_directories(cuexis_host_protocol_tests PRIVATE
+    "${PROJECT_SOURCE_DIR}/engine/playback/internal")
 target_compile_definitions(cuexis_host_protocol_tests PRIVATE CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
 target_link_libraries(cuexis_host_protocol_tests PRIVATE cuexis::execution_host_support cuexis::playback cuexis::presentation_renderer Catch2::Catch2WithMain)
 catch_discover_tests(cuexis_host_protocol_tests ADD_TAGS_AS_LABELS PROPERTIES LABELS "rpa")
@@ -55,13 +58,40 @@ add_executable(cuexis_execution_host_tests
     rpa_b5_host_fixture.hpp
     rpa_b5_seek_host_tests.cpp
     rpa_b5_transcript_tests.cpp
+    rr_frame_observation_errors_tests.cpp
+    f135_owner_channel_error_tests.cpp
+    ../support/f135_allocation_probe.cpp
+    rr_host_frame_chain_tests.cpp
+    rr_sdk_execution_host_shared_tests.cpp
     ../pd/retained_control_tests.cpp
     ${CUEXIS_EXECUTION_HOST_SOURCES}
+    "${PROJECT_SOURCE_DIR}/app/execution_host/frame_observation.cpp"
     "${PROJECT_SOURCE_DIR}/app/player/src/snapshot_scene.cpp"
 )
 target_compile_features(cuexis_execution_host_tests PRIVATE cxx_std_20)
-target_include_directories(cuexis_execution_host_tests PRIVATE "${PROJECT_SOURCE_DIR}/engine/judgement/internal")
-target_compile_definitions(cuexis_execution_host_tests PRIVATE CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
+target_include_directories(cuexis_execution_host_tests PRIVATE
+    "${PROJECT_SOURCE_DIR}/engine/judgement/internal"
+    "${PROJECT_SOURCE_DIR}/engine/playback/internal")
+target_compile_definitions(cuexis_execution_host_tests PRIVATE CUEXIS_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+    CUEXIS_FRAME_OBSERVATION_FAULT_INJECTION=1)
 target_link_libraries(cuexis_execution_host_tests PRIVATE cuexis::execution_host_support cuexis::playback cuexis::presentation_renderer cuexis::render cuexis::judgement cuexis::gameplay_packed Catch2::Catch2WithMain)
 catch_discover_tests(cuexis_execution_host_tests ADD_TAGS_AS_LABELS PROPERTIES LABELS "execution-host")
+
+# RR-4 shared Player evidence: the real Player and the in-repo host tests must consume the same
+# experimental Playback shared library, whose build-only execution-host entries are exported.
+if(CUEXIS_LIBRARY_TYPE STREQUAL "SHARED" AND TARGET cuexis_player)
+    add_test(NAME rr_sdk_execution_host_shared
+        COMMAND "${CMAKE_COMMAND}"
+            "-DCUEXIS_PLAYER=$<TARGET_FILE:cuexis_player>"
+            "-DCUEXIS_PLAYER_DIR=$<TARGET_FILE_DIR:cuexis_player>"
+            "-DCUEXIS_PLAYBACK_DLL=$<TARGET_FILE:cuexis_playback>"
+            "-DCUEXIS_PLAYBACK_DLL_NAME=$<TARGET_FILE_NAME:cuexis_playback>"
+            "-DCUEXIS_CONSUMER=$<TARGET_FILE:cuexis_execution_host_tests>"
+            "-DCUEXIS_MSVC=${MSVC}"
+            "-DCUEXIS_LINKER=${CMAKE_LINKER}"
+            -P "${CMAKE_CURRENT_SOURCE_DIR}/run_rr_sdk_execution_host_shared.cmake")
+    set_tests_properties(rr_sdk_execution_host_shared PROPERTIES
+        LABELS "rpa;sdk;shared;package" TIMEOUT 420
+        RESOURCE_LOCK cuexis_external_consumer)
+endif()
 endif()

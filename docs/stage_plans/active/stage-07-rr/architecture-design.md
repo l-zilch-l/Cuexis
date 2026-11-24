@@ -21,9 +21,9 @@ Stage 7-RR 的任务边界仍见[计划 §4](plan.md#4-已确认方向与决策�
 D-05 保留原 RR-3 的 R1/R5/R6 切片；2026-11-23 owner 已将 T-10–T-16 和 F302、F310、F313/F316、F207 全面清理纳入本轮，当前扩展范围见[登记册 §24](findings.md#24-统一实施前设计裁定2026-11-23)。D-19 的公共兼容窗口仍独立有效。
 本附页保留 owner 已接受的设计及其历史边界。本轮代理按已授权范围细化技术选择，合同路由和缺口追踪见[可实施性索引](design-readiness.md)。实施采用以[计划](plan.md#唯一派单授权入口)为准。
 
-2026-11-23 owner 另按 D-04 接受两项现行任务修订，均未实现：F501 的
-[PreparedPlayback 有效性合同](../../../api/playback-session.md#preparedplayback-有效性修订f501已接受未实现)
-由 T-17 承接；F135 的[观测桥错误分类合同](../../../api/realtime-host-boundary.md#f135-观测桥错误分类修订已接受未实现)
+2026-11-23 owner 另按 D-04 接受两项现行任务修订，均已落实：F501 的
+[PreparedPlayback 有效性合同](../../../api/playback-session.md#preparedplayback-有效性修订f501已接受已实现)
+由 T-17 承接；F135 的[观测桥错误分类合同](../../../api/realtime-host-boundary.md#f135-观测桥错误分类修订已接受并实现)
 由 T-03 绑定、T-06 实施。具体语义由合同维护，不增加新设计编号。
 
 同日 owner 接受 F203 的[临时覆盖登记修订](../../../architecture/RUNTIME_SESSION.md#临时覆盖登记修订f203已接受未实现)，由 T-17 复用既有属性校验落实整批验证；完整结构清理已纳入本轮，应用分层的具体边界见[呈现与 Player 合同](contracts/render-player-writer.md#应用分层与内部入口f313f316)。
@@ -54,7 +54,7 @@ D-05 保留原 RR-3 的 R1/R5/R6 切片；2026-11-23 owner 已将 T-10–T-16 �
   音频报告音源位置，Chart 定义谱面零点与节拍，Judgement 消费 tick。
 - 设备校正和谱面 offset 纳入 Playback 的换算链；不以这次收敛为由重写全部时钟。
 - 现有普通播放宿主与实验执行宿主的双宿主隔离不是长期目标。
-- 以上方向不改 D-05；D-21、D-22、D-23、D-24 的已接受边界见下文，生产实现未开始。
+- 以上方向不改 D-05；D-21、D-22、D-23、D-24 的已接受边界见下文，生产实现已部分启动，进度见 [CURRENT_STATUS](../../../CURRENT_STATUS.md)。
 
 ## 3. 路线选择与未选替代
 

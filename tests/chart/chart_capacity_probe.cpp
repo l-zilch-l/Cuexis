@@ -39,6 +39,7 @@
 
 #include <psapi.h>
 #else
+#include <cuexis/chart/packed_chart_writer.hpp>
 #include <sys/resource.h>
 #include <unistd.h>
 #endif

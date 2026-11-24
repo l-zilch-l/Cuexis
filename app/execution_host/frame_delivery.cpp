@@ -34,17 +34,37 @@ auto sameRegistration(const ConsumerRegistration& a, const ConsumerRegistration&
            a.context == b.context && a.profile == b.profile;
 }
 auto fingerprint(const FrameRequest& r) -> DeliveryFingerprint {
-    return {r.consumerId,
-            r.requestId,
-            r.projectionScope,
-            r.retained.frame() ? r.retained.frame()->frameId : 0,
-            r.retained.serial(),
-            r.context,
-            r.viewport.width,
-            r.viewport.height,
-            r.exactVersion,
-            r.deadlineMonotonicUs,
-            r.frozen};
+    DeliveryFingerprint result{};
+    result.consumerId = r.consumerId;
+    result.requestId = r.requestId;
+    result.projectionScope = r.projectionScope;
+    result.retainedFrame = r.retained.frame() ? r.retained.frame()->frameId : 0;
+    result.retainedSerial = r.retained.serial();
+    result.context = r.context;
+    result.width = r.viewport.width;
+    result.height = r.viewport.height;
+    result.exactVersion = r.exactVersion;
+    result.deadline = r.deadlineMonotonicUs;
+    result.frozen = r.frozen;
+    result.layout = r.target.has_value();
+    if (r.target) {
+        result.width = 0;
+        result.height = 0;
+        result.targetExtentWidth = r.target->extent.width;
+        result.targetExtentHeight = r.target->extent.height;
+        result.hostX = r.target->host.x;
+        result.hostY = r.target->host.y;
+        result.hostWidth = r.target->host.width;
+        result.hostHeight = r.target->host.height;
+        result.rotation = static_cast<std::uint16_t>(r.target->rotation);
+    }
+    result.selection = static_cast<std::uint8_t>(r.framing.selection);
+    result.hasExact = r.framing.exact.has_value();
+    if (r.framing.exact) {
+        result.exactWidth = r.framing.exact->width;
+        result.exactHeight = r.framing.exact->height;
+    }
+    return result;
 }
 FrameDelivery::FrameDelivery(DeliveryLimits limits, std::shared_ptr<FrameStorage> storage,
                              std::shared_ptr<FrameStorage> attempts)
@@ -210,8 +230,8 @@ auto FrameDelivery::admit(const FrameRequest& r, std::uint64_t version, std::int
     std::lock_guard lock(mutex_);
     auto* c = find(r.consumerId);
     if (!c || c->registration.state != ConsumerState::active || closing_ || !r.requestId ||
-        r.context.sessionScope != c->registration.context.sessionScope || !r.viewport.width ||
-        !r.viewport.height)
+        r.context.sessionScope != c->registration.context.sessionScope ||
+        (!r.target && (!r.viewport.width || !r.viewport.height)))
         return core::unexpected(stale());
     const auto f = fingerprint(r);
     if (auto* old = request(*c, r.requestId)) {
@@ -271,6 +291,39 @@ auto FrameDelivery::admit(const FrameRequest& r, std::uint64_t version, std::int
         c->current->info.frameId = nextFrame_++;
     }
     return DeliveryAdmission{c->current->info, std::move(reservation), true, std::move(*attempt)};
+} catch (...) {
+    return core::unexpected(stale());
+}
+auto FrameDelivery::refuse(const FrameRequest& r, DeliveryStatus status)
+    -> core::Result<DeliveryInfo> try {
+    std::lock_guard lock(mutex_);
+    auto* c = find(r.consumerId);
+    if (!c || c->registration.state != ConsumerState::active || closing_ || !r.requestId ||
+        r.context.sessionScope != c->registration.context.sessionScope || !terminal(status))
+        return core::unexpected(stale());
+    const auto f = fingerprint(r);
+    if (auto* old = request(*c, r.requestId)) {
+        if (old->fingerprint != f)
+            return core::unexpected(conflict());
+        return old->info;
+    }
+    if (r.requestId <= c->requestHighWater)
+        return DeliveryInfo{r.consumerId, r.requestId, 0, 0, DeliveryStatus::historyUnavailable};
+    if (c->current && !terminal(c->current->info.status)) {
+        if (c->registration.profile.mode == ConsumerMode::exactCapture)
+            return core::unexpected(stale());
+        finish(*c, DeliveryStatus::canceled);
+    }
+    if (c->current) {
+        c->history[c->historyNext] = *c->current;
+        c->historyNext = (c->historyNext + 1) % c->history.size();
+    }
+    c->requestHighWater = r.requestId;
+    DeliveryInfo info{r.consumerId, r.requestId, 0, 0, status};
+    if (r.retained.frame() && r.retained.frame()->source)
+        info.resultVersion = r.retained.frame()->source->resultVersion;
+    c->current = RequestRecord{f, info};
+    return info;
 } catch (...) {
     return core::unexpected(stale());
 }
@@ -491,11 +544,14 @@ auto frameByteBound(std::size_t objects, std::size_t resources, std::size_t memb
     return bytes;
 }
 auto payloadBytes(const FramePayload& p) noexcept -> std::size_t {
+    // sizeof(FramePayload) already covers the variant storage for whichever branch is active; the
+    // laid-out frame adds no dynamic storage beyond the snapshot strings counted below.
+    const auto& snapshot = p.snapshotView();
     std::size_t bytes = sizeof(FramePayload) +
-                        p.snapshot.objects.capacity() * sizeof(FrameSnapshot::ObjectSnapshot) +
+                        snapshot.objects.capacity() * sizeof(FrameSnapshot::ObjectSnapshot) +
                         p.resources.capacity() * sizeof(PortableResourcePtr) +
                         p.membership.capacity() * sizeof(FeedbackId);
-    for (const auto& o : p.snapshot.objects) {
+    for (const auto& o : snapshot.objects) {
         bytes += o.id.capacity() + 1 + o.materialAssetId.capacity() + 1;
         if (o.mesh)
             bytes += o.mesh->assetId.capacity() + 1;

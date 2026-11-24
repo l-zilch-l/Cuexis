@@ -115,4 +115,81 @@ TEST_CASE("BehaviorSystem rejects invalid program and non-finite time", "[behavi
                       .has_value());
 }
 
+TEST_CASE("BehaviorSystem event and step sampling distinguishes the Beat 0 legacy overload",
+          "[behavior][sampling][rr-f133]") {
+    using cuexis::behavior::BehaviorEvent;
+    using cuexis::behavior::BehaviorEventTrack;
+    using cuexis::behavior::BehaviorSample;
+    using cuexis::behavior::BehaviorStepEvent;
+    using cuexis::behavior::BehaviorStepTrack;
+    using cuexis::behavior::PropertyBaseline;
+
+    BehaviorDefinition definition;
+    BehaviorEventTrack events;
+    events.property = PropertyId::TransformPositionX;
+    events.events.push_back(BehaviorEvent{.startBeat = 2.0,
+                                          .endBeat = 4.0,
+                                          .startValue = PropertyValue{10.0},
+                                          .endValue = PropertyValue{20.0},
+                                          .startSlope = 0.0,
+                                          .endSlope = 0.0,
+                                          .instantaneous = false});
+    events.events.push_back(BehaviorEvent{.startBeat = 4.0,
+                                          .endBeat = 4.0,
+                                          .startValue = PropertyValue{30.0},
+                                          .endValue = PropertyValue{30.0},
+                                          .startSlope = 0.0,
+                                          .endSlope = 0.0,
+                                          .instantaneous = true});
+    definition.eventTracks.push_back(std::move(events));
+
+    BehaviorStepTrack steps;
+    steps.property = PropertyId::TransformPositionY;
+    steps.events.push_back(BehaviorStepEvent{.beat = -1.0, .value = PropertyValue{5.0}});
+    steps.events.push_back(BehaviorStepEvent{.beat = 1.0, .value = PropertyValue{7.0}});
+    steps.events.push_back(BehaviorStepEvent{.beat = 3.0, .value = PropertyValue{9.0}});
+    definition.stepTracks.push_back(std::move(steps));
+
+    BehaviorProgram program;
+    program.definitions.push_back(std::move(definition));
+    BehaviorBinding binding{.entity = entt::entity{3}, .behavior = RuntimeBehaviorIndex{0}};
+    binding.baselines.push_back(
+        PropertyBaseline{.property = PropertyId::TransformPositionX, .value = PropertyValue{0.0}});
+    binding.baselines.push_back(
+        PropertyBaseline{.property = PropertyId::TransformPositionY, .value = PropertyValue{1.0}});
+    program.bindings.push_back(std::move(binding));
+
+    cuexis::world::PropertyWriteBuffer writes;
+    REQUIRE(BehaviorSystem::evaluate(program, 1000.0, writes).has_value());
+    REQUIRE(writes.size() == 2);
+    //  The legacy overload has no Beat input: 1000 ms is Beat 2 at 120 BPM, but the Event track is
+    //  evaluated at Beat 0 (its baseline) and the Step track takes the last step at or before 0.
+    CHECK(*std::get_if<double>(&writes.writes()[0].value) == Catch::Approx(0.0));
+    CHECK(*std::get_if<double>(&writes.writes()[1].value) == Catch::Approx(5.0));
+
+    //  The full sample evaluates Event and Step tracks at the actual Beat: the first Event starts
+    //  above Beat 0, Beat 3 is strictly inside it, and Beat 4 is the instantaneous boundary.
+    REQUIRE(BehaviorSystem::evaluate(program, BehaviorSample{1000.0, 2.0, false, 0.0}, writes)
+                .has_value());
+    CHECK(*std::get_if<double>(&writes.writes()[0].value) == Catch::Approx(10.0));
+    CHECK(*std::get_if<double>(&writes.writes()[1].value) == Catch::Approx(7.0));
+
+    REQUIRE(BehaviorSystem::evaluate(program, BehaviorSample{1500.0, 3.0, false, 0.0}, writes)
+                .has_value());
+    CHECK(*std::get_if<double>(&writes.writes()[0].value) == Catch::Approx(15.0));
+    CHECK(*std::get_if<double>(&writes.writes()[1].value) == Catch::Approx(9.0));
+
+    REQUIRE(BehaviorSystem::evaluate(program, BehaviorSample{2000.0, 4.0, false, 0.0}, writes)
+                .has_value());
+    CHECK(*std::get_if<double>(&writes.writes()[0].value) == Catch::Approx(30.0));
+    CHECK(*std::get_if<double>(&writes.writes()[1].value) == Catch::Approx(9.0));
+
+    //  A negative Beat before the first Event still yields the captured baseline, and the Step
+    //  track takes the declared negative-beat step.
+    REQUIRE(BehaviorSystem::evaluate(program, BehaviorSample{-250.0, -0.5, true, 0.25}, writes)
+                .has_value());
+    CHECK(*std::get_if<double>(&writes.writes()[0].value) == Catch::Approx(0.0));
+    CHECK(*std::get_if<double>(&writes.writes()[1].value) == Catch::Approx(5.0));
+}
+
 } // namespace
