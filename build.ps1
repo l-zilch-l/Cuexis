@@ -1,8 +1,8 @@
 # One-command local build entry point.
 #
 # Configure, build and test Cuexis without remembering the Visual Studio environment or the preset
-# commands. Standard presets load MSVC through tools/with-msvc.cmd; the mingw-* presets run in the
-# current shell because they expect the MSYS2 toolchain instead.
+# commands. Standard presets import the MSVC environment into this process; the mingw-* presets run
+# in the current shell because they expect the MSYS2 toolchain instead.
 #
 # Examples:
 #   .\build.ps1
@@ -29,12 +29,13 @@ $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 Push-Location $root
 try {
+    if ($Preset -notlike 'mingw*') {
+        . (Join-Path $root 'tools\msvc-env.ps1')
+        [void](Import-MsvcEnvironment)
+    }
+
     function Invoke-Tool([string]$Executable, [string[]]$Arguments) {
-        if ($Preset -like 'mingw*') {
-            & $Executable @Arguments
-        } else {
-            & (Join-Path $root 'tools\with-msvc.cmd') $Executable @Arguments
-        }
+        & $Executable @Arguments
         if ($LASTEXITCODE -ne 0) {
             throw "$Executable failed with exit code $LASTEXITCODE"
         }

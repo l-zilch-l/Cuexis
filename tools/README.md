@@ -53,7 +53,7 @@ cuexis_asset_importer                    VerifyAssetImporter.cmake（shader-tool
 
 | 脚本 | 用途 |
 | --- | --- |
-| `tools/with-msvc.ps1` / `tools/with-msvc.cmd` | 在普通 shell 中加载 VS x64 开发环境后执行命令（vswhere 定位，保留 VCPKG_ROOT） |
+| `tools/msvc-env.ps1` / `tools/with-msvc.ps1` / `tools/with-msvc.cmd` | 在普通 shell 中加载 VS x64 开发环境后执行命令（vswhere 定位，保留 VCPKG_ROOT；`build.ps1` 直接复用前者） |
 | `tools/prepare_sdk_approval.ps1` / `tools/prepare_sdk_approval.cmd` | 生成并发布 SDK owner 批准评论（只在需要 SDK API 变更时） |
 | `tools/check_sdk_approval_assistant_tests.ps1` | 批准助手回归测试 |
 | `tools/measure_playback_method.py` | 播放方法耗时测量（人工） |
