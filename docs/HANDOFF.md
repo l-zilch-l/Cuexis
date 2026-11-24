@@ -16,19 +16,20 @@ authority: owns
 
 ## 当前任务
 
-T-06 第一轮只完成帧对象、GL 实验桥、安装面与 F135 场景 1/2/3/5，交付记为部分成立，见[部分交付](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-06-frame-bridge-partial.md)。T-10 已完成九轮：值层、计分、作者 CLI、运行 records/Prepared 存储、`cuexis_judgement_compile` 骨架与 `runtime::AdvanceKernel`（编号/Stop、GP-02 四向量、单元耗尽 Fold、GP-04 多单元、最小 replay）；剩余 GP-03 故障矩阵、Playback owning DTO 与 legacy 输入切换。T-12 部分完成：timing 库、编译闭包、chart 时间适配与 beat-us 消费者成立，canonical 行、GP 轨迹与安装隔离未做。下一阶段先按登记册 §42 实施 F508 生命周期拆分，再实施 F135 interned Error 与 0.10.0 版本。波次 5 的交付报告在 [T-02](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-02-state-facts.md)、[T-05](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-05-frame-layout.md)与 [T-17](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-17-session-correctness.md)。
+T-06 第一轮只完成帧对象、GL 实验桥、安装面与 F135 场景 1/2/3/5，交付记为部分成立，见[部分交付](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-06-frame-bridge-partial.md)。T-10 已完成九轮：值层、计分、作者 CLI、运行 records/Prepared 存储、`cuexis_judgement_compile` 骨架与 `runtime::AdvanceKernel`（编号/Stop、GP-02 四向量、单元耗尽 Fold、GP-04 多单元、最小 replay）；剩余 GP-03 故障矩阵、Playback owning DTO 与 legacy 输入切换。T-12 部分完成：timing 库、编译闭包、chart 时间适配与 beat-us 消费者成立，canonical 行、GP 轨迹与安装隔离未做。F508 已按登记册 §42 的拆分落地（§43）：内容卸载保留控制身份，Close 终态清理，`rr_session_unload_lifecycle` 六 SECTION 通过；F135 采用形状 2 实施中，0.10.0 版本与 owner 审批评论等实施完成后处理。治理树引导 PR 48 已开，合并后 PR 47 的 PR 事件才有含治理树的可信历史基线。波次 5 的交付报告在 [T-02](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-02-state-facts.md)、[T-05](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-05-frame-layout.md)与 [T-17](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-17-session-correctness.md)。
 
 T-01 证据在 [基线与派单报告](stage_reports/stages/stage-07-rr/readiness/2026-11-23-t-01-dispatch-baseline.md)；T-03 证据在 [合同与诊断交付](stage_reports/stages/stage-07-rr/implementation/2026-11-23-t-03-contracts-and-diagnostics.md)；T-04 证据在 [构建闭包拆分与隔离门禁](stage_reports/stages/stage-07-rr/implementation/2026-11-24-t-04-build-isolation.md)。派单输入的规范哈希取基线 blob，见 [hashes.txt](stage_reports/stages/stage-07-rr/evidence/t-01-baseline/hashes.txt)，独立 checkout 复算不需要 `out/`。
 
 ## 下一步
 
-1. 按[唯一调度](stage_plans/active/stage-07-rr/schedule.md)启动波次 6 的 T-06；T-08 等 T-06，T-10 等 T-07/T-08；T-09 的退出材料与设备项留给 owner。
-2. 每卡按其任务级验收取证并回写发现处置；文档变更收尾前运行文档总入口、事实、命名与生成物检查。
-3. 实际发布、SDK 晋升与旧 API 退役仍各自单独取得；设备与实体听音项留给 owner。
+1. 按[唯一调度](stage_plans/active/stage-07-rr/schedule.md)继续波次 6/7 的 T-06、T-08；T-10 的 GP-03、Playback owning DTO 与 legacy 输入切换，T-12 的 canonical 行与安装隔离随后推进。F135（task-34）完成后接 0.10.0 版本、element-size 基线与 owner 审批评论。
+2. PR 48 合并后把 master 合进 PR 47、重推，并确认 `Documentation contracts` 转绿；随后在合并后的树上重跑 F508、隔离门禁与 T-17 验收命令。
+3. 每卡按其任务级验收取证并回写发现处置；文档变更收尾前运行文档总入口、事实、命名与生成物检查。
+4. 实际发布、SDK 晋升与旧 API 退役仍各自单独取得；设备与实体听音项留给 owner。
 
 ## 阻塞与待决
 
-RR-F508 的 unload 清零与 R1 定向 Close/retire 幂等重放冲突，需要 replay ledger 设计裁定后才能重新实施；RR-F135 场景 4 需要 D-04 先裁定不分配的错误表示。GL 边界门禁因 T-05/T-06 的渲染测试直接调用 GL 而变红，修复在 task-25。F132 的旧身份字节需要 T-10 在改动前 dump（改动前基线已采集，见[身份字节基线](stage_reports/stages/stage-07-rr/evidence/t-03/identity-baseline/identity-baseline.md)）；F135 的五类故障注入与安装消费者分别归 T-06、T-08。D-20 的正式发行判定语料在仓库内为空集，历史发行资料是否存在无法核实，缺口已具名交 T-09；两套外部包的当前实现重放已完成，见[只读重放证据](stage_reports/stages/stage-07-rr/evidence/external-corpus/replay-current/replay-current.md)。
+PR 48 治理树引导需 owner 合并；它的文档与版本门禁已过，其余构建任务仍在跑，合并前不能视为完成。F135 会让 SDK 公共布局变化，按 0.10.0 处理并需要 owner 的版本审批评论（已授权代理以 owner 名义代发，审批与 head sha、UTC 日期绑定）。GL 边界门禁已由 task-25 修复，`cuexis_rr_playback_isolation` 的 Chart 源表漂移已修（`f00439c3`）。F132 的旧身份字节需要 T-10 在改动前 dump（改动前基线已采集，见[身份字节基线](stage_reports/stages/stage-07-rr/evidence/t-03/identity-baseline/identity-baseline.md)）；F135 的五类故障注入与安装消费者分别归 T-06、T-08。D-20 的正式发行判定语料在仓库内为空集，历史发行资料是否存在无法核实，缺口已具名交 T-09；两套外部包的当前实现重放已完成，见[只读重放证据](stage_reports/stages/stage-07-rr/evidence/external-corpus/replay-current/replay-current.md)。
 
 ## 验证状态
 
@@ -41,6 +42,8 @@ T-04：四个预设（`debug`、`headless-debug`、`candidate-headless-debug`、
 波次 5：T-02 的四项文档门禁与负例注入退出 0，RR-F105 部分成立，`[packed]` 69 例全过（含修复 T-04b 遗留的 SPEC-02 源单元列表）；T-05 的 `rr_frame_layout` 在 `debug` 4/4、`headless-debug` 3/3 通过，真实 GL 上下文覆盖借用 FBO 与状态恢复，`framebuffer_incomplete` 本机不可构造；T-17 的四例与既有 override 集在 `candidate-headless-debug` 通过，`headless-debug` 默认闭包测试通过、隔离门禁未回退。合并树上重新跑过：candidate 预设 `[packed]` 69/69、T-17 两例与 override 集全过；`debug` 的 `rr_frame_layout` 4/4、`[packed]` 69/69、隔离门禁与 T-03/T-04 七项测试全过。
 
 T-06：帧对象、能力检查、GL 实验桥（窗口路径只编译）、安装面、共享导出与 F135 场景 1/2/3/5 通过；场景 4 与宿主/Player 帧链未闭环。B4/R0 等 7 个 worker 用例在 F508 清零回退后全部恢复，`cuexis_architecture_tests` 因渲染测试直接调用 GL 变红，修复在 task-25。
+
+F508 第二轮：`rr_session_unload_lifecycle` 六 SECTION 通过，`-L rpa` 186/186、`-L execution-host` 71/71、候选 playback 195/35794、默认闭包 137/17556；`cuexis_architecture_tests` 与 `cuexis_format_check` 退出 0，隔离门禁在 `candidate-debug`、`debug` 退出 0。PR 47 的编译修复在本地复现：GCC 全量构建、MSVC Release `cuexis_judgement_compile`、`candidate-debug` 的 `cuexis_chart_tools` 均退出 0；远端重跑待推送。
 
 CMake target 事实已可检查：`debug` 预设 fresh configure 生成的 `cuexis-targets.txt` 已同步到 `BUILDING.md` 目标块，`check_docs.py` 的 target contract 项退出 0。产品行为、设备与 hosted 证据随各责任任务取得。
 
@@ -55,4 +58,4 @@ CMake target 事实已可检查：`debug` 预设 fresh configure 生成的 `cuex
 
 ## 最近改动
 
-本轮已提交：`a22e255f` 治理落盘、`3b8bf41e` T-01 派单与证据、`569253d8` T-13 复验、`03334ecd` 命名硬规则与检查器、`6c77a888` T-01 证据修正、`5dc55387` T-04 拆分与改名迁移、`3943fb13` 门禁依赖遍历修复、`0bb2d927` D-20 双侧重放证据、`92539ad4` 门禁帮助函数依赖 id 修复、`8cfb302d` T-04 交付、`9c25a88f` 日期构建推进、`b07e20dc` T-05 几何与 GL、`5f1ef718` T-17 会话修复、`52f0d760` T-02 与 SPEC-02 修复、`95de188d` 波次 5 交付与状态回写、`b2ad4cf8` T-06 帧对象与 GL 桥、`8383672c` F508 清零回退。T-06 的部分交付报告与状态回写随后提交。
+本轮已提交：`a22e255f` 治理落盘、`3b8bf41e` T-01 派单与证据、`569253d8` T-13 复验、`03334ecd` 命名硬规则与检查器、`6c77a888` T-01 证据修正、`5dc55387` T-04 拆分与改名迁移、`3943fb13` 门禁依赖遍历修复、`0bb2d927` D-20 双侧重放证据、`92539ad4` 门禁帮助函数依赖 id 修复、`8cfb302d` T-04 交付、`9c25a88f` 日期构建推进、`b07e20dc` T-05 几何与 GL、`5f1ef718` T-17 会话修复、`52f0d760` T-02 与 SPEC-02 修复、`95de188d` 波次 5 交付与状态回写、`b2ad4cf8` T-06 帧对象与 GL 桥、`8383672c` F508 清零回退、`07eb42ea` T-10 第九轮、`77157702` T-12、`b2769f55` F508/F135 裁定、`c85cfa61` F508 生命周期拆分、`80c121b4` GCC/MSVC/Clang 编译修复、`f00439c3` 隔离源表对齐。以上后三项与 F135 相关文档更新尚未推送。T-06 的部分交付报告与状态回写随后提交。

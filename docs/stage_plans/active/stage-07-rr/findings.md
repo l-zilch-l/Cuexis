@@ -929,6 +929,15 @@ T-06 按卡实施，交付范围只到 Playback 帧对象与 GL 实验桥，宿�
 
 T-10 第九轮（GP-04 多单元、最小 ReplayRecord/replay）与 T-12（timing 库、编译闭包、chart 时间适配、beat-us 消费者）已本地提交，未推送。
 
+## 43. F508 生命周期拆分落地与 PR 47 CI 修复（2026-11-24）
+
+- RR-F508 内容卸载与控制生命周期拆分：**成立**。内容卸载清 Runtime、Gameplay、调度器、时钟映射、`executionMapping`、`tailTransition`、`framings` 与 committed presentation token，保留 `hostFence`、accepted control/decision 与 `confirmedHostContext`；Session 变 Empty 且 generation 递增，Empty 再卸载不 bump。Close 终态由 `releaseExecutionFence`、`completeExecutionClose` 与无 fence 分支清理；`retireExecutionStep` 改走内容卸载，Close 前重放仍走完整 proof；新内容提交后旧 proof 归 `host.rpa.context_stale`。`rr_session_unload_lifecycle` 六个 SECTION 通过；`-L rpa` 186/186、`-L execution-host` 71/71；候选 playback 195 用例 / 35794 断言；默认闭包 137 用例 / 17556 断言；架构与格式门禁通过。证据在 `out/review/stage-07-rr/T-17/lifecycle-split/`。未做：shared 导出、设备、无 fence 独立 worker 用例。
+- 隔离门禁 Chart 源表漂移：**成立并已修复**。T-11/T-12 新增的 `chart_v5_loader.cpp`、`chart_v5_timing.cpp`、`compiled_chart_timing.cpp`、`timing_source_adapter.cpp` 未同步进 `cmake/VerifyPlaybackCandidateIsolation.cmake` 的三张源表，候选预设退出 8；补齐后 `candidate-debug` 与 `debug` 的 `cuexis_rr_playback_isolation` 退出 0（`f00439c3`）。
+- PR 47 远端编译红灯：**成立并已修复**。`advance_kernel.cpp` 缺 `<limits>` 被 GCC/Clang 拒绝；`legacy_prepared_view.cpp` 六个转换记录默认初始化触发 MSVC Release maybe-uninitialized；`chart_v5_loader.cpp` 的 82 KiB schema 字面量触发 Clang `-Woverlength-strings`。分别补 include、值初始化、按 TU 关闭该可移植性告警（`80c121b4`）；本地 GCC 全量构建、MSVC Release `cuexis_judgement_compile`、`candidate-debug` 的 `cuexis_chart_tools` 与格式检查退出 0。远端重跑待推送。
+- F135 形状探针：**成立**。形状 2 在 MSVC/Clang/GCC 上 `Error` 104→112 B，会话槽位增量约为形状 1 的一半；零分配构造与复制、三次持续 OOM、nothrow move 与静态存储期负例通过，采用形状 2（task-34 实施中）。证据在 `out/review/stage-07-rr/investigations/f135-shape/`。
+- PR 48 治理树引导：**部分成立**。docs 快照加入 master 目标事实、四个旧命名豁免、检查脚本与日期版本后，`Documentation contracts` 与 `Version advancement (pre-merge)` 已通过；其余构建任务仍在运行。合并后 PR 47 的 PR 事件才有含治理树的可信 base。
+- 本轮本地提交 `c85cfa61`（F508 拆分）、`80c121b4`（编译修复）、`f00439c3`（隔离源表），均未推送。
+
 ## 附录 处置记录（按日期保留，§12–§16）
 
 本附录保留各轮审查的处置记录，按当时时点成立，不改写结论；编号沿用历史顺序，故排在 §17 之后阅读。
