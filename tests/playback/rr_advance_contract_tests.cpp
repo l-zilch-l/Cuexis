@@ -11,13 +11,17 @@
 #include <cuexis/judgement/gameplay_graph_reference.hpp>
 #include <cuexis/judgement/normalized_score.hpp>
 #include <cuexis/judgement/phase_types.hpp>
+#include <cuexis/judgement/prepared_gameplay.hpp>
+#include <cuexis/judgement/prepared_gameplay_records.hpp>
 #include <cuexis/judgement/prepared_identity.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 
 #include <cstdint>
 #include <limits>
+#include <optional>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <vector>
 
@@ -64,6 +68,90 @@ auto preparedScore() -> PreparedNormalizedScore {
     score.units = {ScoreUnit{{0, 1}}, ScoreUnit{{2}}};
     score.basis = ScoreBasis{8, 3};
     return score;
+}
+
+auto runtimePolicy() -> runtime::LatePolicyParameters {
+    runtime::LatePolicyParameters policy;
+    policy.finalizationWatermark = runtime::MeasuredParameter<TickSpan>::measured(TickSpan{8});
+    policy.maxQueueHop = runtime::MeasuredParameter<TickSpan>::measured(TickSpan{4});
+    policy.windowCloseThreshold = runtime::MeasuredParameter<TickSpan>::measured(TickSpan{3});
+    policy.windowOpenThreshold = runtime::MeasuredParameter<TickSpan>::measured(TickSpan{2});
+    policy.policy = runtime::LateEventPolicy::queueNextTick;
+    return policy;
+}
+
+auto runtimeIdentities() -> PreparedIdentityDeclarations {
+    PreparedIdentityDeclarations identities;
+    identities.engine.judgementSemanticRevision = "judgement.t4-k4.v1";
+    identities.engine.factSemanticRevision = "fact.semantic.phase-local.v1";
+    identities.engine.fixedPointTableId = "fixed-point.none.v1";
+    identities.engine.coordinationPhaseOrderToken = "coordination.six-eight.t4-k4.v1";
+    identities.ruleset.interfaceProjectionToken = "ruleset.one";
+    identities.session.judgementConfigToken = "judgement.config.one";
+    return identities;
+}
+
+auto tapRequirement(std::size_t index, std::int64_t target,
+                    std::optional<std::uint32_t> gradeTableIndex, std::int64_t windowRadius = 50)
+    -> runtime::PreparedRequirement {
+    runtime::PreparedRequirement requirement;
+    requirement.stableId = StableDeclarationId{"doc.alpha", static_cast<std::uint32_t>(index)};
+    requirement.identity = RequirementIdentity{"chart.one",  "invocation.one",
+                                               "module.one", "export.one",
+                                               {},           "req." + std::to_string(index)};
+    requirement.phases = {PhaseDeclaration{PhaseKind::tap, 0}};
+    requirement.timing.end = Tick{target + windowRadius};
+    requirement.timing.successWindows = {runtime::SuccessWindow{
+        Tick{target - windowRadius}, Tick{target + windowRadius}, requirement.phases.front()}};
+    requirement.timing.phaseTargets = {runtime::PhaseTarget{PhaseKind::tap, Tick{target}}};
+    requirement.deadline = Tick{target + windowRadius};
+    if (gradeTableIndex) {
+        requirement.measure.push_back(
+            runtime::CompiledMeasureComponent{PhaseKind::tap,
+                                              FactCategory::tap,
+                                              runtime::GradePresence::declared,
+                                              {},
+                                              *gradeTableIndex});
+    }
+    return requirement;
+}
+
+auto tapUnitScore(std::vector<runtime::PreparedRequirement>& requirements,
+                  std::vector<ScoreUnit> units) -> PreparedNormalizedScore {
+    auto score = preparedScore();
+    score.units = std::move(units);
+    score.basis = ScoreBasis{0, 0};
+    (void)requirements;
+    return score;
+}
+
+auto contextValue(const cuexis::core::Error& error, std::string_view key) -> std::string {
+    for (const auto& entry : error.context()) {
+        if (entry.key == key) {
+            return entry.value;
+        }
+    }
+    return {};
+}
+
+auto singleRequirementView(const runtime::PreparedTimebase& timebase,
+                           std::vector<runtime::PreparedRequirement>& requirements,
+                           runtime::LatePolicyParameters& policy,
+                           PreparedIdentityDeclarations& identities, PreparedNormalizedScore& score)
+    -> runtime::CompiledGameplayView {
+    return runtime::CompiledGameplayView{
+        timebase,
+        policy,
+        identities,
+        "content.one",
+        "prepared.one",
+        "execution.one",
+        nullptr,
+        &score,
+        requirements,
+        std::span<const runtime::PreparedResource>{},
+        std::span<const runtime::PreparedTimerKey>{},
+    };
 }
 
 } // namespace
@@ -293,21 +381,220 @@ TEST_CASE("cuexis_rr_advance_contract", "[playback][judgement][rr][advance]") {
         CHECK_FALSE(normalizedScoreOutput(0, 1, 1, 0, 0, 3, 2));
     }
 
-    SECTION("the prepared grade table answers half-open intervals") {
-        PreparedGradeTable table;
-        table.id = "main";
-        table.exactStart = -10;
-        table.exactEnd = 15;
-        table.intervals = {PreparedGradeInterval{-50, -10, "Good"},
-                           PreparedGradeInterval{-10, 10, "Great"},
-                           PreparedGradeInterval{10, 50, "Good"}};
-        CHECK(preparedGradeAt(table, -51) == nullptr);
-        CHECK(*preparedGradeAt(table, -50) == "Good");
-        CHECK(*preparedGradeAt(table, -11) == "Good");
-        CHECK(*preparedGradeAt(table, -10) == "Great");
-        CHECK(*preparedGradeAt(table, 9) == "Great");
-        CHECK(*preparedGradeAt(table, 10) == "Good");
-        CHECK(*preparedGradeAt(table, 49) == "Good");
-        CHECK(preparedGradeAt(table, 50) == nullptr);
+    SECTION("the fixed full-mark basis follows GP-04") {
+        auto policy = runtimePolicy();
+
+        //  200 and 1000 single-A units give (400, 20100) and (2000, 500500).
+        {
+            std::vector<runtime::PreparedRequirement> requirements;
+            std::vector<ScoreUnit> units;
+            for (std::size_t index = 0; index < 200; ++index) {
+                requirements.push_back(tapRequirement(index, 1000, 0));
+                units.push_back(ScoreUnit{{static_cast<std::uint32_t>(index)}});
+            }
+            auto score = tapUnitScore(requirements, std::move(units));
+            auto basis = runtime::deriveScoreBasis(requirements, policy, score);
+            REQUIRE(basis);
+            CHECK(basis->jMax == 400);
+            CHECK(basis->cMax == 20100);
+        }
+        {
+            std::vector<runtime::PreparedRequirement> requirements;
+            std::vector<ScoreUnit> units;
+            for (std::size_t index = 0; index < 1000; ++index) {
+                requirements.push_back(tapRequirement(index, 1000, 0));
+                units.push_back(ScoreUnit{{static_cast<std::uint32_t>(index)}});
+            }
+            auto score = tapUnitScore(requirements, std::move(units));
+            auto basis = runtime::deriveScoreBasis(requirements, policy, score);
+            REQUIRE(basis);
+            CHECK(basis->jMax == 2000);
+            CHECK(basis->cMax == 500500);
+        }
+
+        //  A/B share one explicit unit; solo is its own unit: Jmax=8, Cmax=3.
+        {
+            std::vector<runtime::PreparedRequirement> requirements = {
+                tapRequirement(0, 1000, 0), tapRequirement(1, 2000, 1), tapRequirement(2, 3000, 2)};
+            auto score = tapUnitScore(requirements, {ScoreUnit{{0, 1}}, ScoreUnit{{2}}});
+            auto basis = runtime::deriveScoreBasis(requirements, policy, score);
+            REQUIRE(basis);
+            CHECK(basis->jMax == 8);
+            CHECK(basis->cMax == 3);
+            CHECK(normalizedScoreOutput(900000, 100000, 1000000, 8, 8, 3, 3).value() == 1000000);
+            CHECK(normalizedScoreOutput(900000, 100000, 1000000, 5, 8, 3, 3).value() == 662500);
+        }
+
+        //  A unit with only non-qualifying keys is rejected with the precise reason.
+        {
+            std::vector<runtime::PreparedRequirement> requirements = {
+                tapRequirement(0, 1000, std::nullopt)};
+            requirements.front().timing.successWindows.clear();
+            auto score = tapUnitScore(requirements, {ScoreUnit{{0}}});
+            auto basis = runtime::deriveScoreBasis(requirements, policy, score);
+            REQUIRE_FALSE(basis);
+            CHECK(contextValue(basis.error(), "reason") == "score_unit_unqualified");
+        }
+
+        //  A local key with no exact rule is rejected.
+        {
+            std::vector<runtime::PreparedRequirement> requirements = {tapRequirement(0, 1000, 0)};
+            auto score = tapUnitScore(requirements, {ScoreUnit{{0}}});
+            score.mode.rules = {ScoreRuleRow{PhaseKind::tap, Outcome::miss, std::nullopt, false, 0,
+                                             ComboAction::keep}};
+            auto basis = runtime::deriveScoreBasis(requirements, policy, score);
+            REQUIRE_FALSE(basis);
+            CHECK(contextValue(basis.error(), "reason") == "score_rule_missing");
+        }
+
+        //  ObserveOnly requirements cannot join a unit.
+        {
+            std::vector<runtime::PreparedRequirement> requirements = {tapRequirement(0, 1000, 0)};
+            runtime::ResourceClaimDeclaration claim;
+            claim.intent = runtime::ResourceClaimIntent::observe;
+            requirements.front().resourceClaims = {claim};
+            auto score = tapUnitScore(requirements, {ScoreUnit{{0}}});
+            auto basis = runtime::deriveScoreBasis(requirements, policy, score);
+            REQUIRE_FALSE(basis);
+            CHECK(contextValue(basis.error(), "reason") == "score_observe_only_unit");
+        }
+
+        //  Structural unit errors are refused before any key derivation.
+        {
+            std::vector<runtime::PreparedRequirement> requirements = {tapRequirement(0, 1000, 0)};
+            auto score = tapUnitScore(requirements, {ScoreUnit{{0}}, ScoreUnit{{0}}});
+            CHECK_FALSE(runtime::deriveScoreBasis(requirements, policy, score));
+            auto outOfRange = tapUnitScore(requirements, {ScoreUnit{{5}}});
+            CHECK_FALSE(runtime::deriveScoreBasis(requirements, policy, outOfRange));
+        }
+    }
+
+    SECTION("the release observation envelope follows GP-02") {
+        //  Body release: earliest dispatch 850 minus hop 4 gives the -154 body error at target
+        //  1000.
+        auto body = runtime::releaseObservationDomain(850, 1000, 4);
+        REQUIRE(body);
+        CHECK(body->start == 846);
+        CHECK(body->end == 1000);
+        CHECK(846 - 1000 == -154);
+
+        //  Tail release: the last window closes at 1020, which is +20 at tail target 1000.
+        auto tail = runtime::releaseObservationDomain(1000, 1020, 4);
+        REQUIRE(tail);
+        CHECK(tail->start == 996);
+        CHECK(tail->end == 1020);
+        CHECK(1020 - 1000 == 20);
+
+        CHECK_FALSE(runtime::releaseObservationDomain(1000, 1000, 4));
+        CHECK_FALSE(runtime::releaseObservationDomain(1001, 1000, 4));
+        CHECK(runtime::releaseObservationDomain(850, 1000, 0)->start == 850);
+        const auto clamped =
+            runtime::releaseObservationDomain(std::numeric_limits<std::int64_t>::min(), 0, 4);
+        REQUIRE(clamped);
+        CHECK(clamped->start == std::numeric_limits<std::int64_t>::min());
+        CHECK(clamped->end == 0);
+    }
+
+    SECTION("prepared storage owns the records and rejects an inconsistent basis") {
+        auto policy = runtimePolicy();
+        auto identities = runtimeIdentities();
+        const runtime::PreparedTimebase timebase{"engine.tick.us.v1", 1, 1, Tick{0}};
+        std::optional<runtime::PreparedGameplay> prepared;
+        {
+            std::vector<runtime::PreparedRequirement> requirements = {tapRequirement(0, 1000, 0)};
+            auto score = tapUnitScore(requirements, {ScoreUnit{{0}}});
+            score.basis = ScoreBasis{2, 1};
+            runtime::PrepareGameplayLimits limits{};
+            auto view = singleRequirementView(timebase, requirements, policy, identities, score);
+            auto result = runtime::prepareCompiledGameplay(view, limits);
+            REQUIRE(result);
+            prepared = std::move(*result);
+        }
+        //  The source vectors are gone; the owning handle still serves every value.
+        CHECK(prepared->requirements().size() == 1);
+        CHECK(prepared->resources().empty());
+        CHECK(prepared->timers().empty());
+        CHECK(prepared->identity() == "prepared.one");
+        CHECK(prepared->settlementCapacity() == 1);
+        const auto& dictionary = prepared->settlementDictionary();
+        REQUIRE(dictionary.phases.size() == 1);
+        CHECK(dictionary.phases.front().phase == PhaseKind::tap);
+        CHECK(dictionary.phases.front().requirement.requirementLocalId == "req.0");
+        CHECK(dictionary.grades == std::vector<std::string>{"A", "B", "solo"});
+        const auto records = prepared->records();
+        CHECK(records.normalizedScore != nullptr);
+        CHECK(records.contentIdentity == "content.one");
+        CHECK(records.preparedIdentity == "prepared.one");
+        CHECK(records.requirements.size() == 1);
+        CHECK(prepared->admitsSuccess(0, Tick{1000}));
+        CHECK(prepared->admitsSuccess(0, Tick{1049}));
+        CHECK_FALSE(prepared->admitsSuccess(0, Tick{1050}));
+        CHECK_FALSE(prepared->admitsSuccess(1, Tick{1000}));
+
+        //  A tampered basis is rejected with the contract field path.
+        {
+            std::vector<runtime::PreparedRequirement> requirements = {tapRequirement(0, 1000, 0)};
+            auto score = tapUnitScore(requirements, {ScoreUnit{{0}}});
+            score.basis = ScoreBasis{3, 1};
+            runtime::PrepareGameplayLimits limits{};
+            auto view = singleRequirementView(timebase, requirements, policy, identities, score);
+            auto result = runtime::prepareCompiledGameplay(view, limits);
+            REQUIRE_FALSE(result);
+            CHECK(result.error().code() == "judgement.execution.relation_invalid");
+            CHECK(contextValue(result.error(), "reason") == "basis_mismatch");
+            CHECK(contextValue(result.error(), "fieldPath") == "/scoreBasis/jMax");
+        }
+
+        //  A measured limit is enforced; the previous handle is not touched by a failure.
+        {
+            std::vector<runtime::PreparedRequirement> requirements = {tapRequirement(0, 1000, 0),
+                                                                      tapRequirement(1, 2000, 1)};
+            auto score = tapUnitScore(requirements, {ScoreUnit{{0}}, ScoreUnit{{1}}});
+            score.basis = ScoreBasis{4, 3};
+            runtime::PrepareGameplayLimits limits{};
+            limits.maxRequirements = runtime::MeasuredParameter<std::uint64_t>::measured(1);
+            auto view = singleRequirementView(timebase, requirements, policy, identities, score);
+            auto result = runtime::prepareCompiledGameplay(view, limits);
+            REQUIRE_FALSE(result);
+            CHECK(result.error().code() == "capability.budget_insufficient");
+            CHECK(contextValue(result.error(), "fieldPath") == "/limits/maxRequirements");
+            CHECK(prepared->settlementCapacity() == 1);
+        }
+
+        //  Cross-reference and shape rejections.
+        {
+            std::vector<runtime::PreparedRequirement> requirements = {tapRequirement(0, 1000, 0)};
+            auto score = tapUnitScore(requirements, {ScoreUnit{{0}}});
+            score.basis = ScoreBasis{2, 1};
+            runtime::PrepareGameplayLimits limits{};
+            runtime::PreparedTimerKey timer;
+            timer.requirement = requirements.front().identity;
+            timer.requirement.requirementLocalId = "unknown";
+            timer.phase = PhaseKind::tap;
+            auto view = singleRequirementView(timebase, requirements, policy, identities, score);
+            view.timers = std::span<const runtime::PreparedTimerKey>{&timer, 1};
+            CHECK_FALSE(runtime::prepareCompiledGameplay(view, limits));
+        }
+
+        //  An empty view prepares with capacity zero.
+        {
+            runtime::PreparedTimebase timebase{"engine.tick.us.v1", 1, 1, Tick{0}};
+            runtime::CompiledGameplayView view{timebase,
+                                               policy,
+                                               identities,
+                                               "",
+                                               "",
+                                               "",
+                                               nullptr,
+                                               nullptr,
+                                               std::span<const runtime::PreparedRequirement>{},
+                                               std::span<const runtime::PreparedResource>{},
+                                               std::span<const runtime::PreparedTimerKey>{}};
+            runtime::PrepareGameplayLimits limits{};
+            auto empty = runtime::prepareCompiledGameplay(view, limits);
+            REQUIRE(empty);
+            CHECK(empty->settlementCapacity() == 0);
+            CHECK(empty->settlementDictionary().phases.empty());
+        }
     }
 }

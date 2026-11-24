@@ -454,6 +454,28 @@ function(cuexis_verify_source_architecture source_dir)
         endif()
     endforeach()
 
+    #  The running value headers must not pull the author/compile chain back into the runtime. The
+    #  runtime records are consumed by an independent consumer that may link Judgement and Core
+    #  only, so none of these headers may include an author graph, assembler, prepared-artifact,
+    #  legacy timebase, ruleset, execution-profile or session header.
+    set(judgement_runtime_value_headers
+        prepared_identity.hpp
+        phase_types.hpp
+        normalized_score.hpp
+        advance.hpp
+        prepared_gameplay_records.hpp
+        prepared_gameplay.hpp)
+    foreach(runtime_value_header IN LISTS judgement_runtime_value_headers)
+        _cuexis_partition_text("${source_dir}" "engine/judgement/include/cuexis/judgement"
+            "${runtime_value_header}" runtime_value_text)
+        if(runtime_value_text MATCHES
+           "#[ \t]*include[ \t]*[<\"]cuexis/judgement/(gameplay_assembler|gameplay_graph|gameplay_prepare|timebase\\.hpp|timebase_rational|timebase_profile|ruleset|execution_profile|input_boundary|recovery|kernel_types|judgement_session)")
+            message(FATAL_ERROR
+                "Judgement runtime value header includes a compile-side header: "
+                "${runtime_value_header}")
+        endif()
+    endforeach()
+
     file(GLOB_RECURSE judgement_sources
         "${source_dir}/engine/judgement/*.cpp"
         "${source_dir}/engine/judgement/*.hpp"

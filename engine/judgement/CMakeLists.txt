@@ -6,6 +6,7 @@ set_target_properties(cuexis_judgement PROPERTIES EXPORT_NAME InternalJudgement)
 target_sources(cuexis_judgement
     PRIVATE
         src/diagnostic.cpp
+        src/derived_score.cpp
         src/execution_profile.cpp
         src/execution_scheduler.cpp
         src/execution_kernel_advance.cpp
@@ -41,6 +42,7 @@ target_sources(cuexis_judgement
         src/kernel_types.cpp
         src/normalized_score.cpp
         src/phase_types.cpp
+        src/prepared_gameplay.cpp
         src/recovery_codec.cpp
         src/recovery.cpp
         src/ruleset.cpp

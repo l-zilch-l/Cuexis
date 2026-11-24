@@ -35,6 +35,8 @@ add_executable(cuexis_judgement_tests
     phase_types_self_contained.cpp
     normalized_score_self_contained.cpp
     advance_self_contained.cpp
+    prepared_gameplay_records_self_contained.cpp
+    prepared_gameplay_self_contained.cpp
 )
 
 target_include_directories(cuexis_judgement_tests PRIVATE ${PROJECT_SOURCE_DIR}/engine/judgement/internal)

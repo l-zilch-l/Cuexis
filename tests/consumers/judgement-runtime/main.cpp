@@ -4,6 +4,8 @@
 #include <cuexis/judgement/judgement_session.hpp>
 #include <cuexis/judgement/normalized_score.hpp>
 #include <cuexis/judgement/phase_types.hpp>
+#include <cuexis/judgement/prepared_gameplay.hpp>
+#include <cuexis/judgement/prepared_gameplay_records.hpp>
 #include <cuexis/judgement/prepared_identity.hpp>
 
 #include <cstdint>
@@ -52,6 +54,19 @@ int main() {
     const auto total = normalizedScoreOutput(900000, 100000, 1000000, 8, 8, 3, 3);
     if (!total || *total != 1000000U) {
         return fail("the full normalized score did not reach the total");
+    }
+
+    //  The runtime prepared records and the shared observation-domain helper are usable without an
+    //  author header: the consumer builds a requirement value and asks the domain helper directly.
+    cuexis::judgement::runtime::PreparedRequirement requirement;
+    requirement.stableId = declaration;
+    requirement.phases = {PhaseDeclaration{PhaseKind::tap, 0}};
+    if (requirement.phases.front().kind != PhaseKind::tap) {
+        return fail("the runtime requirement lost its phase");
+    }
+    const auto domain = cuexis::judgement::runtime::releaseObservationDomain(850, 1000, 4);
+    if (!domain || domain->start != 846 || domain->end != 1000) {
+        return fail("the release observation domain is wrong");
     }
 
     //  The runtime session factory is reachable without any author or Playback type.
