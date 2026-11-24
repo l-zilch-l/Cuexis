@@ -498,6 +498,32 @@ function(cuexis_verify_source_architecture source_dir)
         endif()
     endforeach()
 
+    #  Direction of the split: the running library never includes the compile side, and the compile
+    #  side only includes Core, Judgement and its own root.
+    foreach(source IN LISTS judgement_sources)
+        file(READ "${source}" contents)
+        if(contents MATCHES "#[ \t]*include[ \t]*[<\"]cuexis/judgement/compile/")
+            message(FATAL_ERROR
+                "The running Judgement library includes a compile-side header: ${source}")
+        endif()
+    endforeach()
+    file(GLOB_RECURSE judgement_compile_sources
+        "${source_dir}/engine/judgement_compile/*.cpp"
+        "${source_dir}/engine/judgement_compile/*.hpp"
+    )
+    foreach(source IN LISTS judgement_compile_sources)
+        file(READ "${source}" contents)
+        string(REGEX MATCHALL "#[ \t]*include[ \t]*[<\"]cuexis/[^>\"]*[>\"]"
+               compile_includes "${contents}")
+        foreach(compile_include IN LISTS compile_includes)
+            if(NOT compile_include MATCHES "cuexis/(core|judgement)/")
+                message(FATAL_ERROR
+                    "Judgement compile side includes a non-Core/non-Judgement header: "
+                    "${source} -> ${compile_include}")
+            endif()
+        endforeach()
+    endforeach()
+
     file(GLOB_RECURSE all_project_sources
         "${source_dir}/app/*.cpp"
         "${source_dir}/app/*.hpp"

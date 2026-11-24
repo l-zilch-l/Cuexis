@@ -37,6 +37,7 @@ add_executable(cuexis_judgement_tests
     advance_self_contained.cpp
     prepared_gameplay_records_self_contained.cpp
     prepared_gameplay_self_contained.cpp
+    legacy_prepared_view_tests.cpp
 )
 
 target_include_directories(cuexis_judgement_tests PRIVATE ${PROJECT_SOURCE_DIR}/engine/judgement/internal)
@@ -46,6 +47,7 @@ target_compile_features(cuexis_judgement_tests PRIVATE cxx_std_20)
 target_link_libraries(cuexis_judgement_tests
     PRIVATE
         cuexis::judgement
+        cuexis::judgement_compile
         Catch2::Catch2WithMain
 )
 

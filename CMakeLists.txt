@@ -250,6 +250,10 @@ set(CUEXIS_ACTIVE_TARGETS
     cuexis_player_support
 )
 
+if(TARGET cuexis_judgement_compile)
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_judgement_compile)
+endif()
+
 if(TARGET cuexis_execution_host_support)
     list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_execution_host_support)
 endif()
@@ -1190,6 +1194,13 @@ cuexis_verify_target_dependencies(cuexis_judgement
     ALLOWED
         cuexis::core
 )
+if(TARGET cuexis_judgement_compile)
+    cuexis_verify_target_dependencies(cuexis_judgement_compile
+        ALLOWED
+            cuexis::judgement
+            cuexis::core
+    )
+endif()
 if(TARGET cuexis_gameplay_packed)
     cuexis_verify_target_dependencies(cuexis_gameplay_packed
         ALLOWED
@@ -1515,6 +1526,7 @@ if(CUEXIS_BUILD_TESTS)
     cuexis_verify_target_dependencies(cuexis_judgement_tests
         ALLOWED
             cuexis::judgement
+            cuexis::judgement_compile
             Catch2::Catch2WithMain
     )
     if(TARGET cuexis_pd_baseline_probe)
@@ -1535,6 +1547,7 @@ if(CUEXIS_BUILD_TESTS)
         ALLOWED
             cuexis::playback
             cuexis::judgement
+            cuexis::judgement_compile
             Catch2::Catch2WithMain
     )
     if(TARGET cuexis_host_protocol_tests)

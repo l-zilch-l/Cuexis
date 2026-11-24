@@ -20,6 +20,7 @@ target_link_libraries(cuexis_rpa_tests
     PRIVATE
         cuexis::playback
         cuexis::judgement
+        cuexis::judgement_compile
         Catch2::Catch2WithMain
 )
 
