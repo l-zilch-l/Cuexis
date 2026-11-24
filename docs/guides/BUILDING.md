@@ -43,6 +43,7 @@ cuexis_runtime
 cuexis_playback
 cuexis_presentation_renderer
 cuexis_player_support
+cuexis_judgement_compile
 cuexis_cxc_candidate
 cuexis_chart_codec
 cuexis_chart_tools

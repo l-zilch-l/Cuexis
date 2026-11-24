@@ -906,6 +906,17 @@ T-06 按卡实施，交付范围只到 Playback 帧对象与 GL 实验桥，宿�
 - retained 两向模式与请求选择差异：**成立**。legacy handle+有 target、layout handle+`nullopt` 两向都在帧 ID/attempt/reservation 前记终态 `noRetainedFrame`（新增 `FrameDelivery::refuse`），重复请求同终态，随后匹配模式复用原 handle/serial；Default handle 时 BestFit 请求被拒、同选择复用。
 - CI 适配：`rr_frame_layout_shared` 在无 OpenGL 上下文的宿主上把真实 Player smoke 记为 NOT CHECKED 而不是产品失败；本地 NVIDIA 上下文仍真实执行。`cuexis_rr_sdk_facade_compat` 需要 vcvars 环境，未加载 MSVC 环境时嵌套 configure 会因缺库失败并误报，运行说明需写明这一点。
 
+## 41. T-10 前三轮：值层、计分与编译目标骨架（2026-11-24）
+
+- 值层：**成立**。四个 Prepared 身份声明与 `StableDeclarationId`/`PhaseKind`/`Outcome`/`FactCategory`/`RequirementIdentity` 移到独立头，旧作者头改为转引；四个自包含 TU 单独编译，include trace 不含作者/图/编译根。
+- RR-F132 旧身份字节：**成立（仅旧字节）**。改动前保存 `graded=0` 3425 B、`graded=1` 3592 B 基线，搬迁与格式化后逐字节相同；新身份分层未实现。
+- 计分与释放域：**成立**。`normalized_score` 的整数舍入、模式/表/单元校验、奖励段与 `deriveScoreBasis` 在 GP-04 向量上通过；局部 release 域 `(850,1000,4)={846,1000}`、`(1000,1020,4)={996,1020}` 与钳位有独立断言；整数 Fold 尚未接到当次推进。
+- 作者 CLI 拆分：**成立**。`cuexis_gameplay_author_cli` 独立目标，author 只剩纯作者源；codemodel 证明 author 无 Playback/CXC 边，`cuexis_gameplay_assemble` 与 `cuexis_chart_candidate` 改链 CLI，tools OFF 时不创建。
+- 运行 records 与 Prepared 存储：**成立**。v3 DTO 放在 `cuexis::judgement::runtime`，旧 `PreparedRequirement`(192 B) 与 `element_sizes.cpp` 基线零改动；`runtime::PreparedGameplay` 复制共享存储，源向量销毁后 records/身份/字典仍可读，字典顺序、basis 篡改与超限拒绝都有用例。
+- `cuexis_judgement_compile`：**部分成立**。目标已真实创建（STATIC，PUBLIC 链 Judgement/Core），有 legacy→runtime 视图桥、默认启测与 RPA 私有边、架构方向检查；但运行内核仍消费旧 `PreparedGameplay`，作者/图/timebase 源仍在 `cuexis_judgement`（44 个源），消费者作者头阴性仍编译成功。
+- 运行内核 `advance`、`receiveCanonicalBatch`、编号先分配、`advanceStopCut`、`acceptedIngressThrough`、Resume 编号共用、Playback owning 结算投影、容量码与 shared 精确导出：**不成立**（未实施）。
+- 裁定：`PreparedRequirement` 同名冲突采用独立 `runtime` 命名空间，不改旧类型名与 element-size 基线。`cuexis_rr_advance_contract` 已注册并通过，覆盖值层、GP-02 域、GP-04 基数与存储寿命；GP-02 完整推进、GP-03、CLK-02 与 Stop 回放仍未覆盖。
+
 ## 附录 处置记录（按日期保留，§12–§16）
 
 本附录保留各轮审查的处置记录，按当时时点成立，不改写结论；编号沿用历史顺序，故排在 §17 之后阅读。
