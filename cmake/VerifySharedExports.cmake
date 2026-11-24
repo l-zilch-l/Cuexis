@@ -81,11 +81,11 @@ set(public_class_pattern "ChartClock|RealtimeClock|PlaybackSession|PlaybackSourc
 set(public_mangled_classes "10ChartClock|13RealtimeClock|15PlaybackSession|14PlaybackSource|16PreparedPlayback|15RuntimeTimeline|12LaidOutFrame")
 set(public_function_pattern "computeContentRect|computeFrameDigest|computeFrameLayout")
 set(public_mangled_functions
-    "17computeContentRect|18computeFrameDigest|18computeFrameLayout")
+    "18computeContentRect|18computeFrameDigest|18computeFrameLayout")
 set(experimental_function_pattern
     "computeContentRect|computeFrameLayout|preparedFramings|extractLaidOutFrame|relayoutRetainedFrame")
 set(experimental_mangled_functions
-    "17computeContentRect|18computeFrameLayout|16preparedFramings|19extractLaidOutFrame|21relayoutRetainedFrame")
+    "18computeContentRect|18computeFrameLayout|16preparedFramings|19extractLaidOutFrame|21relayoutRetainedFrame")
 if(CUEXIS_GAMEPLAY_CANDIDATE)
     string(APPEND public_class_pattern "|GameplayContent|GameplayResult|GameplayCheckpoint|GameplayReplay|GameplaySnapshot")
     string(APPEND public_mangled_classes "|15GameplayContent|14GameplayResult|18GameplayCheckpoint|14GameplayReplay|16GameplaySnapshot")
