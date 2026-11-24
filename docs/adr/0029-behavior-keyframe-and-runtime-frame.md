@@ -1,5 +1,11 @@
 # ADR 0029：Behavior Keyframe v1、绝对时间采样与 PlaybackSession 帧契约
 
+<!-- cuexis-meta
+id: ADR-0029
+status: accepted
+authority: owns
+-->
+
 日期：2026-07-22
 
 状态：已接受

@@ -4,6 +4,12 @@
 
 更新日期：2026-09-05
 
+<!-- cuexis-meta
+id: ARCH-GAMEPLAY_ABSTRACTION_MODEL
+status: active
+authority: owns
+-->
+
 本文定义 Cuexis 对狭义音乐游戏（以下简称“音游”）的抽象理解，是 Chart、
 Input、Judgement、Playback 和 Presentation 后续设计的共同语义基础。本文不是
 某一个 Chart 版本的字段合同，也不表示所有对应运行时模块已经完成。

@@ -1,3 +1,4 @@
+# Reproduction mapping: tools/verification/execution_acceptance/README.md (R4 evidence).
 """Run a sealed fixed group once. No retries, sample replacement or automatic budget changes."""
 import argparse
 import datetime as dt

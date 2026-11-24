@@ -1,5 +1,12 @@
 # 2026-11-01 · R3 提交路径停顿的等待归因（2800 静态 / 1800 静态）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-r3-submit-stall-wait-attribution
+status: evidence
+authority: none
+date: 2026-11-01
+-->
+
 状态：diagnostic（诊断）。本报告只回答"2800 静态的慢帧把时间花在哪里"，不改变任何容量结论，
 不构成 Stage 7A / R3 / R4 的验收证据。
 

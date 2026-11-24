@@ -1,0 +1,114 @@
+{
+  "recordedAt": "2026-11-23T08:26:50.750625+00:00",
+  "baseHead": "ca5cbb9121b015ae0b3b5d681610ca94dac78184",
+  "workingTree": true,
+  "subjectHashes": {
+    "tools/verification/check_docs.py": "600f60bf6eb756d09620c4e3d72921710727524f88d460c0a7a3648190bee66e",
+    "tools/verification/check_docs_facts.py": "2dbbe551ad474580d7db0e1a18b50ca4d0f100aab90586dfd74e043b1079b6f5",
+    "tools/verification/check_docs_governance.py": "3c3beb3a1d07123042e21b6707934128f0b20601184aaa3909a7078331fddbf6",
+    "tools/verification/check_docs_section_contract_tests.py": "798793d1af90e0cf59b561f4be4323caf2a8cb7a50ec1ec847d06aae774b7274",
+    "tools/verification/check_docs_status_contract_tests.py": "505c1d1e26525e400b0123ef030aeef01f2e0642041f79c92179554886f00b93",
+    "tools/verification/check_docs_target_contract_tests.py": "8bc79def8ab031f26530aaa23578ce812509f42046e50fcac5bf24f0158c8fcc",
+    "tools/verification/gen_docs_codes.py": "d3af49c0911192b2515fdf93d86477c6c71573c0fd14ac85abb8f9d5db50957c",
+    "tools/verification/gen_docs_limits.py": "83abce046ca9e0128424c3832991f95b14c1341f89171da6313fa015221601c6",
+    "tools/verification/gen_docs_map.py": "44d2020f0a3f14df13f1281bc0333e68b88cbcf88afe63fd570204b5e4e74e80",
+    "tools/verification/test_check_docs_facts.py": "7f738d9c992440df7633b66c1e5ffc511f081db71615b4a5454570376397cadc",
+    "tools/verification/test_check_docs_governance.py": "f45b17ed0ea71a975d7eba386616558cac5cd0498cbb2d5645a19faf2c50c946",
+    "tools/verification/check_findings.py": "bfa6a5dfdc76c1c5e96177bcb01c804e2d0a57fd1ab15a0aae0b6869fe612e06",
+    "tools/verification/test_check_findings.py": "154a7bb47fce41558e005df651980af3f49accb98f4938a5639a07fce1af4c12",
+    "tools/check_pre_push.ps1": "250f5413ea4dbe1c18df1d5652e64c66e8bdebfbddcb1ca6569c11e61ddb7b64",
+    "tools/check_docs.py": "f6cc22af42cb8fd4341ccad7c28534a6eb36529dea3ce402ccf785564a877018",
+    ".github/workflows/linux-quality.yml": "56685c420960167b303eed29046bacc63769093539cf87464ae2125c65febd90"
+  },
+  "totalTests": 155,
+  "results": [
+    {
+      "script": "test_check_findings.py",
+      "command": [
+        "C:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "tools/verification/test_check_findings.py"
+      ],
+      "returncode": 0,
+      "tests": 35,
+      "stdout": "",
+      "stderr": "...................................\n----------------------------------------------------------------------\nRan 35 tests in 6.295s\n\nOK\n"
+    },
+    {
+      "script": "test_check_docs_governance.py",
+      "command": [
+        "C:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "tools/verification/test_check_docs_governance.py"
+      ],
+      "returncode": 0,
+      "tests": 51,
+      "stdout": "",
+      "stderr": "...................................................\n----------------------------------------------------------------------\nRan 51 tests in 27.182s\n\nOK\n"
+    },
+    {
+      "script": "test_check_docs_facts.py",
+      "command": [
+        "C:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "tools/verification/test_check_docs_facts.py"
+      ],
+      "returncode": 0,
+      "tests": 13,
+      "stdout": "NOT CHECKED: CMake target facts are missing; set CUEXIS_TARGETS_FILE to fresh configure output\nNOT CHECKED: CMake target facts are missing; set CUEXIS_TARGETS_FILE to fresh configure output\n",
+      "stderr": ".............\n----------------------------------------------------------------------\nRan 13 tests in 0.050s\n\nOK\n"
+    },
+    {
+      "script": "check_docs_status_contract_tests.py",
+      "command": [
+        "C:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "tools/verification/check_docs_status_contract_tests.py"
+      ],
+      "returncode": 0,
+      "tests": 8,
+      "stdout": "",
+      "stderr": "........\n----------------------------------------------------------------------\nRan 8 tests in 0.147s\n\nOK\n"
+    },
+    {
+      "script": "check_docs_target_contract_tests.py",
+      "command": [
+        "C:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "tools/verification/check_docs_target_contract_tests.py"
+      ],
+      "returncode": 0,
+      "tests": 2,
+      "stdout": "",
+      "stderr": "..\n----------------------------------------------------------------------\nRan 2 tests in 0.016s\n\nOK\n"
+    },
+    {
+      "script": "check_docs_section_contract_tests.py",
+      "command": [
+        "C:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "tools/verification/check_docs_section_contract_tests.py"
+      ],
+      "returncode": 0,
+      "tests": 19,
+      "stdout": "",
+      "stderr": "...................\n----------------------------------------------------------------------\nRan 19 tests in 0.595s\n\nOK\n"
+    },
+    {
+      "script": "test_check_plan_schedule.py",
+      "command": [
+        "C:\\msys64\\ucrt64\\bin\\python.exe",
+        "-B",
+        "tools/verification/test_check_plan_schedule.py"
+      ],
+      "returncode": 0,
+      "tests": 27,
+      "stdout": "",
+      "stderr": "...........................\n----------------------------------------------------------------------\nRan 27 tests in 0.701s\n\nOK\n"
+    }
+  ],
+  "limits": [
+    "No product builds or device/hosted tests were run.",
+    "Real local CMake target facts are absent; ordinary entry reports NOT CHECKED and strict entry must fail."
+  ]
+}

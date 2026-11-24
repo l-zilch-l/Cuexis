@@ -1,5 +1,11 @@
 # 中立绘制命令优化附件
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-31-draw-transfer-evidence.index
+status: evidence
+authority: none
+-->
+
 状态：局部选用证据。返回 [报告](../2026-10-31-r3-neutral-command-transfer.md)。
 
 - [选用、源码与边界](selection.json)

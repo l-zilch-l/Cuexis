@@ -1,5 +1,12 @@
 # S7A-7/8进度核对与独立RPA阶段拆分
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.design.2026-10-09-realtime-stage-separation
+status: evidence
+authority: none
+date: 2026-10-09
+-->
+
 状态：dated handoff；规划修订，非实施或阶段关闭
 
 证据日期：2026-10-09（Asia/Shanghai）
@@ -53,7 +60,7 @@ Version Gate run37924467045的pre-merge失败，post-merge audit与historical re
 
 ## 4. 独立阶段与范围迁移
 
-新建[Stage RPA：实时播放架构与接口规范化](../../../../../stage_plans/active/stage-07/03-rpa-legacy/plan.md)，
+新建[Stage RPA：实时播放架构与接口规范化](../../../../../stage_plans/completed/stage-07/03-rpa-legacy/plan.md)，
 作为独立阶段，不使用S7A-7/8子任务编号，也不重排Stage8–14。
 
 | 原工作 | 新工作 | 范围处理 |

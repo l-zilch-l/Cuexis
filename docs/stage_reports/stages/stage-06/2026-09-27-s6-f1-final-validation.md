@@ -1,5 +1,12 @@
 # S6-F1 最终验证退出记录
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-06.2026-09-27-s6-f1-final-validation
+status: evidence
+authority: none
+date: 2026-09-27
+-->
+
 - 日期：2026-09-27
 - 范围：Stage 6 `S6-F1`（最终验证）
 - 候选 SHA：`c80a5b5f43a6aa7021037aaf2e308e2b9ec3d764`

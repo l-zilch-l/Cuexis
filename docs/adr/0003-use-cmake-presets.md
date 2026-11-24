@@ -1,5 +1,11 @@
 # ADR 0003：使用 CMake Presets
 
+<!-- cuexis-meta
+id: ADR-0003
+status: accepted
+authority: owns
+-->
+
 日期：2026-07-17
 
 状态：已接受

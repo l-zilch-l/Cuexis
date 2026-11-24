@@ -1,8 +1,15 @@
 # Cuexis Animation Template (CXT) v1
 
 状态：accepted contract；CFU-C Reader/Writer/lowering 与 CFU-E prepare import/lookup 已实现；
+
 CFU-F consumer/determinism/safety gates 已关闭；G3 hosted、G4、G5 report-SHA hosted revalidation 与
 G6 owner acceptance 已完成；非空动画执行已由 Stage 4 关闭
+
+<!-- cuexis-meta
+id: FORMAT-CXT_FORMAT
+status: accepted
+authority: owns
+-->
 
 更新日期：2026-09-01
 

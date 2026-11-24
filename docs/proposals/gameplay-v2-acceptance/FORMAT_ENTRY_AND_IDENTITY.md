@@ -1,11 +1,17 @@
 # 格式、入口与 identity 矩阵
 
+<!-- cuexis-meta
+id: PROPOSALS-gameplay-v2-acceptance.FORMAT_ENTRY_AND_IDENTITY
+status: candidate
+authority: none
+-->
+
 状态：candidate；S7A-0 准入产出，待 owner acceptance
 
 更新日期：2026-10-05
 
 上级文档：[Gameplay V2 acceptance package](README.md) ·
-[Stage 7A 实施计划](../../stage_plans/active/stage-07/plan.md)
+[Stage 7A 实施计划](../../stage_plans/completed/stage-07/plan.md)
 
 文档角色：格式与入口表征。它记录版本层级、Playback entry、四类身份与迁移规则，并标出未决点。
 它不是格式 Spec 正文，也不产生格式变更授权。

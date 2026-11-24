@@ -4,6 +4,12 @@
 
 更新日期：2026-11-04
 
+<!-- cuexis-meta
+id: ARCH-execution-state-and-recovery
+status: candidate
+authority: owns
+-->
+
 本文说明 R3 重构后保留的所有权、复用和缓存设计。产品边界仍由
 [ADR 0027](../adr/0027-playback-sdk-product-boundary.md) 定义，实时职责与线程部署由
 [ADR 0046](../adr/0046-realtime-playback-coordination.md) 定义；当前工作状态及未验收事项只见

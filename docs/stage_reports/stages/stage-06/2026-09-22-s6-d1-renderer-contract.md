@@ -1,5 +1,12 @@
 # S6-D1 渲染合同与测试 renderer
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-06.2026-09-22-s6-d1-renderer-contract
+status: evidence
+authority: none
+date: 2026-09-22
+-->
+
 状态：in_progress（本地无 GPU 证据；本报告不是 D1 退出证据）
 
 日期：2026-09-22

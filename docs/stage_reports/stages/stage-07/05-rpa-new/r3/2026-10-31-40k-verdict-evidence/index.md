@@ -1,5 +1,11 @@
 # 40K 吞吐与预算判定附件
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-31-40k-verdict-evidence.index
+status: evidence
+authority: none
+-->
+
 状态：冻结证据索引。返回 [判定报告](../2026-10-31-r3-40k-240fps-and-budget-verdict.md)。
 
 - [复制来源、原始字节及哈希](manifest.json)

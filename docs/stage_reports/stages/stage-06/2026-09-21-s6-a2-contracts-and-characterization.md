@@ -1,5 +1,12 @@
 # S6-A2 冻结合同落盘与表征
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-06.2026-09-21-s6-a2-contracts-and-characterization
+status: evidence
+authority: none
+date: 2026-09-21
+-->
+
 状态：completed（S6-A2）；下游批次未完成
 
 日期：2026-09-21

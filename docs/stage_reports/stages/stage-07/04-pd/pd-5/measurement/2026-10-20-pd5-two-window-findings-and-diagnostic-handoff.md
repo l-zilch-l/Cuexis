@@ -1,8 +1,15 @@
 # PD-5 P0 two-window findings and diagnostic handoff
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.measurement.2026-10-20-pd5-two-window-findings-and-diagnostic-handoff
+status: evidence
+authority: none
+date: 2026-10-20
+-->
+
 日期：2026-10-20；2026-10-21 更正。状态：修复前 P0 两窗保留、窗口 3 停止；F1 已提交，只有有限诊断效果，尚无修复后的正式接受。下文实验数值保留其原范围；关于成本下限、IPO、宿主 total、拟合和对象数的旧解释由本次更正取代。
 
-本报告记录有限测量与初步归因，不替代[已接受的测量协议](../../../../../../stage_plans/active/stage-07/04-pd/pd-5/pd5-measurement-proposal.md)，不接受完整 PD-5、生产性能或 Stage 7 关闭。
+本报告记录有限测量与初步归因，不替代[已接受的测量协议](../../../../../../stage_plans/completed/stage-07/04-pd/pd-5/pd5-measurement-proposal.md)，不接受完整 PD-5、生产性能或 Stage 7 关闭。
 
 ## 2026-10-21 证据更正
 

@@ -1,5 +1,12 @@
 # 260830 Follow-up Task 3 Hosted Verification
 
+<!-- cuexis-meta
+id: EVIDENCE-reviews.260830-followup.2026-08-31-task-3-hosted-verification
+status: evidence
+authority: none
+date: 2026-08-31
+-->
+
 状态：completed
 
 更新日期：2026-08-31

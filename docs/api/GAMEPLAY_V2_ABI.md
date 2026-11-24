@@ -1,5 +1,11 @@
 # Gameplay V2 ABI（候选）：内部 typed preview 边界
 
+<!-- cuexis-meta
+id: API-GAMEPLAY_V2_ABI
+status: candidate
+authority: owns
+-->
+
 2026-10-11 RPA合同修订：owner已选择capture-time、T2/O1/I1/C1/L1、G1/Q1/K1、TB-05和R2，
 并授权其余普通设计由代理收敛。正常输入顺序/身份沿execution profile，控制cut、R2 Fact、
 连续前缀/时钟观察、Replay/Seek及新profile/Recovery版本归
@@ -47,7 +53,7 @@ faulted=session_unaffected。它表示 facade state/content/组合预检失败�
 文档角色：内部技术参考（候选）
 
 上级文档：[Gameplay V2 acceptance package](../proposals/gameplay-v2-acceptance/README.md) ·
-[Stage 7A 实施计划](../stage_plans/active/stage-07/01-a/plan.md) ·
+[Stage 7A 实施计划](../stage_plans/completed/stage-07/01-a/plan.md) ·
 [Gameplay V2 研究重构](../proposals/research/gameplay-v2/README.md)
 
 ## 边界声明
@@ -66,12 +72,12 @@ ADR，更**不是**已发布 SDK 的宿主 API。
 1. **内部 / preview typed 边界。** 本 ABI 描述的是 Gameplay typed kernel 与 Playback 集成之间的
    C++ 边界。它面向仓库内消费者与 reference host，不面向第三方宿主。ADR 0027 冻结的宿主入口仍是
    `cuexis::playback::PlaybackSession`；本文不新增、不替换、不重命名任何宿主入口。
-2. **不是已发布 SDK 的宿主 API。** 当前分支安装包（SDK API `0.8.0`）不直接暴露本文的内部执行类型。本文不改变
+2. **不是已发布 SDK 的宿主 API。** 当前分支安装包（SDK API `0.9.1`）不直接暴露本文的内部执行类型。本文不改变
    SDK API 版本，也不构成版本升级授权；Stage 7A 的 typed 类型即使实现，也只进入内部/preview 安装
    组件，且必须由实现批次的安装图（见 [依赖与安装图](../proposals/gameplay-v2-acceptance/TARGETS_AND_DEPENDENCIES.md)）
    显式登记。
 3. **不是稳定 C ABI。** 稳定 C ABI 不属于本阶段。Stage 7A 的实施计划把稳定 C ABI 明确交给后续阶段
-   （[总计划§10](../stage_plans/active/stage-07/plan.md#10-交接物和后续阶段关系)：“Stage 14 再决定稳定 C ABI；
+   （[总计划§10](../stage_plans/completed/stage-07/plan.md#10-交接物和后续阶段关系)：“Stage 14 再决定稳定 C ABI；
    Stage 7 的 C++ typed preview 不等于稳定 ABI”）。本文的类型可以带 `tl::expected`、标准库容器和
    C++ 异常边界，因为它们不跨稳定 ABI。
 4. **语义权威在 Spec。** 字段含义、运行语义、求值顺序、版本层级与拒绝语义的唯一权威是
@@ -92,7 +98,7 @@ ADR，更**不是**已发布 SDK 的宿主 API。
 prepare-time 有界循环的**完全展开**与 `boundedRelationInstance` 的稳定拒绝，以及**对外 identity 的
 不透明性**声明（限定冻结口径见 §S7A-3 限定冻结范围与登记规则）；**其余**字段宽度、
 序列化字节、最终命名和安装组件仍待实现批次与 ABI **一起**冻结
-（[plan.md](../stage_plans/active/stage-07/01-a/plan.md) §S7A-1）。因此本文中任何类型名都只是**候选名**，
+（[plan.md](../stage_plans/completed/stage-07/01-a/plan.md) §S7A-1）。因此本文中任何类型名都只是**候选名**，
 不是已冻结符号；范围外的表示与行为不因本文存在而获得授权。
 
 ## 类型清单
@@ -622,7 +628,7 @@ create configuration
 - 几何平方、乘法、加法与窄化必须有范围证明或显式拒绝；失败映射为稳定诊断而不是未定义行为。
 - **本文不登记任何具体量程数值、上限或限额。** 生产限额必须由真实内容测量后单独接受；研究稿的
   切片数值只是量级参考，不得写成 ABI 常量
-  （[plan.md §3](../stage_plans/active/stage-07/01-a/plan.md)）。
+  （[plan.md §3](../stage_plans/completed/stage-07/01-a/plan.md)）。
 - **每个 `InputDomain` 必须携带 typed `AmountSpec`（第 2 轮 CM-T13，2026-10-03）。** `AmountSpec` 声明
   canonical **整数量化**、**scale**、**可表示范围**与**边界策略**四项；量化使用**精确整数运算**与
   **最近值半数取偶**（round-half-to-even，负值对称，与 Tick 侧 tie rule 同一规则）。
@@ -756,8 +762,8 @@ Requirement 与 identity 分量，不参与码的等价比较。
 
 | 事项 | 归属 | 依据 |
 | --- | --- | --- |
-| 最终命名、整数宽度、字段集 | 实现批次与 ABI 一起冻结 | [plan.md §S7A-1](../stage_plans/active/stage-07/01-a/plan.md) |
-| 所有权与生命周期、异常边界 | 实现批次与 ABI 一起冻结 | 同上（[plan.md §S7A-1](../stage_plans/active/stage-07/01-a/plan.md) 列五类：命名、整数宽度、所有权、异常边界、序列化；§3 的所有权陈述是边界约束，不是已冻结的所有权细分） |
+| 最终命名、整数宽度、字段集 | 实现批次与 ABI 一起冻结 | [plan.md §S7A-1](../stage_plans/completed/stage-07/01-a/plan.md) |
+| 所有权与生命周期、异常边界 | 实现批次与 ABI 一起冻结 | 同上（[plan.md §S7A-1](../stage_plans/completed/stage-07/01-a/plan.md) 列五类：命名、整数宽度、所有权、异常边界、序列化；§3 的所有权陈述是边界约束，不是已冻结的所有权细分） |
 | 序列化字节与线格式 | 实现批次 + Packed/CXC candidate wire revision | 同上；[FORMAT_ENTRY_AND_IDENTITY §7](../proposals/gameplay-v2-acceptance/FORMAT_ENTRY_AND_IDENTITY.md#L127-L136) |
 | 安装组件归属与 target/allowlist | S7A-1 与实现批次 | [TARGETS_AND_DEPENDENCIES.md](../proposals/gameplay-v2-acceptance/TARGETS_AND_DEPENDENCIES.md) |
 | 完整 `IdentityProjection` 表 | 第 1 轮 Q-10 已接受方向，表本身待写 | CM-I06 |
@@ -770,7 +776,7 @@ Requirement 与 identity 分量，不参与码的等价比较。
 | `outcome` / `category` / `grade` 最小集合 | 第 5 轮 | CM-S10 / P1-07 |
 | `candidateRevision` 与 artifact/interchange 的完整兼容矩阵 | 第 1 轮已定方向，矩阵待定义 | Q-01 Codex 修订 |
 | 7A 是否含 `cuexis.ruleset` package | 第 5 轮 | CM-S08 / Q-17 |
-| 所有预算数值、上限、限额 | S7A-9 前保持未冻结 | A8 / [plan.md §3](../stage_plans/active/stage-07/01-a/plan.md) |
+| 所有预算数值、上限、限额 | S7A-9 前保持未冻结 | A8 / [plan.md §3](../stage_plans/completed/stage-07/01-a/plan.md) |
 
 ### 明确不承诺的内容
 
@@ -785,7 +791,7 @@ Requirement 与 identity 分量，不参与码的等价比较。
 ## S7A-1 限定冻结范围与登记规则（2026-10-02）
 
 **顶层状态仍为 `candidate`。** 本文不改为 `frozen` / `active`：授权来自**范围精确的限定冻结**，
-不来自状态词。按 [Stage 7总计划](../stage_plans/active/stage-07/plan.md#11-权威输入和冻结顺序) §1.1 冻结顺序第 2 步的
+不来自状态词。按 [Stage 7总计划](../stage_plans/completed/stage-07/plan.md#11-权威输入和冻结顺序) §1.1 冻结顺序第 2 步的
 **分批冻结**口径（2026-10-02 owner 接受第 1 轮补充 S1-01…S1-05，登记见 [RULING_WORKSHEET.md](../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md) §7A；
 该次准入咨询 thread `s7a1-admission-rulings` 记入 [S7A-0 接受记录](../stage_reports/stages/stage-07/01-a/s7a-0/2026-10-02-s7a-0-acceptance.md) §4.2），
 本文只在下列四项范围内为 S7A-1 骨架提供依据：①权威来源与版本层级；②类型角色与边界；③模块与安装
@@ -888,7 +894,7 @@ entry / manifest 集成是 **S7A-7**，**不阻塞 S7A-5 / S7A-6**。
 ## S7A-2 限定冻结范围与登记规则（2026-10-03）
 
 **顶层状态仍为 `candidate`。** 本文不改为 `frozen` / `active`：授权来自**范围精确的限定冻结**，不来自
-状态词。按 [Stage 7总计划](../stage_plans/active/stage-07/plan.md#11-权威输入和冻结顺序) §1.1 冻结顺序第 2 步的**分批冻结**
+状态词。按 [Stage 7总计划](../stage_plans/completed/stage-07/plan.md#11-权威输入和冻结顺序) §1.1 冻结顺序第 2 步的**分批冻结**
 口径，第 2 轮（时间域与迟到策略）于 2026-10-03 由 Codex 裁定并落进本文；该轮是进入 S7A-2 的**准入门禁**。
 
 **provenance。** 决策卡 thread `s7a1-freeze-bindings`，verdict `adopt`，confidence 0.99，日期 2026-10-03，
@@ -962,7 +968,7 @@ minimumRate / reconstruction / discontinuity 表示；S7C-1 扩展字段；研�
 ## S7A-3 限定冻结范围与登记规则（2026-10-04 更新）
 
 **顶层状态仍为 `candidate`。** 本文不改为 `frozen` / `active`：授权来自**范围精确的限定冻结**，不来自
-状态词。按 [Stage 7总计划](../stage_plans/active/stage-07/plan.md#11-权威输入和冻结顺序) §1.1 冻结顺序第 2 步的**分批冻结**
+状态词。按 [Stage 7总计划](../stage_plans/completed/stage-07/plan.md#11-权威输入和冻结顺序) §1.1 冻结顺序第 2 步的**分批冻结**
 口径，第 3 轮（prepare、装配与 entry）于 2026-10-03 由 Codex 裁定并落进本文；该轮是进入 S7A-3 的
 **准入门禁**。
 
@@ -1013,7 +1019,7 @@ lease / contact 分配留给规范运行阶段，P1 用新 candidate revision �
 ## S7A-4 限定冻结范围与登记规则（2026-10-03）
 
 **顶层状态仍为 `candidate`。** 本文不改为 `frozen` / `active`：授权来自**范围精确的限定冻结**，不来自
-状态词。按 [Stage 7总计划](../stage_plans/active/stage-07/plan.md#11-权威输入和冻结顺序) §1.1 冻结顺序第 2 步的**分批冻结**
+状态词。按 [Stage 7总计划](../stage_plans/completed/stage-07/plan.md#11-权威输入和冻结顺序) §1.1 冻结顺序第 2 步的**分批冻结**
 口径，第 4 轮（仲裁、资源与事实序）于 2026-10-03 由 Codex 裁定并落进本文；该轮是进入 S7A-4 的
 **准入门禁**。
 
@@ -1054,7 +1060,7 @@ runtime solver 或 global solver；`max_cardinality`；bounded backtracking；`c
 ## S7A-5 限定冻结范围与登记规则（2026-10-03）
 
 **顶层状态仍为 `candidate`。** 本文不改为 `frozen` / `active`：授权来自**范围精确的限定冻结**，不来自
-状态词。按 [Stage 7总计划](../stage_plans/active/stage-07/plan.md#11-权威输入和冻结顺序) §1.1 冻结顺序第 2 步的**分批冻结**
+状态词。按 [Stage 7总计划](../stage_plans/completed/stage-07/plan.md#11-权威输入和冻结顺序) §1.1 冻结顺序第 2 步的**分批冻结**
 口径，第 5 轮（Ruleset、事实序、Score 与 Snapshot）于 2026-10-03 由 Codex 裁定并落进本文；该轮与
 `## S7A-6` 共为进入 S7A-5 / S7A-6 的**准入门禁**。
 
@@ -1205,11 +1211,11 @@ package 形状 / identity / 迁移；⑥ Presentation 缓存或 HostOverride tok
    `diagnostic map` / `content-artifact identity`（定义见 [Spec §5.1.1](../formats/GAMEPLAY_V2_SPEC.md)）；
    **保留三行、不新增类型行**，9 域 / **126 = 96 + 30** 不变；`IdentityProjection` 与
    `InterchangeCompatibility` 状态格的**首词仍为 `待冻结`**，只在语义文字里补齐裁定。
-3. **`D-6` 行号订正（`S7A7-R11`）**：`tools/check_stage6_a2.py` 的**实际行号为 `:259`**（历史报告中
+3. **`D-6` 行号订正（`S7A7-R11`）**：`tools/verification/check_stage6_a2.py` 的**实际行号为 `:259`**（历史报告中
    写作 `:252`）。**本文不改写任何带日期的历史报告正文**，只在此处登记订正后的行号作为引用依据。
 
 **`D-11` 的最小登记（`S7A7-R13`）。** 稳定 C ABI **唯一归属 Stage 14**（见本文 §边界声明 第 3 条与
-[总计划§10](../stage_plans/active/stage-07/plan.md#10-交接物和后续阶段关系)）；`AGENTS.md` 第 21、260 行的 Stage 12 是**孤例**，
+[总计划§10](../stage_plans/completed/stage-07/plan.md#10-交接物和后续阶段关系)）；`AGENTS.md` 第 21、260 行的 Stage 12 是**孤例**，
 **本轮不改 `AGENTS.md`**，由 owner 择时订正。同一句话另写入 [CURRENT_STATUS.md](../CURRENT_STATUS.md)、
 [ROADMAP.md](../ROADMAP.md) 与 [ADR 0043](../adr/0043-gameplay-judgement-ruleset-convergence.md)。
 
@@ -1268,7 +1274,7 @@ ADR 0042 具名复核后落到 `master`；**在该动作完成前不得宣称 S7
 | §3 会话操作 | 保留 |
 | §4 诊断方向 | 保留方向；码表由 CM-D04 统一，旧码到新码必须给出映射，不得出现两个同义码 |
 | §5 兼容与版本 | 强化：增加 artifact 与 interchange 两条独立判定 |
-| §6 非目标 | 保留；其中“稳定 C ABI 仍属于 Stage 14”与 [总计划§10](../stage_plans/active/stage-07/plan.md#10-交接物和后续阶段关系) 一致 |
+| §6 非目标 | 保留；其中“稳定 C ABI 仍属于 Stage 14”与 [总计划§10](../stage_plans/completed/stage-07/plan.md#10-交接物和后续阶段关系) 一致 |
 
 字段级映射（旧候选字段 → V2 边界）：
 
@@ -1337,7 +1343,7 @@ S7A-5 / S7A-6**。
 | --- | --- | --- | --- |
 | 1 | ~~`IdentityProjection` 表（semantic / artifact / interchange 三列）尚未写出~~ **已裁定（第 1 轮，Codex 2026-10-02；第 7 轮 2026-10-03 按第 1 轮裁定补齐处置词与裁定正文，`S7A7-R08`）**：唯一 projection 表**落点**为 [Spec §5.2](../formats/GAMEPLAY_V2_SPEC.md)，以**实际生效的 prepared value** 为准，逐字段标注 source / semantic / artifact / judgement / presentation 归属，并分别列明三条判定（§域 7 的三条分工）；三项统一命名为 `source closure` / `diagnostic map` / `content-artifact identity`（Spec §5.1.1）。**本表不另立第二张投影表** | S7A-1（门禁已满足） | CM-I06 / Q-10 |
 | 2 | ~~`candidateRevision` 的完整 artifact/interchange 兼容矩阵（覆盖工具链与载体差异）尚未定义~~ **已裁定（第 1 轮，Codex 2026-10-02；第 7 轮 2026-10-03 补齐处置词，`S7A7-R08`）**：`candidateRevision` **不进** `compiledSemanticIdentity`，但**必须进入** artifact compatibility / interchange 判定；**不可互换的产物不得仅凭 `CompiledSemanticIdentity` 判等价**；须给出覆盖工具链与载体差异的兼容矩阵。**矩阵细则**仍属 [Spec §2.4 / §11.1 第 1 条](../formats/GAMEPLAY_V2_SPEC.md) 的后续条目 | S7A-1（语义已冻结）／矩阵细则后续批次 | Q-01 Codex 修订 |
-| 3 | 类型最终命名、整数宽度、字段集、序列化字节均未冻结 | S7A-1 起 | [plan.md §S7A-1](../stage_plans/active/stage-07/01-a/plan.md)（**第 2 轮例外**：`ChartTick` / `judgementTick` / `observationTick` / `commitTick` 与 `TickSpan` / `TickDelta` 的**宽度与单位来源已冻结**为有符号 64 位整数 + `engine.tick.us.v1` 的 `TimebaseProfile`；**第 3 轮例外**：identity 的**规范字节边界**已冻结为"prepare 内部确定性派生物、语义等价 / 排序 / 身份域边界"，**编码实现须在 S7A-3 消费前闭合**，见 [Spec §5.5](../formats/GAMEPLAY_V2_SPEC.md)；**第 5 轮例外**：`RegisterKind` 三类**命名**（`exclusive` / `commutative_monoid` / `ledger_derived`）与 Fact 身份**生成语义**已冻结（Spec §3.15、§3.17），Snapshot / Replay 两套 **header 字段集**与 `SnapshotPayload` **闭包**已冻结（Spec §3.18），**拼写规范**为类型 `EventCodecId` / 字段 `eventCodecId`；**第 6 轮例外**：域 8 的 capability registry 与诊断行的**语义文本**已冻结（`CapabilityRecord` 七字段的 identity 归属、诊断四层结构、集中码表位置 + CTest 校验门禁），见 §S7A-7 节与 [Spec §5.6 / §9.6](../formats/GAMEPLAY_V2_SPEC.md)；**最终命名、整数宽度与序列化字节仍在此行**） |
+| 3 | 类型最终命名、整数宽度、字段集、序列化字节均未冻结 | S7A-1 起 | [plan.md §S7A-1](../stage_plans/completed/stage-07/01-a/plan.md)（**第 2 轮例外**：`ChartTick` / `judgementTick` / `observationTick` / `commitTick` 与 `TickSpan` / `TickDelta` 的**宽度与单位来源已冻结**为有符号 64 位整数 + `engine.tick.us.v1` 的 `TimebaseProfile`；**第 3 轮例外**：identity 的**规范字节边界**已冻结为"prepare 内部确定性派生物、语义等价 / 排序 / 身份域边界"，**编码实现须在 S7A-3 消费前闭合**，见 [Spec §5.5](../formats/GAMEPLAY_V2_SPEC.md)；**第 5 轮例外**：`RegisterKind` 三类**命名**（`exclusive` / `commutative_monoid` / `ledger_derived`）与 Fact 身份**生成语义**已冻结（Spec §3.15、§3.17），Snapshot / Replay 两套 **header 字段集**与 `SnapshotPayload` **闭包**已冻结（Spec §3.18），**拼写规范**为类型 `EventCodecId` / 字段 `eventCodecId`；**第 6 轮例外**：域 8 的 capability registry 与诊断行的**语义文本**已冻结（`CapabilityRecord` 七字段的 identity 归属、诊断四层结构、集中码表位置 + CTest 校验门禁），见 §S7A-7 节与 [Spec §5.6 / §9.6](../formats/GAMEPLAY_V2_SPEC.md)；**最终命名、整数宽度与序列化字节仍在此行**） |
 | 4 | 安装组件归属、target 与 allowlist 落地方式未定 | S7A-1 | TARGETS_AND_DEPENDENCIES |
 | 5 | ~~`Tick` 宽度、`ChartTick` ↔ `ObservationTick` 转换边界与 tie rule 未定~~ **已裁定（第 2 轮，Codex 2026-10-03）**：宽度为有符号 64 位整数，单位由 `engine.tick.us.v1` 的 `TimebaseProfile` 声明，禁止隐式换算，溢出稳定拒绝；RationalBeat → `judgementTick` 为精确有理数映射、四舍五入到最近整数、半数取偶、tempo/stop/负 Beat 同一规则；同 Tick 按 `(tick, originKind, canonicalOrdinal)` 排序，禁止按 ingress 顺序。**本次修订（2026-10-03 实现复核）：`stop` 语义为塌缩 / 跳变 + 精确累计函数 `F`（`F(originBeat) = 0`、`F(endBeat) = F(startBeat) + duration`、`tick(beat) = roundHalfToEven(F(beat))`、只舍入一次、区间内非单射、半开方向正向 `(originBeat, beat]` / 负向 `(beat, originBeat]`、有 stop 时不再奇对称），不再表述为"stop 把区间映射为不推进的 Tick"** | S7A-2（门禁已满足） | CM-T03 / CM-T04；落点 [Spec §3.7](../formats/GAMEPLAY_V2_SPEC.md) |
 | 6 | ~~`FinalizationWatermark` 与 queue hop 的状态表未定（7A 不冻结数值）~~ **已裁定（第 2 轮，Codex 2026-10-03）**：`finalizationWatermark`、queue hop、窗口 open/close 与重复排队条件均为 typed 参数，由 `TimebaseProfile` / ruleset 提供；默认值只在 profile registry 登记为 `pending_measurement`；缺失或未测量在 prepare 稳定拒绝；重复排队稳定拒绝并返回诊断码。**具体数值仍为后续批次阻塞项**（不是 S7A-2 门禁） | S7A-2（参数化已冻结）／后续批次（数值） | CM-T08 / P1-04 |
@@ -1350,7 +1356,7 @@ S7A-5 / S7A-6**。
 | 13 | 诊断码表（code / category / severity）与机器可读文件位置未定 | S7A-7 | CM-D04 / P1-09 |
 | 14 | ~~7A 是否包含 `cuexis.ruleset` package 未裁定~~ **已裁定（第 5 轮，Codex 2026-10-03，`S7A5-R05`）**：7A **只用内置、静态注册的 Ruleset Interface / 模块**；任何 `cuexis.ruleset` package 输入命中**既有 R-09**（诊断 `ruleset.package_unsupported`），**不得读** package hash / manifest / 迁移矩阵。**遗留部分**：package 的**形状 / identity / 完整性 / 版本迁移**仍待冻结，归 **S7C-2**（不阻塞 S7A-5 / S7A-6） | S7A-5（门禁已满足）／**S7C-2**（package 形状与迁移） | CM-S08 / Q-17；落点 [Spec §3.16](../formats/GAMEPLAY_V2_SPEC.md) 与 Spec §7.2 的 R-09 |
 | 15 | `PresentationEvent` 与既有 HostOverride / OverrideToken 的 precedence 命名常量未定 | S7A-7 | CM-P04 / Q-09 |
-| 16 | 所有预算数值与限额在 S7A-9 前保持未冻结，仅登记计数口径与待测量项 | S7A-9（数值与限额）／S7A-6（`ReplayDecodeBudget`、typed byte-budget descriptor 字段集；`SeekLatencyCommitment` 类型与承诺语义；两套 header 字节布局） | A8 / [plan.md §3](../stage_plans/active/stage-07/01-a/plan.md)；CM-K08（第 5 轮，本次登记新增）。**第 5 轮更新（2026-10-03，`S7A5-R06` / `S7A5-R08`）**：`ReplayDecodeBudget` 的**三类预算字段**（事件数 / 字节数 / 解码时间）与超限错误语义、typed byte-budget descriptor、`SeekLatencyCommitment` 的**类型、承诺语义、会话只能收紧与测量口径入口**已冻结；**所有具体数值**（含 `maxSeekLatency`）仍在此行、保持未冻结，且**禁止**进入 Schema / header / 运行时约束 / 对外承诺，提供具体值稳定拒绝 |
+| 16 | 所有预算数值与限额在 S7A-9 前保持未冻结，仅登记计数口径与待测量项 | S7A-9（数值与限额）／S7A-6（`ReplayDecodeBudget`、typed byte-budget descriptor 字段集；`SeekLatencyCommitment` 类型与承诺语义；两套 header 字节布局） | A8 / [plan.md §3](../stage_plans/completed/stage-07/01-a/plan.md)；CM-K08（第 5 轮，本次登记新增）。**第 5 轮更新（2026-10-03，`S7A5-R06` / `S7A5-R08`）**：`ReplayDecodeBudget` 的**三类预算字段**（事件数 / 字节数 / 解码时间）与超限错误语义、typed byte-budget descriptor、`SeekLatencyCommitment` 的**类型、承诺语义、会话只能收紧与测量口径入口**已冻结；**所有具体数值**（含 `maxSeekLatency`）仍在此行、保持未冻结，且**禁止**进入 Schema / header / 运行时约束 / 对外承诺，提供具体值稳定拒绝 |
 | 17 | capability registry 条目字段集（`CapabilityRecord`）已由第 6 轮冻结语义、D-14 按方案 (a) 处置（以本文 `CapabilityRecord` 行的 `待冻结` 为准，登记首词不变） | S7A-7 | CM-X01（第 6 轮，与 Q-15 / Q-19 同批） |
 | 18 | **第 2 轮留下的后续批次阻塞项**（不是 S7A-2 门禁）：具体 late-policy 数值（watermark / queue hop / 窗口开闭阈值）、具体业务量程数值与限额（`AmountSpec` 的取值）、S7C-1 的 `CalibrationProfile` 扩展字段、连续输入能力（连续轨迹 / minimumRate / reconstruction / discontinuity，属 S7B-1）；另登记两项（2026-10-03 实现复核）：**late-policy 参数量级关系的校验**阻塞 **S7A-4** 的 late-window / 判定消费（最终数值与限额记 **S7A-9**），**Tick → Beat 反查契约**阻塞**首次消费该反查的后续批次**（`S7A-3` / `S7A-4` / `S7A-5` 均不消费它）。**2026-10-03 输入半批复核（同 thread 两张续裁卡，`adopt` 0.97 / 0.99）后本行仍只承载上述遗留**：`AmountSpec` 的 **64 位 canonical 宽度已冻结**、域声明集合与完整 `AmountSpec` 字段**已进 session identity**、**7A 不引入 per-domain 版本字段**（会话级版本由 `profileVersion` 承载）、不连续表示与连续输入能力**复用** `input.continuous_unsupported`（`field.path` 区分）并归 **S7B-1**、不可表示的 calibrated clock 值**复用**既有 tick 域表示失败——上列各项**均不再是未决项**，本行**不新增编号** | 后续批次（数值与限额）；S7C-1；S7B-1；**S7A-4**（late-policy 参数量级关系的校验）；**首次消费 Tick → Beat 反查的后续批次** | CM-T08 / P1-04（数值）、CM-T13（数值）、S7C-1 校准扩展、CM-L02 / P1-05（连续输入）；CM-T09 / CM-T13（2026-10-03 输入半批复核，已冻结部分） |
 | 19 | **第 3 轮遗留项（已部分闭合）**：Gameplay Capsule v2 的首次 Packed wire 合同已由 S7A-3 裁决闭合；仍遗留 `boundedRelationInstance` 候选表示与具体 `stableRejectCode`（CM-C10 / P1-03，7B+ / S7C）、[SUPPORT §6.1](../proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md) 的 `W-01…W-05` 候选项（按首次实际消费登记，W-02 须先核对已闭合的 F-04） | 后续批次（**只阻塞首次拟消费它的批次**）；实现证据、identity 内部编码与完整 E1 验收仍属 S7A-3 工作 | Q-07、CM-C10 / P1-03、CM-X05（已由 D-3 落地关闭，处置词 `revise`） |
@@ -1365,7 +1371,7 @@ S7A-5 / S7A-6**。
 - [支持 / 拒绝矩阵与 capability registry 草案](../proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md)：7A 支持集合与 19 条拒绝
 - [格式、入口与 identity 矩阵](../proposals/gameplay-v2-acceptance/FORMAT_ENTRY_AND_IDENTITY.md)：四类身份与四分量投影
 - [S7A-0.2 合同逐项台账](../proposals/gameplay-v2-acceptance/CONTRACT_MATRIX.md)：114 项合同与处置词
-- [Stage 7A 实施计划](../stage_plans/active/stage-07/01-a/plan.md)：批次、冻结顺序与关闭标准
+- [Stage 7A 实施计划](../stage_plans/completed/stage-07/01-a/plan.md)：批次、冻结顺序与关闭标准
 - [S7A-0 owner 接受记录](../stage_reports/stages/stage-07/01-a/s7a-0/2026-10-02-s7a-0-acceptance.md)：接受对象与 §4 冻结顺序
 - [第 7 轮收尾裁定与缺陷处置记录](../stage_reports/stages/stage-07/01-a/s7a-7-8/2026-10-03-s7a-7-wrapup-rulings.md)：第 7 轮的 16 行 / 18 项、五条 `CM-V*` 补齐、`D-9` / `D-12` 与收尾门禁
 - [V2 语义内核](../proposals/research/gameplay-v2/SEMANTIC_KERNEL.md)：时间域、规范化观测、Fact Ledger 与 Ruleset 事务
@@ -1511,15 +1517,7 @@ GameplayAdvanceReceipt::publicationFailureStage 为 optional，成功 absent。
 
 ## S7A-7 Graph source 首用（2026-10-07）
 
-Candidate ON 的 GameplayContent::fromGraph 与 PlaybackSource::fromGameplayGraph 明确消费
-Compiled Graph v1；后者携带 owning byte vector、显式 sourceId/entryPath、GameplayConfiguration、
-GameplayGraphDecodeBudget、typed assets/provider 与 prepare intent。
-GameplayGraphDecodeBudget 为七项无默认 size_t：maxBytes/maxDepth/maxStringBytes/maxValues/
-maxContainerElements/maxRowAtoms/maxRowDecodedStringBytes；configuration.testOnly 是唯一候选预算准入开关。
-这些不是生产阈值。公共边界不暴露 json_support 或 Packed/Kernel 类型。
-同一原始字节视图仅经 typed SAX 解码一次；Graph 不再编码成 Packed 后重读，不 fallback 到 author/JSON source。
-Graph 与 Packed 共享实际 content/configure/prepare 与生命周期，完整 owning Capsule/Prepared 留在内部。
-首用诊断沿 Graph 格式的中央登记及既有 prepare 公共投影，失败不发布部分 source 或改变旧 session。
+公共 Graph source 的载体、解码、预算及失败原子性以 [Playback 生命周期的 Graph source 首用](playback-session.md#s7a-7-graph-source-首用2026-10-07)为唯一正文；本 ABI 保留内部 typed 边界，避免重复维护公开入口合同。
 
 
 ## S7A-7/8 显式 configuration JSON 首用（2026-10-07）
@@ -1586,16 +1584,7 @@ This does not reorder Ruleset modules, control journals or admitted input sequen
 
 ## 诊断迁移与 SDK 0.7.5
 
-本候选SDK消费Spec的“诊断正式化与 Recovery revision2”合同。公开布局/签名/枚举不变；
-可观察code/sourceCode及两类legacy/query message按该合同改变，旧owning值保持。
-Replay/Snapshot Writer输出revision2；Reader拒绝revision1健康及故障原件，
-拒绝不兼容旧诊断值，不能以SDK patch号声称旧归档兼容。
-直接evaluateGameplayReplay/restoreGameplay/checkpointGameplay/seekGameplay执行各自校验，
-fromBytes成功只证明结构校验，不代替evidenceValid或完整结果比较；Checkpoint保留fallback。
-候选安装consumer最低请求Cuexis 0.7.5并重建，matching-toolchain shared不承诺旧二进制可替换。
-production candidate-OFF无新API；新码可能随原content错误路径进入已有Result，category/context规则不变。
-失败原子性、generation、sealed前缀、GameplayAdvanceReceipt与公开Result承载均保持既有合同。
-
+公开诊断迁移、Recovery 版本拒绝及候选安装消费者要求见 [Playback 生命周期的诊断迁移](playback-session.md#诊断迁移与-sdk-075)。本节随后保留仅属于内部恢复/查询的补充约束。
 
 已存在的未登记operation-state来源沿`restoreGameplay`后`archiveGameplay`可观察：
 Snapshot恢复不携带完整原journal，因此canArchive=false，原provisional生命周期错误经identity投影返回。

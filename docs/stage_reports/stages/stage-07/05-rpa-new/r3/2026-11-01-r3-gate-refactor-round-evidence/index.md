@@ -1,5 +1,11 @@
 # R3 两项超界的重构探索证据（2026-11-01）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-r3-gate-refactor-round-evidence.index
+status: evidence
+authority: none
+-->
+
 本目录保存第一性原理重构探索的数值记录。它回答：为了修这两项，试过哪些方向、每个方向的量级如何、
 为什么最终没有保留代码。
 

@@ -1,5 +1,11 @@
 # New RPA Evidence Catalog
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.evidence-catalog
+status: evidence
+authority: none
+-->
+
 状态：current index
 
 更新日期：2026-11-08

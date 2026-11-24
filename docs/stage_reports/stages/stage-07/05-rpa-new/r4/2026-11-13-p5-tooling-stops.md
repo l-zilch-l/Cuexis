@@ -1,5 +1,12 @@
 # P5 控制单元：两次尝试都停在工具缺陷，等待第三次额度（2026-11-13）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-13-p5-tooling-stops
+status: evidence
+authority: none
+date: 2026-11-13
+-->
+
 状态：stopped attempts；两次均未产生任何组结论，第三次需要 owner 豁免
 
 日期：2026-11-13

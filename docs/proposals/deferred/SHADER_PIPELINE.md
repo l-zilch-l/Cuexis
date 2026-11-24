@@ -1,5 +1,11 @@
 # Cuexis Shader Pipeline 规范
 
+<!-- cuexis-meta
+id: PROPOSALS-deferred.SHADER_PIPELINE
+status: candidate
+authority: none
+-->
+
 状态：superseded as field contract；retained as design-input history
 
 更新日期：2026-08-28

@@ -1,5 +1,12 @@
 # S6-D2 OpenGL 迁移与 Player 接线
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-06.2026-09-22-s6-d2-opengl-migration
+status: evidence
+authority: none
+date: 2026-09-22
+-->
+
 状态：in_progress（本地 GPU smoke 已通过；本报告不是 D2 退出证据）
 
 日期：2026-09-22

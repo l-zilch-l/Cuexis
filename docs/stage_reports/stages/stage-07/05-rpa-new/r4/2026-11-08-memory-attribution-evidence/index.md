@@ -1,5 +1,11 @@
 # R4 内存归因证据包
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-08-memory-attribution-evidence.index
+status: evidence
+authority: none
+-->
+
 状态：candidate evidence；逐域精确分区与 P8/40K 失败现场，不含接受裁定
 
 日期：2026-11-08

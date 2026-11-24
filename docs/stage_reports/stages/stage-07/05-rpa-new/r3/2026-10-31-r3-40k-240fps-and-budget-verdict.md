@@ -1,5 +1,12 @@
 # 40K @ 240 FPS 可行性、1080P 容量前缘与 128 MiB 预算判定
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-31-r3-40k-240fps-and-budget-verdict
+status: evidence
+authority: none
+date: 2026-10-31
+-->
+
 状态：有限本地设备诊断的汇总判定；不是 R3/R4 或生产接受
 
 日期：2026-10-31（冻结判定）／2026-11-01 00:0x 补测当前源码 `466ff76` 的刷新点

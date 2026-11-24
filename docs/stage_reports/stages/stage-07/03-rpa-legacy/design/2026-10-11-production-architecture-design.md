@@ -1,10 +1,17 @@
 # RPA 生产架构方案
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.design.2026-10-11-production-architecture-design
+status: evidence
+authority: none
+date: 2026-10-11
+-->
+
 状态：design decision record；2026-10-11后续委托裁定已收口，未实施、未接受生产阈值、未获原型授权
 
 更新日期：2026-10-11（Asia/Shanghai）
 
-工作范围与门禁归 [RPA 分册](../../../../../stage_plans/active/stage-07/03-rpa-legacy/plan.md)，决策方向归
+工作范围与门禁归 [RPA 分册](../../../../../stage_plans/completed/stage-07/03-rpa-legacy/plan.md)，决策方向归
 [ADR 0046](../../../../../adr/0046-realtime-playback-coordination.md)，字段与语义仍归各自
 Spec/ABI/profile/API 合同。本文保存本日较早的推荐理由；owner随后选择K1并授权其余普通设计自行收敛，
 最终选择以[ADR0046](../../../../../adr/0046-realtime-playback-coordination.md)、
@@ -379,7 +386,7 @@ F3 与 F2 的成本下限相同（两者都需要 present 回执通道），所�
 
 ## 6. 实施顺序与批次
 
-**批次表、进入/退出条件与门禁的唯一来源是 [RPA 分册](../../../../../stage_plans/active/stage-07/03-rpa-legacy/plan.md) 的「批次表」**，
+**批次表、进入/退出条件与门禁的唯一来源是 [RPA 分册](../../../../../stage_plans/completed/stage-07/03-rpa-legacy/plan.md) 的「批次表」**，
 本文不复制它——早期版本此处有一份副本，已与分册产生分歧并删除。本文只保留两条设计侧的约束：
 
 - **硬前置：** 独立诊断前置 N3 退出记录有效，是 B5 之前所有新架构原型的前置。

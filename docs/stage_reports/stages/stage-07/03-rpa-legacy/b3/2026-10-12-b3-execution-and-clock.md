@@ -1,5 +1,12 @@
 # Stage 7 B3 执行与时钟实施记录
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.b3.2026-10-12-b3-execution-and-clock
+status: evidence
+authority: none
+date: 2026-10-12
+-->
+
 日期：2026-10-12；状态：B3 本地实施与适用检查完成（testOnly）；Stage 7 仍 active。
 
 源码起点：stage-7 / `8f18394`；工作树有未提交实施变更。
@@ -98,4 +105,4 @@ EOF tail 时间桥已验证；Player/audio 的 tail 输入截止与实际音频�
 
 API 首用见 [execution coordination](../../../../../api/execution-coordination.md)，
 wire 见 [revision3](../../../../../formats/execution-recovery-wire-v3.md)，
-实施范围见 [B3 计划](../../../../../stage_plans/active/stage-07/03-rpa-legacy/plan.md)。
+实施范围见 [B3 计划](../../../../../stage_plans/completed/stage-07/03-rpa-legacy/plan.md)。

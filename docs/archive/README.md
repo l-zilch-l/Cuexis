@@ -1,5 +1,11 @@
 # Documentation Archive
 
+<!-- cuexis-meta
+id: ARCHIVE-README
+status: historical
+authority: none
+-->
+
 状态：现行历史文档索引
 
 更新日期：2026-10-25

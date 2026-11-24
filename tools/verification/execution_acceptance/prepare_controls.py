@@ -1,3 +1,4 @@
+# Reproduction mapping: tools/verification/execution_acceptance/README.md (R4 evidence).
 """Bounded pilot, proofs and preparation for the P5 scripted control unit.
 
 The control workload has no pre-PD counterpart and no presentation-matrix counts, so it declares its

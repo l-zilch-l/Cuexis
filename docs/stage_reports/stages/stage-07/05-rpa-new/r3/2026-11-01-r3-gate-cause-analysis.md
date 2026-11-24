@@ -1,5 +1,12 @@
 # R3 两项超界的根因分析（2026-11-01）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-r3-gate-cause-analysis
+status: evidence
+authority: none
+date: 2026-11-01
+-->
+
 状态：诊断。本批**没有保留任何代码改动**——仪器诊断、消融补丁与批量读重写全部回滚，工作树恢复为
 `6256af8` 的内容。两个门的判定不变。
 

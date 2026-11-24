@@ -1,5 +1,11 @@
 # Cuexis 阶段 1B 完成报告
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-01.stage-1b-completion
+status: evidence
+authority: none
+-->
+
 状态：实现与全部验收门禁完成  
 报告日期：2026-07-18（2026-07-21 复核：`cuexis_playback` 已随 SDK 转型方案及 ADR 0028 后续激活为第 15 个非测试 target）  
 完成版本：`26.07.18.18-1`  

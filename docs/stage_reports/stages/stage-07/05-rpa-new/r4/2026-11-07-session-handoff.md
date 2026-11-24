@@ -1,5 +1,12 @@
 # R4 跨对话交接与 hosted 留档
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-07-session-handoff
+status: evidence
+authority: none
+date: 2026-11-07
+-->
+
 状态：交接留档；R4 未关闭，本轮只本地提交
 
 日期：2026-11-07
@@ -79,7 +86,7 @@ owner已要求暂不修Version Gate；日期版本更新不能替代真实owner�
 
 常规合同内修复、工具、登记、回归与CI由既有授权覆盖。涉及新性能机制、公共语义、
 新负载/设备类别、ETW、预算变更或超出额度的实验，按
-[实施计划§4–§5](../../../../../stage_plans/active/stage-07/05-rpa-new/r4/plan.md)提供具体方案。
+[实施计划§4–§5](../../../../../stage_plans/completed/stage-07/05-rpa-new/r4/plan.md)提供具体方案。
 等待一个决定时继续无依赖任务；不把建议写成owner已接受。
 
 ## 5. 下一对话承接顺序

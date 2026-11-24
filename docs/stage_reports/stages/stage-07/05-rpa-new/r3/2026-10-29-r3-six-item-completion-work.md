@@ -1,5 +1,12 @@
 # R3 六项优化实施与验证账本
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-29-r3-six-item-completion-work
+status: evidence
+authority: none
+date: 2026-10-29
+-->
+
 状态：active；owner 已要求恢复并完成剩余任务，候选尚未全部验证，不是 R3/R4 退出。2026-11-02 owner 四项裁定后门账为 14 项通过 + 1 项部分（适用 Seek 2/5 类），见文末“2026-11-02 owner 裁定”。
 
 日期：2026-10-29
@@ -494,7 +501,7 @@ owner 的决定。
 
 ## 第一批正式门测量（2026-11-01）
 
-预注册在任何测量之前写定，四组各自独立，判据逐字取自 [R3 计划](../../../../../stage_plans/active/stage-07/05-rpa-new/plan.md)
+预注册在任何测量之前写定，四组各自独立，判据逐字取自 [R3 计划](../../../../../stage_plans/completed/stage-07/05-rpa-new/plan.md)
 §9.2–9.4。报告见[第一批正式门测量](2026-11-01-r3-first-gate-batch.md)，附件见
 [门测量证据](2026-11-01-r3-gate-batch1-evidence/index.md)。
 

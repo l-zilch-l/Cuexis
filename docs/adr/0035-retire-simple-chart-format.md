@@ -1,5 +1,11 @@
 # ADR 0035：阶段 2A 移除 Simple Chart 格式
 
+<!-- cuexis-meta
+id: ADR-0035
+status: accepted
+authority: owns
+-->
+
 日期：2026-08-04
 
 状态：已接受并于 2026-08-05 在阶段 2A.1 实施

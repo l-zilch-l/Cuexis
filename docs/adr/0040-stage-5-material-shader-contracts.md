@@ -1,5 +1,11 @@
 # ADR 0040：Stage 5 Material、Shader 与能力分层合同
 
+<!-- cuexis-meta
+id: ADR-0040
+status: accepted
+authority: owns
+-->
+
 日期：2026-08-28
 
 状态：已接受

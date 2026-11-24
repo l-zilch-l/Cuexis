@@ -1,5 +1,12 @@
 # Gameplay Fold Spike：预算实测与确定性检查
 
+<!-- cuexis-meta
+id: EVIDENCE-reviews.gameplay-ruleset-2026-10.2026-10-01-fold-spike
+status: evidence
+authority: none
+date: 2026-10-01
+-->
+
 状态：dated evidence（研究性 spike，不是实施；2026-10-01 快照）
 
 更新日期：2026-10-01

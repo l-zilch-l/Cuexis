@@ -1,5 +1,12 @@
 # Stage Chart Format Update CFU-D3 Runtime Equivalence
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.chart-format-update.2026-08-14-d3-equivalence
+status: evidence
+authority: none
+date: 2026-08-14
+-->
+
 状态：CFU-D3 complete；整包 CFU-D 未关（外部旧 Chart 资产仍未确认）
 
 快照日期：2026-08-14

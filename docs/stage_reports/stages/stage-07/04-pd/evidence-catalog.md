@@ -1,5 +1,11 @@
 # Presentation Decoupling Evidence Catalog
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.evidence-catalog
+status: evidence
+authority: none
+-->
+
 状态：current index
 
 更新日期：2026-10-26

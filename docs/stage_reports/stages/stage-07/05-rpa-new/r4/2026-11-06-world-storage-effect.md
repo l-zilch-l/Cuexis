@@ -1,5 +1,12 @@
 # R4 World 页存储整改效果验证
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-06-world-storage-effect
+status: evidence
+authority: none
+date: 2026-11-06
+-->
+
 状态：scoped memory reduction verified；完整语义内存仍为 unrated；O1 未变
 
 日期：2026-11-06

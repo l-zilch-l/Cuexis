@@ -1,5 +1,11 @@
 # Deferred Design Proposals
 
+<!-- cuexis-meta
+id: PROPOSALS-deferred.README
+status: candidate
+authority: none
+-->
+
 状态：historical/deferred index
 
 更新日期：2026-10-01

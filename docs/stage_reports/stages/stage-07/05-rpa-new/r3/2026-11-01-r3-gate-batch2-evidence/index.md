@@ -1,5 +1,11 @@
 # R3 第二批正式门测量附件（2026-11-01）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-r3-gate-batch2-evidence.index
+status: evidence
+authority: none
+-->
+
 本目录保存第二批门的全部字节：预注册、驱动器、6 个进程的原始日志与派生结果，以及一次作废尝试。
 仪器是仓库自带的 PD5 脚本化 host 探针，编译进 `cuexis_execution_device_probe`（`CUEXIS_PD5_DEVICE`），
 所以渲染器是真实 OpenGL 后端、GPU render 走 timer query，而不是 CPU 测试渲染器。

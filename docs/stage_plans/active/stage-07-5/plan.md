@@ -2,7 +2,13 @@
 
 状态：active；独立阶段规划与交接准备，尚未开始产品实施。
 
-更新日期：2026-11-14
+更新日期：2026-11-23
+
+<!-- cuexis-meta
+id: PLAN-active.stage-07-5.plan
+status: active
+authority: owns
+-->
 
 返回[阶段计划索引](../../README.md)；报告入口见[独立阶段报告索引](../../../stage_reports/stages/stage-07-5/README.md)。
 当前进度唯一以[CURRENT_STATUS](../../../CURRENT_STATUS.md)为准。
@@ -33,19 +39,31 @@ identity 及已接受合同不因本次拆分改名或重编号。
 
 ## 2. 前置基线与依赖
 
-主路线为 **Stage 7 受限关闭交接 → Stage 7.5 → Stage 8**。
+主路线为 **Stage 7 受限关闭交接 → Stage 7-RR（复核与重构） → Stage 7.5 → Stage 8**。
 归档来源：[拆分前 Stage 7 总计划](../../../archive/stage-07-planning/2026-11-14-stage-07-before-gameplay-evolution-split.md)，
 实际实施基线及 owner 接受边界见
 [R4／RPA 受限退出与缺陷交接](../../../stage_reports/stages/stage-07/05-rpa-new/r4/2026-11-14-limited-exit-and-defect-handoff.md)。
 其已验证代码为 `d1951326`，SDK `0.9.1`；后续工具／实现差异另行绑定，不能冒称该 SHA 已认证新能力。
-[独立诊断前置](../stage-07/02-diagnostics/plan.md)的 N3 已退出，正式码及兼容合同继续继承。
+[独立诊断前置](../../completed/stage-07/02-diagnostics/plan.md)的 N3 已退出，正式码及兼容合同继续继承。
 
 RPA 入场前置按 owner 明确接受的受限退出满足。原性能／内存／GPU／设备限制、P8 历史缺口、F3 延期及 testOnly
 继续有效，拆分不扩大生产范围、不重置正式次数，也不把历史 fail／inconclusive／blocked 改成 pass。
 
+[Stage 7-RR](../stage-07-rr/plan.md) 的当前计划范围完成并取得 owner 接受，是本阶段的入场前置。
+RR 当前范围还包括统一会话、共享时间、v3 实验闭环以及完整结构清理，范围裁定见
+[登记册 §24](../stage-07-rr/findings.md#24-统一实施前设计裁定2026-11-23)。本阶段在其实际验收成果上扩展高级输入能力，
+复用版本派发、成品 Reader、会话控制和已接受的时间映射；不另建时钟、会话 owner 或重复启动 Chart/应用分层清理。
+RR 设计已接受不代表成果已经可用，入场仍须取得实际交接，也不能替代本阶段 §5 的准入包与门禁。
+
+按 2026-11-23 owner 裁定，Stage 8 以 Chart v5 + Gameplay v3 为正式主线、新创作默认及已验证播放组合，
+不再完整新交付 v2 正式化；已承诺旧内容兼容继续保留。RR 承担 v3 实验实现与验证，本阶段以 v3 为主线扩展高级能力，
+Stage 8 完成正式验收；前两阶段完成均不替代正式发行门禁。
+每项新 capability 在准入包中明确适用的玩法版本和入口；v3 已有的等级、计分与时间规则按 RR 合同复用，
+旧 v2 规则按已承诺兼容范围验证，不回写为 v3 语义，也不默认向旧 v2 增加新 capability。
+
 | 能力工作线 | 最低依赖 | 边界 |
 | --- | --- | --- |
-| S7B-0 | 受限 RPA-F4 交接及 7A typed contract | registry、拒绝表与 harness 不隐含新增运行时能力 |
+| S7B-0 | RR 完成并接受、受限 RPA-F4 交接及 7A typed contract | registry、拒绝表与 harness 不隐含新增运行时能力 |
 | S7B-1 continuous／Slide | S7B-0；连续 Slider 另依赖连续采样子项 | handoff 不自动要求 Slider，不复用 7A preparedGrace |
 | S7B-2 Flick | S7B-0；使用连续 motion 时依赖相应 S7B-1 子项 | 离散子集可独立提案，不假设轨迹已支持 |
 | S7B-3 multi-contact | S7B-0、contact identity／input projection；轨迹子项另依赖 S7B-1 | 键盘多键不等于多触点能力 |
@@ -53,17 +71,17 @@ RPA 入场前置按 owner 明确接受的受限退出满足。原性能／内存
 | S7C-1 calibration | S7B-0 与实际设备／profile 合同 | 高级策略不自动接受历史 F3 生产参数或精确 AV |
 | S7C-2 Ruleset package | S7B-0、已接受 Ruleset Interface | 静态模块／常量包，不开放脚本、字节码或动态插件 |
 
-所用基线若包含[PD](../stage-07/04-pd/plan.md)，须消费其实际合同 revision、SDK 与安装消费者交接；
+所用基线若包含[PD](../../completed/stage-07/04-pd/plan.md)，须消费其实际合同 revision、SDK 与安装消费者交接；
 phase/outcome、FactBinding／聚合、Snapshot／Replay 和表现预算的影响逐项核验。
 必需绑定不支持时在 prepare 拒绝，不静默跳过 Fact 后推进 cursor；细则见
-[PD 能力边界](../stage-07/04-pd/design.md#121-能力演进与-factbinding)及
-[PD 版本交接](../stage-07/04-pd/design.md#127-跨阶段交接版本与维护成本)。
+[PD 能力边界](../../completed/stage-07/04-pd/design.md#121-能力演进与-factbinding)及
+[PD 版本交接](../../completed/stage-07/04-pd/design.md#127-跨阶段交接版本与维护成本)。
 
 ## 3. 工作线与实施顺序
 
 | 工作线 | 内容与退出 |
 | --- | --- |
-| GE-0 基线承接 | 读取已接受限制、固定源码／工具／内容／设备身份，维护一份本阶段门账及遗留责任；不重新认证历史失败 |
+| GE-0 基线承接 | 接收 RR 实际验收成果与旧内容回归基线，固定源码／工具／内容／设备身份；逐项核对原性能缺陷仍存在的成本，维护本阶段门账及遗留责任 |
 | S7B-0–4、S7C-1/2 | 按 §5–7 原有能力要求逐项准入、实施和验收，保留原批次 ID |
 | GE-R 局部重构与性能稳定 | 能力工作线之后集中处理输入历史复制、Replay 保活和 Gameplay evaluation 事务成本；见 §8 |
 | GE-F 独立最终接受 | 新实现身份的必要本地／hosted／消费者与预算验证、遗留处置和 Stage 8 交接，取得 owner 接受 |
@@ -85,6 +103,9 @@ phase/outcome、FactBinding／聚合、Snapshot／Replay 和表现预算的影�
 
 ## 5. Stage 7.5 能力线的统一规则
 
+下文的 Seek 验证须区分既有已支持入口和 RR 延期的新实时 seek；后者先验证稳定拒绝，
+若新增能力确实依赖它，须先明确扩展范围及版本合同。每项新能力仍须完成本计划要求的 Snapshot 与 Replay 验证。
+
 ### 5.1 新能力准入包
 
 每个 Gameplay Evolution 能力在开工前必须有一份 capability proposal，至少包含：
@@ -102,13 +123,14 @@ budget profile and worst-case limits
 unsupported/rejection diagnostics
 v4/v5/CXC/Packed representation decision
 headless golden and migration strategy
+applicable Gameplay version and production / experimental entry
 Stage 8 inclusion decision: included / candidate / deferred / rejected
 ```
 
 能力不能通过修改 7A 已发行字段含义来“顺便支持”。如果不能保持旧 Replay 或旧 v5 语义，必须
 创建新的 capability revision 或 Replay revision，并在 capability negotiation 和 replay header 中
-显式出现。这里的 revision 不是 Chart 外层 `version = 5`，也不是 Gameplay `gameplay.version = 2`
-的替代字段；不得重新引入 `semanticRevision` 作为同义版本。
+显式出现。这里的 revision 不是 Chart 外层 `version = 5`，也不是 Gameplay `gameplay.version`
+的替代字段（本阶段主线为 3，旧 v2 按兼容范围保留）；不得重新引入 `semanticRevision` 作为同义版本。
 
 ### 5.2 统一实现和退出门禁
 
@@ -245,13 +267,16 @@ grading 或有界重复的动作语义。7A 已支持的 Release/tail 仍是同�
 
 ### S7C-1：校准、设备延迟和 Judgement Policy
 
-基础实时架构归[Stage 7-RPA子阶段](../stage-07/03-rpa-legacy/plan.md)，正式命名迁移归[独立诊断前置](../stage-07/02-diagnostics/plan.md)。
-S7C-1负责校准参数及高级设备策略；本批不承接基础同步缺口，未因此启动实施。
+基础实时架构归[Stage 7-RPA子阶段](../../completed/stage-07/03-rpa-legacy/plan.md)，正式命名迁移归[独立诊断前置](../../completed/stage-07/02-diagnostics/plan.md)。
+RR 的[共享时间与会话合同](../stage-07-rr/contracts/runtime-timing.md)承担本轮时间映射与基础校准接线；
+S7C-1 复用其实际交付，扩展校准参数及高级设备策略，不重做基础同步。设备等待的计时、超时判断和处置
+由各平台 Player 实现，SDK 不新增该机制；算法预算及判定窗口仍遵守各自合同。
 
 **目标。** 将 timing offset、input latency、窗口等级和设备能力变成显式、可复现的策略。
 
-**范围。** `JudgementConfig`、`CalibrationProfile`、输入/输出 offset 的单位和符号、应用时点、
-设备最低上报率、等级窗口、Life/Accuracy policy 和 capability 协商。
+**范围。** `JudgementConfig`、`CalibrationProfile` 的新增策略、设备最低上报率、Life/Accuracy policy 和 capability 协商。
+输入/输出 offset 的单位、符号与应用时点沿适用版本的既有合同；v3 等级窗口与计分表复用 RR 作者规则，
+v3 的新增可配置项不得让宿主覆写内容声明的规则；各版本均不得重复叠加校准。
 
 **边界。** 校准不得读隐式历史或宿主私有类型；Chart offset、输入 offset、输出估算不能重复
 叠加；profile 变更必须通过 prepare/session transaction；设备不满足能力时拒绝或按显式策略降级。
@@ -310,7 +335,7 @@ Gameplay Evolution 的每一行都可以单独立项，但不能跳过 S7B-0 的
 | S7B-4.5 | 复杂动作族独立选入 | 每个子能力独立 ID、Spec、matrix entry | 每个子能力单独有 Replay、budget、migration、拒绝和 owner decision；禁止把“动作族全部完成”作为模糊结论 |
 | S7C-1.1 | CalibrationProfile 数据 | profile schema、单位/符号/范围和 identity 表 | 正负 offset、零值、越界、未知版本和迁移稳定；Chart/input/output offset 不重复叠加 |
 | S7C-1.2 | 应用时点和事务 | prepare/session apply 状态矩阵 | profile 只在批准时点生效；活动会话不回读文件；失败保留旧 effective profile 和旧 identity |
-| S7C-1.3 | 窗口/Accuracy policy | JudgementConfig、grade table 和 life policy | 窗口严格边界、等级映射、Life/Accuracy 累计和 reset/seek/replay 一致；表 ID 只增不改 |
+| S7C-1.3 | 窗口/Accuracy policy | 适用版本的既有 grade table、允许扩展的 JudgementConfig 和 life policy | 复用 RR 已验收的 v3 等级/计分基础；验证新增策略与窗口边界、累计和已支持的恢复/Replay 行为；v3 宿主不得覆写作者规则，表 ID 只增不改 |
 | S7C-1.4 | 设备能力协商 | capability negotiation 和 fallback policy | 不满足最低上报率、触摸/压力/方向能力或设备变化时按显式拒绝/降级；不写入未经批准的硬件私有 identity |
 | S7C-1.5 | 校准 Replay/迁移 | profile identity、Replay fixture、旧版本矩阵 | 同 profile 跨机器相同；profile 变化造成预期 identity 变化；旧 Replay 兼容性有明确接受或拒绝 |
 | S7C-2.1 | Ruleset package manifest | `cuexis.ruleset` manifest、interface projection 和 hash | package 字节/清单顺序规范化；缺字段、未知字段、重复 module 和 hash mismatch 在 prepare 失败 |
@@ -321,6 +346,10 @@ Gameplay Evolution 的每一行都可以单独立项，但不能跳过 S7B-0 的
 | S7C-2.6 | package/candidate publication | CXC v1 Stored entry、entry kind 和 production/candidate matrix | Ruleset entry 不伪装成 Chart entry；source/compiled/playback 分层清晰；默认 Writer 不发布未接受 package |
 
 ## 7. Gameplay Evolution 与 Stage 8 的选入规则
+
+以下选入以 Chart v5 + Gameplay v3 正式主线为目标，按玩法版本与 capability 分别核对。
+本阶段完成高级能力验收后，向 Stage 8 提交正式选入证据及拒绝范围；RR 实验结果不能替代该正式验收。
+旧 v2 及其他已承诺旧内容保留兼容验证，不要求重新完整交付 v2 正式化，也不将新能力回写旧规则。
 
 Stage 8启动须先取得本计划当前计划范围的完成与owner接受记录。
 发行矩阵只决定哪些已验收能力进入正式发行，不用于跳过尚未完成的Gameplay Evolution任务。选入必须同时满足：
@@ -344,6 +373,10 @@ Stage 7.5 须完成 S7B-0–4、S7C-1/2 当前计划范围的逐项退出、GE-R
 单平台结果、只测正例的 golden 或历史报告都不能替代本计划要求的实现和验证证据。
 
 ## 8. GE-R：局部重构与性能稳定
+
+GE-0 先以 RR 交付后的实现复验原问题。RR 已完成的结构修正直接引用其证据，GE-R 只处理仍存在的成本及高级能力新增的成本；
+完整 Chart 隔离、公共类型分类、应用分层和资源加载去重不再另列为本阶段首次清理。原性能缺陷只有在适用负载的新测量支持时
+才能关闭，不能因结构已调整而推定性能已达标。
 
 针对已有证据分别处理累积 receipts／accepted 历史的复制、Replay 对独立历史状态的持有，
 以及 Gameplay 呈现事务完整 evaluation 复制／重复 reset／旧 candidate 析构成本。
@@ -379,5 +412,9 @@ Stage 8 必须取得本阶段当前范围的完成及 owner 接受，发行矩�
 ## 10. 排除项与旧路径
 
 本阶段不实现 Stage 8 默认 Writer／正式发行，也不实现 Studio、稳定 C ABI、任意脚本或未准入的 3D／自由体感能力。
-[Stage 7 原计划入口](../stage-07/06-b/plan.md)保留一轮兼容导航；历史报告中的 7B+ 名称及 S7B/S7C ID
+[Stage 7 原计划入口](../../completed/stage-07/06-b/plan.md)保留一轮兼容导航；历史报告中的 7B+ 名称及 S7B/S7C ID
 保留原语境。活合同与新交接统一引用本路径；后续阶段只消费本阶段实际接受的接口与证据。
+
+## 11. 交接
+
+暂停或结束本阶段时更新 [交接页](../../../HANDOFF.md)（当前任务、下一步、阻塞与验证状态），并把新增缺陷写入当前登记册。

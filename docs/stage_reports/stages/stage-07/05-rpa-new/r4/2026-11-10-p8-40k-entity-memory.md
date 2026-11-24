@@ -1,5 +1,12 @@
 # P8 40K 实体内存（内容行受限）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-10-p8-40k-entity-memory
+status: evidence
+authority: none
+date: 2026-11-10
+-->
+
 状态：evidence；给出 40K 实体下的实测与结构归因，不含上限接受裁定
 
 日期：2026-11-10

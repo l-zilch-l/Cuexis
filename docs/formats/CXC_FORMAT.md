@@ -1,10 +1,17 @@
 # Cuexis CXC v1
 
 状态：accepted contract；CFU-C3/C4 内部 archive/tools 与 CFU-E Playback source/prepare/identity
+
 已实现；CFU-F hosted consumer/determinism/safety gates 已关闭；G3 hosted、G4、G5 report-SHA
 revalidation 与 G6 owner acceptance 已完成；最终产品封存已记录
 
-更新日期：2026-10-22
+<!-- cuexis-meta
+id: FORMAT-CXC_FORMAT
+status: accepted
+authority: owns
+-->
+
+更新日期：2026-11-20
 
 依据：[ADR 0038](../adr/0038-cxc-v1-and-chart-v4-boundary.md)
 
@@ -178,12 +185,14 @@ compiled entry
   已验证的 Packed Chart 或其他 typed portable payload
 
 playback entry
-  manifest 明确指定、可被 Playback 读取的 compiled entry
+  manifest 显式登记为可播放、按具名 profile 读取或编译的 chart entry
 ```
 
-Foundation/Stage 6 candidate Chart v5 的 Playback entry 必须是 Packed Chart。Gameplay V2
-扩展尚未被本格式接受；在该扩展接受前，Playback 不读取作者层 JSON 或
-CXT source，也不在包内隐式执行 CXT Pattern。Packed entry 必须在 pack 前完成：
+本 candidate extension 的 `playback=true` encoding 由具名 profile 唯一确定：
+`candidate.static-tap-lanes4-v1` 必须使用 `packed-chart`；
+`candidate.behavior-v2-v1` 必须使用 `source-json`。后者是受限候选，不扩大静态 Packed
+profile，也不注册 Packed Behavior sections。普通 CXC v1 默认入口仍沿用既有 v1–v4
+Project/Chart 路径，不探测或隐式选择 candidate entry。静态 Packed entry 必须在 pack 前完成：
 
 ```text
 Chart/CXT typed validation
@@ -209,8 +218,8 @@ entry encoding: source-json | source-cxt | packed-chart | portable-payload
 playback: boolean
 source semantic identity（若为 compiled entry）
 compiled semantic identity（若为 playback entry）
-compiler profile（若为 Packed Chart）
-expanded entity/event counts（若为 Packed Chart）
+compiler profile（若为 playback entry）
+expanded entity/requirement counts（若为 playback entry）
 ```
 
 这些字段属于 CXC v1 的 Chart v5 manifest extension，不改变 ZIP32 载体版本，也不改变
@@ -244,17 +253,19 @@ Foundation revision 1 使用已登记的 `extensions["cuexis.chart-entry.v1"]` �
 ```
 
 `sourcePath` 与 `sourceSemanticIdentity` 可省略；其余字段对每个 candidate entry 必需。
-当前 Foundation/Stage 6 候选合同中，`playback=true` 的 entry 必须是 `packed-chart`，其 `path`
-必须存在于同一个 CXC，且
+当前候选合同中，静态 profile 的 `playback=true` entry 必须是 `packed-chart`；Behavior
+profile 则必须是 `source-json`，并按 Chart Entry 合同编译与校验。两种 profile 的 entry
+`path` 均必须存在于同一个 CXC，且
 `artifactIdentity` 必须等于 manifest 基础 entry 的精确 SHA-256。Foundation validator
-还会在 16 MiB entry 门禁内检查 Packed Header/目录和 declared entity/requirement counts。
+按 profile 验证内容；静态 Packed entry 还会在 16 MiB entry 门禁内检查 Packed Header/目录和
+declared entity/requirement counts。
 `compiledSemanticIdentity` 是展开语义的 typed identity；它不能由 source path、CXT
-参数文本或包 identity 代替。`source` entry 可以保留供审查和复现，但永远不是
-Foundation Playback 入口。
+参数文本或包 identity 代替。归档 source entry 可保留供审查和复现。作为播放入口的条目须声明
+`kind=chart`、`playback=true`，由显式路径选择且匹配上述 profile/encoding。
 
 `cxc_pack` 与 `cxc_validate` 不读取、冻结或展开 CXT v2。需要从 CXT 生成 Packed bytes
 时，必须先运行显式 compile/prepare 步骤，再把已生成的 Packed entry 交给 CXC tooling。
-候选 extension 中的未知必需字段、非 `packed-chart` playback、缺失 playback entry、
+候选 extension 中的未知必需字段、与注册 profile 不匹配的 playback encoding、缺失 playback entry、
 artifact hash、count 或 profile 不匹配均 fail closed。
 
 Gameplay V2 研究路线提出一个待接受的 Stage 7A manifest 扩展：在不改变 CXC v1 ZIP32

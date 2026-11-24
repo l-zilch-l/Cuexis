@@ -1,5 +1,12 @@
 # PD-3-a Runtime and World Software Transaction
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-3.a.2026-10-18-pd3a-software-transaction
+status: evidence
+authority: none
+date: 2026-10-18
+-->
+
 日期：2026-10-18。状态：PD-3-a 内部实施、补正门禁与 GPT-6-Luna 复审通过。
 
 2026-10-19 续接核对：98 项既有证据文件、31 项实现输入和记录的程序散列均未变化，
@@ -9,8 +16,8 @@
 ## 1. 范围与对照点
 
 用户在 PD-2 之后明确要求继续完成 PD-3-a。本批仅落实
-[PD 计划](../../../../../../stage_plans/active/stage-07/04-pd/plan.md)的事务子批次，
-依据[设计细则 §5](../../../../../../stage_plans/active/stage-07/04-pd/design.md#5-软件事务与失败恢复pd-3)。
+[PD 计划](../../../../../../stage_plans/completed/stage-07/04-pd/plan.md)的事务子批次，
+依据[设计细则 §5](../../../../../../stage_plans/completed/stage-07/04-pd/design.md#5-软件事务与失败恢复pd-3)。
 PD-3-b 状态修订/PresentationRead/物化器、PD-3-c 控制绑定以及 PD-4/5 未启动。
 没有接受宿主候选合同、更新 SDK/构建版本、提交、push、PR、合并或发行。
 

@@ -1,5 +1,12 @@
 # R4 收尾工具实施与准入复核（2026-11-13）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-13-closeout-implementation
+status: evidence
+authority: none
+date: 2026-11-13
+-->
+
 状态：implementation and diagnostic evidence；不是正式计时、内存预算或退出接受
 
 返回 [New RPA 报告索引](../README.md)。本轮授权见

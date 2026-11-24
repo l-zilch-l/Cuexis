@@ -2,11 +2,18 @@
 
 状态：active
 
-更新日期：2026-10-28
+更新日期：2026-11-24
 
 适用版本：SDK API `0.9.1`
 
 文档角色：公共 API 参考
+
+<!-- cuexis-meta
+id: API-playback-session
+status: active
+authority: owns
+topics: playback.prepared-validity
+-->
 
 权威头文件：[playback_session.hpp](../../engine/playback/include/cuexis/playback/playback_session.hpp)
 
@@ -53,7 +60,7 @@
 | `Empty` | 没有 active 内容。 |
 | `Ready` | 内容已提交，可以开始更新。 |
 | `Running` | 已执行播放更新。 |
-| `Failed` | Session 本身进入不可继续状态；普通 prepare/reload 失败不应破坏 active 内容。 |
+| `Failed` | 保留的枚举值，当前实现从不进入（RR-F412）；失败统一通过 `core::Result` 返回，active 内容保持不变。 |
 
 `PreparedPlayback` 只表示候选内容。只有 `commit` 会替换 active 状态。prepare 或 reload 失败时，既有
 FrameSnapshot、semantic identity、active diagnostics 和 presentation 必须保持不变。
@@ -157,6 +164,29 @@ resource closure、typed Asset index/provider、CPU资源与 exact content ident
 其 prepare/commit/submit/advance/query/Replay/Snapshot/Seek 与 Presentation 模式使用相同
 实际 kernel/Fold。H/T/RuntimeFrame 仍显式预检；RuntimeUpdated=false 明示没有 Runtime
 图，而不是错误。Frame/update/HostOverride 沿已有无 World 稳定拒绝。该意图不增加数值预算。
+
+<a id="preparedplayback-有效性修订f501已接受未实现"></a>
+
+### PreparedPlayback 有效性修订（F501，已接受、已实现）
+
+2026-11-23 owner 按 Stage 7-RR D-04 接受本节。2026-11-24 由
+[T-17](../stage_plans/active/stage-07-rr/tasks/T-17.md) 实现并以候选构建验证；证据见
+`out/review/stage-07-rr/T-17/report.md`。候选路径对原会话的内部解引用另加最小寿命守卫，失效时
+返回既有 `host.rpa.context_stale`，不改变公共所有权边界。
+
+`valid()` 按候选实际内容类别判断是否已合法准备：普通表现候选保留对应 Runtime 条件，显式
+GameplayOnly 候选以其合法准备的 Gameplay 内容成立，不要求创建 World 或 RuntimeSession。
+空对象、移动后的对象和在错误线程查询的对象返回 false；线程与析构约束保持上文规定。
+该修订沿用现有类型和接口，不引入占位 Runtime 或另一套有效性 API。
+
+有效 GameplayOnly 候选的 `contentInfo()`、`semanticIdentity()` 应可读取实际准备的内容；
+`mainMusicSource()` 在已有有效音频资源时可用，无音频时仍返回缺失。依赖表现能力的访问与操作
+另行检查所需资源或 Runtime，沿已有缺失/拒绝规则处理，不能由 `valid()` 推断可生成画面。
+
+`valid()` 不承诺 `commit()` 必然成功。提交仍独立校验 owner/session、generation、生命周期、
+正在执行的操作及 host fence；旧候选即使内容仍完整，也可被提交门禁拒绝。
+正例须在同一合法会话、准备后前置条件未改变时验证有效性与提交成功；负例分别验证对象无效
+和提交资格失效，不能要求两者在所有情况下返回相同结论。
 
 ## Candidate 安装 consumer 的首用边界
 
@@ -292,3 +322,18 @@ fromBytes成功只证明结构校验，不代替evidenceValid或完整结果比�
 候选安装consumer最低请求Cuexis 0.7.5并重建，matching-toolchain shared不承诺旧二进制可替换。
 production candidate-OFF无新API；新码可能随原content错误路径进入已有Result，category/context规则不变。
 失败原子性、generation、sealed前缀、GameplayAdvanceReceipt与公开Result承载均保持既有合同。
+
+## 实验 Gameplay 外观与构建期入口（候选安装）
+
+候选 SDK 额外安装三个实验头：`cuexis/playback/experimental/gameplay.hpp`（候选 source 工厂、
+prepare/submit/advance/query/control）、`gameplay_realtime.hpp`（realtime 时钟、capture、advance、
+pause/resume/control 与 reconciliation 身份）和 `gameplay_replay.hpp`（archive/snapshot/evaluate/
+restore/seek/checkpoint/replay cut）。每个自由函数把第一个参数作为原成员调用的会话对象，
+参数、默认值、返回类型与校验顺序不变，转发到同版本的候选成员或已装自由函数；旧成员、旧符号
+和旧头在本兼容窗口内继续保留。实验头只随 `-DCuexis_ALLOW_EXPERIMENTAL=ON` 的候选安装提供，
+默认安装不包含它们；名字与导出不构成稳定 SDK 承诺，晋升按 D-19 的版本机制另行处理。
+
+执行宿主与回放身份的构建期入口是 `cuexis/playback/execution_host_access.hpp`、
+`cuexis/playback/replay_identity.hpp` 和 `cuexis/playback/frame_layout_access.hpp`，只向具名的
+仓内 host/测试目标提供私有 include 根，不安装、不导出公共头，也不改变公共类布局。
+默认库不导出 `detail` 的这组符号；实验共享库只导出该表列出的成员。

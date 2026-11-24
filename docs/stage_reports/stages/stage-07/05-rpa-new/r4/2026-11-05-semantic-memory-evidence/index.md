@@ -1,5 +1,11 @@
 # R4 语义整改原始证据
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-05-semantic-memory-evidence.index
+status: evidence
+authority: none
+-->
+
 状态：dated evidence；两轮有界诊断，不是正式性能或内存接受
 
 日期：2026-11-05

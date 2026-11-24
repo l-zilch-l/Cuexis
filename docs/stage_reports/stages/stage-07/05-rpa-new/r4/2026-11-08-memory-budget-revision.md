@@ -1,5 +1,12 @@
 # 内存上限修订提案 v2（待 owner 选择与签署）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-08-memory-budget-revision
+status: evidence
+authority: none
+date: 2026-11-08
+-->
+
 状态：proposal，其中 §6 的归属修正已于 2026-11-11 被 owner 接受；未改变任何上限数值与 O1 接受记录
 
 日期：2026-11-08

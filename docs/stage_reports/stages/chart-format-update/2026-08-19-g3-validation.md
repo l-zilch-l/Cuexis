@@ -1,5 +1,12 @@
 # Stage Chart Format Update CFU-G3 Final Candidate Validation
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.chart-format-update.2026-08-19-g3-validation
+status: evidence
+authority: none
+date: 2026-08-19
+-->
+
 状态：CFU-G3 未关闭；本地候选门禁通过，候选发布与同 SHA hosted 验证受执行环境阻断
 
 执行日期：2026-08-19

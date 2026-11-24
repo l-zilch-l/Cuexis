@@ -1,5 +1,12 @@
 # S6-B1 版本比较与发行门禁
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-06.2026-09-20-s6-b1-version-gate
+status: evidence
+authority: none
+date: 2026-09-20
+-->
+
 状态：completed（bootstrap、受保护 required check、同 SHA hosted 验证与合并后审计已完成）
 
 日期：2026-09-21

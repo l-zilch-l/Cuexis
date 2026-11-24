@@ -5,6 +5,12 @@
 完成证据见[阶段 2 完成报告](../../../stage_reports/stages/stage-02/completion.md)。阶段 2 交接时仍缺少的
 hosted Linux 门禁后来随 [Stage 3 最终验收](../../../stage_reports/stages/stage-03/completion.md) 一并关闭。
 
+<!-- cuexis-meta
+id: PLAN-completed.stage-02.plan
+status: completed
+authority: owns
+-->
+
 ## 1. 目标与边界
 
 阶段 2 的目标是让 Behavior 表达 Cuexis 谱面表现，并通过 `PlaybackSession` 在任意目标时间确定性采样。它不建设宿主任意代码、脚本、无界回调或通用游戏状态机。

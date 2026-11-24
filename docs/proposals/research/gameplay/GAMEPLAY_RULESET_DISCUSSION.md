@@ -1,5 +1,11 @@
 # Gameplay Ruleset 设计讨论记录
 
+<!-- cuexis-meta
+id: PROPOSALS-research.gameplay.GAMEPLAY_RULESET_DISCUSSION
+status: candidate
+authority: none
+-->
+
 > 目录状态：Gameplay research history。本文保留讨论过程；当前取舍以 ADR 0043、Gameplay Judgement Spec 和候选 ABI 为准。
 
 状态：candidate（设计讨论记录，未接受，未实施）
@@ -8,7 +14,7 @@
 
 本文记录对 Input / Judgement / "脚本"系统的重新设计讨论。它是设计输入，不是 ADR、Spec
 或阶段计划；后续设计可能整体取代 [音乐游戏玩法抽象模型](../../../architecture/GAMEPLAY_ABSTRACTION_MODEL.md)
-与 [Stage 7 计划](../../../stage_plans/active/stage-07/plan.md) 中的相应内容。讨论中已明确：与现有文档
+与 [Stage 7 计划](../../../stage_plans/completed/stage-07/plan.md) 中的相应内容。讨论中已明确：与现有文档
 （含"运行时脚本无限期延后"条款）的冲突不作为约束，待设计收敛后再统一修订。
 
 **状态更新（2026-10-01）**：I 收敛工作稿已经建立。本文继续作为推导和历史讨论记录；取舍、

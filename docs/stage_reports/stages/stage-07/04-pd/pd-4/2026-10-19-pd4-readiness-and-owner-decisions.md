@@ -1,5 +1,12 @@
 # PD-4 准备与 owner 决策清单
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-4.2026-10-19-pd4-readiness-and-owner-decisions
+status: evidence
+authority: none
+date: 2026-10-19
+-->
+
 日期：2026-10-19。状态：owner 已在本对话接受三项推荐并授权实施 PD-4；本文保留准备时点记录，后续实施与本地验证见 [PD-4 报告](2026-10-19-pd4-delivery-retirement-and-observation.md)。
 当前状态唯一见 [CURRENT_STATUS](../../../../../CURRENT_STATUS.md)。
 
@@ -56,7 +63,7 @@ UntilReset 为 absence，有限 end=INT64_MAX 的效果仍可正常到期。
 
 ## 可独立推进的实施批次
 
-以下是对现有 PD-4 范围的执行顺序，不新增阶段合同；完整语义归 [PD 细则](../../../../../stage_plans/active/stage-07/04-pd/design.md)。
+以下是对现有 PD-4 范围的执行顺序，不新增阶段合同；完整语义归 [PD 细则](../../../../../stage_plans/completed/stage-07/04-pd/design.md)。
 
 1. 合同接受落约与公开 optional expiry 迁移；先做真实 lease/存储计账和寿命矩阵，明确 CPU/GPU/证据三维结束条件。
 2. 消费注册、确认/撤销、RealtimeLatest 与 ExactCapture；先准入再物化，Ready/take/取消/过期唯一先后，移交后请求历史只留 metadata。

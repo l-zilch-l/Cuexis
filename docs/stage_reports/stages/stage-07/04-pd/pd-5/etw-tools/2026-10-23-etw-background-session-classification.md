@@ -1,5 +1,12 @@
 # PD-5 DiagTrack 命名会话清单与预检规则修正
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.etw-tools.2026-10-23-etw-background-session-classification
+status: evidence
+authority: none
+date: 2026-10-23
+-->
+
 状态：管理员 inventory 已核验；只读分类已修正；实际 capture 与完整预检仍未通过。
 
 更新日期：2026-10-23，Asia/Shanghai。前序见

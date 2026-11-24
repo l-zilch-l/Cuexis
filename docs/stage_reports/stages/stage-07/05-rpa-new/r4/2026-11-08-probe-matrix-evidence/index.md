@@ -1,5 +1,11 @@
 # R4 展示矩阵探针证据包
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-08-probe-matrix-evidence.index
+status: evidence
+authority: none
+-->
+
 状态：candidate evidence；两次登记均因环境停止，不含正式裁定
 
 日期：2026-11-08

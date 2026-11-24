@@ -1,5 +1,12 @@
 # R3 窗口启动响应、JSON 准备及渲染归因
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-31-r3-startup-and-render-attribution
+status: evidence
+authority: none
+date: 2026-10-31
+-->
+
 状态：有限诊断与未选用候选归档；仅测试探针响应修复进入根树，R3 未退出。
 
 日期：2026-10-31（部分实验始于 2026-10-30）。返回 [New RPA 索引](../README.md)。

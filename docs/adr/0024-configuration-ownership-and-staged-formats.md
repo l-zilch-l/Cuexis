@@ -1,5 +1,11 @@
 # ADR 0024：配置所有权与格式分阶段冻结
 
+<!-- cuexis-meta
+id: ADR-0024
+status: accepted
+authority: owns
+-->
+
 日期：2026-07-18
 
 状态：已接受

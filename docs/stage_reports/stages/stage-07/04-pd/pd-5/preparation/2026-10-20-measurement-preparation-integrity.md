@@ -1,10 +1,17 @@
 # 测量准备的注册完整性与容量短测修正
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.preparation.2026-10-20-measurement-preparation-integrity
+status: evidence
+authority: none
+date: 2026-10-20
+-->
+
 日期：2026-10-20。状态：两项局部工具修正已验证；完整测量准备未完成。
 本报告接续[窗口与矩阵准备](2026-10-19-pd5-window-and-matrix-preparation.md)和
 [功能命名修正](2026-10-20-performance-tool-functional-naming.md)。当前状态唯一见
 [CURRENT_STATUS](../../../../../../CURRENT_STATUS.md)，阈值仍使用
-[已接受的本机方案](../../../../../../stage_plans/active/stage-07/04-pd/pd-5/pd5-measurement-proposal.md)。
+[已接受的本机方案](../../../../../../stage_plans/completed/stage-07/04-pd/pd-5/pd5-measurement-proposal.md)。
 
 ## 注册与原始证据绑定
 

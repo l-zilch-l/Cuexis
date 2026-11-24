@@ -2,14 +2,21 @@
 
 状态：现行格式索引
 
-更新日期：2026-10-05
+更新日期：2026-11-24
+
+<!-- cuexis-meta
+id: INDEX-formats
+status: active
+authority: index
+-->
 
 ## Artifact 分层
 
 所有 Chart 格式都遵守
 [音乐游戏玩法抽象模型](../architecture/GAMEPLAY_ABSTRACTION_MODEL.md)定义的语义边界：
 格式版本可以改变字段合同和物理编码，但不得把某一种轨道、Note 或渲染方式误认为
-音游的核心语义。
+音游的核心语义。同一谱面在代码中的表示与转换点见
+[Chart 表示与转换点](../architecture/CHART_REPRESENTATIONS.md)。
 
 ```text
 Source Project
@@ -37,8 +44,8 @@ Compiled Runtime
 | Chart v1/v2/v3 | [CHART_FORMAT.md](CHART_FORMAT.md) | implemented |
 | Chart v4 | [CHART_V4_FORMAT.md](CHART_V4_FORMAT.md) | accepted and implemented; C1–C4, CFU-D/E/F/G gates closed; Stage 4 animation runtime closed |
 | Chart v5 | [Chart v5 工作包](../stage_plans/active/chart-format-update-for-v5/plan.md) | candidate；Foundation 先交 Core，Stage 6 candidate 消费，Stage 8 正式发行；40k/16 MiB 为关闭门禁 |
-| Packed Chart v1 | [PACKED_CHART_FORMAT.md](PACKED_CHART_FORMAT.md) | candidate；Header/目录、字典/身份、Archetype 与实体差异流、无损 Beat；未实现 |
-| Gameplay Capsule v2 | [GAMEPLAY_CAPSULE_V2_FORMAT.md](GAMEPLAY_CAPSULE_V2_FORMAT.md) | candidate；S7A-3 首次 Packed 消费物理合同唯一权威，设计已于 2026-10-04 闭合；Reader/Writer 与 E1 实现验收未完成；revision 1 不变 |
+| Packed Chart v1 | [PACKED_CHART_FORMAT.md](PACKED_CHART_FORMAT.md) | candidate；Reader/Writer 已实现并被 69 个 `[packed]` 测试用例覆盖，默认 Playback/Player 入口未消费（`CUEXIS_ENABLE_CHART_V5_CANDIDATE` 默认 OFF）；见 Stage 7-RR RR-F105 |
+| Gameplay Capsule v2 | [GAMEPLAY_CAPSULE_V2_FORMAT.md](GAMEPLAY_CAPSULE_V2_FORMAT.md) | candidate；S7A-3 首次 Packed 消费物理合同唯一权威，设计已于 2026-10-04 闭合；Reader/Writer 已实现、E1 验收未完成；代码默认 `candidateRevision = 2`（Reader 接受 2/3/4），见 [Stage 7-RR 登记册](../stage_plans/active/stage-07-rr/findings.md) §2.2 |
 | Compiled Gameplay Graph JSON v1 | [GAMEPLAY_GRAPH_V1_FORMAT.md](GAMEPLAY_GRAPH_V1_FORMAT.md) | candidate；C78-05 / R78-08 首用物理合同，明确 typed SAX、完整静态 chart、整数与引用；实现和等价验收仍归现行状态 |
 | CXC v1 | [CXC_FORMAT.md](CXC_FORMAT.md) | accepted and implemented internally; archive/tools and Playback source/prepare/identity gates closed; no public CXC package API |
 | CXT v1 | [CXT_FORMAT.md](CXT_FORMAT.md) | accepted contract; Reader/Writer/lowering and prepare import/lookup implemented; CFU-F and G4 hosted gates closed; Stage 4 animation execution closed |
@@ -49,8 +56,8 @@ Compiled Runtime
 | Animation Mixing | [ANIMATION_MIXING.md](ANIMATION_MIXING.md) | accepted contract; format-stage gates closed; Stage 4 runtime closed |
 | Portable Presentation v1 | [PORTABLE_PRESENTATION.md](PORTABLE_PRESENTATION.md) | implemented |
 | Material/Shader v1 | [MATERIAL_SHADER.md](MATERIAL_SHADER.md) | accepted contract; S5-A through S5-H completed; Stage 5 closed and merged into `master` 2026-08-28 |
-| Stage 6 chart entry extension v1 | [CHART_ENTRY_V1_FORMAT.md](CHART_ENTRY_V1_FORMAT.md) | candidate contract recorded by A2; explicit Playback entry implementation not yet present |
-| Stage 6 configuration and media contract | [STAGE6_CONFIG_AND_MEDIA.md](STAGE6_CONFIG_AND_MEDIA.md) | candidate contract recorded by A2; Player support/media importer not yet present |
+| Stage 6 chart entry extension v1 | [CHART_ENTRY_V1_FORMAT.md](CHART_ENTRY_V1_FORMAT.md) | candidate contract recorded by A2; explicit Playback entry factories implemented (`fromFilesystemProjectEntry`/`fromCxcFileEntry`); candidate gameplay entry factories behind flag |
+| Stage 6 configuration and media contract | [STAGE6_CONFIG_AND_MEDIA.md](STAGE6_CONFIG_AND_MEDIA.md) | candidate contract recorded by A2; media importer present behind default-OFF `CUEXIS_BUILD_MEDIA_TOOLS` |
 | Gameplay Judgement | [GAMEPLAY_JUDGEMENT_SPEC.md](GAMEPLAY_JUDGEMENT_SPEC.md) | candidate；I 收敛工作稿，未实施，待 ADR 0043 owner acceptance |
 | Gameplay V2 | [GAMEPLAY_V2_SPEC.md](GAMEPLAY_V2_SPEC.md) | candidate；Stage 7A 的 V2 字段与运行语义唯一权威 Spec；分批设计与部分实现不等于整批验收，现状只见 [CURRENT_STATUS](../CURRENT_STATUS.md)；与 [ADR 0044](../adr/0044-gameplay-v2-semantic-kernel.md)、[Gameplay V2 ABI](../api/GAMEPLAY_V2_ABI.md) 协同 |
 | RPA execution/control supplement | [RPA补充Spec](rpa-execution-contract.md) | candidate；已选实施设计，控制/时钟/T2/R2/Replay与版本闭包；未实施 |

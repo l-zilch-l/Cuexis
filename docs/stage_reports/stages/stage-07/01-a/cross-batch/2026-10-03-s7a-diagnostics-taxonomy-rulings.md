@@ -1,12 +1,19 @@
 # 第 6 轮 `CM-D04` / `P1-09` 首次消费的诊断分类学后续补齐记录
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.01-a.cross-batch.2026-10-03-s7a-diagnostics-taxonomy-rulings
+status: evidence
+authority: none
+date: 2026-10-03
+-->
+
 状态：dated implementation record（第 6 轮诊断码表分类学冲突裁定的文档与集中码表落地证据；
 不是阶段关闭、不是 owner acceptance、不是实施证据、**不是** Judgement 实现完成声明、
 **也不是** Stage 7A 完成声明）
 
 更新日期：2026-10-03
 
-上级文档：[Stage 7A 实施计划](../../../../../stage_plans/active/stage-07/plan.md) §1.1 / §S7A-3 / §S7A-5 / §S7A-7 ·
+上级文档：[Stage 7A 实施计划](../../../../../stage_plans/completed/stage-07/plan.md) §1.1 / §S7A-3 / §S7A-5 / §S7A-7 ·
 [Gameplay V2 acceptance package](../../../../../proposals/gameplay-v2-acceptance/README.md) ·
 [未决语义分轮裁决清单](../../../../../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md) §6 / §9 ·
 [未决问题与 owner 决策请求](../../../../../proposals/gameplay-v2-acceptance/OPEN_QUESTIONS.md) §4.4 / §4.6 ·

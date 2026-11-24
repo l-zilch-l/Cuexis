@@ -1,5 +1,12 @@
 # P5 脚本化控制单元：登记、适配器与 pilot
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-11-p5-controls-unit
+status: evidence
+authority: none
+date: 2026-11-11
+-->
+
 状态：candidate evidence；一个通过的 pilot，不含正式组，不构成接受裁定
 
 日期：2026-11-11

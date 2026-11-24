@@ -1,5 +1,11 @@
 # Cuexis 阶段 4 验收报告
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-04.completion
+status: evidence
+authority: none
+-->
+
 状态：S4-H complete；最终 SHA hosted Linux/MSVC/MinGW 已通过，项目所有者已接受，Stage 4 已关闭
 
 报告日期：2026-08-27

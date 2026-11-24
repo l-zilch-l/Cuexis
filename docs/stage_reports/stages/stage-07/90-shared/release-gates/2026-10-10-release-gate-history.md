@@ -1,5 +1,12 @@
 # Stage 7 发布门禁的历史阻塞与关闭依据
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.90-shared.release-gates.2026-10-10-release-gate-history
+status: evidence
+authority: none
+date: 2026-10-10
+-->
+
 状态：historical
 
 证据日期：2026-10-09 至 2026-10-10；整理日期：2026-10-17

@@ -1,5 +1,11 @@
 # ADR 0020：确定性粒子时间轴与 Seek
 
+<!-- cuexis-meta
+id: ADR-0020
+status: accepted
+authority: owns
+-->
+
 日期：2026-07-17
 
 状态：已接受

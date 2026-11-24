@@ -1,8 +1,15 @@
 # Stage 6 Implementation Plan: Playback C++ API and Player Productization
 
 状态：completed；已于 2026-09-27 关闭并归档（`S6-F2` 关闭报告、三个核验问题处置与 Stage 7A /
+
 Stage 8 交接清单经项目所有者明确接受）；Foundation 交接加固（R0-R5）已于 2026-09-17 关闭并经
 owner 接受，本阶段曾自此恢复实施
+
+<!-- cuexis-meta
+id: PLAN-completed.stage-06.plan
+status: historical
+authority: owns
+-->
 
 更新日期：2026-09-28
 

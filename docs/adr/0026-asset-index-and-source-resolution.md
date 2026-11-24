@@ -1,5 +1,11 @@
 # ADR 0026：Asset Index 与来源解析
 
+<!-- cuexis-meta
+id: ADR-0026
+status: accepted
+authority: owns
+-->
+
 日期：2026-07-18
 
 状态：已接受

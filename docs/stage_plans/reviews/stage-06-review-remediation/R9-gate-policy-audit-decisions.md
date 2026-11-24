@@ -1,5 +1,11 @@
 # R9 门禁策略审计 — 裁定与实施依据
 
+<!-- cuexis-meta
+id: PLAN-reviews.stage-06-review-remediation.R9-gate-policy-audit-decisions
+status: historical
+authority: owns
+-->
+
 本文件是 R9 批次**门禁策略缺陷链**的裁定记录与实施依据。它记录"做什么、为什么、以及什么证据能推翻结论"，
 使实施与后续评审不必重新推导。背景与现象见
 `docs/stage_reports/reviews/stage-06-review-2026-09/2026-09-28-r9-reference-host-command-loop.md` §2.1。
@@ -57,8 +63,8 @@ audit items left open by section 4 of this file，即 D11/D14/D15），策略基
 ### 1.4 仓库既有模式
 
 ```
-VerifyCfuF3Determinism / CfuF4Performance / ChartCapacity /
-ExternalConsumer / S4GPerformance / S5HPerformance
+VerifyContentDeterminism / ContentIOPerformance / ChartCapacity /
+ExternalConsumer / ClipCompilePerformance / RulesetPreparePerformance
     → cmake_minimum_required(VERSION 3.25)
 VerifyReferenceHost / VerifyReferenceHostCommands   → 无（本批次新增）
 VerifyPlayerDistribution                            → 无（既有）

@@ -2,11 +2,17 @@
 
 状态：active
 
-更新日期：2026-10-28
+更新日期：2026-11-23
 
 适用版本：SDK API `0.9.1`
 
 文档角色：公共 API 参考
+
+<!-- cuexis-meta
+id: API-frames-digests-and-timelines
+status: active
+authority: owns
+-->
 
 权威头文件：[playback_session.hpp](../../engine/playback/include/cuexis/playback/playback_session.hpp)、
 [frame_digest.hpp](../../engine/playback/include/cuexis/playback/frame_digest.hpp)、
@@ -53,12 +59,17 @@ snapshot 是独立值，不包含 entity、World、GLM 或 GPU handle。
 
 ## `FrameDigest` 合同
 
-`computeFrameDigest` 以 `RuntimeFrame`、`FrameSnapshot` 和 digest version 为输入。FrameDigest v1-v3、
+`computeFrameDigest` 以 `RuntimeFrame` 与 `FrameSnapshot` 为输入，返回结果里的 `algorithmVersion` 标明所用 digest version；公开 API 不接受版本入参（可指定版本的入口只在内部实现，不安装）。FrameDigest v1-v3、
 canonical bytes/order 和合法输入结果是兼容合同。
 
 - 新实现不得改变已有 digest version 的结果。
 - digest 用于确定性验证，不替代 snapshot 本身。
-- 跨 source parity 应同时比较 semantic identity、关键帧 snapshot 和指定版本 digest。
+- 跨 source parity 应同时比较 semantic identity、关键帧 snapshot 和宿主可观察的默认版本 digest。
+  默认版本入口是 `computeFrameDigest`：它不接受版本入参，只返回 `algorithmVersion` 与 `value`；
+  当前默认版本为 3。内部定版本比较（v1、v2、v3 分别固定）由
+  `playback::detail::computeFrameDigestVersion` 承担，声明在
+  `engine/playback/src/frame_digest_internal.hpp`，不安装、不属于公开 API；测试为固定版本单独
+  编译 `src/frame_digest_version.cpp` 的安排归 T-04/RR-F214，不改变公开可达性。
 
 ## 时间线速查
 

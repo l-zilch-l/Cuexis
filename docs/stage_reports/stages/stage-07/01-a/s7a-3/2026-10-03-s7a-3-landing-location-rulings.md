@@ -1,11 +1,18 @@
 # S7A-3 落地位置裁定（卡 4 / 卡 5）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.01-a.s7a-3.2026-10-03-s7a-3-landing-location-rulings
+status: evidence
+authority: none
+date: 2026-10-03
+-->
+
 ## 1. 角色与出处
 
 本文件是**带日期的裁定登记**，只登记裁定原文要点与主控的独立复核，**不表示任何实现完成**，也不改变任何门禁状态。
 
 **权威范围在 plan。** 卡 1–5 已按 S7A-3 批次的权威范围登记进
-[plan.md](../../../../../stage_plans/active/stage-07/plan.md) 的 `### S7A-3` 小节（"S7A-3 第二半 part 1 实现复核裁定后的范围收窄"）；
+[plan.md](../../../../../stage_plans/completed/stage-07/plan.md) 的 `### S7A-3` 小节（"S7A-3 第二半 part 1 实现复核裁定后的范围收窄"）；
 本文件承担**逐字要点与独立复核证据**，plan 承担**约束范围**。两者若有出入，以 plan 的范围规定为准，并以本文件的逐字原文订正 plan。
 
 两张卡由主控通过只读工具向顾问取得（`ask_codex`，`sandbox: read-only`，模式 `consult`，工作区 `D:\Cuexis-worktree`）：

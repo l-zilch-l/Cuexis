@@ -1,5 +1,11 @@
 # ADR 0001：项目命名为 Cuexis
 
+<!-- cuexis-meta
+id: ADR-0001
+status: accepted
+authority: owns
+-->
+
 日期：2026-07-17
 
 状态：已接受

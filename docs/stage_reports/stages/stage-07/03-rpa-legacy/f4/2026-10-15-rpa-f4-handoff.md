@@ -1,5 +1,12 @@
 # RPA F4 Handoff Package
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.f4.2026-10-15-rpa-f4-handoff
+status: evidence
+authority: none
+date: 2026-10-15
+-->
+
 Date: 2026-10-15
 
 ## Handoff status

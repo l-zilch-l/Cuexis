@@ -1,3 +1,4 @@
+# Reproduction mapping: tools/verification/execution_acceptance/README.md (R4 evidence).
 """One bounded P3 device-host stream pilot; never claims a formal attempt.
 
 This is the original gpu-stream-v1 host workload, not the renderer/capture matrix. Its fixed

@@ -1,5 +1,11 @@
 # R4-6 F1/F2 证据包（最终候选）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-10-f1-f2-final-candidate-evidence.index
+status: evidence
+authority: none
+-->
+
 状态：candidate evidence；只登记原始字节位置与只读复核方式，不含接受裁定
 
 日期：2026-11-10

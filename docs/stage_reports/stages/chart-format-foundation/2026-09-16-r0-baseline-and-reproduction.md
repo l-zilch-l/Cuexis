@@ -1,5 +1,12 @@
 # Chart Format Foundation Hardening R0：基线与复现
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.chart-format-foundation.2026-09-16-r0-baseline-and-reproduction
+status: evidence
+authority: none
+date: 2026-09-16
+-->
+
 日期：2026-09-16
 
 状态：R0 基线与复现完成；决策清单待 owner 确认；R1 未开始

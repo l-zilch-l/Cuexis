@@ -1,5 +1,11 @@
 # 2026-11-07 R4 Evidence Archive
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-07-owning-and-cpu-evidence.index
+status: evidence
+authority: none
+-->
+
 状态：evidence bundle；candidate C evidence, not final acceptance
 
 日期：2026-11-07

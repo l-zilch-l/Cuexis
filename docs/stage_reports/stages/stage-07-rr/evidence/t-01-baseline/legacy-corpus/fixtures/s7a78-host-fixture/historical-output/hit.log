@@ -1,0 +1,41 @@
+command=["D:\\Cuexis-worktree\\out\\s7a78-host-build\\cuexis_reference_host.exe", "--content", "D:\\Cuexis-worktree\\out\\s7a78-host-fixture\\main.cxc", "--candidate-entry", "compiled/gameplay.packed", "--command-file", "D:\\Cuexis-worktree\\out\\s7a78-host-fixture\\commands.txt", "--gameplay-configuration", "D:\\Cuexis-worktree\\out\\s7a78-host-fixture\\configuration.json", "--gameplay-config-budget", "131072,64,8192,16384,8192", "--gameplay-h-step", "250", "--gameplay-presentation-step", "7", "--gameplay-observations", "D:\\Cuexis-worktree\\out\\s7a78-host-fixture\\input.txt"]
+host.build flavor=experimental
+host.start sdk_api_baseline=0.7.1 content=main.cxc package=no mode=command
+host.load source=host-project identity=f303b3fe36d0a8e05ffc2ed80045832612d2eb338c13f45a2ea2914e5804b730 presentation_entries=0
+host.commit state=Ready identity=f303b3fe36d0a8e05ffc2ed80045832612d2eb338c13f45a2ea2914e5804b730
+host.command index=0 line=1 verb=open outcome=ok transport=Empty->Paused
+host.play state=Ready chartTimeMs=0 discontinuityId=0
+host.command index=1 line=2 verb=play outcome=ok transport=Paused->Playing
+host.gameplay H=250 T=7 facts=0 score=0 combo=0 hits=0 misses=0 completeReplay=same
+host.frame index=0 mode=advance chartTimeMs=250 discontinuityId=0 objects=1 digest=13443950106894340181 algorithm=3 cmdIndex=2 simulationDeltaTimeMs=250
+host.gameplay H=500 T=14 facts=0 score=0 combo=0 hits=0 misses=0 completeReplay=same
+host.frame index=1 mode=advance chartTimeMs=500 discontinuityId=0 objects=1 digest=5212740851433303013 algorithm=3 cmdIndex=2 simulationDeltaTimeMs=250
+host.gameplay H=750 T=21 facts=0 score=0 combo=0 hits=0 misses=0 completeReplay=same
+host.frame index=2 mode=advance chartTimeMs=750 discontinuityId=0 objects=1 digest=14073244548191374765 algorithm=3 cmdIndex=2 simulationDeltaTimeMs=250
+host.gameplay H=1000 T=28 facts=1 score=2 combo=1 hits=1 misses=0 completeReplay=same
+host.frame index=3 mode=advance chartTimeMs=1000 discontinuityId=0 objects=1 digest=9102213054185466485 algorithm=3 cmdIndex=2 simulationDeltaTimeMs=250
+host.command index=2 line=3 verb=tick outcome=ok transport=Playing->Playing
+host.observation reason=pause-check state=Running chartTimeMs=1000 discontinuityId=0 sampled=yes objects=1 digest=9102213054185466485
+host.pause state=Running chartTimeMs=1000 discontinuityId=0
+host.command index=3 line=4 verb=pause outcome=ok transport=Playing->Paused
+host.command index=4 line=5 verb=tick outcome=ok transport=Paused->Paused
+host.gameplay H=1000 T=1000 facts=1 score=2 combo=1 hits=1 misses=0 completeReplay=same
+host.frame index=4 mode=seek chartTimeMs=1000 discontinuityId=1 objects=1 digest=12324685542855576983 algorithm=3 cmdIndex=5 simulationDeltaTimeMs=0
+host.command index=5 line=6 verb=seek outcome=ok transport=Paused->Paused
+host.reload-sample cmdIndex=6 targetChartTimeMs=1000 targetSimulationDeltaTimeMs=0 targetDiscontinuityId=1 normalizedChartTimeMs=1000 normalizedSimulationDeltaTimeMs=0 normalizedDiscontinuityId=1
+host.command index=6 line=7 verb=reload outcome=ok transport=Paused->Paused
+host.play state=Running chartTimeMs=1000 discontinuityId=1
+host.command index=7 line=8 verb=play outcome=ok transport=Paused->Playing
+host.gameplay H=250 T=1007 facts=0 score=0 combo=0 hits=0 misses=0 completeReplay=same
+host.frame index=5 mode=advance chartTimeMs=1250 discontinuityId=1 objects=1 digest=17938434106898139432 algorithm=3 cmdIndex=8 simulationDeltaTimeMs=250
+host.gameplay H=500 T=1014 facts=0 score=0 combo=0 hits=0 misses=0 completeReplay=same
+host.frame index=6 mode=advance chartTimeMs=1500 discontinuityId=1 objects=1 digest=9670972756748733172 algorithm=3 cmdIndex=8 simulationDeltaTimeMs=250
+host.gameplay H=750 T=1021 facts=0 score=0 combo=0 hits=0 misses=0 completeReplay=same
+host.frame index=7 mode=advance chartTimeMs=1750 discontinuityId=1 objects=1 digest=17357659870020502784 algorithm=3 cmdIndex=8 simulationDeltaTimeMs=250
+host.gameplay H=1000 T=1028 facts=1 score=2 combo=1 hits=1 misses=0 completeReplay=same
+host.frame index=8 mode=advance chartTimeMs=2000 discontinuityId=1 objects=1 digest=9073895131673036732 algorithm=3 cmdIndex=8 simulationDeltaTimeMs=250
+host.command index=8 line=9 verb=tick outcome=ok transport=Playing->Playing
+host.command index=9 line=10 verb=quit outcome=ok transport=Playing->Terminated
+host.destroy state=Empty resources_released=yes
+host.clock tickAttempts=10 suppressedTicks=2 emittedTickFrames=8 publicUpdateAttempts=9 publicUpdateSuccesses=9 frameCount=9
+host.summary outcome=ok steps=39

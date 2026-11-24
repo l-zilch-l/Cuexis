@@ -1,5 +1,12 @@
 # Stage 7 RPA Wait Path Optimization Evidence
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.performance.2026-10-14-wait-path-optimization
+status: evidence
+authority: none
+date: 2026-10-14
+-->
+
 证据日期：2026-10-14
 
 状态：implementation evidence；本报告只覆盖本轮等待路径修改和受控性能复测，不关闭 F3、B5 或 Stage 7。

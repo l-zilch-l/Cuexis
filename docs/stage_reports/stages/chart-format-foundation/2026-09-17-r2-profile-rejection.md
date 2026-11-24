@@ -1,5 +1,12 @@
 # Chart Format Foundation Hardening R2：profile、section 注册表与内部次序严格拒绝
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.chart-format-foundation.2026-09-17-r2-profile-rejection
+status: evidence
+authority: none
+date: 2026-09-17
+-->
+
 日期：2026-09-17
 
 状态：R2 完成；profile、section 注册表/flag 策略与内部次序在所有支持入口一致拒绝

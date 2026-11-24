@@ -1,5 +1,11 @@
 # R4 World 页存储效果原始证据
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-06-world-storage-effect-evidence.index
+status: evidence
+authority: none
+-->
+
 状态：dated evidence；一轮 64/high 限定诊断，非完整内存接受
 
 日期：2026-11-06

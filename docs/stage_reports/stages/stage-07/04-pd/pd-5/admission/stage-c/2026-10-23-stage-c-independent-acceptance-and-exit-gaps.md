@@ -1,5 +1,12 @@
 # PD-5 Stage C 独立功能验收、内存责任与退出缺口
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.admission.stage-c.2026-10-23-stage-c-independent-acceptance-and-exit-gaps
+status: evidence
+authority: none
+date: 2026-10-23
+-->
+
 状态：completed（本批审计与交付）；Stage C overall acceptance / PD-5 acceptance：not passed。
 
 快照日期及更新日期：2026-10-23，Asia/Shanghai。当前摘要唯一见
@@ -68,8 +75,8 @@ R4 TEST ONLY Snapshot maxElements 已由 20,000,000 提高到 67,108,864，本�
 
 ## 3. observer exceeded 的合同归属与实测
 
-原始权威为[已接受 PD-5 协议 §5](../../../../../../../stage_plans/active/stage-07/04-pd/pd-5/pd5-measurement-proposal.md#5-内存积压与-owner-拆分判据)
-及[设计 §9](../../../../../../../stage_plans/active/stage-07/04-pd/design.md#9-容量-profile测量与退出pd-0--pd-5)：
+原始权威为[已接受 PD-5 协议 §5](../../../../../../../stage_plans/completed/stage-07/04-pd/pd-5/pd5-measurement-proposal.md#5-内存积压与-owner-拆分判据)
+及[设计 §9](../../../../../../../stage_plans/completed/stage-07/04-pd/design.md#9-容量-profile测量与退出pd-0--pd-5)：
 reference workload 需逐域完整有限额度、峰值及回收证明；没有已接受的全 SDK 统一 MiB 生产额度。
 
 本次 `global_cpp_new_envelope` 数值来自 `tests/pd/pd5_memory_observer.cpp` 的固定 testOnly
@@ -134,8 +141,8 @@ owner 回收完成后验证相应 live=0 或已声明有界稳态。本批仅列
 
 ## 5. PD-5 退出缺口矩阵
 
-门禁仍由[原测量协议](../../../../../../../stage_plans/active/stage-07/04-pd/pd-5/pd5-measurement-proposal.md)、
-[PD 计划 §7/11](../../../../../../../stage_plans/active/stage-07/04-pd/plan.md)
+门禁仍由[原测量协议](../../../../../../../stage_plans/completed/stage-07/04-pd/pd-5/pd5-measurement-proposal.md)、
+[PD 计划 §7/11](../../../../../../../stage_plans/completed/stage-07/04-pd/plan.md)
 及设计拥有。下表是本时点证据审计，不新增或豁免门禁；既有工具 JSON 的 pending 文案也不是
 当前运行事实。全部性能单元进入前须完成正常 allocator/collector/profile、等价与新身份冻结。
 
@@ -168,7 +175,7 @@ R1–R8、S1–S6、X1–X6 的交接追溯按设计 §10–12 分类：
 | R7 | PD-4 及[最小生命周期修复](../../lifecycle/2026-10-23-minimal-lifecycle-repair.md) | 有界 Tail/工厂和本次关闭结果不消除旧阻塞的未归因风险 |
 | R8 | [PD-0](../../../pd-0/2026-10-18-pd0-controlled-environment-and-build-binding.md)、本报告 | PD-5 正式判定和拆分审查未完成 |
 | X1 / 正式合同差异 | PD-3-c、PD-4 的 SDK 0.8.1/0.9.0 接受与消费者证据 | 冻结实际采用 revision、SDK/迁移差异；不接受暂停的公开停止候选 |
-| X3 / X5 / X6 | [设计 §12](../../../../../../../stage_plans/active/stage-07/04-pd/design.md#12-与后续阶段的兼容与设计约束) | Studio、未来有界重建与稳定 ABI 是后续接入条件，不要求 PD 预先实施；不冒充已交付 |
+| X3 / X5 / X6 | [设计 §12](../../../../../../../stage_plans/completed/stage-07/04-pd/design.md#12-与后续阶段的兼容与设计约束) | Studio、未来有界重建与稳定 ABI 是后续接入条件，不要求 PD 预先实施；不冒充已交付 |
 
 完整生产 profile、精确 AV 同步、实体设备失效/恢复、RPA-F4/owner 最终生产接受及整个
 Stage 7 关闭仍属 RPA/生产交接；它们不因本批通过关闭。但已接受本机 reference 协议中的

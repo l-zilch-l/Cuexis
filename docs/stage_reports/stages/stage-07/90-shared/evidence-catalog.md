@@ -1,5 +1,11 @@
 # Shared Evidence Evidence Catalog
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.90-shared.evidence-catalog
+status: evidence
+authority: none
+-->
+
 状态：current index
 
 更新日期：2026-11-05

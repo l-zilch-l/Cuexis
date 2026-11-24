@@ -1,5 +1,12 @@
 # Gameplay Ruleset：I 收敛整理报告
 
+<!-- cuexis-meta
+id: EVIDENCE-reviews.gameplay-ruleset-2026-10.2026-10-01-i-convergence
+status: evidence
+authority: none
+date: 2026-10-01
+-->
+
 状态：I convergence working report；文档收敛已启动，产品实现未启动
 
 日期：2026-10-01

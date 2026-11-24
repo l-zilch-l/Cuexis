@@ -1,0 +1,86 @@
+{
+  "task": "task-15",
+  "task_card": "docs/stage_plans/active/stage-07-rr/tasks/T-04.md item 5 (RR-F302 item 5) and item 4 link probes",
+  "agent": "negatives",
+  "commit": "3943fb1365853b6f5af5c8a41ef322d147863ee6",
+  "head_at_finish": "92539ad4da1b8fb8db5c02269bea301851cefdaa",
+  "gate_script": "cmake/VerifyPlaybackCandidateIsolation.cmake",
+  "gate_sha256": "BC7DB017462F0A3B1D0BF89FA56F3CC17731DBC89BE18CE4C7D6AC997A6FF8B1",
+  "gate_fixed_commit": "92539ad4da1b8fb8db5c02269bea301851cefdaa",
+  "gate_fixed_sha256": "49E9A7BDD23844B7309D799BF9D25D5FCC1AAF182F49E35C46D95563566157CB",
+  "verdicts": {
+    "A1_source_readded": "成立",
+    "A2_codec_link": "成立",
+    "A3_tools_include_root": "成立",
+    "B_link_probes": "成立",
+    "T04_item5_overall": "成立"
+  },
+  "A1": {
+    "configure_exit": 0,
+    "gate_exit": 1,
+    "first_error": "Chart target 'cuexis_chart' compiles the unexpected translation unit 'cxt_v2_loader.cpp' (VerifyPlaybackCandidateIsolation.cmake:288)",
+    "positive_control_gate_exit": 0,
+    "fixed_gate_exit": 1,
+    "fixed_gate_first_error": "same line 288 error (a1/gate-fixed.log)"
+  },
+  "A2": {
+    "verdict_basis": "fixed main-tree gate at commit 92539ad4",
+    "fixed_candidate_configure_exit": 0,
+    "fixed_candidate_gate_exit": 1,
+    "fixed_candidate_first_error": "base Chart target 'cuexis_chart' links 'cuexis_chart_codec'; the base Reader/CXT1/v4 Resolver closure must stay independent (line 548)",
+    "fixed_candidate_log": "a2/gate-fixed-candidate.log",
+    "fixed_default_configure_exit": 0,
+    "fixed_default_gate_exit": 1,
+    "fixed_default_first_error": "ordinary cuexis_playback closure links candidate target 'cuexis_chart_codec' (line 453, checked before the line 548 base-Chart link check, so it stays first in this configuration)",
+    "fixed_default_log": "a2/gate-fixed-off.log",
+    "fixed_clean_main_controls": {
+      "headless-debug": 0,
+      "candidate-headless-debug": 0
+    },
+    "fixed_rerun_summary": "a2/fixed-gate-rerun.md",
+    "requested_mutation_configure_exit": 1,
+    "requested_mutation_rejected_by": "VerifyArchitecture.cmake:652 cuexis_verify_target_dependencies ALLOWED; recorded as pre-gate context, not used as the gate negative",
+    "pre_fix_false_negative": {
+      "historical": true,
+      "candidate_gate_exit": 0,
+      "off_gate_exit": 1,
+      "off_first_error": "ordinary cuexis_playback closure links candidate target 'cuexis_chart_codec' (line 453)",
+      "root_cause": "cuexis_target_dependency_names() read File API dependencies entries as string ids without the 'id' member (line 207); the entries are objects, so the base-Chart link assertion at lines 545-552 never fired",
+      "helper_diagnostic": "dependencies raw count=1 object id cuexis_chart_codec; gate helper result []; correct id-member extraction [cuexis_chart_codec]",
+      "id_fix_probe": {
+        "script": "scripts/VerifyPlaybackCandidateIsolation.probe-id-fix.cmake",
+        "exit": 1,
+        "first_error": "base Chart target 'cuexis_chart' links 'cuexis_chart_codec'"
+      },
+      "fixed_by": "92539ad4da1b8fb8db5c02269bea301851cefdaa",
+      "fixed_by_summary": "read dependency id member: string(JSON dependency_id GET \"${target_json}\" dependencies ${dependency_index} id)"
+    }
+  },
+  "A3": {
+    "configure_exit": 0,
+    "gate_exit": 1,
+    "first_error": "target 'cuexis_chart' exposes the forbidden include root '.../engine/chart/tools_include' (line 329)",
+    "positive_control_gate_exit": 0,
+    "fixed_gate_exit": 1,
+    "fixed_gate_first_error": "same line 329 error (a3/gate-fixed.log)"
+  },
+  "B": {
+    "compile_exit": 0,
+    "lowering_chart_only_link_exit": 1120,
+    "encode_codec_only_link_exit": 1120,
+    "lowering_tools_control_exit": 0,
+    "encode_tools_control_exit": 0,
+    "unresolved_lowering": "?lowerCandidateRuntime@chart@cuexis@@YA?AUCandidateRuntimeArtifactResult@12@AEBUCanonicalSemanticChart@12@AEBUChartLimits@12@@Z",
+    "unresolved_encode": "?encode@packed@chart@cuexis@@YA?V?$expected@V?$vector@W4byte@std@@V?$allocator@W4byte@std@@@2@@std@@VError@core@cuexis@@@tl@@AEBUCanonicalSemanticChart@23@UPackedChartProfile@123@UPackedChartLimits@23@@Z",
+    "dumpbin_chart_lowering_matches": 0,
+    "dumpbin_codec_encode_matches": 0,
+    "dumpbin_tools_both_defined": true
+  },
+  "boundaries": [
+    "production sources read-only; no git add/commit by this agent",
+    "main gate fix commit 92539ad4 was made by the lead; this agent only reran it and updated evidence",
+    "copies and build outputs only under out/review/stage-07-rr/T-04/negatives",
+    "vcpkg reused from out/build/headless-debug/vcpkg_installed with VCPKG_MANIFEST_INSTALL=OFF",
+    "A2 direct configure failure is not used as the gate negative"
+  ]
+}

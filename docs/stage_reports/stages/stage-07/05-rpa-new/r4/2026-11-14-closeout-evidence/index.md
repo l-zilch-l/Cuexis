@@ -1,5 +1,11 @@
 # R4 自动收尾小记录归档（2026-11-14）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-14-closeout-evidence.index
+status: evidence
+authority: none
+-->
+
 返回 [New RPA 报告索引](../../README.md)。本目录按原字节复制小记录，逐文件来源、大小与 SHA-256 见 [manifest](manifest.json)。
 
 测量绑定 `ce2a9a6952fd4a9a4d82949544f7ef3482e204e6`，不认证后继最终验证候选；派生审计不冒充原始记录。完整日志、环境、构建图与 claim 台账仍保留在原目录。

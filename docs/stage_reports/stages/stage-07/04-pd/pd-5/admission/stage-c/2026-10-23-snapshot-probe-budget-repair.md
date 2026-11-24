@@ -1,5 +1,12 @@
 # PD-5 Snapshot probe 测试预算最小修复
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.admission.stage-c.2026-10-23-snapshot-probe-budget-repair
+status: evidence
+authority: none
+date: 2026-10-23
+-->
+
 状态：focused local regression passed / stage C not passed / uncommitted review
 
 日期：2026-10-23（Asia/Shanghai）。起点为干净

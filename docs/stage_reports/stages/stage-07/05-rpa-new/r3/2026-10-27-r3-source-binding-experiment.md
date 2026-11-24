@@ -1,5 +1,12 @@
 # R3 运行时来源绑定对照实验
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-27-r3-source-binding-experiment
+status: evidence
+authority: none
+date: 2026-10-27
+-->
+
 状态：本地候选保留；R3/R4 未退出，设备与生产未接受。
 
 日期：2026-10-27。返回 [New RPA 报告索引](../README.md)。

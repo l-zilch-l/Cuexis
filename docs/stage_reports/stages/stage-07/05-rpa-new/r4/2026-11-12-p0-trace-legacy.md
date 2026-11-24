@@ -1,5 +1,12 @@
 # P0 `legacy` 计时两项复跑：`validated_trace` 与 `playback_only` 均通过（2026-11-12）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-12-p0-trace-legacy
+status: evidence
+authority: none
+date: 2026-11-12
+-->
+
 状态：formal result；P0 四个计时单元全部结案
 
 日期：2026-11-12

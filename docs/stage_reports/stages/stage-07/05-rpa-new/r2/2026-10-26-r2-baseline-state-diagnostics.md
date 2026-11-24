@@ -1,9 +1,16 @@
 # R2 B 基线状态诊断及显式重跑
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r2.2026-10-26-r2-baseline-state-diagnostics
+status: evidence
+authority: none
+date: 2026-10-26
+-->
+
 状态：local diagnostic complete；R2 收益未确认，R2/R4 未退出。
 
 日期：2026-10-26（Asia/Shanghai）。当前状态由 [CURRENT_STATUS](../../../../../CURRENT_STATUS.md) 持有，
-范围与停止门见[整改计划](../../../../../stage_plans/active/stage-07/05-rpa-new/plan.md)。
+范围与停止门见[整改计划](../../../../../stage_plans/completed/stage-07/05-rpa-new/plan.md)。
 
 ## 1. 本轮范围与身份
 

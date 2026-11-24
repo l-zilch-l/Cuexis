@@ -1,5 +1,11 @@
 # Presentation Decoupling Reports and Evidence
 
+<!-- cuexis-meta
+id: INDEX-stage_reports.stages.stage-07.04-pd
+status: active
+authority: index
+-->
+
 状态：current index
 
 更新日期：2026-10-26
@@ -10,7 +16,7 @@
 
 先按下表定位批次；同批报告与附件放在同一目录。完整原始路径直接查 [证据清单](evidence-catalog.md)，无须逐篇翻阅。
 
-返回 [Stage 7 阶段总表](../README.md)。计划入口：[对应阶段计划](../../../../stage_plans/active/stage-07/04-pd/README.md)。
+返回 [Stage 7 阶段总表](../README.md)。计划入口：[对应阶段计划](../../../../stage_plans/completed/stage-07/04-pd/README.md)。
 
 工作树整合与本次文档整理记录见 [共享材料](../90-shared/README.md)。
 

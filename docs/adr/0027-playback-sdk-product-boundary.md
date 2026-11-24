@@ -1,5 +1,11 @@
 # ADR 0027：Cuexis Playback SDK 产品边界与宿主职责
 
+<!-- cuexis-meta
+id: ADR-0027
+status: accepted
+authority: owns
+-->
+
 日期：2026-07-20
 
 状态：已接受
@@ -40,6 +46,8 @@ runtime / chart / judgement -X-> SDL / OpenGL / host engine SDK
 ```
 
 Player 和 Studio 不得各自建立私有的 Chart -> Runtime 路径。可选适配器失败不能改变核心 SDK 的平台无关语义。
+
+Judgement 是内部 STATIC 模块，只链接 core，不安装头文件，不进入公共 SDK。
 
 ## 备选方案
 

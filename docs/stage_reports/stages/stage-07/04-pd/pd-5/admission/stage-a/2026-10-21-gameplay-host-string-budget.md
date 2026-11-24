@@ -1,5 +1,12 @@
 # Gameplay-host Packed dictionary and budget audit
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.admission.stage-a.2026-10-21-gameplay-host-string-budget
+status: evidence
+authority: none
+date: 2026-10-21
+-->
+
 日期：2026-10-21。角色：独立正确性/准入调查，非性能接受或正式测量。
 基础 HEAD 6014611，开工留档 a87e80d；最终状态仍由 [CURRENT_STATUS](../../../../../../../CURRENT_STATUS.md) 汇总。
 
@@ -106,5 +113,5 @@ REF0 histogram 不一致、STR0 字节核算错误和将 40k 拒绝伪称通过�
 
 前轮证据包 3167 项与旧暂停/构建绑定开工核对通过，日志 previous-packet-before.log、history-before.log；
 交回时再次核对。字典调查不冒充性能测量，控制器 0 只表示所有预声明观察符合预期，40k wire 仍拒绝。
-唯一读取候选的未来机制与冻结条件由 [C2 计划](../../../../../../../stage_plans/active/stage-07/04-pd/pd-5/pd5-read-result-candidate.md)
+唯一读取候选的未来机制与冻结条件由 [C2 计划](../../../../../../../stage_plans/completed/stage-07/04-pd/pd-5/pd5-read-result-candidate.md)
 拥有；实施/诊断结果另列报告。按用户补充，本轮完成候选验证后先交回核验，不自动保留或启动正式组。

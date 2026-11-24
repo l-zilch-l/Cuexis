@@ -1,5 +1,12 @@
 # `read_long` 正式三窗九对组（2026-11-12）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-12-read-long-formal-group
+status: evidence
+authority: none
+date: 2026-11-12
+-->
+
 状态：formal result；`legacy` 通过，`RPA` 首轮因重复性 inconclusive、复跑后通过
 
 日期：2026-11-12

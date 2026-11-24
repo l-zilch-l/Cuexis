@@ -4,6 +4,12 @@
 
 更新日期：2026-08-31
 
+<!-- cuexis-meta
+id: PLAN-completed.260830-followup.task-3-critical-branch-coverage
+status: completed
+authority: owns
+-->
+
 所属计划：[260830-followup 维护计划](plan.md)
 
 本计划承接接手文档中的第三项任务，并以

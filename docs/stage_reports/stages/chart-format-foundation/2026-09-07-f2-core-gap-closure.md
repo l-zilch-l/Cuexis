@@ -1,5 +1,12 @@
 # Chart Format Foundation F2：CXT v2 Core 缺口闭合
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.chart-format-foundation.2026-09-07-f2-core-gap-closure
+status: evidence
+authority: none
+date: 2026-09-07
+-->
+
 状态：completed task evidence；Foundation 仍为 active
 
 日期：2026-09-07

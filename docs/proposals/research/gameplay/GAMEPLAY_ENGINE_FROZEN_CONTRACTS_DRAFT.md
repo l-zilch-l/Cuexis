@@ -1,5 +1,11 @@
 # 引擎冻结合同草案（定点表、缓动曲线、判定语义版本）
 
+<!-- cuexis-meta
+id: PROPOSALS-research.gameplay.GAMEPLAY_ENGINE_FROZEN_CONTRACTS_DRAFT
+status: candidate
+authority: none
+-->
+
 > 目录状态：Gameplay research input。本文保留引擎侧登记点和门禁研究；接受后的权威入口为 ADR 0043 与 Gameplay Judgement Spec。
 
 状态：candidate（设计草案，未接受，未实施）

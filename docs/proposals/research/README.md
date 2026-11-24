@@ -1,5 +1,11 @@
 # Proposal Research
 
+<!-- cuexis-meta
+id: PROPOSALS-research.README
+status: candidate
+authority: none
+-->
+
 状态：current index
 
 更新日期：2026-10-01

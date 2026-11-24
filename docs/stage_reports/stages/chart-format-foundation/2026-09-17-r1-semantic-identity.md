@@ -1,5 +1,12 @@
 # Chart Format Foundation Hardening R1：Semantic Identity 闭环
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.chart-format-foundation.2026-09-17-r1-semantic-identity
+status: evidence
+authority: none
+date: 2026-09-17
+-->
+
 日期：2026-09-17
 
 状态：R1 完成；R2-R5 未开始

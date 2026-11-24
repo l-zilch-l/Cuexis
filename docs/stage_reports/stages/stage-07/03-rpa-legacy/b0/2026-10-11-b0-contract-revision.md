@@ -1,10 +1,17 @@
 # RPA B0 合同修订与决策记录
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.b0.2026-10-11-b0-contract-revision
+status: evidence
+authority: none
+date: 2026-10-11
+-->
+
 状态：active；合同修订记录，B0未退出，未实施产品
 
 更新日期：2026-10-11
 
-范围、批次与准入归[RPA分册](../../../../../stage_plans/active/stage-07/03-rpa-legacy/plan.md)；
+范围、批次与准入归[RPA分册](../../../../../stage_plans/completed/stage-07/03-rpa-legacy/plan.md)；
 方向裁定归[生产架构方案](../design/2026-10-11-production-architecture-design.md)。
 本记录按讨论轮次保留当时已写合同、未闭合细节和候选方案，不新增实施授权。
 §1–9中的“本次/仍待”指各自历史轮次，最新委托裁定收口见§10；不得据较早段落重新打开已闭合设计。

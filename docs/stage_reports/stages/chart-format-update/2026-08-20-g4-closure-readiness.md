@@ -1,5 +1,12 @@
 # Stage Chart Format Update CFU-G4 Closure Readiness
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.chart-format-update.2026-08-20-g4-closure-readiness
+status: evidence
+authority: none
+date: 2026-08-20
+-->
+
 状态：CFU-G4 complete；离线关闭准备包已冻结，CFU-G 仍为 active
 
 执行日期：2026-08-20

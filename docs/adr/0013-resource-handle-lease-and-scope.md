@@ -1,5 +1,11 @@
 # ADR 0013：资源 Handle、Lease 与 Scope 生命周期
 
+<!-- cuexis-meta
+id: ADR-0013
+status: accepted
+authority: owns
+-->
+
 日期：2026-07-17
 
 状态：已接受

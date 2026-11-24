@@ -1,5 +1,12 @@
 # D-9 候选补丁与验证证据：version-gate 的 POSIX shell 判据
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.90-shared.release-gates.2026-10-02-d9-shell-guard-candidate
+status: evidence
+authority: none
+date: 2026-10-02
+-->
+
 状态：candidate patch + dated evidence（**未提交、未落 `master`**；等待 owner 按 ADR 0042 复核）
 
 更新日期：2026-10-02

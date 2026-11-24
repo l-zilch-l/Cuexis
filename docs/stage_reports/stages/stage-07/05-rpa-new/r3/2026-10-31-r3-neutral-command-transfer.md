@@ -1,5 +1,12 @@
 # R3 中立绘制命令转移与已有顺序检测
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-31-r3-neutral-command-transfer
+status: evidence
+authority: none
+date: 2026-10-31
+-->
+
 状态：保留局部实现；普通有限对照与相关回归通过，完整最终矩阵及 240 FPS 仍开放。
 
 日期：2026-10-31。返回 [New RPA 索引](../README.md)。

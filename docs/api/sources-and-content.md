@@ -8,6 +8,12 @@
 
 文档角色：公共 API 参考
 
+<!-- cuexis-meta
+id: API-sources-and-content
+status: active
+authority: owns
+-->
+
 权威头文件：[playback_source.hpp](../../engine/playback/include/cuexis/playback/playback_source.hpp)、
 [content_provider.hpp](../../engine/content/include/cuexis/content/content_provider.hpp)
 

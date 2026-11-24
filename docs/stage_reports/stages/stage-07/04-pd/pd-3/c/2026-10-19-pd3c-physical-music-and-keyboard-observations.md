@@ -1,12 +1,19 @@
 # PD-3-c 后独立音乐与实体键盘观察
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-3.c.2026-10-19-pd3c-physical-music-and-keyboard-observations
+status: evidence
+authority: none
+date: 2026-10-19
+-->
+
 日期：2026-10-19（Asia/Shanghai）。状态：受限实体观察；完整播放、长期容量及设备验收未通过或未完成。未修改生产源码，PD-4/5 未开始。
 
 ## 输入与环境
 
 本轮按 owner 要求准备真实 GPU/audio 与实体操作，未启动正式性能验收。
 当前状态见 [CURRENT_STATUS](../../../../../../CURRENT_STATUS.md)，验收归属见
-[RPA 计划](../../../../../../stage_plans/active/stage-07/03-rpa-legacy/plan.md)。
+[RPA 计划](../../../../../../stage_plans/completed/stage-07/03-rpa-legacy/plan.md)。
 
 工作区 HEAD 为 `d344088236ae589c0b49a4994ef0fbddd6567ce2`；PD-3-c 的未提交实施/测试/构建输入指纹为
 `abdf37111c38826b803d3e6d4ec36c561861d2f94d53d8247ea6844b1e980ed8`，58 个输入逐项核验未变。

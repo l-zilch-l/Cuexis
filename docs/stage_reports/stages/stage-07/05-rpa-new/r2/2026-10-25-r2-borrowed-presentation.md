@@ -1,8 +1,15 @@
 # R2 有界借用行实施与本地验证
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r2.2026-10-25-r2-borrowed-presentation
+status: evidence
+authority: none
+date: 2026-10-25
+-->
+
 日期：2026-10-25（Asia/Shanghai）。状态：首版候选已实现、正确性与包边界门通过；局部诊断完成，候选未接受，R2 收益门未完成。本报告不裁定 R4、RPA、PD、设备/生产接受或 Stage 7 关闭。
 
-设计与门禁由[整改计划 §7](../../../../../stage_plans/active/stage-07/05-rpa-new/plan.md#7-r2有界借用行原序写入最终-snapshot)持有；R1 当前退出结论见[R1 本地记录 §11](../r1/2026-10-25-r1-continuation.md#11-当前修复构建有限-pilot-与-r1-退出)。
+设计与门禁由[整改计划 §7](../../../../../stage_plans/completed/stage-07/05-rpa-new/plan.md#7-r2有界借用行原序写入最终-snapshot)持有；R1 当前退出结论见[R1 本地记录 §11](../r1/2026-10-25-r1-continuation.md#11-当前修复构建有限-pilot-与-r1-退出)。
 
 ## 1. 授权、起点与范围
 

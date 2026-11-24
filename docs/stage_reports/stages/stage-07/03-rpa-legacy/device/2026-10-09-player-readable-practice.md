@@ -1,5 +1,12 @@
 # Player readable four-lane device practice
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.device.2026-10-09-player-readable-practice
+status: evidence
+authority: none
+date: 2026-10-09
+-->
+
 状态：受限 CPU 与定向 SDL/GPU 窗口验证通过；实体键盘、听音、校准与新 SHA hosted 待回填
 
 证据日期：2026-10-09（Asia/Shanghai）
@@ -12,7 +19,7 @@
 Hit/Miss；启动 Ready 等 Space。四个 Tap 后接一个 Hold，不再要求故意漏 J。
 
 所属合同：[Playback Player guide v1](../../../../../api/playback-session.md)，
-决策：[plan-a §3.4.17](../../../../../stage_plans/active/stage-07/01-a/plan.md)，
+决策：[plan-a §3.4.17](../../../../../stage_plans/completed/stage-07/01-a/plan.md)，
 操作：[设备示例](../../../../../examples/s7a78-device-acceptance.md)。
 guide 是显式可选 testOnly 的 Player 私有显示输入，不安装新 API、Kernel/Recovery 图或依赖。
 精确整数目标与实际 H 决定位置；命中/失败读取实际 FactBinding snapshot visibility，

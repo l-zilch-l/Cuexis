@@ -1,5 +1,11 @@
 # Cuexis Simple Chart Format v1
 
+<!-- cuexis-meta
+id: ARCHIVE-SIMPLE_CHART_FORMAT
+status: historical
+authority: none
+-->
+
 状态：历史格式；已由 ADR 0035 在阶段 2A.1 移除
 
 更新日期：2026-08-05

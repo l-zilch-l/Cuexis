@@ -1,5 +1,12 @@
 # Gameplay V2 acceptance package：owner 接受记录
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.01-a.s7a-0.2026-10-02-s7a-0-acceptance
+status: evidence
+authority: none
+date: 2026-10-02
+-->
+
 状态：completed（准入接受；V2 文档冻结为后续独立工作项）
 
 快照日期：2026-10-02
@@ -7,7 +14,7 @@
 后续关闭证据：本记录 §4 的冻结顺序执行证据、§5 的逐轮裁定登记
 （[RULING_WORKSHEET.md](../../../../../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md) §9）
 
-上级文档：[Stage 7A 实施计划](../../../../../stage_plans/active/stage-07/plan.md)（§1.1 冻结顺序、§S7A-0 退出门禁）·
+上级文档：[Stage 7A 实施计划](../../../../../stage_plans/completed/stage-07/plan.md)（§1.1 冻结顺序、§S7A-0 退出门禁）·
 [S7A-0 执行基线与合同表征](2026-10-02-s7a-0-baseline.md)（同一批次的执行基线证据）·
 [Gameplay V2 acceptance package](../../../../../proposals/gameplay-v2-acceptance/README.md)
 
@@ -137,5 +144,5 @@ owner 于 2026-10-02 接受 [Gameplay V2 acceptance package](../../../../../prop
 - [Gameplay V2 acceptance package](../../../../../proposals/gameplay-v2-acceptance/README.md)
 - [未决语义分轮裁决清单](../../../../../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md)
 - [S7A-0 执行基线与合同表征](2026-10-02-s7a-0-baseline.md)
-- [Stage 7A 实施计划](../../../../../stage_plans/active/stage-07/plan.md)
+- [Stage 7A 实施计划](../../../../../stage_plans/completed/stage-07/plan.md)
 - [文档整理政策](../../../../../DOCUMENTATION_POLICY.md)

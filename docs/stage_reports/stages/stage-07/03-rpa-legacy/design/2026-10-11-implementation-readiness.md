@@ -1,5 +1,12 @@
 # RPA 实施规划就绪审查
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.design.2026-10-11-implementation-readiness
+status: evidence
+authority: none
+date: 2026-10-11
+-->
+
 状态：design readiness record；B0设计闭合，未实施、未完成RPA验收
 
 日期：2026-10-11（Asia/Shanghai）
@@ -12,7 +19,7 @@ owner先选择K1，随后明确剩余事项除极难决策者由代理合理给�
 [ADR0046](../../../../../adr/0046-realtime-playback-coordination.md)。
 
 规划已具备明确实现路径：B1基线/oracle→B2存储→B3时间/执行/版本→B4宿主/资源→B5线程/设备，
-具体小批次、输入、退出和回退归[RPA计划](../../../../../stage_plans/active/stage-07/03-rpa-legacy/plan.md)。
+具体小批次、输入、退出和回退归[RPA计划](../../../../../stage_plans/completed/stage-07/03-rpa-legacy/plan.md)。
 剩余参数有M-TIME/TAIL/SPLIT/CAP的测量与拒绝启用规则，不作为空白语义留给实现者补默认值。
 本结论是**实施规划就绪**，不是产品、生产预算、实体设备或阶段关闭结论。
 

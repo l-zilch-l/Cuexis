@@ -1,5 +1,12 @@
 # R4 owner 裁定记录（2026-11-11）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-11-owner-decisions
+status: evidence
+authority: none
+date: 2026-11-11
+-->
+
 状态：accepted decision record；记录 owner 在审阅中给出的四项裁定，不改写任何已测字节
 
 日期：2026-11-11

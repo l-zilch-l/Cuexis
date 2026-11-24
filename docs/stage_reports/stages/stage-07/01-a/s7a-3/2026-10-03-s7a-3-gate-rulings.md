@@ -1,11 +1,18 @@
 # S7A-3 准入门禁：第 3 轮（prepare、装配与 entry）裁定落地记录
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.01-a.s7a-3.2026-10-03-s7a-3-gate-rulings
+status: evidence
+authority: none
+date: 2026-10-03
+-->
+
 状态：dated implementation record（第 3 轮裁定的文档落地证据；不是阶段关闭、不是 owner acceptance、
 不是实施证据）
 
 更新日期：2026-10-03
 
-上级文档：[Stage 7A 实施计划](../../../../../stage_plans/active/stage-07/plan.md) §S7A-3 ·
+上级文档：[Stage 7A 实施计划](../../../../../stage_plans/completed/stage-07/plan.md) §S7A-3 ·
 [Gameplay V2 acceptance package](../../../../../proposals/gameplay-v2-acceptance/README.md) ·
 [未决语义分轮裁决清单](../../../../../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md) §3、§8、§9
 
@@ -157,7 +164,7 @@ S7A-3 实现**不得消费**：
 | [acceptance README.md](../../../../../proposals/gameplay-v2-acceptance/README.md) | §1 `SUPPORT` 与 `RULING_WORKSHEET` 行；§2 A4 状态；§4.3 未决段；更新日期 | `open` 18 → 16、第 3 轮状态已裁定 |
 | [BATCH_GATES.md](../../../../../proposals/gameplay-v2-acceptance/BATCH_GATES.md) | §1 S7A-3 的负例 / golden / 停止条件 + 新增"第 3 轮裁定后的 S7A-3 门禁"段；更新日期 | `W-03`/`W-04`/`W-05` 的首次消费登记要求写入停止条件 |
 | [ADR 0044](../../../../../adr/0044-gameplay-v2-semantic-kernel.md) | "仍待裁定的部分"段、第 3 轮表行、威胁 5、证据边界 | **最小同步**：把"第 3 至第 7 轮尚未裁定"改为"第 4 至第 7 轮"，并把候选 / W 类缺口措辞与本次事实对齐；不改任何决策语义与接受门禁 |
-| [plan.md](../../../../../stage_plans/active/stage-07/plan.md) 第 99 行、[CURRENT_STATUS.md](../../../../../CURRENT_STATUS.md) 第 33 / 241 行、[reading-order.md](../../../../../guides/reading-order.md) 第 61 行、Spec §S7A-1 节、ABI §S7A-1 节 | **落地后复核的事实同步（2026-10-03）**：`第 2（至 / -）7 轮尚未裁定` → `第 4（至 / -）7 轮尚未裁定`（Spec 第 777 行、ABI 第 546 行、plan 第 99 行、CURRENT_STATUS 第 241 行、reading-order 第 61 行）；CURRENT_STATUS 第 33 行的 Stage 7A 行另补"第 1、2、3 轮语义已裁定" | **不是新裁定**：这些都是**现行**授权 / 引导表述（不是历史证据），第 2、3 轮裁定落地后原措辞已不成立；同步后全仓该措辞为 **0 处**，历史报告与带日期记录一律保留原样 |
+| [plan.md](../../../../../stage_plans/completed/stage-07/plan.md) 第 99 行、[CURRENT_STATUS.md](../../../../../CURRENT_STATUS.md) 第 33 / 241 行、[reading-order.md](../../../../../guides/reading-order.md) 第 61 行、Spec §S7A-1 节、ABI §S7A-1 节 | **落地后复核的事实同步（2026-10-03）**：`第 2（至 / -）7 轮尚未裁定` → `第 4（至 / -）7 轮尚未裁定`（Spec 第 777 行、ABI 第 546 行、plan 第 99 行、CURRENT_STATUS 第 241 行、reading-order 第 61 行）；CURRENT_STATUS 第 33 行的 Stage 7A 行另补"第 1、2、3 轮语义已裁定" | **不是新裁定**：这些都是**现行**授权 / 引导表述（不是历史证据），第 2、3 轮裁定落地后原措辞已不成立；同步后全仓该措辞为 **0 处**，历史报告与带日期记录一律保留原样 |
 
 ## 9. 跑过的门禁与结果
 
@@ -236,7 +243,7 @@ ABI 类型清单: 9 域 / 126 条 = 冻结目标 96 + 待冻结 30
 
 ## 10. 相关索引
 
-- [Stage 7A 实施计划](../../../../../stage_plans/active/stage-07/plan.md)：§S7A-3 的目的、工作内容与验证要求
+- [Stage 7A 实施计划](../../../../../stage_plans/completed/stage-07/plan.md)：§S7A-3 的目的、工作内容与验证要求
 - [未决语义分轮裁决清单](../../../../../proposals/gameplay-v2-acceptance/RULING_WORKSHEET.md)：第 3 轮裁定列与 §9 裁定登记
 - [S7A-0.2 合同逐项台账](../../../../../proposals/gameplay-v2-acceptance/CONTRACT_MATRIX.md)：114 项与 16 项 `open`
 - [支持 / 拒绝矩阵与 capability registry 草案](../../../../../proposals/gameplay-v2-acceptance/SUPPORT_AND_REJECTION_MATRIX.md)：§6 字段定义与 §6.1 候选项门禁归属

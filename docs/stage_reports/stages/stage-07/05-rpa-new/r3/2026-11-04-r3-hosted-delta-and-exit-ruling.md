@@ -1,5 +1,12 @@
 # R3 hosted 口径裁定与批次退出（2026-11-04）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-04-r3-hosted-delta-and-exit-ruling
+status: evidence
+authority: none
+date: 2026-11-04
+-->
+
 状态：owner ruling；R3 关闭记录
 
 矩阵冻结点：`d70df15a463cb1fe4329bffb8f0c99bcac676c15`
@@ -8,7 +15,7 @@ hosted 验证点：`de73aa2c474fe142ef3d85764346fcd2773afce5`
 
 返回 [New RPA 报告索引](../README.md)。当前门账与阶段状态只以
 [CURRENT_STATUS](../../../../../CURRENT_STATUS.md) 为准，实施登记见
-[R3 实施登记 §12](../../../../../stage_plans/active/stage-07/05-rpa-new/r3/plan.md)。
+[R3 实施登记 §12](../../../../../stage_plans/completed/stage-07/05-rpa-new/r3/plan.md)。
 
 ## 0. 决定
 

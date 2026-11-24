@@ -1,5 +1,11 @@
 # S7A-4 推荐方案登记
 
+<!-- cuexis-meta
+id: PROPOSALS-gameplay-v2-acceptance.S7A-4_RECOMMENDED_DESIGN
+status: candidate
+authority: none
+-->
+
 状态：recorded recommendation；未冻结新增字段、公共编码或数值限额
 
 2026-10-05 后续：本文件保留方案比较与当时的未决清单；当前完整选定方案已落入
@@ -10,7 +16,7 @@
 
 日期：2026-10-05（Asia/Shanghai）
 
-上级文档：[Stage 7 计划](../../stage_plans/active/stage-07/plan.md) §S7A-4 ·
+上级文档：[Stage 7 计划](../../stage_plans/completed/stage-07/plan.md) §S7A-4 ·
 [Gameplay V2 acceptance package](README.md)
 
 ## 1. 授权、基线与文档角色

@@ -2,12 +2,20 @@
 
 状态：compatibility entry
 
-更新日期：2026-10-25
+更新日期：2026-11-23
+
+<!-- cuexis-meta
+id: PLAN-future.realtime-playback-foundation.plan
+status: future
+authority: owns
+-->
 
 RPA已按owner指令归入Stage 7子阶段。2026-10-11计划正文已归档到
 [Stage 7-RPA计划快照](../../../archive/stage-07-planning/03-rpa-legacy/2026-10-11-rpa-plan.md)，
-当前性能整改与R1入口见[性能整改候选设计](../../active/stage-07/05-rpa-new/plan.md)
-和[R1实施计划](../../active/stage-07/05-rpa-new/r1/plan.md)，统一受
-[Stage 7总计划](../../active/stage-07/plan.md)约束。
+当时的性能整改与R1入口见[性能整改候选设计](../../completed/stage-07/05-rpa-new/plan.md)
+和[R1实施计划](../../completed/stage-07/05-rpa-new/r1/plan.md)，统一受
+[Stage 7总计划](../../completed/stage-07/plan.md)约束。
 
-本页仅为旧路径兼容入口，保留至少一个文档整理周期，不代表future阶段，不复制计划正文。
+本页仅为旧路径兼容入口，保留至少一个文档整理周期，不代表 future 阶段，不复制计划正文。
+后续架构改造归 [Stage 7-RR](../../active/stage-07-rr/plan.md)，高级输入与剩余性能整改归
+[Stage 7.5](../../active/stage-07-5/plan.md)；当前进度以 [CURRENT_STATUS](../../../CURRENT_STATUS.md) 为准。

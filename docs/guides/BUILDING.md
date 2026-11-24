@@ -4,6 +4,12 @@
 
 更新日期：2026-10-11
 
+<!-- cuexis-meta
+id: GUIDE-BUILDING
+status: active
+authority: owns
+-->
+
 ## 当前仓库说明
 
 当前仓库提供阶段 0 工程基础、阶段 1A-1E Playback Core 闭环、阶段 2 的 Chart/Behavior/迁移
@@ -92,6 +98,9 @@ cuexis_format_check
 cuexis_player_dist
 ```
 <!-- CUEXIS_ACTIVE_TARGETS_END -->
+
+`cuexis_debug` 只被 `cuexis_debug_tests` 链接，是测试专用库，不是生产依赖。
+`cuexis_gameplay_assemble` 只在 candidate 构建中存在（`if(TARGET ...)`），因此不出现在默认 active 列表。
 
 ## C++ toolchain and Catch2 ABI
 
@@ -330,6 +339,22 @@ python -B tools/verification/check_header_self_containment.py
 目录，清单里的参考编译单元路径不变。
 
 ### Pre-push 检查
+
+文档变更完成前，无论本轮是否提交或推送，都先执行以下短检查。结构检查包含登记册和治理规则，事实检查对当前版本漂移失败；它们不代替产品功能测试。
+
+```powershell
+python -B tools/check_docs.py
+python -B tools/verification/check_docs_facts.py --list
+python -B tools/verification/test_check_findings.py
+python -B tools/verification/test_check_docs_governance.py
+python -B tools/verification/test_check_source_naming.py
+python -B tools/verification/test_check_docs_facts.py
+```
+
+历史保护默认比较 HEAD；复核某次变更时将 `CUEXIS_DOCS_BASE_REF` 设为明确的基准修订。CI 从事件基准取得同一参数并取完整 Git 历史。
+手动 workflow 必须提供 `docs_base`。新分支 push 无有效事件基准时，保护检查明确失败，使用有基准的 PR 事件或具名手动验证；不能回退到当前提交与自身比较来宣称历史保护通过。
+生成事实缺失会显示 `NOT CHECKED`，严格验收设置 `CUEXIS_DOCS_STRICT=1` 并通过 `CUEXIS_TARGETS_FILE` 提供 fresh configure 产生的 target 清单；缺输入严格失败，不能手造清单冒充生成结果。
+文档入口及自测同样接入 CI 和下述 Quick 编排。脚本不会自行安装 Git hook，是否启用 hook 需单独确认；远端必需检查设置也不能由仓内脚本推断。
 
 `tools/check_pre_push.ps1` 将格式、文档、版本和跨工具链检查统一为一个入口。日常修改可先运行
 快速检查；推送前运行完整检查：

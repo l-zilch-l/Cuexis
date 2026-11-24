@@ -4,6 +4,13 @@
 
 更新日期：2026-08-27
 
+<!-- cuexis-meta
+id: FORMAT-ANIMATION_MIXING
+status: accepted
+authority: owns
+topics: animation.mixing
+-->
+
 CXC/Chart/CXT 文档负责持久化边界；本文只定义运行时求值与混合语义。ChartParameter、Clip、
 Layer、Binding、Property ID、mask、时间域
 和 lowering 的字段权威是 [CHART_V4_FORMAT.md](CHART_V4_FORMAT.md)，CXC 容器与闭包由

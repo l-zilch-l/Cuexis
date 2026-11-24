@@ -1,10 +1,17 @@
 # PD-5 tool and profile preparation
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.preparation.2026-10-19-pd5-tools-and-profile-preparation
+status: evidence
+authority: none
+date: 2026-10-19
+-->
+
 日期：2026-10-19。状态：本机阈值/协议已接受；首批测量工具与有限 CPU/GPU profile 已验证，
 **完整测量准备仍在进行，未注册或运行正式窗口**。本报告不宣布 PD-5 完成。
 当前状态唯一见 [CURRENT_STATUS](../../../../../../CURRENT_STATUS.md)，已接受门槛见
 后续工具扩展见[窗口协议与矩阵准备](2026-10-19-pd5-window-and-matrix-preparation.md)；下文保留首批验证时点。
-[测量方案](../../../../../../stage_plans/active/stage-07/04-pd/pd-5/pd5-measurement-proposal.md)。
+[测量方案](../../../../../../stage_plans/completed/stage-07/04-pd/pd-5/pd5-measurement-proposal.md)。
 
 ## 1. 接受与实施范围
 

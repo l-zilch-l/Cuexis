@@ -1,5 +1,12 @@
 # `read_long` 裁定与复跑记录（2026-11-12）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-12-read-long-ruling
+status: evidence
+authority: none
+date: 2026-11-12
+-->
+
 状态：accepted ruling；`read_long` 两个单元均判通过
 
 日期：2026-11-12

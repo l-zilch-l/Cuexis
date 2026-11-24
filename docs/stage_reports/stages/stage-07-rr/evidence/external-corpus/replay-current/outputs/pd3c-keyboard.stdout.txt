@@ -1,0 +1,3 @@
+all-hit: score=46 hits=21 misses=0 replay=equal
+no-input: score=-21 hits=0 misses=21 replay=equal
+early-hold-release: score=36 hits=19 misses=2 replay=equal

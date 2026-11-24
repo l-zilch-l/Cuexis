@@ -1,0 +1,43 @@
+{
+  "reports_verified": 13,
+  "navigation_only": true,
+  "attachment_comparison": "matches trusted Git blob or checkout representation byte for byte; original attachment paths were not written by this task",
+  "original_attachments": [
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/evidence/2026-11-22-checkout-inputs.json",
+      "sha256": "64d2d1619378fc12254979eed80308e4e2313bea3894301daaf2f95c51b22b4a",
+      "representation": "git blob",
+      "git_blob": "504eef03a66d33ba80f41ef2e9e3b1539d21ef27"
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/evidence/2026-11-22-checkout-review-A.txt",
+      "sha256": "84cd5db228fd0f3d0a55b07b5df8feba6fa9ed24f5afa5c1d95f3a49e060fade",
+      "representation": "git blob",
+      "git_blob": "f5ce2871e15779ce0541369ec2bf7e82f4246b0b"
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/evidence/2026-11-22-checkout-review-B.txt",
+      "sha256": "1b0f8f269e7ee07652f20f21367e92b4f75b2c17f9eca9ddfdba78870e7676c4",
+      "representation": "git blob",
+      "git_blob": "557ef3092f72cfffda6cc85b6c503f71bb1aa715"
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/evidence/2026-11-22-checkout-validation.json",
+      "sha256": "50a4ee2032ebfd7b839f5d493a462cc6ac2a745e76b654cb8d5d7b9f8474cf65",
+      "representation": "git blob",
+      "git_blob": "2b359d2adb2144f8018871ad36fd0718ad470e9e"
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/evidence/2026-11-22-ir17-after.json",
+      "sha256": "d8585621eb22f19d274dc0ed1c85e5dd2d8abe2f794fc94ddcbaa226b60d6471",
+      "representation": "Git checkout filters (CRLF)",
+      "git_blob": "8536c1d5bd5612f47475f5e1ba0fe0af88f43773"
+    },
+    {
+      "path": "docs/stage_reports/stages/stage-07-rr/evidence/2026-11-22-ir17-before.json",
+      "sha256": "f5a6b9196a6a7e8c0b9f54a96cadbe326b0ac3f1a48a5839d4ef1cd4bc78a854",
+      "representation": "Git checkout filters (CRLF)",
+      "git_blob": "65f949fa27d4d06a49f7965c6aa636c626bc0276"
+    }
+  ]
+}

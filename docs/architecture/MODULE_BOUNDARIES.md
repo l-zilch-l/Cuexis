@@ -2,7 +2,13 @@
 
 状态：现行模块边界摘要
 
-更新日期：2026-10-28
+更新日期：2026-11-17
+
+<!-- cuexis-meta
+id: ARCH-MODULE_BOUNDARIES
+status: active
+authority: owns
+-->
 
 本文总结稳定依赖方向。构建时的精确 allowlist 和 architecture tests 仍由根 CMake 配置拥有。
 
@@ -26,6 +32,7 @@
 | `cuexis_audio_sdl` | SDL Audio adapter | Runtime/Chart 反向依赖 |
 | `cuexis_playback` | 宿主公共门面和 Prepared transaction | 暴露 World、RuntimeSession、EnTT、shaderc、SPIRV-Cross |
 | `cuexis_shader` | 可选 GLSL 450 → SPIR-V 编译、反射与目标代码生成 | Playback 公共头、SDL、OpenGL、JSON DOM、minizip；不是安装 component |
+| `cuexis_execution_host`（app） | 执行 worker/owner 通道、命令分发、录制与观测 | SDL、GL、窗口；`engine/*/src/` 与 `cuexis_internal/` 私有头；不得成为第二套播放事务实现 |
 
 ## 依赖原则
 
@@ -56,6 +63,11 @@ OpenGL adapter 都实现 `IPresentationRenderer`；Player 正式帧调用 `submi
 当前 candidate 的分页状态、prepare / 自然锚点复用、来源身份和缓存实现见
 [执行状态、恢复与准备路径](execution-state-and-recovery.md)。Packed prepare 仍复用
 Judgement 的 typed 准备和验证，不建立另一套 kernel；内部辅助头不成为安装版 SDK 类型。
+
+应用层（`app/`）不属于安装 SDK。`cuexis_execution_host` 只提供 worker/owner 通道、命令分发与观测，
+播放事务仍由 `cuexis_playback` 拥有；它不得依赖 SDL/GL/窗口，也不得直接 include
+`engine/*/src/` 或 `cuexis_internal/`（现存越界登记为 RR-F316，收敛前不得新增同类 include）。
+`app/player` 是组合根：SDL/OpenGL 类型只出现在装配与 smoke 源文件。
 
 ## JSON 和第三方类型
 

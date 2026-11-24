@@ -2,11 +2,18 @@
 
 状态：candidate contract；当前分支 SDK 0.9.1 preview；发行、设备与生产接受独立
 
-更新日期：2026-10-28
+更新日期：2026-11-23
+
+<!-- cuexis-meta
+id: API-realtime-host-boundary
+status: candidate
+authority: owns
+topics: host.rpa.error-classification
+-->
 
 决策归 [ADR 0046](../adr/0046-realtime-playback-coordination.md)，执行/时间/控制语义归
 [RPA 补充 Spec](../formats/rpa-execution-contract.md)，批次和门禁归
-[RPA 整改计划](../stage_plans/active/stage-07/05-rpa-new/plan.md)。本页拥有载体、接口、所有权和宿主状态。
+[RPA 整改计划](../stage_plans/completed/stage-07/05-rpa-new/plan.md)。本页拥有载体、接口、所有权和宿主状态。
 旧候选 TB-01–07 表由补充 Spec 的已选合同替代；当前实施状态以
 [CURRENT_STATUS](../CURRENT_STATUS.md) 为准，内部存储与复用设计见
 [执行状态、恢复与准备路径](../architecture/execution-state-and-recovery.md)。
@@ -36,6 +43,8 @@ D3 `consumeCommittedPrefix/samplePresentation`；D4 `prepareAudio/applyAudioCont
 D5 `readCapabilities/prepareCandidate/activateCandidate/present/retire`。
 这些是职责入口，SDK 不隐式创建线程，不安装内部执行图；新公共批次/控制 facade 由 B3/B4
 按相同合同提供 owning opaque 值，旧同步方法保留显式 legacy 行为，版本策略见 Spec §6。
+（这些名称是**设计职责名**，当前代码未提供同名入口；实现现状见
+`engine/playback/include/cuexis/playback/execution_control.hpp` 与 `app/execution_host/`。）
 公共时钟扩展采用单独可选连贯观察接口，不给旧 IAudioClock 虚函数增加纯虚义务；
 旧 HostClock/第三方实现没有连贯观察时仍能用于旧路径，RPA 实时启动明确拒绝能力不足。
 
@@ -78,7 +87,8 @@ Gameplay 的 Prepared/Running/Paused/Faulted 保持独立；Suspended 是禁止�
 | 连续交付尚有缺口 | Waiting，reason=InputPrefix | 保留输入、精确重传；不借超时跳过 |
 | 时钟无效/超期/误差参数缺失 | `host.rpa.clock_invalid` | 撤销许可；显式新段恢复，不静默 fallback |
 | 配置预算未测量 | `host.rpa.profile_incomplete` | 生产启动拒绝；testOnly 明示 |
-| 可靠通道不能接纳 | `host.rpa.capacity_exceeded` | 未发送请求明确拒绝；已捕获无法保留则记录 gap 并 Suspended |
+| 配置预算或容量耗尽，可靠通道不能接纳 | `host.rpa.capacity_exceeded` | 未发送请求明确拒绝；已捕获无法保留则记录 gap 并 Suspended |
+| 观测桥操作因实际内存分配失败而未完成（F135 已接受、未实现） | `host.rpa.allocation_failed` | 由预留故障槽保留失败；按下节区分操作失败与单纯观测丢失，不伪报提交或呈现成功 |
 | PauseTrace 已确认不可补齐 | `host.rpa.capture_gap` | 拒绝直接续跑；保留结果，显式 Stop/reset/完整恢复 |
 | 已接纳操作迟迟无设备回执 | `host.rpa.device_pending` | 报实际阶段；超时不是回滚或 Closed |
 | renderer/audio 失败 | `host.rpa.device_failed`，cause 保留原码 | 按实际副作用收束；未生效步骤依B1取消；切段或软件提交后保留实际状态，不假回滚 |
@@ -100,6 +110,47 @@ host.rpa 码只属于宿主协议，不投影成 judgement.*，不增加 N3 九�
 控制消息和故障回执各有预留容量。D1 的切段步骤也遵循下面 B1，Applied 的 payload 为
 CutApplied(cut,q,pauseEpoch)；当前未执行为 Pending，不能用裸 NotApplied 充当取消成功。
 超时/查询不到记录只表示未知，保持实际宿主状态和禁止推进要求，不授权撤销或重发新操作。
+
+### F135 观测桥错误分类修订（已接受、未实现）
+
+2026-11-23 owner 按 Stage 7-RR D-04 接受新增稳定宿主码 `host.rpa.allocation_failed`；
+[T-03](../stage_plans/active/stage-07-rr/tasks/T-03.md)绑定合同与旧新映射，
+[T-06](../stage_plans/active/stage-07-rr/tasks/T-06.md)落实观测桥及故障注入验收。
+当前观测桥仍把部分分配失败映射为 `host.rpa.capacity_exceeded`，本节不表示实现已修复。
+
+实际分配失败导致操作无法完成时使用 `host.rpa.allocation_failed`；配置预算或容量确实耗尽时
+保留 `host.rpa.capacity_exceeded`。复用现有预留 `FaultSlot` 的 allocation/capacity 原因，
+不新增错误框架，不向 judgement 诊断 schema 登记宿主码。仅凭 catch-all 不能断定发生分配失败；
+其他异常须保留可核实的原因与既有边界处理，不能统一改报 allocation_failed。
+
+故障报告本身不得再次分配内存。预建 owning `core::Error` 的复制也可能分配，不能仅凭
+“预先构造”认定安全；故障槽及错误交付路径必须在分配器持续失败时仍可用，并保留实际失败阶段。
+
+单纯丢失观测记录时，允许原执行继续，但必须留下不完整/Unknown 标记；观测缺失不能反向
+阻塞 Gameplay，也不能用来证明实际 submit/present 成功。若请求的操作本身未完成，须如实报告
+该操作失败；不得用允许丢观测的规则掩盖操作失败。区分依据是实际副作用与该入口的职责。
+本次修订限定于 F135 观测桥切片；其他宿主路径的稳定码变更仍须各自的合同接受记录。
+
+#### F135 基线映射（2026-11-23，已接受、未实现）
+
+下表与 T-03 证据 `out/review/stage-07-rr/T-03/report.md` 的同表同步。旧实现列是对
+[frame_observation.cpp](../../app/execution_host/frame_observation.cpp) 的只读取证，不是修复
+声明；“未执行验收”列链接 [T-06 任务级验收](../stage_plans/active/stage-07-rr/tasks/T-06.md#任务级验收)
+的 `rr_frame_observation_errors` 具名场景。本轮没有构建或运行该测试，合同接受不等于运行通过。
+
+| 场景 | 旧实现（当前触发与诊断） | 已接受目标 | 未执行验收（T-06 `rr_frame_observation_errors`；计划用例名，未实施） |
+| --- | --- | --- | --- |
+| 实际分配失败导致观测桥操作失败 | `copyPresentReceipt` 的 catch 返回 `host.rpa.capacity_exceeded`（`:72-73`）；`configure` 与 `create` 的 catch 同样报 `capacity_exceeded`（`:124-125`/`:288-289`）；`observe/expire/activate/query` 的 catch 返回预建 `allocationFailure_`，其码同为 `capacity_exceeded`（`:524-527`/`:549-552`/`:597-600`/`:613-614`，定义见 `frame_observation.hpp:230-231`）。 | 精确报 `host.rpa.allocation_failed`，并保留失败阶段；不得吞掉或误报 `capacity_exceeded`。 | [实际分配失败导致观测桥操作失败](../stage_plans/active/stage-07-rr/tasks/T-06.md#任务级验收) |
+| 真实预算/容量耗尽 | `feedback` 超出 `limits.bytes` 时置 `coverageLost()` 并返回成功空值（`:322-327`）；`publishImpl` 超出预算同样 `coverageLost()` 后返回成功（`:396-399`）；`configure` 的预算不足报 `profile_incomplete`（`:104-126`）。 | 真实预算/容量拒绝保留 `host.rpa.capacity_exceeded`；不得借用 `allocation_failed`。 | [真实预算/容量耗尽](../stage_plans/active/stage-07-rr/tasks/T-06.md#任务级验收) |
+| 非致命观测记录丢失 | `dropAttempt/dropFeedback/trim` 设置 unknown/历史丢失标记后继续（`:143-231`）；`feedback`/`publishImpl`/`recordAttempt` 的 catch 只 `coverageLost()` 并返回成功（`:335-337`/`:426-428`/`:447-449`），丢失不阻塞原执行，也不区分操作失败。 | 允许原执行继续，但必须留下不完整/Unknown 标记；不得据此证明 submit/present 成功。 | [非致命观测记录丢失](../stage_plans/active/stage-07-rr/tasks/T-06.md#任务级验收) |
+| 持续 OOM 下报告可用 | 预留故障槽字段 `FaultSlot fault_` 已声明（`frame_observation.hpp:173`、`:229`），但本文件没有写入点；`error()` 以字符串拼接构造 `host.rpa.*`（`:8-10`），`copyPresentReceipt` 复制 cause 链时仍分配（`:58-68`）。 | 复用既有 `FaultSlot` 的 allocation/capacity Reason；故障槽与错误交付路径在持续 OOM 下仍可用，预建 owning `core::Error` 的复制/移动也须验证。 | [持续 OOM 下报告可用](../stage_plans/active/stage-07-rr/tasks/T-06.md#任务级验收) |
+| submit/present 真实性及异常分类 | `presentOwnedFrame` 的 catch 返回 `PresentStatus::unknown` 与 `host.rpa.device_failed`（`frame_observation.hpp:113-117`）；`observe` 在 `copyPresentReceipt` 失败时记 `receiptLost` 后返回成功（`:486-491`），自身 catch 则返回预建 `allocationFailure_`（`:524-527`）。 | 操作未完成必须报告失败；纯观测丢失标 Unknown/不完整且不阻塞 Gameplay；不得伪报完成，也不得把其他异常统一改报 allocation_failed。 | [submit/present 真实性及异常分类](../stage_plans/active/stage-07-rr/tasks/T-06.md#任务级验收) |
+
+表内 `rr_frame_observation_errors` 及五个场景名目前只存在于 T-06 计划与本节，代码/测试 0 命中；
+它们是待实施的计划用例，不是现有测试。
+
+2026-11-23 接受记录见[登记册 §23](../stage_plans/active/stage-07-rr/findings.md#23-正式实施前计划检查2026-11-22)；
+实现与故障注入由 T-06 承接，本节只固定旧新映射，不表示缺陷已修复。
 
 ### 2.1 B1：owner 串行裁决 Apply 与 Cancel
 
@@ -272,8 +323,8 @@ ADR 0033 禁止私有导出的规则保留；共享库白名单仅登记实际�
 新增只读来源 API 与 SDK 0.8.1 已获 owner 接受，实施验证见
 [PD-3-c 记录](../stage_reports/stages/stage-07/04-pd/pd-3/c/2026-10-19-pd3c-contract-and-version-decision.md)。
 §8.2–8.4 已于 2026-10-19 随 ADR 0047 获 owner 接受；PD-4 内部实施及适用本地门禁完成，证据见 [PD-4 实施报告](../stage_reports/stages/stage-07/04-pd/pd-4/2026-10-19-pd4-delivery-retirement-and-observation.md)；尚未作为正式发行交付。
-[PD 计划](../stage_plans/active/stage-07/04-pd/plan.md)拥有批次，
-[设计细则](../stage_plans/active/stage-07/04-pd/design.md)拥有内部接入和待验收项。
+[PD 计划](../stage_plans/completed/stage-07/04-pd/plan.md)拥有批次，
+[设计细则](../stage_plans/completed/stage-07/04-pd/design.md)拥有内部接入和待验收项。
 
 ### 8.1 状态来源与使用许可
 
@@ -323,7 +374,7 @@ scope 替换/取消和证据 TTL 仍分别处理；TTL 不能改变效果寿命�
 不能只核对 HostContext/资源代。注册激活和撤销须经 Renderer owner 串行确认，沿可靠生命周期
 设施传递；撤销确认前不得让同端新注册生效。迟到激活、撤销与确认不复活旧注册，也不清除
 新注册。注册前沿独立于可淘汰历史，帧执行标记只有在旧注册失效已确认后才能为新身份初始化。
-具体状态/容量归[PD 细则 §6.3.1](../stage_plans/active/stage-07/04-pd/design.md)。
+具体状态/容量归[PD 细则 §6.3.1](../stage_plans/completed/stage-07/04-pd/design.md)。
 注册确认不解除控制/fence，撤销确认不证明 GPU 已完成或外部 CPU 引用已释放；公开 HostContext
 及 Gameplay/Replay identity 不因此增加字段。
 同一 Renderer instance/generation 的控制或资源换代可保留注册，但仍更新已确认交付绑定；
@@ -356,6 +407,6 @@ NotSubmitted。旧注册的合法 receipt 仍只补原 attempt 的反馈证据�
 暂停时精确保留画面已丢失，必须显式报告无可重绘图，不能用当前较新修订替代或运行 frozen
 update 补图。该结局在 PD 文档中称 NoRetainedFrame，尚未指定公共错误码或安装类型。
 恢复沿合法更新/控制和设备确认；跨资源代的精确暂停画面恢复需另行接受资源重新取得合同。
-细节及验收归[PD 细则 §12.4](../stage_plans/active/stage-07/04-pd/design.md)。
+细节及验收归[PD 细则 §12.4](../stage_plans/completed/stage-07/04-pd/design.md)。
 实施前须接受触发条件、可观察状态与恢复保证；如影响公共合同，补版本/安装消费者差异，
 不得把压力驱逐直接当成现有 SDK 已允许的行为。

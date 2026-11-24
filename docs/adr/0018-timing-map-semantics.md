@@ -1,5 +1,11 @@
 # ADR 0018：TimingMap 的 BPM、Stop 与 Offset 语义
 
+<!-- cuexis-meta
+id: ADR-0018
+status: accepted
+authority: owns
+-->
+
 日期：2026-07-17；v3 补充：2026-08-03；边界复核：2026-08-04
 
 状态：已接受

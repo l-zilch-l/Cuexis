@@ -1,5 +1,11 @@
 # ADR 0011：使用 Catch2 v3 和 CTest
 
+<!-- cuexis-meta
+id: ADR-0011
+status: accepted
+authority: owns
+-->
+
 日期：2026-07-16
 
 状态：已接受

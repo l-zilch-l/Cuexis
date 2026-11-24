@@ -1,5 +1,11 @@
 # ADR 0022：Android 资源与输入延迟策略
 
+<!-- cuexis-meta
+id: ADR-0022
+status: accepted
+authority: owns
+-->
+
 日期：2026-07-17
 
 状态：已接受

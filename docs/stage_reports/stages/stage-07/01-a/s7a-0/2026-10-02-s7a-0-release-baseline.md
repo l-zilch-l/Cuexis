@@ -1,5 +1,12 @@
 # Stage 7A S7A-0：Release 基线证据
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.01-a.s7a-0.2026-10-02-s7a-0-release-baseline
+status: evidence
+authority: none
+date: 2026-10-02
+-->
+
 状态：completed（S7A-0 退出门禁的 Release 本地证据）
 
 快照日期：2026-10-02
@@ -7,7 +14,7 @@
 后续关闭证据：hosted 四作业（Linux Quality / Windows MSVC / Windows MinGW / Version Gate）结果、
 MSYS2 本地复跑结果。**本次未运行**，见 §5。
 
-上级文档：[Stage 7A 实施计划](../../../../../stage_plans/active/stage-07/plan.md)（§S7A-0 退出门禁）·
+上级文档：[Stage 7A 实施计划](../../../../../stage_plans/completed/stage-07/plan.md)（§S7A-0 退出门禁）·
 [owner 接受记录](2026-10-02-s7a-0-acceptance.md) · [Debug 执行基线](2026-10-02-s7a-0-baseline.md)
 
 ## 1. 目的
@@ -114,4 +121,4 @@ Release 侧在**当前工作树（含未提交的 D-9 候选补丁）**上达成
 - [Debug 执行基线](2026-10-02-s7a-0-baseline.md)
 - [owner 接受记录](2026-10-02-s7a-0-acceptance.md)
 - [D-9 候选补丁与验证证据](../../90-shared/release-gates/2026-10-02-d9-shell-guard-candidate.md)
-- [Stage 7A 实施计划](../../../../../stage_plans/active/stage-07/plan.md)
+- [Stage 7A 实施计划](../../../../../stage_plans/completed/stage-07/plan.md)

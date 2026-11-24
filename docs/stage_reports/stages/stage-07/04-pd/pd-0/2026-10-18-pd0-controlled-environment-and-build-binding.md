@@ -1,12 +1,19 @@
 # PD-0 受控环境、构建绑定与退出证据
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-0.2026-10-18-pd0-controlled-environment-and-build-binding
+status: evidence
+authority: none
+date: 2026-10-18
+-->
+
 状态：PD-0 testOnly 基线与行为表征完成；PD-1 至 PD-5 未开始
 
 日期：2026-10-18（Asia/Shanghai）
 
 本轮在 owner 提供的安静环境中，先解决测量程序的源码绑定缺陷，再使用干净重建的程序完成一次预登记的两窗口正式组。全部 owner 与宿主均值重复性满足原定 15% 门槛，长读取块、精确语义身份、同源码存储/阶段/交付观测及受影响检查通过，因此 PD-0 退出。
 
-该结论限于登记的有限 testOnly profile。历史失败、未测项和帧账本回收缺陷继续保留；本轮没有实现 PD-1 至 PD-5，没有接受生产预算、尾延迟或实体设备门禁。当前状态唯一见 [CURRENT_STATUS](../../../../../CURRENT_STATUS.md)，方法和批次范围见[设计 §9.2](../../../../../stage_plans/active/stage-07/04-pd/design.md)与 [PD 计划](../../../../../stage_plans/active/stage-07/04-pd/plan.md)。
+该结论限于登记的有限 testOnly profile。历史失败、未测项和帧账本回收缺陷继续保留；本轮没有实现 PD-1 至 PD-5，没有接受生产预算、尾延迟或实体设备门禁。当前状态唯一见 [CURRENT_STATUS](../../../../../CURRENT_STATUS.md)，方法和批次范围见[设计 §9.2](../../../../../stage_plans/completed/stage-07/04-pd/design.md)与 [PD 计划](../../../../../stage_plans/completed/stage-07/04-pd/plan.md)。
 
 ## 环境与不可替换的历史
 

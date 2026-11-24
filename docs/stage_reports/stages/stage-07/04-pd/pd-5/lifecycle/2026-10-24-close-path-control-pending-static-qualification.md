@@ -1,5 +1,12 @@
 # 2026-10-24 关闭路径 `host.rpa.control_pending` 静态定性
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.lifecycle.2026-10-24-close-path-control-pending-static-qualification
+status: evidence
+authority: none
+date: 2026-10-24
+-->
+
 **状态**：completed（静态定性）；**运行**：否。**PD-5 acceptance**：not passed。本文件不修代码、不改判据、不撤销历史失败，也不把未归因的关闭故障说成已解决。
 
 ## 1 触发事实

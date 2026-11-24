@@ -1,12 +1,19 @@
 # Stage 7 B4 宿主与资源分离实施记录
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.03-rpa-legacy.b4.2026-10-12-b4-host-and-resources
+status: evidence
+authority: none
+date: 2026-10-12
+-->
+
 日期：2026-10-12，最终核对延续至 2026-10-13；状态：B4.1–B4.5 本地实施与适用验证完成（testOnly）；Stage 7 仍 active。
 源码起点 `stage-7 / 8f18394`，SDK API `0.8.0`，日期构建 `26.10.12-2`。
 B3 与 B4 同在未提交工作树；没有 commit、push、PR、merge 或发行行为。
 
 ## 实施范围
 
-按 [B4 计划](../../../../../stage_plans/active/stage-07/03-rpa-legacy/plan.md) 顺序，先采用同线程显式 owner 驱动。
+按 [B4 计划](../../../../../stage_plans/completed/stage-07/03-rpa-legacy/plan.md) 顺序，先采用同线程显式 owner 驱动。
 真实线程创建、callback 隔离实现、SDL/实体设备接入及性能容量验收属于 B5/F1–F4。
 这里的 audio callback 隔离来自显式注入的证明接口，不能从 stop 成功推断设备 callback 已静默。
 

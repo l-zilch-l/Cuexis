@@ -1,11 +1,18 @@
 # Cuexis Chart Format v1/v2/v3
 
 状态：v1/v2/v3 已实现并继续作为 Playback 生产格式族。方案 B 已于阶段 2A.1 移除。ADR 0038
+
 已接受 CXC v1、Chart v4 与 CXT v1。显式迁移默认仍输出 v3；`--target 4` 可将合法
 v1/v2/v3 提升为静态空动画 v4。Chart v4 字段见 [CHART_V4_FORMAT.md](CHART_V4_FORMAT.md)，
 CXC 容器见 [CXC_FORMAT.md](CXC_FORMAT.md)，CXT 文件语义见 [CXT_FORMAT.md](CXT_FORMAT.md)。
 
-更新日期：2026-08-14
+<!-- cuexis-meta
+id: FORMAT-CHART_FORMAT
+status: active
+authority: owns
+-->
+
+更新日期：2026-11-23
 
 ## 1. 范围
 
@@ -160,6 +167,12 @@ denominator 是大于 0 的整数
 ```
 
 阶段 1 历史方案 B 的十进制 beat 必须根据 JSON 原始十进制文本转换，不能先转成二进制浮点再猜测分数；该转换只用于移除前的一次性迁移。
+
+实现额外拒绝 `|numerator| > ChartLimits::maxBeatNumeratorMagnitude` 与
+`denominator > ChartLimits::maxBeatDenominator`，报 `chart.beat.limit_exceeded`。判定在
+`RationalBeat::create` 约分之后进行，所以上限按最简有理数计；分子在符号两侧同等受限。
+来源为 `engine/chart/include/cuexis/chart/limits.hpp` 的具名成员（默认可读视图见
+[guides/LIMITS.md](../guides/LIMITS.md)）。
 
 ## 4. Timing（v1/v2）
 
@@ -424,7 +437,7 @@ v1 允许的 Property 为 `transform.position.x/y/z`、`transform.rotation`、`t
 
 空 Track、重复 Beat、同一 Behavior 重复 Property、未知字段/easing、非有限值、非规范 Quaternion 和越界 FOV 都是错误。阶段 2A 前的历史 Simple v1 只提供标量位置/FOV Track，并在 Behavior、Track、Key 子树对未知字段严格报错；这些规则仅用于迁移旧输入，不进入 v3。
 
-v1 默认安全预算为每 Behavior 6 条 Track、每 Track 65536 个 Key；v3 默认安全预算为每 Behavior 65536 个 Event、每 Chart 262144 个 Event；两者共用每帧 600000 个 Property Write 和 1024 条诊断上限。`behavior.transform.keyframe` version 1 保持兼容；阶段 2 已选择 Behavior Event 作为新 Behavior 的谱面层表达，具体字段、版本和迁移规则见 `docs/stage_plans/stage_2_implementation_plan.md`。
+v1 默认安全预算为每 Behavior 6 条 Track、每 Track 65536 个 Key；v3 默认安全预算为每 Behavior 65536 个 Event、每 Chart 262144 个 Event；两者共用每帧 600000 个 Property Write 和 1024 条诊断上限。`behavior.transform.keyframe` version 1 保持兼容；阶段 2 已选择 Behavior Event 作为新 Behavior 的谱面层表达，具体字段、版本和迁移规则见 `docs/stage_plans/completed/stage-02/plan.md`。
 
 ### 8a. v3 Behavior Event
 

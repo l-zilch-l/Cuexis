@@ -1,5 +1,11 @@
 # ADR 0039：从构建版本移除小时字段
 
+<!-- cuexis-meta
+id: ADR-0039
+status: accepted
+authority: owns
+-->
+
 日期：2026-08-10
 
 状态：已接受

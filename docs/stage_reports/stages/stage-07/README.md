@@ -1,5 +1,11 @@
 # Stage 7 Reports and Evidence
 
+<!-- cuexis-meta
+id: INDEX-stage_reports.stages.stage-07
+status: active
+authority: index
+-->
+
 状态：current index
 
 更新日期：2026-11-14
@@ -24,7 +30,7 @@
 
 ## 计划与回溯
 
-- [五阶段计划与配套文档总表](../../../stage_plans/active/stage-07/README.md)；[Stage 7 全局计划](../../../stage_plans/active/stage-07/plan.md)。
+- [五阶段计划与配套文档总表](../../../stage_plans/completed/stage-07/README.md)；[Stage 7 全局计划](../../../stage_plans/completed/stage-07/plan.md)。
 - [旧路径到当前位置映射](legacy-paths.md)：保留至少一个整理周期。
 - 原始 out、ETL、claim/seal、登记组、失败窗口与封包内部路径保持原位；本次只移动 docs 中附件，原始字节不变。
 - 历史报告的日期、结论、绝对路径与源码身份保留；历史“下一步”不覆盖当前状态和授权。

@@ -1,5 +1,12 @@
 # R3 empty-advance reserve attempt
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-10-27-r3-empty-reserve-attempt
+status: evidence
+authority: none
+date: 2026-10-27
+-->
+
 状态：in progress，2026-10-27。局部改动正确且有收益，整体 20 ms 目标仍未解决，R3 未退出。
 返回 [New RPA 报告索引](../README.md)。起点为已冻结的 [R3b 候选](2026-10-27-r3b-certified-prefix-and-cost.md)。
 本记录不回填原 R3b 的源/二进制/样本身份。

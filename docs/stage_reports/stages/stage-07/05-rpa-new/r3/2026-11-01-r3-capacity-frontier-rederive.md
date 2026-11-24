@@ -1,5 +1,12 @@
 # R3 240 FPS 容量前缘重新推导（2026-11-01）
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r3.2026-11-01-r3-capacity-frontier-rederive
+status: evidence
+authority: none
+date: 2026-11-01
+-->
+
 状态：diagnostic ladder；test-only；**不是**容量接受、性能门通过、R3/R4 退出或生产门限
 
 日期：2026-11-01

@@ -1,0 +1,14 @@
+﻿{
+  "player": "D:\\Cuexis-worktree\\out\\build\\pd4-player-release\\bin\\cuexis_player.exe",
+  "player_sha256": "72594dfebc658e6767d672aadb12aa8afc3305bbf92156633a34652946f2eca1",
+  "implementation_fingerprint": "59e304b8f34afc4a124f22f5b156f5c4df20db3b90b984e2aebeaac9de787fdb",
+  "head": "d344088236ae589c0b49a4994ef0fbddd6567ce2",
+  "files": {
+    "music-release/music.cxc": "2092d8aa426802947d350d0705dce8579faa27af5bdb74334ad8a38f923d4b52",
+    "launch-release.ps1": "6b7d85600b144d4e4c0416052f3a335791fda699f178b883608926d988a92289",
+    "03-music-release.cmd": "f9dc956b80d4b9394685c5d18bae6ead96acf7d56417c32b5522b8db04dffd62"
+  },
+  "sdk": "0.9.0",
+  "build_version": "26.10.19-1",
+  "test_series": "PD-4 physical device"
+}

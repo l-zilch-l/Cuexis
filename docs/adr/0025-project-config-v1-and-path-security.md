@@ -1,5 +1,11 @@
 # ADR 0025：ProjectConfig v1 与项目路径安全
 
+<!-- cuexis-meta
+id: ADR-0025
+status: accepted
+authority: owns
+-->
+
 日期：2026-07-18
 
 状态：已接受

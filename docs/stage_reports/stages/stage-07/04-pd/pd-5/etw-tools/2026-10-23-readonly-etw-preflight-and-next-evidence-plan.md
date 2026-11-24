@@ -1,5 +1,12 @@
 # PD-5 只读管理员预检与下一证据方案
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-5.etw-tools.2026-10-23-readonly-etw-preflight-and-next-evidence-plan
+status: evidence
+authority: none
+date: 2026-10-23
+-->
+
 状态：本批工具单元验证与方案复核完成；实际 ETW capture、性能候选登记和 PD-5 acceptance 未完成。
 
 更新日期：2026-10-23，Asia/Shanghai。前序见

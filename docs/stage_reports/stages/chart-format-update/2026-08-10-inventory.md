@@ -1,5 +1,12 @@
 # 2026-08-10 Stage Chart Format Update：CFU-A 盘点报告
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.chart-format-update.2026-08-10-inventory
+status: evidence
+authority: none
+date: 2026-08-10
+-->
+
 状态：仓库内盘点和 CFU-A 用例清单完成；CXT v1/播放前参数/Template Binding 子决策已接受，
 ADR 0038 其余门禁仍待项目所有者确认
 

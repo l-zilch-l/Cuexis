@@ -1,0 +1,1 @@
+all-hit: score=778 hits=387 misses=0 replay=equal

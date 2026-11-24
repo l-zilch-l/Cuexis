@@ -1,3 +1,4 @@
+# Reproduction mapping: tools/verification/execution_acceptance/README.md (R4 evidence).
 """One bounded owner A/B pilot group, followed by preparation only; never claims formal attempts."""
 import argparse
 from pathlib import Path

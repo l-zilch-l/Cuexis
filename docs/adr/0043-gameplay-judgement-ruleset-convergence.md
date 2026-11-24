@@ -2,7 +2,17 @@
 
 状态：superseded；I 收敛工作稿，未实施，从未被接受为实施基线；已由 [ADR 0044](0044-gameplay-v2-semantic-kernel.md)（Gameplay V2 语义内核与冻结边界）取代，字段与运行语义改为 [Gameplay V2 Spec](../formats/GAMEPLAY_V2_SPEC.md)，typed 边界改为 [Gameplay V2 ABI](../api/GAMEPLAY_V2_ABI.md)。本文件保留为 Gameplay I 的历史候选基线与差异对照，不删除、不再更新结论。
 
+<!-- cuexis-meta
+id: ADR-0043
+status: historical
+authority: owns
+-->
+
 日期：2026-10-01
+
+> **Seek 的当前入口（candidate）**：行为语义见 [RPA 执行与控制补充合同](../formats/rpa-execution-contract.md) 第 4 节与
+> [Gameplay V2 Spec](../formats/GAMEPLAY_V2_SPEC.md) 的 Fact Ledger 重建段；接口边界见 [Gameplay V2 ABI](../api/GAMEPLAY_V2_ABI.md) 域 9；
+> `PlaybackSession::seekGameplay` 仅在候选构建编译，默认构建与安装面不暴露。本文的 seek 设计仅作历史对照。
 
 ## 背景
 

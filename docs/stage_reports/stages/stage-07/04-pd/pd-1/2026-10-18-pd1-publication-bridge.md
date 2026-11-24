@@ -1,11 +1,18 @@
 # PD-1 Judgement Publication Bridge
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.04-pd.pd-1.2026-10-18-pd1-publication-bridge
+status: evidence
+authority: none
+date: 2026-10-18
+-->
+
 日期：2026-10-18。状态：PD-1 内部实施及本地适用门禁完成。
 
 ## 1. 范围与源码绑定
 
-本批只实施 [PD 计划](../../../../../stage_plans/active/stage-07/04-pd/plan.md)
-PD-1 和[设计细则 §2](../../../../../stage_plans/active/stage-07/04-pd/design.md#2-judgement-发布视图pd-1)。
+本批只实施 [PD 计划](../../../../../stage_plans/completed/stage-07/04-pd/plan.md)
+PD-1 和[设计细则 §2](../../../../../stage_plans/completed/stage-07/04-pd/design.md#2-judgement-发布视图pd-1)。
 owner 在本次对话明确要求先提交当前状态留档，再开始 PD-1；Desktop 接手文档用于理解背景，
 不据其中的后续路线启动 PD-2 至 PD-5。
 

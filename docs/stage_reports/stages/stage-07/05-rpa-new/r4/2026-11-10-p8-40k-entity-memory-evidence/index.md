@@ -1,5 +1,11 @@
 # P8 40K 实体内存证据包
 
+<!-- cuexis-meta
+id: EVIDENCE-stages.stage-07.05-rpa-new.r4.2026-11-10-p8-40k-entity-memory-evidence.index
+status: evidence
+authority: none
+-->
+
 状态：candidate evidence；只登记原始字节位置与只读复核方式，不含接受裁定
 
 日期：2026-11-10

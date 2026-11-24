@@ -1,0 +1,7 @@
+{
+  "case": "IR17 missing required Stop heading",
+  "checker": "working tree revision after fix",
+  "exit": 1,
+  "stdout": "Plan schedule checks failed:\n- E:\\Cuexis-worktree\\out\\review\\stage-07-rr\\checkout-review-20261122\\negative-after-59w7h245\\stage\\tasks\\T-05.md: task sections must occur once in order: 目标, 输入, 写域, 步骤, 任务级验收, 证据, 停止条件\n",
+  "stderr": ""
+}
