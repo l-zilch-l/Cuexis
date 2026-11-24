@@ -114,20 +114,24 @@ cuexis_player_dist
 
 All C++ dependencies, including Catch2, must be built by the same toolchain as Cuexis. The
 standard `debug` and `release` presets use the MSVC-compatible `x64-windows` vcpkg triplet and
-must be configured from a Visual Studio Developer PowerShell with `cl.exe` available:
+need the Visual Studio `cl.exe`. A plain shell on this machine has MSYS2 GCC ahead of MSVC on
+PATH, so load the developer environment through the repository helper instead of a hardcoded
+vcvars path:
 
 ```powershell
-cmake --preset debug --fresh
-cmake --build --preset debug
-ctest --preset debug --no-tests=error
+pwsh -NoProfile -File tools/with-msvc.ps1 cmake --preset debug --fresh
+pwsh -NoProfile -File tools/with-msvc.ps1 cmake --build --preset debug
+pwsh -NoProfile -File tools/with-msvc.ps1 ctest --preset debug --no-tests=error
 ```
+
+The helper locates Visual Studio with `vswhere.exe`, imports `VsDevCmd.bat`, keeps the process
+`VCPKG_ROOT`, and forwards the command and its exit code. Quote arguments that contain a drive
+letter after `=`. A Visual Studio Developer PowerShell also works unchanged.
 
 For the repository MinGW environment, use the matching preset and triplet instead. A fresh
 build directory is required when changing compiler or triplet:
 
 ```powershell
-$env:HTTP_PROXY = "http://127.0.0.1:7890"
-$env:HTTPS_PROXY = "http://127.0.0.1:7890"
 cmake --preset mingw-debug --fresh
 cmake --build --preset mingw-debug
 ctest --preset mingw-debug --no-tests=error
@@ -136,12 +140,13 @@ ctest --preset mingw-debug --no-tests=error
 For a complete headless test run (without SDL/OpenGL/Player targets), use:
 
 ```powershell
-$env:HTTP_PROXY = "http://127.0.0.1:7890"
-$env:HTTPS_PROXY = "http://127.0.0.1:7890"
 cmake --preset mingw-headless-debug --fresh
 cmake --build --preset mingw-headless-debug
 ctest --preset mingw-headless-debug --no-tests=error
 ```
+
+vcpkg downloads need GitHub access. Set `HTTP_PROXY`/`HTTPS_PROXY` only when the current network
+needs a proxy, and do not leave a stale proxy port in the environment.
 
 Configure rejects GNU/MinGW with `x64-windows` and MSVC with a `*-mingw-*` triplet. This
 prevents late linker failures caused by mixing MinGW objects with MSVC-built Catch2 libraries,
@@ -174,7 +179,7 @@ vcpkg
 
 设置 `VCPKG_ROOT` 指向 vcpkg 根目录。不得在 Preset 中提交个人绝对路径。
 
-使用 Visual Studio Developer PowerShell/Command Prompt，或确保 `cl.exe`、Ninja 和 CMake 已处于 PATH。
+使用 Visual Studio Developer PowerShell/Command Prompt，或通过 `tools/with-msvc.ps1` 加载开发环境，或确保 `cl.exe`、Ninja 和 CMake 已处于 PATH。
 
 MSVC + Ninja 配置会探测 `/showIncludes` 前缀。当前复现环境的输入代码页为 936、输出代码页为
 65001：CMake 按输入代码页误解码 UTF-8 编译器输出，修复使用 UTF-8 前缀。非 UTF-8 输出保留
@@ -484,7 +489,7 @@ warmed update/extract/validate 和 reload peak memory。数值用于同机趋势
 ## 常见错误
 
 ```text
-找不到 cl.exe：从 Visual Studio Developer 环境运行
+找不到 cl.exe：用 tools/with-msvc.ps1 包裹命令，或从 Visual Studio Developer 环境运行
 找不到 vcpkg toolchain：检查 VCPKG_ROOT
 依赖版本漂移：检查 baseline 和 overlay port
 Catch2 测试未发现：确认 CUEXIS_BUILD_TESTS、BUILD_TESTING 和 test preset
