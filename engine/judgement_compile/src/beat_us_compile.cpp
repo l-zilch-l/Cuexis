@@ -377,8 +377,7 @@ namespace {
 }
 
 [[maybe_unused, nodiscard]] auto findGradeSelection(const BeatRequirementSource& authored,
-                                                    PhaseKind kind)
-    -> const BeatGradeSelection* {
+                                                    PhaseKind kind) -> const BeatGradeSelection* {
     for (const auto& selection : authored.gradeTables) {
         if (selection.phase == kind) {
             return &selection;
