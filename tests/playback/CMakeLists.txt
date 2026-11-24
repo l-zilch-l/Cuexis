@@ -91,6 +91,9 @@ endif()
 
 if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
     target_include_directories(cuexis_playback_tests PRIVATE ${PROJECT_SOURCE_DIR}/engine/judgement/internal)
+    # The GP-03 contract case drives the runtime kernel's test-only seal/Fold failure points through
+    # the real transaction; that internal seam is not installed and is not part of any public header.
+    target_include_directories(cuexis_playback_tests PRIVATE ${PROJECT_SOURCE_DIR}/engine/judgement/src)
     target_sources(cuexis_playback_tests PRIVATE ../pd/publication_integration_tests.cpp
         ../pd/projection_adapter_tests.cpp ../pd/projection_integration_tests.cpp
         ../pd/software_transaction_integration_tests.cpp

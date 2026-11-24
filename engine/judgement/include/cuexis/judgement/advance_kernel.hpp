@@ -1,18 +1,21 @@
 #pragma once
 
-//  Judgement runtime - the minimal tick-record advance kernel.
+//  Judgement runtime - the tick-record advance kernel.
 //
-//  This kernel consumes `runtime::PreparedGameplay` only. It owns the same-run ingress cursor, the
-//  sequence allocator and the receive-closed flag; the phase/Fold settlement is deliberately not
-//  part of this first minimal kernel (the report records that gap). No author header, graph or
-//  legacy timebase type is reachable from here.
+//  The kernel consumes `runtime::PreparedGameplay` only. It owns the same-run ingress cursor, the
+//  sequence allocator, the receive-closed flag, the owner-thread guard and the per-call fault
+//  state. Settlement is staged first and folded second: a successful seal publishes the slots and
+//  the frontier, and a Fold failure keeps that sealed prefix while reporting `faulted` with no
+//  score payload. No author header, graph or legacy timebase type is reachable from here.
 
 #include <cuexis/core/result.hpp>
+#include <cuexis/core/thread_checker.hpp>
 #include <cuexis/judgement/advance.hpp>
 #include <cuexis/judgement/prepared_gameplay.hpp>
 
 #include <compare>
 #include <cstdint>
+#include <functional>
 #include <optional>
 #include <span>
 #include <string>
@@ -20,6 +23,10 @@
 #include <vector>
 
 namespace cuexis::judgement::runtime {
+
+namespace detail {
+class AdvanceTestAccess;
+}
 
 //  One same-run ingress sequence. 0 is the first sequence; the allocator never wraps.
 class IngressSequence final {
@@ -88,11 +95,36 @@ struct StopCut final {
     Tick cutoff{};
 };
 
-//  The result of one advance or Stop transaction.
+//  The runtime-side session configuration. The timebase is the verified `PreparedTimebase` of the
+//  run, not the legacy ownable profile; identity declarations stay by value. The legacy-only
+//  carriers are represented as a refusal: the runtime shape records that a legacy ruleset was
+//  requested so `prepare` can reject it instead of silently downgrading.
+struct SessionConfiguration final {
+    PreparedTimebase timebase;
+    LatePolicyParameters latePolicy;
+    PreparedIdentityDeclarations identityDeclarations;
+    std::string calibrationIdentityToken;
+    std::string executionProfileToken;
+    std::string lateAlgorithmToken;
+    std::string factSemanticRevision;
+    //  Any value means "this call carries a legacy ruleset"; the v3 runtime boundary refuses it.
+    std::optional<std::string> legacyRulesetToken;
+};
+
+//  The observable lifecycle of one kernel. A default-constructed kernel is `unprepared`; a faulted
+//  kernel freezes and refuses every later mutating call.
+enum class AdvanceSessionState : std::uint8_t { unprepared, prepared, faulted };
+
+//  The result of one advance or Stop transaction. `normalized` is present only on the first normal
+//  completion of the run; a faulted call keeps the sealed prefix (`settledEvents`, slots) and
+//  leaves it empty.
 struct AdvanceSummary final {
     std::optional<Tick> processedThrough;
     std::size_t processedRecords{0};
     std::size_t settledEvents{0};
+    //  The number of settlement slots this call filled; equal to `settledEvents` when the call got
+    //  a slot span, zero for the counting-only overload. A faulted call reports the sealed prefix.
+    std::size_t written{0};
     std::int64_t j{0};
     std::int64_t c{0};
     std::uint32_t score{0};
@@ -102,14 +134,31 @@ struct AdvanceSummary final {
     std::uint32_t mc{0};
     std::uint32_t combo{0};
     std::uint32_t maxCombo{0};
+    AdvanceStatus status{AdvanceStatus::ongoing};
+    FaultCode fault{AdvanceFaultStage::none, AdvanceFaultReason::none};
+    std::optional<NormalizedScoreResult> normalized;
 };
 
 class AdvanceKernel final {
   public:
-    //  Publishes one owning prepared handle. The handle must carry a complete late policy; no
-    //  phase or score table is required by this minimal kernel.
-    [[nodiscard]] static auto prepare(PreparedGameplay prepared, RunKey run = {})
+    //  An unprepared kernel carries no prepared handle and refuses every mutating call with
+    //  `session.mutation_rejected` at `/session/state`.
+    AdvanceKernel() noexcept = default;
+    AdvanceKernel(const AdvanceKernel&) = delete;
+    AdvanceKernel(AdvanceKernel&& other) noexcept;
+    auto operator=(AdvanceKernel&& other) noexcept -> AdvanceKernel&;
+    auto operator=(const AdvanceKernel&) -> AdvanceKernel& = delete;
+    ~AdvanceKernel() noexcept = default;
+
+    //  Publishes one owning prepared handle. Both run-key components must be non-zero; the first
+    //  call is the thread that owns the kernel.
+    [[nodiscard]] static auto prepare(PreparedGameplay prepared, RunKey run)
         -> core::Result<AdvanceKernel>;
+
+    //  The runtime session form: validates the timebase, late policy, identity declarations and the
+    //  absence of legacy overrides against the prepared run before publishing the handle.
+    [[nodiscard]] static auto prepare(SessionConfiguration configuration, PreparedGameplay prepared,
+                                      RunKey run) -> core::Result<AdvanceKernel>;
 
     //  Assigns contiguous sequences to the whole batch before any late/admission decision, then
     //  records accept/reject decisions and commits the cursor with the records. A canonical or
@@ -122,19 +171,27 @@ class AdvanceKernel final {
 
     //  Advances the frontier and processes accepted records whose dispatch is at or before the
     //  horizon. It never moves backwards and never allocates a sequence. The overload without
-    //  slots settles for counting only; the overload with slots rejects the whole transaction with
-    //  `capability.budget_insufficient` when the slots cannot hold the events.
+    //  slots settles for counting only; every overload with slots requires at least P slots before
+    //  the transaction starts. The run overload applies the contract pre-check order.
     [[nodiscard]] auto advance(Tick horizon) -> core::Result<AdvanceSummary>;
     [[nodiscard]] auto advance(Tick horizon, std::span<SettlementEvent> slots)
         -> core::Result<AdvanceSummary>;
+    [[nodiscard]] auto advance(Tick horizon, RunKey run, std::span<SettlementEvent> slots)
+        -> core::Result<AdvanceSummary>;
 
-    //  Validates the caller's run, bound and cutoff, closes receive, and drains accepted records up
-    //  to the cutoff. The upper bound must equal the current cursor exactly.
+    //  Validates the caller's run, bound and cutoff, closes receive, seals the events up to the
+    //  cutoff and folds them. The upper bound must equal the current cursor exactly.
     [[nodiscard]] auto advanceStopCut(const StopCut& cut, std::span<SettlementEvent> slots)
         -> core::Result<AdvanceSummary>;
 
     [[nodiscard]] auto run() const noexcept -> RunKey {
         return run_;
+    }
+    [[nodiscard]] auto state() const noexcept -> AdvanceSessionState {
+        return state_;
+    }
+    [[nodiscard]] auto fault() const noexcept -> FaultCode {
+        return fault_;
     }
     [[nodiscard]] auto receiveClosed() const noexcept -> bool {
         return receiveClosed_;
@@ -148,10 +205,18 @@ class AdvanceKernel final {
     [[nodiscard]] auto archivedRecords() const noexcept -> std::span<const IngressReceipt> {
         return archive_;
     }
+    //  P: the exact number of phase instances in this run, which is the settlement slot count.
+    [[nodiscard]] auto settlementCapacity() const noexcept -> std::size_t {
+        return settlementCapacity_;
+    }
+    //  The owning dictionary of this prepared run. The host copies it before the run starts.
+    [[nodiscard]] auto dictionary() const noexcept -> const SettlementDictionary&;
     //  Read-only, owning replay: no renumbering, no re-emission, no allocation of sequence.
     [[nodiscard]] auto replay() const -> ReplaySnapshot;
 
   private:
+    friend class detail::AdvanceTestAccess;
+
     AdvanceKernel(PreparedGameplay prepared, RunKey run, LatePolicyParameters late);
 
     struct RequirementRun final {
@@ -167,8 +232,18 @@ class AdvanceKernel final {
         bool settled{false};
     };
 
-    auto advanceInternal(Tick horizon, std::span<SettlementEvent> slots, bool enforceSlots)
+    auto advanceInternal(Tick horizon, const RunKey* run, std::span<SettlementEvent> slots,
+                         bool enforceSlots) -> core::Result<AdvanceSummary>;
+    auto stopCutInternal(const StopCut& cut, std::span<SettlementEvent> slots)
         -> core::Result<AdvanceSummary>;
+    auto runTransaction(Tick horizon, const RunKey* run, std::span<SettlementEvent> slots,
+                        bool enforceSlots, bool closeReceive) -> core::Result<AdvanceSummary>;
+    auto summaryOf(std::optional<Tick> processedThrough, std::size_t processed,
+                   std::size_t written) const -> AdvanceSummary;
+    auto rejectWrongThread() const -> core::Error;
+    auto rejectState(std::string_view reason, std::string_view message) const -> core::Error;
+    auto rejectRun(std::string_view reason, std::string_view message) const -> core::Error;
+    void markFaulted(AdvanceFaultStage stage, AdvanceFaultReason reason);
     auto route(Tick observation, bool& forwarded) const -> std::optional<Tick>;
     auto requirementIndexFor(const TickRecord& record) const -> std::optional<std::size_t>;
     auto phaseOffset(std::size_t requirement) const -> std::size_t;
@@ -177,11 +252,12 @@ class AdvanceKernel final {
     auto lastTailEnd(const PreparedRequirement& requirement) const -> Tick;
     auto gradeIndex(std::size_t requirement, PhaseKind phase, std::int64_t error) const
         -> std::optional<std::uint32_t>;
+    auto directionOf(std::size_t requirement, PhaseKind phase, std::int64_t error) const
+        -> std::optional<TimingDirection>;
     auto emit(std::size_t requirement, PhaseKind phase, Tick tick, Outcome outcome,
-              std::optional<std::int64_t> error, std::optional<TimingDirection> direction)
-        -> SettlementEvent;
+              std::optional<std::int64_t> error) -> SettlementEvent;
     void settleRecord(std::size_t requirement, const TickRecord& record, Tick dispatch);
-    void settleTimers(Tick horizon);
+    void settleTimers(Tick tick, Tick sealLimit);
     void applyFold(const SettlementEvent& event);
     auto computeScore() const -> std::uint32_t;
     auto processThrough(Tick horizon) -> std::size_t;
@@ -196,9 +272,17 @@ class AdvanceKernel final {
     std::uint32_t combo_{0};
     std::uint32_t maxCombo_{0};
 
-    PreparedGameplay prepared_;
+    std::optional<PreparedGameplay> prepared_;
+    std::optional<SessionConfiguration> configuration_;
     RunKey run_{};
     LatePolicyParameters late_;
+    core::ThreadChecker owner_;
+    AdvanceSessionState state_{AdvanceSessionState::unprepared};
+    FaultCode fault_{AdvanceFaultStage::none, AdvanceFaultReason::none};
+    bool inTransaction_{false};
+    bool completed_{false};
+    std::size_t settlementCapacity_{0};
+    Tick terminalHorizon_{};
     std::optional<Tick> frontier_;
     std::optional<IngressSequence> acceptedThrough_;
     IngressSequence nextSequence_{};
@@ -207,6 +291,11 @@ class AdvanceKernel final {
     std::vector<TickRecord> records_;
     std::vector<SettlementEvent> settled_;
     std::vector<std::size_t> pending_;
+
+    //  Test-only seam; empty in production. `advance_testing.hpp` maps its controls onto these.
+    std::optional<std::uint8_t> testFaultPoint_;
+    std::size_t testSealOrdinal_{1};
+    std::function<void()> testAtSeal_;
 };
 
 } // namespace cuexis::judgement::runtime

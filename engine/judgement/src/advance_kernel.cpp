@@ -1,11 +1,48 @@
 #include <cuexis/judgement/advance_kernel.hpp>
 
+#include "advance_testing.hpp"
+
 #include <algorithm>
 #include <limits>
+#include <new>
+#include <stdexcept>
 #include <utility>
 
 namespace cuexis::judgement::runtime {
 namespace {
+
+//  Test injection points; the values match `detail::AdvanceFaultPoint` in `advance_testing.hpp`.
+constexpr std::uint8_t kBeforeSeal = 1;
+constexpr std::uint8_t kAfterSealFold = 2;
+constexpr std::uint8_t kBeforeNumbering = 3;
+constexpr std::uint8_t kReentrantSeal = 4;
+constexpr std::uint8_t kAllocationBeforeSeal = 5;
+constexpr std::uint8_t kArithmeticBeforeSeal = 6;
+
+//  The production classification of one transaction exception: an allocation failure is a
+//  resource fault, a checked-arithmetic failure is an arithmetic fault, everything else is an
+//  invariant violation.
+auto faultReasonFromCurrentException() noexcept -> AdvanceFaultReason {
+    try {
+        throw;
+    } catch (const std::bad_alloc&) {
+        return AdvanceFaultReason::resource;
+    } catch (const std::overflow_error&) {
+        return AdvanceFaultReason::arithmetic;
+    } catch (...) {
+        return AdvanceFaultReason::invariant;
+    }
+}
+
+struct TransactionGuard final {
+    bool& flag;
+    explicit TransactionGuard(bool& value) noexcept : flag(value) {
+        flag = true;
+    }
+    ~TransactionGuard() {
+        flag = false;
+    }
+};
 
 auto kernelError(std::string code, std::string reason, std::string path, std::string message)
     -> core::Error {
@@ -15,6 +52,18 @@ auto kernelError(std::string code, std::string reason, std::string path, std::st
         .withContext("faulted", "false")
         .withContext("reason", std::move(reason))
         .withContext("fieldPath", std::move(path));
+}
+
+auto capacityError(std::size_t required, std::size_t provided) -> core::Error {
+    return core::Error{"judgement.advance.output_capacity_insufficient",
+                       "the settlement slots are too small"}
+        .withContext("category", "budget_exceeded")
+        .withContext("severity", "error")
+        .withContext("faulted", "false")
+        .withContext("reason", "budget")
+        .withContext("fieldPath", "/slots")
+        .withContext("required", std::to_string(required))
+        .withContext("provided", std::to_string(provided));
 }
 
 auto lateError(std::string message) -> core::Error {
@@ -43,34 +92,207 @@ auto validateLate(const LatePolicyParameters& late) -> core::Result<void> {
     return {};
 }
 
+auto sameTimebase(const PreparedTimebase& left, const PreparedTimebase& right) noexcept -> bool {
+    return left.identity == right.identity &&
+           left.microsecondsNumerator == right.microsecondsNumerator &&
+           left.microsecondsDenominator == right.microsecondsDenominator &&
+           left.origin == right.origin;
+}
+
+auto lastTailEndOf(const PreparedRequirement& requirement) -> Tick {
+    std::optional<Tick> end;
+    for (const auto& window : requirement.timing.successWindows) {
+        if (window.phase.kind == PhaseKind::tail && (!end || window.end > *end)) {
+            end = window.end;
+        }
+    }
+    return end.value_or(requirement.deadline);
+}
+
 } // namespace
 
 AdvanceKernel::AdvanceKernel(PreparedGameplay prepared, RunKey run, LatePolicyParameters late)
     : prepared_(std::move(prepared)), run_(run), late_(std::move(late)) {
-    const auto requirements = prepared_.requirements();
+    const auto records = prepared_->records();
+    const auto requirements = records.requirements;
     runs_.resize(requirements.size());
     phaseOffsets_.reserve(requirements.size());
     std::size_t offset = 0;
     for (const auto& requirement : requirements) {
         phaseOffsets_.push_back(offset);
         offset += requirement.phases.size();
+        terminalHorizon_ = std::max(terminalHorizon_, requirement.deadline);
+        terminalHorizon_ = std::max(terminalHorizon_, lastTailEndOf(requirement));
+        if (requirement.timing.body) {
+            terminalHorizon_ = std::max(terminalHorizon_, requirement.timing.body->end);
+        }
     }
-    const auto* score = prepared_.records().normalizedScore;
+    settlementCapacity_ = offset;
+    const auto* score = prepared_->records().normalizedScore;
     if (score != nullptr) {
         units_.reserve(score->units.size());
         for (const auto& unit : score->units) {
             units_.push_back(UnitRun{unit.phaseIndices, unit.phaseIndices.size(), false});
         }
     }
+    state_ = AdvanceSessionState::prepared;
+}
+
+AdvanceKernel::AdvanceKernel(AdvanceKernel&& other) noexcept
+    : runs_(std::move(other.runs_)), units_(std::move(other.units_)),
+      phaseOffsets_(std::move(other.phaseOffsets_)), staged_(std::move(other.staged_)),
+      j_(other.j_), c_(other.c_), score_(other.score_), combo_(other.combo_),
+      maxCombo_(other.maxCombo_), prepared_(std::move(other.prepared_)),
+      configuration_(std::move(other.configuration_)), run_(other.run_),
+      late_(std::move(other.late_)), state_(other.state_), fault_(other.fault_),
+      inTransaction_(false), completed_(other.completed_),
+      settlementCapacity_(other.settlementCapacity_), terminalHorizon_(other.terminalHorizon_),
+      frontier_(other.frontier_), acceptedThrough_(other.acceptedThrough_),
+      nextSequence_(other.nextSequence_), receiveClosed_(other.receiveClosed_),
+      archive_(std::move(other.archive_)), records_(std::move(other.records_)),
+      settled_(std::move(other.settled_)), pending_(std::move(other.pending_)),
+      testFaultPoint_(other.testFaultPoint_), testSealOrdinal_(other.testSealOrdinal_),
+      testAtSeal_(std::move(other.testAtSeal_)) {
+    other.prepared_.reset();
+    other.state_ = AdvanceSessionState::unprepared;
+    other.inTransaction_ = false;
+    other.staged_.clear();
+}
+
+auto AdvanceKernel::operator=(AdvanceKernel&& other) noexcept -> AdvanceKernel& {
+    if (this == &other) {
+        return *this;
+    }
+    runs_ = std::move(other.runs_);
+    units_ = std::move(other.units_);
+    phaseOffsets_ = std::move(other.phaseOffsets_);
+    staged_ = std::move(other.staged_);
+    j_ = other.j_;
+    c_ = other.c_;
+    score_ = other.score_;
+    combo_ = other.combo_;
+    maxCombo_ = other.maxCombo_;
+    prepared_ = std::move(other.prepared_);
+    configuration_ = std::move(other.configuration_);
+    run_ = other.run_;
+    late_ = std::move(other.late_);
+    state_ = other.state_;
+    fault_ = other.fault_;
+    inTransaction_ = false;
+    completed_ = other.completed_;
+    settlementCapacity_ = other.settlementCapacity_;
+    terminalHorizon_ = other.terminalHorizon_;
+    frontier_ = other.frontier_;
+    acceptedThrough_ = other.acceptedThrough_;
+    nextSequence_ = other.nextSequence_;
+    receiveClosed_ = other.receiveClosed_;
+    archive_ = std::move(other.archive_);
+    records_ = std::move(other.records_);
+    settled_ = std::move(other.settled_);
+    pending_ = std::move(other.pending_);
+    testFaultPoint_ = other.testFaultPoint_;
+    testSealOrdinal_ = other.testSealOrdinal_;
+    testAtSeal_ = std::move(other.testAtSeal_);
+    other.prepared_.reset();
+    other.state_ = AdvanceSessionState::unprepared;
+    other.inTransaction_ = false;
+    other.staged_.clear();
+    return *this;
 }
 
 auto AdvanceKernel::prepare(PreparedGameplay prepared, RunKey run) -> core::Result<AdvanceKernel> {
+    if (run.sessionScope == 0 || run.runEpoch == 0) {
+        return core::unexpected(kernelError("session.mutation_rejected", "run_zero", "/run",
+                                            "the run key components must be non-zero"));
+    }
     auto valid = validateLate(prepared.records().latePolicy);
     if (!valid) {
         return core::unexpected(valid.error());
     }
     auto late = prepared.records().latePolicy;
     return AdvanceKernel{std::move(prepared), run, std::move(late)};
+}
+
+auto AdvanceKernel::prepare(SessionConfiguration configuration, PreparedGameplay prepared,
+                            RunKey run) -> core::Result<AdvanceKernel> {
+    if (configuration.legacyRulesetToken.has_value()) {
+        return core::unexpected(kernelError("judgement.execution.relation_invalid",
+                                            "legacy_ruleset_unsupported", "/session/ruleset",
+                                            "a v3 runtime session refuses a legacy ruleset"));
+    }
+    const auto records = prepared.records();
+    if (!sameTimebase(configuration.timebase, records.timebase)) {
+        return core::unexpected(kernelError("judgement.execution.relation_invalid",
+                                            "timebase_mismatch", "/timebase",
+                                            "the session timebase differs from the prepared run"));
+    }
+    if (configuration.identityDeclarations != prepared.identityDeclarations()) {
+        return core::unexpected(
+            core::Error{"playback.gameplay.invalid",
+                        "the session identity declarations differ from the prepared run"}
+                .withContext("category", "identity_closure_incomplete")
+                .withContext("severity", "error")
+                .withContext("faulted", "false")
+                .withContext("fieldPath", "/identityDeclarations"));
+    }
+    if (configuration.latePolicy != records.latePolicy) {
+        return core::unexpected(
+            kernelError("judgement.execution.relation_invalid", "late_policy_mismatch",
+                        "/latePolicy", "the session late policy differs from the prepared run"));
+    }
+    if (!configuration.executionProfileToken.empty() &&
+        configuration.executionProfileToken != records.executionProfile) {
+        return core::unexpected(kernelError(
+            "judgement.execution.relation_invalid", "execution_profile_override",
+            "/session/executionProfile", "the session overrides the prepared execution profile"));
+    }
+    if (!configuration.lateAlgorithmToken.empty() &&
+        configuration.lateAlgorithmToken !=
+            prepared.identityDeclarations().engine.lateAlgorithmToken.value_or("")) {
+        return core::unexpected(kernelError("judgement.execution.relation_invalid",
+                                            "late_algorithm_override", "/session/lateAlgorithm",
+                                            "the session overrides the prepared late algorithm"));
+    }
+    if (!configuration.factSemanticRevision.empty() &&
+        configuration.factSemanticRevision !=
+            prepared.identityDeclarations().engine.factSemanticRevision) {
+        return core::unexpected(kernelError("judgement.execution.relation_invalid",
+                                            "fact_semantics_override", "/session/factSemantic",
+                                            "the session overrides the prepared fact semantics"));
+    }
+    auto kernel = prepare(std::move(prepared), run);
+    if (!kernel) {
+        return kernel;
+    }
+    kernel->configuration_ = std::move(configuration);
+    return kernel;
+}
+
+auto AdvanceKernel::rejectWrongThread() const -> core::Error {
+    return kernelError("session.mutation_rejected", "wrong_thread", "/session/owner",
+                       "the advance kernel is bound to another thread");
+}
+
+auto AdvanceKernel::rejectState(std::string_view reason, std::string_view message) const
+    -> core::Error {
+    return kernelError("session.mutation_rejected", std::string{reason}, "/session/state",
+                       std::string{message});
+}
+
+auto AdvanceKernel::rejectRun(std::string_view reason, std::string_view message) const
+    -> core::Error {
+    return kernelError("session.mutation_rejected", std::string{reason}, "/run",
+                       std::string{message});
+}
+
+void AdvanceKernel::markFaulted(AdvanceFaultStage stage, AdvanceFaultReason reason) {
+    state_ = AdvanceSessionState::faulted;
+    fault_ = FaultCode{stage, reason};
+}
+
+auto AdvanceKernel::dictionary() const noexcept -> const SettlementDictionary& {
+    static const SettlementDictionary empty;
+    return prepared_ ? prepared_->settlementDictionary() : empty;
 }
 
 auto AdvanceKernel::route(Tick observation, bool& forwarded) const -> std::optional<Tick> {
@@ -106,9 +328,35 @@ auto AdvanceKernel::route(Tick observation, bool& forwarded) const -> std::optio
 
 auto AdvanceKernel::receiveCanonicalBatch(std::span<const TickRecord> records)
     -> core::Result<std::vector<IngressReceipt>> {
+    if (!owner_.isCurrent()) {
+        return core::unexpected(rejectWrongThread());
+    }
+    if (inTransaction_) {
+        return core::unexpected(kernelError("session.mutation_rejected", "reentrant",
+                                            "/session/owner",
+                                            "the advance kernel is already in a transaction"));
+    }
+    if (state_ != AdvanceSessionState::prepared) {
+        if (state_ == AdvanceSessionState::faulted) {
+            return core::unexpected(
+                rejectState("faulted", "the advance kernel is already faulted"));
+        }
+        return core::unexpected(
+            rejectState("not_prepared", "the advance kernel has no prepared run"));
+    }
     if (receiveClosed_) {
-        return core::unexpected(kernelError("judgement.stop_cut.closed", "receive_closed",
-                                            "/receive", "the receive boundary is closed"));
+        return core::unexpected(kernelError("judgement.execution.relation_invalid",
+                                            "receive_closed", "/receive",
+                                            "the receive boundary is closed"));
+    }
+    if (testFaultPoint_ == kBeforeNumbering) {
+        return core::unexpected(core::Error{"host.rpa.allocation_failed",
+                                            "the ingress reservation could not be allocated"}
+                                    .withContext("category", "budget_exceeded")
+                                    .withContext("severity", "error")
+                                    .withContext("faulted", "false")
+                                    .withContext("reason", "allocation_failed")
+                                    .withContext("fieldPath", "/records"));
     }
     for (const auto& record : records) {
         if (record.domainToken.empty() || record.sourceClass.empty() ||
@@ -123,6 +371,7 @@ auto AdvanceKernel::receiveCanonicalBatch(std::span<const TickRecord> records)
         return core::unexpected(kernelError("host.rpa.capacity_exceeded", "capacity", "/records",
                                             "the sequence space is exhausted"));
     }
+    TransactionGuard guard{inTransaction_};
     //  Number the whole batch before any late/admission decision, then commit records and cursor
     //  together. No operation after this point can fail.
     std::vector<IngressReceipt> receipts;
@@ -176,175 +425,336 @@ auto AdvanceKernel::replay() const -> ReplaySnapshot {
     return snapshot;
 }
 
-auto AdvanceKernel::processThrough(Tick horizon) -> std::size_t {
-    std::vector<std::size_t> ordered;
-    ordered.reserve(pending_.size());
-    for (const auto index : pending_) {
-        if (archive_[index].dispatchTick <= horizon) {
-            ordered.push_back(index);
-        }
-    }
-    std::sort(ordered.begin(), ordered.end(), [this](auto left, auto right) {
-        if (archive_[left].dispatchTick != archive_[right].dispatchTick) {
-            return archive_[left].dispatchTick < archive_[right].dispatchTick;
-        }
-        return archive_[left].sequence < archive_[right].sequence;
-    });
-    std::size_t processed = 0;
-    for (const auto index : ordered) {
-        const auto dispatch = archive_[index].dispatchTick;
-        settleTimers(dispatch);
-        if (const auto requirement = requirementIndexFor(records_[index])) {
-            settleRecord(*requirement, records_[index], dispatch);
-        }
-        pending_.erase(std::find(pending_.begin(), pending_.end(), index));
-        ++processed;
-    }
-    settleTimers(horizon);
-    return processed;
+auto AdvanceKernel::summaryOf(std::optional<Tick> processedThrough, std::size_t processed,
+                              std::size_t written) const -> AdvanceSummary {
+    const auto* normalized = prepared_ ? prepared_->records().normalizedScore : nullptr;
+    AdvanceSummary summary;
+    summary.processedThrough = processedThrough;
+    summary.processedRecords = processed;
+    summary.settledEvents = written;
+    summary.written = written;
+    summary.j = j_;
+    summary.c = c_;
+    summary.score = score_;
+    summary.jMax = normalized ? normalized->basis.jMax : 0;
+    summary.cMax = normalized ? normalized->basis.cMax : 0;
+    summary.mj = normalized ? normalized->mode.mj : 0;
+    summary.mc = normalized ? normalized->mode.mc : 0;
+    summary.combo = combo_;
+    summary.maxCombo = maxCombo_;
+    summary.status = completed_ ? AdvanceStatus::completed : AdvanceStatus::ongoing;
+    summary.fault = fault_;
+    return summary;
 }
 
-auto AdvanceKernel::advanceInternal(Tick horizon, std::span<SettlementEvent> slots,
-                                    bool enforceSlots) -> core::Result<AdvanceSummary> {
-    if (receiveClosed_) {
-        return core::unexpected(kernelError("judgement.stop_cut.closed", "receive_closed",
-                                            "/advance", "the receive boundary is closed"));
+auto AdvanceKernel::runTransaction(Tick horizon, const RunKey* run,
+                                   std::span<SettlementEvent> slots, bool enforceSlots,
+                                   bool closeReceive) -> core::Result<AdvanceSummary> {
+    if (!owner_.isCurrent()) {
+        return core::unexpected(rejectWrongThread());
+    }
+    if (inTransaction_) {
+        return core::unexpected(kernelError("session.mutation_rejected", "reentrant",
+                                            "/session/owner",
+                                            "the advance kernel is already in a transaction"));
+    }
+    if (state_ != AdvanceSessionState::prepared) {
+        if (state_ == AdvanceSessionState::faulted) {
+            return core::unexpected(
+                rejectState("faulted", "the advance kernel is already faulted"));
+        }
+        return core::unexpected(
+            rejectState("not_prepared", "the advance kernel has no prepared run"));
+    }
+    if (closeReceive && receiveClosed_) {
+        return core::unexpected(kernelError("judgement.execution.relation_invalid",
+                                            "receive_closed", "/stopCut",
+                                            "a StopCut was already accepted"));
+    }
+    if (run != nullptr && *run != run_) {
+        return core::unexpected(rejectRun("run_mismatch", "the advance call names another run"));
     }
     if (frontier_ && horizon < *frontier_) {
-        return core::unexpected(kernelError("judgement.execution.horizon_reversed",
-                                            "horizon_reversed", "/horizon",
-                                            "the advance horizon moved backwards"));
+        return core::unexpected(kernelError("judgement.timebase.time_reversal", "horizon_reversed",
+                                            "/horizon", "the advance horizon moved backwards"));
     }
-    auto runs = runs_;
-    auto units = units_;
-    auto pending = pending_;
-    auto j = j_;
-    auto c = c_;
-    auto score = score_;
-    auto combo = combo_;
-    auto maxCombo = maxCombo_;
-    std::vector<SettlementEvent> staged;
+    if (enforceSlots && slots.size() < settlementCapacity_) {
+        return core::unexpected(capacityError(settlementCapacity_, slots.size()));
+    }
+    TransactionGuard guard{inTransaction_};
+    if (closeReceive) {
+        receiveClosed_ = true;
+    }
+
+    //  Ordinary advance finalizes timers only through `horizon - windowCloseThreshold`; the StopCut
+    //  already carries the stopped frontier and seals through its cutoff without the offset.
+    auto sealLimit = horizon;
+    if (!closeReceive) {
+        auto limit =
+            offsetTicks(horizon, TickSpan{-late_.windowCloseThreshold.measuredValue()->value()});
+        if (!limit) {
+            return core::unexpected(
+                kernelError("judgement.timebase.tick_overflow", "tick_overflow", "/horizon",
+                            "the close-threshold seal limit is not representable"));
+        }
+        sealLimit = *limit;
+    }
+
     staged_.clear();
-    const auto processed = processThrough(horizon);
-    if (enforceSlots && staged_.size() > slots.size()) {
-        runs_ = std::move(runs);
-        units_ = std::move(units);
-        pending_ = std::move(pending);
-        j_ = j;
-        c_ = c;
-        score_ = score;
-        combo_ = combo;
-        maxCombo_ = maxCombo;
+    auto makeSummary = [this, enforceSlots](std::optional<Tick> through, std::size_t processed,
+                                            std::size_t written) {
+        auto summary = summaryOf(through, processed, written);
+        if (!enforceSlots) {
+            summary.written = 0;
+        }
+        return summary;
+    };
+
+    std::size_t writtenTotal = 0;
+    std::size_t processedSealed = 0;
+    std::size_t sealOrdinal = 0;
+    std::optional<Tick> sealedFrontier = frontier_;
+    auto committedRuns = runs_;
+    auto committedPending = pending_;
+    AdvanceFaultStage stage = AdvanceFaultStage::kernel;
+    auto faultSummary = [&](AdvanceFaultStage faultStage, AdvanceFaultReason reason) {
+        runs_ = std::move(committedRuns);
+        pending_ = std::move(committedPending);
         staged_.clear();
-        return core::unexpected(kernelError("capability.budget_insufficient", "budget", "/slots",
-                                            "the settlement slots are too small"));
+        markFaulted(faultStage, reason);
+        auto summary = makeSummary(sealedFrontier, processedSealed, writtenTotal);
+        summary.status = AdvanceStatus::faulted;
+        summary.fault = fault_;
+        summary.normalized.reset();
+        return summary;
+    };
+
+    try {
+        //  Candidate seals: every tick that can carry a dispatch or a due timer, plus the horizon.
+        //  A record forwarded behind the sealed frontier (the late policy may queue it to
+        //  `close+1 <= frontier`) is processed in the first seal without moving the frontier back.
+        std::vector<Tick> ticks;
+        ticks.reserve(pending_.size() + (4 * prepared_->requirements().size()) + 1);
+        std::vector<std::size_t> behind;
+        std::vector<std::size_t> dispatched;
+        for (const auto index : pending_) {
+            const auto dispatch = archive_[index].dispatchTick;
+            if (dispatch > horizon) {
+                continue;
+            }
+            if (frontier_ && dispatch < *frontier_) {
+                behind.push_back(index);
+            } else {
+                dispatched.push_back(index);
+                ticks.push_back(dispatch);
+            }
+        }
+        for (const auto& requirement : prepared_->requirements()) {
+            if (requirement.deadline <= sealLimit &&
+                (!frontier_ || requirement.deadline >= *frontier_)) {
+                ticks.push_back(requirement.deadline);
+            }
+            if (requirement.timing.body && requirement.timing.body->end <= sealLimit &&
+                (!frontier_ || requirement.timing.body->end >= *frontier_)) {
+                ticks.push_back(requirement.timing.body->end);
+            }
+            const auto tailEnd = lastTailEnd(requirement);
+            if (tailEnd <= sealLimit && (!frontier_ || tailEnd >= *frontier_)) {
+                ticks.push_back(tailEnd);
+            }
+        }
+        ticks.push_back(horizon);
+        std::sort(ticks.begin(), ticks.end());
+        ticks.erase(std::unique(ticks.begin(), ticks.end()), ticks.end());
+        if (frontier_) {
+            ticks.erase(std::remove_if(ticks.begin(), ticks.end(),
+                                       [this](Tick tick) { return tick < *frontier_; }),
+                        ticks.end());
+        }
+        std::sort(behind.begin(), behind.end(), [this](auto left, auto right) {
+            return archive_[left].sequence < archive_[right].sequence;
+        });
+        std::sort(dispatched.begin(), dispatched.end(), [this](auto left, auto right) {
+            if (archive_[left].dispatchTick != archive_[right].dispatchTick) {
+                return archive_[left].dispatchTick < archive_[right].dispatchTick;
+            }
+            return archive_[left].sequence < archive_[right].sequence;
+        });
+
+        bool behindDone = false;
+        std::size_t dispatchedCursor = 0;
+        for (const auto tick : ticks) {
+            staged_.clear();
+            settleTimers(tick, sealLimit);
+            std::size_t processedThisTick = 0;
+            if (!behindDone) {
+                behindDone = true;
+                for (const auto index : behind) {
+                    if (const auto requirement = requirementIndexFor(records_[index])) {
+                        settleRecord(*requirement, records_[index], archive_[index].dispatchTick);
+                    }
+                    pending_.erase(std::find(pending_.begin(), pending_.end(), index));
+                    ++processedThisTick;
+                }
+            }
+            while (dispatchedCursor < dispatched.size() &&
+                   archive_[dispatched[dispatchedCursor]].dispatchTick <= tick) {
+                const auto index = dispatched[dispatchedCursor++];
+                if (const auto requirement = requirementIndexFor(records_[index])) {
+                    settleRecord(*requirement, records_[index], archive_[index].dispatchTick);
+                }
+                pending_.erase(std::find(pending_.begin(), pending_.end(), index));
+                ++processedThisTick;
+            }
+            //  Timers whose stage became complete on this tick's records settle in the same seal.
+            settleTimers(tick, sealLimit);
+            const bool eventBearing = !staged_.empty();
+            if (eventBearing) {
+                ++sealOrdinal;
+            }
+            if (eventBearing && sealOrdinal == testSealOrdinal_) {
+                if (testFaultPoint_ == kBeforeSeal) {
+                    throw std::runtime_error{"injected transaction failure"};
+                }
+                if (testFaultPoint_ == kAllocationBeforeSeal) {
+                    throw std::bad_alloc{};
+                }
+                if (testFaultPoint_ == kArithmeticBeforeSeal) {
+                    throw std::overflow_error{"injected checked arithmetic failure"};
+                }
+            }
+            const auto count = staged_.size();
+            //  The settled history insert may allocate; it runs before any slot or frontier is
+            //  published, so a failure keeps the whole call unsealed.
+            settled_.insert(settled_.end(), staged_.begin(), staged_.end());
+            if (enforceSlots) {
+                for (std::size_t index = 0; index < count; ++index) {
+                    slots[writtenTotal + index] = staged_[index];
+                }
+            }
+            frontier_ = tick;
+            sealedFrontier = tick;
+            processedSealed += processedThisTick;
+            writtenTotal += count;
+            committedRuns = runs_;
+            committedPending = pending_;
+            if (eventBearing) {
+                stage = AdvanceFaultStage::fold;
+                if (testFaultPoint_ == kAfterSealFold && sealOrdinal == testSealOrdinal_) {
+                    throw std::runtime_error{"injected Fold failure"};
+                }
+                for (const auto& event : staged_) {
+                    applyFold(event);
+                }
+                stage = AdvanceFaultStage::kernel;
+            }
+            if (eventBearing && testFaultPoint_ == kReentrantSeal &&
+                sealOrdinal == testSealOrdinal_ && testAtSeal_) {
+                auto callback = std::move(testAtSeal_);
+                testAtSeal_ = {};
+                callback();
+            }
+            staged_.clear();
+        }
+    } catch (...) {
+        return faultSummary(stage, faultReasonFromCurrentException());
     }
-    for (std::size_t index = 0; index < staged_.size(); ++index) {
-        if (index < slots.size()) {
-            slots[index] = staged_[index];
+    score_ = computeScore();
+    const bool terminal = std::all_of(runs_.begin(), runs_.end(), [](const auto& run) {
+        return run.stage == RequirementRun::Stage::done;
+    });
+    const bool finished =
+        frontier_.has_value() && *frontier_ >= terminalHorizon_ && pending_.empty() && terminal;
+    auto summary = makeSummary(horizon, processedSealed, writtenTotal);
+    if (finished) {
+        summary.status = AdvanceStatus::completed;
+        if (!completed_) {
+            const auto* normalized = prepared_ ? prepared_->records().normalizedScore : nullptr;
+            summary.normalized = NormalizedScoreResult{static_cast<std::uint64_t>(j_),
+                                                       normalized ? normalized->basis.jMax : 0,
+                                                       static_cast<std::uint64_t>(c_),
+                                                       normalized ? normalized->basis.cMax : 0,
+                                                       normalized ? normalized->mode.mj : 0,
+                                                       normalized ? normalized->mode.mc : 0,
+                                                       score_,
+                                                       combo_,
+                                                       maxCombo_};
+            completed_ = true;
         }
     }
-    settled_.insert(settled_.end(), staged_.begin(), staged_.end());
-    frontier_ = horizon;
-    score_ = computeScore();
-    const auto* normalized = prepared_.records().normalizedScore;
-    return AdvanceSummary{horizon,
-                          processed,
-                          staged_.size(),
-                          j_,
-                          c_,
-                          score_,
-                          normalized ? normalized->basis.jMax : 0,
-                          normalized ? normalized->basis.cMax : 0,
-                          normalized ? normalized->mode.mj : 0,
-                          normalized ? normalized->mode.mc : 0,
-                          combo_,
-                          maxCombo_};
+    return summary;
+}
+
+auto AdvanceKernel::advanceInternal(Tick horizon, const RunKey* run,
+                                    std::span<SettlementEvent> slots, bool enforceSlots)
+    -> core::Result<AdvanceSummary> {
+    return runTransaction(horizon, run, slots, enforceSlots, false);
 }
 
 auto AdvanceKernel::advance(Tick horizon) -> core::Result<AdvanceSummary> {
-    return advanceInternal(horizon, std::span<SettlementEvent>{}, false);
+    return advanceInternal(horizon, nullptr, std::span<SettlementEvent>{}, false);
 }
 
 auto AdvanceKernel::advance(Tick horizon, std::span<SettlementEvent> slots)
     -> core::Result<AdvanceSummary> {
-    return advanceInternal(horizon, slots, true);
+    return advanceInternal(horizon, nullptr, slots, true);
+}
+
+auto AdvanceKernel::advance(Tick horizon, RunKey run, std::span<SettlementEvent> slots)
+    -> core::Result<AdvanceSummary> {
+    return advanceInternal(horizon, &run, slots, true);
+}
+
+auto AdvanceKernel::stopCutInternal(const StopCut& cut, std::span<SettlementEvent> slots)
+    -> core::Result<AdvanceSummary> {
+    if (!owner_.isCurrent()) {
+        return core::unexpected(rejectWrongThread());
+    }
+    if (inTransaction_) {
+        return core::unexpected(kernelError("session.mutation_rejected", "reentrant",
+                                            "/session/owner",
+                                            "the advance kernel is already in a transaction"));
+    }
+    if (state_ != AdvanceSessionState::prepared) {
+        if (state_ == AdvanceSessionState::faulted) {
+            return core::unexpected(
+                rejectState("faulted", "the advance kernel is already faulted"));
+        }
+        return core::unexpected(
+            rejectState("not_prepared", "the advance kernel has no prepared run"));
+    }
+    if (receiveClosed_) {
+        return core::unexpected(kernelError("judgement.execution.relation_invalid",
+                                            "receive_closed", "/stopCut",
+                                            "a StopCut was already accepted"));
+    }
+    if (cut.run != run_) {
+        return core::unexpected(rejectRun("run_mismatch", "the StopCut names another run"));
+    }
+    if (cut.acceptedThrough != acceptedThrough_) {
+        return core::unexpected(kernelError("judgement.execution.relation_invalid",
+                                            "bound_mismatch", "/acceptedThrough",
+                                            "the StopCut upper bound is not the kernel cursor"));
+    }
+    if (frontier_ && cut.cutoff < *frontier_) {
+        return core::unexpected(kernelError("judgement.timebase.time_reversal", "cutoff_reversed",
+                                            "/cutoff",
+                                            "the Stop cutoff precedes the sealed frontier"));
+    }
+    if (slots.size() < settlementCapacity_) {
+        return core::unexpected(capacityError(settlementCapacity_, slots.size()));
+    }
+    return runTransaction(cut.cutoff, &run_, slots, true, true);
 }
 
 auto AdvanceKernel::advanceStopCut(const StopCut& cut, std::span<SettlementEvent> slots)
     -> core::Result<AdvanceSummary> {
-    if (receiveClosed_) {
-        return core::unexpected(kernelError("judgement.stop_cut.closed", "receive_closed",
-                                            "/stopCut", "a StopCut was already accepted"));
-    }
-    if (cut.run != run_) {
-        return core::unexpected(kernelError("judgement.stop_cut.run_mismatch", "run_mismatch",
-                                            "/run", "the StopCut names another run"));
-    }
-    if (cut.acceptedThrough != acceptedThrough_) {
-        return core::unexpected(kernelError("judgement.stop_cut.bound_mismatch", "bound_mismatch",
-                                            "/acceptedThrough",
-                                            "the StopCut upper bound is not the kernel cursor"));
-    }
-    if (frontier_ && cut.cutoff < *frontier_) {
-        return core::unexpected(kernelError("judgement.stop_cut.cutoff_reversed", "cutoff_reversed",
-                                            "/cutoff",
-                                            "the Stop cutoff precedes the sealed frontier"));
-    }
-    if (slots.size() < prepared_.settlementCapacity()) {
-        return core::unexpected(kernelError("capability.budget_insufficient", "budget", "/slots",
-                                            "the settlement slot count is too small"));
-    }
-    auto runs = runs_;
-    auto units = units_;
-    auto pending = pending_;
-    auto j = j_;
-    auto c = c_;
-    auto score = score_;
-    auto combo = combo_;
-    auto maxCombo = maxCombo_;
-    std::vector<SettlementEvent> staged;
-    receiveClosed_ = true;
-    staged_.clear();
-    const auto processed = processThrough(cut.cutoff);
-    if (staged_.size() > slots.size()) {
-        receiveClosed_ = false;
-        runs_ = std::move(runs);
-        units_ = std::move(units);
-        pending_ = std::move(pending);
-        j_ = j;
-        c_ = c;
-        score_ = score;
-        combo_ = combo;
-        maxCombo_ = maxCombo;
-        staged_.clear();
-        return core::unexpected(kernelError("capability.budget_insufficient", "budget", "/slots",
-                                            "the settlement slots are too small"));
-    }
-    for (std::size_t index = 0; index < staged_.size(); ++index) {
-        slots[index] = staged_[index];
-    }
-    settled_.insert(settled_.end(), staged_.begin(), staged_.end());
-    frontier_ = cut.cutoff;
-    score_ = computeScore();
-    const auto* normalized = prepared_.records().normalizedScore;
-    return AdvanceSummary{cut.cutoff,
-                          processed,
-                          staged_.size(),
-                          j_,
-                          c_,
-                          score_,
-                          normalized ? normalized->basis.jMax : 0,
-                          normalized ? normalized->basis.cMax : 0,
-                          normalized ? normalized->mode.mj : 0,
-                          normalized ? normalized->mode.mc : 0,
-                          combo_,
-                          maxCombo_};
+    return stopCutInternal(cut, slots);
 }
 
 auto AdvanceKernel::requirementIndexFor(const TickRecord& record) const
     -> std::optional<std::size_t> {
-    const auto requirements = prepared_.requirements();
+    const auto requirements = prepared_->requirements();
     for (std::size_t index = 0; index < requirements.size(); ++index) {
         for (const auto& binding : requirements[index].atomBindings) {
             if (binding.domainToken != record.domainToken ||
@@ -387,23 +797,17 @@ auto AdvanceKernel::targetOf(const PreparedRequirement& requirement, PhaseKind k
 }
 
 auto AdvanceKernel::lastTailEnd(const PreparedRequirement& requirement) const -> Tick {
-    std::optional<Tick> end;
-    for (const auto& window : requirement.timing.successWindows) {
-        if (window.phase.kind == PhaseKind::tail && (!end || window.end > *end)) {
-            end = window.end;
-        }
-    }
-    return end.value_or(requirement.deadline);
+    return lastTailEndOf(requirement);
 }
 
 auto AdvanceKernel::gradeIndex(std::size_t requirement, PhaseKind phase, std::int64_t error) const
     -> std::optional<std::uint32_t> {
-    const auto& preparedRequirement = prepared_.requirements()[requirement];
+    const auto& preparedRequirement = prepared_->requirements()[requirement];
     for (const auto& component : preparedRequirement.measure) {
         if (component.phase != phase || !component.gradeTableIndex) {
             continue;
         }
-        const auto* score = prepared_.records().normalizedScore;
+        const auto* score = prepared_->records().normalizedScore;
         if (score == nullptr || *component.gradeTableIndex >= score->gradeTables.size()) {
             return std::nullopt;
         }
@@ -411,7 +815,7 @@ auto AdvanceKernel::gradeIndex(std::size_t requirement, PhaseKind phase, std::in
         if (grade == nullptr) {
             return std::nullopt;
         }
-        const auto& grades = prepared_.settlementDictionary().grades;
+        const auto& grades = prepared_->settlementDictionary().grades;
         const auto found = std::find(grades.begin(), grades.end(), *grade);
         if (found == grades.end()) {
             return std::nullopt;
@@ -421,13 +825,38 @@ auto AdvanceKernel::gradeIndex(std::size_t requirement, PhaseKind phase, std::in
     return std::nullopt;
 }
 
+//  The direction is independent of the grade: it reads the selected table's own exact band, so an
+//  error inside [exactStart, exactEnd) is Exact even when the grading interval around it differs.
+//  A phase with no selected table has no direction evidence at all.
+auto AdvanceKernel::directionOf(std::size_t requirement, PhaseKind phase, std::int64_t error) const
+    -> std::optional<TimingDirection> {
+    const auto& preparedRequirement = prepared_->requirements()[requirement];
+    for (const auto& component : preparedRequirement.measure) {
+        if (component.phase != phase || !component.gradeTableIndex) {
+            continue;
+        }
+        const auto* score = prepared_->records().normalizedScore;
+        if (score == nullptr || *component.gradeTableIndex >= score->gradeTables.size()) {
+            return std::nullopt;
+        }
+        const auto& table = score->gradeTables[*component.gradeTableIndex];
+        if (error < table.exactStart) {
+            return TimingDirection::early;
+        }
+        if (error >= table.exactEnd) {
+            return TimingDirection::late;
+        }
+        return TimingDirection::exact;
+    }
+    return std::nullopt;
+}
+
 auto AdvanceKernel::emit(std::size_t requirement, PhaseKind phase, Tick tick, Outcome outcome,
-                         std::optional<std::int64_t> error,
-                         std::optional<TimingDirection> direction) -> SettlementEvent {
+                         std::optional<std::int64_t> error) -> SettlementEvent {
     SettlementEvent event{};
     event.gradeIndex = std::numeric_limits<std::uint32_t>::max();
     event.tick = tick;
-    const auto& phases = prepared_.requirements()[requirement].phases;
+    const auto& phases = prepared_->requirements()[requirement].phases;
     for (std::size_t index = 0; index < phases.size(); ++index) {
         if (phases[index].kind == phase) {
             event.phaseIndex = static_cast<std::uint32_t>(phaseOffset(requirement) + index);
@@ -436,18 +865,17 @@ auto AdvanceKernel::emit(std::size_t requirement, PhaseKind phase, Tick tick, Ou
     }
     event.outcome = outcome;
     event.error = error ? std::optional<TickDelta>{TickDelta{*error}} : std::nullopt;
-    event.direction = direction;
     if (error) {
         event.gradeIndex = gradeIndex(requirement, phase, *error)
                                .value_or(std::numeric_limits<std::uint32_t>::max());
+        event.direction = directionOf(requirement, phase, *error);
     }
-    applyFold(event);
     staged_.push_back(event);
     return event;
 }
 
 auto AdvanceKernel::computeScore() const -> std::uint32_t {
-    const auto* score = prepared_.records().normalizedScore;
+    const auto* score = prepared_ ? prepared_->records().normalizedScore : nullptr;
     if (score == nullptr) {
         return 0;
     }
@@ -461,18 +889,18 @@ auto AdvanceKernel::computeScore() const -> std::uint32_t {
 }
 
 void AdvanceKernel::applyFold(const SettlementEvent& event) {
-    const auto* score = prepared_.records().normalizedScore;
+    const auto* score = prepared_->records().normalizedScore;
     if (score == nullptr) {
         return;
     }
-    const auto& phases = prepared_.settlementDictionary().phases;
+    const auto& phases = prepared_->settlementDictionary().phases;
     if (event.phaseIndex >= phases.size()) {
         return;
     }
     const auto phase = phases[event.phaseIndex].phase;
     std::optional<std::string> grade;
     if (event.gradeIndex != std::numeric_limits<std::uint32_t>::max()) {
-        const auto& grades = prepared_.settlementDictionary().grades;
+        const auto& grades = prepared_->settlementDictionary().grades;
         if (event.gradeIndex < grades.size()) {
             grade = grades[event.gradeIndex];
         }
@@ -533,7 +961,7 @@ void AdvanceKernel::applyFold(const SettlementEvent& event) {
 
 void AdvanceKernel::settleRecord(std::size_t requirement, const TickRecord& record, Tick dispatch) {
     auto& run = runs_[requirement];
-    auto& preparedRequirement = prepared_.requirements()[requirement];
+    auto& preparedRequirement = prepared_->requirements()[requirement];
     const bool hasTap =
         std::any_of(preparedRequirement.phases.begin(), preparedRequirement.phases.end(),
                     [](const auto& phase) { return phase.kind == PhaseKind::tap; });
@@ -545,10 +973,7 @@ void AdvanceKernel::settleRecord(std::size_t requirement, const TickRecord& reco
             if (inWindow(preparedRequirement, PhaseKind::tap, record.observationTick)) {
                 const auto target = targetOf(preparedRequirement, PhaseKind::tap);
                 const auto error = record.observationTick.value() - target.value();
-                emit(requirement, PhaseKind::tap, dispatch, Outcome::hit, error,
-                     error < 0    ? std::optional<TimingDirection>{TimingDirection::early}
-                     : error == 0 ? std::optional<TimingDirection>{TimingDirection::exact}
-                                  : std::optional<TimingDirection>{TimingDirection::late});
+                emit(requirement, PhaseKind::tap, dispatch, Outcome::hit, error);
                 run.tapDone = true;
                 run.stage = RequirementRun::Stage::done;
             }
@@ -559,7 +984,7 @@ void AdvanceKernel::settleRecord(std::size_t requirement, const TickRecord& reco
         if (!headWindow) {
             return;
         }
-        emit(requirement, PhaseKind::head, dispatch, Outcome::hit, std::nullopt, std::nullopt);
+        emit(requirement, PhaseKind::head, dispatch, Outcome::hit, std::nullopt);
         run.pressObservation = record.observationTick;
         run.stage = RequirementRun::Stage::body;
         return;
@@ -578,18 +1003,15 @@ void AdvanceKernel::settleRecord(std::size_t requirement, const TickRecord& reco
         if (!bodyHit) {
             const auto target = targetOf(preparedRequirement, PhaseKind::body);
             const auto error = observation.value() - target.value();
-            emit(requirement, PhaseKind::body, dispatch, Outcome::miss, error,
-                 error < 0    ? std::optional<TimingDirection>{TimingDirection::early}
-                 : error == 0 ? std::optional<TimingDirection>{TimingDirection::exact}
-                              : std::optional<TimingDirection>{TimingDirection::late});
+            emit(requirement, PhaseKind::body, dispatch, Outcome::miss, error);
             bodyMissed = true;
         } else {
-            emit(requirement, PhaseKind::body, dispatch, Outcome::hit, std::nullopt, std::nullopt);
+            emit(requirement, PhaseKind::body, dispatch, Outcome::hit, std::nullopt);
         }
         run.stage = RequirementRun::Stage::tail;
     }
     if (bodyMissed) {
-        emit(requirement, PhaseKind::tail, dispatch, Outcome::miss, std::nullopt, std::nullopt);
+        emit(requirement, PhaseKind::tail, dispatch, Outcome::miss, std::nullopt);
         run.stage = RequirementRun::Stage::done;
         return;
     }
@@ -597,45 +1019,37 @@ void AdvanceKernel::settleRecord(std::size_t requirement, const TickRecord& reco
     const auto tailEnd = lastTailEnd(preparedRequirement);
     if (inWindow(preparedRequirement, PhaseKind::tail, observation)) {
         const auto error = observation.value() - tailTarget.value();
-        emit(requirement, PhaseKind::tail, dispatch, Outcome::hit, error,
-             error < 0    ? std::optional<TimingDirection>{TimingDirection::early}
-             : error == 0 ? std::optional<TimingDirection>{TimingDirection::exact}
-                          : std::optional<TimingDirection>{TimingDirection::late});
+        emit(requirement, PhaseKind::tail, dispatch, Outcome::hit, error);
     } else if (observation < tailEnd) {
         const auto error = observation.value() - tailTarget.value();
-        emit(requirement, PhaseKind::tail, dispatch, Outcome::miss, error,
-             error < 0    ? std::optional<TimingDirection>{TimingDirection::early}
-             : error == 0 ? std::optional<TimingDirection>{TimingDirection::exact}
-                          : std::optional<TimingDirection>{TimingDirection::late});
+        emit(requirement, PhaseKind::tail, dispatch, Outcome::miss, error);
     } else {
-        emit(requirement, PhaseKind::tail, tailEnd, Outcome::miss, std::nullopt, std::nullopt);
+        emit(requirement, PhaseKind::tail, tailEnd, Outcome::miss, std::nullopt);
     }
     run.stage = RequirementRun::Stage::done;
 }
 
-void AdvanceKernel::settleTimers(Tick horizon) {
-    const auto requirements = prepared_.requirements();
+void AdvanceKernel::settleTimers(Tick tick, Tick sealLimit) {
+    const auto requirements = prepared_->requirements();
     for (std::size_t index = 0; index < runs_.size(); ++index) {
         auto& run = runs_[index];
         const auto& requirement = requirements[index];
         if (run.stage == RequirementRun::Stage::body && requirement.timing.body &&
-            horizon >= requirement.timing.body->end) {
-            emit(index, PhaseKind::body, requirement.timing.body->end, Outcome::hit, std::nullopt,
-                 std::nullopt);
+            tick >= requirement.timing.body->end && sealLimit >= requirement.timing.body->end) {
+            emit(index, PhaseKind::body, requirement.timing.body->end, Outcome::hit, std::nullopt);
             run.stage = RequirementRun::Stage::tail;
         }
-        if (run.stage == RequirementRun::Stage::tail && horizon >= lastTailEnd(requirement)) {
-            emit(index, PhaseKind::tail, lastTailEnd(requirement), Outcome::miss, std::nullopt,
-                 std::nullopt);
+        const auto tailEnd = lastTailEnd(requirement);
+        if (run.stage == RequirementRun::Stage::tail && tick >= tailEnd && sealLimit >= tailEnd) {
+            emit(index, PhaseKind::tail, tailEnd, Outcome::miss, std::nullopt);
             run.stage = RequirementRun::Stage::done;
         }
         const bool hasTap =
             std::any_of(requirement.phases.begin(), requirement.phases.end(),
                         [](const auto& phase) { return phase.kind == PhaseKind::tap; });
-        if (run.stage == RequirementRun::Stage::dormant && hasTap &&
-            horizon >= requirement.deadline) {
-            emit(index, PhaseKind::tap, requirement.deadline, Outcome::miss, std::nullopt,
-                 std::nullopt);
+        if (run.stage == RequirementRun::Stage::dormant && hasTap && tick >= requirement.deadline &&
+            sealLimit >= requirement.deadline) {
+            emit(index, PhaseKind::tap, requirement.deadline, Outcome::miss, std::nullopt);
             run.stage = RequirementRun::Stage::done;
         }
     }

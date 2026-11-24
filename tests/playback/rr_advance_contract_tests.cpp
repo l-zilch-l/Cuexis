@@ -1,10 +1,10 @@
-// T-10 advance contract, value and score part.
+// T-10 advance contract: value, score, kernel and GP-03 fault/priority matrix.
 //
-// This case currently covers the runtime value headers, the prepared identity declarations, the
-// advance value contract, the normalized score records and the shared exact integer helpers (GP-05
-// and the computable halves of GP-04). The kernel transaction itself - GP-02, GP-03 and CLK-02 - is
-// not implemented in this round; the report records that remainder and its conditions instead of
-// asserting a result the tree cannot produce.
+// This case covers the runtime value headers, the prepared identity declarations, the advance value
+// contract, the normalized score records and the shared exact integer helpers (GP-05 and GP-04),
+// the kernel transaction and the GP-03 settlement fault/priority matrix. The Playback owning DTO
+// projection and the session-level recovery archive are not part of this case; the report records
+// that remainder and its conditions.
 
 #include <cuexis/judgement/advance.hpp>
 #include <cuexis/judgement/advance_kernel.hpp>
@@ -16,13 +16,17 @@
 #include <cuexis/judgement/prepared_gameplay_records.hpp>
 #include <cuexis/judgement/prepared_identity.hpp>
 
+#include "advance_testing.hpp"
+
 #include <catch2/catch_test_macros.hpp>
 
+#include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <optional>
 #include <string>
 #include <string_view>
+#include <thread>
 #include <type_traits>
 #include <vector>
 
@@ -386,6 +390,53 @@ auto shortHoldRequirement() -> runtime::PreparedRequirement {
         runtime::AtomBinding{"atom.release", "domain.binding.one", "keyboard", "channel.zero",
                              runtime::InputAction::release, std::nullopt, false}};
     return requirement;
+}
+
+auto emptyPrepared() -> runtime::PreparedGameplay {
+    auto policy = runtimePolicy();
+    auto identities = runtimeIdentities();
+    const runtime::PreparedTimebase timebase{"engine.tick.us.v1", 1, 1, Tick{0}};
+    runtime::CompiledGameplayView view{timebase,
+                                       policy,
+                                       identities,
+                                       "",
+                                       "",
+                                       "",
+                                       nullptr,
+                                       nullptr,
+                                       std::span<const runtime::PreparedRequirement>{},
+                                       std::span<const runtime::PreparedResource>{},
+                                       std::span<const runtime::PreparedTimerKey>{}};
+    auto prepared = runtime::prepareCompiledGameplay(view, runtime::PrepareGameplayLimits{});
+    REQUIRE(prepared);
+    return std::move(*prepared);
+}
+
+auto sentinelEvent() -> SettlementEvent {
+    SettlementEvent event{};
+    event.tick = Tick{-777};
+    event.phaseIndex = 7;
+    event.gradeIndex = 9;
+    event.outcome = Outcome::miss;
+    event.error = TickDelta{-999};
+    event.direction = TimingDirection::late;
+    return event;
+}
+
+auto isSentinel(const SettlementEvent& event) -> bool {
+    return event.tick == Tick{-777} && event.phaseIndex == 7 && event.gradeIndex == 9 &&
+           event.outcome == Outcome::miss && event.error.has_value() &&
+           event.error->value() == -999 && event.direction == TimingDirection::late;
+}
+
+auto runtimeConfiguration(const runtime::PreparedGameplay& prepared)
+    -> runtime::SessionConfiguration {
+    const auto records = prepared.records();
+    runtime::SessionConfiguration configuration;
+    configuration.timebase = records.timebase;
+    configuration.latePolicy = records.latePolicy;
+    configuration.identityDeclarations = prepared.identityDeclarations();
+    return configuration;
 }
 
 } // namespace
@@ -858,7 +909,7 @@ TEST_CASE("cuexis_rr_advance_contract", "[playback][judgement][rr][advance]") {
         //  A backward horizon keeps frontier and records unchanged.
         auto reversed = kernel->advance(Tick{99});
         REQUIRE_FALSE(reversed);
-        CHECK(reversed.error().code() == "judgement.execution.horizon_reversed");
+        CHECK(reversed.error().code() == "judgement.timebase.time_reversal");
         CHECK(kernel->frontier() == Tick{100});
         CHECK(kernel->archivedRecords().size() == 2);
     }
@@ -878,11 +929,13 @@ TEST_CASE("cuexis_rr_advance_contract", "[playback][judgement][rr][advance]") {
         const runtime::StopCut wrongRun{RunKey{9, 3}, runtime::IngressSequence{0}, Tick{100}};
         auto runError = kernel->advanceStopCut(wrongRun, std::span<SettlementEvent>{});
         REQUIRE_FALSE(runError);
-        CHECK(runError.error().code() == "judgement.stop_cut.run_mismatch");
+        CHECK(runError.error().code() == "session.mutation_rejected");
+        CHECK(contextValue(runError.error(), "fieldPath") == "/run");
         const runtime::StopCut wrongBound{RunKey{9, 2}, runtime::IngressSequence{0}, Tick{100}};
         auto boundError = kernel->advanceStopCut(wrongBound, std::span<SettlementEvent>{});
         REQUIRE_FALSE(boundError);
-        CHECK(boundError.error().code() == "judgement.stop_cut.bound_mismatch");
+        CHECK(boundError.error().code() == "judgement.execution.relation_invalid");
+        CHECK(contextValue(boundError.error(), "fieldPath") == "/acceptedThrough");
         CHECK_FALSE(kernel->receiveClosed());
         CHECK(kernel->acceptedIngressThrough()->value() == 1);
 
@@ -899,7 +952,7 @@ TEST_CASE("cuexis_rr_advance_contract", "[playback][judgement][rr][advance]") {
         auto closed =
             kernel->receiveCanonicalBatch(std::vector<runtime::TickRecord>{tickRecord(95)});
         REQUIRE_FALSE(closed);
-        CHECK(closed.error().code() == "judgement.stop_cut.closed");
+        CHECK(closed.error().code() == "judgement.execution.relation_invalid");
         CHECK(kernel->nextSequence().value() == sequenceAfterStop);
         CHECK(kernel->archivedRecords().size() == 2);
     }
@@ -921,14 +974,14 @@ TEST_CASE("cuexis_rr_advance_contract", "[playback][judgement][rr][advance]") {
             runtime::StopCut{RunKey{1, 1}, runtime::IngressSequence{0}, Tick{99}},
             std::span<SettlementEvent>{});
         REQUIRE_FALSE(cutoffError);
-        CHECK(cutoffError.error().code() == "judgement.stop_cut.cutoff_reversed");
+        CHECK(cutoffError.error().code() == "judgement.timebase.time_reversal");
 
         auto shortSlots = makeKernel();
         auto slotError = shortSlots.advanceStopCut(
             runtime::StopCut{RunKey{1, 1}, runtime::IngressSequence{0}, Tick{100}},
             std::span<SettlementEvent>{});
         REQUIRE_FALSE(slotError);
-        CHECK(slotError.error().code() == "capability.budget_insufficient");
+        CHECK(slotError.error().code() == "judgement.advance.output_capacity_insufficient");
         CHECK_FALSE(shortSlots.receiveClosed());
     }
 
@@ -943,7 +996,7 @@ TEST_CASE("cuexis_rr_advance_contract", "[playback][judgement][rr][advance]") {
         auto prepared = runtime::prepareCompiledGameplay(view, runtime::PrepareGameplayLimits{});
         REQUIRE(prepared);
         CHECK(prepared->requirements().front().timing.body->end == Tick{851});
-        auto kernel = runtime::AdvanceKernel::prepare(*prepared);
+        auto kernel = runtime::AdvanceKernel::prepare(*prepared, RunKey{1, 1});
         REQUIRE(kernel);
         CHECK(kernel->nextSequence().value() == 0);
         CHECK((runtime::releaseObservationDomain(850, 851, 4)->end == 851));
@@ -992,7 +1045,9 @@ TEST_CASE("cuexis_rr_advance_contract", "[playback][judgement][rr][advance]") {
         CHECK(event.outcome == Outcome::miss);
         REQUIRE(event.error.has_value());
         CHECK(event.error->value() == -151);
-        CHECK(event.direction == TimingDirection::early);
+        //  This phase selects no grade table, so the real error survives while both the grade and
+        //  the direction stay absent (GP-01 "旧未声明表样本无 grade/方向").
+        CHECK_FALSE(event.direction.has_value());
     }
 
     SECTION("the settlement slots reject the whole transaction when too small") {
@@ -1002,7 +1057,7 @@ TEST_CASE("cuexis_rr_advance_contract", "[playback][judgement][rr][advance]") {
         REQUIRE(kernel->receiveCanonicalBatch(std::vector<runtime::TickRecord>{tickRecord(1000)}));
         auto rejected = kernel->advance(Tick{1000}, std::span<SettlementEvent>{});
         REQUIRE_FALSE(rejected);
-        CHECK(rejected.error().code() == "capability.budget_insufficient");
+        CHECK(rejected.error().code() == "judgement.advance.output_capacity_insufficient");
         CHECK_FALSE(kernel->frontier().has_value());
         std::vector<SettlementEvent> slots(1);
         auto accepted = kernel->advance(Tick{1000}, slots);
@@ -1178,5 +1233,539 @@ TEST_CASE("cuexis_rr_advance_contract", "[playback][judgement][rr][advance]") {
         REQUIRE_FALSE(rejected);
         CHECK(stopped->replay().records.size() == 2);
         CHECK(stopped->nextSequence() == runtime::IngressSequence{2});
+    }
+
+    SECTION("GP-03 the settlement event layout is checked per type") {
+        STATIC_REQUIRE(sizeof(Tick) == 8);
+        STATIC_REQUIRE(sizeof(TickDelta) == 8);
+        STATIC_REQUIRE(sizeof(Outcome) == 1);
+        STATIC_REQUIRE(sizeof(TimingDirection) == 1);
+        STATIC_REQUIRE(sizeof(std::uint32_t) == 4);
+        STATIC_REQUIRE(sizeof(std::optional<TickDelta>) == 16);
+        STATIC_REQUIRE(sizeof(std::optional<TimingDirection>) == 2);
+        STATIC_REQUIRE(sizeof(SettlementEvent) == 48);
+        STATIC_REQUIRE(alignof(SettlementEvent) == 8);
+        STATIC_REQUIRE(sizeof(runtime::IngressSequence) == 8);
+        STATIC_REQUIRE(sizeof(FaultCode) == 2);
+        STATIC_REQUIRE(sizeof(NormalizedScoreResult) == 56);
+        CHECK(sizeof(runtime::AdvanceSummary) >= sizeof(SettlementEvent));
+    }
+
+    SECTION("GP-03 P-1 slots are refused without touching the buffer, ledger or frontier") {
+        auto prepared = gp02Prepared(false);
+        REQUIRE(prepared.settlementCapacity() == 3);
+        auto kernel = runtime::AdvanceKernel::prepare(prepared, RunKey{20, 1});
+        REQUIRE(kernel);
+        REQUIRE(kernel->receiveCanonicalBatch(std::vector<runtime::TickRecord>{tickRecord(900)}));
+        const auto archiveBefore = kernel->archivedRecords().size();
+
+        std::vector<SettlementEvent> shortSlots(2, sentinelEvent());
+        auto refused = kernel->advance(Tick{900}, shortSlots);
+        REQUIRE_FALSE(refused);
+        CHECK(refused.error().code() == "judgement.advance.output_capacity_insufficient");
+        CHECK(contextValue(refused.error(), "fieldPath") == "/slots");
+        CHECK(contextValue(refused.error(), "required") == "3");
+        CHECK(contextValue(refused.error(), "provided") == "2");
+        for (const auto& event : shortSlots) {
+            CHECK(isSentinel(event));
+        }
+        CHECK_FALSE(kernel->frontier().has_value());
+        CHECK(kernel->archivedRecords().size() == archiveBefore);
+        CHECK(kernel->replay().events.empty());
+        CHECK(kernel->nextSequence().value() == 1);
+
+        //  With the exact P the same call returns the original event and leaves the tail of the
+        //  buffer at its previous value.
+        std::vector<SettlementEvent> slots(3, sentinelEvent());
+        auto sealed = kernel->advance(Tick{900}, slots);
+        REQUIRE(sealed);
+        REQUIRE(sealed->settledEvents == 1);
+        CHECK(sealed->status == AdvanceStatus::ongoing);
+        CHECK(slots[0].tick == Tick{900});
+        CHECK(slots[0].phaseIndex == 0);
+        CHECK(slots[0].outcome == Outcome::hit);
+        CHECK(isSentinel(slots[1]));
+        CHECK(isSentinel(slots[2]));
+
+        auto second = kernel->advance(Tick{1103}, slots);
+        REQUIRE(second);
+        CHECK(second->settledEvents == 2);
+        CHECK(slots[0].phaseIndex == 1); // body timer Hit
+        CHECK(slots[0].outcome == Outcome::hit);
+        CHECK(slots[1].phaseIndex == 2); // tail timer Miss
+        CHECK(slots[1].outcome == Outcome::miss);
+    }
+
+    SECTION("GP-03 two sessions with the same epoch key refuse each other's StopCut") {
+        auto prepared = gp02Prepared(false);
+        auto first = runtime::AdvanceKernel::prepare(prepared, RunKey{21, 3});
+        auto second = runtime::AdvanceKernel::prepare(prepared, RunKey{21, 3});
+        REQUIRE(first);
+        REQUIRE(second);
+        REQUIRE(first->receiveCanonicalBatch(std::vector<runtime::TickRecord>{tickRecord(900)}));
+        REQUIRE(second->receiveCanonicalBatch(std::vector<runtime::TickRecord>{
+            tickRecord(900), tickRecord(1019, runtime::InputAction::release)}));
+        CHECK(first->acceptedIngressThrough() == runtime::IngressSequence{0});
+        CHECK(second->acceptedIngressThrough() == runtime::IngressSequence{1});
+
+        std::vector<SettlementEvent> slots(3, sentinelEvent());
+        auto secondRejectsFirst = second->advanceStopCut(
+            runtime::StopCut{RunKey{21, 3}, first->acceptedIngressThrough(), Tick{1103}}, slots);
+        REQUIRE_FALSE(secondRejectsFirst);
+        CHECK(secondRejectsFirst.error().code() == "judgement.execution.relation_invalid");
+        CHECK(contextValue(secondRejectsFirst.error(), "fieldPath") == "/acceptedThrough");
+        CHECK_FALSE(second->receiveClosed());
+        CHECK_FALSE(second->frontier().has_value());
+        CHECK(second->nextSequence().value() == 2);
+        for (const auto& event : slots) {
+            CHECK(isSentinel(event));
+        }
+
+        auto firstRejectsSecond = first->advanceStopCut(
+            runtime::StopCut{RunKey{21, 3}, second->acceptedIngressThrough(), Tick{1103}}, slots);
+        REQUIRE_FALSE(firstRejectsSecond);
+        CHECK(contextValue(firstRejectsSecond.error(), "fieldPath") == "/acceptedThrough");
+        CHECK_FALSE(first->receiveClosed());
+
+        //  Same epoch, different session scope: advance refuses the foreign key before any state
+        //  change. An identical (scope, epoch) pair carries no instance identity in `RunKey`, so
+        //  the kernel can only separate sessions whose scope or bound differs.
+        auto other = runtime::AdvanceKernel::prepare(prepared, RunKey{31, 3});
+        REQUIRE(other);
+        std::vector<SettlementEvent> advanceSlots(3, sentinelEvent());
+        auto crossAdvance = first->advance(Tick{900}, other->run(), advanceSlots);
+        REQUIRE_FALSE(crossAdvance);
+        CHECK(crossAdvance.error().code() == "session.mutation_rejected");
+        CHECK(contextValue(crossAdvance.error(), "category") == "invalid_relation");
+        CHECK(contextValue(crossAdvance.error(), "fieldPath") == "/run");
+        CHECK_FALSE(first->frontier().has_value());
+        CHECK(first->nextSequence().value() == 1);
+        for (const auto& event : advanceSlots) {
+            CHECK(isSentinel(event));
+        }
+        auto reverseAdvance = other->advance(Tick{900}, first->run(), advanceSlots);
+        REQUIRE_FALSE(reverseAdvance);
+        CHECK(reverseAdvance.error().code() == "session.mutation_rejected");
+        CHECK(contextValue(reverseAdvance.error(), "fieldPath") == "/run");
+        CHECK_FALSE(other->frontier().has_value());
+        CHECK(other->nextSequence().value() == 0);
+
+        //  The StopCut form reports the same wrong run at /run before the bound check.
+        auto stopRun = first->advanceStopCut(
+            runtime::StopCut{other->run(), first->acceptedIngressThrough(), Tick{1103}}, slots);
+        REQUIRE_FALSE(stopRun);
+        CHECK(stopRun.error().code() == "session.mutation_rejected");
+        CHECK(contextValue(stopRun.error(), "fieldPath") == "/run");
+        CHECK_FALSE(first->receiveClosed());
+        CHECK_FALSE(first->frontier().has_value());
+
+        auto firstStop = first->advanceStopCut(
+            runtime::StopCut{RunKey{21, 3}, first->acceptedIngressThrough(), Tick{1103}}, slots);
+        REQUIRE(firstStop);
+        CHECK(firstStop->settledEvents == 3);
+        auto secondStop = second->advanceStopCut(
+            runtime::StopCut{RunKey{21, 3}, second->acceptedIngressThrough(), Tick{1103}}, slots);
+        REQUIRE(secondStop);
+        CHECK(secondStop->settledEvents == 3);
+        CHECK(first->replay().events.size() == 3);
+        CHECK(second->replay().events.size() == 3);
+        CHECK(first->nextSequence().value() == 1);
+        CHECK(second->nextSequence().value() == 2);
+    }
+
+    SECTION("GP-03 retained values survive unload and a Retry starts a new epoch") {
+        auto prepared = gp02Prepared(false);
+        auto dictionary = prepared.settlementDictionary(); // host owning copy before the run
+        std::vector<SettlementEvent> slots(3);
+        SettlementEvent copiedEvent{};
+        runtime::ReplaySnapshot stopped;
+        {
+            auto kernel = runtime::AdvanceKernel::prepare(prepared, RunKey{22, 1});
+            REQUIRE(kernel);
+            REQUIRE(kernel->receiveCanonicalBatch(std::vector<runtime::TickRecord>{
+                tickRecord(900), tickRecord(1019, runtime::InputAction::release)}));
+            auto stop = kernel->advanceStopCut(
+                runtime::StopCut{RunKey{22, 1}, kernel->acceptedIngressThrough(), Tick{1103}},
+                slots);
+            REQUIRE(stop);
+            REQUIRE(stop->settledEvents == 3);
+            copiedEvent = slots.front(); // by value
+            stopped = kernel->replay();
+
+            //  The same-run state is not re-emitted: a second Stop is refused and the replay
+            //  stays the same owning value.
+            auto repeated = kernel->advanceStopCut(
+                runtime::StopCut{RunKey{22, 1}, kernel->acceptedIngressThrough(), Tick{1103}},
+                slots);
+            REQUIRE_FALSE(repeated);
+            CHECK(repeated.error().code() == "judgement.execution.relation_invalid");
+            CHECK(kernel->replay().events.size() == 3);
+        }
+        //  The session is unloaded; the host copies stay readable.
+        CHECK(dictionary.phases.size() == 3);
+        CHECK(dictionary.grades == std::vector<std::string>{"break", "release"});
+        CHECK(copiedEvent.tick == Tick{900});
+        CHECK(copiedEvent.phaseIndex == 0);
+        CHECK(copiedEvent.outcome == Outcome::hit);
+        CHECK(stopped.events.size() == 3);
+        CHECK(stopped.frontier == Tick{1103});
+
+        //  Retry takes a new epoch and starts from a zero cursor with no re-emission.
+        auto retry = runtime::AdvanceKernel::prepare(prepared, RunKey{22, 2});
+        REQUIRE(retry);
+        CHECK_FALSE(retry->acceptedIngressThrough().has_value());
+        CHECK(retry->nextSequence().value() == 0);
+        CHECK(retry->replay().records.empty());
+        CHECK(retry->replay().events.empty());
+        CHECK_FALSE(retry->frontier().has_value());
+        auto batch = retry->receiveCanonicalBatch(std::vector<runtime::TickRecord>{
+            tickRecord(900), tickRecord(1019, runtime::InputAction::release)});
+        REQUIRE(batch);
+        CHECK(batch->at(0).sequence.value() == 0);
+        CHECK(retry->replay().events.empty());
+    }
+
+    SECTION("GP-03 an empty run completes at zero with an empty slot span") {
+        auto prepared = emptyPrepared();
+        auto kernel = runtime::AdvanceKernel::prepare(prepared, RunKey{23, 1});
+        REQUIRE(kernel);
+        CHECK(kernel->settlementCapacity() == 0);
+        auto summary = kernel->advance(Tick{0}, std::span<SettlementEvent>{});
+        REQUIRE(summary);
+        CHECK(summary->settledEvents == 0);
+        CHECK(summary->status == AdvanceStatus::completed);
+        REQUIRE(summary->normalized.has_value());
+        CHECK(summary->normalized->score == 0);
+        CHECK(summary->normalized->jMax == 0);
+        CHECK(summary->normalized->cMax == 0);
+        auto again = kernel->advance(Tick{0}, std::span<SettlementEvent>{});
+        REQUIRE(again);
+        CHECK(again->status == AdvanceStatus::completed);
+        CHECK_FALSE(again->normalized.has_value());
+    }
+
+    SECTION("GP-03 the pre-check order reports one stable fault and leaves state unchanged") {
+        auto prepared = gp02Prepared(false);
+        auto preparedKernel = runtime::AdvanceKernel::prepare(prepared, RunKey{24, 1});
+        REQUIRE(preparedKernel);
+        REQUIRE(preparedKernel->advance(Tick{1000}));
+        std::vector<SettlementEvent> slots(3, sentinelEvent());
+        const auto archiveSize = preparedKernel->archivedRecords().size();
+
+        //  A run mismatch beats the horizon reversal.
+        auto badRun = preparedKernel->advance(Tick{999}, RunKey{24, 2}, slots);
+        REQUIRE_FALSE(badRun);
+        CHECK(badRun.error().code() == "session.mutation_rejected");
+        CHECK(contextValue(badRun.error(), "fieldPath") == "/run");
+        CHECK(preparedKernel->frontier() == Tick{1000});
+
+        //  The reversal beats the short slot buffer.
+        auto reversed =
+            preparedKernel->advance(Tick{999}, RunKey{24, 1}, std::span<SettlementEvent>{});
+        REQUIRE_FALSE(reversed);
+        CHECK(reversed.error().code() == "judgement.timebase.time_reversal");
+        CHECK(contextValue(reversed.error(), "fieldPath") == "/horizon");
+
+        //  The short slot buffer is the last pre-check; nothing moved.
+        std::vector<SettlementEvent> shortSlots(2, sentinelEvent());
+        auto shortSlotsResult = preparedKernel->advance(Tick{1000}, RunKey{24, 1}, shortSlots);
+        REQUIRE_FALSE(shortSlotsResult);
+        CHECK(shortSlotsResult.error().code() == "judgement.advance.output_capacity_insufficient");
+        CHECK(contextValue(shortSlotsResult.error(), "fieldPath") == "/slots");
+        CHECK(contextValue(shortSlotsResult.error(), "required") == "3");
+        CHECK(contextValue(shortSlotsResult.error(), "provided") == "2");
+        CHECK(preparedKernel->frontier() == Tick{1000});
+        CHECK(preparedKernel->archivedRecords().size() == archiveSize);
+        for (const auto& event : shortSlots) {
+            CHECK(isSentinel(event));
+        }
+
+        //  Unprepared beats a bad run.
+        runtime::AdvanceKernel unprepared;
+        auto unpreparedBadRun = unprepared.advance(Tick{0}, RunKey{0, 0}, slots);
+        REQUIRE_FALSE(unpreparedBadRun);
+        CHECK(unpreparedBadRun.error().code() == "session.mutation_rejected");
+        CHECK(contextValue(unpreparedBadRun.error(), "fieldPath") == "/session/state");
+        CHECK(unprepared.state() == runtime::AdvanceSessionState::unprepared);
+
+        //  A zero run is refused at prepare; the mismatch is refused at advance.
+        CHECK_FALSE(runtime::AdvanceKernel::prepare(prepared, RunKey{0, 1}));
+        CHECK_FALSE(runtime::AdvanceKernel::prepare(prepared, RunKey{1, 0}));
+
+        //  Wrong thread beats unprepared and a bad run; it is a Result, never an assert.
+        std::string threadCode;
+        std::string threadPath;
+        {
+            runtime::AdvanceKernel sharedUnprepared;
+            std::vector<SettlementEvent> threadSlots(3, sentinelEvent());
+            std::thread worker{[&] {
+                auto result = sharedUnprepared.advance(Tick{0}, RunKey{0, 0}, threadSlots);
+                threadCode = result ? std::string{"ok"} : std::string{result.error().code()};
+                if (!result) {
+                    threadPath = contextValue(result.error(), "fieldPath");
+                }
+            }};
+            worker.join();
+            CHECK(threadCode == "session.mutation_rejected");
+            CHECK(threadPath == "/session/owner");
+        }
+
+        //  Wrong reentrancy is refused from inside the transaction, before any state change.
+        std::string reentrantCode;
+        std::string reentrantPath;
+        {
+            auto reentrant = runtime::AdvanceKernel::prepare(prepared, RunKey{24, 4});
+            REQUIRE(reentrant);
+            REQUIRE(reentrant->receiveCanonicalBatch(
+                std::vector<runtime::TickRecord>{tickRecord(900)}));
+            runtime::detail::AdvanceTestControls controls{};
+            controls.point = runtime::detail::AdvanceFaultPoint::reentrantSeal;
+            controls.atSeal = [&] {
+                auto nested = reentrant->advance(Tick{1000}, RunKey{24, 4}, slots);
+                reentrantCode = nested ? std::string{"ok"} : std::string{nested.error().code()};
+                if (!nested) {
+                    reentrantPath = contextValue(nested.error(), "fieldPath");
+                }
+            };
+            runtime::detail::AdvanceTestAccess::inject(*reentrant, std::move(controls));
+            std::vector<SettlementEvent> outerSlots(3);
+            auto outer = reentrant->advance(Tick{900}, outerSlots);
+            REQUIRE(outer);
+            CHECK(reentrantCode == "session.mutation_rejected");
+            CHECK(reentrantPath == "/session/owner");
+            CHECK(outer->settledEvents == 1);
+        }
+
+        //  A faulted session beats the run check.
+        auto faulted = runtime::AdvanceKernel::prepare(prepared, RunKey{24, 2});
+        REQUIRE(faulted);
+        REQUIRE(faulted->receiveCanonicalBatch(std::vector<runtime::TickRecord>{tickRecord(900)}));
+        runtime::detail::AdvanceTestAccess::inject(
+            *faulted, {runtime::detail::AdvanceFaultPoint::beforeSeal});
+        std::vector<SettlementEvent> faultSlots(3, sentinelEvent());
+        auto fault = faulted->advance(Tick{900}, RunKey{24, 2}, faultSlots);
+        REQUIRE(fault);
+        REQUIRE(fault->status == AdvanceStatus::faulted);
+        auto stateFirst = faulted->advance(Tick{1000}, RunKey{24, 3}, faultSlots);
+        REQUIRE_FALSE(stateFirst);
+        CHECK(stateFirst.error().code() == "session.mutation_rejected");
+        CHECK(contextValue(stateFirst.error(), "fieldPath") == "/session/state");
+    }
+
+    SECTION("GP-03 seal-time faults keep the sealed prefix and never deliver a score") {
+        auto prepared = gp02Prepared(false);
+
+        //  Fault before the first settlement-bearing tick seal: zero events.
+        {
+            auto kernel = runtime::AdvanceKernel::prepare(prepared, RunKey{25, 1});
+            REQUIRE(kernel);
+            REQUIRE(
+                kernel->receiveCanonicalBatch(std::vector<runtime::TickRecord>{tickRecord(900)}));
+            runtime::detail::AdvanceTestAccess::inject(
+                *kernel, {runtime::detail::AdvanceFaultPoint::beforeSeal});
+            std::vector<SettlementEvent> slots(3, sentinelEvent());
+            auto faulted = kernel->advance(Tick{1103}, slots);
+            REQUIRE(faulted);
+            CHECK(faulted->status == AdvanceStatus::faulted);
+            CHECK(faulted->fault.stage == AdvanceFaultStage::kernel);
+            CHECK(faulted->fault.reason == AdvanceFaultReason::invariant);
+            CHECK(faulted->written == 0);
+            CHECK(faulted->settledEvents == 0);
+            CHECK_FALSE(faulted->processedThrough.has_value());
+            CHECK_FALSE(faulted->normalized.has_value());
+            for (const auto& event : slots) {
+                CHECK(isSentinel(event));
+            }
+            CHECK_FALSE(kernel->frontier().has_value());
+            CHECK(kernel->replay().events.empty());
+            CHECK(kernel->state() == runtime::AdvanceSessionState::faulted);
+            auto later = kernel->advance(Tick{1103}, slots);
+            REQUIRE_FALSE(later);
+            CHECK(later.error().code() == "session.mutation_rejected");
+            CHECK(contextValue(later.error(), "fieldPath") == "/session/state");
+        }
+
+        //  Fault before the second settlement-bearing tick seal: the first tick's event is sealed
+        //  and delivered, and the faulted call reports that one-slot prefix.
+        {
+            auto kernel = runtime::AdvanceKernel::prepare(prepared, RunKey{25, 2});
+            REQUIRE(kernel);
+            REQUIRE(
+                kernel->receiveCanonicalBatch(std::vector<runtime::TickRecord>{tickRecord(900)}));
+            runtime::detail::AdvanceTestAccess::inject(
+                *kernel, {runtime::detail::AdvanceFaultPoint::beforeSeal, 2});
+            std::vector<SettlementEvent> slots(3, sentinelEvent());
+            auto second = kernel->advance(Tick{1103}, slots);
+            REQUIRE(second);
+            CHECK(second->status == AdvanceStatus::faulted);
+            CHECK(second->written == 1);
+            CHECK(second->settledEvents == 1);
+            CHECK(second->processedThrough == Tick{900});
+            CHECK(slots[0].tick == Tick{900});
+            CHECK(slots[0].outcome == Outcome::hit);
+            CHECK(isSentinel(slots[1]));
+            CHECK(kernel->frontier() == Tick{900});
+            REQUIRE(kernel->replay().events.size() == 1);
+            CHECK(kernel->replay().events.front().tick == Tick{900});
+        }
+
+        //  Fold fault after the second settlement-bearing tick seal: two events are sealed, the
+        //  call is faulted and the score payload is empty.
+        {
+            auto kernel = runtime::AdvanceKernel::prepare(prepared, RunKey{25, 3});
+            REQUIRE(kernel);
+            REQUIRE(
+                kernel->receiveCanonicalBatch(std::vector<runtime::TickRecord>{tickRecord(900)}));
+            runtime::detail::AdvanceTestAccess::inject(
+                *kernel, {runtime::detail::AdvanceFaultPoint::afterSealFold, 2});
+            std::vector<SettlementEvent> slots(3, sentinelEvent());
+            auto second = kernel->advance(Tick{1103}, slots);
+            REQUIRE(second);
+            CHECK(second->status == AdvanceStatus::faulted);
+            CHECK(second->fault.stage == AdvanceFaultStage::fold);
+            CHECK(second->fault.reason == AdvanceFaultReason::invariant);
+            CHECK(second->written == 2);
+            CHECK(second->settledEvents == 2);
+            CHECK(second->processedThrough == Tick{1000});
+            CHECK_FALSE(second->normalized.has_value());
+            CHECK(slots[0].tick == Tick{900});
+            CHECK(slots[1].tick == Tick{1000});
+            CHECK(kernel->frontier() == Tick{1000});
+            CHECK(kernel->replay().events.size() == 2);
+            CHECK(kernel->state() == runtime::AdvanceSessionState::faulted);
+        }
+
+        //  An injected pre-check allocation failure numbers nothing and does not advance.
+        {
+            auto kernel = runtime::AdvanceKernel::prepare(prepared, RunKey{25, 4});
+            REQUIRE(kernel);
+            runtime::detail::AdvanceTestAccess::inject(
+                *kernel, {runtime::detail::AdvanceFaultPoint::beforeNumbering});
+            auto refused =
+                kernel->receiveCanonicalBatch(std::vector<runtime::TickRecord>{tickRecord(900)});
+            REQUIRE_FALSE(refused);
+            CHECK(refused.error().code() == "host.rpa.allocation_failed");
+            CHECK_FALSE(kernel->acceptedIngressThrough().has_value());
+            CHECK(kernel->nextSequence().value() == 0);
+            CHECK(kernel->archivedRecords().empty());
+            runtime::detail::AdvanceTestAccess::clear(*kernel);
+            auto accepted =
+                kernel->receiveCanonicalBatch(std::vector<runtime::TickRecord>{tickRecord(900)});
+            REQUIRE(accepted);
+            CHECK(accepted->front().sequence.value() == 0);
+            CHECK(kernel->acceptedIngressThrough() == runtime::IngressSequence{0});
+        }
+    }
+
+    SECTION("GP-03 a pre-seal allocation failure classifies as resource and freezes") {
+        auto prepared = gp02Prepared(false);
+        auto kernel = runtime::AdvanceKernel::prepare(prepared, RunKey{27, 1});
+        REQUIRE(kernel);
+        REQUIRE(kernel->receiveCanonicalBatch(std::vector<runtime::TickRecord>{tickRecord(900)}));
+        const auto sequenceBefore = kernel->nextSequence();
+        const auto archiveBefore = kernel->archivedRecords().size();
+        runtime::detail::AdvanceTestAccess::inject(
+            *kernel, {runtime::detail::AdvanceFaultPoint::allocationBeforeSeal});
+        std::vector<SettlementEvent> slots(3, sentinelEvent());
+        auto summary = kernel->advance(Tick{1103}, slots);
+        REQUIRE(summary);
+        CHECK(summary->status == AdvanceStatus::faulted);
+        CHECK(summary->fault.stage == AdvanceFaultStage::kernel);
+        CHECK(summary->fault.reason == AdvanceFaultReason::resource);
+        CHECK(summary->written == 0);
+        CHECK(summary->settledEvents == 0);
+        CHECK_FALSE(summary->processedThrough.has_value());
+        CHECK_FALSE(summary->normalized.has_value());
+        CHECK_FALSE(kernel->frontier().has_value());
+        CHECK(kernel->nextSequence() == sequenceBefore);
+        CHECK(kernel->archivedRecords().size() == archiveBefore);
+        CHECK(kernel->replay().events.empty());
+        for (const auto& event : slots) {
+            CHECK(isSentinel(event));
+        }
+        CHECK(kernel->state() == runtime::AdvanceSessionState::faulted);
+        auto later = kernel->advance(Tick{1103}, slots);
+        REQUIRE_FALSE(later);
+        CHECK(later.error().code() == "session.mutation_rejected");
+        CHECK(contextValue(later.error(), "fieldPath") == "/session/state");
+    }
+
+    SECTION("GP-03 a pre-seal checked-arithmetic failure classifies as arithmetic") {
+        auto prepared = gp02Prepared(false);
+        auto kernel = runtime::AdvanceKernel::prepare(prepared, RunKey{28, 1});
+        REQUIRE(kernel);
+        REQUIRE(kernel->receiveCanonicalBatch(std::vector<runtime::TickRecord>{tickRecord(900)}));
+        runtime::detail::AdvanceTestAccess::inject(
+            *kernel, {runtime::detail::AdvanceFaultPoint::arithmeticBeforeSeal});
+        std::vector<SettlementEvent> slots(3, sentinelEvent());
+        auto summary = kernel->advance(Tick{1103}, slots);
+        REQUIRE(summary);
+        CHECK(summary->status == AdvanceStatus::faulted);
+        CHECK(summary->fault.stage == AdvanceFaultStage::kernel);
+        CHECK(summary->fault.reason == AdvanceFaultReason::arithmetic);
+        CHECK(summary->written == 0);
+        CHECK_FALSE(summary->normalized.has_value());
+        CHECK_FALSE(kernel->frontier().has_value());
+        for (const auto& event : slots) {
+            CHECK(isSentinel(event));
+        }
+        CHECK(kernel->state() == runtime::AdvanceSessionState::faulted);
+    }
+
+    SECTION("the runtime SessionConfiguration binds the validated prepared run") {
+        auto prepared = gp02Prepared(false);
+        auto configuration = runtimeConfiguration(prepared);
+        auto kernel = runtime::AdvanceKernel::prepare(configuration, prepared, RunKey{26, 1});
+        REQUIRE(kernel);
+        CHECK(kernel->run() == RunKey{26, 1});
+        CHECK(kernel->settlementCapacity() == 3);
+        CHECK(kernel->dictionary().phases.size() == 3);
+        CHECK(kernel->dictionary().grades == std::vector<std::string>{"break", "release"});
+
+        auto mutated = configuration;
+        mutated.legacyRulesetToken = "legacy.ruleset";
+        auto legacy = runtime::AdvanceKernel::prepare(mutated, prepared, RunKey{26, 2});
+        REQUIRE_FALSE(legacy);
+        CHECK(legacy.error().code() == "judgement.execution.relation_invalid");
+        CHECK(contextValue(legacy.error(), "fieldPath") == "/session/ruleset");
+
+        mutated = configuration;
+        mutated.timebase.microsecondsNumerator = 2;
+        auto timebase = runtime::AdvanceKernel::prepare(mutated, prepared, RunKey{26, 2});
+        REQUIRE_FALSE(timebase);
+        CHECK(timebase.error().code() == "judgement.execution.relation_invalid");
+        CHECK(contextValue(timebase.error(), "fieldPath") == "/timebase");
+
+        mutated = configuration;
+        mutated.identityDeclarations.session.judgementConfigToken = "other";
+        auto identity = runtime::AdvanceKernel::prepare(mutated, prepared, RunKey{26, 2});
+        REQUIRE_FALSE(identity);
+        CHECK(identity.error().code() == "playback.gameplay.invalid");
+        CHECK(contextValue(identity.error(), "fieldPath") == "/identityDeclarations");
+
+        mutated = configuration;
+        mutated.latePolicy.finalizationWatermark =
+            runtime::MeasuredParameter<TickSpan>::measured(TickSpan{9});
+        auto late = runtime::AdvanceKernel::prepare(mutated, prepared, RunKey{26, 2});
+        REQUIRE_FALSE(late);
+        CHECK(contextValue(late.error(), "fieldPath") == "/latePolicy");
+
+        mutated = configuration;
+        mutated.executionProfileToken = "override";
+        auto profile = runtime::AdvanceKernel::prepare(mutated, prepared, RunKey{26, 2});
+        REQUIRE_FALSE(profile);
+        CHECK(contextValue(profile.error(), "fieldPath") == "/session/executionProfile");
+
+        mutated = configuration;
+        mutated.lateAlgorithmToken = "override";
+        auto algorithm = runtime::AdvanceKernel::prepare(mutated, prepared, RunKey{26, 2});
+        REQUIRE_FALSE(algorithm);
+        CHECK(contextValue(algorithm.error(), "fieldPath") == "/session/lateAlgorithm");
+
+        mutated = configuration;
+        mutated.factSemanticRevision = "override";
+        auto semantics = runtime::AdvanceKernel::prepare(mutated, prepared, RunKey{26, 2});
+        REQUIRE_FALSE(semantics);
+        CHECK(contextValue(semantics.error(), "fieldPath") == "/session/factSemantic");
     }
 }

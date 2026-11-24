@@ -1402,6 +1402,23 @@
       ],
       "note": "New Stop code registered by RR-FMT / slot RR-ADV (T-11). Two Stops at different author beats whose quantized endpoints meet (the earlier Stop's quantized end equals the later Stop's quantized start) is a time-order relation error and maps to invalid_relation. fieldPath points at the later Stop; relatedFieldPath points at the earlier Stop. It is not a capability reject code, so stableRejectCode stays null and no R entry is added.",
       "publicConsumptionSurface": "Consumed through the existing DiagnosticCode carrier and its core::Error context (code / category / severity / faulted / fieldPath / relatedFieldPath); no new ABI domain, type or public enum value is introduced."
+    },
+    {
+      "code": "judgement.advance.output_capacity_insufficient",
+      "family": "judgement.advance",
+      "category": "budget_exceeded",
+      "categoryBasis": "documented_mapping_row",
+      "severity": "error",
+      "faulted": "session_unaffected",
+      "ownerBatch": "RR-ADV",
+      "slot": "RR-ADV",
+      "stableRejectCode": null,
+      "rejectionEntries": [],
+      "source": [
+        "stage_plans/active/stage-07-rr/contracts/runtime-timing.md#稳定诊断与迁移"
+      ],
+      "note": "New advance code registered by RR-ADV (T-10). One advance or StopCut call needs at least P settlement slots before the transaction starts, where P is the number of expanded phase instances of the prepared run; a smaller span is refused without writing any slot, numbering any input or moving the frontier. fieldPath is /slots and the context carries the required/provided element counts. It is not a capability reject code, so stableRejectCode stays null and no R entry is added.",
+      "publicConsumptionSurface": "Consumed through the existing DiagnosticCode carrier and its core::Error context (code / category / severity / faulted / fieldPath / required / provided); no new ABI domain, type or public enum value is introduced."
     }
   ],
   "rejectionEntries": [
