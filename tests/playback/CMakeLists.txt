@@ -102,6 +102,7 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
         playback_gameplay_diagnostics_tests.cpp
         playback_gameplay_execution_tests.cpp
         playback_gameplay_fixture.hpp
+        rr_advance_contract_tests.cpp
         rr_t17_session_tests.cpp
         ../judgement/execution_reference.cpp
         "${PROJECT_SOURCE_DIR}/engine/playback/src/gameplay_entry.cpp")

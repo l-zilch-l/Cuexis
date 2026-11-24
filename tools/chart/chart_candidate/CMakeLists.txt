@@ -7,5 +7,5 @@ target_link_libraries(cuexis_chart_candidate PRIVATE
 
 if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
     target_compile_definitions(cuexis_chart_candidate PRIVATE CUEXIS_GAMEPLAY_ASSEMBLER_CANDIDATE=1)
-    target_link_libraries(cuexis_chart_candidate PRIVATE cuexis::gameplay_author)
+    target_link_libraries(cuexis_chart_candidate PRIVATE cuexis::gameplay_author_cli)
 endif()

@@ -31,6 +31,10 @@ add_executable(cuexis_judgement_tests
     timebase_mapping_tests.cpp
     timebase_policy_tests.cpp
     timebase_test_fixture.hpp
+    prepared_identity_self_contained.cpp
+    phase_types_self_contained.cpp
+    normalized_score_self_contained.cpp
+    advance_self_contained.cpp
 )
 
 target_include_directories(cuexis_judgement_tests PRIVATE ${PROJECT_SOURCE_DIR}/engine/judgement/internal)

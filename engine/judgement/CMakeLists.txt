@@ -39,6 +39,8 @@ target_sources(cuexis_judgement
         src/input_helpers.hpp
         src/input_mapping.cpp
         src/kernel_types.cpp
+        src/normalized_score.cpp
+        src/phase_types.cpp
         src/recovery_codec.cpp
         src/recovery.cpp
         src/ruleset.cpp

@@ -298,6 +298,9 @@ if(CUEXIS_BUILD_DEVELOPER_TOOLS)
         cuexis_chart_candidate
     )
 endif()
+if(TARGET cuexis_gameplay_author_cli)
+    list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_gameplay_author_cli)
+endif()
 if(TARGET cuexis_gameplay_assemble)
     list(APPEND CUEXIS_ACTIVE_TARGETS cuexis_gameplay_assemble)
 endif()
@@ -1205,19 +1208,23 @@ if(TARGET cuexis_gameplay_author_tests)
 endif()
 if(TARGET cuexis_gameplay_author)
     cuexis_verify_target_dependencies(cuexis_gameplay_author
-        ALLOWED cuexis::core cuexis::json_support cuexis::chart cuexis::chart_tools
-                cuexis::judgement cuexis::gameplay_packed
-                cuexis::playback cuexis::cxc cuexis::asset_publish)
+        ALLOWED cuexis::core cuexis::json_support cuexis::chart cuexis::chart_codec
+                cuexis::chart_tools cuexis::judgement cuexis::gameplay_packed)
+endif()
+if(TARGET cuexis_gameplay_author_cli)
+    cuexis_verify_target_dependencies(cuexis_gameplay_author_cli
+        ALLOWED cuexis::gameplay_author cuexis::core cuexis::chart_tools cuexis::playback
+                cuexis::cxc cuexis::cxc_candidate cuexis::asset_publish)
 endif()
 if(TARGET cuexis_gameplay_assemble)
     cuexis_verify_target_dependencies(cuexis_gameplay_assemble ALLOWED
-        cuexis::gameplay_author)
+        cuexis::gameplay_author_cli)
 endif()
 if(TARGET cuexis_chart_candidate)
     cuexis_verify_target_dependencies(cuexis_chart_candidate
         ALLOWED cuexis::chart cuexis::chart_codec cuexis::chart_tools cuexis::cxc
                 cuexis::cxc_candidate cuexis::core cuexis::json_support
-                cuexis::asset_publish cuexis::playback cuexis::gameplay_author)
+                cuexis::asset_publish cuexis::playback cuexis::gameplay_author_cli)
 endif()
 cuexis_verify_target_dependencies(cuexis_render
     ALLOWED
