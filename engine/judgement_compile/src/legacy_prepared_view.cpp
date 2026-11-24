@@ -66,7 +66,7 @@ auto convertMeasure(const MeasureSpecDeclaration& source)
     std::vector<runtime::CompiledMeasureComponent> converted;
     converted.reserve(source.components.size());
     for (const auto& component : source.components) {
-        runtime::CompiledMeasureComponent out;
+        runtime::CompiledMeasureComponent out{};
         out.phase = component.phase;
         out.category = factCategoryOfPhase(component.phase);
         out.grade = component.gradeTable.has_value() ? runtime::GradePresence::declared
@@ -82,7 +82,7 @@ auto convertAtomBindings(const std::vector<AtomBinding>& source)
     std::vector<runtime::AtomBinding> converted;
     converted.reserve(source.size());
     for (const auto& binding : source) {
-        runtime::AtomBinding out;
+        runtime::AtomBinding out{};
         out.atomRef = binding.atomRef;
         out.domainToken = binding.domainToken;
         out.sourceClass = binding.sourceClass;
@@ -103,7 +103,7 @@ auto convertClaims(const std::vector<ResourceClaimDeclaration>& source)
     std::vector<runtime::ResourceClaimDeclaration> converted;
     converted.reserve(source.size());
     for (const auto& claim : source) {
-        runtime::ResourceClaimDeclaration out;
+        runtime::ResourceClaimDeclaration out{};
         out.resourceId = claim.resourceRef.resourceId;
         out.claimPolicy.policyToken = claim.claimPolicy.policyToken;
         out.claimPolicy.claimKeyToken = claim.claimPolicy.claimKeyToken;
@@ -162,7 +162,7 @@ auto preparedGameplayView(const PreparedGameplay& prepared)
             return core::unexpected(
                 conversionError("a prepared requirement has no timing record", "prepared_timing"));
         }
-        runtime::PreparedRequirement out;
+        runtime::PreparedRequirement out{};
         out.stableId = source.stableId;
         out.identity = source.identity;
         out.phases = source.phases;
@@ -184,7 +184,7 @@ auto preparedGameplayView(const PreparedGameplay& prepared)
     std::vector<runtime::PreparedResource> convertedResources;
     convertedResources.reserve(prepared.resources().size());
     for (const auto& source : prepared.resources()) {
-        runtime::PreparedResource out;
+        runtime::PreparedResource out{};
         out.resourceId = source.resourceId;
         const auto resource = std::find_if(graph.resources.begin(), graph.resources.end(),
                                            [&source](const auto& candidate) {
@@ -207,7 +207,7 @@ auto preparedGameplayView(const PreparedGameplay& prepared)
     std::vector<runtime::PreparedTimerKey> convertedTimers;
     convertedTimers.reserve(prepared.timers().size());
     for (const auto& source : prepared.timers()) {
-        runtime::PreparedTimerKey out;
+        runtime::PreparedTimerKey out{};
         out.requirement = source.requirement;
         out.phase = source.phase;
         out.kind = static_cast<runtime::PreparedTimerKind>(source.kind);

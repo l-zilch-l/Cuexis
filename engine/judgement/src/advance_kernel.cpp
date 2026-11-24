@@ -1,6 +1,7 @@
 #include <cuexis/judgement/advance_kernel.hpp>
 
 #include <algorithm>
+#include <limits>
 #include <utility>
 
 namespace cuexis::judgement::runtime {

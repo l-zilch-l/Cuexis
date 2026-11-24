@@ -140,6 +140,15 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE OR CUEXIS_BUILD_DEVELOPER_TOOLS OR
     configure_file(src/chart_v5_schema.hpp.in
         "${CMAKE_CURRENT_BINARY_DIR}/generated/chart_v5_schema.hpp" @ONLY)
 
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        # The embedded schema is one oversized string literal, and Clang concatenates
+        # adjacent literals before measuring them, so splitting cannot avoid
+        # -Woverlength-strings. Every supported compiler accepts the artifact; keep the
+        # portability warning off for the one translation unit that carries it.
+        set_source_files_properties(src/chart_v5_loader.cpp PROPERTIES
+            COMPILE_OPTIONS "-Wno-overlength-strings")
+    endif()
+
     # CXT2 expansion, candidate/Behavior source compilation, candidate assembly, migration and
     # the Packed file Writer. The old Resolver-facing chart_writer.cpp stays in the base target.
     target_sources(cuexis_chart_tools
