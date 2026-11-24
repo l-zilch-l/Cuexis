@@ -49,6 +49,26 @@ struct TickRecord final {
     std::optional<std::int64_t> amount;
 };
 
+//  One archived ingress row: the canonical record, its true sequence and dispatch decision.
+struct ReplayRecord final {
+    IngressSequence sequence;
+    Tick dispatchTick;
+    bool accepted;
+    std::string rejectionCode;
+    TickRecord record;
+};
+
+//  The in-memory replay of one open or stopped run. `events` are the settled events in emission
+//  order; `records` retain every numbered row, including rejected rows.
+struct ReplaySnapshot final {
+    std::vector<ReplayRecord> records;
+    std::vector<SettlementEvent> events;
+    std::optional<Tick> frontier;
+    std::int64_t j{0};
+    std::int64_t c{0};
+    std::uint32_t score{0};
+};
+
 //  The accepted or rejected outcome of one record. `dispatchTick` is the original tick when the
 //  record is on time and the queued tick when the late policy forwarded it; a rejected record keeps
 //  its real sequence and the dispatch it would have had.
@@ -76,6 +96,12 @@ struct AdvanceSummary final {
     std::int64_t j{0};
     std::int64_t c{0};
     std::uint32_t score{0};
+    std::uint64_t jMax{0};
+    std::uint64_t cMax{0};
+    std::uint32_t mj{0};
+    std::uint32_t mc{0};
+    std::uint32_t combo{0};
+    std::uint32_t maxCombo{0};
 };
 
 class AdvanceKernel final {
@@ -122,6 +148,8 @@ class AdvanceKernel final {
     [[nodiscard]] auto archivedRecords() const noexcept -> std::span<const IngressReceipt> {
         return archive_;
     }
+    //  Read-only, owning replay: no renumbering, no re-emission, no allocation of sequence.
+    [[nodiscard]] auto replay() const -> ReplaySnapshot;
 
   private:
     AdvanceKernel(PreparedGameplay prepared, RunKey run, LatePolicyParameters late);
@@ -177,6 +205,7 @@ class AdvanceKernel final {
     bool receiveClosed_{false};
     std::vector<IngressReceipt> archive_;
     std::vector<TickRecord> records_;
+    std::vector<SettlementEvent> settled_;
     std::vector<std::size_t> pending_;
 };
 

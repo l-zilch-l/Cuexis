@@ -29,3 +29,6 @@ CMakeUserPresets.json
 
 # Compiler object files (MSVC .obj pick up the same name on every platform).
 *.obj
+
+# MSVC program database left by local link steps.
+/vc140.pdb

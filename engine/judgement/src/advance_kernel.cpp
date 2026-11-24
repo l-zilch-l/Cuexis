@@ -158,6 +158,23 @@ auto AdvanceKernel::acceptedIngressThrough() const noexcept -> std::optional<Ing
     return acceptedThrough_;
 }
 
+auto AdvanceKernel::replay() const -> ReplaySnapshot {
+    ReplaySnapshot snapshot;
+    snapshot.records.reserve(archive_.size());
+    for (std::size_t index = 0; index < archive_.size(); ++index) {
+        const auto& receipt = archive_[index];
+        snapshot.records.push_back(ReplayRecord{receipt.sequence, receipt.dispatchTick,
+                                                receipt.accepted, receipt.rejectionCode,
+                                                records_[index]});
+    }
+    snapshot.events = settled_;
+    snapshot.frontier = frontier_;
+    snapshot.j = j_;
+    snapshot.c = c_;
+    snapshot.score = score_;
+    return snapshot;
+}
+
 auto AdvanceKernel::processThrough(Tick horizon) -> std::size_t {
     std::vector<std::size_t> ordered;
     ordered.reserve(pending_.size());
@@ -226,9 +243,22 @@ auto AdvanceKernel::advanceInternal(Tick horizon, std::span<SettlementEvent> slo
             slots[index] = staged_[index];
         }
     }
+    settled_.insert(settled_.end(), staged_.begin(), staged_.end());
     frontier_ = horizon;
     score_ = computeScore();
-    return AdvanceSummary{horizon, processed, staged_.size(), j_, c_, score_};
+    const auto* normalized = prepared_.records().normalizedScore;
+    return AdvanceSummary{horizon,
+                          processed,
+                          staged_.size(),
+                          j_,
+                          c_,
+                          score_,
+                          normalized ? normalized->basis.jMax : 0,
+                          normalized ? normalized->basis.cMax : 0,
+                          normalized ? normalized->mode.mj : 0,
+                          normalized ? normalized->mode.mc : 0,
+                          combo_,
+                          maxCombo_};
 }
 
 auto AdvanceKernel::advance(Tick horizon) -> core::Result<AdvanceSummary> {
@@ -293,9 +323,22 @@ auto AdvanceKernel::advanceStopCut(const StopCut& cut, std::span<SettlementEvent
     for (std::size_t index = 0; index < staged_.size(); ++index) {
         slots[index] = staged_[index];
     }
+    settled_.insert(settled_.end(), staged_.begin(), staged_.end());
     frontier_ = cut.cutoff;
     score_ = computeScore();
-    return AdvanceSummary{cut.cutoff, processed, staged_.size(), j_, c_, score_};
+    const auto* normalized = prepared_.records().normalizedScore;
+    return AdvanceSummary{cut.cutoff,
+                          processed,
+                          staged_.size(),
+                          j_,
+                          c_,
+                          score_,
+                          normalized ? normalized->basis.jMax : 0,
+                          normalized ? normalized->basis.cMax : 0,
+                          normalized ? normalized->mode.mj : 0,
+                          normalized ? normalized->mode.mc : 0,
+                          combo_,
+                          maxCombo_};
 }
 
 auto AdvanceKernel::requirementIndexFor(const TickRecord& record) const
@@ -582,6 +625,15 @@ void AdvanceKernel::settleTimers(Tick horizon) {
         }
         if (run.stage == RequirementRun::Stage::tail && horizon >= lastTailEnd(requirement)) {
             emit(index, PhaseKind::tail, lastTailEnd(requirement), Outcome::miss, std::nullopt,
+                 std::nullopt);
+            run.stage = RequirementRun::Stage::done;
+        }
+        const bool hasTap =
+            std::any_of(requirement.phases.begin(), requirement.phases.end(),
+                        [](const auto& phase) { return phase.kind == PhaseKind::tap; });
+        if (run.stage == RequirementRun::Stage::dormant && hasTap &&
+            horizon >= requirement.deadline) {
+            emit(index, PhaseKind::tap, requirement.deadline, Outcome::miss, std::nullopt,
                  std::nullopt);
             run.stage = RequirementRun::Stage::done;
         }

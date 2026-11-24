@@ -233,6 +233,86 @@ auto gp02Prepared(bool shortHold) -> runtime::PreparedGameplay {
     return *prepared;
 }
 
+auto gp04Score() -> PreparedNormalizedScore {
+    PreparedNormalizedScore score;
+    auto& mode = score.mode;
+    mode.id = "gp04";
+    mode.total = 1000000;
+    mode.mj = 900000;
+    mode.mc = 100000;
+    mode.onExhausted = ComboAction::reset;
+    mode.comboRewards = {ComboRewardSegment{1, 1, 1}};
+    mode.rules = {
+        ScoreRuleRow{PhaseKind::tap, Outcome::hit, std::string{"A"}, true, 2,
+                     ComboAction::increment},
+        ScoreRuleRow{PhaseKind::tap, Outcome::hit, std::string{"B"}, true, 5,
+                     ComboAction::increment},
+        ScoreRuleRow{PhaseKind::tap, Outcome::hit, std::string{"solo"}, true, 3,
+                     ComboAction::increment},
+        ScoreRuleRow{PhaseKind::tap, Outcome::miss, std::nullopt, false, 0, ComboAction::keep},
+    };
+    for (const char* id : {"A", "B", "solo"}) {
+        PreparedGradeTable table;
+        table.id = id;
+        table.exactStart = 0;
+        table.exactEnd = 1;
+        table.intervals = {PreparedGradeInterval{0, 1, id}};
+        score.gradeTables.push_back(std::move(table));
+    }
+    return score;
+}
+
+auto gp04Prepared(std::size_t count, bool explicitUnits, bool stagger = false)
+    -> runtime::PreparedGameplay {
+    std::vector<runtime::PreparedRequirement> requirements;
+    requirements.reserve(count);
+    for (std::size_t index = 0; index < count; ++index) {
+        const auto target = stagger && index > 0 ? 1100 : 1000;
+        auto requirement = tapRequirement(index, target, explicitUnits ? index % 3 : 0);
+        requirement.atomBindings.front().channelToken = "channel." + std::to_string(index);
+        requirements.push_back(std::move(requirement));
+    }
+    auto score = gp04Score();
+    if (explicitUnits && count == 3) {
+        score.units = {ScoreUnit{{0, 1}}, ScoreUnit{{2}}};
+        score.basis = ScoreBasis{8, 3};
+    } else {
+        score.units.clear();
+        for (std::size_t index = 0; index < count; ++index) {
+            score.units.push_back(ScoreUnit{{static_cast<std::uint32_t>(index)}});
+        }
+        score.basis = ScoreBasis{2 * count, count * (count + 1) / 2};
+    }
+    auto policy = runtimePolicy();
+    auto identities = runtimeIdentities();
+    const runtime::PreparedTimebase timebase{"engine.tick.us.v1", 1, 1, Tick{0}};
+    runtime::CompiledGameplayView view{
+        timebase,
+        policy,
+        identities,
+        "content.one",
+        "prepared.one",
+        "execution.one",
+        nullptr,
+        &score,
+        requirements,
+        std::span<const runtime::PreparedResource>{},
+        std::span<const runtime::PreparedTimerKey>{},
+    };
+    auto prepared = runtime::prepareCompiledGameplay(view, runtime::PrepareGameplayLimits{});
+    REQUIRE(prepared);
+    return *prepared;
+}
+
+auto gp04Record(std::size_t index) -> runtime::TickRecord {
+    return runtime::TickRecord{Tick{1000},
+                               "domain.binding.one",
+                               "keyboard",
+                               "channel." + std::to_string(index),
+                               runtime::InputAction::press,
+                               std::nullopt};
+}
+
 auto contextValue(const cuexis::core::Error& error, std::string_view key) -> std::string {
     for (const auto& entry : error.context()) {
         if (entry.key == key) {
@@ -978,5 +1058,125 @@ TEST_CASE("cuexis_rr_advance_contract", "[playback][judgement][rr][advance]") {
         CHECK(fourth.j == 10);
         CHECK(fourth.c == 6);
         CHECK(fourth.score == 100);
+    }
+
+    SECTION("the GP-04 single-A units scale to 200 and 1000") {
+        auto run = [](std::size_t count) {
+            auto kernel =
+                runtime::AdvanceKernel::prepare(gp04Prepared(count, false), RunKey{10, 1});
+            REQUIRE(kernel);
+            std::vector<runtime::TickRecord> batch;
+            for (std::size_t index = 0; index < count; ++index) {
+                batch.push_back(gp04Record(index));
+            }
+            REQUIRE(kernel->receiveCanonicalBatch(batch));
+            std::vector<SettlementEvent> slots(count);
+            auto advanced = kernel->advance(Tick{1000}, slots);
+            REQUIRE(advanced);
+            return *advanced;
+        };
+        const auto small = run(200);
+        CHECK(small.j == 400);
+        CHECK(small.c == 20100);
+        CHECK(small.score == 1000000);
+        CHECK(small.jMax == 400);
+        CHECK(small.cMax == 20100);
+        CHECK(small.mj == 900000);
+        CHECK(small.mc == 100000);
+        CHECK(small.combo == 200);
+        CHECK(small.maxCombo == 200);
+        const auto large = run(1000);
+        CHECK(large.j == 2000);
+        CHECK(large.c == 500500);
+        CHECK(large.score == 1000000);
+        CHECK(large.jMax == 2000);
+        CHECK(large.cMax == 500500);
+        CHECK(large.combo == 1000);
+    }
+
+    SECTION("the GP-04 explicit unit shares one award") {
+        auto settle = [](std::vector<std::size_t> order) {
+            auto kernel = runtime::AdvanceKernel::prepare(gp04Prepared(3, true), RunKey{11, 1});
+            REQUIRE(kernel);
+            std::vector<runtime::TickRecord> batch;
+            for (const auto index : order) {
+                batch.push_back(gp04Record(index));
+            }
+            REQUIRE(kernel->receiveCanonicalBatch(batch));
+            std::vector<SettlementEvent> slots(3);
+            auto advanced = kernel->advance(Tick{1000}, slots);
+            REQUIRE(advanced);
+            return *advanced;
+        };
+        const auto aFirst = settle({0, 1, 2});
+        CHECK(aFirst.j == 5);
+        CHECK(aFirst.c == 3);
+        CHECK(aFirst.score == 662500);
+        CHECK(aFirst.jMax == 8);
+        CHECK(aFirst.cMax == 3);
+        CHECK(aFirst.combo == 2);
+        CHECK(aFirst.maxCombo == 2);
+        const auto bFirst = settle({1, 0, 2});
+        CHECK(bFirst.j == 8);
+        CHECK(bFirst.score == 1000000);
+
+        auto kernel = runtime::AdvanceKernel::prepare(gp04Prepared(3, true, true), RunKey{12, 1});
+        REQUIRE(kernel);
+        std::vector<SettlementEvent> slots(3);
+        REQUIRE(kernel->advance(Tick{1050}, slots)); // A's null Miss, no early reset
+        const auto late = [](std::size_t index) {
+            return runtime::TickRecord{Tick{1100},
+                                       "domain.binding.one",
+                                       "keyboard",
+                                       "channel." + std::to_string(index),
+                                       runtime::InputAction::press,
+                                       std::nullopt};
+        };
+        CHECK(kernel->receiveCanonicalBatch(std::vector<runtime::TickRecord>{late(1), late(2)}));
+        auto later = kernel->advance(Tick{1100}, slots);
+        REQUIRE(later);
+        CHECK(later->j == 8);
+        CHECK(later->score == 1000000);
+    }
+
+    SECTION("the replay keeps true numbering and settled events after Stop") {
+        auto kernel = runtime::AdvanceKernel::prepare(gp02Prepared(false), RunKey{13, 1});
+        REQUIRE(kernel);
+        REQUIRE(kernel->receiveCanonicalBatch(std::vector<runtime::TickRecord>{
+            tickRecord(900), tickRecord(1019, runtime::InputAction::release)}));
+        std::vector<SettlementEvent> slots(3);
+        REQUIRE(kernel->advance(Tick{1103}, slots));
+        const auto open = kernel->replay();
+        REQUIRE(open.records.size() == 2);
+        CHECK(open.records[0].sequence == runtime::IngressSequence{0});
+        CHECK(open.records[1].sequence == runtime::IngressSequence{1});
+        CHECK(open.events.size() == 3);
+        CHECK(open.frontier == Tick{1103});
+        CHECK(open.j == 10);
+        CHECK(open.score == 100);
+
+        auto stopped = runtime::AdvanceKernel::prepare(preparedTapGameplay(), RunKey{14, 1});
+        REQUIRE(stopped);
+        REQUIRE(stopped->receiveCanonicalBatch(
+            std::vector<runtime::TickRecord>{tickRecord(1100), tickRecord(1000)}));
+        std::vector<SettlementEvent> stopSlots(3);
+        auto cut = stopped->advanceStopCut(
+            runtime::StopCut{RunKey{14, 1}, stopped->acceptedIngressThrough(), Tick{1000}},
+            stopSlots);
+        REQUIRE(cut);
+        CHECK(cut->settledEvents == 1);
+        const auto replay = stopped->replay();
+        REQUIRE(replay.records.size() == 2);
+        CHECK(replay.records[0].sequence == runtime::IngressSequence{0});
+        CHECK(replay.records[1].sequence == runtime::IngressSequence{1});
+        CHECK(replay.records[1].accepted);
+        CHECK(replay.events.size() == 1);
+        CHECK(replay.frontier == Tick{1000});
+        CHECK(stopped->nextSequence() == runtime::IngressSequence{2});
+        auto rejected =
+            stopped->receiveCanonicalBatch(std::vector<runtime::TickRecord>{tickRecord(95)});
+        REQUIRE_FALSE(rejected);
+        CHECK(stopped->replay().records.size() == 2);
+        CHECK(stopped->nextSequence() == runtime::IngressSequence{2});
     }
 }
