@@ -152,8 +152,8 @@ TEST_CASE("F135 allocation probe fails every allocation and counts attempts",
     {
         const f135_probe::FailScope scope;
         try {
-            auto* value = new int(7);
-            delete value;
+            void* value = ::operator new(8);
+            ::operator delete(value);
         } catch (const std::bad_alloc&) {
             threw = true;
         }
