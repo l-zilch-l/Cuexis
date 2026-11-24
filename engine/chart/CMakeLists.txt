@@ -36,6 +36,7 @@ target_sources(cuexis_chart
         src/chart_project_path_internal.cpp
         src/rational_beat.cpp
         src/timing_map.cpp
+        src/timing_source_adapter.cpp
         src/uuid.cpp
     PRIVATE
         FILE_SET HEADERS
@@ -56,6 +57,7 @@ target_sources(cuexis_chart
             include/cuexis/chart/prepared_semantic_identity.hpp
             include/cuexis/chart/rational_beat.hpp
             include/cuexis/chart/timing_map.hpp
+            include/cuexis/chart/timing_source_adapter.hpp
             include/cuexis/chart/uuid.hpp
 )
 
@@ -68,6 +70,7 @@ target_compile_features(cuexis_chart PUBLIC cxx_std_20)
 target_link_libraries(cuexis_chart
     PUBLIC
         cuexis::core
+        cuexis::timing
     PRIVATE
         cuexis::json_support
 )
@@ -95,6 +98,7 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE OR CUEXIS_BUILD_DEVELOPER_TOOLS OR
             src/packed_chart_read.cpp
             src/packed_profile.cpp
             src/packed_semantic_identity.cpp
+            src/compiled_chart_timing.cpp
         PRIVATE
             FILE_SET HEADERS
             BASE_DIRS codec_include
@@ -108,6 +112,7 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE OR CUEXIS_BUILD_DEVELOPER_TOOLS OR
     target_include_directories(cuexis_chart_codec
         PUBLIC
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/codec_include>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/internal>
         PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}/src
     )
@@ -118,6 +123,7 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE OR CUEXIS_BUILD_DEVELOPER_TOOLS OR
         PUBLIC
             cuexis::chart
             cuexis::core
+            cuexis::timing
     )
 
     add_library(cuexis_chart_tools STATIC)
@@ -149,6 +155,7 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE OR CUEXIS_BUILD_DEVELOPER_TOOLS OR
             src/candidate_lowering.cpp
             src/candidate_assembler.cpp
             src/behavior_candidate.cpp
+            src/chart_v5_timing.cpp
             src/packed_chart_tables_sections.cpp
             src/packed_chart_tables_writer.cpp
             src/packed_chart_io.cpp
@@ -161,6 +168,7 @@ if(CUEXIS_ENABLE_CHART_V5_CANDIDATE OR CUEXIS_BUILD_DEVELOPER_TOOLS OR
                 tools_include/cuexis/chart/candidate_lowering.hpp
                 tools_include/cuexis/chart/chart_migrator.hpp
                 tools_include/cuexis/chart/chart_v5_document.hpp
+                tools_include/cuexis/chart/chart_v5_timing.hpp
                 tools_include/cuexis/chart/cxt_v2_loader.hpp
                 tools_include/cuexis/chart/packed_chart_io.hpp
                 tools_include/cuexis/chart/packed_chart_writer.hpp

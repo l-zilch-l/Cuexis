@@ -404,7 +404,7 @@ function(cuexis_verify_source_architecture source_dir)
             "gameplay_assembler_identity.hpp|struct GameplaySourceDocument"
             "gameplay_assembler_identity.hpp|struct GameplaySource"
             "gameplay_assembler_identity.hpp|enum class EntryKind"
-            "gameplay_assembler_identity.hpp|struct CompileCapabilityContext"
+            "internal/cuexis/judgement/compiled_gameplay_context.hpp|struct CompileCapabilityContext"
             "prepared_identity.hpp|struct EngineIdentityDeclaration"
             "prepared_identity.hpp|struct RulesetIdentityDeclaration"
             "prepared_identity.hpp|struct SessionIdentityDeclaration"
@@ -418,7 +418,7 @@ function(cuexis_verify_source_architecture source_dir)
             "gameplay_assembler_identity.hpp|makePreparedIdentity"
             "gameplay_assembler_identity.hpp|sharesJudgementIdentity"
             "gameplay_assembler_publication.hpp|struct ContentProfileCounts"
-            "gameplay_assembler_publication.hpp|struct ContentProfileLimits"
+            "internal/cuexis/judgement/compiled_gameplay_context.hpp|struct ContentProfileLimits"
             "gameplay_assembler_publication.hpp|enum class ContentProfileVerdict"
             "gameplay_assembler_publication.hpp|countContentProfile"
             "gameplay_assembler_publication.hpp|checkContentProfile"
@@ -444,8 +444,15 @@ function(cuexis_verify_source_architecture source_dir)
             "gameplay_assembler_compiled.hpp|compileMeasure"
             "gameplay_assembler.hpp|resolveResourceClaims")
         _cuexis_split_entry("${judgement_assembler_entry}" judgement_assembler_owner judgement_assembler_surface)
-        _cuexis_partition_text("${source_dir}" "engine/judgement/include/cuexis/judgement"
-            "${judgement_assembler_owner}" judgement_assembler_text)
+        if(judgement_assembler_owner MATCHES "^internal/")
+            #  The two shared compile-side types are owned by the internal context header. The
+            #  author headers re-include that header instead of repeating the definitions.
+            _cuexis_partition_text("${source_dir}" "engine/judgement"
+                "${judgement_assembler_owner}" judgement_assembler_text)
+        else()
+            _cuexis_partition_text("${source_dir}" "engine/judgement/include/cuexis/judgement"
+                "${judgement_assembler_owner}" judgement_assembler_text)
+        endif()
         _cuexis_declaration_pattern("${judgement_assembler_surface}" judgement_assembler_pattern)
         if(NOT judgement_assembler_text MATCHES "${judgement_assembler_pattern}")
             message(FATAL_ERROR
@@ -483,12 +490,30 @@ function(cuexis_verify_source_architecture source_dir)
         "${source_dir}/engine/judgement/*.cpp"
         "${source_dir}/engine/judgement/*.hpp"
     )
+    set(judgement_shared_rows_header
+        "engine/judgement/internal/cuexis/judgement/compiled_gameplay_rows.hpp")
     foreach(source IN LISTS judgement_sources)
         file(READ "${source}" contents)
+        file(RELATIVE_PATH relative_judgement_source "${source_dir}" "${source}")
+        string(REPLACE "\\" "/" relative_judgement_source "${relative_judgement_source}")
+        if(NOT relative_judgement_source STREQUAL judgement_shared_rows_header AND
+           contents MATCHES "#[ \t]*include[ \t]*[<\"][^>\"\n]*compiled_gameplay_rows\\.hpp[>\"]")
+            message(FATAL_ERROR
+                "The running Judgement library includes the shared compile-side rows header: "
+                "${source}")
+        endif()
         string(REGEX MATCHALL "#[ \t]*include[ \t]*[<\"]cuexis/[^>\"]*[>\"]"
                judgement_includes "${contents}")
         foreach(judgement_include IN LISTS judgement_includes)
-            if(NOT judgement_include MATCHES "cuexis/(core|judgement)/")
+            if(relative_judgement_source STREQUAL judgement_shared_rows_header)
+                #  Only the named shared owning-product header may see the shared timing values;
+                #  every other runtime header and translation unit keeps the author/timing ban.
+                if(NOT judgement_include MATCHES "cuexis/(core|judgement|timing)/")
+                    message(FATAL_ERROR
+                        "Judgement shared rows header includes a non-timing Cuexis header: "
+                        "${judgement_include}")
+                endif()
+            elseif(NOT judgement_include MATCHES "cuexis/(core|judgement)/")
                 message(FATAL_ERROR
                     "Judgement includes a non-core Cuexis header: ${source} -> ${judgement_include}")
             endif()
@@ -519,9 +544,9 @@ function(cuexis_verify_source_architecture source_dir)
         string(REGEX MATCHALL "#[ \t]*include[ \t]*[<\"]cuexis/[^>\"]*[>\"]"
                compile_includes "${contents}")
         foreach(compile_include IN LISTS compile_includes)
-            if(NOT compile_include MATCHES "cuexis/(core|judgement)/")
+            if(NOT compile_include MATCHES "cuexis/(core|judgement|timing)/")
                 message(FATAL_ERROR
-                    "Judgement compile side includes a non-Core/non-Judgement header: "
+                    "Judgement compile side includes a non-Core/non-Judgement/non-timing header: "
                     "${source} -> ${compile_include}")
             endif()
         endforeach()

@@ -6,6 +6,8 @@
 #include <cuexis/judgement/gameplay_graph.hpp>
 #include <cuexis/judgement/prepared_identity.hpp>
 
+//  The shared compile-side context; see the context note below.
+#include "../../../internal/cuexis/judgement/compiled_gameplay_context.hpp"
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -78,15 +80,10 @@ enum class EntryKind : std::uint8_t {
 
 //  The capability context of one assembly.
 //
-//  The capability registry entry field set is unfrozen (CM-X01, first consumer S7A-7), so this
-//  batch does not invent a registry. What it consumes is the caller-supplied context: which
-//  capability ids the compiling toolchain recognises, and which of those this compile enabled. A
-//  derived capability that no context recognises is an unknown capability; one that is recognised
-//  but not enabled is a disabled capability; neither is silently added to the closure.
-struct CompileCapabilityContext final {
-    std::vector<std::string> recognisedCapabilityIds;
-    std::vector<std::string> enabledCapabilityIds;
-};
+//  The type moved to the shared compile-side context header
+//  `cuexis/judgement/compiled_gameplay_context.hpp`; this author-facing header re-includes the
+//  single definition so the author compiler and the prepared-artifact Reader share one type
+//  identity. The include lives at the top of this header, outside any namespace.
 
 //  ---------------------------------------------------------------------------------------------
 //  Canonical identity bytes (Spec 5.5)

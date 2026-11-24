@@ -233,6 +233,7 @@ set(CUEXIS_ACTIVE_TARGETS
     cuexis_filesystem
     cuexis_content
     cuexis_json_support
+    cuexis_timing
     cuexis_project
     cuexis_world
     cuexis_assets
@@ -325,6 +326,7 @@ if(CUEXIS_BUILD_TESTS)
         cuexis_filesystem_tests
         cuexis_content_tests
         cuexis_json_support_tests
+        cuexis_timing_tests
         cuexis_project_tests
         cuexis_assets_tests
         cuexis_chart_tests
@@ -936,6 +938,7 @@ set(CUEXIS_PUBLIC_EXPORT_TARGETS
 set(CUEXIS_STATIC_IMPLEMENTATION_TARGETS
     cuexis_filesystem
     cuexis_json_support
+    cuexis_timing
     cuexis_project
     cuexis_world
     cuexis_assets
@@ -1097,6 +1100,10 @@ cuexis_verify_target_dependencies(cuexis_json_support
         nlohmann_json::nlohmann_json
         nlohmann_json_schema_validator::validator
 )
+cuexis_verify_target_dependencies(cuexis_timing
+    ALLOWED
+        cuexis::core
+)
 cuexis_verify_target_dependencies(cuexis_project
     ALLOWED
         cuexis::core
@@ -1116,6 +1123,7 @@ cuexis_verify_target_dependencies(cuexis_assets
 cuexis_verify_target_dependencies(cuexis_chart
     ALLOWED
         cuexis::core
+        cuexis::timing
         cuexis::json_support
 )
 cuexis_verify_target_dependencies(cuexis_animation
@@ -1170,6 +1178,7 @@ if(TARGET cuexis_chart_codec)
         ALLOWED
             cuexis::chart
             cuexis::core
+            cuexis::timing
     )
 endif()
 if(TARGET cuexis_chart_tools)
@@ -1198,6 +1207,7 @@ if(TARGET cuexis_judgement_compile)
     cuexis_verify_target_dependencies(cuexis_judgement_compile
         ALLOWED
             cuexis::judgement
+            cuexis::timing
             cuexis::core
     )
 endif()
@@ -1461,6 +1471,11 @@ if(CUEXIS_BUILD_TESTS)
             cuexis::json_support
             Catch2::Catch2WithMain
     )
+    cuexis_verify_target_dependencies(cuexis_timing_tests
+        ALLOWED
+            cuexis::timing
+            Catch2::Catch2WithMain
+    )
     cuexis_verify_target_dependencies(cuexis_project_tests
         ALLOWED
             cuexis::project
@@ -1527,6 +1542,9 @@ if(CUEXIS_BUILD_TESTS)
         ALLOWED
             cuexis::judgement
             cuexis::judgement_compile
+            cuexis::chart_tools
+            cuexis::json_support
+            cuexis::timing
             Catch2::Catch2WithMain
     )
     if(TARGET cuexis_pd_baseline_probe)

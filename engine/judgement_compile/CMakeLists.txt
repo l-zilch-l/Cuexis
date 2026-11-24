@@ -4,6 +4,7 @@ set_target_properties(cuexis_judgement_compile PROPERTIES EXPORT_NAME InternalJu
 
 target_sources(cuexis_judgement_compile
     PRIVATE
+        src/beat_us_compile.cpp
         src/legacy_prepared_view.cpp
         src/legacy_runtime_identity.cpp
 )
@@ -11,13 +12,16 @@ target_sources(cuexis_judgement_compile
 target_include_directories(cuexis_judgement_compile
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/engine/judgement/internal>
 )
 
 target_compile_features(cuexis_judgement_compile PUBLIC cxx_std_20)
 
-# The compile side links the running judgement library; the runtime never links back.
+# The compile side links the running judgement library and the shared timing map; the runtime never
+# links back.
 target_link_libraries(cuexis_judgement_compile
     PUBLIC
         cuexis::judgement
+        cuexis::timing
         cuexis::core
 )

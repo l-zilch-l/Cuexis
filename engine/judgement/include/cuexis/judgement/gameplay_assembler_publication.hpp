@@ -4,6 +4,9 @@
 
 #include "gameplay_assembler_identity.hpp"
 
+//  The shared compile-side context; see the context note below.
+#include "../../../internal/cuexis/judgement/compiled_gameplay_context.hpp"
+
 #include <cuexis/core/result.hpp>
 #include <cuexis/judgement/gameplay_graph.hpp>
 
@@ -50,22 +53,10 @@ struct ContentProfileCounts final {
 
 [[nodiscard]] auto countContentProfile(const CanonicalGameplayGraph& graph) -> ContentProfileCounts;
 
-//  The accepted upper bounds of the content profile. Every bound is a measured-or-pending
-//  parameter, which is the S7A-2 carrier for exactly this situation: a bound no measurement has
-//  accepted stays pending and is reported as not enforced, instead of being spelled as a zero limit
-//  (BUDGET 3.2 keeps 0 as a literal upper bound, so 0 can never mean "no limit").
-struct ContentProfileLimits final {
-    MeasuredParameter<std::uint64_t> maxRequirements;
-    MeasuredParameter<std::uint64_t> maxResources;
-    MeasuredParameter<std::uint64_t> maxExclusiveRelations;
-    MeasuredParameter<std::uint64_t> maxRelationMembers;
-    MeasuredParameter<std::uint64_t> maxMergedDeclarations;
-    MeasuredParameter<std::uint64_t> maxPatternNodes;
-    MeasuredParameter<std::uint64_t> maxMeasureComponents;
-    MeasuredParameter<std::uint64_t> maxFactBindings;
-    MeasuredParameter<std::uint64_t> maxDerivedCapabilities;
-    MeasuredParameter<std::uint64_t> maxDiagnosticMapEntries;
-};
+//  The accepted upper bounds of the content profile moved to the shared compile-side context
+//  header `cuexis/judgement/compiled_gameplay_context.hpp`; this author-facing header re-includes
+//  the single definition so the author compiler and the prepared-artifact Reader share one type
+//  identity. The include lives at the top of this header, outside any namespace.
 
 //  The outcome of one content-profile check.
 enum class ContentProfileVerdict : std::uint8_t {

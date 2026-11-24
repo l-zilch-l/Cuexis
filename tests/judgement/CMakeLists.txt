@@ -47,6 +47,15 @@ add_executable(cuexis_judgement_tests
 target_include_directories(cuexis_judgement_tests PRIVATE ${PROJECT_SOURCE_DIR}/engine/judgement/internal)
 target_include_directories(cuexis_judgement_tests PRIVATE ${PROJECT_SOURCE_DIR}/engine/judgement/src)
 
+# The candidate contract test exercises the build-only Chart v5 timing source and the author
+# compiler; the default build does not compile either of them.
+if(CUEXIS_ENABLE_CHART_V5_CANDIDATE)
+    target_sources(cuexis_judgement_tests PRIVATE rr_timing_contract_tests.cpp)
+    #  The v5 source values also expose the opaque JSON value they carry, which the Chart tools
+    #  target keeps as a private dependency; the test names the directly used edge.
+    target_link_libraries(cuexis_judgement_tests PRIVATE cuexis::chart_tools cuexis::json_support)
+endif()
+
 target_compile_features(cuexis_judgement_tests PRIVATE cxx_std_20)
 target_link_libraries(cuexis_judgement_tests
     PRIVATE

@@ -28,6 +28,7 @@ cuexis_audio
 cuexis_filesystem
 cuexis_content
 cuexis_json_support
+cuexis_timing
 cuexis_project
 cuexis_world
 cuexis_assets
@@ -67,6 +68,7 @@ cuexis_audio_tests
 cuexis_filesystem_tests
 cuexis_content_tests
 cuexis_json_support_tests
+cuexis_timing_tests
 cuexis_project_tests
 cuexis_assets_tests
 cuexis_chart_tests

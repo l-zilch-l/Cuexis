@@ -320,4 +320,21 @@ TEST_CASE("Runtime debug snapshots are explicit, bounded, and explain Event reso
     CHECK(invalid.error().code() == "runtime.debug.capacity_invalid");
 }
 
+TEST_CASE("RuntimeSession samples Behavior Event tracks at the real Beat, not Beat 0",
+          "[runtime][behavior][rr-f133]") {
+    auto chart = stage2RuntimeChart();
+    const auto halfBeat = chart.timingMap.beatToChartTimeMs(0.5);
+    REQUIRE(halfBeat.has_value());
+
+    cuexis::runtime::RuntimeSession session;
+    auto prepared = session.prepare(std::move(chart));
+    REQUIRE(prepared.hasValue());
+    REQUIRE(session.commit(std::move(*prepared.prepared)).has_value());
+    REQUIRE(session.update({.chartTimeMs = *halfBeat}).has_value());
+
+    //  The event that starts at Beat 0 interpolates 4 -> 8 with the declared slopes; at Beat 0.5
+    //  the Hermite progress is 0.25, so the applied value is 5, not the Beat-0 start value 4.
+    CHECK(stage2State(session).transform.position.x == Catch::Approx(5.0F));
+}
+
 } // namespace
